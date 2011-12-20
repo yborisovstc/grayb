@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for ceation of graph 
+     -->
+
+
+<!DOCTYPE graph SYSTEM "../etc/objspec.dtd"> 
+
+<graph id="test">
+    <vert id="Vert1" parent="Vertex">
+    </node>
+</graph>
+
