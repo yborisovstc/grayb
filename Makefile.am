@@ -9,10 +9,12 @@ dist_sconf_DATA = \
 
 modulesdir = $(pkgdatadir)/modules
 dist_modules_DATA = \
-	     modules/system.xml
+	     modules/syst.xml 
+	     modules/vector.xml 
 
 
 EXTRA_DIST = \
 	     etc/objspec.dtd \
+	     modules/syst.xml 
 	     modules/vector.xml
 
