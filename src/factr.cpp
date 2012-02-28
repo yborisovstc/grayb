@@ -14,11 +14,11 @@ void *GFactory::DoGetObj(const char *aName)
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
 
-Vert* GFactory::CreateNode(const string& aType)
+Elem* GFactory::CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv)
 {
-    Vert* res = NULL;
+    Elem* res = NULL;
     for (map<string, GProvider*>::iterator it = iProviders.begin(); it != iProviders.end() && res == NULL; it++) {
-	res = it->second->CreateNode(aType);
+	res = it->second->CreateNode(aType, aName, aMan, aEnv);
     }
     return res;
 }

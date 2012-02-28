@@ -6,7 +6,8 @@
 <!ELEMENT logspec (logdata+)>
 
 <!-- Mutation - addition -->
-<!ELEMENT add (vert*, edge*, logspec* )>
+<!-- TODO [YB] To remove "add" mutation. Each node shall be mutable. -->
+<!ELEMENT add (node*, logspec* )>
 
 <!-- Mutation - change content -->
 <!ELEMENT cont EMPTY>
@@ -20,13 +21,9 @@
 <!-- Mutation - Changing node attribute-->
 <!ELEMENT chg EMPTY >
 
-<!ELEMENT graph (vert*, edge*, logspec*, add*, rm*, chg*, cont*, move*)>
+<!-- Element of base hier -->
+<!ELEMENT node (node*, logspec*, add*, rm*, chg*, cont*, move*)>
  
-<!-- Vertex - Element of graph. Is the graph of lower hier layer itself -->
-<!ELEMENT vert (vert*, edge*, logspec*, add*, rm*, chg*, cont*, move*)>
-
-<!ELEMENT edge EMPTY>
-
 <!-- Logging event: tran - transitioning, upd - updated, cre - created, any - all events -->
 <!ATTLIST logspec event (tran | upd | cre | any) #REQUIRED>
 
@@ -37,18 +34,9 @@
      type - parent name,
      id - instance name,
      -->
-<!ATTLIST vert 
-   id CDATA #REQUIRED
-   parent CDATA #REQUIRED
->
-
-<!-- State added attributes:
-  type - type of state
-  id - identification of instance
-  -->
-<!ATTLIST edge 
-    enda CDATA #REQUIRED
-    endb CDATA #REQUIRED
+<!ATTLIST node 
+   id CDATA #IMPLIED
+   parent CDATA #IMPLIED
 >
 
 <!-- Adding node attributes:
@@ -63,7 +51,7 @@
   node - mutated node - DES URI
   -->
 <!ATTLIST rm 
-    elem CDATA #IMPLIED
+    node CDATA #IMPLIED
 >
 
 <!-- Change  attributes:
@@ -72,17 +60,17 @@
      val - attr value,
      -->
 <!ATTLIST chg
-   elem CDATA #REQUIRED
+   node CDATA #REQUIRED
    attr CDATA #REQUIRED
    val CDATA #REQUIRED
 >
 
 <!-- Change content attributes:
-     elem - changed elem
+     node - changed elem
      val - new value,
      -->
 <!ATTLIST cont
-   elem CDATA #REQUIRED
+   node CDATA #IMPLIED
    val CDATA #REQUIRED
 >
 
@@ -92,6 +80,6 @@
      -->
 <!ATTLIST move
    id CDATA #REQUIRED
-   elem CDATA #IMPLIED
+   node CDATA #IMPLIED
 >
 

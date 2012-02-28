@@ -8,6 +8,7 @@ class ChromoNode;
 // Interface of Graph
 class MGraph
 {
+    public:
 };
 
 #endif

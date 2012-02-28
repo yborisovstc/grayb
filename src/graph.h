@@ -9,7 +9,7 @@ class Graph: public Elem, public MGraph
 {
     public:
 	static const char* Type() { return "Graph";};
-	Graph(const string &aName);
+	Graph(const string &aName, Elem* aMan, MEnv* aEnv);
     public:
 	static void Init();
 	// From Base
@@ -17,10 +17,10 @@ class Graph: public Elem, public MGraph
 	// From Elem
 	virtual TBool AddNode(const ChromoNode& aSpec);
 	virtual TBool DoMutation(const ChromoNode& aCromo);
-	virtual const set<TNodeType>& CompsTypes();
+	virtual const set<string>& CompsTypes();
     protected:
 	// Components types
-	static set<TNodeType> iCompsTypes;
+	static set<string> iCompsTypes;
 	// Sign of inited
 	static bool iInit;
 };

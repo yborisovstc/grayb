@@ -10,6 +10,9 @@ map<TNodeType, string> KNodeTypesNames;
 map<TNodeAttr, string> KNodeAttrsNames;
 map<string, TNodeAttr> KNodeAttrs;
 
+const string GUri::KTypeElem = "Elem";
+const string KTypeUnknown = "";
+
 TBool GUri::iInit = EFalse;
 
 const string& GUri::NodeAttrName(TNodeAttr aAttr)
@@ -51,14 +54,12 @@ void GUri::Construct()
 {
     if (KNodeTypes.size() == 0)
     {
-	KNodeTypes["graph"] = ENt_Graph;
-	KNodeTypes["vert"] = ENt_Vert;
-	KNodeTypes["edge"] = ENt_Edge;
+	KNodeTypes["node"] = ENt_Node;
 	KNodeTypes["log"] = ENt_Log;
-	KNodeTypes["add"] = ENt_Add;
 	KNodeTypes["move"] = ENt_Move;
 	KNodeTypes["rm"] = ENt_Rm;
 	KNodeTypes["change"] = ENt_Change;
+	KNodeTypes["cont"] = ENt_Cont;
 
 	for (map<string, TNodeType>::const_iterator it = KNodeTypes.begin(); it != KNodeTypes.end(); it++) {
 	    KNodeTypesNames[it->second] = it->first;
@@ -80,11 +81,30 @@ void GUri::Construct()
     iInit = ETrue;
 }
 
+const string& GUri::Scheme() const
+{
+    return iScheme;
+}
+
 void GUri::Parse()
 {
     TBool fin = EFalse;
-    size_t query_beg = iUri.find_first_of('?', 0);
-    string hier = iUri.substr(0, query_beg);
+    string frag;
+    size_t base_end = iUri.find_first_of('#', 0);
+    if (base_end != string::npos) {
+	// Base part is presented
+	frag = iUri.substr(0, base_end + 1);
+	size_t scheme_end = iUri.find_first_of(':', 0);
+	if (scheme_end != string::npos) {
+	    iScheme = iUri.substr(0, scheme_end);
+	}
+    }
+    else {
+	// Base part is missing
+	frag = iUri;
+    }
+    size_t query_beg = frag.find_first_of('?', 0);
+    string hier = frag.substr(0, query_beg);
     size_t elem_beg = 0;
     size_t elem_end = hier.find_first_of('/', 0);
     string elem = hier.substr(0, elem_end);
@@ -92,13 +112,12 @@ void GUri::Parse()
     while (!elem.empty()) {
 	size_t type_end = elem.find_first_of(':');
 	size_t name_beg = 0;
-	TNodeType type;
+	string type;
 	if (type_end == string::npos) {
-	    type = ENt_Graph;
+	    type = KTypeElem;
 	}
 	else {
-	    string tname = elem.substr(0, type_end);
-	    type = KNodeTypes[tname];
+	    type = elem.substr(0, type_end);
 	    name_beg = type_end + 1;
 	}
 	string name = elem.substr(name_beg);
@@ -115,7 +134,7 @@ void GUri::Parse()
     // Query
     if (query_beg != string::npos) {
 	// Just one condition for now
-	string query = iUri.substr(query_beg+1);
+	string query = frag.substr(query_beg+1);
 	size_t cond_beg = 0;
 	size_t cond_end = query.find_first_of("&", cond_beg);
 	string cond = query.substr(cond_beg, cond_end);
@@ -148,8 +167,8 @@ string GUri::GetUri(vector<TElem>::const_iterator aStart) const
     // Hier
     for (vector<GUri::TElem>::const_iterator it = aStart; it != iElems.end(); it++) {
 	GUri::TElem elem = *it;
-	if (elem.first != ENt_Vert) {
-	    res.append(KNodeTypesNames[elem.first] + ":");
+	if (elem.first.compare(KTypeElem) != 0) {
+	    res.append(elem.first + ":");
 	}
 	res.append(elem.second);
 	if (it + 1 != iElems.end()) {
@@ -172,10 +191,10 @@ string GUri::GetUri(vector<TElem>::const_iterator aStart) const
     return res;
 }
 
-TNodeType GUri::GetType() const
+const string& GUri::GetType() const
 {
     TInt size = iElems.size();
-    return size == 0 ? ENt_Unknown : iElems.at(size -1).first;
+    return size == 0 ? KTypeUnknown : iElems.at(size -1).first;
 }
 
 string GUri::GetName() const
@@ -184,12 +203,12 @@ string GUri::GetName() const
     return size == 0 ? string() : iElems.at(size -1).second;
 }
 
-void GUri::AppendElem(TNodeType aType, const string& aName)
+void GUri::AppendElem(const string& aType, const string& aName)
 {
     iElems.push_back(TElem(aType, aName));
 }
 
-void GUri::PrependElem(TNodeType aType, const string& aName)
+void GUri::PrependElem(const string& aType, const string& aName)
 {
     iElems.insert(iElems.begin(), TElem(aType, aName));
 }

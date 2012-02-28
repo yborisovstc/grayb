@@ -9,7 +9,7 @@ ChromoMdlX::ChromoMdlX(): ChromoMdl("ChromoMdlX"), iDoc(NULL), iDocOwned(EFalse)
 {
 };
 
-void *ChromoMdlX::DoGetObj(const char *aName)
+void *ChromoMdlX::DoGetObj(const char *aName) 
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
@@ -47,7 +47,8 @@ void* ChromoMdlX::Find(const void* aHandle, const string& aUri)
 	    if (res->type == XML_ELEMENT_NODE) {
 		TNodeType type = GetType((void*) res);
 		char *name = (char*) xmlGetProp(res, (const xmlChar *) GUri::NodeAttrName(ENa_Id).c_str());
-		if (elem.first == type && elem.second.compare(name) == 0) {
+		char *parent = (char*) xmlGetProp(res, (const xmlChar *) GUri::NodeAttrName(ENa_Parent).c_str());
+		if (type == ENt_Node && elem.first.compare(parent) == 0 && elem.second.compare(name) == 0) {
 		    break;
 		}
 	    }
@@ -69,7 +70,7 @@ void* ChromoMdlX::Set(const char *aFileName)
     iDoc = xmlReadFile(aFileName, NULL, XML_PARSE_DTDLOAD | XML_PARSE_DTDVALID);
     __ASSERT(iDoc != NULL);
     // Get the node 
-    sRoot = (xmlNodePtr) GetFirstChild((void *) iDoc, ENt_Graph);
+    sRoot = (xmlNodePtr) GetFirstChild((void *) iDoc, ENt_Node);
     iDocOwned = EFalse;
     return sRoot;
 }
@@ -87,7 +88,7 @@ void* ChromoMdlX::Set(const string& aUri)
     // Get the node 
     string desuri;
     Chromo::GetFrag(aUri, desuri);
-    sRoot = (xmlNodePtr) GetFirstChild((void *) iDoc, ENt_Graph);
+    sRoot = (xmlNodePtr) GetFirstChild((void *) iDoc, ENt_Node);
     if (!desuri.empty()) {
 	res = (xmlNodePtr) Find(sRoot, desuri); 
     }

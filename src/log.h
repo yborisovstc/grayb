@@ -10,6 +10,7 @@ class GLogRec: public Base, public MLogRec
     public:
 	static const char* Type() { return "GLogRec";};
 	GLogRec(const string& aName, const string& aLogFileName);
+	virtual ~GLogRec();
     public:
 	// From Base
 	virtual void *DoGetObj(const char *aName);
@@ -18,7 +19,9 @@ class GLogRec: public Base, public MLogRec
 	virtual void WriteFormat(const char* aFmt,...);
 	virtual void Flush();
     protected:
+	FILE* iLogFile;
 	string iLogFileName;
+	TBool iLogFileValid;
 };
 
 #endif

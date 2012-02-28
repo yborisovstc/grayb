@@ -9,7 +9,7 @@ dist_sconf_DATA = \
 
 modulesdir = $(pkgdatadir)/modules
 dist_modules_DATA = \
-	     modules/vector.xml
+	     modules/system.xml
 
 
 EXTRA_DIST = \

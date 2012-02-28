@@ -11,14 +11,12 @@ using namespace std;
 enum TNodeType
 {
     ENt_Unknown = 0,
-    ENt_Graph = 1,
-    ENt_Vert = 2,
-    ENt_Edge = 3,   	// Connection
-    ENt_Log = 4,  	// Logging specification
-    ENt_Add = 5,      	// Mutation - add
-    ENt_Move = 7, 	// Mutation - move node
-    ENt_Rm = 8,   	// Mutation - removal
-    ENt_Change = 9, 	// Change node attribute
+    ENt_Node = 1,
+    ENt_Log = 2,  	// Logging specification
+    ENt_Move = 3, 	// Mutation - move node
+    ENt_Rm = 4,   	// Mutation - removal
+    ENt_Change = 5, 	// Change node attribute
+    ENt_Cont = 6, 	// Change node content
 };
 
 enum TNodeAttr
@@ -41,20 +39,22 @@ class GUri
 	};
     public:
 	// Element type: type (parent), name
-	typedef pair<TNodeType, string> TElem;
+	typedef pair<string, string> TElem;
 	typedef pair<TNodeAttr, string> TQueryCnd;
 	typedef pair<TQueryOpr, TQueryCnd> TQueryElem;
 	typedef vector<TElem>::const_iterator const_elem_iter;
+	typedef vector<TElem>::iterator elem_iter;
     public:
 	GUri(const string& aGUri);
 	GUri();
 	const vector<TElem>& Elems() const {return iElems;};
 	string GetUri(vector<TElem>::const_iterator aStart) const;
 	string GetUri() const { return GetUri(iElems.begin());};
-	TNodeType GetType() const;
+	const string& GetType() const;
+	const string& Scheme() const;
 	string GetName() const;
-	void AppendElem(TNodeType aType, const string& aName);
-	void PrependElem(TNodeType aType, const string& aName);
+	void AppendElem(const string& aType, const string& aName);
+	void PrependElem(const string& aType, const string& aName);
 	void AppendQueryElem(TQueryOpr aOpr, TNodeAttr aAttr, const string& aValue);
 	static const string& NodeAttrName(TNodeAttr aAttr);
 	static const string& NodeTypeName(TNodeType aType);
@@ -65,12 +65,13 @@ class GUri
     private:
 	void Parse();
     private:
-	static map<string, TNodeType> iEbNameToNType;
 	string iUri;
 	string iScheme;
 	vector<TElem> iElems;
 	vector<TQueryElem> iQueryElems;
 	static TBool iInit;
+    public:
+	static const string KTypeElem;
 };
 
 #endif

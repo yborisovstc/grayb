@@ -16,7 +16,7 @@ class GFactory: public Base, public MProvider
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MProvider
-	virtual Vert* CreateNode(const string& aType);
+	virtual Elem* CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv);
 	virtual Chromo* CreateChromo();
     protected:
 	map<string, GProvider*> iProviders;

@@ -14,9 +14,9 @@ using namespace std;
 class Base
 {
     public:
-	Base(const string &aName):iName(aName) {};
+	Base(const string& aName): iName(aName) {};
 	virtual ~Base() {};
-	const string& Name() { return iName;}
+	const string& Name() const { return iName;}
 	template <class T> T* GetObj(T* aInst) {return aInst = static_cast<T*>(DoGetObj(aInst->Type())); };
 	void* GetObj(const char *aType) {return DoGetObj(aType); };
     protected:

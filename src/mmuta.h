@@ -9,7 +9,7 @@ class ChromoNode;
 class MMutable
 {
     public:
-	virtual TBool DoMutation(const ChromoNode& aCromo) = 0;
+	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime) = 0;
 };
 
 #endif

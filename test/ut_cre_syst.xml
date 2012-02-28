@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for ceation of system. System includes connpoint with roles specified.
+     So System supports different "type" of relations (roled relations)
+     This test is just for conn points connection
+     -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Syst">
+    <!-- Module containing components of system layer -->
+    <node id="sysmod" parent="file:../modules/syst.xml#SysComps" />
+
+    <node id="cp1" parent="SysComps:sysmod/Vert:ConnPoint"> <cont node="Prop:Provided" val="Iface1"/></node>
+    <node id="cp2" parent="SysComps:sysmod/Vert:ConnPoint"> <cont node="Prop:Required" val="Iface2"/></node>
+    <node parent="Edge"> <cont node="Prop:P1" val="ConnPoint:cp1"/> <cont node="Prop:P2" val="ConnPoint:cp2"/> </node>
+</node>
+

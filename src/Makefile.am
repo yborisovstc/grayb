@@ -30,14 +30,22 @@ libgrayb_la_SOURCES = \
 		       factr.h \
 		       mgraph.h \
 		       mvert.h \
+		       medge.h \
 		       vert.h \
 		       vert.cpp \
+		       edge.h \
+		       edge.cpp \
 		       melem.h \
 		       elem.h \
 		       elem.cpp \
+		       mprop.h \
+		       prop.h \
+		       prop.cpp \
+		       syst.h \
+		       syst.cpp \
+		       capsule.h \
+		       capsule.cpp \
 		       mmuta.h \
-		       mutelem.h \
-		       mutelem.cpp \
 		       graph.cpp \
 		       graph.h 
 
@@ -47,6 +55,7 @@ include_HEADERS = \
 		  base.h \
 		  chromo.h \
 		  mchromo.h \
+		  medge.h \
 		  mlog.h \
 		  log.h \
 		  menv.h \

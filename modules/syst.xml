@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+
+<!-- Base elements for system layer 
+     -->
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="SysComps" parent="Elem">
+    <node id="ConnPoint" parent="Vert">
+	<node id="Provided" parent="Prop"></node>
+	<node id="Required" parent="Prop"></node>
+    </node>
+</node>
+

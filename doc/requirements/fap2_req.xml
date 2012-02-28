@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+
+<!DOCTYPE article SYSTEM "/usr/share/sgml/docbook/dtd/xml/4.5/docbookx.dtd">
+
+
+<article status="draft" class="specification"> <title>Enhanced Discrete Events System framework (graph based). Requirements.</title>
+
+    <articleinfo>
+	<author><personname><firstname>Yuri</firstname><surname>Borisov</surname></personname>
+	    <email>yuri.borisov.v@gmail.com</email></author> 
+
+	<releaseinfo>Ver.0.01 at 30-Nov-2011</releaseinfo>
+
+	<abstract>
+	    <simpara>This document collects use-cases and software requirements for Discrete Events System framework ver 2.</simpara>
+	</abstract>
+
+	<revhistory>
+	    <revision> <revnumber>0.01</revnumber> <date>30-Nov-2011</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Initial version</revremark> </revision>
+	</revhistory>
+
+    </articleinfo>
+
+    <bibliolist>
+	<title>References</title>
+    </bibliolist>
+
+    
+    <sect1 id="uc_graph"> <title>Graph</title>
+	<sect2 id="uc_graph_01"><title>UC_GRAPH_01 Getting parent nodes available.</title>
+	    <sect3><title>Description</title>
+		CLIENT requests adding new graph node into the graph - SYSTEM offers the following ways to do this:
+		<itemizedlist>
+		    <listitem>From the current graphs loaded in environment by specifyinc local URI </listitem>
+		    <listitem>From external graph by specifying full URI (URI includes graph spec and node within the spec)</listitem>
+		    <listitem>From graph provider</listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="uc_graph_02"><title>UC_GRAPH_02 Creation from spec</title>
+	    <sect3><title>Description</title>
+		CLIENT requests creation of graph by spec - SYSTEM creates the graph using the spec given.
+	    </sect3>
+	    <sect3><title>Extentions</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_graph_02_1"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="uc_graph_02_1"><title>UC_GRAPH_02.1 Spec of creation </title>
+	    <sect3><title>Description</title>
+		[Ext UC_GRAPH_02] Graph spec consists of:
+		<itemizedlist>
+		    <listitem>Name</listitem>
+		    <listitem>Parent</listitem>
+		    <listitem>Mutations</listitem>
+		</itemizedlist>
+		<simpara>The mutation can be as:</simpara>
+		<itemizedlist>
+		    <listitem>Adding node or edge</listitem>
+		    <listitem>Changing of node or edge attributes</listitem>
+		    <listitem>Mutating of graph element if it's representing graph itself.</listitem>
+		</itemizedlist>
+		<simpara>The spec can be consider as "chromosome" of a graph. The spec can </simpara>
+	    </sect3>
+	    <sect3><title>Extentions</title>
+	    </sect3>
+	</sect2>
+	<sect2 id="uc_graph_03"><title>UC_GRAPH_03 Serialization as spec</title>
+	    <sect3><title>Description</title>
+		CLIENT requests serialization - SYSTEM serialize the graph as graph spec.
+	    </sect3>
+	    <sect3><title>Extentions</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_graph_02_1"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+    </sect1>
+
+</article>

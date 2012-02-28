@@ -1,5 +1,33 @@
 #include "mutelem.h"
+#include "mprov.h"
 #include "chromo.h"
+
+
+set<string> MutElem::iCompsTypes;
+bool MutElem::iInit = false;
+
+void MutElem::Init()
+{
+    if (!iInit) {
+	iCompsTypes.insert("MutElem");
+	iInit = true;
+    }
+}
+
+MutElem::MutElem(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iMut(NULL), iChromo(NULL)
+{
+    iMut = Provider()->CreateChromo();
+    iMut->Init(ENt_Node);
+    iChromo = Provider()->CreateChromo();
+    iChromo->Init(ENt_Node);
+    ChromoNode croot = iChromo->Root();
+    croot.SetAttr(ENa_Id, iName);
+}
+
+void* MutElem::DoGetObj(const char *aName)
+{
+    return (strcmp(aName, Type()) == 0) ? this : NULL;
+}
 
 void MutElem::SetMutation(const ChromoNode& aMuta)
 {
@@ -26,9 +54,17 @@ void MutElem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
     ChromoNode& chrroot = iChromo->Root();
     for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End(); rit++)
     {
+	TBool res = EFalse;
 	ChromoNode rno = (*rit);
 	TNodeType rnotype = rno.Type();
-	if (rnotype == ENt_Add) {
+	if (rnotype == ENt_Node) {
+	    res = AddNode(rno);
+	    if (!res) {
+		string pname = rno.Attr(ENa_Parent);
+		Logger()->WriteFormat("ERROR: Node [%s] - adding node of type [%s] failed", Name().c_str(), pname.c_str());
+	    }
+	}
+	else if (rnotype == ENt_Add) {
 	    MutAddNode(rno);
 	}
 	/*
@@ -49,7 +85,7 @@ void MutElem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 	   }
 	   */
 	else {
-	    Logger()->WriteFormat("ERROR: Mutating object [%s] - unknown mutation type [%d]", Name().c_str(), rnotype);
+	    Logger()->WriteFormat("ERROR: Mutating node [%s] - unknown mutation type [%d]", Name().c_str(), rnotype);
 	}
     }
 }
@@ -75,3 +111,9 @@ void MutElem::MutAddNode(const ChromoNode& aSpec)
 	Logger()->WriteFormat("ERROR: Adding node: cannot find [%s]", snode.c_str());
     }
 }
+
+const set<string>& MutElem::CompsTypes()
+{
+    return iCompsTypes;
+}
+

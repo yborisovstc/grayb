@@ -2,12 +2,6 @@
 #include <stdlib.h>
 
 // Chromo
-//
-void Chromo::GetUriScheme(const string& aUri, string& aScheme)
-{
-    size_t pos = aUri.find_first_of(':');
-    aScheme = (pos != string::npos) ? aUri.substr(0, pos) : string();
-}
 
 void Chromo::GetPath(const string& aUri, string& aPath)
 {

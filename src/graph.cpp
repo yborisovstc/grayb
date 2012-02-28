@@ -1,16 +1,17 @@
 #include "graph.h"
 
-set<TNodeType> Graph::iCompsTypes;
+set<string> Graph::iCompsTypes;
 bool Graph::iInit = false;
 
-Graph::Graph(const string &aName): Elem(aName) 
+Graph::Graph(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv) 
 {
 }
 
 void Graph::Init()
 {
     if (!iInit) {
-	iCompsTypes.insert(ENt_Node);
+	iCompsTypes.insert("Vert");
+	iCompsTypes.insert("Edge");
 	iInit = true;
     }
 }
@@ -28,7 +29,7 @@ TBool Graph::DoMutation(const ChromoNode& aCromo)
 {
 }
 
-const set<TNodeType>& Graph::CompsTypes()
+const set<string>& Graph::CompsTypes()
 {
     return iCompsTypes;
 }

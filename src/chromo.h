@@ -110,7 +110,6 @@ class Chromo: public MChromo
     public:
 	virtual ~Chromo() {};
     public:
-	static void GetUriScheme(const string& aUri, string& aScheme);
 	static void GetPath(const string& aUri, string& aPath);
 	static void GetFrag(const string& aUri, string& aFrag);
 };

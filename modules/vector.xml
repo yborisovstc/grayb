@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+
+<!-- DES module for linear arithmetic -->
+<!--
+     -->
+
+<!DOCTYPE  iobject SYSTEM "/usr/share/fapws/conf/objspec.dtd"> 
+
+<iobject type="none" id="vector" quiet="yes">
+    <trans> 
+	let Point x y :: Struct Float Float := Struct (X::Float Y::Float) x y
+	let Point x y :: Struct - - := Struct (X::Float Y::Float) Float x Float y
+	let cc1 :: Point := Point 4.0 6.0
+	let cc2 :: Point := 5.0 7.0
+	let PtX x :: Float Point := Fld x X
+	let PtY x :: Float Point := Fld x Y
+	let add x y :: Point Point Point := Point (add PtX x PtX y) (add PtY x PtY y)
+	let Vector x y :: Struct Float Float := Struct (X::Float Y::Float) x y
+	let Vector x y :: Struct - - := Struct (X::Float Y::Float) Float x Float y
+	let Vector x :: Struct Struct := x
+	let vc1 :: Vector := Vector 4.0 6.0
+	let vc2 :: Vector := 5.0 7.0
+	let KVect0 :: Vector := 0.0 0.0
+	let VectX x :: Float Vector := Fld x X
+	let VectY x :: Float Vector := Fld x Y
+	let vc1x :: Float := VectX vc1
+	let vc1y :: Float := VectY vc1
+	let add x y :: Vector Vector Vector := Vector add VectX x VectX y add VectY x VectY y
+	let atst :: Vector := add vc1 vc2
+	let cp1 :: TBool := lt VectY vc1 0.0
+    </trans>
+</iobject> <!-- test -->
+

@@ -5,13 +5,14 @@
 
 using namespace std;
 
-class Vert;
+class Elem;
 class Chromo;
+class MEnv;
 
 class MProvider
 {
     public:
-	virtual Vert* CreateNode(const string& aType) = 0;
+	virtual Elem* CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv) = 0;
 	virtual Chromo* CreateChromo() = 0;
 };
 

@@ -10,7 +10,7 @@ void *GProvider::DoGetObj(const char *aName)
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
 
-Vert* GProvider::CreateNode(const string& aType)
+Elem* GProvider::CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv)
 {
     return NULL;
 }

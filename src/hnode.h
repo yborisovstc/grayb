@@ -1,18 +1,18 @@
-#ifndef __GRAYB_ELEM_H
-#define __GRAYB_ELEM_H
+#ifndef __GRAYB_HNODE_H
+#define __GRAYB_HNODE_H
 
 #include "melem.h"
 #include "menv.h"
 #include "mlog.h"
 #include "mmuta.h"
+#include "mgraph.h"
 #include "base.h"
 #include "chromo.h"
 
-class Chromo;
 class MProvider;
 
-// Element of native hier - mutable
-class Elem: public Base, public MMutable 
+// Node of native hier
+class HNode: public Base, public MElem 
 {
     public:
 	// name, parent
@@ -22,27 +22,16 @@ class Elem: public Base, public MMutable
 	static const char* Type() { return "Elem";};
 	Elem(const string &aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	Elem* GetNode(const GUri& aUri);
+	virtual Elem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase);
 	void SetEType(const string& aEType);
 	void SetMutation(const ChromoNode& aMuta);
 	void Mutate(TBool aRunTimeOnly = EFalse);
     public:
-	Elem* CreateHeir(const string& aName, Elem* iMan);
-	const MChromo& Chromos() { return *iChromo;};
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MElem
 	virtual const string& EType() const;
 	virtual const set<string>& CompsTypes();
-	virtual Elem* Clone(const string& aName, Elem* aMan, MEnv* aEnv) const;
-	virtual Elem* GetNode(const string& aUri);
-	virtual Elem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase);
-	virtual TBool ChangeCont(const string& aVal); 
-	virtual TBool AddNode(const ChromoNode& aSpec);
-	virtual void OnCompDeleting(Elem& aComp);
-	virtual void OnCompAdding(Elem& aComp);
-	virtual void OnCompChanged(Elem& aComp);
-	// From MMutable
-	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime);
     protected:
 	Elem* AddElem(const ChromoNode& aSpec);
 	static void Init();
@@ -50,8 +39,6 @@ class Elem: public Base, public MMutable
 	inline MProvider* Provider() const;
 	TBool AppendComp(Elem* aComp);
 	Elem* GetComp(const string& aParent, const string& aName);
-	TBool DoMutChangeCont(const ChromoNode& aSpec);
-	Elem* GetComp(TInt aInd);
     protected:
 	// Element type - parent's name
 	string iEType;
@@ -74,5 +61,6 @@ class Elem: public Base, public MMutable
 inline MLogRec* Elem::Logger() {return iEnv ? iEnv->Logger(): NULL; }
 
 inline MProvider* Elem::Provider() const {return iEnv ? iEnv->Provider(): NULL; }
+
 
 #endif
