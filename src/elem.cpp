@@ -26,8 +26,48 @@ Elem::Elem(const string &aName, Elem* aMan, MEnv* aEnv): Base(aName), iMan(aMan)
     iChromo->Init(ENt_Node);
     ChromoNode croot = iChromo->Root();
     croot.SetAttr(ENa_Id, iName);
-//    croot.SetAttr(ENa_Parent, iEType);
     SetEType(Type());
+    SetParent(Type());
+}
+
+Elem::~Elem() {
+    for (map<TCkey, Elem*>::reverse_iterator it = iComps.rbegin(); it != iComps.rend(); it++) {
+	delete it->second;
+    }
+    iComps.clear();
+    iEnv = NULL; // Not owned
+    if (iMut != NULL) {
+	delete iMut;
+	iMut = NULL;
+    }
+    if (iChromo != NULL) {
+	delete iChromo;
+	iChromo = NULL;
+    }
+}
+
+string Elem::PName() const
+{
+    ChromoNode croot = iChromo->Root();
+    return croot.Attr(ENa_Parent);
+}
+
+const map<Elem::TCkey, Elem*>& Elem::Comps() const
+{
+    return iComps;
+}
+
+void Elem::SetParent(const string& aParent)
+{
+    ChromoNode croot = iChromo->Root();
+    croot.SetAttr(ENa_Parent, aParent);
+}
+
+void Elem::SetMan(Elem* aMan)
+{
+    __ASSERT(iMan == NULL && aMan != NULL || iMan != NULL && aMan == NULL);
+    // TODO [YB] To add notifications here
+    iMan = aMan;
 }
 
 void *Elem::DoGetObj(const char *aName)
@@ -48,7 +88,6 @@ Elem* Elem::Clone(const string& aName, Elem* aMan, MEnv* aEnv) const
 void Elem::SetEType(const string& aEType)
 {
     iEType = aEType;
-    iChromo->Root().SetAttr(ENa_Parent, iEType);
 }
 
 // TODO [YB] Is it redundant? Actually only one type of node allowed -elem
@@ -267,6 +306,8 @@ Elem* Elem::AddElem(const ChromoNode& aNode)
 	// Create heir from the parent
 	elem = parent->CreateHeir(sname, this);
 	// TODO [YB] Seems to be just temporal solution. To consider using context instead.
+	// Make heir based on the parent: re-parent the heir (currently it's of grandparent's parent) and clean the chromo
+	//elem->SetEType(sparent); // The type is set when creating heir
 	ChromoNode hroot = elem->Chromos().Root();
 	hroot.SetAttr(ENa_Parent, sparent);
 	// Remove external parent from system
@@ -297,21 +338,101 @@ const set<string>& Elem::CompsTypes()
     return iCompsTypes;
 }
 
-// TODO [YB] It will not work with grandparent. To support.
-Elem* Elem::CreateHeir(const string& aName, Elem* iMan)
+Elem* Elem::CreateHeir(const string& aName, Elem* aMan)
 {
-    Elem* heir = Clone(aName, iMan, iEnv);
-    heir->SetEType(Name());
-    // Set parent
-    // TODO [YB] The context is missed here, just name set. To consider, ref discussion in md#sec_desg_chromo_full
-    ChromoNode hroot = heir->Chromos().Root();
-    hroot.SetAttr(ENa_Parent, Name());
+    Elem* heir = NULL;
+    // Obtain parent first
+    string sparent = iChromo->Root().Attr(ENa_Parent);
+    // Check the scheme
+    GUri prnturi(sparent);
+    TBool ext_parent = EFalse;
+    Elem *parent = NULL;
+    if (!sparent.empty()) {
+	if (prnturi.Scheme().empty()) {
+	    // Local parent
+	    parent = GetNode(prnturi);
+	}
+	else {
+	    // TODO [YB] To add seaching the module - it will allow to specify just file of spec wo full uri
+	    Chromo *spec = Provider()->CreateChromo();
+	    TBool res = spec->Set(sparent);
+	    if (res) {
+		const ChromoNode& root = spec->Root();
+		parent = AddElem(root);
+		delete spec;
+		ext_parent = ETrue;
+	    }
+	}
+    }
+    if (parent == NULL) {
+	// No parents found, create from embedded parent
+	heir = Provider()->CreateNode(sparent, aName, this, iEnv);
+	if (heir == NULL) {
+	    Logger()->WriteFormat("ERROR: [%s] - creating elem [%s] - parent [%s] not found", Name().c_str(), aName.c_str(), sparent.c_str());
+	}
+    }
+    else {
+	// Create heir from the parent
+	heir = parent->CreateHeir(aName, this);
+    }
+
     // Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo
     ChromoNode root = iChromo->Root();
     heir->SetMutation(root);
     heir->Mutate(ETrue);
+    // Mutated with parent's own chromo - so panent's name is the type now. Also clean up the chromo - the heir is bare now.
+    // Set also the parent, but it will be updated further
+    ChromoNode hroot = heir->Chromos().Root();
+    for (ChromoNode::Iterator it = hroot.Begin(); it != hroot.End();)
+    {
+	ChromoNode node = *it;
+	it++; // It is required because removing node by iterator breakes iterator itself
+	hroot.RmChild(node);
+    }
+    heir->SetEType(Name());
+    heir->SetParent(Name());
+    heir->SetMan(NULL);
+    heir->SetMan(aMan);
+    // Remove external parent from system
+    if (parent != NULL && ext_parent) {
+	delete parent;
+    }
     return heir;
 }
+
+/*
+// TODO [YB] It will not work with grandparent. To support.
+Elem* Elem::CreateHeir(const string& aName, Elem* iMan)
+{
+    // TODO [YB] To make creating heir recursivelly - use CreateHeir instead of Clone. Thus the parent asked grandparent to create heir
+    // and mutate it, etc. In case of simple parent - ask provider to create simple parent heir.
+    Elem* heir = Clone(aName, iMan, iEnv);
+    // Set base type as parent into chromo, but true parent into EType
+    // TODO [YB] The context is missed here, just name set. To consider, ref discussion in md#sec_desg_chromo_full
+//    ChromoNode hroot = heir->Chromos().Root();
+//    hroot.SetAttr(ENa_Parent, Name());
+//    hroot.SetAttr(ENa_Parent, heir->EType()); // Absolute chromo form
+    // Set parent
+    // Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo
+    ChromoNode root = iChromo->Root();
+    heir->SetMutation(root);
+    heir->Mutate(ETrue);
+    // Mutated with parent's own chromo - so panent's name is the type now. Also clean up the chromo - the heir is bare now.
+    // Set also the parent, but it will be updated further
+    ChromoNode hroot = heir->Chromos().Root();
+    hroot.SetAttr(ENa_Parent, Name());
+    for (ChromoNode::Iterator it = hroot.Begin(); it != hroot.End();)
+    {
+	ChromoNode node = *it;
+	it++; // It is required because removing node by iterator breakes iterator itself
+	hroot.RmChild(node);
+    }
+    heir->SetEType(Name());
+    return heir;
+}
+*/
+
+
 /*
 Elem* Elem::GetComp(const string& aName, Elem* aRequestor)
 {

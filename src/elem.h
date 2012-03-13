@@ -22,11 +22,16 @@ class Elem: public Base, public MMutable
 	static const char* Type() { return "Elem";};
 	Elem(const string &aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	Elem* GetNode(const GUri& aUri);
+	virtual ~Elem();
 	void SetEType(const string& aEType);
+	void SetParent(const string& aParent);
+	void SetMan(Elem* aMan);
 	void SetMutation(const ChromoNode& aMuta);
 	void Mutate(TBool aRunTimeOnly = EFalse);
+	string PName() const;
+	const map<TCkey, Elem*>& Comps() const;
     public:
-	Elem* CreateHeir(const string& aName, Elem* iMan);
+	Elem* CreateHeir(const string& aName, Elem* aMan);
 	const MChromo& Chromos() { return *iChromo;};
 	// From Base
 	virtual void *DoGetObj(const char *aName);

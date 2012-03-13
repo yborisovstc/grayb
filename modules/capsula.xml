@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+
+<!-- Base elements for capsula layer. Capsula is incapsulated system. It's internal structure
+     is hidded from outside world, the only connection points are the way of relation to the system. 
+     -->
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="SysComps" parent="Elem">
+
+    <!-- Element that acts as feedthrough for capsula of system - it extend
+	 the connection from outside into the system
+	 -->
+    <node id="Extender"> 
+	<node id="Ext" parent="ConnPoint"></node>
+	<node id="Int" parent="ConnPoint"></node>
+    </node>
+
+</node>
+

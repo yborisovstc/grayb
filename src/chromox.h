@@ -12,6 +12,7 @@ class ChromoMdlX: public ChromoMdl
 {
     public:
 	ChromoMdlX();
+	virtual ~ChromoMdlX();
     public:
 	virtual TNodeType GetType(const string& aId);
 	virtual TNodeType GetType(const void* aHandle);

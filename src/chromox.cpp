@@ -9,6 +9,11 @@ ChromoMdlX::ChromoMdlX(): ChromoMdl("ChromoMdlX"), iDoc(NULL), iDocOwned(EFalse)
 {
 };
 
+ChromoMdlX::~ChromoMdlX()
+{
+    Reset(); 
+}
+
 void *ChromoMdlX::DoGetObj(const char *aName) 
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;

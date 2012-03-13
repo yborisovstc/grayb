@@ -2,6 +2,7 @@
 #include "syst.h"
 #include "edge.h"
 #include "prov.h"
+#include "mprop.h"
 
 Syst::Syst(const string& aName, Elem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
 {
@@ -41,13 +42,30 @@ void Syst::OnCompChanged(Elem& aComp)
 		MVert* pt1v = pt1->GetObj(pt1v);
 		MVert* pt2v = pt2->GetObj(pt2v);
 		if (pt1v != NULL && pt2v != NULL) {
-		    edge->SetPoints(pt1v, pt2v);
-		    TBool res = edge->Connect();
-		    if (res) {
-			Logger()->WriteFormat("Syst [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+		    // Check roles conformance
+		    // Point#1 provided
+		    Elem* ept1prov = pt1->GetNode("Prop:Provided");
+		    MProp* ppt1prov = ept1prov->GetObj(ppt1prov);
+		    Elem* ept2req = pt2->GetNode("Prop:Required");
+		    MProp* ppt2req = ept2req->GetObj(ppt2req);
+		    // Point#2 provided
+		    Elem* ept2prov = pt2->GetNode("Prop:Provided");
+		    MProp* ppt2prov = ept2prov->GetObj(ppt2prov);
+		    Elem* ept1req = pt1->GetNode("Prop:Required");
+		    MProp* ppt1req = ept1req->GetObj(ppt1req);
+		    if (ppt1prov->Value() == ppt2req->Value() && ppt2prov->Value() == ppt1req->Value()) {
+			// Roles are compatible - connect
+			edge->SetPoints(pt1v, pt2v);
+			TBool res = edge->Connect();
+			if (res) {
+			    Logger()->WriteFormat("Syst [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			}
+			else {
+			    Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			}
 		    }
 		    else {
-			Logger()->WriteFormat("ERR: Syst [%s] connected [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - incompatible roles", Name().c_str(), pt1u.c_str(), pt2u.c_str());
 		    }
 		}
 		else {
@@ -56,7 +74,7 @@ void Syst::OnCompChanged(Elem& aComp)
 	    }
 	    else {
 		Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - cannot find [%s]", Name().c_str(), pt1u.c_str(), pt2u.c_str(), 
-		    (pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
+			(pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
 	    }
 	}
     }

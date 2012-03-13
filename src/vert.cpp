@@ -5,6 +5,7 @@ Vert::Vert(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     //iEType = Type();
     SetEType(Type());
+    SetParent(Type());
 }
 
 void *Vert::DoGetObj(const char *aName)
