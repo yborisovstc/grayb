@@ -5,6 +5,8 @@ bool Graph::iInit = false;
 
 Graph::Graph(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv) 
 {
+    if (!iInit) 
+	Init();
 }
 
 void Graph::Init()

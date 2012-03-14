@@ -32,7 +32,7 @@ class ChromoMdlX: public ChromoMdl
 	virtual void* AddChildDef(void* aParent, const void* aHandle, TBool aCopy = ETrue);
 	virtual void* AddNext(const void* aPrev, const void* aHandle, TBool aCopy = ETrue);
 	virtual void* AddNext(const void* aPrev, TNodeType aNode);
-	virtual void RmChild(void* aParent, void* aChild);
+	virtual void RmChild(void* aParent, void* aChild, TBool aDeattachOnly = EFalse);
 	virtual void Rm(void* aNode);
 	virtual void MoveNextTo(void* aHandle, void* aDest);
 	virtual void SetAttr(void* aNode, TNodeAttr aType, const char* aVal);
@@ -45,7 +45,7 @@ class ChromoMdlX: public ChromoMdl
 	int GetAttrInt(void *aHandle, const char *aName);
 	void* Set(const char* aFileName);
 	void* Set(const string& aUri);
-	void* Set(ChromoMdlX& aMdl, const void* aHandle);
+	void* Set(const void* aHandle);
 	xmlDoc* Doc() { return iDoc;};
 	static inline const char *Type() { return "ChromoMdlX";}; 
 	virtual void* Init(TNodeType aRootType);

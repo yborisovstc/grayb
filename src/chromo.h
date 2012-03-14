@@ -88,7 +88,7 @@ class ChromoNode
 	    ChromoNode(iMdl, iMdl.AddNext(aPrev.Handle(), aNode.Handle(), aCopy)); };
 	ChromoNode AddNext(TNodeType aType) { return ChromoNode(iMdl, iMdl.AddNext(iHandle, aType));};
 	// Be careful while removing node got from iterator. Iterator is not cleaned thus it returns wrong node on ++
-	void RmChild(const ChromoNode& aChild) { iMdl.RmChild(iHandle, aChild.iHandle); };
+	void RmChild(const ChromoNode& aChild, TBool aDeattachOnly = EFalse) { iMdl.RmChild(iHandle, aChild.iHandle, aDeattachOnly); };
 	void Rm() { iMdl.Rm(iHandle); };
 	void SetAttr(TNodeAttr aType, const string& aVal) { iMdl.SetAttr(iHandle, aType, aVal.c_str()); };
 	void SetAttr(TNodeAttr aType, TNodeType aVal) { iMdl.SetAttr(iHandle, aType, aVal); };

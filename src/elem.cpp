@@ -31,8 +31,15 @@ Elem::Elem(const string &aName, Elem* aMan, MEnv* aEnv): Base(aName), iMan(aMan)
 }
 
 Elem::~Elem() {
-    for (map<TCkey, Elem*>::reverse_iterator it = iComps.rbegin(); it != iComps.rend(); it++) {
+    // Notify the man of deleting
+    if (iMan != NULL) {
+	iMan->OnCompDeleting(*this);
+    }
+    // Remove the comps, using iterator refresh because the map is updated on each comp deletion
+    map<TCkey, Elem*>::reverse_iterator it = iComps.rbegin();
+    while (it != iComps.rend()) {
 	delete it->second;
+	it = iComps.rbegin();
     }
     iComps.clear();
     iEnv = NULL; // Not owned
@@ -68,6 +75,11 @@ void Elem::SetMan(Elem* aMan)
     __ASSERT(iMan == NULL && aMan != NULL || iMan != NULL && aMan == NULL);
     // TODO [YB] To add notifications here
     iMan = aMan;
+}
+
+Elem* Elem::GetMan()
+{
+    return iMan;
 }
 
 void *Elem::DoGetObj(const char *aName)
@@ -202,9 +214,11 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 	if (rnotype == ENt_Node) {
 	    Elem* node = AddElem(rno);
 	    if (node != NULL) {
-		// Attach comp chromo
-		chrroot.AddChild(node->iChromo->Root(), EFalse);
-		Logger()->WriteFormat("Node [%s] - added node [%s] of type [%s]", Name().c_str(), node->Name().c_str(), node->EType().c_str());
+		if (!aRunTime) {
+		    // Attach comp chromo
+		    chrroot.AddChild(node->iChromo->Root(), EFalse);
+		    Logger()->WriteFormat("Node [%s] - added node [%s] of type [%s]", Name().c_str(), node->Name().c_str(), node->EType().c_str());
+		}
 	    }
 	    else {
 		string pname = rno.Attr(ENa_Parent);
@@ -379,16 +393,9 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan)
     // Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo
     ChromoNode root = iChromo->Root();
     heir->SetMutation(root);
+    // Mutate run-time only - don't update chromo
     heir->Mutate(ETrue);
-    // Mutated with parent's own chromo - so panent's name is the type now. Also clean up the chromo - the heir is bare now.
-    // Set also the parent, but it will be updated further
-    ChromoNode hroot = heir->Chromos().Root();
-    for (ChromoNode::Iterator it = hroot.Begin(); it != hroot.End();)
-    {
-	ChromoNode node = *it;
-	it++; // It is required because removing node by iterator breakes iterator itself
-	hroot.RmChild(node);
-    }
+    // Mutated with parent's own chromo - so panent's name is the type now. Set also the parent, but it will be updated further
     heir->SetEType(Name());
     heir->SetParent(Name());
     heir->SetMan(NULL);
@@ -478,6 +485,12 @@ Elem* Elem::GetNode(const string& aUri)
 
 void Elem::OnCompDeleting(Elem& aComp)
 {
+    // Deattach the comp's chromo
+    iChromo->Root().RmChild(aComp.Chromos().Root(), ETrue);
+    // Remove from comps
+    map<TCkey, Elem*>::iterator it = iComps.find(TCkey(aComp.Name(), aComp.EType()));
+    __ASSERT(it != iComps.end());
+    iComps.erase(it);
 }
 
 void Elem::OnCompAdding(Elem& aComp)

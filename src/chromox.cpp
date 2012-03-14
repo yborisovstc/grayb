@@ -104,10 +104,9 @@ void* ChromoMdlX::Set(const string& aUri)
     return res;
 }
 
-void* ChromoMdlX::Set(ChromoMdlX& aMdl, const void* aNode)
+void* ChromoMdlX::Set(const void* aHandle)
 {
-    iDoc = aMdl.Doc();
-    xmlNodePtr node = xmlDocCopyNode((xmlNodePtr) aNode, iDoc, 1);
+    xmlNodePtr node = xmlDocCopyNode((xmlNodePtr) aHandle, iDoc, 1);
     return node;
 }
 
@@ -318,11 +317,13 @@ void ChromoMdlX::SetAttr(void* aNode, TNodeAttr aType, TNodeAttr aVal)
     SetAttr(aNode, aType, GUri::NodeAttrName(aVal).c_str());
 }
 
-void ChromoMdlX::RmChild(void* aParent, void* aChild)
+void ChromoMdlX::RmChild(void* aParent, void* aChild, TBool aDeattachOnly)
 {
     xmlNodePtr child = (xmlNodePtr) aChild;
     xmlUnlinkNode(child);
-    xmlFreeNode(child);
+    if (!aDeattachOnly) {
+	xmlFreeNode(child);
+    }
 }
 
 void ChromoMdlX::Rm(void* aNode)
@@ -431,9 +432,7 @@ TBool ChromoX::Set(const string& aUri)
 
 void ChromoX::Set(const ChromoNode& aRoot)
 {
-    ChromoMdlX *mdl = aRoot.Mdl().GetObj(mdl);
-    __ASSERT(mdl != NULL);
-    void *root = iMdl.Set(*mdl, aRoot.Handle());
+    void *root = iMdl.Set(aRoot.Handle());
     iRootNode = ChromoNode(iMdl, root);
 }
 

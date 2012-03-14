@@ -13,9 +13,7 @@
     <node id="elem3" parent="elem1">
 	<node id="elem4" parent="../elem1/elem2"/>
     </node>
-    <!--
     <node id="elem5" parent="elem1/elem2"/>
-    -->
 
 </node>
 

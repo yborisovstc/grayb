@@ -39,6 +39,7 @@ class Elem: public Base, public MMutable
 	virtual const string& EType() const;
 	virtual const set<string>& CompsTypes();
 	virtual Elem* Clone(const string& aName, Elem* aMan, MEnv* aEnv) const;
+	virtual Elem* GetMan();
 	virtual Elem* GetNode(const string& aUri);
 	virtual Elem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase);
 	virtual TBool ChangeCont(const string& aVal); 
