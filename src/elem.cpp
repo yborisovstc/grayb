@@ -352,7 +352,7 @@ const set<string>& Elem::CompsTypes()
     return iCompsTypes;
 }
 
-Elem* Elem::CreateHeir(const string& aName, Elem* aMan)
+Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont */)
 {
     Elem* heir = NULL;
     // Obtain parent first
@@ -364,6 +364,8 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan)
     if (!sparent.empty()) {
 	if (prnturi.Scheme().empty()) {
 	    // Local parent
+	    // Correct uri because parent uri is relative to the man context
+	    prnturi.PrependElem("node", "..");
 	    parent = GetNode(prnturi);
 	}
 	else {
@@ -386,8 +388,8 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan)
 	}
     }
     else {
-	// Create heir from the parent
-	heir = parent->CreateHeir(aName, this);
+	// Create heir from the parent, the mutation context set to the current (the man)
+	heir = parent->CreateHeir(aName, iMan);
     }
 
     // Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo

@@ -49,6 +49,7 @@ void Vert::Disconnect(MVert* aPair)
 
 void Vert::OnCompDeleting(Elem& aComp)
 {
+    Elem::OnCompDeleting(aComp);
 }
 
 void Vert::OnCompAdding(Elem& aComp)

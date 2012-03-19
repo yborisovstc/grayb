@@ -4,6 +4,7 @@
 Prop::Prop(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetEType(Type());
+    SetParent(Type());
 }
 
 void *Prop::DoGetObj(const char *aName)

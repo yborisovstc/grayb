@@ -54,6 +54,7 @@ class GUri
 	const string& Scheme() const;
 	string GetName() const;
 	void AppendElem(const string& aType, const string& aName);
+	void AppendElem(const TElem& aElem);
 	void PrependElem(const string& aType, const string& aName);
 	void AppendQueryElem(TQueryOpr aOpr, TNodeAttr aAttr, const string& aValue);
 	static const string& NodeAttrName(TNodeAttr aAttr);

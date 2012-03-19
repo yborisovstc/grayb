@@ -31,7 +31,9 @@ class Elem: public Base, public MMutable
 	string PName() const;
 	const map<TCkey, Elem*>& Comps() const;
     public:
-	Elem* CreateHeir(const string& aName, Elem* aMan);
+	// aInitCont - the uri of initial context of element, this is requires to element "understand" that it is
+	// in new context now and corrected uris related to initial context
+	Elem* CreateHeir(const string& aName, Elem* aMan/*, const GUri& aInitCont*/);
 	const MChromo& Chromos() { return *iChromo;};
 	// From Base
 	virtual void *DoGetObj(const char *aName);

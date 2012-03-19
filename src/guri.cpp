@@ -208,6 +208,11 @@ void GUri::AppendElem(const string& aType, const string& aName)
     iElems.push_back(TElem(aType, aName));
 }
 
+void GUri::AppendElem(const TElem& aElem)
+{
+    iElems.push_back(aElem);
+}
+
 void GUri::PrependElem(const string& aType, const string& aName)
 {
     iElems.insert(iElems.begin(), TElem(aType, aName));
@@ -217,5 +222,4 @@ void GUri::AppendQueryElem(TQueryOpr aOpr, TNodeAttr aAttr, const string& aValue
 {
     iQueryElems.push_back(TQueryElem(aOpr, TQueryCnd(aAttr, aValue)));
 }
-
 
