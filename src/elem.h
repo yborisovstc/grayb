@@ -83,4 +83,16 @@ inline MLogRec* Elem::Logger() {return iEnv ? iEnv->Logger(): NULL; }
 
 inline MProvider* Elem::Provider() const {return iEnv ? iEnv->Provider(): NULL; }
 
+
+// Runtime agent - implements interfaces that can be used by the man
+
+class Agent: public Elem
+{
+    public:
+    static const char* Type() { return "Agent";};
+    Agent(const string &aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+    // From Base
+    virtual void *DoGetObj(const char *aName);
+};
+
 #endif

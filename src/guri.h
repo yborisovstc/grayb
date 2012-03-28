@@ -17,6 +17,7 @@ enum TNodeType
     ENt_Rm = 4,   	// Mutation - removal
     ENt_Change = 5, 	// Change node attribute
     ENt_Cont = 6, 	// Change node content
+    ENt_Add = 7, 	// Add elem to node
 };
 
 enum TNodeAttr

@@ -103,6 +103,7 @@ void Elem::SetEType(const string& aEType)
 }
 
 // TODO [YB] Is it redundant? Actually only one type of node allowed -elem
+/*
 TBool Elem::AddNode(const ChromoNode& aSpec)
 {
     TBool res = EFalse;
@@ -113,6 +114,32 @@ TBool Elem::AddNode(const ChromoNode& aSpec)
 	    res = ETrue;
 	    Logger()->WriteFormat("Node [%s] - added node [%s] of type [%s]", Name().c_str(), elem->Name().c_str(), elem->EType().c_str());
 	}
+    }
+    return res;
+}
+*/
+
+TBool Elem::AddNode(const ChromoNode& aSpec)
+{
+    TBool res = ETrue;
+    string snode = aSpec.Attr(ENa_MutNode);
+    GUri unode(snode);
+    Elem* node = GetNode(unode);
+    if (node != NULL) {
+	for (ChromoNode::Const_Iterator mit = aSpec.Begin(); mit != aSpec.End() && res; mit++)
+	{
+	    const ChromoNode& mno = (*mit);
+	    res = node->AddElem(mno);
+	    if (!res) {
+		Logger()->WriteFormat("ERROR: Adding node into [%s] - failure", snode.c_str());
+	    }
+	    else {
+		Logger()->WriteFormat("[%s]: added node [%s] into [%s]", Name().c_str(), mno.Name().c_str(), snode.c_str());
+	    }
+	}
+    }
+    else {
+	Logger()->WriteFormat("ERROR: Adding node: cannot find [%s]", snode.c_str());
     }
     return res;
 }
@@ -224,6 +251,9 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 		string pname = rno.Attr(ENa_Parent);
 		Logger()->WriteFormat("ERROR: Node [%s] - adding node of type [%s] failed", Name().c_str(), pname.c_str());
 	    }
+	}
+	else if (rnotype == ENt_Add) {
+	    AddNode(rno);
 	}
 	else if (rnotype == ENt_Cont) {
 	    DoMutChangeCont(rno);
@@ -507,3 +537,14 @@ void Elem::OnCompChanged(Elem& aComp)
 }
 
 
+
+Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+{
+    SetEType(Type());
+    SetParent(Type());
+}
+
+void *Agent::DoGetObj(const char *aName)
+{
+    return (strcmp(aName, Type()) == 0) ? this : NULL;
+}

@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+
+<!-- Base elements for Discrete Events System layer. 
+     -->
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="DesComps" parent="Elem">
+
+    <node id="State" parent="StateBase"> 
+
+    	<node id="Output" parent="Extender"> 
+    	</node>
+    </node>
+
+</node>
+

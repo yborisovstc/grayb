@@ -4,6 +4,7 @@
 #include "edge.h"
 #include "prop.h"
 #include "syst.h"
+#include "incaps.h"
 
 
 ProvDef::ProvDef(const string &aName): GProvider(aName)
@@ -27,6 +28,9 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     }
     else if (aType.compare(Syst::Type()) == 0) {
 	res = new Syst(aName, aMan, aEnv);
+    }
+    else if (aType.compare(Incaps::Type()) == 0) {
+	res = new Incaps(aName, aMan, aEnv);
     }
     return res;
 }

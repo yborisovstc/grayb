@@ -6,7 +6,8 @@
 
 Syst::Syst(const string& aName, Elem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
 {
-    iEType = Type();
+    SetEType(Type());
+    SetParent(Type());
 }
 
 void *Syst::DoGetObj(const char *aName)

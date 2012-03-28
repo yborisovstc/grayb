@@ -6,7 +6,6 @@
 <!ELEMENT logspec (logdata+)>
 
 <!-- Mutation - addition -->
-<!-- TODO [YB] To remove "add" mutation. Each node shall be mutable. -->
 <!ELEMENT add (node*, logspec* )>
 
 <!-- Mutation - change content -->
