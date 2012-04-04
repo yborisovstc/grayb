@@ -3,16 +3,15 @@
 
 #include "syst.h"
 
-class Incaps: public Syst
+class Incaps: public Syst, public MACompsObserver
 {
     public:
-	static const char* Type() { return "Incaps";};
+	static const char* Type() { return "IncapsAgent";};
 	Incaps(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
-	// From Elem
-	virtual Elem* Clone(const string& aName, Elem* aMan, MEnv* aEnv) const;
-	virtual void OnCompChanged(Elem& aComp);
+	// From MACompsObserver
+	virtual void HandleCompChanged(Elem& aContext, Elem& aComp);
 };
 
 #endif

@@ -3,11 +3,14 @@
 <!-- Base elements for system layer 
      -->
 
-<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+<!DOCTYPE node SYSTEM "/usr/share/grayb/conf/objspec.dtd"> 
 
 <node id="SysComps" parent="Elem">
 
-    <node id="ConnPoint" parent="Vert">
+    <node id="ConnPoint" parent="ConnPointBase">
+	<!-- Just mutate by adding the provider iface 
+	<node id="Prov" parent="Elem"></node>
+	-->
 	<node id="Provided" parent="Prop"></node>
 	<node id="Required" parent="Prop"></node>
     </node>
@@ -15,8 +18,8 @@
     <!-- Element that acts as feedthrough for capsula of system - it extend
 	 the connection from outside into the system
 	 -->
-    <node id="Extender" parent="Vert:ConnPoint"> 
-	<node id="Int" parent="../Vert:ConnPoint"></node>
+    <node id="Extender" parent="ConnPointBase:ConnPoint"> 
+	<node id="Int" parent="../ConnPointBase:ConnPoint"></node>
     </node>
 
 

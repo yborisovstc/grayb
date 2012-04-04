@@ -5,6 +5,8 @@
 #include "prop.h"
 #include "syst.h"
 #include "incaps.h"
+#include "data.h"
+#include "func.h"
 
 
 ProvDef::ProvDef(const string &aName): GProvider(aName)
@@ -26,11 +28,20 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     else if (aType.compare(Elem::Type()) == 0) {
 	res = new Elem(aName, aMan, aEnv);
     }
+    else if (aType.compare(ConnPointBase::Type()) == 0) {
+	res = new ConnPointBase(aName, aMan, aEnv);
+    }
     else if (aType.compare(Syst::Type()) == 0) {
 	res = new Syst(aName, aMan, aEnv);
     }
     else if (aType.compare(Incaps::Type()) == 0) {
 	res = new Incaps(aName, aMan, aEnv);
+    }
+    else if (aType.compare(DInt::Type()) == 0) {
+	res = new DInt(aName, aMan, aEnv);
+    }
+    else if (aType.compare(AIncInt::Type()) == 0) {
+	res = new AIncInt(aName, aMan, aEnv);
     }
     return res;
 }

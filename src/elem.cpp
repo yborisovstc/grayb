@@ -30,18 +30,20 @@ Elem::Elem(const string &aName, Elem* aMan, MEnv* aEnv): Base(aName), iMan(aMan)
     SetParent(Type());
 }
 
-Elem::~Elem() {
+Elem::~Elem() 
+{
     // Notify the man of deleting
     if (iMan != NULL) {
 	iMan->OnCompDeleting(*this);
     }
     // Remove the comps, using iterator refresh because the map is updated on each comp deletion
-    map<TCkey, Elem*>::reverse_iterator it = iComps.rbegin();
+    vector<Elem*>::reverse_iterator it = iComps.rbegin();
     while (it != iComps.rend()) {
-	delete it->second;
+	delete *it;
 	it = iComps.rbegin();
     }
     iComps.clear();
+    iMComps.clear();
     iEnv = NULL; // Not owned
     if (iMut != NULL) {
 	delete iMut;
@@ -59,7 +61,7 @@ string Elem::PName() const
     return croot.Attr(ENa_Parent);
 }
 
-const map<Elem::TCkey, Elem*>& Elem::Comps() const
+const vector<Elem*>& Elem::Comps() const
 {
     return iComps;
 }
@@ -84,17 +86,19 @@ Elem* Elem::GetMan()
 
 void *Elem::DoGetObj(const char *aName)
 {
-    return (strcmp(aName, Type()) == 0) ? this : NULL;
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName, MCompsObserver::Type()) == 0) {
+	res = (MCompsObserver*) this;
+    }
+    return res;
 }
 
 const string& Elem::EType() const
 {
     return iEType;
-}
-
-Elem* Elem::Clone(const string& aName, Elem* aMan, MEnv* aEnv) const
-{
-    return new Elem(aName, aMan, aEnv);
 }
 
 void Elem::SetEType(const string& aEType)
@@ -146,13 +150,15 @@ TBool Elem::AddNode(const ChromoNode& aSpec)
 
 Elem* Elem::GetComp(const string& aParent, const string& aName)
 {
-    return iComps.count(TCkey(aName, aParent)) > 0 ? iComps[TCkey(aName, aParent)] : NULL;
+    TMElem::iterator it = iMComps.find(TCkey(aName, aParent));
+    return (it != iMComps.end()) ? it->second : NULL;
+//    return iMComps.count(TCkey(aName, aParent)) > 0 ? iMComps[TCkey(aName, aParent)] : NULL;
 }
 
 Elem* Elem::GetComp(TInt aInd)
 {
     Elem *res = NULL;
-    map<TCkey, Elem*>::iterator it = iComps.begin();
+    map<TCkey, Elem*>::iterator it = iMComps.begin();
     for (TInt cnt = 0; cnt < aInd; cnt++) { 
 	it++;
     }
@@ -440,39 +446,6 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
 }
 
 /*
-// TODO [YB] It will not work with grandparent. To support.
-Elem* Elem::CreateHeir(const string& aName, Elem* iMan)
-{
-    // TODO [YB] To make creating heir recursivelly - use CreateHeir instead of Clone. Thus the parent asked grandparent to create heir
-    // and mutate it, etc. In case of simple parent - ask provider to create simple parent heir.
-    Elem* heir = Clone(aName, iMan, iEnv);
-    // Set base type as parent into chromo, but true parent into EType
-    // TODO [YB] The context is missed here, just name set. To consider, ref discussion in md#sec_desg_chromo_full
-//    ChromoNode hroot = heir->Chromos().Root();
-//    hroot.SetAttr(ENa_Parent, Name());
-//    hroot.SetAttr(ENa_Parent, heir->EType()); // Absolute chromo form
-    // Set parent
-    // Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo
-    ChromoNode root = iChromo->Root();
-    heir->SetMutation(root);
-    heir->Mutate(ETrue);
-    // Mutated with parent's own chromo - so panent's name is the type now. Also clean up the chromo - the heir is bare now.
-    // Set also the parent, but it will be updated further
-    ChromoNode hroot = heir->Chromos().Root();
-    hroot.SetAttr(ENa_Parent, Name());
-    for (ChromoNode::Iterator it = hroot.Begin(); it != hroot.End();)
-    {
-	ChromoNode node = *it;
-	it++; // It is required because removing node by iterator breakes iterator itself
-	hroot.RmChild(node);
-    }
-    heir->SetEType(Name());
-    return heir;
-}
-*/
-
-
-/*
 Elem* Elem::GetComp(const string& aName, Elem* aRequestor)
 {
     // Search local
@@ -497,9 +470,11 @@ Elem* Elem::GetComp(const string& aName, Elem* aRequestor)
 TBool Elem::AppendComp(Elem* aComp)
 {
     TBool res = ETrue;
-    if (iComps.count(TCkey(aComp->Name(), aComp->EType())) == 0)
+    if (iMComps.count(TCkey(aComp->Name(), aComp->EType())) == 0)
     {
-	iComps.insert(pair<TCkey, Elem*>(TCkey(aComp->Name(), aComp->EType()), aComp));
+	iComps.push_back(aComp);
+	iMComps.insert(pair<TCkey, Elem*>(TCkey(aComp->Name(), aComp->EType()), aComp));
+	iMComps.insert(pair<TCkey, Elem*>(TCkey(aComp->Name(), "*"), aComp));
     }
     else {
 	Logger()->WriteFormat("ERROR: [%s] - Adding elem [%s] - name already exists", Name().c_str(), aComp->Name().c_str());
@@ -520,9 +495,15 @@ void Elem::OnCompDeleting(Elem& aComp)
     // Deattach the comp's chromo
     iChromo->Root().RmChild(aComp.Chromos().Root(), ETrue);
     // Remove from comps
-    map<TCkey, Elem*>::iterator it = iComps.find(TCkey(aComp.Name(), aComp.EType()));
-    __ASSERT(it != iComps.end());
-    iComps.erase(it);
+    map<TCkey, Elem*>::iterator it = iMComps.find(TCkey(aComp.Name(), aComp.EType()));
+    __ASSERT(it != iMComps.end());
+    it = iMComps.find(TCkey(aComp.Name(), aComp.EType()));
+    iMComps.erase(it);
+    for (vector<Elem*>::iterator oit = iComps.begin(); oit != iComps.end(); oit++) {
+	if (*oit == &aComp) {
+	    iComps.erase(oit); break;
+	}	
+    }
 }
 
 void Elem::OnCompAdding(Elem& aComp)
@@ -530,6 +511,22 @@ void Elem::OnCompAdding(Elem& aComp)
 }
 
 void Elem::OnCompChanged(Elem& aComp)
+{
+    Elem* agents = GetComp("Elem", "Agents");
+    if (agents != NULL) {
+	Elem* eagent = agents->GetComp("*", "MACompsObserver");
+	if (eagent != NULL) {
+	    MACompsObserver* iagent = eagent->GetObj(iagent);
+	    __ASSERT(iagent != NULL);
+	    iagent->HandleCompChanged(*this, aComp);
+	}
+    }
+    else {
+	DoOnCompChanged(aComp);
+    }
+}
+
+void Elem::DoOnCompChanged(Elem& aComp)
 {
     if (iMan != NULL) {
 	iMan->OnCompChanged(*this);

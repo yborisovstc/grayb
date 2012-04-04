@@ -4,6 +4,31 @@
 #include "prov.h"
 #include "mprop.h"
 
+ConnPointBase::ConnPointBase(const string& aName, Elem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
+{
+    SetEType(Type());
+    SetParent(Type());
+}
+
+void *ConnPointBase::DoGetObj(const char *aName)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = Vert::DoGetObj(aName);
+    }
+    if (res == NULL) {
+	__ASSERT(iMan != NULL);
+	res = iMan->DoGetObj(aName);
+    }
+    return res;
+}
+
+
+
+
 Syst::Syst(const string& aName, Elem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
 {
     SetEType(Type());
@@ -22,12 +47,7 @@ void *Syst::DoGetObj(const char *aName)
     return res;
 }
 
-Elem* Syst::Clone(const string& aName, Elem* aMan, MEnv* aEnv) const
-{
-    return new Syst(aName, aMan, aEnv);
-}
-
-void Syst::OnCompChanged(Elem& aComp)
+void Syst::DoOnCompChanged(Elem& aComp)
 {
     if (aComp.EType() == "Edge") {
 	// Reconnect the edge
@@ -45,16 +65,19 @@ void Syst::OnCompChanged(Elem& aComp)
 		if (pt1v != NULL && pt2v != NULL) {
 		    // Check roles conformance
 		    // Point#1 provided
+		    //Elem* ept1provi = pt1->GetNode("*:Prov");
 		    Elem* ept1prov = pt1->GetNode("Prop:Provided");
 		    MProp* ppt1prov = ept1prov->GetObj(ppt1prov);
 		    Elem* ept2req = pt2->GetNode("Prop:Required");
 		    MProp* ppt2req = ept2req->GetObj(ppt2req);
 		    // Point#2 provided
+		    //Elem* ept2provi = pt2->GetNode("*:Prov");
 		    Elem* ept2prov = pt2->GetNode("Prop:Provided");
 		    MProp* ppt2prov = ept2prov->GetObj(ppt2prov);
 		    Elem* ept1req = pt1->GetNode("Prop:Required");
 		    MProp* ppt1req = ept1req->GetObj(ppt1req);
 		    if (ppt1prov->Value() == ppt2req->Value() && ppt2prov->Value() == ppt1req->Value()) {
+		    //if (ept1provi->EType() == ppt2req->Value() && ept2provi->EType() == ppt1req->Value()) {
 			// Roles are compatible - connect
 			edge->SetPoints(pt1v, pt2v);
 			TBool res = edge->Connect();

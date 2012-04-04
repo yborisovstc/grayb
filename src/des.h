@@ -11,7 +11,6 @@ class State: public Incaps
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From Elem
-	virtual Elem* Clone(const string& aName, Elem* aMan, MEnv* aEnv) const;
 	virtual void OnCompChanged(Elem& aComp);
 };
 

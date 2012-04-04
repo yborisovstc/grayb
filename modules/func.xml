@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+
+<!-- Base elements for data keeping systems
+     -->
+
+<!DOCTYPE node SYSTEM "/usr/share/grayb/conf/objspec.dtd"> 
+
+<node id="FuncComps" parent="Elem">
+
+    <!-- Module containing components of system layer -->
+    <node id="sysmod" parent="file:/usr/share/grayb/modules/syst.xml#SysComps" />
+    <!-- Module containing components of incaps layer -->
+    <node id="incapsmod" parent="file:/usr/share/grayb/modules/capsula.xml#IncapsComps" />
+
+    <node id="FuncIncInt" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+
+    	<add node="Elem:Agents"> 
+	    <node id="func_agt" parent="AIncInt"> 
+	    </node>
+    	</add>
+
+    	<add node="Elem:Capsule"> 
+	    <node id="inp" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+		<cont node="Prop:Required" val="MDInt"/>
+	    </node>
+    	</add>
+    </node>
+
+</node>
+

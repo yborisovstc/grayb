@@ -4,13 +4,17 @@
      is hidded from outside world, the only connection points are the way of relation to the system. 
      -->
 
-<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+<!DOCTYPE node SYSTEM "/usr/share/grayb/conf/objspec.dtd"> 
 
 <node id="IncapsComps" parent="Elem">
 
 
-    <node id="Incaps" parent="IncapsBase"> 
+    <node id="Incaps" parent="Syst"> 
 
+    	<node id="Agents" parent="Elem"> 
+	    <node id="MACompsObserver" parent="IncapsAgent"> 
+	    </node>
+    	</node>
 	<!-- Element that acts as place for all extenders of the system.
 	 IncapsSystem allows the connection outside only for those EPs that are in capsula
 	 -->

@@ -1,6 +1,7 @@
 #ifndef __GRAYB_ELEM_H
 #define __GRAYB_ELEM_H
 
+
 #include "melem.h"
 #include "menv.h"
 #include "mlog.h"
@@ -12,12 +13,13 @@ class Chromo;
 class MProvider;
 
 // Element of native hier - mutable
-class Elem: public Base, public MMutable 
+class Elem: public Base, public MMutable, public MCompsObserver
 {
     public:
 	// name, parent
 	typedef pair<string, string> TCkey;
 	typedef pair<TCkey, Elem*> TCelem;
+	typedef multimap<TCkey, Elem*> TMElem;
     public:
 	static const char* Type() { return "Elem";};
 	Elem(const string &aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
@@ -29,7 +31,7 @@ class Elem: public Base, public MMutable
 	void SetMutation(const ChromoNode& aMuta);
 	void Mutate(TBool aRunTimeOnly = EFalse);
 	string PName() const;
-	const map<TCkey, Elem*>& Comps() const;
+	const vector<Elem*>& Comps() const;
     public:
 	// aInitCont - the uri of initial context of element, this is requires to element "understand" that it is
 	// in new context now and corrected uris related to initial context
@@ -40,12 +42,12 @@ class Elem: public Base, public MMutable
 	// From MElem
 	virtual const string& EType() const;
 	virtual const set<string>& CompsTypes();
-	virtual Elem* Clone(const string& aName, Elem* aMan, MEnv* aEnv) const;
 	virtual Elem* GetMan();
 	virtual Elem* GetNode(const string& aUri);
 	virtual Elem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase);
 	virtual TBool ChangeCont(const string& aVal); 
 	virtual TBool AddNode(const ChromoNode& aSpec);
+	// From MCompsObserver
 	virtual void OnCompDeleting(Elem& aComp);
 	virtual void OnCompAdding(Elem& aComp);
 	virtual void OnCompChanged(Elem& aComp);
@@ -60,6 +62,7 @@ class Elem: public Base, public MMutable
 	Elem* GetComp(const string& aParent, const string& aName);
 	TBool DoMutChangeCont(const ChromoNode& aSpec);
 	Elem* GetComp(TInt aInd);
+	virtual void DoOnCompChanged(Elem& aComp);
     protected:
 	// Element type - parent's name
 	string iEType;
@@ -75,8 +78,10 @@ class Elem: public Base, public MMutable
 	static set<string> iCompsTypes;
 	// Sign of inited
 	static bool iInit;
-	// Components
-	map<TCkey, Elem*> iComps;
+	// Components, owninig container
+	vector<Elem*> iComps;
+	// Components map, not owning
+	multimap<TCkey, Elem*> iMComps;
 };
 
 inline MLogRec* Elem::Logger() {return iEnv ? iEnv->Logger(): NULL; }

@@ -41,10 +41,15 @@ libgrayb_la_SOURCES = \
 		       mprop.h \
 		       prop.h \
 		       prop.cpp \
+		       mdata.h \
+		       data.h \
+		       data.cpp \
 		       syst.h \
 		       syst.cpp \
 		       incaps.h \
 		       incaps.cpp \
+		       func.h \
+		       func.cpp \
 		       des.h \
 		       des.cpp \
 		       mmuta.h \

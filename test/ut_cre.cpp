@@ -17,6 +17,7 @@ class Ut_cre : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_CreGr);
     CPPUNIT_TEST(test_CreSyst);
     CPPUNIT_TEST(test_CreIncaps);
+    CPPUNIT_TEST(test_CreData);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -26,6 +27,7 @@ private:
     void test_CreGr();
     void test_CreSyst();
     void test_CreIncaps();
+    void test_CreData();
 private:
     Env* iEnv;
 };
@@ -85,7 +87,7 @@ void Ut_cre::test_CreSyst()
 {
     printf("\n === Test of creation of system\n");
 
-    iEnv = new Env("Env", "ut_cre_syst.xml", "ut_cre_syst.txt");
+    iEnv = new Env("Env", "ut_cre_syst1.xml", "ut_cre_syst.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
@@ -107,6 +109,28 @@ void Ut_cre::test_CreIncaps()
     printf("\n === Test of creation of incapsulated system\n");
 
     iEnv = new Env("Env", "ut_cre_incaps.xml", "ut_cre_incaps.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    Elem* ep1 = root->GetNode("Incaps:test/Incaps:Ics1/Elem:Capsule/Extender:ep");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get ep1", ep1 != 0);
+    MVert* mep1 = ep1->GetObj(mep1);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get mep1", mep1 != 0);
+    MVert* pair = *(mep1->Pairs().begin());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
+    Elem* epairt = root->GetNode("Incaps:test/Incaps:Ics2/Elem:Capsule/Extender:ep");
+    MVert* mpairt = epairt->GetObj(mpairt);
+    CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
+
+    delete iEnv;
+}
+
+void Ut_cre::test_CreData()
+{
+    printf("\n === Test of creation of data system\n");
+
+    iEnv = new Env("Env", "ut_cre_data.xml", "ut_cre_data.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();

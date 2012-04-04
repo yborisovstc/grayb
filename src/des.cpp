@@ -22,11 +22,6 @@ void *State::DoGetObj(const char *aName)
     return res;
 }
 
-Elem* State::Clone(const string& aName, Elem* aMan, MEnv* aEnv) const
-{
-    return new State(aName, aMan, aEnv);
-}
-
 void State::OnCompChanged(Elem& aComp)
 {
     if (aComp.EType() == "Edge") {

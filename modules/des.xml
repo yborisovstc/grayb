@@ -7,9 +7,10 @@
 
 <node id="DesComps" parent="Elem">
 
-    <node id="State" parent="StateBase"> 
+    <node id="State" parent="Incaps"> 
 
     	<node id="Output" parent="Extender"> 
+	    <cont node="Prop:Provided" val="Data"/>
     	</node>
     </node>
 

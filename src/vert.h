@@ -18,10 +18,9 @@ class Vert: public Elem, public MVert
 	virtual set<MVert*>& Pairs();
 	virtual Base* EBase();
 	// From Elem
-	virtual Elem* Clone(const string& aName, Elem* aMan, MEnv* aEnv) const;
 	virtual void OnCompDeleting(Elem& aComp);
 	virtual void OnCompAdding(Elem& aComp);
-	virtual void OnCompChanged(Elem& aComp);
+	virtual void DoOnCompChanged(Elem& aComp);
     protected:
 	set<MVert*> iPairs;
 };

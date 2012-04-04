@@ -17,12 +17,10 @@ void *Vert::DoGetObj(const char *aName)
     else if (strcmp(aName, MVert::Type()) == 0) {
 	res = (MVert*) this;
     }
+    else {
+	res = Elem::DoGetObj(aName);
+    }
     return res;
-}
-
-Elem* Vert::Clone(const string& aName, Elem* aMan, MEnv* aEnv) const
-{
-    return new Vert(aName, aMan, aEnv);
 }
 
 TBool Vert::Connect(MVert* aPair)
@@ -56,7 +54,7 @@ void Vert::OnCompAdding(Elem& aComp)
 {
 }
 
-void Vert::OnCompChanged(Elem& aComp)
+void Vert::DoOnCompChanged(Elem& aComp)
 {
     if (aComp.EType() == "Edge") {
 	// Reconnect the edge

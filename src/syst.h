@@ -3,6 +3,16 @@
 
 #include "vert.h"
 
+// Base of ConnPoint reimplement obj provider iface to redirect the request to the hier mgr
+class ConnPointBase: public Vert
+{
+    public:
+	static const char* Type() { return "ConnPointBase";};
+	ConnPointBase(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName);
+};
+
 class Syst: public Vert
 {
     public:
@@ -10,9 +20,8 @@ class Syst: public Vert
 	Syst(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
-	// From Elem
-	virtual Elem* Clone(const string& aName, Elem* aMan, MEnv* aEnv) const;
-	virtual void OnCompChanged(Elem& aComp);
+	// From MCompsObserver
+	virtual void DoOnCompChanged(Elem& aComp);
 };
 
 #endif
