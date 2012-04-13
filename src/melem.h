@@ -23,7 +23,7 @@ class MACompsObserver
 {
     public:
 	static const char* Type() { return "MACompsObserver";};
-	virtual void HandleCompChanged(Elem& aContext, Elem& aComp) = 0;
+	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp) = 0;
 };
 
 // TODO [YB] Obsolete?

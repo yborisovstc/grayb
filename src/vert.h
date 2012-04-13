@@ -11,7 +11,7 @@ class Vert: public Elem, public MVert
 	static const char* Type() { return "Vert";};
 	Vert(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MVert
 	virtual TBool Connect(MVert* aPair);
 	virtual void Disconnect(MVert* aPair);

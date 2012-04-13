@@ -27,7 +27,7 @@ Edge::Edge(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
     __ASSERT(res);
 }
 
-void* Edge::DoGetObj(const char *aName)
+void* Edge::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }

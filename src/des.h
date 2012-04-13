@@ -9,7 +9,7 @@ class State: public Incaps
 	static const char* Type() { return "State";};
 	State(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From Elem
 	virtual void OnCompChanged(Elem& aComp);
 };

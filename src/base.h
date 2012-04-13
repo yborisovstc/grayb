@@ -20,7 +20,7 @@ class Base
 	template <class T> T* GetObj(T* aInst) {return aInst = static_cast<T*>(DoGetObj(aInst->Type())); };
 	void* GetObj(const char *aType) {return DoGetObj(aType); };
     protected:
-	virtual void *DoGetObj(const char *aName) = 0;
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue) = 0;
     protected:
 	string iName;
 };

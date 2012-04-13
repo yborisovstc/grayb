@@ -10,19 +10,21 @@ ConnPointBase::ConnPointBase(const string& aName, Elem* aMan, MEnv* aEnv): Vert(
     SetParent(Type());
 }
 
-void *ConnPointBase::DoGetObj(const char *aName)
+void *ConnPointBase::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = Vert::DoGetObj(aName);
+	res = Vert::DoGetObj(aName, aIncUpHier);
     }
+    /* No need because implemented on elem level
     if (res == NULL) {
 	__ASSERT(iMan != NULL);
 	res = iMan->DoGetObj(aName);
     }
+    */
     return res;
 }
 
@@ -35,14 +37,14 @@ Syst::Syst(const string& aName, Elem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
     SetParent(Type());
 }
 
-void *Syst::DoGetObj(const char *aName)
+void *Syst::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = Vert::DoGetObj(aName);
+	res = Vert::DoGetObj(aName, aIncUpHier);
     }
     return res;
 }
@@ -77,7 +79,7 @@ void Syst::DoOnCompChanged(Elem& aComp)
 		    Elem* ept1req = pt1->GetNode("Prop:Required");
 		    MProp* ppt1req = ept1req->GetObj(ppt1req);
 		    if (ppt1prov->Value() == ppt2req->Value() && ppt2prov->Value() == ppt1req->Value()) {
-		    //if (ept1provi->EType() == ppt2req->Value() && ept2provi->EType() == ppt1req->Value()) {
+			//if (ept1provi->EType() == ppt2req->Value() && ept2provi->EType() == ppt1req->Value()) {
 			// Roles are compatible - connect
 			edge->SetPoints(pt1v, pt2v);
 			TBool res = edge->Connect();
@@ -91,16 +93,16 @@ void Syst::DoOnCompChanged(Elem& aComp)
 		    else {
 			Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - incompatible roles", Name().c_str(), pt1u.c_str(), pt2u.c_str());
 		    }
+		    }
+		    else {
+			Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - ends aren't vertexes", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+		    }
 		}
 		else {
-		    Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - ends aren't vertexes", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+		    Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - cannot find [%s]", Name().c_str(), pt1u.c_str(), pt2u.c_str(), 
+			    (pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
 		}
-	    }
-	    else {
-		Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - cannot find [%s]", Name().c_str(), pt1u.c_str(), pt2u.c_str(), 
-			(pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
 	    }
 	}
     }
-}
 

@@ -28,7 +28,7 @@ class HNode: public Base, public MElem
 	void Mutate(TBool aRunTimeOnly = EFalse);
     public:
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MElem
 	virtual const string& EType() const;
 	virtual const set<string>& CompsTypes();

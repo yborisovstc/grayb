@@ -18,7 +18,7 @@ void Graph::Init()
     }
 }
 
-void* Graph::DoGetObj(const char *aName)
+void* Graph::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }

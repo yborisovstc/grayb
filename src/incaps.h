@@ -9,9 +9,9 @@ class Incaps: public Syst, public MACompsObserver
 	static const char* Type() { return "IncapsAgent";};
 	Incaps(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MACompsObserver
-	virtual void HandleCompChanged(Elem& aContext, Elem& aComp);
+	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
 };
 
 #endif

@@ -7,7 +7,7 @@ Prop::Prop(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
     SetParent(Type());
 }
 
-void *Prop::DoGetObj(const char *aName)
+void *Prop::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {

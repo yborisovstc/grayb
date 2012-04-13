@@ -84,7 +84,7 @@ Elem* Elem::GetMan()
     return iMan;
 }
 
-void *Elem::DoGetObj(const char *aName)
+void *Elem::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -93,6 +93,18 @@ void *Elem::DoGetObj(const char *aName)
     else if (strcmp(aName, MCompsObserver::Type()) == 0) {
 	res = (MCompsObserver*) this;
     }
+    else {
+	Elem* agents = GetComp("Elem", "Agents");
+	if (agents != NULL) {
+	    for (vector<Elem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && res == NULL; it++) {
+		res = (*it)->DoGetObj(aName, EFalse);
+	    }
+	}
+    }
+    if (res == NULL && aIncUpHier && iMan != NULL) {
+	res = iMan->DoGetObj(aName);
+    }
+
     return res;
 }
 
@@ -216,6 +228,11 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
     return res;
 }
 
+const vector<Elem*>& Elem::Comps()
+{
+    return iComps;
+}
+
 void Elem::SetMutation(const ChromoNode& aMuta)
 {
     iMut->Set(aMuta);
@@ -234,6 +251,46 @@ void Elem::Mutate(TBool aRunTimeOnly)
     }
 }
 
+TBool Elem::MergeMutation(const ChromoNode& aSpec)
+{
+    TBool res = EFalse;
+    ChromoNode& chrroot = iChromo->Root();
+    TNodeType rnotype = aSpec.Type();
+    if (rnotype == ENt_Move) {
+	res = MergeMutMove(aSpec);
+    }
+    else {
+	chrroot.AddChild(aSpec);
+	res = ETrue;
+    }
+    return res;
+}
+
+TBool Elem::MergeMutMove(const ChromoNode& aSpec)
+{
+    TBool res = EFalse;
+    /*
+    DesUri src(aSpec.Attr(ENa_Id));
+    TNodeType srctype = src.Elems().at(0).first;
+    string srcname = src.Elems().at(0).second;
+    DesUri dest(aSpec.Attr(ENa_MutNode));
+    string destname = dest.Elems().at(0).second;
+    if (srctype == ENt_Object) {
+	CAE_ChromoNode& croot = iChromo->Root();
+	// Find the dest and src
+	CAE_ChromoNode::Iterator nidest = croot.Find(ENt_Object, destname);
+	CAE_ChromoNode::Iterator nisrc = croot.Find(ENt_Object, srcname);
+	// Move node
+	CAE_ChromoNode nsrc = *nisrc;
+	nsrc.MoveNextTo(nidest);
+	res = ETrue;
+    }
+    else {
+	Logger()->WriteFormat("ERROR: Moving element [%s] - unsupported element type for moving", srcname.c_str());
+    }
+    */
+    return res;
+}
 
 void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 {
@@ -250,7 +307,6 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 		if (!aRunTime) {
 		    // Attach comp chromo
 		    chrroot.AddChild(node->iChromo->Root(), EFalse);
-		    Logger()->WriteFormat("Node [%s] - added node [%s] of type [%s]", Name().c_str(), node->Name().c_str(), node->EType().c_str());
 		}
 	    }
 	    else {
@@ -258,28 +314,33 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 		Logger()->WriteFormat("ERROR: Node [%s] - adding node of type [%s] failed", Name().c_str(), pname.c_str());
 	    }
 	}
-	else if (rnotype == ENt_Add) {
-	    AddNode(rno);
-	}
-	else if (rnotype == ENt_Cont) {
-	    DoMutChangeCont(rno);
-	}
-	/*
-	   else if (rnotype == ENt_Rm) {
-	   string snode = rno.Attr(ENa_MutNode);
-	   DesUri unode(snode);
-	   RmNode(unode);
-	   }
-	   else if (rnotype == ENt_Change) {
-	   ChangeAttr_v2(rno);
-	   }
-	   else if (rnotype == ENt_MutMove) 
-	   {
-	   MoveElem_v1(rno);
-	   }
-	   */
 	else {
-	    Logger()->WriteFormat("ERROR: Mutating node [%s] - unknown mutation type [%d]", Name().c_str(), rnotype);
+	    if (rnotype == ENt_Add) {
+		AddNode(rno);
+	    }
+	    else if (rnotype == ENt_Cont) {
+		DoMutChangeCont(rno);
+	    }
+	    /*
+	       else if (rnotype == ENt_Rm) {
+	       string snode = rno.Attr(ENa_MutNode);
+	       DesUri unode(snode);
+	       RmNode(unode);
+	       }
+	       else if (rnotype == ENt_Change) {
+	       ChangeAttr_v2(rno);
+	       }
+	       else if (rnotype == ENt_MutMove) 
+	       {
+	       MoveElem_v1(rno);
+	       }
+	       */
+	    else {
+		Logger()->WriteFormat("ERROR: Mutating node [%s] - unknown mutation type [%d]", Name().c_str(), rnotype);
+	    }
+	    if (!aRunTime) {
+		MergeMutation(rno);
+	    }
 	}
     }
 }
@@ -324,6 +385,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode)
 	sname = name;
 	free(name);
     }
+    Logger()->WriteFormat("[%s] - start adding node [%s:%s]", Name().c_str(), sparent.c_str(), sname.c_str());
     Elem* elem = NULL;
     // Obtain parent first
     Elem *parent = NULL;
@@ -379,6 +441,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode)
 	    elem->SetMutation(aNode);
 	    elem->Mutate();
 	}
+	Logger()->WriteFormat("[%s] - added node [%s:%s]", Name().c_str(), elem->EType().c_str(), elem->Name().c_str());
     }
     return elem;
 }
@@ -446,24 +509,24 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
 }
 
 /*
-Elem* Elem::GetComp(const string& aName, Elem* aRequestor)
-{
-    // Search local
-    CAE_Object* res = iComps.count(aName) > 0 ? iComps[aName] : NULL;
-    // Then down
-    if (res == NULL && aRequestor != NULL) {
-	for (map<string, CAE_Object*>::iterator it = iComps.begin(); it != iComps.end() && res == NULL; it++) {
-	    CAE_Object* comp = it->second;
-	    if (comp != aRequestor) {
-		res = comp->GetComp(aName, this);
-	    }
-	}
-    }
-    // Then up
-    if (res == NULL && iMan != aRequestor) {
-	res = iMan->GetComp(aName, this);
-    }
-    return res;
+   Elem* Elem::GetComp(const string& aName, Elem* aRequestor)
+   {
+// Search local
+CAE_Object* res = iComps.count(aName) > 0 ? iComps[aName] : NULL;
+// Then down
+if (res == NULL && aRequestor != NULL) {
+for (map<string, CAE_Object*>::iterator it = iComps.begin(); it != iComps.end() && res == NULL; it++) {
+CAE_Object* comp = it->second;
+if (comp != aRequestor) {
+res = comp->GetComp(aName, this);
+}
+}
+}
+// Then up
+if (res == NULL && iMan != aRequestor) {
+res = iMan->GetComp(aName, this);
+}
+return res;
 }
 */
 
@@ -514,6 +577,24 @@ void Elem::OnCompChanged(Elem& aComp)
 {
     Elem* agents = GetComp("Elem", "Agents");
     if (agents != NULL) {
+	TBool res = false;
+	for (vector<Elem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && !res; it++) {
+	    MACompsObserver* iagent = (*it)->GetObj(iagent);
+	    if (iagent != NULL) {
+		res = iagent->HandleCompChanged(*this, aComp);
+	    }
+	}
+    }
+    else {
+	DoOnCompChanged(aComp);
+    }
+}
+
+/*
+   void Elem::OnCompChanged(Elem& aComp)
+   {
+   Elem* agents = GetComp("Elem", "Agents");
+    if (agents != NULL) {
 	Elem* eagent = agents->GetComp("*", "MACompsObserver");
 	if (eagent != NULL) {
 	    MACompsObserver* iagent = eagent->GetObj(iagent);
@@ -525,12 +606,18 @@ void Elem::OnCompChanged(Elem& aComp)
 	DoOnCompChanged(aComp);
     }
 }
+*/
 
 void Elem::DoOnCompChanged(Elem& aComp)
 {
     if (iMan != NULL) {
 	iMan->OnCompChanged(*this);
     }
+}
+
+GUri Elem::GetUri(const Elem* aElem) const
+{
+    return GUri();
 }
 
 
@@ -541,7 +628,7 @@ Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEn
     SetParent(Type());
 }
 
-void *Agent::DoGetObj(const char *aName)
+void *Agent::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }

@@ -18,7 +18,7 @@ Incaps::Incaps(const string& aName, Elem* aMan, MEnv* aEnv): Syst(aName, aMan, a
     */
 }
 
-void *Incaps::DoGetObj(const char *aName)
+void *Incaps::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -28,7 +28,7 @@ void *Incaps::DoGetObj(const char *aName)
 	res = (MACompsObserver*) this;
     }
     else {
-	res = Syst::DoGetObj(aName);
+	res = Syst::DoGetObj(aName, aIncUpHier);
     }
     return res;
 }
@@ -97,8 +97,9 @@ void Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 }
 */
 
-void Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
+TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
+    TBool res = EFalse;
     if (aComp.EType() == "Edge") {
 	// Reconnect the edge
 	Edge* edge = aComp.GetObj(edge);	
@@ -156,6 +157,8 @@ void Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 			(pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
 	    }
 	}
+	res = ETrue;
     }
+    return res;
 }
 

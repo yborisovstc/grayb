@@ -14,7 +14,7 @@ ChromoMdlX::~ChromoMdlX()
     Reset(); 
 }
 
-void *ChromoMdlX::DoGetObj(const char *aName) 
+void *ChromoMdlX::DoGetObj(const char *aName, TBool aIncUpHier) 
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }

@@ -10,14 +10,14 @@ State::State(const string& aName, Elem* aMan, MEnv* aEnv): Incaps(aName, aMan, a
     SetParent(Type());
 }
 
-void *State::DoGetObj(const char *aName)
+void *State::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = Syst::DoGetObj(aName);
+	res = Syst::DoGetObj(aName, aIncUpHier);
     }
     return res;
 }

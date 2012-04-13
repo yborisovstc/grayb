@@ -8,7 +8,7 @@ Vert::Vert(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
     SetParent(Type());
 }
 
-void *Vert::DoGetObj(const char *aName)
+void *Vert::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -18,15 +18,19 @@ void *Vert::DoGetObj(const char *aName)
 	res = (MVert*) this;
     }
     else {
-	res = Elem::DoGetObj(aName);
+	res = Elem::DoGetObj(aName, aIncUpHier);
     }
     return res;
 }
 
 TBool Vert::Connect(MVert* aPair)
 {
+    TBool res = ETrue;
     __ASSERT(iPairs.count(aPair) == 0);
     iPairs.insert(aPair);
+    __ASSERT(iMan != NULL);
+    iMan->OnCompChanged(*this);
+    return res;
 }
 
 Base* Vert::EBase()

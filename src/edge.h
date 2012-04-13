@@ -15,7 +15,7 @@ class Edge: public Elem, public MEdge
 	const string& Point2u();
 	void SetPoints(MVert* aPoint1, MVert* aPoint2);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MEdge
 	virtual TBool Connect();
 	virtual void Disconnect();

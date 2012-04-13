@@ -21,7 +21,7 @@ public:
 	void AddProvider(GProvider* aProv);
 public:
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MEnv
 	virtual MProvider *Provider() const;
 	virtual MLogRec *Logger();

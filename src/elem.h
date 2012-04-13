@@ -24,6 +24,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	static const char* Type() { return "Elem";};
 	Elem(const string &aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	Elem* GetNode(const GUri& aUri);
+	GUri GetUri(const Elem* aElem) const;
 	virtual ~Elem();
 	void SetEType(const string& aEType);
 	void SetParent(const string& aParent);
@@ -37,8 +38,9 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	// in new context now and corrected uris related to initial context
 	Elem* CreateHeir(const string& aName, Elem* aMan/*, const GUri& aInitCont*/);
 	const MChromo& Chromos() { return *iChromo;};
+	const MChromo& Mutation() { return *iMut;};
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MElem
 	virtual const string& EType() const;
 	virtual const set<string>& CompsTypes();
@@ -47,6 +49,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	virtual Elem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase);
 	virtual TBool ChangeCont(const string& aVal); 
 	virtual TBool AddNode(const ChromoNode& aSpec);
+	const vector<Elem*>& Comps();
 	// From MCompsObserver
 	virtual void OnCompDeleting(Elem& aComp);
 	virtual void OnCompAdding(Elem& aComp);
@@ -61,6 +64,8 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	TBool AppendComp(Elem* aComp);
 	Elem* GetComp(const string& aParent, const string& aName);
 	TBool DoMutChangeCont(const ChromoNode& aSpec);
+	TBool MergeMutation(const ChromoNode& aSpec);
+	TBool MergeMutMove(const ChromoNode& aSpec);
 	Elem* GetComp(TInt aInd);
 	virtual void DoOnCompChanged(Elem& aComp);
     protected:
@@ -97,7 +102,7 @@ class Agent: public Elem
     static const char* Type() { return "Agent";};
     Agent(const string &aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
     // From Base
-    virtual void *DoGetObj(const char *aName);
+    virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 };
 
 #endif

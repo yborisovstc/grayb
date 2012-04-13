@@ -18,15 +18,16 @@
 
     <node id="test" parent="IncapsComps:incapsmod/Syst:Incaps">
 
+	<node id="DataS_Int_1" parent="../DataComps:datamod/DataS:DataSInt">
+	    <cont node="Prop:Value" val="34"/> 
+	</node>
+
 	<node id="Data_Int_1" parent="../DataComps:datamod/Incaps:DataInt"/>
 
 	<node id="Incr" parent="../FuncComps:funcmod/Incaps:FuncIncInt"/>
 
 	<node parent="Edge"> 
-	    <!--
-	    <cont node="Prop:P1" val="DataInt:Data_Int_1/Elem:Capsule/ConnPoint:outp"/> 
-	    -->
-	    <cont node="Prop:P1" val="DataInt:Data_Int_1/Elem:Capsule/ConnPoint:outp"/> 
+	    <cont node="Prop:P1" val="DataSInt:DataS_Int_1/Elem:Capsule/ConnPoint:out"/> 
 	    <cont node="Prop:P2" val="FuncIncInt:Incr/Elem:Capsule/ConnPoint:inp"/> 
 	</node>
 

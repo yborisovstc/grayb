@@ -21,7 +21,11 @@
 
     	<add node="Elem:Capsule"> 
 	    <node id="inp" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
-		<cont node="Prop:Required" val="MDInt"/>
+		<cont node="Prop:Required" val="MDIntGet"/>
+		<cont node="Prop:Provided" val="MDataObserver"/>
+	    </node>
+	    <node id="out" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+		<cont node="Prop:Provided" val="MDIntGet"/>
 	    </node>
     	</add>
     </node>

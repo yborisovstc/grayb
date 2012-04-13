@@ -18,4 +18,12 @@ class MDInt
 	virtual void Set(TInt aData) = 0;
 };
 
+class MDIntGet
+{
+    public:
+	static const char* Type() { return "MDIntGet";};
+	virtual TInt Value() = 0;
+};
+
+
 #endif

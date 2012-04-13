@@ -9,7 +9,7 @@ GFactory::GFactory(const string& aName): Base(aName)
     AddProvider(baseprov);
 }
 
-void *GFactory::DoGetObj(const char *aName)
+void *GFactory::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }

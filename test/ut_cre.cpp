@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <elem.h>
 #include <mvert.h>
+#include <mdata.h>
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -135,15 +136,25 @@ void Ut_cre::test_CreData()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* ep1 = root->GetNode("Incaps:test/Incaps:Ics1/Elem:Capsule/Extender:ep");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get ep1", ep1 != 0);
-    MVert* mep1 = ep1->GetObj(mep1);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get mep1", mep1 != 0);
-    MVert* pair = *(mep1->Pairs().begin());
+    Elem* doutp = root->GetNode("Incaps:test/DataSInt:DataS_Int_1/Elem:Capsule/ConnPoint:out");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
+    MDIntGet* doutpget = doutp->GetObj(doutpget);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 34);
+    MVert* mdoutpv = doutp->GetObj(mdoutpv);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get data out vertex", mdoutpv != 0);
+    MVert* pair = *(mdoutpv->Pairs().begin());
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    Elem* epairt = root->GetNode("Incaps:test/Incaps:Ics2/Elem:Capsule/Extender:ep");
-    MVert* mpairt = epairt->GetObj(mpairt);
+    Elem* efuninp = root->GetNode("Incaps:test/FuncIncInt:Incr/Elem:Capsule/ConnPoint:inp");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get fun inp", efuninp != NULL);
+    MVert* mpairt = efuninp->GetObj(mpairt);
     CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
+
+    Elem* foutp = root->GetNode("Incaps:test/FuncIncInt:Incr/Elem:Capsule/ConnPoint:out");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
+    MDIntGet* foutpget = doutp->GetObj(doutpget);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of func out", foutpget->Value() == 35);
 
     delete iEnv;
 }

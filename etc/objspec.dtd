@@ -21,7 +21,7 @@
 <!ELEMENT chg EMPTY >
 
 <!-- Element of base hier -->
-<!ELEMENT node (node*, logspec*, add*, rm*, chg*, cont*, move*)>
+<!ELEMENT node (node*, logspec*, add*, rm*, chg*, cont*, move*)* >
  
 <!-- Logging event: tran - transitioning, upd - updated, cre - created, any - all events -->
 <!ATTLIST logspec event (tran | upd | cre | any) #REQUIRED>

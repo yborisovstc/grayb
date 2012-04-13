@@ -10,7 +10,7 @@ class ConnPointBase: public Vert
 	static const char* Type() { return "ConnPointBase";};
 	ConnPointBase(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 };
 
 class Syst: public Vert
@@ -19,7 +19,7 @@ class Syst: public Vert
 	static const char* Type() { return "Syst";};
 	Syst(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MCompsObserver
 	virtual void DoOnCompChanged(Elem& aComp);
 };

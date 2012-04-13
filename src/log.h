@@ -13,7 +13,7 @@ class GLogRec: public Base, public MLogRec
 	virtual ~GLogRec();
     public:
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MLogRec
 	virtual void WriteRecord(const char* aText);
 	virtual void WriteFormat(const char* aFmt,...);
