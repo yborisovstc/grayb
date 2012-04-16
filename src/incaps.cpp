@@ -100,9 +100,11 @@ void Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
     TBool res = EFalse;
-    if (aComp.EType() == "Edge") {
+    Elem* eedge = aContext.GetCompOwning("Edge", &aComp);
+    if (eedge != NULL) {
+    //if (aComp.EType() == "Edge") {
 	// Reconnect the edge
-	Edge* edge = aComp.GetObj(edge);	
+	Edge* edge = eedge->GetObj(edge);	
 	__ASSERT(edge != NULL);
 	edge->Disconnect();
 	const string& pt1u = edge->Point1u();

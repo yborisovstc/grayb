@@ -20,6 +20,8 @@ class Edge: public Elem, public MEdge
 	virtual TBool Connect();
 	virtual void Disconnect();
 	virtual MVert* Pair(const MVert* aPoint);
+	virtual MVert* Point1() const;
+	virtual MVert* Point2() const;
 	// From Elem
     protected:
 	static void Init();

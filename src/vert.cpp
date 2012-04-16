@@ -60,9 +60,19 @@ void Vert::OnCompAdding(Elem& aComp)
 
 void Vert::DoOnCompChanged(Elem& aComp)
 {
+    Elem* eedge = GetCompOwning("Edge", &aComp);
+    /*
     if (aComp.EType() == "Edge") {
+	eedge = &aComp;
+    }
+    else if (aComp.GetMan() != this && aComp.GetMan()->EType() == "Edge") {
+	eedge = aComp.GetMan();
+    }
+    */
+    //if (aComp.EType() == "Edge") {
+    if (eedge != NULL) {
 	// Reconnect the edge
-	Edge* edge = aComp.GetObj(edge);	
+	Edge* edge = eedge->GetObj(edge);	
 	__ASSERT(edge != NULL);
 	edge->Disconnect();
 	const string& pt1u = edge->Point1u();

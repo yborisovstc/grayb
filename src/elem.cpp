@@ -611,7 +611,7 @@ void Elem::OnCompChanged(Elem& aComp)
 void Elem::DoOnCompChanged(Elem& aComp)
 {
     if (iMan != NULL) {
-	iMan->OnCompChanged(*this);
+	iMan->OnCompChanged(aComp);
     }
 }
 
@@ -620,6 +620,18 @@ GUri Elem::GetUri(const Elem* aElem) const
     return GUri();
 }
 
+Elem* Elem::GetCompOwning(const string& aParent, Elem* aElem)
+{
+    Elem* res = NULL;
+    Elem* node = aElem;
+    while (node->GetMan() != NULL && !(node->GetMan() == this && node->EType() == aParent)) {
+	node = node->GetMan();	
+    }
+    if (node->GetMan() != NULL) {
+	res = node;
+    }
+    return res;
+}
 
 
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)

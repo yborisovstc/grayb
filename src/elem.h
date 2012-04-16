@@ -38,7 +38,9 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	// in new context now and corrected uris related to initial context
 	Elem* CreateHeir(const string& aName, Elem* aMan/*, const GUri& aInitCont*/);
 	const MChromo& Chromos() { return *iChromo;};
-	const MChromo& Mutation() { return *iMut;};
+	MChromo& Mutation() { return *iMut;};
+	// Gets the comp with given type and owning given element
+	Elem* GetCompOwning(const string& aParent, Elem* aElem);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MElem

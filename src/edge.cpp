@@ -32,6 +32,16 @@ void* Edge::DoGetObj(const char *aName, TBool aIncUpHier)
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
 
+MVert* Edge::Point1() const
+{
+    return iPoint1;
+}
+
+MVert* Edge::Point2() const
+{
+    return iPoint2;
+}
+
 void Edge::SetPoints(MVert* aPoint1, MVert* aPoint2)
 {
     __ASSERT(iPoint1 == NULL && iPoint2 == NULL && aPoint1 != NULL && aPoint2 != NULL);

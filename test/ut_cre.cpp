@@ -123,6 +123,8 @@ void Ut_cre::test_CreIncaps()
     Elem* epairt = root->GetNode("Incaps:test/Incaps:Ics2/Elem:Capsule/Extender:ep");
     MVert* mpairt = epairt->GetObj(mpairt);
     CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
+    Elem* wep1 = root->GetNode("Incaps:test/Incaps:Ics1/ConnPoint:cp_int");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get wrong edge ep1", wep1 != NULL);
 
     delete iEnv;
 }
@@ -152,9 +154,10 @@ void Ut_cre::test_CreData()
 
     Elem* foutp = root->GetNode("Incaps:test/FuncIncInt:Incr/Elem:Capsule/ConnPoint:out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
-    MDIntGet* foutpget = doutp->GetObj(doutpget);
+    MDIntGet* foutpget = foutp->GetObj(doutpget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get value of func out", foutpget->Value() == 35);
+    TInt fres = foutpget->Value();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of func out", fres == 35);
 
     delete iEnv;
 }

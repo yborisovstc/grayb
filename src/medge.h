@@ -12,6 +12,8 @@ class MEdge
 	virtual TBool Connect() = 0;
 	virtual void Disconnect() = 0;
 	virtual MVert* Pair(const MVert* aPoint) = 0;
+	virtual MVert* Point1() const = 0;
+	virtual MVert* Point2() const = 0;
 };
 
 #endif

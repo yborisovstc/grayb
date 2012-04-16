@@ -15,7 +15,7 @@
     <!-- <node id="test" parent="IncapsComps:incapsmod/IncapsBase:Incaps"> -->
     <node id="test" parent="IncapsComps:incapsmod/Syst:Incaps">
 	<node id="Ics1" parent="../IncapsComps:incapsmod/Syst:Incaps">
-	    <node id="cp_int" parent="../../SysComps:sysmod/Vert:ConnPoint"> 
+	    <node id="cp_int" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
 		<cont node="Prop:Provided" val="Role3"/> <cont node="Prop:Required" val="Role4"/>
 	    </node>
 	    <add node="Capsule">
