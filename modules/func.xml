@@ -25,10 +25,31 @@
 		<cont node="Prop:Provided" val="MDataObserver"/>
 	    </node>
 	    <node id="out" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+		<cont node="Prop:Required" val="MDataObserver"/>
 		<cont node="Prop:Provided" val="MDIntGet"/>
 	    </node>
     	</add>
     </node>
+
+    <!-- Function of integer result -->
+    <node id="FuncIntRes" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+
+    	<add node="Elem:Agents"> 
+	    <node id="func_agt" parent="AFunIntRes"> 
+	    </node>
+    	</add>
+
+    	<add node="Elem:Capsule"> 
+	    <node id="inp" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+		<cont node="Prop:Required" val="MDIntGet"/>
+		<cont node="Prop:Provided" val="MDataObserver"/>
+	    </node>
+	    <node id="out" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+		<cont node="Prop:Required" val="MDIntSet"/>
+	    </node>
+    	</add>
+    </node>
+
 
 </node>
 

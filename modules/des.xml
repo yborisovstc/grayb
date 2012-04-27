@@ -7,11 +7,33 @@
 
 <node id="DesComps" parent="Elem">
 
-    <node id="State" parent="Incaps"> 
+    <!-- Module containing components of system layer -->
+    <node id="sysmod" parent="file:/usr/share/grayb/modules/syst.xml#SysComps" />
+    <!-- Module containing components of incaps layer -->
+    <node id="incapsmod" parent="file:/usr/share/grayb/modules/capsula.xml#IncapsComps" />
+    <!-- Module containing components of data -->
+    <node id="datamod" parent="file:../modules/data.xml#DataComps" />
 
-    	<node id="Output" parent="Extender"> 
-	    <cont node="Prop:Provided" val="Data"/>
-    	</node>
+
+    <node id="State" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+	<add node="Elem:Capsule">
+	    <node id="Out" parent="../../SysComps:sysmod/ConnPoint:Extender"> 
+		<!--
+		<cont node="Prop:Required" val="MDesActivable"/>
+		-->
+		<cont node="Prop:Required" val="MDataObserver"/>
+	    </node>
+	</add>
+    </node>
+
+    <node id="StateInt" parent="Incaps:State"> 
+	<cont node="Elem:Capsule/Extender:Out/Prop:Provided" val="MDIntGet"/>
+	<node id="Confirmed" parent="../DataComps:datamod/DataS:DataSInt">
+	</node>
+	<node parent="Edge"> 
+	    <cont node="Prop:P1" val="DataSInt:Confirmed/Elem:Capsule/ConnPoint:out"/> 
+	    <cont node="Prop:P2" val="Elem:Capsule/Extender:Out/ConnPoint:Int"/> 
+	</node>
     </node>
 
 </node>

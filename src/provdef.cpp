@@ -43,6 +43,9 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     else if (aType.compare(AIncInt::Type()) == 0) {
 	res = new AIncInt(aName, aMan, aEnv);
     }
+    else if (aType.compare(AFunIntRes::Type()) == 0) {
+	res = new AFunIntRes(aName, aMan, aEnv);
+    }
     return res;
 }
 

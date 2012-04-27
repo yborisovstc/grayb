@@ -46,6 +46,9 @@ void *DInt::DoGetObj(const char *aName, TBool aIncUpHier)
     else if (strcmp(aName, MDIntGet::Type()) == 0) {
 	res = (MDIntGet*) this;
     }
+    else if (strcmp(aName, MDIntSet::Type()) == 0) {
+	res = (MDIntSet*) this;
+    }
     else {
 	res = Elem::DoGetObj(aName, aIncUpHier);
     }
@@ -72,5 +75,12 @@ bool DInt::FromString(const string& aData)
 TInt DInt::Value()
 {
     return mData;
+}
+
+void DInt::SetValue(TInt aData)
+{
+    if (mData != aData) {
+	mData = aData;
+    }
 }
 

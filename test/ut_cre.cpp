@@ -157,7 +157,7 @@ void Ut_cre::test_CreData()
     MDIntGet* foutpget = foutp->GetObj(doutpget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
     TInt fres = foutpget->Value();
-    CPPUNIT_ASSERT_MESSAGE("Fail to get value of func out", fres == 35);
+    CPPUNIT_ASSERT_MESSAGE("Incorrect func result", fres == 35);
 
     delete iEnv;
 }

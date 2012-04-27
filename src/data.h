@@ -4,13 +4,6 @@
 #include "elem.h"
 #include "mdata.h"
 
-class MDataObserver
-{
-    public:
-	static const char* Type() { return "MDataObserver";};
-	virtual void OnDataChanged() = 0;
-};
-
 class DataBase: public Elem, public MACompsObserver
 {
     public:
@@ -25,7 +18,7 @@ class DataBase: public Elem, public MACompsObserver
 // Data is representing some static model
 //
 // Data of integer
-class DInt: public DataBase, public MDInt, public MDIntGet
+class DInt: public DataBase, public MDInt, public MDIntGet, public MDIntSet
 {
     public:
 	static const char* Type() { return "DInt";};
@@ -37,6 +30,8 @@ class DInt: public DataBase, public MDInt, public MDIntGet
 	virtual void Set(TInt aData);
 	// From MDIntGet
 	virtual TInt Value();
+	// From MDIntSet
+	virtual void SetValue(TInt aData);
 	// From Data
 	virtual bool FromString(const string& aData); 
     private:

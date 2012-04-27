@@ -2,7 +2,9 @@ bin_PROGRAMS = ut-grayb-lib
 
 ut_grayb_lib_SOURCES = \
 		       ut_grayb_main.cpp \
-		       ut_cre.cpp 
+		       ut_cre.cpp \
+		       ut_fun.cpp \
+		       ut_des.cpp 
 
 AM_CPPFLAGS = -D_PLAT_LINUX_ -g -O0
 ut_grayb_lib_LDFLAGS=-L../src/ -lgrayb  -lcppunit

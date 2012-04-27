@@ -43,7 +43,15 @@ void *Syst::DoGetObj(const char *aName, TBool aIncUpHier)
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
-    else {
+    else  {
+	Elem* agents = GetComp("Elem", "Agents");
+	if (agents != NULL) {
+	    for (vector<Elem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && res == NULL; it++) {
+		res = (*it)->DoGetObj(aName, EFalse);
+	    }
+	}
+    }
+    if (res == NULL) {
 	res = Vert::DoGetObj(aName, aIncUpHier);
     }
     return res;

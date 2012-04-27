@@ -93,6 +93,7 @@ void *Elem::DoGetObj(const char *aName, TBool aIncUpHier)
     else if (strcmp(aName, MCompsObserver::Type()) == 0) {
 	res = (MCompsObserver*) this;
     }
+    /*
     else {
 	Elem* agents = GetComp("Elem", "Agents");
 	if (agents != NULL) {
@@ -101,6 +102,7 @@ void *Elem::DoGetObj(const char *aName, TBool aIncUpHier)
 	    }
 	}
     }
+    */
     if (res == NULL && aIncUpHier && iMan != NULL) {
 	res = iMan->DoGetObj(aName);
     }
@@ -633,6 +635,27 @@ Elem* Elem::GetCompOwning(const string& aParent, Elem* aElem)
     return res;
 }
 
+Elem* Elem::GetCompOwning(Elem* aElem)
+{
+    Elem* res = NULL;
+    Elem* node = aElem;
+    while (node->GetMan() != NULL && !(node->GetMan() == this)) {
+	node = node->GetMan();	
+    }
+    if (node->GetMan() != NULL) {
+	res = node;
+    }
+    return res;
+}
+
+TBool Elem::IsComp(Elem* aElem)
+{
+    Elem* man = aElem->GetMan();
+    while (man != NULL && man != this) {
+	man = man->GetMan();	
+    }
+    return man == this;
+}
 
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {

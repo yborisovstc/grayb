@@ -16,7 +16,8 @@ Edge::Edge(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     if (!iInit) 
 	Init();
-    iEType = Type();
+    SetEType(Type());
+    SetParent(Type());
     // Adding properties "Points"
     Elem* p1 = Provider()->CreateNode("Prop", "P1", this, iEnv);
     Elem* p2 = Provider()->CreateNode("Prop", "P2", this, iEnv);

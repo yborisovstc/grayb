@@ -41,6 +41,8 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	MChromo& Mutation() { return *iMut;};
 	// Gets the comp with given type and owning given element
 	Elem* GetCompOwning(const string& aParent, Elem* aElem);
+	Elem* GetCompOwning(Elem* aElem);
+	TBool IsComp(Elem* aElem);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MElem

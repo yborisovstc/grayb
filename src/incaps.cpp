@@ -113,41 +113,72 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 	    Elem* pt1 = aContext.GetNode(pt1u);
 	    Elem* pt2 = aContext.GetNode(pt2u);
 	    if (pt1 != NULL && pt2 != NULL) {
-		// Check if CPs belongs to capsule
+		// Check if CPs belongs to capsule, or CP is internal point of extender
+		Elem* caps = aContext.GetNode("Elem:Capsule");
 		Elem* pt1man = pt1->GetMan();
 		Elem* pt2man = pt2->GetMan(); 
-		if (pt1man->Name() == "Capsule" && pt2man->Name() == "Capsule") {
+		TBool pt1caps = pt1man->Name() == "Capsule";
+		TBool pt2caps = pt2man->Name() == "Capsule";
+		TBool pt1eint = caps->IsComp(pt1) && pt1->Name() == "Int" && pt1man->EType() == "Extender";
+		TBool pt2eint = caps->IsComp(pt2) && pt2->Name() == "Int" && pt2man->EType() == "Extender";
+		TBool pt1int = pt1caps && aContext.IsComp(pt1);
+		TBool pt2int = pt2caps && aContext.IsComp(pt2);
+		if (pt1caps && pt2caps || pt1int && pt2eint || pt2int && pt1eint) {
 		    MVert* pt1v = pt1->GetObj(pt1v);
 		    MVert* pt2v = pt2->GetObj(pt2v);
 		    if (pt1v != NULL && pt2v != NULL) {
 			// Check roles conformance
+			Elem* pt1r = pt1eint ? pt1man : pt1;
+			Elem* pt2r = pt2eint ? pt2man : pt2;
 			// Point#1 provided
-			Elem* ept1prov = pt1->GetNode("Prop:Provided");
+			Elem* ept1prov = pt1r->GetNode("Prop:Provided");
 			MProp* ppt1prov = ept1prov->GetObj(ppt1prov);
-			Elem* ept2req = pt2->GetNode("Prop:Required");
+			Elem* ept2req = pt2r->GetNode("Prop:Required");
 			MProp* ppt2req = ept2req->GetObj(ppt2req);
 			// Point#2 provided
-			Elem* ept2prov = pt2->GetNode("Prop:Provided");
+			Elem* ept2prov = pt2r->GetNode("Prop:Provided");
 			MProp* ppt2prov = ept2prov->GetObj(ppt2prov);
 			Elem* ept1req = pt1->GetNode("Prop:Required");
 			MProp* ppt1req = ept1req->GetObj(ppt1req);
-			if (ppt1prov->Value() == ppt2req->Value() && ppt2prov->Value() == ppt1req->Value()) {
-			    // Roles are compatible - connect
-			    edge->SetPoints(pt1v, pt2v);
-			    TBool res = edge->Connect();
-			    if (res) {
-				Logger()->WriteFormat("Incaps [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			if (pt1int && pt2eint || pt2int && pt1eint) {
+			    // Extending
+			    if (ppt1prov->Value() == ppt2prov->Value() && ppt2req->Value() == ppt1req->Value()) {
+				// Roles are compatible - connect
+				edge->SetPoints(pt1v, pt2v);
+				TBool res = edge->Connect();
+				if (res) {
+				    Logger()->WriteFormat("Incaps [%s] extended [%s-%s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+				}
+				else {
+				    Logger()->WriteFormat("ERR: Incaps [%s] extending [%s-%s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+				}
 			    }
 			    else {
-				Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+				Logger()->WriteFormat("ERR: Incaps [%s] extending [%s-%s] - incompatible roles", 
+					Name().c_str(), pt1u.c_str(), pt2u.c_str());
 			    }
 			}
-			else {
-			    Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - incompatible roles", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			else if (pt1caps && pt2caps) {
+			    // Connecting
+			    if (ppt1prov->Value() == ppt2req->Value() && ppt2prov->Value() == ppt1req->Value()) {
+				// Roles are compatible - connect
+				edge->SetPoints(pt1v, pt2v);
+				TBool res = edge->Connect();
+				if (res) {
+				    Logger()->WriteFormat("Incaps [%s] connected [%s-%s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+				}
+				else {
+				    Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s-%s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+				}
+			    }
+			    else {
+				Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s-%s] - incompatible roles", 
+					Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			    }
 			}
 		    }
 		    else {
-			Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - ends aren't vertexes", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s-%s] - ends aren't vertexes", Name().c_str(), pt1u.c_str(), pt2u.c_str());
 		    }
 		} // pt1man->Name() == "Capsule"
 		else {
