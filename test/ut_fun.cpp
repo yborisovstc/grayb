@@ -3,6 +3,7 @@
 #include <elem.h>
 #include <mvert.h>
 #include <mdata.h>
+#include <mprop.h>
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -74,6 +75,13 @@ void Ut_func::test_FuncSeq1()
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget != 0);
     TInt rdataval = rdataget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval == 36);
+    Elem* resdataprop = root->GetNode("Incaps:test/DataSInt:ResData/Prop:Value");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get rdata value property", resdataprop != 0);
+    MProp* rdmprop = resdataprop->GetObj(rdmprop);
+    const string& rdval = rdmprop->Value();
+    CPPUNIT_ASSERT_MESSAGE("Incorrect rdata prop value", rdval == "36");
+
+
 
     delete iEnv;
 }

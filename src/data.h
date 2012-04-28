@@ -11,8 +11,11 @@ class DataBase: public Elem, public MACompsObserver
 	DataBase(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
     protected:
 	virtual bool FromString(const string& aData) = 0; 
+	virtual bool ToString(string& aData) = 0; 
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
+    protected:
+	void UpdateProp();
 };
 
 // Data is representing some static model
@@ -34,6 +37,7 @@ class DInt: public DataBase, public MDInt, public MDIntGet, public MDIntSet
 	virtual void SetValue(TInt aData);
 	// From Data
 	virtual bool FromString(const string& aData); 
+	virtual bool ToString(string& aData); 
     private:
 	TInt mData;
 };

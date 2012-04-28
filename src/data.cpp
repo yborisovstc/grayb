@@ -27,6 +27,16 @@ TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
     return res;
 }
 
+void DataBase::UpdateProp()
+{
+    Elem* eprop = GetNode("../../Prop:Value");
+    if (eprop != NULL) {
+	string res;
+	ToString(res);
+	eprop->ChangeCont(res);
+    }
+}
+	
 
 DInt::DInt(const string& aName, Elem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv)
 {
@@ -72,6 +82,14 @@ bool DInt::FromString(const string& aData)
     sscanf(aData.c_str(), "%d", &mData);
 }
 
+bool DInt::ToString(string& aData)
+{
+    char buf[20];
+    memset(buf, 0, 20);
+    sprintf(buf, "%d", mData);
+    aData.append(buf);
+}
+
 TInt DInt::Value()
 {
     return mData;
@@ -81,6 +99,7 @@ void DInt::SetValue(TInt aData)
 {
     if (mData != aData) {
 	mData = aData;
+	UpdateProp();
     }
 }
 
