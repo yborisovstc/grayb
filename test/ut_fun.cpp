@@ -64,7 +64,7 @@ void Ut_func::test_FuncSeq1()
 
     Elem* foutp = root->GetNode("Incaps:test/FuncIncInt:Incr2/Elem:Capsule/ConnPoint:out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
-    MDIntGet* foutpget = foutp->GetObj(doutpget);
+    MDIntGet* foutpget = foutp->GetObj(foutpget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
     TInt fres = foutpget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result", fres == 36);
@@ -81,6 +81,28 @@ void Ut_func::test_FuncSeq1()
     const string& rdval = rdmprop->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect rdata prop value", rdval == "36");
 
+    // Checking the result update on update of input
+    // Mutate the input data first
+    Elem* dinp = root->GetNode("Incaps:test/DataSInt:DataS_Int_1");
+    ChromoNode nchange = dinp->Mutation().Root().AddChild(ENt_Cont);
+    nchange.SetAttr(ENa_MutNode, "Prop:Value");
+    nchange.SetAttr(ENa_MutVal, "57");
+    dinp->Mutate();
+    // Check the function output
+    Elem* foutp1 = root->GetNode("Incaps:test/FuncIncInt:Incr2/Elem:Capsule/ConnPoint:out");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get func out when inp data changed", foutp1 != 0);
+    MDIntGet* foutpget1 = foutp1->GetObj(foutpget1);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface when input data changed", foutpget1 != 0);
+    TInt fres1 = foutpget1->Value();
+    CPPUNIT_ASSERT_MESSAGE("Incorrect func result after input data change", fres1 == 59);
+    // Check the output data
+    Elem* resdataprop1 = root->GetNode("Incaps:test/DataSInt:ResData/Prop:Value");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
+    MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
+    const string& rdval1 = rdmprop1->Value();
+    CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "59");
+
+   
 
 
     delete iEnv;

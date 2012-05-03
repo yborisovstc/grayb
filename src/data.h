@@ -16,6 +16,7 @@ class DataBase: public Elem, public MACompsObserver
 	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
     protected:
 	void UpdateProp();
+	void NotifyUpdate();
 };
 
 // Data is representing some static model

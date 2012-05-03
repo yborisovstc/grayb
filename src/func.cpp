@@ -46,6 +46,20 @@ void FuncBase::OnDataChanged()
 {
 }
 
+void FuncBase::NotifyUpdate()
+{
+    Elem* eout = GetNode("../../Elem:Capsule/ConnPoint:out");
+    if (eout != NULL) {
+	MVert* mvout = eout->GetObj(mvout);
+	MVert* mpair = *(mvout->Pairs().begin());
+	if (mpair != NULL) {
+	    MDataObserver* obsr = mpair->EBase()->GetObj(obsr);
+	    if (obsr != NULL) {
+		obsr->OnDataChanged();
+	    }
+	}
+    }
+}
 
 // Agent base of Int function
 AFunInt::AFunInt(const string& aName, Elem* aMan, MEnv* aEnv): FuncBase(aName, aMan, aEnv), mData(0)
@@ -74,12 +88,27 @@ void AFunInt::SetRes(TInt aData)
     if (mData != aData) {
 	Logger()->WriteFormat("AFunInt [%s] updated [%d <- %d]", Name().c_str(), mData, aData);
 	mData = aData;
+	NotifyUpdate();
     }
 }
 
 TInt AFunInt::Value()
 {
     return mData;
+}
+
+MDIntGet* AFunInt::GetInp(const string& aInpName)
+{
+    MDIntGet* res = NULL;
+    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:" + aInpName);
+    if (einp != NULL) {
+	Vert* vert = einp->GetObj(vert);
+	MVert* pair = *(vert->Pairs().begin());
+	if (pair != NULL) {
+	    res = pair->EBase()->GetObj(res);
+	}
+    }
+    return res;
 }
 
 
@@ -121,6 +150,13 @@ TBool AIncInt::HandleIoChanged(Elem& aContext, Elem* aCp)
     return res;
 }
 
+void AIncInt::OnDataChanged()
+{
+    MDIntGet* mget = GetInp("inp");
+    TInt val = mget->Value();
+    SetRes(val + 1);
+}
+
 // Agent of Int function result
 AFunIntRes::AFunIntRes(const string& aName, Elem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
@@ -153,20 +189,20 @@ TBool AFunIntRes::HandleIoChanged(Elem& aContext, Elem* aCp)
 	    if (dget != NULL) {
 		TInt val = dget->Value();
 		SetRes(val);
-		UpdateOutp(aContext);
+		UpdateOutp();
 		res = ETrue;
 	    }
 	}
 	else if (aCp->Name() == "out") {
-	    UpdateOutp(aContext);
+	    UpdateOutp();
 	}
     }
     return res;
 }
 
-void AFunIntRes::UpdateOutp(Elem& aContext)
+void AFunIntRes::UpdateOutp()
 {
-    Elem* out = aContext.GetNode("Elem:Capsule/ConnPoint:out");
+    Elem* out = GetNode("../../Elem:Capsule/ConnPoint:out");
     if (out != NULL) {
 	Vert* vert = out->GetObj(vert);
 	MVert* pair = *(vert->Pairs().begin());
@@ -180,3 +216,10 @@ void AFunIntRes::UpdateOutp(Elem& aContext)
     }
 }
 
+void AFunIntRes::OnDataChanged()
+{
+    MDIntGet* mget = GetInp("inp");
+    TInt val = mget->Value();
+    SetRes(val);
+    UpdateOutp();
+}

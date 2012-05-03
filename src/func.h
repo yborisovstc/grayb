@@ -17,6 +17,7 @@ class FuncBase: public Elem, public MACompsObserver, public MDataObserver
 	virtual void OnDataChanged();
     protected:
 	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp) = 0;
+	void NotifyUpdate();
 };
 
 // Agent base of Int function
@@ -31,6 +32,7 @@ class AFunInt: public FuncBase, public MDIntGet
 	virtual TInt Value();
     protected:
 	void SetRes(TInt aData);
+	MDIntGet* GetInp(const string& aInpName);
     protected:
 	TInt mData;
 };
@@ -45,6 +47,8 @@ class AIncInt: public AFunInt
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From FuncBase
 	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
+	// From MDataObserver
+	virtual void OnDataChanged();
 };
 
 // Agent of Int function result
@@ -57,8 +61,10 @@ class AFunIntRes: public AFunInt
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From FuncBase
 	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
+	// From MDataObserver
+	virtual void OnDataChanged();
     protected:
-	void UpdateOutp(Elem& aContext);
+	void UpdateOutp();
 };
 
 #endif

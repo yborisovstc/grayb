@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "mprop.h"
+#include "mvert.h"
 #include "data.h"
 
 DataBase::DataBase(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
@@ -25,6 +26,19 @@ TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 	res = ETrue;
     }
     return res;
+}
+
+void DataBase::NotifyUpdate()
+{
+    Elem* eout = GetNode("../../Elem:Capsule/ConnPoint:out");
+    if (eout != NULL) {
+	MVert* mvout = eout->GetObj(mvout);
+	MVert* mpair = *(mvout->Pairs().begin());
+	if (mpair != NULL) {
+	    MDataObserver* obsr = mpair->EBase()->GetObj(obsr);
+	    obsr->OnDataChanged();
+	}
+    }
 }
 
 void DataBase::UpdateProp()
@@ -74,12 +88,16 @@ void DInt::Set(TInt aData)
 {
     if (mData != aData) {
 	mData = aData;
+	UpdateProp();
+	NotifyUpdate();
     }
 }
 
 bool DInt::FromString(const string& aData)
 {
-    sscanf(aData.c_str(), "%d", &mData);
+    TInt data;
+    sscanf(aData.c_str(), "%d", &data);
+    Set(data);
 }
 
 bool DInt::ToString(string& aData)
@@ -97,9 +115,6 @@ TInt DInt::Value()
 
 void DInt::SetValue(TInt aData)
 {
-    if (mData != aData) {
-	mData = aData;
-	UpdateProp();
-    }
+    Set(aData);
 }
 
