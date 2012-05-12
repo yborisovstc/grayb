@@ -38,6 +38,7 @@ class MElem
 	virtual MElem* GetMan() = 0;
 	virtual MElem* GetNode(const string& aUri) = 0;
 	virtual MElem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase) = 0;
+	virtual Elem* GetNodeLoc(const GUri::TElem& aElem) = 0;
 	virtual TBool ChangeCont(const string& aVal) = 0; 
 	virtual TBool AddNode(const ChromoNode& aSpec) = 0;
 };

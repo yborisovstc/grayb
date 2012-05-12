@@ -74,6 +74,7 @@ class GUri
 	static TBool iInit;
     public:
 	static const string KTypeElem;
+	static const string KTypeAny;
 };
 
 #endif

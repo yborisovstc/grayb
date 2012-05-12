@@ -51,6 +51,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	virtual Elem* GetMan();
 	virtual Elem* GetNode(const string& aUri);
 	virtual Elem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase);
+	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);
 	virtual TBool ChangeCont(const string& aVal); 
 	virtual TBool AddNode(const ChromoNode& aSpec);
 	const vector<Elem*>& Comps();

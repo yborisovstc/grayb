@@ -209,6 +209,11 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
 }
 */
 
+Elem* Elem::GetNodeLoc(const GUri::TElem& aElem)
+{
+    return GetComp(aElem.first, aElem.second);
+}
+
 Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
 {
     Elem* res = NULL;
@@ -222,7 +227,7 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
 	}
     }
     else {
-	res = GetComp(elem.first, elem.second);
+	res = GetNodeLoc(elem);
 	if (res != NULL && aPathBase + 1 != aUri.Elems().end()) {
 	    res = res->GetNode(aUri, ++aPathBase);
 	}
@@ -562,6 +567,7 @@ void Elem::OnCompDeleting(Elem& aComp)
     // Remove from comps
     map<TCkey, Elem*>::iterator it = iMComps.find(TCkey(aComp.Name(), aComp.EType()));
     __ASSERT(it != iMComps.end());
+    // TODO [YB] the item (name,*) isn't removed - to add
     it = iMComps.find(TCkey(aComp.Name(), aComp.EType()));
     iMComps.erase(it);
     for (vector<Elem*>::iterator oit = iComps.begin(); oit != iComps.end(); oit++) {

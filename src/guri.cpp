@@ -11,6 +11,7 @@ map<TNodeAttr, string> KNodeAttrsNames;
 map<string, TNodeAttr> KNodeAttrs;
 
 const string GUri::KTypeElem = "Elem";
+const string GUri::KTypeAny = "*";
 const string KTypeUnknown = "";
 
 TBool GUri::iInit = EFalse;
@@ -115,7 +116,7 @@ void GUri::Parse()
 	size_t name_beg = 0;
 	string type;
 	if (type_end == string::npos) {
-	    type = KTypeElem;
+	    type = KTypeAny;
 	}
 	else {
 	    type = elem.substr(0, type_end);
@@ -168,7 +169,7 @@ string GUri::GetUri(vector<TElem>::const_iterator aStart) const
     // Hier
     for (vector<GUri::TElem>::const_iterator it = aStart; it != iElems.end(); it++) {
 	GUri::TElem elem = *it;
-	if (elem.first.compare(KTypeElem) != 0) {
+	if (elem.first.compare(KTypeAny) != 0) {
 	    res.append(elem.first + ":");
 	}
 	res.append(elem.second);

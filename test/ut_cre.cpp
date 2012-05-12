@@ -159,5 +159,9 @@ void Ut_cre::test_CreData()
     TInt fres = foutpget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result", fres == 35);
 
+    // Check getting node via edge
+    Elem* fdoutp = root->GetNode("test/Incr/Capsule/inp/Edge:*/*");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get data out via func-data connection", fdoutp != 0);
+
     delete iEnv;
 }

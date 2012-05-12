@@ -17,12 +17,15 @@ class Edge: public Elem, public MEdge
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MEdge
+	virtual Base* EBase();
+	virtual const Base* EBase() const;
 	virtual TBool Connect();
 	virtual void Disconnect();
 	virtual MVert* Pair(const MVert* aPoint);
 	virtual MVert* Point1() const;
 	virtual MVert* Point2() const;
 	// From Elem
+	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);
     protected:
 	static void Init();
     protected:

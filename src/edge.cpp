@@ -30,7 +30,17 @@ Edge::Edge(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 
 void* Edge::DoGetObj(const char *aName, TBool aIncUpHier)
 {
-    return (strcmp(aName, Type()) == 0) ? this : NULL;
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName, MEdge::Type()) == 0) {
+	res = (MEdge*) this;
+    }
+    else {
+	res = Elem::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
 }
 
 MVert* Edge::Point1() const
@@ -53,15 +63,18 @@ void Edge::SetPoints(MVert* aPoint1, MVert* aPoint2)
 TBool Edge::Connect()
 {
     TBool res = EFalse;
-    res = iPoint1->Connect(iPoint2) && iPoint2->Connect(iPoint1);
+    //res = iPoint1->Connect(iPoint2) && iPoint2->Connect(iPoint1);
+    res = iPoint1->Connect(this) && iPoint2->Connect(this);
     return res;
 }
 
 void Edge::Disconnect()
 {
     if (iPoint1 != NULL && iPoint2 != NULL) {
-	iPoint1->Disconnect(iPoint2);
-	iPoint2->Disconnect(iPoint1);
+	//iPoint1->Disconnect(iPoint2);
+	//iPoint2->Disconnect(iPoint1);
+	iPoint1->Disconnect(this);
+	iPoint2->Disconnect(this);
 	iPoint1 = NULL;
 	iPoint2 = NULL;
     }
@@ -90,3 +103,41 @@ const string& Edge::Point2u()
     return pt->Value();
 }
 
+Base* Edge::EBase()
+{
+    return (Base*) this;
+}
+
+const Base* Edge::EBase() const
+{
+    return (const Base*) this;
+}
+
+Elem* Edge::GetNodeLoc(const GUri::TElem& aElem)
+{
+    Elem* res = NULL;
+    // Try hier first
+    res = Elem::GetNodeLoc(aElem);
+    // Check points then
+    Elem* p1 = iPoint1 != NULL ? iPoint1->EBase()->GetObj(p1) : NULL;
+    Elem* p2 = iPoint2 != NULL ? iPoint2->EBase()->GetObj(p1) : NULL;
+    Elem* pres = NULL;
+    if (p1 != NULL && (aElem.second == "*" || aElem.second != "*" && p1->Name() == aElem.second) && 
+	    (aElem.first == "*" || aElem.first != "*" && p1->EType() == aElem.first)) {
+	pres = p1;
+    }
+    else if (p2 != NULL && (aElem.second == "*" || aElem.second != "*" && p2->Name() == aElem.second) && 
+	    (aElem.first == "*" || aElem.first != "*" && p2->EType() == aElem.first)) {
+	pres = p1;
+    }
+    if (pres != NULL) {
+	if (res == NULL) {
+	    res = pres;
+	}
+	else {
+	    Logger()->WriteFormat("ERR: Vert [%s] URI elem [%s:%s] - resolution conflict", Name().c_str(), aElem.second.c_str(), aElem.first.c_str()); 
+	    res = NULL;
+	}
+    }
+    return res;
+}
