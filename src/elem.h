@@ -20,11 +20,75 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	typedef pair<string, string> TCkey;
 	typedef pair<TCkey, Elem*> TCelem;
 	typedef multimap<TCkey, Elem*> TMElem;
+
+    public:
+	class IterImplBase
+    {
+	friend class Elem;
+	public:
+	static const char* Type() { return "IterImplBase";};
+	IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd = EFalse);
+	IterImplBase(Elem& aElem);
+	IterImplBase(const IterImplBase& aImpl);
+	virtual void Set(const IterImplBase& aImpl);
+	virtual void PostIncr();
+	virtual TBool IsEqual(const IterImplBase& aImpl) const;
+	virtual TBool IsCompatible(const IterImplBase& aImpl) const;
+	virtual Elem*  GetElem();
+	virtual void* DoGetObj(const char *aName);
+	virtual const void* DoGetObj(const char *aName) const;
+	public:
+	Elem& iElem;
+	GUri::TElem iId;
+	TMElem::iterator iCIter; // Comps iter
+	pair<TMElem::iterator, TMElem::iterator> iCIterRange;
+    };
+
+	class Iterator: public iterator<input_iterator_tag, Elem*>
+    {
+	friend class Elem;
+	public:
+	Iterator(): iImpl(NULL) {};
+	Iterator(IterImplBase* aImpl): iImpl(aImpl) {};
+	~Iterator() { delete iImpl;};
+	Iterator(const Iterator& aIt) { iImpl = new IterImplBase(*(aIt.iImpl));};
+	Iterator& operator=(const Iterator& aIt) { iImpl->Set(*(aIt.iImpl)); return *this;};
+	Iterator& operator++() { iImpl->PostIncr(); return *this;};
+	Iterator operator++(int) { Iterator tmp(*this); operator++(); return tmp; };
+	TBool operator==(const Iterator& aIt) { return iImpl->IsEqual((*aIt.iImpl));};
+	TBool operator!=(const Iterator& aIt) { return !operator==(aIt);};
+	Elem*  operator*() { return iImpl->GetElem();};
+	public:
+	IterImplBase* iImpl;
+    };
+
+	/*
+	class Iterator: public iterator<input_iterator_tag, Elem*>
+    {
+	friend class Elem;
+	public:
+	Iterator(Elem& aElem, GUri::TElem aId);
+	Iterator(const Iterator& aIt);
+	virtual Iterator& operator=(const Iterator& aIt);
+	virtual Iterator& operator++();
+	Iterator operator++(int) { Iterator tmp(*this); operator++(); return tmp; };
+	virtual TBool operator==(const Iterator& aIt);
+	TBool operator!=(const Iterator& aIt) { return !operator==(aIt);};
+	virtual Elem*  operator*();
+	virtual Iterator Begin();
+	virtual Iterator End();
+	public:
+	Elem& iElem;
+	GUri::TElem iId;
+	TMElem::iterator iCIter; // Comps iter
+	pair<TMElem::iterator, TMElem::iterator> iCIterRange;
+    };
+    */
+
     public:
 	static const char* Type() { return "Elem";};
 	Elem(const string &aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	Elem* GetNode(const GUri& aUri);
-	GUri GetUri(const Elem* aElem) const;
 	virtual ~Elem();
 	void SetEType(const string& aEType);
 	void SetParent(const string& aParent);
@@ -43,6 +107,10 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	Elem* GetCompOwning(const string& aParent, Elem* aElem);
 	Elem* GetCompOwning(Elem* aElem);
 	TBool IsComp(Elem* aElem);
+	// Gets URI from hier top node aTop
+	void GetUri(Elem* aTop, GUri& aUri);
+	virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
+	virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MElem

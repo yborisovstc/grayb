@@ -3,12 +3,131 @@
 #include "mprov.h"
 #include "mprop.h"
 
+// Points iterator
+Edge::IterImplEdge::IterImplEdge(Elem& aElem, GUri::TElem aId, TBool aToEnd): IterImplBase(aElem, aId, aToEnd)
+{
+    Edge* edge = iElem.GetObj(edge);
+    __ASSERT(edge != NULL);
+    iPIter = EEnd;
+    if (!aToEnd) {
+	MVert* mpt1 = edge->iPoint1;
+	if (mpt1 != NULL) {
+	    Elem* pt1 = mpt1->EBase()->GetObj(pt1);
+	    if ((iId.second == "*" || pt1->Name() == iId.second) && (iId.first == "*" || pt1->EType() == iId.first)) {
+		iPIter = EP1;
+	    }
+	}
+	if (iPIter == EEnd) {
+	    MVert* mpt2 = edge->iPoint2;
+	    if (mpt2 != NULL) {
+		Elem* pt2 = mpt2->EBase()->GetObj(pt2);
+		if ((iId.second == "*" || pt2->Name() == iId.second) && (iId.first == "*" || pt2->EType() == iId.first)) {
+		    iPIter = EP2;
+		}
+	    }
+	}
+    }
+};
+
+Edge::IterImplEdge::IterImplEdge(const IterImplEdge& aIt): IterImplBase(aIt),
+    iPIter(aIt.iPIter)
+{
+};
+
+void Edge::IterImplEdge::Set(const IterImplBase& aImpl)
+{
+    const IterImplEdge* src = static_cast<const IterImplEdge*>(aImpl.DoGetObj(Type()));
+    __ASSERT(src != NULL);
+    iPIter = src->iPIter; 
+}
+
+void Edge::IterImplEdge::PostIncr()
+{
+    if (iCIter != iCIterRange.second) {
+	IterImplBase::PostIncr();
+    }
+    else {
+	Edge* edge = iElem.GetObj(edge);
+	if (iPIter == EP1) {
+	    iPIter = EEnd;
+	    MVert* mpt2 = edge->iPoint2;
+	    if (mpt2 != NULL) {
+		Elem* pt2 = mpt2->EBase()->GetObj(pt2);
+		if ((iId.second == "*" || pt2->Name() == iId.second) && (iId.first == "*" || pt2->EType() == iId.first)) {
+		    iPIter = EP2;
+		}
+	    }
+	}
+	if (iPIter == EP2) {
+	    iPIter = EEnd;
+	}
+    }
+}
+
+TBool Edge::IterImplEdge::IsCompatible(const IterImplBase& aImpl) const
+{
+    const IterImplEdge* src = static_cast<const IterImplEdge*>(aImpl.DoGetObj(Type()));
+    return src != NULL;
+}
+
+TBool Edge::IterImplEdge::IsEqual(const IterImplBase& aImpl) const
+{
+    TBool res = IterImplBase::IsEqual(aImpl);
+    if (res) {
+	const IterImplEdge* src = static_cast<const IterImplEdge*>(aImpl.DoGetObj(Type()));
+	__ASSERT(src != NULL);
+	res = iPIter == src->iPIter;
+    }
+    return res;
+}
+
+void *Edge::IterImplEdge::DoGetObj(const char *aName)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    return res;
+}
+
+const void *Edge::IterImplEdge::DoGetObj(const char *aName) const
+{
+    const void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    return res;
+}
+
+Elem*  Edge::IterImplEdge::GetElem()
+{
+    Elem* res = NULL;
+    if (iCIter != iCIterRange.second) {
+	res = IterImplBase::GetElem();
+    }
+    else {
+	Edge* edge = iElem.GetObj(edge);
+	MVert* mpt = NULL;
+	if (iPIter == EP1) {
+	    mpt = edge->iPoint1;
+	}
+	else if (iPIter == EP2) {
+	    mpt = edge->iPoint2;
+	}
+	if (mpt != NULL) {
+	    res = mpt->EBase()->GetObj(res);
+	}
+    }
+    return res;
+}
+
+
 bool Edge::iInit = false;
 
 void Edge::Init()
 {
     Elem::Init();
-//    iCompsTypes.insert("Prop");
+    //    iCompsTypes.insert("Prop");
     iInit = true;
 }
 
@@ -141,3 +260,15 @@ Elem* Edge::GetNodeLoc(const GUri::TElem& aElem)
     }
     return res;
 }
+
+Elem::Iterator Edge::NodesLoc_Begin(const GUri::TElem& aId)
+{
+    return Iterator(new IterImplEdge(*this, aId));
+}
+
+Elem::Iterator Edge::NodesLoc_End(const GUri::TElem& aId)
+{
+    return Iterator(new IterImplEdge(*this, aId, ETrue));
+}
+
+

@@ -160,7 +160,11 @@ void Ut_cre::test_CreData()
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result", fres == 35);
 
     // Check getting node via edge
-    Elem* fdoutp = root->GetNode("test/Incr/Capsule/inp/Edge:*/*");
+    Elem* fdoutp = root->GetNode("test/Incr/Capsule/inp/Edge:*/ConnPoint:*");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get data out via func-data connection", fdoutp != 0);
+
+    // Check serching node, one level search
+    Elem* srdoutp = root->GetNode("test/Incr/*/inp");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out via func-data connection", fdoutp != 0);
 
     delete iEnv;

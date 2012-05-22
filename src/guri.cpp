@@ -14,6 +14,11 @@ const string GUri::KTypeElem = "Elem";
 const string GUri::KTypeAny = "*";
 const string KTypeUnknown = "";
 
+const string KSchemeSep = ":";
+const string KBaseSep = "#";
+const string KParentSep = ":";
+const string KElemSep = "/";
+
 TBool GUri::iInit = EFalse;
 
 const string& GUri::NodeAttrName(TNodeAttr aAttr)
@@ -95,6 +100,7 @@ void GUri::Parse()
     size_t base_end = iUri.find_first_of('#', 0);
     if (base_end != string::npos) {
 	// Base part is presented
+	iBase = iUri.substr(0, base_end);
 	frag = iUri.substr(0, base_end + 1);
 	size_t scheme_end = iUri.find_first_of(':', 0);
 	if (scheme_end != string::npos) {
@@ -111,7 +117,7 @@ void GUri::Parse()
     size_t elem_end = hier.find_first_of('/', 0);
     string elem = hier.substr(0, elem_end);
     // Hier
-    while (!elem.empty()) {
+    while (!(elem.empty() && elem_end == string::npos)) {
 	size_t type_end = elem.find_first_of(':');
 	size_t name_beg = 0;
 	string type;
@@ -223,5 +229,21 @@ void GUri::PrependElem(const string& aType, const string& aName)
 void GUri::AppendQueryElem(TQueryOpr aOpr, TNodeAttr aAttr, const string& aValue)
 {
     iQueryElems.push_back(TQueryElem(aOpr, TQueryCnd(aAttr, aValue)));
+}
+
+void GUri::ToString(string& aRes)
+{
+    if (!iScheme.empty()) {
+	aRes.append(iScheme + KSchemeSep);
+    }
+    if (!iBase.empty()) {
+	aRes.append(iBase + KBaseSep);
+    }
+    for (vector<GUri::TElem>::const_iterator it = iElems.begin(); it != iElems.end(); it++) {
+	aRes.append(it->first + KParentSep + it->second);
+	if (it + 1 != iElems.end()) {
+	    aRes.append(KElemSep);
+	}
+    }
 }
 

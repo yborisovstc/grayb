@@ -8,6 +8,30 @@
 class Edge: public Elem, public MEdge
 {
     public:
+	class IterImplEdge: public IterImplBase
+	{
+	    friend class Elem;
+	    public:
+	    enum TIter {
+		EP1, EP2, EEnd
+	    };
+	    static const char* Type() { return "IterImplEdge";};
+	    IterImplEdge(Elem& aElem, GUri::TElem aId, TBool aToEnd = EFalse);
+	    IterImplEdge(Elem& aElem);
+	    IterImplEdge(const IterImplEdge& aImpl);
+	    virtual void Set(const IterImplBase& aImpl);
+	    virtual void PostIncr();
+	    virtual TBool IsEqual(const IterImplBase& aImpl) const;
+	    virtual TBool IsCompatible(const IterImplBase& aImpl) const;
+	    virtual Elem*  GetElem();
+	    virtual void* DoGetObj(const char *aName);
+	    virtual const void* DoGetObj(const char *aName) const;
+	    public:
+	    TIter iPIter;
+	};
+
+
+    public:
 	static const char* Type() { return "Edge";};
 	Edge(const string& aName, Elem* aMan, MEnv* aEnv);
     public:
@@ -25,6 +49,8 @@ class Edge: public Elem, public MEdge
 	virtual MVert* Point1() const;
 	virtual MVert* Point2() const;
 	// From Elem
+	virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
+	virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
 	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);
     protected:
 	static void Init();

@@ -22,11 +22,11 @@
 	    <cont node="Prop:Value" val="34"/> 
 	</node>
 
-	<node id="Incr" parent="../funcmod/FuncIncInt"/>
+	<node id="Incr" parent="../FuncComps:funcmod/Incaps:FuncIncInt"/>
 
 	<node id="Incr2" parent="../FuncComps:funcmod/Incaps:FuncIncInt"/>
 
-	<node id="Result" parent="../*:funcmod/*:FuncIntRes"/>
+	<node id="Result" parent="../FuncComps:funcmod/Incaps:FuncIntRes"/>
 
 	<node id="ResData" parent="../DataComps:datamod/DataS:DataSInt"/>
 

@@ -8,6 +8,122 @@
 set<string> Elem::iCompsTypes;
 bool Elem::iInit = false;
 
+Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd): iElem(aElem), iId(aId)
+{
+    iCIterRange = iElem.iMComps.equal_range(Elem::TCkey(iId.second, iId.first));
+    iCIter = aToEnd ? iCIterRange.second : iCIterRange.first;
+};
+
+Elem::IterImplBase::IterImplBase(const IterImplBase& aIt): 
+    iElem(aIt.iElem), iId(aIt.iId), iCIterRange(aIt.iCIterRange), iCIter(aIt.iCIter) 
+{
+};
+
+void Elem::IterImplBase::Set(const IterImplBase& aImpl)
+{
+    iElem = aImpl.iElem;
+    iId = aImpl.iId;
+    iCIterRange = aImpl.iCIterRange;
+    iCIter = aImpl.iCIter; 
+}
+
+void Elem::IterImplBase::PostIncr()
+{
+    iCIter++;
+}
+
+TBool Elem::IterImplBase::IsCompatible(const IterImplBase& aImpl) const
+{
+    return ETrue;
+}
+
+TBool Elem::IterImplBase::IsEqual(const IterImplBase& aImpl) const
+{
+    TBool res = EFalse;
+    if (IsCompatible(aImpl) && aImpl.IsCompatible(*this)) {
+	res = &iElem == &(aImpl.iElem) && iId == aImpl.iId && iCIter == aImpl.iCIter;
+    }
+    return res;
+}
+
+void *Elem::IterImplBase::DoGetObj(const char *aName)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    return res;
+}
+
+const void *Elem::IterImplBase::DoGetObj(const char *aName) const
+{
+    const void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    return res;
+}
+
+Elem*  Elem::IterImplBase::GetElem()
+{
+    Elem* res = NULL;
+    if (iCIter != iCIterRange.second) {
+	res = iCIter->second;
+    }
+    return res;
+}
+
+/*
+// Local nodes iterator
+Elem::Iterator::Iterator(Elem& aElem, GUri::TElem aId): iElem(aElem), iId(aId)
+{
+    iCIterRange = iElem.iMComps.equal_range(Elem::TCkey(iId.second, iId.first));
+    iCIter = iCIterRange.first;
+};
+
+Elem::Iterator::Iterator(const Iterator& aIt): iElem(aIt.iElem), iCIter(aIt.iCIter) 
+{
+};
+
+Elem::Iterator& Elem::Iterator::operator=(const Elem::Iterator& aIt) 
+{ 
+    iElem = aIt.iElem; 
+    iId = aIt.iId;
+    iCIterRange = aIt.iCIterRange;
+    iCIter = aIt.iCIter; 
+    return *this; 
+};
+
+Elem::Iterator& Elem::Iterator::operator++()
+{
+    iCIter++;
+    return *this;
+}
+
+Elem::Iterator Elem::Iterator::Begin()
+{
+    return Iterator(iElem, iId);
+}
+
+Elem::Iterator Elem::Iterator::End()
+{
+    Iterator res = Iterator(iElem, iId);
+    res.iCIter = iCIterRange.second;
+    return res;
+}
+
+TBool Elem::Iterator::operator==(const Iterator& aIt)
+{
+    TBool res = &iElem == &(aIt.iElem) && iId == aIt.iId && iCIter == aIt.iCIter;
+}
+
+Elem*  Elem::Iterator::operator*()
+{
+    return iCIter->second;
+}
+*/
+
+// Element
 void Elem::Init()
 {
     iCompsTypes.insert("Elem");
@@ -213,7 +329,24 @@ Elem* Elem::GetNodeLoc(const GUri::TElem& aElem)
 {
     return GetComp(aElem.first, aElem.second);
 }
+/*
+Elem::Iterator Elem::GetNodesLoc(const GUri::TElem& aId)
+{
+    return Iterator(*this, aId);
+}
+*/
 
+Elem::Iterator Elem::NodesLoc_Begin(const GUri::TElem& aId)
+{
+    return Iterator(new IterImplBase(*this, aId));
+}
+
+Elem::Iterator Elem::NodesLoc_End(const GUri::TElem& aId)
+{
+    return Iterator(new IterImplBase(*this, aId, ETrue));
+}
+
+#if 0
 Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
 {
     Elem* res = NULL;
@@ -227,9 +360,81 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
 	}
     }
     else {
+	/*
 	res = GetNodeLoc(elem);
 	if (res != NULL && aPathBase + 1 != aUri.Elems().end()) {
 	    res = res->GetNode(aUri, ++aPathBase);
+	}
+	*/
+	Iterator it = GetNodesLoc(elem);
+	if (it != it.End()) {
+	    if (aPathBase + 1 != aUri.Elems().end()) {
+		for (; it != it.End(); it++) {
+		    Elem* node = *it;
+		    if (res == NULL) {
+			res = node->GetNode(aUri, ++aPathBase);
+		    }
+		    else {
+			res = NULL;
+			Logger()->WriteFormat("ERR: [%s]: getting node [%s] - mutliple choice", Name().c_str(), aUri.GetUri().c_str());
+			break;
+		    }
+		}
+	    }
+	    else {
+		res = *it;
+		if (++it != it.End()) {
+		    res = NULL;
+		    Logger()->WriteFormat("ERR: [%s]: getting node [%s] - mutliple choice", Name().c_str(), aUri.GetUri().c_str());
+		}
+	    }
+	}
+    }
+    return res;
+}
+#endif
+
+Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
+{
+    Elem* res = NULL;
+    GUri::const_elem_iter uripos = aPathBase;
+    GUri::TElem elem = *uripos;
+    if (elem.second == "..") {
+	if (iMan != NULL) {
+	    res = iMan->GetNode(aUri, ++aPathBase);
+	}
+	else {
+	    Logger()->WriteFormat("[%s]: getting node [%s] - path to top of root", Name().c_str(), aUri.GetUri().c_str());
+	}
+    }
+    else {
+	Iterator it = NodesLoc_Begin(elem);
+	Iterator itend = NodesLoc_End(elem);
+	if (it != itend) {
+	    uripos++;
+	    if (uripos != aUri.Elems().end()) {
+		for (; it != itend; it++) {
+		    Elem* node = *it;
+		    Elem* res1 = node->GetNode(aUri, uripos);
+		    if (res1 != NULL) {
+			if (res == NULL) {
+			    res = res1;
+			}
+			else {
+			    res = NULL;
+			    Logger()->WriteFormat("ERR: [%s]: getting node [%s] - multiple choice", Name().c_str(), aUri.GetUri().c_str());
+			    break;
+			}
+		    }
+		}
+	    }
+	    else {
+		res = *it;
+		if (++it != itend) {
+		    res = NULL;
+		    Logger()->WriteFormat("ERR: [%s]: getting node [%s] - multiple choice", Name().c_str(), aUri.GetUri().c_str());
+		}
+	    }
 	}
     }
     return res;
@@ -545,6 +750,7 @@ TBool Elem::AppendComp(Elem* aComp)
 	iComps.push_back(aComp);
 	iMComps.insert(pair<TCkey, Elem*>(TCkey(aComp->Name(), aComp->EType()), aComp));
 	iMComps.insert(pair<TCkey, Elem*>(TCkey(aComp->Name(), "*"), aComp));
+	iMComps.insert(pair<TCkey, Elem*>(TCkey("*", "*"), aComp));
     }
     else {
 	Logger()->WriteFormat("ERROR: [%s] - Adding elem [%s] - name already exists", Name().c_str(), aComp->Name().c_str());
@@ -623,11 +829,6 @@ void Elem::DoOnCompChanged(Elem& aComp)
     }
 }
 
-GUri Elem::GetUri(const Elem* aElem) const
-{
-    return GUri();
-}
-
 Elem* Elem::GetCompOwning(const string& aParent, Elem* aElem)
 {
     Elem* res = NULL;
@@ -663,6 +864,16 @@ TBool Elem::IsComp(Elem* aElem)
     return man == this;
 }
 
+void Elem::GetUri(Elem* aTop, GUri& aUri)
+{
+    aUri.PrependElem(EType(), Name());
+    if (iMan != aTop) {
+	iMan->GetUri(aTop, aUri);
+    }
+}
+
+
+
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetEType(Type());
@@ -673,3 +884,4 @@ void *Agent::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
+
