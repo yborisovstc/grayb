@@ -864,11 +864,18 @@ TBool Elem::IsComp(Elem* aElem)
     return man == this;
 }
 
-void Elem::GetUri(Elem* aTop, GUri& aUri)
+void Elem::GetUri(GUri& aUri, Elem* aTop)
 {
-    aUri.PrependElem(EType(), Name());
-    if (iMan != aTop) {
-	iMan->GetUri(aTop, aUri);
+    if (aTop != this) {
+	aUri.PrependElem(EType(), Name());
+	if (iMan != NULL) {
+	    if (iMan != aTop) {
+		iMan->GetUri(aUri, aTop);
+	    }
+	}
+	else {
+	    aUri.PrependElem("", "");
+	}
     }
 }
 

@@ -109,10 +109,16 @@ void Ut_uri::test_UriBase()
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out (asterisk URI)", resdata1 != 0);
     // Checking getting uri basing on hier mgr
     GUri rduri;
-    resdata1->GetUri(root, rduri);
+    resdata1->GetUri(rduri, root);
     string rduriss;
     rduri.ToString(rduriss);
     CPPUNIT_ASSERT_MESSAGE("Fail to get URI from hier", rduriss == "Incaps:test/DataSInt:ResData/Elem:Capsule/ConnPoint:out");
+    // Checking getting absolute uri
+    GUri rduria;
+    resdata1->GetUri(rduria);
+    string rduriass;
+    rduria.ToString(rduriass);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get absolute URI", rduriass == "/Elem:testroot/Incaps:test/DataSInt:ResData/Elem:Capsule/ConnPoint:out");
 
     delete iEnv;
 }

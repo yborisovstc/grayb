@@ -240,7 +240,9 @@ void GUri::ToString(string& aRes)
 	aRes.append(iBase + KBaseSep);
     }
     for (vector<GUri::TElem>::const_iterator it = iElems.begin(); it != iElems.end(); it++) {
-	aRes.append(it->first + KParentSep + it->second);
+	if (!it->first.empty() || !it->second.empty()) {
+	    aRes.append(it->first + KParentSep + it->second);
+	}
 	if (it + 1 != iElems.end()) {
 	    aRes.append(KElemSep);
 	}

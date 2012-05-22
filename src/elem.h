@@ -107,8 +107,8 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	Elem* GetCompOwning(const string& aParent, Elem* aElem);
 	Elem* GetCompOwning(Elem* aElem);
 	TBool IsComp(Elem* aElem);
-	// Gets URI from hier top node aTop
-	void GetUri(Elem* aTop, GUri& aUri);
+	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
+	void GetUri(GUri& aUri, Elem* aTop = NULL);
 	virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
 	virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
 	// From Base
