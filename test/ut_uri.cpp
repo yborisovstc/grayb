@@ -119,6 +119,9 @@ void Ut_uri::test_UriBase()
     string rduriass;
     rduria.ToString(rduriass);
     CPPUNIT_ASSERT_MESSAGE("Fail to get absolute URI", rduriass == "/Elem:testroot/Incaps:test/DataSInt:ResData/Elem:Capsule/ConnPoint:out");
+    // Checking of getting node by absolute uri
+    Elem* nodeau = resdata1->GetNode(rduriass);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get node by absolute URI", nodeau == resdata1);
 
     delete iEnv;
 }

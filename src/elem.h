@@ -106,6 +106,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	// Gets the comp with given type and owning given element
 	Elem* GetCompOwning(const string& aParent, Elem* aElem);
 	Elem* GetCompOwning(Elem* aElem);
+	Elem* GetRoot();
 	TBool IsComp(Elem* aElem);
 	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
 	void GetUri(GUri& aUri, Elem* aTop = NULL);

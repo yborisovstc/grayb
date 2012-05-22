@@ -298,8 +298,17 @@ Elem* Elem::GetComp(TInt aInd)
 
 Elem* Elem::GetNode(const GUri& aUri) 
 { 
+    Elem* res = NULL;
     GUri::const_elem_iter it = aUri.Elems().begin(); 
-    return GetNode(aUri, it); 
+    if (it->second.empty()) {
+	Elem* root = GetRoot();
+	it++;
+	res = root->GetNode(aUri, ++it);
+    }
+    else {
+	res = GetNode(aUri, it); 
+    }
+    return res;
 }
 
 /*
@@ -879,6 +888,14 @@ void Elem::GetUri(GUri& aUri, Elem* aTop)
     }
 }
 
+Elem* Elem::GetRoot()
+{
+    Elem* res = this;
+    if (iMan != NULL) {
+	res = iMan->GetRoot();
+    }
+    return res;
+}
 
 
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
