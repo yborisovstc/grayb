@@ -110,18 +110,25 @@ void Ut_uri::test_UriBase()
     // Checking getting uri basing on hier mgr
     GUri rduri;
     resdata1->GetUri(rduri, root);
-    string rduriss;
-    rduri.ToString(rduriss);
+    string rduriss = rduri.GetUri();
     CPPUNIT_ASSERT_MESSAGE("Fail to get URI from hier", rduriss == "Incaps:test/DataSInt:ResData/Elem:Capsule/ConnPoint:out");
     // Checking getting absolute uri
     GUri rduria;
     resdata1->GetUri(rduria);
-    string rduriass;
-    rduria.ToString(rduriass);
+    string rduriass= rduria.GetUri();
     CPPUNIT_ASSERT_MESSAGE("Fail to get absolute URI", rduriass == "/Elem:testroot/Incaps:test/DataSInt:ResData/Elem:Capsule/ConnPoint:out");
     // Checking of getting node by absolute uri
     Elem* nodeau = resdata1->GetNode(rduriass);
     CPPUNIT_ASSERT_MESSAGE("Fail to get node by absolute URI", nodeau == resdata1);
+    // Checking creating module with absolute uri
+    ChromoNode madd = root->Mutation().Root().AddChild(ENt_Node);
+    madd.SetAttr(ENa_Id, "new_elem1");
+    madd.SetAttr(ENa_Parent, "file:../modules/func.xml#/Elem:FuncComps");
+    root->Mutate();
+    // Check the element added
+    Elem* eadded = root->GetNode("FuncComps:new_elem1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem added", eadded != 0);
+ 
 
     delete iEnv;
 }

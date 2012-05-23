@@ -175,7 +175,7 @@ string GUri::GetUri(vector<TElem>::const_iterator aStart) const
     // Hier
     for (vector<GUri::TElem>::const_iterator it = aStart; it != iElems.end(); it++) {
 	GUri::TElem elem = *it;
-	if (elem.first.compare(KTypeAny) != 0) {
+	if (!elem.first.empty() && elem.first != KTypeAny) {
 	    res.append(elem.first + ":");
 	}
 	res.append(elem.second);
@@ -231,6 +231,7 @@ void GUri::AppendQueryElem(TQueryOpr aOpr, TNodeAttr aAttr, const string& aValue
     iQueryElems.push_back(TQueryElem(aOpr, TQueryCnd(aAttr, aValue)));
 }
 
+/*
 void GUri::ToString(string& aRes)
 {
     if (!iScheme.empty()) {
@@ -240,7 +241,7 @@ void GUri::ToString(string& aRes)
 	aRes.append(iBase + KBaseSep);
     }
     for (vector<GUri::TElem>::const_iterator it = iElems.begin(); it != iElems.end(); it++) {
-	if (!it->first.empty() || !it->second.empty()) {
+	if (!it->second.empty()) {
 	    aRes.append(it->first + KParentSep + it->second);
 	}
 	if (it + 1 != iElems.end()) {
@@ -248,4 +249,4 @@ void GUri::ToString(string& aRes)
 	}
     }
 }
-
+*/

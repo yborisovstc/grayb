@@ -61,9 +61,13 @@ include_HEADERS = \
 		  plat.h \
 		  base.h \
 		  chromo.h \
+		  melem.h \
 		  mchromo.h \
 		  medge.h \
 		  mlog.h \
+		  mmuta.h \
+		  mprop.h \
+		  mvert.h \
 		  log.h \
 		  menv.h \
 		  env.h \
@@ -71,7 +75,12 @@ include_HEADERS = \
 		  mprov.h \
 		  prov.h \
 		  mgraph.h \
-		  mvert.h \
+		  elem.h \
+		  syst.h \
+		  prop.h \
+		  vert.h \
+		  edge.h \
+		  incaps.h \
 		  graph.h 
 
 

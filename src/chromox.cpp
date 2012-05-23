@@ -95,6 +95,14 @@ void* ChromoMdlX::Set(const string& aUri)
     Chromo::GetFrag(aUri, desuri);
     sRoot = (xmlNodePtr) GetFirstChild((void *) iDoc, ENt_Node);
     if (!desuri.empty()) {
+	// Transform into rel uri if abs
+	// TODO [YB] - to consider if it would be better to update Find to accept the abs uri
+	GUri desurib = GUri(desuri);
+	GUri::const_elem_iter it = desurib.Elems().begin();
+	if (it->second.empty()) {
+	    it++;
+	}
+	desuri = desurib.GetUri(it);
 	res = (xmlNodePtr) Find(sRoot, desuri); 
     }
     else {

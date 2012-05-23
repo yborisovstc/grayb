@@ -62,7 +62,7 @@ class GUri
 	static const string& NodeTypeName(TNodeType aType);
 	static TNodeAttr NodeAttr(const string& aAttrName);
 	static TNodeType NodeType(const string& aTypeName);
-	void ToString(string& aRes);
+	//void ToString(string& aRes);
     protected:
 	static void Construct();
     private:
