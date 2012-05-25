@@ -60,6 +60,12 @@ void Ut_mut::test_Add()
     // Check the element added
     Elem* eadded = root->GetNode("elem5:new_elem1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get elem added", eadded != 0);
+    // Delete element
+    ChromoNode mdel = root->Mutation().Root().AddChild(ENt_Rm);
+    mdel.SetAttr(ENa_MutNode, "new_elem1");
+    root->Mutate();
+    Elem* erem = root->GetNode("elem5:new_elem1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to remove elem", erem == 0);
  
     delete iEnv;
 }

@@ -123,6 +123,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);
 	virtual TBool ChangeCont(const string& aVal); 
 	virtual TBool AddNode(const ChromoNode& aSpec);
+	virtual TBool RmNode(const GUri& aUri);
 	const vector<Elem*>& Comps();
 	// From MCompsObserver
 	virtual void OnCompDeleting(Elem& aComp);

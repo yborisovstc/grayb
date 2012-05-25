@@ -542,12 +542,12 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 	    else if (rnotype == ENt_Cont) {
 		DoMutChangeCont(rno);
 	    }
+	    else if (rnotype == ENt_Rm) {
+		string snode = rno.Attr(ENa_MutNode);
+		GUri unode(snode);
+		RmNode(unode);
+	    }
 	    /*
-	       else if (rnotype == ENt_Rm) {
-	       string snode = rno.Attr(ENa_MutNode);
-	       DesUri unode(snode);
-	       RmNode(unode);
-	       }
 	       else if (rnotype == ENt_Change) {
 	       ChangeAttr_v2(rno);
 	       }
@@ -897,6 +897,16 @@ Elem* Elem::GetRoot()
     return res;
 }
 
+TBool Elem::RmNode(const GUri& aUri)
+{
+    Elem* node = GetNode(aUri);
+    if (node != NULL) {
+	delete node;
+    }
+    else {
+	Logger()->WriteFormat("ERR: [%s] - Removing elem [%s] - name already exists", Name().c_str(), aUri.GetUri().c_str());
+    }
+}
 
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
