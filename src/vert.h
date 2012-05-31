@@ -53,6 +53,8 @@ class Vert: public Elem, public MVert
 	virtual void OnCompAdding(Elem& aComp);
 	virtual void DoOnCompChanged(Elem& aComp);
     protected:
+	void RemoveFromMap(MEdge* aEdge, const TCkey& aKey);
+    protected:
 	set<MVert*> iPairs;
 	multimap<TCkey, MEdge*> iMEdges;
 };

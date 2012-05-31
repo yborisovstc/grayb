@@ -780,11 +780,29 @@ void Elem::OnCompDeleting(Elem& aComp)
     // Deattach the comp's chromo
     iChromo->Root().RmChild(aComp.Chromos().Root(), ETrue);
     // Remove from comps
-    map<TCkey, Elem*>::iterator it = iMComps.find(TCkey(aComp.Name(), aComp.EType()));
+    TMElem::iterator it = iMComps.find(TCkey(aComp.Name(), aComp.EType()));
     __ASSERT(it != iMComps.end());
-    // TODO [YB] the item (name,*) isn't removed - to add
-    it = iMComps.find(TCkey(aComp.Name(), aComp.EType()));
+    Elem* targ = it->second;
     iMComps.erase(it);
+    TMElem::iterator lb = iMComps.lower_bound(TCkey(aComp.Name(), "*"));
+    TMElem::iterator ub = iMComps.upper_bound(TCkey(aComp.Name(), "*"));
+    TBool found = false;
+    for (it = lb, found = false; it != ub && !found; it++) {
+	if (it->second == targ) {
+	    iMComps.erase(it);
+	    found = true;
+	}
+    }
+    __ASSERT(found);
+    lb = iMComps.lower_bound(TCkey("*", "*"));
+    ub = iMComps.upper_bound(TCkey("*", "*"));
+    for (it = lb, found = false; it != ub && !found; it++) {
+	if (it->second == targ) {
+	    iMComps.erase(it);
+	    found = true;
+	}
+    }
+    __ASSERT(found);
     for (vector<Elem*>::iterator oit = iComps.begin(); oit != iComps.end(); oit++) {
 	if (*oit == &aComp) {
 	    iComps.erase(oit); break;
@@ -902,9 +920,10 @@ TBool Elem::RmNode(const GUri& aUri)
     Elem* node = GetNode(aUri);
     if (node != NULL) {
 	delete node;
+	Logger()->WriteFormat("[%s] - removed elem [%s]", Name().c_str(), aUri.GetUri().c_str());
     }
     else {
-	Logger()->WriteFormat("ERR: [%s] - Removing elem [%s] - name already exists", Name().c_str(), aUri.GetUri().c_str());
+	Logger()->WriteFormat("ERR: [%s] - Removing elem [%s] - not found", Name().c_str(), aUri.GetUri().c_str());
     }
 }
 

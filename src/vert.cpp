@@ -159,7 +159,12 @@ void Vert::Disconnect(MEdge* aEdge)
     Edge* ee = aEdge->EBase()->GetObj(ee);
     multimap<TCkey,MEdge*>::iterator found = iMEdges.find(TCkey(ee->Name(), ee->EType()));
     __ASSERT(found != iMEdges.end());
+    iMEdges.erase(found);
+    RemoveFromMap(aEdge, TCkey("*", ee->EType()));
+    RemoveFromMap(aEdge, TCkey(ee->Name(), "*"));
+    RemoveFromMap(aEdge, TCkey("*", "*"));
     Disconnect(aEdge->Pair(this));
+    /*
     MEdge* edge = (*found).second;
     multimap<TCkey,MEdge*>::iterator fbytypelb = iMEdges.lower_bound(TCkey("*", ee->EType()));
     multimap<TCkey,MEdge*>::iterator fbytypeub = iMEdges.upper_bound(TCkey("*", ee->EType()));
@@ -168,7 +173,22 @@ void Vert::Disconnect(MEdge* aEdge)
 	    iMEdges.erase(it); break;
 	}
     }
-    iMEdges.erase(found);
+    */
+}
+
+void Vert::RemoveFromMap(MEdge* aEdge, const TCkey& aKey)
+{
+    __ASSERT(aEdge != NULL);
+    TBool found = EFalse;
+    TEdgesMap::iterator lb = iMEdges.lower_bound(aKey);
+    TEdgesMap::iterator ub = iMEdges.upper_bound(aKey);
+    for (TEdgesMap::iterator it = lb; it != ub && !found; it++) {
+	if (it->second == aEdge) {
+	    iMEdges.erase(it); found = true;
+	}
+    }
+    __ASSERT(found);
+
 }
 
 void Vert::OnCompDeleting(Elem& aComp)

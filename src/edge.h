@@ -34,6 +34,7 @@ class Edge: public Elem, public MEdge
     public:
 	static const char* Type() { return "Edge";};
 	Edge(const string& aName, Elem* aMan, MEnv* aEnv);
+	virtual ~Edge();
     public:
 	const string& Point1u();
 	const string& Point2u();

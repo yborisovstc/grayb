@@ -147,6 +147,11 @@ Edge::Edge(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
     __ASSERT(res);
 }
 
+Edge::~Edge() 
+{
+    Disconnect();
+}
+
 void* Edge::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
