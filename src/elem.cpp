@@ -200,27 +200,19 @@ Elem* Elem::GetMan()
     return iMan;
 }
 
-void *Elem::DoGetObj(const char *aName, TBool aIncUpHier)
+void *Elem::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
+    RqContext ctx(this, aCtx);
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else if (strcmp(aName, MCompsObserver::Type()) == 0) {
 	res = (MCompsObserver*) this;
     }
-    /*
-    else {
-	Elem* agents = GetComp("Elem", "Agents");
-	if (agents != NULL) {
-	    for (vector<Elem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && res == NULL; it++) {
-		res = (*it)->DoGetObj(aName, EFalse);
-	    }
-	}
-    }
-    */
-    if (res == NULL && aIncUpHier && iMan != NULL) {
-	res = iMan->DoGetObj(aName);
+    // TODO [YB] To avoid routing to hier
+    if (res == NULL && aIncUpHier && iMan != NULL && !ctx.IsInContext(iMan)) {
+	res = iMan->DoGetObj(aName, aIncUpHier, &ctx);
     }
 
     return res;
@@ -310,6 +302,12 @@ Elem* Elem::GetNode(const GUri& aUri)
     }
     return res;
 }
+
+Elem* Elem::GetNodeS(const char* aUri)
+{
+    return GetNode(aUri);
+}
+
 
 /*
 Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
@@ -591,7 +589,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec)
 	}
     }
     else {
-	Logger()->WriteFormat("ERROR: Changing [%s] - cannot find node", snode.c_str());
+	Logger()->WriteFormat("ERROR: [%s] - changing [%s] - cannot find node", Name().c_str(), snode.c_str());
     }
     return res;
 }
@@ -654,6 +652,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode)
     else {
 	TBool res = AppendComp(elem);
 	if (!res) {
+	    Logger()->WriteFormat("ERROR: [%s] - adding node [%s:%s]", Name().c_str(), elem->EType().c_str(), elem->Name().c_str());
 	    delete elem;
 	    elem = NULL;
 	}
@@ -661,8 +660,8 @@ Elem* Elem::AddElem(const ChromoNode& aNode)
 	    // Mutate object 
 	    elem->SetMutation(aNode);
 	    elem->Mutate();
+	    Logger()->WriteFormat("[%s] - added node [%s:%s]", Name().c_str(), elem->EType().c_str(), elem->Name().c_str());
 	}
-	Logger()->WriteFormat("[%s] - added node [%s:%s]", Name().c_str(), elem->EType().c_str(), elem->Name().c_str());
     }
     return elem;
 }
@@ -817,8 +816,8 @@ void Elem::OnCompAdding(Elem& aComp)
 void Elem::OnCompChanged(Elem& aComp)
 {
     Elem* agents = GetComp("Elem", "Agents");
+    TBool res = false;
     if (agents != NULL) {
-	TBool res = false;
 	for (vector<Elem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && !res; it++) {
 	    MACompsObserver* iagent = (*it)->GetObj(iagent);
 	    if (iagent != NULL) {
@@ -826,7 +825,7 @@ void Elem::OnCompChanged(Elem& aComp)
 	    }
 	}
     }
-    else {
+    if (!res) {
 	DoOnCompChanged(aComp);
     }
 }
@@ -927,13 +926,18 @@ TBool Elem::RmNode(const GUri& aUri)
     }
 }
 
+TBool Elem::IsName(const char* aName)
+{
+    return iName == aName;
+}
+
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetEType(Type());
     SetParent(Type());
 }
 
-void *Agent::DoGetObj(const char *aName, TBool aIncUpHier)
+void *Agent::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }

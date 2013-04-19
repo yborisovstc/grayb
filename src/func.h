@@ -10,7 +10,7 @@ class FuncBase: public Elem, public MACompsObserver, public MDataObserver
 	static const char* Type() { return "FuncBase";};
 	FuncBase(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
 	// From MDataObserver
@@ -27,7 +27,7 @@ class AFunInt: public FuncBase, public MDIntGet
 	static const char* Type() { return "AFunInt";};
 	AFunInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MDIntGet
 	virtual TInt Value();
     protected:
@@ -44,7 +44,7 @@ class AIncInt: public AFunInt
 	static const char* Type() { return "AIncInt";};
 	AIncInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From FuncBase
 	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
 	// From MDataObserver
@@ -58,7 +58,7 @@ class AFunIntRes: public AFunInt
 	static const char* Type() { return "AFunIntRes";};
 	AFunIntRes(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From FuncBase
 	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
 	// From MDataObserver

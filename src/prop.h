@@ -13,7 +13,7 @@ class Prop: public Elem, public MProp
 	Prop(const string& aName, Elem* aMan, MEnv* aEnv);
     public:
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MProp
 	virtual const string& Value() const;
 	// From MElem

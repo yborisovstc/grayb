@@ -20,7 +20,20 @@
 	 -->
     <node id="Extender" parent="ConnPointBase:ConnPoint"> 
 	<node id="Int" parent="../ConnPointBase:ConnPoint"></node>
+    	<add node="Elem:Agents"> 
+	    <node id="MAExteder" parent="ExtenderAgent"> 
+	    </node>
+    	</add>
     </node>
+
+    <!-- Socket -->
+    <node id="Socket" parent="Vert"> 
+    	<add node="Elem:Agents"> 
+	    <node id="Sock" parent="ASocket"> 
+	    </node>
+    	</add>
+    </node>
+
 
 
 </node>

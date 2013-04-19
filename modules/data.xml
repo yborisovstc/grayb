@@ -47,5 +47,26 @@
     	</add>
     </node>
 
+    <!-- Data with separate input, output, and dedicated input for initiating of setting data-->
+    <node id="DataSC" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+    	<add node="Elem:Capsule"> 
+	    <node id="Inp" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"/> 
+	    <node id="Out" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"/> 
+	    <node id="Upd" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"/> 
+    	</add>
+	<node id="Value" parent="Prop"/>
+    </node>
+
+    <node id="DataSCInt" parent="Incaps:DataSC"> 
+    	<add node="Elem:Agents"> 
+	    <node id="MACompsObserver" parent="DInt"/> 
+    	</add>
+	<cont node="Elem:Capsule/ConnPoint:Inp/Prop:Required" val="MDIntGet"/>
+	<cont node="Elem:Capsule/ConnPoint:Out/Prop:Provided" val="MDIntGet"/>
+	<cont node="Elem:Capsule/ConnPoint:Upd/Prop:Provided" val="MUpdatable"/>
+    </node>
+
+
+
 </node>
 

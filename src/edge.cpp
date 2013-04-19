@@ -152,7 +152,7 @@ Edge::~Edge()
     Disconnect();
 }
 
-void* Edge::DoGetObj(const char *aName, TBool aIncUpHier)
+void* Edge::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {

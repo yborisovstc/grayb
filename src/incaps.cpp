@@ -4,6 +4,11 @@
 #include "prov.h"
 #include "mprop.h"
 
+
+// TODO [YB] Do we need incaps? Syst also provides same restriction for connections (the only CPs are allowed for connecting)
+// The only case is that there can be some Syst CPs that needs to be disabled for connecting. 
+// Then these CPs can be moved outside of Incaps Capsula
+
 Incaps::Incaps(const string& aName, Elem* aMan, MEnv* aEnv): Syst(aName, aMan, aEnv)
 {
     SetEType(Type());
@@ -18,7 +23,7 @@ Incaps::Incaps(const string& aName, Elem* aMan, MEnv* aEnv): Syst(aName, aMan, a
     */
 }
 
-void *Incaps::DoGetObj(const char *aName, TBool aIncUpHier)
+void *Incaps::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -28,7 +33,7 @@ void *Incaps::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MACompsObserver*) this;
     }
     else {
-	res = Syst::DoGetObj(aName, aIncUpHier);
+	res = Syst::DoGetObj(aName, aIncUpHier, aCtx);
     }
     return res;
 }
@@ -97,12 +102,35 @@ void Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 }
 */
 
+TBool Incaps::IsPtOk(Elem& aContext, Elem* aPt) {
+    TBool res = EFalse;
+    Elem* man = aContext.GetCompOwning("Incaps", aPt);
+    if (man != NULL) {
+	if (man->GetMan() == &aContext) {
+	    Elem* caps = man->GetNode("Elem:Capsule");
+	    res = caps->IsComp(aPt);
+	}
+    }
+    else {
+	man = aContext.GetCompOwning("Syst", aPt);
+	if ( man != NULL) {
+	    if (man->GetMan() == &aContext) {
+		res = aPt->EType() == "ConnPoint";
+	    }
+	}
+	else {
+	    res = ETrue;
+	}
+    }
+    return res;
+}
+
 TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
     TBool res = EFalse;
     Elem* eedge = aContext.GetCompOwning("Edge", &aComp);
     if (eedge != NULL) {
-    //if (aComp.EType() == "Edge") {
+	//if (aComp.EType() == "Edge") {
 	// Reconnect the edge
 	Edge* edge = eedge->GetObj(edge);	
 	__ASSERT(edge != NULL);
@@ -113,7 +141,90 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 	    Elem* pt1 = aContext.GetNode(pt1u);
 	    Elem* pt2 = aContext.GetNode(pt2u);
 	    if (pt1 != NULL && pt2 != NULL) {
-		// Check if CPs belongs to capsule, or CP is internal point of extender
+#if 1
+		TBool ispt1ok = IsPtOk(aContext, pt1);
+		TBool ispt2ok = IsPtOk(aContext, pt2);
+		if (ispt1ok && ispt2ok) {
+		    MVert* pt1v = pt1->GetObj(pt1v);
+		    MVert* pt2v = pt2->GetObj(pt2v);
+		    if (pt1v != NULL && pt2v != NULL) {
+			MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
+			MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
+			if (pt1checker->IsCompatible(pt2) && pt2checker->IsCompatible(pt1)) {
+			    // Are compatible - connect
+			    edge->SetPoints(pt1v, pt2v);
+			    TBool res = edge->Connect();
+			    if (res) {
+				Logger()->WriteFormat("Incaps [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			    }
+			    else {
+				Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			    }
+			}
+			else {
+			    Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - incompatible", 
+				    Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			}
+		    }
+		    else {
+			Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - ends aren't vertexes", 
+				Name().c_str(), pt1u.c_str(), pt2u.c_str());
+		    }
+		}
+		else {
+		    Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - not allowed cp", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+		}
+#endif
+
+#if 0
+		// There can be two cases: connecting and extending
+		Elem* caps = aContext.GetNode("Elem:Capsule");
+		Elem* pt1man = pt1->GetMan();
+		Elem* pt2man = pt2->GetMan(); 
+		TBool pt1caps = pt1man->Name() == "Capsule";
+		TBool pt2caps = pt2man->Name() == "Capsule";
+		TBool pt1eint = caps->IsComp(pt1);
+		TBool pt2eint = caps->IsComp(pt2);
+		TBool pt1int = pt1caps && aContext.IsComp(pt1);
+		TBool pt2int = pt2caps && aContext.IsComp(pt2);
+		// Connecting: One CP is in context capsula and another is out of context
+		TBool isconn = pt1caps && pt2caps;
+		// Extending: One CP is in context capsula and another is within the context
+		TBool isext = pt1int && pt2eint || pt2int && pt1eint;
+		if (isconn || isext) {
+		    MVert* pt1v = pt1->GetObj(pt1v);
+		    MVert* pt2v = pt2->GetObj(pt2v);
+		    if (pt1v != NULL && pt2v != NULL) {
+			MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
+			MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
+			if (pt1checker->IsCompatible(pt2) && pt2checker->IsCompatible(pt1)) {
+			    // Are compatible - connect
+			    edge->SetPoints(pt1v, pt2v);
+			    TBool res = edge->Connect();
+			    if (res) {
+				Logger()->WriteFormat("Incaps [%s] extended [%s-%s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			    }
+			    else {
+				Logger()->WriteFormat("ERR: Incaps [%s] extending [%s-%s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			    }
+			}
+			else {
+			    Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s-%s] - incompatible roles", 
+				    Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			}
+		    }
+		    else {
+			Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s-%s] - ends aren't vertexes", 
+				Name().c_str(), pt1u.c_str(), pt2u.c_str());
+		    }
+		}
+		else {
+		    Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - not capsule cp", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+		}
+#endif
+#if 0
+		// There can be two cases: connecting and extending
+		// Checking if CPs belongs to capsule, or CP is internal point of extender
 		Elem* caps = aContext.GetNode("Elem:Capsule");
 		Elem* pt1man = pt1->GetMan();
 		Elem* pt2man = pt2->GetMan(); 
@@ -124,6 +235,7 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 		TBool pt1int = pt1caps && aContext.IsComp(pt1);
 		TBool pt2int = pt2caps && aContext.IsComp(pt2);
 		if (pt1caps && pt2caps || pt1int && pt2eint || pt2int && pt1eint) {
+		    // CPs belongs to capsule, or CP is internal point of extender
 		    MVert* pt1v = pt1->GetObj(pt1v);
 		    MVert* pt2v = pt2->GetObj(pt2v);
 		    if (pt1v != NULL && pt2v != NULL) {
@@ -184,6 +296,7 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 		else {
 		    Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - not capsule cp", Name().c_str(), pt1u.c_str(), pt2u.c_str());
 		}
+#endif
 	    } // pt1 != NULL ...
 	    else {
 		Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - cannot find [%s]", Name().c_str(), pt1u.c_str(), pt2u.c_str(), 

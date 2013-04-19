@@ -1,4 +1,5 @@
 #include "vert.h"
+#include "mprov.h"
 #include "edge.h"
 
 // Nodes iterator
@@ -89,11 +90,17 @@ Vert::Vert(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
     //iEType = Type();
     SetEType(Type());
     SetParent(Type());
+    // Create component for run-time extentions
+    Elem* agents = Provider()->CreateNode("Elem", "Agents", this, iEnv);
+    __ASSERT(agents != NULL);
+    TBool res = AppendComp(agents);
+    __ASSERT(res);
 }
 
-void *Vert::DoGetObj(const char *aName, TBool aIncUpHier)
+void *Vert::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
+    RqContext ctx(this, aCtx);
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
@@ -101,7 +108,34 @@ void *Vert::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MVert*) this;
     }
     else {
-	res = Elem::DoGetObj(aName, aIncUpHier);
+	res = Elem::DoGetObj(aName, EFalse);
+    }
+    // Support run-time extentions on the base layer, ref md#sec_refac_iface
+    if (res == NULL) {
+	Elem* agents = GetComp("Elem", "Agents");
+	if (agents != NULL) {
+	    for (vector<Elem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && res == NULL; it++) {
+		Elem* eit = (*it);
+		if (!ctx.IsInContext(eit)) {
+		    res = (*it)->DoGetObj(aName, aIncUpHier, &ctx);
+		}
+	    }
+	}
+    }
+    // Routing to pairs makes the rule of making path to iface to "weak". There can be unexpected paths found
+    /*
+    // Routing to pairs
+    if (res == NULL && aIncUpHier) {
+	for (set<MVert*>::const_iterator it = Pairs().begin(); it != Pairs().end(); it++) {
+	    Base* ep = (*it)->EBase();
+	    if (ep != NULL && !ctx.IsInContext(ep)) {
+		res = ep->DoGetObj(aName, aIncUpHier, &ctx);
+	    }
+	}
+    }
+    */
+    if (res == NULL && aIncUpHier) {
+	res = Elem::DoGetObj(aName, aIncUpHier, aCtx);
     }
     return res;
 }

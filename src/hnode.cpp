@@ -24,7 +24,7 @@ MutElem::MutElem(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan,
     croot.SetAttr(ENa_Id, iName);
 }
 
-void* MutElem::DoGetObj(const char *aName, TBool aIncUpHier)
+void* MutElem::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }

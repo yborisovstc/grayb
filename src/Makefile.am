@@ -53,6 +53,7 @@ libgrayb_la_SOURCES = \
 		       des.h \
 		       des.cpp \
 		       mmuta.h \
+		       mconn.h \
 		       graph.cpp \
 		       graph.h 
 
@@ -67,6 +68,7 @@ include_HEADERS = \
 		  mlog.h \
 		  mmuta.h \
 		  mprop.h \
+		  mconn.h \
 		  mvert.h \
 		  log.h \
 		  menv.h \

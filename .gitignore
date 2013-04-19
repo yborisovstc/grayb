@@ -1,4 +1,7 @@
 *.swp
+*.swo
+*.txt
+*.html
 configure
 autom4te.cache
 build*

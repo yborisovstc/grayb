@@ -3,6 +3,7 @@
 #include <elem.h>
 #include <mvert.h>
 #include <mdata.h>
+#include <mdes.h>
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -51,22 +52,19 @@ void Ut_des::test_Cre1()
     CPPUNIT_ASSERT_MESSAGE("Fail to get state out", doutp != 0);
     MDIntGet* doutpget = doutp->GetObj(doutpget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 34);
-    MVert* mdoutpv = doutp->GetObj(mdoutpv);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get data out vertex", mdoutpv != 0);
-    MVert* pair = *(mdoutpv->Pairs().begin());
-    CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    Elem* efuninp = root->GetNode("Incaps:test/FuncIncInt:Incr/Elem:Capsule/ConnPoint:inp");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get fun inp", efuninp != NULL);
-    MVert* mpairt = efuninp->GetObj(mpairt);
-    CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
-
-    Elem* foutp = root->GetNode("Incaps:test/FuncIncInt:Incr2/Elem:Capsule/ConnPoint:out");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
-    MDIntGet* foutpget = foutp->GetObj(doutpget);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
-    TInt fres = foutpget->Value();
-    CPPUNIT_ASSERT_MESSAGE("Incorrect func result", fres == 36);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 0);
+    // Sync the state
+    Elem* esync = root->GetNode("Incaps:test/StateInt:State1/Elem:Capsule/ConnPoint:Sync");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != 0);
+    MDesSyncable* sync = esync->GetObj(sync);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
+    // Do some ticks
+    const TInt ticksnum = 2;
+    for (TInt cnt = 0; cnt < ticksnum; cnt++) {
+	sync->Update();
+	sync->Confirm();
+    }
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 2);
 
     delete iEnv;
 }

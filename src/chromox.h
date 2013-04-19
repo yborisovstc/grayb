@@ -51,7 +51,7 @@ class ChromoMdlX: public ChromoMdl
 	virtual void* Init(TNodeType aRootType);
 	void Reset();
     protected:
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
     private:
 	xmlElementPtr GetElementDecl(void* aHandle);
 	xmlElementContent* GetFirstEldeclSecCont(xmlElementPtr aElem);

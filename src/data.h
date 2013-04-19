@@ -4,7 +4,7 @@
 #include "elem.h"
 #include "mdata.h"
 
-class DataBase: public Elem, public MACompsObserver
+class DataBase: public Elem, public MACompsObserver, public MUpdatable
 {
     public:
 	static const char* Type() { return "DataBase";};
@@ -12,6 +12,8 @@ class DataBase: public Elem, public MACompsObserver
     protected:
 	virtual bool FromString(const string& aData) = 0; 
 	virtual bool ToString(string& aData) = 0; 
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
     protected:
@@ -28,7 +30,7 @@ class DInt: public DataBase, public MDInt, public MDIntGet, public MDIntSet
 	static const char* Type() { return "DInt";};
 	DInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MDInt
 	virtual TInt Data() const;
 	virtual void Set(TInt aData);
@@ -39,6 +41,8 @@ class DInt: public DataBase, public MDInt, public MDIntGet, public MDIntSet
 	// From Data
 	virtual bool FromString(const string& aData); 
 	virtual bool ToString(string& aData); 
+	// From MUpdatable
+	virtual void Update();
     private:
 	TInt mData;
 };

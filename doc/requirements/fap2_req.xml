@@ -18,6 +18,10 @@
 	<revhistory>
 	    <revision> <revnumber>0.01</revnumber> <date>30-Nov-2011</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Initial version</revremark> </revision>
+	    <revision> <revnumber>0.02</revnumber> <date>19-Mar-2013</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="uc_conn_02"/></revremark> </revision>
+	    <revision> <revnumber>0.03</revnumber> <date>28-Mar-2013</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="uc_grahp_04"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -27,7 +31,7 @@
     </bibliolist>
 
     
-    <sect1 id="uc_graph"> <title>Graph</title>
+    <sect1 id="uc_graph"> <title>Cooperative multicomponent approach. Graphs.</title>
 	<sect2 id="uc_graph_01"><title>UC_GRAPH_01 Getting parent nodes available.</title>
 	    <sect3><title>Description</title>
 		CLIENT requests adding new graph node into the graph - SYSTEM offers the following ways to do this:
@@ -74,6 +78,78 @@
 	    <sect3><title>Extentions</title>
 		<itemizedlist>
 		    <listitem><xref linkend="uc_graph_02_1"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="uc_grahp_04"><title>UC_GRAHP_04 Providing ifaces</title>
+	    <sect3><title>Description</title>
+		CLIENT requests element for some interface - SYSTEM ensures elements providing interface or indicates that the interface 
+		cannot be provided.
+	    </sect3>
+	    <sect3><title>Details</title>
+		<itemizedlist>
+		    <listitem>The corporative approach is to be used, so element can provide not only "it's owned" interface but 
+			also interface provided by elements that "cooperate" to it.</listitem>
+		    <listitem>The policy of providing interface in cooperative network is to be defined</listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+    </sect1>
+    <sect1 id="uc_conn"><title>Connections</title>
+	<sect2 id="uc_conn_03"><title>UC_CONN_03 Connection</title>
+	    <sect3><title>Description</title>
+		CLIENT requests connecting two systems - SYSTEM allows connecting systems so one system gets able to communicate to another.
+	    </sect3>
+	    <sect3><title>Details</title>
+		<itemizedlist>
+		    <listitem>System contains end points for connection. Connection is established via creating relation between
+			end points of two systems. Such connection endpoints are called Connection points (CP).</listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="uc_conn_04"><title>UC_CONN_04 Extention</title>
+	    <sect3><title>Description</title>
+		CLIENT requests to exhibit iface of  some internal component of the system - SYSTEM provides this via having CP that on 
+		one hand serves as end point for connection from external system but on the oner hand is connected to internal component.
+		Such connection point is called Extention Point (EP).
+	    </sect3>
+	    <sect3><title>Details</title>
+		<itemizedlist>
+		    <listitem>. </listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="uc_conn_01"><title>UC_CONN_01 CPs providing interfaces</title>
+	    <sect3><title>Description</title>
+		CLIENT requests CP for some interface - CP provides only interface that is specified as provided.
+	    </sect3>
+	    <sect3><title>Details</title>
+		<itemizedlist>
+		    <listitem>There is no possibility for CLIENT to obtains some other interface of system via the CP. </listitem>
+		    <listitem>Is this constraint really needed? In fact the connecting policies avoid connecing incompatible CP.
+			The only problem can be access through C interface.</listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2><title id="uc_conn_02">UC_CONN_02 Sockets</title>
+	    <sect3><title>Description</title>
+		CLIENT requests connection of endpoints that are more complex that single CP - SYSTEM provides the means of connecting in 
+		form of socket.
+	    </sect3>
+	    <sect3><title>Details</title>
+		<itemizedlist>
+		    <listitem>Socket is element that contains other CPs</listitem>
+		    <listitem>Sockets are to be compatible in order to be connected.</listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2><title id="uc_conn_05">UC_CONN_05 Extention of sockets</title>
+	    <sect3><title>Description</title>
+		CLIENT requests extending of some internal socket - SYSTEM extends the socket via proper extention point
+		form of socket.
+	    </sect3>
+	    <sect3><title>Details</title>
+		<itemizedlist>
 		</itemizedlist>
 	    </sect3>
 	</sect2>

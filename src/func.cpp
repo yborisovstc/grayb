@@ -11,7 +11,7 @@ FuncBase::FuncBase(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMa
     SetParent(Type());
 }
 
-void *FuncBase::DoGetObj(const char *aName, TBool aIncUpHier)
+void *FuncBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -68,7 +68,7 @@ AFunInt::AFunInt(const string& aName, Elem* aMan, MEnv* aEnv): FuncBase(aName, a
     SetParent(Type());
 }
 
-void *AFunInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFunInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -107,6 +107,8 @@ MDIntGet* AFunInt::GetInp(const string& aInpName)
 	if (pair != NULL) {
 	    res = pair->EBase()->GetObj(res);
 	}
+	// Attempt to use the iface getting rule basing on vert pairs was denied
+	// res = einp->GetObj(res);
     }
     return res;
 }
@@ -118,7 +120,7 @@ AIncInt::AIncInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunInt(aName, aM
     SetParent(Type());
 }
 
-void *AIncInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AIncInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -135,6 +137,7 @@ TBool AIncInt::HandleIoChanged(Elem& aContext, Elem* aCp)
     TBool res = EFalse;
     // Checking input change
     if (aCp->Name() == "inp") {
+	/*
 	Vert* vert = aCp->GetObj(vert);
 	MVert* pair = *(vert->Pairs().begin());
 	if (pair != NULL) {
@@ -145,6 +148,13 @@ TBool AIncInt::HandleIoChanged(Elem& aContext, Elem* aCp)
 		SetRes(val + 1);
 		res = ETrue;
 	    }
+	}
+	*/
+	MDIntGet* dget = aCp->GetObj(dget);
+	if (dget != NULL) {
+	    TInt val = dget->Value();
+	    SetRes(val + 1);
+	    res = ETrue;
 	}
     }
     return res;
@@ -164,7 +174,7 @@ AFunIntRes::AFunIntRes(const string& aName, Elem* aMan, MEnv* aEnv): AFunInt(aNa
     SetParent(Type());
 }
 
-void *AFunIntRes::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFunIntRes::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {

@@ -13,7 +13,7 @@ class Graph: public Elem, public MGraph
     public:
 	static void Init();
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Elem
 	virtual TBool AddNode(const ChromoNode& aSpec);
 	virtual TBool DoMutation(const ChromoNode& aCromo);

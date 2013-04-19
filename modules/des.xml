@@ -14,27 +14,95 @@
     <!-- Module containing components of data -->
     <node id="datamod" parent="file:../modules/data.xml#DataComps" />
 
+    <!-- Output socket -->
+    <node id="StOutSocket" parent="SysComps:sysmod/Vert:Socket">
+	<!-- Pin Des observer. Requires DES observer interface to handle activation of the state -->
+	<node id="PinObs" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	    <cont node="Prop:Required" val="MDesObserver"/>
+	</node>
+	<!-- Pin Data observer. Provides data interface -->
+	<node id="PinData" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	</node>
+    </node>
 
+    <!-- Input socket -->
+    <node id="StInpSocket" parent="SysComps:sysmod/Vert:Socket">
+	<!-- Pin Des observer. Requires DES observer interface to handle activation of the state -->
+	<node id="PinObs" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	    <cont node="Prop:Provided" val="MDesObserver"/>
+	</node>
+	<!-- Pin Data observer. Provides data interface -->
+	<node id="PinData" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	</node>
+    </node>
+
+    <!-- Transition of integer data -->
+    <node id="TrInt" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+
+	<node id="Inp" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	    <cont node="Prop:Required" val="MDIntGet"/>
+	</node>
+	<node id="Out" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	    <cont node="Prop:Provided" val="MDIntGet"/>
+	</node>
+    </node>
+
+    <!-- Transition of integer data : Increment -->
+    <node id="TrIncInt" parent="Incaps:TrInt"> 
+	<add node="Elem:Agents"> 
+	    <node id="TrAgt" parent="ATrIncInt"> 
+	    </node>
+	</add>
+    </node>
+
+    <!-- State base -->
     <node id="State" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+
+	<add node="Elem:Agents"> 
+	    <node id="StateAgt" parent="StateAgent"> 
+	    </node>
+	</add>
+
 	<add node="Elem:Capsule">
+	    <node id="Sync" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+		<cont node="Prop:Required" val="MDesSyncable"/>
+	    </node>
+	    <!-- Input -->
+	    <node id="Inp" parent="../../SysComps:sysmod/ConnPoint:Extender"> 
+		<rm node="ConnPoint:Int"/>
+		<node id="Int" parent="../../../Socket:StInpSocket"> 
+		</node>
+	    </node>
+	    <!-- Output -->
 	    <node id="Out" parent="../../SysComps:sysmod/ConnPoint:Extender"> 
-		<!--
-		<cont node="Prop:Required" val="MDesActivable"/>
-		-->
-		<cont node="Prop:Required" val="MDataObserver"/>
+		<rm node="ConnPoint:Int"/>
+		<node id="Int" parent="../../../Socket:StOutSocket"> 
+		</node>
 	    </node>
 	</add>
     </node>
 
     <node id="StateInt" parent="Incaps:State"> 
-	<cont node="Elem:Capsule/Extender:Out/Prop:Provided" val="MDIntGet"/>
-	<node id="Confirmed" parent="../DataComps:datamod/DataS:DataSInt">
+	<node id="Confirmed" parent="../../DataComps:datamod/DataSC:DataSCInt">
 	</node>
+
+	<node id="Prepared" parent="../../DataComps:datamod/DataSC:DataSCInt">
+	</node>
+
+	<cont node="Elem:Capsule/Extender:Inp/StInpSocket:Int/ConnPoint:PinData/Prop:Provided" val="MDIntGet"/>
+	<cont node="Elem:Capsule/Extender:Out/StOutSocket:Int/ConnPoint:PinData/Prop:Required" val="MDIntGet"/>
+
 	<node parent="Edge"> 
-	    <cont node="Prop:P1" val="DataSInt:Confirmed/Elem:Capsule/ConnPoint:out"/> 
-	    <cont node="Prop:P2" val="Elem:Capsule/Extender:Out/ConnPoint:Int"/> 
+	    <cont node="Prop:P1" val="DataSCInt:Confirmed/Elem:Capsule/ConnPoint:Out"/> 
+	    <cont node="Prop:P2" val="Elem:Capsule/Extender:Out/StOutSocket:Int/ConnPoint:PinData"/> 
+	</node>
+
+	<node parent="Edge"> 
+	    <cont node="Prop:P1" val="DataSCInt:Prepared/Elem:Capsule/ConnPoint:Out"/> 
+	    <cont node="Prop:P2" val="DataSCInt:Confirmed/Elem:Capsule/ConnPoint:Inp"/> 
 	</node>
     </node>
+
 
 </node>
 

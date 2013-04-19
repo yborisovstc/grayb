@@ -65,7 +65,7 @@ void Env::AddProvider(GProvider* aProv)
     iProvider->AddProvider(aProv);
 }
 
-void *Env::DoGetObj(const char *aName, TBool aIncUpHier)
+void *Env::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }

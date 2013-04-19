@@ -8,6 +8,16 @@ using namespace std;
 
 class Base;
 class MEdge;
+class Elem;
+
+// Compatibility checker
+
+class MCompatChecker
+{
+    public:
+	static const char* Type() { return "MCompatChecker";};
+	virtual TBool IsCompatible(Elem* aPair) = 0;
+};
 
 // Graph vertex interface
 class MVert

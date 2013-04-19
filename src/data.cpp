@@ -4,6 +4,7 @@
 #include "mprop.h"
 #include "mvert.h"
 #include "data.h"
+#include "vert.h"
 
 DataBase::DataBase(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
@@ -31,14 +32,32 @@ TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 void DataBase::NotifyUpdate()
 {
     Elem* eout = GetNode("../../Elem:Capsule/ConnPoint:out");
+    // TODO [YB] Scheme of getting iface should be enough to get MDataObserver directly from eout. Seems the chunk below is redundant.
     if (eout != NULL) {
 	MVert* mvout = eout->GetObj(mvout);
 	MVert* mpair = *(mvout->Pairs().begin());
 	if (mpair != NULL) {
 	    MDataObserver* obsr = mpair->EBase()->GetObj(obsr);
-	    obsr->OnDataChanged();
+	    if (obsr != NULL) {
+		obsr->OnDataChanged();
+	    }
 	}
     }
+}
+
+void *DataBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName, MUpdatable::Type()) == 0) {
+	res = (MUpdatable*) this;
+    }
+    else {
+	res = Elem::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
 }
 
 void DataBase::UpdateProp()
@@ -52,13 +71,13 @@ void DataBase::UpdateProp()
 }
 	
 
-DInt::DInt(const string& aName, Elem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv)
+DInt::DInt(const string& aName, Elem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(0)
 {
     SetEType(Type());
     SetParent(Type());
 }
 
-void *DInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *DInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -74,7 +93,7 @@ void *DInt::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDIntSet*) this;
     }
     else {
-	res = Elem::DoGetObj(aName, aIncUpHier);
+	res = DataBase::DoGetObj(aName, aIncUpHier);
     }
     return res;
 }
@@ -118,3 +137,28 @@ void DInt::SetValue(TInt aData)
     Set(aData);
 }
 
+void DInt::Update()
+{
+    MDIntGet* inp = NULL;
+    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:Inp");
+    if (einp != NULL) {
+	Vert* vert = einp->GetObj(vert);
+	MVert* pair = *(vert->Pairs().begin());
+	if (pair != NULL) {
+	    inp = pair->EBase()->GetObj(inp);
+	    if (inp != NULL) {
+		mData = inp->Value();
+	    }
+	}
+    }
+    // Attempt to use the iface getting rule basing on vert pairs was denied
+    /*
+    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:Inp");
+    if (einp != NULL) {
+	MDIntGet* inp = einp->GetObj(inp);
+	if (inp != NULL) {
+	    mData = inp->Value();
+	}
+    }
+    */
+}

@@ -5,7 +5,7 @@ GProvider::GProvider(const string &aName): Base(aName)
 {
 }
 
-void *GProvider::DoGetObj(const char *aName, TBool aIncUpHier)
+void *GProvider::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }

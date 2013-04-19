@@ -2,26 +2,169 @@
 #include "des.h"
 #include "edge.h"
 #include "prov.h"
+#include "menv.h"
+#include "vert.h"
 #include "mprop.h"
 
-State::State(const string& aName, Elem* aMan, MEnv* aEnv): Incaps(aName, aMan, aEnv)
+ATrBase::ATrBase(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetEType(Type());
     SetParent(Type());
 }
 
-void *State::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ATrBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = Syst::DoGetObj(aName, aIncUpHier);
+	res = Elem::DoGetObj(aName, aIncUpHier);
     }
     return res;
 }
 
+// Agent base of Int function
+ATrInt::ATrInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrBase(aName, aMan, aEnv), mData(0)
+{
+    SetEType(Type());
+    SetParent(Type());
+}
+
+void *ATrInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName, MDIntGet::Type()) == 0) {
+	res = (MDIntGet*) this;
+    }
+    else {
+	res = ATrBase::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+MDIntGet* ATrInt::GetInp(const string& aInpName)
+{
+    MDIntGet* res = NULL;
+    Elem* einp = GetNode("../../ConnPoint:" + aInpName);
+    if (einp != NULL) {
+	Vert* vert = einp->GetObj(vert);
+	MVert* pair = *(vert->Pairs().begin());
+	if (pair != NULL) {
+	    res = pair->EBase()->GetObj(res);
+	}
+	// Attempt to use the iface getting rule basing on vert pairs was denied
+	//res = einp->GetObj(res);
+    }
+    return res;
+}
+
+ATrIncInt::ATrIncInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
+{
+    SetEType(Type());
+    SetParent(Type());
+}
+
+void *ATrIncInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = ATrInt::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+TInt ATrIncInt::Value()
+{
+    MDIntGet* mget = GetInp("Inp");
+    TInt val = mget->Value();
+    mData = val + 1;
+    return mData;
+}
+
+
+
+StateAgent::StateAgent(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(EFalse)
+{
+    SetEType(Type());
+    SetParent(Type());
+}
+
+void *StateAgent::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName, MDesSyncable::Type()) == 0) {
+	res = (MDesSyncable*) this;
+    }
+    else {
+	res = Elem::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+TBool StateAgent::IsActive()
+{
+    return iActive;
+}
+
+void StateAgent::SetActive()
+{
+    iActive = ETrue;
+}
+
+void StateAgent::ResetActive()
+{
+    iActive = EFalse;
+}
+
+void StateAgent::Update()
+{
+    Elem* eprepu = GetNode("../../DataSCInt:Prepared/Elem:Capsule/ConnPoint:Upd");
+    if (eprepu != NULL) {
+	MUpdatable* upd = eprepu->GetObj(upd);
+	if (upd != NULL) {
+	    upd->Update();
+	}
+    }
+}
+
+void StateAgent::Confirm()
+{
+    Elem* econfu = GetNode("../../DataSCInt:Confirmed/Elem:Capsule/ConnPoint:Upd");
+    if (econfu != NULL) {
+	MUpdatable* upd = econfu->GetObj(upd);
+	if (upd != NULL) {
+	    upd->Update();
+	}
+    }
+}
+
+TBool StateAgent::IsUpdated()
+{
+    return iUpdated;
+}
+
+void StateAgent::SetUpdated()
+{
+    iUpdated = ETrue;
+}
+
+void StateAgent::ResetUpdated()
+{
+    iUpdated = EFalse;
+}
+
+
+/*
 void State::OnCompChanged(Elem& aComp)
 {
     if (aComp.EType() == "Edge") {
@@ -83,4 +226,4 @@ void State::OnCompChanged(Elem& aComp)
 	}
     }
 }
-
+*/

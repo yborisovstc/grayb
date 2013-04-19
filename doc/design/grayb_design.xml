@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+
+<!DOCTYPE article SYSTEM "/usr/share/sgml/docbook/dtd/xml/4.5/docbookx.dtd">
+
+
+<article status="draft" class="specification"> <title>Enhanced Discrete Events System framework (graph based). Design.</title>
+
+    <articleinfo>
+	<author><personname><firstname>Yuri</firstname><surname>Borisov</surname></personname>
+	    <email>yuri.borisov.v@gmail.com</email></author> 
+
+	<releaseinfo>Ver.0.01 at 03-Mar-2013</releaseinfo>
+
+	<abstract>
+	    <simpara>This document collects use-cases and software desing for Discrete Events System framework ver 2.</simpara>
+	</abstract>
+
+	<revhistory>
+	    <revision> <revnumber>0.01</revnumber> <date>03-Mar-2013</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Initial version</revremark> </revision>
+	    <revision> <revnumber>0.01</revnumber> <date>21-Mar-2013</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="ds_conn_01"/></revremark> </revision>
+	</revhistory>
+
+    </articleinfo>
+
+    <bibliolist>
+	<title>References</title>
+    </bibliolist>
+
+
+    <glossary> <title>Glossary</title> 
+
+	<glossentry id="gls_cp"><glossterm>CP</glossterm> <acronym>CP</acronym>
+	    <glossdef> <para>Connection Point</para> <para>
+		    Element that is used as endpoint of connections between systems.  
+		    </para></glossdef> </glossentry>
+
+    </glossary>
+    
+    <sect1 id="ds_base"> <title>Base</title>
+	<sect2 id="ds_base_01"><title>DS_BASE_01 Getting iface</title>
+	    <sect3><title>Description</title>
+		<simpara>
+		    In DES iface can be considered as atomic behavior. Getting iface is contained in base CPP APIs - GetObj. 
+		    Many of components customize  that APIs. For instance the connection point is customizing the APIs to redirect
+		    the request to real provider of the iface, for connpoint is a proxy only.
+		</simpara>
+		<simpara>Thus the redirection chain can be complex, so getting iface APIs should avoid looping. There could be several 
+		    design approach:</simpara>
+		<itemizedlist>
+		    <listitem>Using agents extention mechanism. Redirect request to higher level of native hierarchy if the current level
+		       cannot handle the request.	
+		    </listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_conn"><title>Connections</title>
+	<sect2 id="ds_conn_01"><title>DS_CONN_01 Connection points</title>
+	    <sect3><title>Description</title>
+		<simpara>
+		    Connection points (CP) are endpoints of connections. System contains CPs and exhibits system's interfaces via CPs.
+		</simpara>
+		<itemizedlist>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_conn_02"><title>DS_CONN_02 Sockets</title>
+	    <sect3><title>Description</title>
+		<simpara>
+		    Socket is the complex CP - element that collects some CPs and EPs. Like simple CP Socket is located in system or capsula of
+		    Incaps.  When connecting two sockets the observed hier element, normally Incapsulated system (Incaps)
+		</simpara>
+		<itemizedlist>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+    </sect1>
+
+</article>

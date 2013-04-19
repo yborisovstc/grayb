@@ -37,7 +37,7 @@ class Vert: public Elem, public MVert
 	Vert(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~Vert();
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MVert
 	virtual TBool Connect(MVert* aPair);
 	virtual TBool Connect(MEdge* aEdge);

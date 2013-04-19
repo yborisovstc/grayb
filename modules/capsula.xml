@@ -11,10 +11,10 @@
 
     <node id="Incaps" parent="Syst"> 
 
-    	<node id="Agents" parent="Elem"> 
+    	<add node="Elem:Agents"> 
 	    <node id="MACompsObserver" parent="IncapsAgent"> 
 	    </node>
-    	</node>
+    	</add>
 	<!-- Element that acts as place for all extenders of the system.
 	 IncapsSystem allows the connection outside only for those EPs that are in capsula
 	 -->

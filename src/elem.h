@@ -108,12 +108,15 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	Elem* GetCompOwning(Elem* aElem);
 	Elem* GetRoot();
 	TBool IsComp(Elem* aElem);
+	// Debug helpers
+	Elem* GetNodeS(const char* aUri);
+	TBool IsName(const char* aName);
 	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
 	void GetUri(GUri& aUri, Elem* aTop = NULL);
 	virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
 	virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MElem
 	virtual const string& EType() const;
 	virtual const set<string>& CompsTypes();
@@ -177,7 +180,7 @@ class Agent: public Elem
     static const char* Type() { return "Agent";};
     Agent(const string &aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
     // From Base
-    virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+    virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 };
 
 #endif
