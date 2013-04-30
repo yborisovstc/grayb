@@ -14,6 +14,9 @@
     <!-- Module containing components of data -->
     <node id="datamod" parent="file:../modules/data.xml#DataComps" />
 
+    <!-- DES logging event -->
+    <node id="DesLogevent" parent="Elem" />
+    
     <!-- Output socket -->
     <node id="StOutSocket" parent="SysComps:sysmod/Vert:Socket">
 	<!-- Pin Des observer. Requires DES observer interface to handle activation of the state -->

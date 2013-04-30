@@ -106,7 +106,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	// Gets the comp with given type and owning given element
 	Elem* GetCompOwning(const string& aParent, Elem* aElem);
 	Elem* GetCompOwning(Elem* aElem);
-	Elem* GetRoot();
+	Elem* GetRoot() const;
 	TBool IsComp(Elem* aElem);
 	// Debug helpers
 	Elem* GetNodeS(const char* aUri);
@@ -137,7 +137,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
     protected:
 	Elem* AddElem(const ChromoNode& aSpec);
 	static void Init();
-	inline MLogRec* Logger();
+	inline MLogRec* Logger() const;
 	inline MProvider* Provider() const;
 	TBool AppendComp(Elem* aComp);
 	Elem* GetComp(const string& aParent, const string& aName);
@@ -146,6 +146,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	TBool MergeMutMove(const ChromoNode& aSpec);
 	Elem* GetComp(TInt aInd);
 	virtual void DoOnCompChanged(Elem& aComp);
+	TBool IsLogeventCreOn();
     protected:
 	// Element type - parent's name
 	string iEType;
@@ -167,7 +168,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	multimap<TCkey, Elem*> iMComps;
 };
 
-inline MLogRec* Elem::Logger() {return iEnv ? iEnv->Logger(): NULL; }
+inline MLogRec* Elem::Logger() const {return iEnv ? iEnv->Logger(): NULL; }
 
 inline MProvider* Elem::Provider() const {return iEnv ? iEnv->Provider(): NULL; }
 

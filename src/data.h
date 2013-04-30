@@ -43,6 +43,8 @@ class DInt: public DataBase, public MDInt, public MDIntGet, public MDIntSet
 	virtual bool ToString(string& aData); 
 	// From MUpdatable
 	virtual void Update();
+    protected:
+	TBool IsLogeventUpdate();
     private:
 	TInt mData;
 };

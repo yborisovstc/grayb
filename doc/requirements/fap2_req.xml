@@ -31,7 +31,31 @@
     </bibliolist>
 
     
-    <sect1 id="uc_graph"> <title>Cooperative multicomponent approach. Graphs.</title>
+    <sect1 id="uc"> <title>Use cases</title>
+	<sect2 id="uc_001"><title>UC_001 Logging</title>
+	    <sect3><title>Description</title>
+		CLIENT requests logging and specifies logging parameters - SYSTEM provides CLIENT with logging data
+	    </sect3>
+	    <sect3><title>Extension of</title>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_002"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="uc_002"><title>UC_002 Logging configuration of element</title>
+	    <sect3><title>Description</title>
+		CLIENT selects some particular element and requests logging configuration - SYSTEM provides CLIENT with means of 
+		logging configuration.
+	    </sect3>
+	    <sect3><title>Extension of</title>
+		<simpara><xref linkend="uc_001"/></simpara>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+	    </sect3>
+	</sect2>
+
 	<sect2 id="uc_graph_01"><title>UC_GRAPH_01 Getting parent nodes available.</title>
 	    <sect3><title>Description</title>
 		CLIENT requests adding new graph node into the graph - SYSTEM offers the following ways to do this:
@@ -94,8 +118,6 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
-    </sect1>
-    <sect1 id="uc_conn"><title>Connections</title>
 	<sect2 id="uc_conn_03"><title>UC_CONN_03 Connection</title>
 	    <sect3><title>Description</title>
 		CLIENT requests connecting two systems - SYSTEM allows connecting systems so one system gets able to communicate to another.

@@ -12,6 +12,10 @@
     <!-- Module containing components of incaps layer -->
     <node id="incapsmod" parent="file:/usr/share/grayb/modules/capsula.xml#IncapsComps" />
 
+ 
+    <!-- DES logging event -->
+    <node id="DataLogevent" parent="Elem" />
+
     <!-- Data with separate input for setting and output for getting -->
     <node id="DataS" parent="IncapsComps:incapsmod/Syst:Incaps"> 
     	<add node="Elem:Capsule"> 
@@ -47,7 +51,13 @@
     	</add>
     </node>
 
-    <!-- Data with separate input, output, and dedicated input for initiating of setting data-->
+    <!-- START: Data with separate input, output, and dedicated input for initiating of setting data-->
+    
+    <!-- DES logging event Update -->
+    <node id="Update" parent="DataLogevent" />
+
+
+    <!-- Data base -->
     <node id="DataSC" parent="IncapsComps:incapsmod/Syst:Incaps"> 
     	<add node="Elem:Capsule"> 
 	    <node id="Inp" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"/> 
@@ -57,6 +67,7 @@
 	<node id="Value" parent="Prop"/>
     </node>
 
+    <!-- Data Int -->
     <node id="DataSCInt" parent="Incaps:DataSC"> 
     	<add node="Elem:Agents"> 
 	    <node id="MACompsObserver" parent="DInt"/> 
@@ -66,6 +77,7 @@
 	<cont node="Elem:Capsule/ConnPoint:Upd/Prop:Provided" val="MUpdatable"/>
     </node>
 
+    <!-- END: Data with separate input, output, and dedicated input for initiating of setting data-->
 
 
 </node>

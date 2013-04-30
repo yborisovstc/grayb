@@ -147,18 +147,32 @@ void DInt::Update()
 	if (pair != NULL) {
 	    inp = pair->EBase()->GetObj(inp);
 	    if (inp != NULL) {
-		mData = inp->Value();
+		TInt idata = inp->Value();
+		if (IsLogeventUpdate()) {
+		    Elem* host = iMan->GetMan();
+		    Logger()->WriteFormat("[%s/%s]: Updated [%d <- %d]", host->GetMan()->Name().c_str(), host->Name().c_str(), mData, idata);
+		}
+		mData = idata;
 	    }
 	}
     }
     // Attempt to use the iface getting rule basing on vert pairs was denied
     /*
-    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:Inp");
-    if (einp != NULL) {
-	MDIntGet* inp = einp->GetObj(inp);
-	if (inp != NULL) {
-	    mData = inp->Value();
-	}
-    }
-    */
+       Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:Inp");
+       if (einp != NULL) {
+       MDIntGet* inp = einp->GetObj(inp);
+       if (inp != NULL) {
+       mData = inp->Value();
+       }
+       }
+       */
 }
+
+
+TBool DInt::IsLogeventUpdate() 
+{
+    Elem* node = GetNode("../../Elem:Logspec/DataLogevent:Update");
+    return node != NULL;
+}
+
+

@@ -260,7 +260,9 @@ TBool Elem::AddNode(const ChromoNode& aSpec)
 		Logger()->WriteFormat("ERROR: Adding node into [%s] - failure", snode.c_str());
 	    }
 	    else {
-		Logger()->WriteFormat("[%s]: added node [%s] into [%s]", Name().c_str(), mno.Name().c_str(), snode.c_str());
+		if (IsLogeventCreOn()) {
+		    Logger()->WriteFormat("[%s]: added node [%s] into [%s]", Name().c_str(), mno.Name().c_str(), snode.c_str());
+		}
 	    }
 	}
     }
@@ -401,7 +403,7 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
 }
 #endif
 
-Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
+Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase) 
 {
     Elem* res = NULL;
     GUri::const_elem_iter uripos = aPathBase;
@@ -411,7 +413,7 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
 	    res = iMan->GetNode(aUri, ++aPathBase);
 	}
 	else {
-	    Logger()->WriteFormat("[%s]: getting node [%s] - path to top of root", Name().c_str(), aUri.GetUri().c_str());
+	    Logger()->WriteFormat("ERR: [%s]: getting node [%s] - path to top of root", Name().c_str(), aUri.GetUri().c_str());
 	}
     }
     else {
@@ -604,7 +606,9 @@ Elem* Elem::AddElem(const ChromoNode& aNode)
 	sname = name;
 	free(name);
     }
-    Logger()->WriteFormat("[%s] - start adding node [%s:%s]", Name().c_str(), sparent.c_str(), sname.c_str());
+    if (IsLogeventCreOn()) {
+	Logger()->WriteFormat("[%s] - start adding node [%s:%s]", Name().c_str(), sparent.c_str(), sname.c_str());
+    }
     Elem* elem = NULL;
     // Obtain parent first
     Elem *parent = NULL;
@@ -660,7 +664,9 @@ Elem* Elem::AddElem(const ChromoNode& aNode)
 	    // Mutate object 
 	    elem->SetMutation(aNode);
 	    elem->Mutate();
-	    Logger()->WriteFormat("[%s] - added node [%s:%s]", Name().c_str(), elem->EType().c_str(), elem->Name().c_str());
+	    if (IsLogeventCreOn()) {
+		Logger()->WriteFormat("[%s] - added node [%s:%s]", Name().c_str(), elem->EType().c_str(), elem->Name().c_str());
+	    }
 	}
     }
     return elem;
@@ -905,9 +911,9 @@ void Elem::GetUri(GUri& aUri, Elem* aTop)
     }
 }
 
-Elem* Elem::GetRoot()
+Elem* Elem::GetRoot() const
 {
-    Elem* res = this;
+    Elem* res = (Elem*) this;
     if (iMan != NULL) {
 	res = iMan->GetRoot();
     }
@@ -919,7 +925,9 @@ TBool Elem::RmNode(const GUri& aUri)
     Elem* node = GetNode(aUri);
     if (node != NULL) {
 	delete node;
-	Logger()->WriteFormat("[%s] - removed elem [%s]", Name().c_str(), aUri.GetUri().c_str());
+	if (IsLogeventCreOn()) {
+	    Logger()->WriteFormat("[%s] - removed elem [%s]", Name().c_str(), aUri.GetUri().c_str());
+	}
     }
     else {
 	Logger()->WriteFormat("ERR: [%s] - Removing elem [%s] - not found", Name().c_str(), aUri.GetUri().c_str());
@@ -929,6 +937,12 @@ TBool Elem::RmNode(const GUri& aUri)
 TBool Elem::IsName(const char* aName)
 {
     return iName == aName;
+}
+
+TBool Elem::IsLogeventCreOn() 
+{
+    Elem* node = GetNode("Elem:Logspec/Elem:Creation");
+    return node != NULL;
 }
 
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)

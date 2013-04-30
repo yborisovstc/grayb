@@ -23,6 +23,18 @@
 	<node id="State1" parent="../DesComps:desmod/State:StateInt">
 	    <!-- <cont node="DataSInt:Confirmed/Prop:Value" val="34"/> -->
 
+	    <node id="Logspec" parent="Elem">
+		<node id="Creation" parent="Elem">
+		</node>
+	    </node>
+
+	    <add node="DataSCInt:Confirmed">
+		<node id="Logspec" parent="Elem">
+		    <node id="Update" parent="../../../../DataComps:datamod/DataLogevent">
+		    </node>
+		</node>
+	    </add>
+
 	    <node id="Trans" parent="../../DesComps:desmod/TrInt:TrIncInt">
 	    </node>
 

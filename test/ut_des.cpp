@@ -59,12 +59,12 @@ void Ut_des::test_Cre1()
     MDesSyncable* sync = esync->GetObj(sync);
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
     // Do some ticks
-    const TInt ticksnum = 2;
+    const TInt ticksnum = 5;
     for (TInt cnt = 0; cnt < ticksnum; cnt++) {
 	sync->Update();
 	sync->Confirm();
     }
-    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 2);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 5);
 
     delete iEnv;
 }

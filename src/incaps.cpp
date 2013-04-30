@@ -155,7 +155,9 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 			    edge->SetPoints(pt1v, pt2v);
 			    TBool res = edge->Connect();
 			    if (res) {
-				Logger()->WriteFormat("Incaps [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+				if (IsLogeventCreOn()) {
+				    Logger()->WriteFormat("Incaps [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+				}
 			    }
 			    else {
 				Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
