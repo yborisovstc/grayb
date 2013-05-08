@@ -61,8 +61,12 @@ void Ut_des::test_Cre1()
     // Do some ticks
     const TInt ticksnum = 5;
     for (TInt cnt = 0; cnt < ticksnum; cnt++) {
-	sync->Update();
-	sync->Confirm();
+	if (sync->IsActive()) {
+	    sync->Update();
+	}
+	if (sync->IsUpdated()) {
+	    sync->Confirm();
+	}
     }
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 5);
 

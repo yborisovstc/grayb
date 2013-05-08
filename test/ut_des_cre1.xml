@@ -1,7 +1,8 @@
 <?xml version="1.0" ?>
 
-<!-- Unit test for simple event system. It contains simple incrementor state.
-     -->
+
+<!-- Simple test that creates sole state Incrementor looped to youself 
+     Tests: state (Confirmed, Prepared, Trans, agent), socket connection -->
 
 
 <!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 

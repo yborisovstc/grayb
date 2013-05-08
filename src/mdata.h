@@ -14,7 +14,7 @@ class MUpdatable
 {
     public:
 	static const char* Type() { return "MUpdatable";};
-	virtual void Update() = 0;
+	virtual TBool Update() = 0;
 };
 
 class MDInt
@@ -23,7 +23,7 @@ class MDInt
 	static const char* Type() { return "MDInt";};
 	virtual TInt Data() const = 0;
 	virtual void Set(TInt aData) = 0;
-	virtual void Update() = 0;
+//	virtual void Update() = 0;
 };
 
 class MDIntGet

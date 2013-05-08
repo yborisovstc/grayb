@@ -137,8 +137,9 @@ void DInt::SetValue(TInt aData)
     Set(aData);
 }
 
-void DInt::Update()
+TBool DInt::Update()
 {
+    TBool res = EFalse;
     MDIntGet* inp = NULL;
     Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:Inp");
     if (einp != NULL) {
@@ -153,6 +154,7 @@ void DInt::Update()
 		    Logger()->WriteFormat("[%s/%s]: Updated [%d <- %d]", host->GetMan()->Name().c_str(), host->Name().c_str(), mData, idata);
 		}
 		mData = idata;
+		res = ETrue;
 	    }
 	}
     }
@@ -166,6 +168,7 @@ void DInt::Update()
        }
        }
        */
+    return res;
 }
 
 

@@ -90,7 +90,7 @@ TInt ATrIncInt::Value()
 
 
 
-StateAgent::StateAgent(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(EFalse)
+StateAgent::StateAgent(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
 {
     SetEType(Type());
     SetParent(Type());
@@ -104,6 +104,9 @@ void *StateAgent::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext*
     }
     else if (strcmp(aName, MDesSyncable::Type()) == 0) {
 	res = (MDesSyncable*) this;
+    }
+    else if (strcmp(aName, MDesObserver::Type()) == 0) {
+	res = (MDesObserver*) this;
     }
     else {
 	res = Elem::DoGetObj(aName, aIncUpHier);
@@ -132,7 +135,10 @@ void StateAgent::Update()
     if (eprepu != NULL) {
 	MUpdatable* upd = eprepu->GetObj(upd);
 	if (upd != NULL) {
-	    upd->Update();
+	    if (upd->Update()) {
+		SetUpdated();
+	    }
+	    ResetActive();
 	}
     }
 }
@@ -143,7 +149,15 @@ void StateAgent::Confirm()
     if (econfu != NULL) {
 	MUpdatable* upd = econfu->GetObj(upd);
 	if (upd != NULL) {
-	    upd->Update();
+	    if (upd->Update()) {
+		// Activate dependencies
+		Elem* eobs = GetNode("../../Elem:Capsule/Extender:Out/StOutSocket:Int/ConnPoint:PinObs");
+		MDesObserver* mobs = eobs->GetObj(mobs);
+		if (mobs != NULL) {
+		    mobs->OnUpdated();
+		}
+	    }
+	    ResetUpdated();
 	}
     }
 }
@@ -163,6 +177,15 @@ void StateAgent::ResetUpdated()
     iUpdated = EFalse;
 }
 
+void StateAgent::OnUpdated()
+{
+    // Mark active
+    SetActive();
+}
+
+void StateAgent::OnActivated()
+{
+}
 
 /*
 void State::OnCompChanged(Elem& aComp)

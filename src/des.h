@@ -42,7 +42,7 @@ class ATrIncInt: public ATrInt
 };
 
 // State base agent
-class StateAgent: public Elem, public MDesSyncable
+class StateAgent: public Elem, public MDesSyncable, public MDesObserver
 {
     public:
 	static const char* Type() { return "StateAgent";};
@@ -60,6 +60,9 @@ class StateAgent: public Elem, public MDesSyncable
 	virtual TBool IsActive();
 	virtual void SetActive();
 	virtual void ResetActive();
+	// From MDesObserver
+	virtual void OnUpdated();
+	virtual void OnActivated();
     private:
 	TBool iActive;
 	TBool iUpdated;
