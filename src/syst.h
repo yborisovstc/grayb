@@ -13,7 +13,7 @@ class ConnPointBase: public Vert, public MCompatChecker
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MCompatChecker
-	virtual TBool IsCompatible(Elem* aPair);
+	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse);
 };
 
 // Extention agent. Redirects request for iface to internal CP of extention.
@@ -25,17 +25,19 @@ class ExtenderAgent: public Elem, public MCompatChecker
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MCompatChecker
-	virtual TBool IsCompatible(Elem* aPair);
+	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse);
 };
 
 // Socket agent: redirects iface requests to pins
-class ASocket: public Elem
+class ASocket: public Elem, public MCompatChecker
 {
     public:
 	static const char* Type() { return "ASocket";};
 	ASocket(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MCompatChecker
+	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse);
 };
 
 

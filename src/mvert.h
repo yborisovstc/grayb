@@ -16,7 +16,7 @@ class MCompatChecker
 {
     public:
 	static const char* Type() { return "MCompatChecker";};
-	virtual TBool IsCompatible(Elem* aPair) = 0;
+	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse) = 0;
 };
 
 // Graph vertex interface

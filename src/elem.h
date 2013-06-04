@@ -62,28 +62,6 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	IterImplBase* iImpl;
     };
 
-	/*
-	class Iterator: public iterator<input_iterator_tag, Elem*>
-    {
-	friend class Elem;
-	public:
-	Iterator(Elem& aElem, GUri::TElem aId);
-	Iterator(const Iterator& aIt);
-	virtual Iterator& operator=(const Iterator& aIt);
-	virtual Iterator& operator++();
-	Iterator operator++(int) { Iterator tmp(*this); operator++(); return tmp; };
-	virtual TBool operator==(const Iterator& aIt);
-	TBool operator!=(const Iterator& aIt) { return !operator==(aIt);};
-	virtual Elem*  operator*();
-	virtual Iterator Begin();
-	virtual Iterator End();
-	public:
-	Elem& iElem;
-	GUri::TElem iId;
-	TMElem::iterator iCIter; // Comps iter
-	pair<TMElem::iterator, TMElem::iterator> iCIterRange;
-    };
-    */
 
     public:
 	static const char* Type() { return "Elem";};
@@ -106,6 +84,8 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	// Gets the comp with given type and owning given element
 	Elem* GetCompOwning(const string& aParent, Elem* aElem);
 	Elem* GetCompOwning(Elem* aElem);
+	// Gets the comp with given name and owning given element
+	Elem* GetCompOwningN(const string& aParent, Elem* aElem);
 	Elem* GetRoot() const;
 	TBool IsComp(Elem* aElem);
 	// Debug helpers
@@ -127,7 +107,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	virtual TBool ChangeCont(const string& aVal); 
 	virtual TBool AddNode(const ChromoNode& aSpec);
 	virtual TBool RmNode(const GUri& aUri);
-	const vector<Elem*>& Comps();
+	vector<Elem*>& Comps();
 	// From MCompsObserver
 	virtual void OnCompDeleting(Elem& aComp);
 	virtual void OnCompAdding(Elem& aComp);

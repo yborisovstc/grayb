@@ -88,7 +88,7 @@ TInt ATrIncInt::Value()
     return mData;
 }
 
-
+/* State base agent */
 
 StateAgent::StateAgent(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
 {
@@ -156,6 +156,7 @@ void StateAgent::Confirm()
 		if (mobs != NULL) {
 		    mobs->OnUpdated();
 		}
+		// Activate mgr
 	    }
 	    ResetUpdated();
 	}
@@ -184,6 +185,106 @@ void StateAgent::OnUpdated()
 }
 
 void StateAgent::OnActivated()
+{
+}
+
+/* DES base agent */
+
+ADes::ADes(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
+{
+    SetEType(Type());
+    SetParent(Type());
+}
+
+void *ADes::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName, MDesSyncable::Type()) == 0) {
+	res = (MDesSyncable*) this;
+    }
+    else if (strcmp(aName, MDesObserver::Type()) == 0) {
+	res = (MDesObserver*) this;
+    }
+    else {
+	res = Elem::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+TBool ADes::IsActive()
+{
+    return iActive;
+}
+
+void ADes::SetActive()
+{
+    iActive = ETrue;
+}
+
+void ADes::ResetActive()
+{
+    iActive = EFalse;
+}
+
+void ADes::Update()
+{
+    // Update all the DES components avoiding agents and capsule
+    Elem* host = iMan->GetMan();
+    for (vector<Elem*>::iterator it = host->Comps().begin(); it != host->Comps().end(); it++) {
+	Elem* eit = (*it);
+	if (eit != iMan && eit->Name() != "Capsule") {
+	    MDesSyncable* msync = eit->GetObj(msync);
+	    if (msync != NULL) {
+		if (msync->IsActive()) {
+		    msync->Update();
+		    SetUpdated();
+		}
+	    }
+	}
+    }
+}
+
+void ADes::Confirm()
+{
+
+    // Confirm all the DES components
+    for (vector<Elem*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
+	Elem* eit = (*it);
+	MDesSyncable* msync = eit->GetObj(msync);
+	if (msync != NULL) {
+	    if (msync->IsUpdated()) {
+		msync->Confirm();
+		ResetUpdated();
+	    }
+	}
+    }
+}
+
+TBool ADes::IsUpdated()
+{
+    return iUpdated;
+}
+
+void ADes::SetUpdated()
+{
+    iUpdated = ETrue;
+}
+
+void ADes::ResetUpdated()
+{
+    iUpdated = EFalse;
+}
+
+void ADes::OnUpdated()
+{
+    // Mark active
+    SetActive();
+}
+
+void ADes::OnActivated()
 {
 }
 

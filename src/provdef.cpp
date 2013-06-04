@@ -59,6 +59,9 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     else if (aType.compare(ASocket::Type()) == 0) {
 	res = new ASocket(aName, aMan, aEnv);
     }
+    else if (aType.compare(ADes::Type()) == 0) {
+	res = new ADes(aName, aMan, aEnv);
+    }
     return res;
 }
 

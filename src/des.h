@@ -68,4 +68,32 @@ class StateAgent: public Elem, public MDesSyncable, public MDesObserver
 	TBool iUpdated;
 };
 
+// DES base agent
+class ADes: public Elem, public MDesSyncable, public MDesObserver
+{
+    public:
+	static const char* Type() { return "ADes";};
+	ADes(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From Elem
+	//virtual void OnCompChanged(Elem& aComp);
+	// From MDesSyncable
+	virtual void Update();
+	virtual void Confirm();
+	virtual TBool IsUpdated();
+	virtual void SetUpdated();
+	virtual void ResetUpdated();
+	virtual TBool IsActive();
+	virtual void SetActive();
+	virtual void ResetActive();
+	// From MDesObserver
+	virtual void OnUpdated();
+	virtual void OnActivated();
+    private:
+	TBool iActive;
+	TBool iUpdated;
+};
+
+
 #endif

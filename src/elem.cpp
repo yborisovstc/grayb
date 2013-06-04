@@ -73,55 +73,6 @@ Elem*  Elem::IterImplBase::GetElem()
     return res;
 }
 
-/*
-// Local nodes iterator
-Elem::Iterator::Iterator(Elem& aElem, GUri::TElem aId): iElem(aElem), iId(aId)
-{
-    iCIterRange = iElem.iMComps.equal_range(Elem::TCkey(iId.second, iId.first));
-    iCIter = iCIterRange.first;
-};
-
-Elem::Iterator::Iterator(const Iterator& aIt): iElem(aIt.iElem), iCIter(aIt.iCIter) 
-{
-};
-
-Elem::Iterator& Elem::Iterator::operator=(const Elem::Iterator& aIt) 
-{ 
-    iElem = aIt.iElem; 
-    iId = aIt.iId;
-    iCIterRange = aIt.iCIterRange;
-    iCIter = aIt.iCIter; 
-    return *this; 
-};
-
-Elem::Iterator& Elem::Iterator::operator++()
-{
-    iCIter++;
-    return *this;
-}
-
-Elem::Iterator Elem::Iterator::Begin()
-{
-    return Iterator(iElem, iId);
-}
-
-Elem::Iterator Elem::Iterator::End()
-{
-    Iterator res = Iterator(iElem, iId);
-    res.iCIter = iCIterRange.second;
-    return res;
-}
-
-TBool Elem::Iterator::operator==(const Iterator& aIt)
-{
-    TBool res = &iElem == &(aIt.iElem) && iId == aIt.iId && iCIter == aIt.iCIter;
-}
-
-Elem*  Elem::Iterator::operator*()
-{
-    return iCIter->second;
-}
-*/
 
 // Element
 void Elem::Init()
@@ -211,9 +162,11 @@ void *Elem::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 	res = (MCompsObserver*) this;
     }
     // TODO [YB] To avoid routing to hier
+    /*
     if (res == NULL && aIncUpHier && iMan != NULL && !ctx.IsInContext(iMan)) {
 	res = iMan->DoGetObj(aName, aIncUpHier, &ctx);
     }
+    */
 
     return res;
 }
@@ -338,12 +291,6 @@ Elem* Elem::GetNodeLoc(const GUri::TElem& aElem)
 {
     return GetComp(aElem.first, aElem.second);
 }
-/*
-Elem::Iterator Elem::GetNodesLoc(const GUri::TElem& aId)
-{
-    return Iterator(*this, aId);
-}
-*/
 
 Elem::Iterator Elem::NodesLoc_Begin(const GUri::TElem& aId)
 {
@@ -354,54 +301,6 @@ Elem::Iterator Elem::NodesLoc_End(const GUri::TElem& aId)
 {
     return Iterator(new IterImplBase(*this, aId, ETrue));
 }
-
-#if 0
-Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
-{
-    Elem* res = NULL;
-    GUri::TElem elem = *aPathBase;
-    if (elem.second == "..") {
-	if (iMan != NULL) {
-	    res = iMan->GetNode(aUri, ++aPathBase);
-	}
-	else {
-	    Logger()->WriteFormat("[%s]: getting node [%s] - path to top of root", Name().c_str(), aUri.GetUri().c_str());
-	}
-    }
-    else {
-	/*
-	res = GetNodeLoc(elem);
-	if (res != NULL && aPathBase + 1 != aUri.Elems().end()) {
-	    res = res->GetNode(aUri, ++aPathBase);
-	}
-	*/
-	Iterator it = GetNodesLoc(elem);
-	if (it != it.End()) {
-	    if (aPathBase + 1 != aUri.Elems().end()) {
-		for (; it != it.End(); it++) {
-		    Elem* node = *it;
-		    if (res == NULL) {
-			res = node->GetNode(aUri, ++aPathBase);
-		    }
-		    else {
-			res = NULL;
-			Logger()->WriteFormat("ERR: [%s]: getting node [%s] - mutliple choice", Name().c_str(), aUri.GetUri().c_str());
-			break;
-		    }
-		}
-	    }
-	    else {
-		res = *it;
-		if (++it != it.End()) {
-		    res = NULL;
-		    Logger()->WriteFormat("ERR: [%s]: getting node [%s] - mutliple choice", Name().c_str(), aUri.GetUri().c_str());
-		}
-	    }
-	}
-    }
-    return res;
-}
-#endif
 
 Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase) 
 {
@@ -449,7 +348,7 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
     return res;
 }
 
-const vector<Elem*>& Elem::Comps()
+vector<Elem*>& Elem::Comps()
 {
     return iComps;
 }
@@ -707,7 +606,7 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
     }
     if (parent == NULL) {
 	// No parents found, create from embedded parent
-	heir = Provider()->CreateNode(sparent, aName, this, iEnv);
+	heir = Provider()->CreateNode(sparent, aName, iMan, iEnv);
 	if (heir == NULL) {
 	    Logger()->WriteFormat("ERROR: [%s] - creating elem [%s] - parent [%s] not found", Name().c_str(), aName.c_str(), sparent.c_str());
 	}
@@ -733,28 +632,6 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
     }
     return heir;
 }
-
-/*
-   Elem* Elem::GetComp(const string& aName, Elem* aRequestor)
-   {
-// Search local
-CAE_Object* res = iComps.count(aName) > 0 ? iComps[aName] : NULL;
-// Then down
-if (res == NULL && aRequestor != NULL) {
-for (map<string, CAE_Object*>::iterator it = iComps.begin(); it != iComps.end() && res == NULL; it++) {
-CAE_Object* comp = it->second;
-if (comp != aRequestor) {
-res = comp->GetComp(aName, this);
-}
-}
-}
-// Then up
-if (res == NULL && iMan != aRequestor) {
-res = iMan->GetComp(aName, this);
-}
-return res;
-}
-*/
 
 TBool Elem::AppendComp(Elem* aComp)
 {
@@ -836,24 +713,6 @@ void Elem::OnCompChanged(Elem& aComp)
     }
 }
 
-/*
-   void Elem::OnCompChanged(Elem& aComp)
-   {
-   Elem* agents = GetComp("Elem", "Agents");
-    if (agents != NULL) {
-	Elem* eagent = agents->GetComp("*", "MACompsObserver");
-	if (eagent != NULL) {
-	    MACompsObserver* iagent = eagent->GetObj(iagent);
-	    __ASSERT(iagent != NULL);
-	    iagent->HandleCompChanged(*this, aComp);
-	}
-    }
-    else {
-	DoOnCompChanged(aComp);
-    }
-}
-*/
-
 void Elem::DoOnCompChanged(Elem& aComp)
 {
     if (iMan != NULL) {
@@ -866,6 +725,20 @@ Elem* Elem::GetCompOwning(const string& aParent, Elem* aElem)
     Elem* res = NULL;
     Elem* node = aElem;
     while (node->GetMan() != NULL && !(node->GetMan() == this && node->EType() == aParent)) {
+	node = node->GetMan();	
+    }
+    if (node->GetMan() != NULL) {
+	res = node;
+    }
+    return res;
+}
+
+// TODO [YB] to use the generic mathod that uses uri instead of having specific func for type and name
+Elem* Elem::GetCompOwningN(const string& aName, Elem* aElem)
+{
+    Elem* res = NULL;
+    Elem* node = aElem;
+    while (node->GetMan() != NULL && !(node->GetMan() == this && node->Name() == aName)) {
 	node = node->GetMan();	
     }
     if (node->GetMan() != NULL) {

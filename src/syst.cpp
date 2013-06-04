@@ -34,7 +34,12 @@ void *ConnPointBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqConte
 		MProp* prov = eprov->GetObj(prov);
 		if (prov != NULL) {
 		    if (prov->Value() == aName) {
-			// TODO [YB] Do we need to redirect to hier only here and restrict doing that unconditionally?
+			// Requested provided iface - cannot be obtain via pairs - redirect to host
+			if (aIncUpHier && iMan != NULL && !ctx.IsInContext(iMan)) {
+			    // TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
+			    Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
+			    res = mgr->DoGetObj(aName, aIncUpHier, &ctx);
+			}
 		    }
 		}
 	    }
@@ -50,32 +55,61 @@ void *ConnPointBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqConte
 				res = pe->DoGetObj(aName, aIncUpHier, &ctx);
 			    }
 			}
+			// Responsible pairs not found, redirect to upper layer
+			if (res == NULL && aIncUpHier && iMan != NULL && !ctx.IsInContext(iMan)) {
+			    Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
+			    res = mgr->DoGetObj(aName, aIncUpHier, &ctx);
+			}
 		    }
 		}
 	    }
 	}
+	/*
 	if (res == NULL) {
 	    res = Vert::DoGetObj(aName, aIncUpHier, aCtx);
 	}
+	*/
     }
     return res;
 }
 
-TBool ConnPointBase::IsCompatible(Elem* aPair)
+TBool ConnPointBase::IsCompatible(Elem* aPair, TBool aExt)
 {
     TBool res = EFalse;
-    // Check roles conformance
-    // Point#1 provided
-    Elem* ept1prov = GetNode("Prop:Provided");
-    MProp* ppt1prov = ept1prov->GetObj(ppt1prov);
-    Elem* ept2req = aPair->GetNode("Prop:Required");
-    MProp* ppt2req = ept2req->GetObj(ppt2req);
-    // Point#2 provided
-    Elem* ept2prov = aPair->GetNode("Prop:Provided");
-    MProp* ppt2prov = ept2prov->GetObj(ppt2prov);
-    Elem* ept1req = GetNode("Prop:Required");
-    MProp* ppt1req = ept1req->GetObj(ppt1req);
-    res = (ppt1prov->Value() == ppt2req->Value() && ppt2prov->Value() == ppt1req->Value());
+    TBool ext = aExt;
+    Elem *cp = aPair;
+    // Temporary solution, ref to MD sec_refac_conncomp for discussion
+    // Checking if the pair is Extender
+    if (aPair->EType() == "Extender") {
+	ext = !ext;
+	cp = aPair->GetNode("*:Int");
+    }
+    if (cp != NULL) {
+	// Check roles conformance
+	Elem* ept1prov = GetNode("Prop:Provided");
+	Elem* ept2req = cp->GetNode("Prop:Required");
+	Elem* ept2prov = cp->GetNode("Prop:Provided");
+	Elem* ept1req = GetNode("Prop:Required");
+	if (ept1prov && ept2req && ept2prov && ept1req) {
+	    // Point#1 provided
+	    MProp* ppt1prov = ept1prov->GetObj(ppt1prov);
+	    MProp* ppt2req = ept2req->GetObj(ppt2req);
+	    // Point#2 provided
+	    MProp* ppt2prov = ept2prov->GetObj(ppt2prov);
+	    MProp* ppt1req = ept1req->GetObj(ppt1req);
+	    if (ppt1prov && ppt2req && ppt2prov && ppt1req) {
+		if (ext) {
+		    res = (ppt1prov->Value() == ppt2prov->Value() && ppt2req->Value() == ppt1req->Value());
+		}
+		else {
+		    res = (ppt1prov->Value() == ppt2req->Value() && ppt2prov->Value() == ppt1req->Value());
+		}
+	    }
+	    else {
+		res = EFalse;
+	    }
+	}
+    }
     return res;
 }
 
@@ -111,32 +145,29 @@ void *ExtenderAgent::DoGetObj(const char *aName, TBool aIncUpHier, const RqConte
 	    if (vhost != NULL) {
 		for (set<MVert*>::const_iterator it = vhost->Pairs().begin(); it != vhost->Pairs().end(); it++) {
 		    Base* ep = (*it)->EBase();
-		    if (ep != NULL) {
+		    if (ep != NULL && !ctx.IsInContext(ep)) {
 			res = ep->DoGetObj(aName, aIncUpHier, &ctx);
 		    }
 		}
 	    }
 	}
     }
+    // Responsible pairs not found, redirect to upper layer
+    if (res == NULL && aIncUpHier && iMan != NULL && !ctx.IsInContext(iMan)) {
+	Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
+	res = mgr->DoGetObj(aName, aIncUpHier, &ctx);
+    }
     return res;
 }
 
-TBool ExtenderAgent::IsCompatible(Elem* aPair)
+TBool ExtenderAgent::IsCompatible(Elem* aPair, TBool aExt)
 {
     TBool res = EFalse;
-    Elem* intcp = GetNode("../../ConnPoint:Int");
-    // Check roles conformance, inverting the roles from internal CP
-    // Point#1 provided
-    Elem* ept1prov = intcp->GetNode("Prop:Required");
-    MProp* ppt1prov = ept1prov->GetObj(ppt1prov);
-    Elem* ept2req = aPair->GetNode("Prop:Required");
-    MProp* ppt2req = ept2req->GetObj(ppt2req);
-    // Point#2 provided
-    Elem* ept2prov = aPair->GetNode("Prop:Provided");
-    MProp* ppt2prov = ept2prov->GetObj(ppt2prov);
-    Elem* ept1req = intcp->GetNode("Prop:Provided");
-    MProp* ppt1req = ept1req->GetObj(ppt1req);
-    res = (ppt1prov->Value() == ppt2req->Value() && ppt2prov->Value() == ppt1req->Value());
+    Elem* intcp = GetNode("../../*:Int");
+    MCompatChecker* mint = intcp->GetObj(mint);
+    if (mint != NULL) {
+	res = mint->IsCompatible(aPair, !aExt);
+    }
     return res;
 }
 
@@ -150,10 +181,17 @@ ASocket::ASocket(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan,
 
 void *ASocket::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
+    // TODO [YB] the current routing model is not optimal. Socket doesn't known itself if
+    // it supports iface or not (only pins know). So socket routes to pins first in hope
+    // they redirect properly. But what if not? Pin routes back to host, so loop happens, that stops 
+    // further routing.
     void* res = NULL;
     RqContext ctx(this, aCtx);
     if (strcmp(aName, Type()) == 0) {
 	res = this;
+    }
+    else if (strcmp(aName, MCompatChecker::Type()) == 0) {
+	res = (MCompatChecker*) this;
     }
     else {
 	res = Elem::DoGetObj(aName, EFalse);
@@ -161,19 +199,81 @@ void *ASocket::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aC
     if (res == NULL && aCtx != NULL) {
 	Base* master = aCtx->Requestor();
 	Elem* emaster = master->GetObj(emaster);
-	Base* rqst = aCtx->Ctx()->Requestor();
-	Elem* erqst = rqst->GetObj(erqst);
-	TBool iscomp = emaster->IsComp(erqst);
-	if (iscomp) {
-	    res = emaster->DoGetObj(aName, ETrue, &ctx);
+	Base* rqst = aCtx->Ctx() != NULL ? aCtx->Ctx()->Requestor(): NULL;
+	if (rqst != NULL) {
+	    Elem* erqst = rqst->GetObj(erqst);
+	    TBool iscomp = emaster->IsComp(erqst);
+	    if (iscomp) {
+		// Request comes from internal CP - forward it to upper layer
+		//		res = emaster->DoGetObj(aName, ETrue, &ctx);
+		if (aIncUpHier && iMan != NULL && !ctx.IsInContext(iMan)) {
+		    // TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
+		    Elem* host = iMan->GetMan();
+		    Elem* hostmgr = host->GetMan();
+		    Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
+		    if (mgr != NULL && !ctx.IsInContext(mgr)) {
+			res = mgr->DoGetObj(aName, aIncUpHier, &ctx);
+		    }
+		}
+	    }
 	}
-	else {
+	if (res == NULL) {
 	    Elem* man = iMan->GetMan();
-	    // Redirect to internal pins with hier option
+	    // Redirect to internal pins. Add host into context, this will prevent internals to redirect
+	    // TODO [YB] To avoid routing directly from agent excluding host. This causes incorrect context
 	    for (vector<Elem*>::const_iterator it = man->Comps().begin(); it != man->Comps().end() && res == NULL; it++) {
 		Elem* eit = (*it);
 		if (!ctx.IsInContext(eit) && eit != iMan) {
 		    res = (*it)->DoGetObj(aName, aIncUpHier, &ctx);
+		    //res = (*it)->DoGetObj(aName, aIncUpHier, aCtx);
+		}
+	    }
+	}
+	// Redirect to pair. 
+	// TODO [YB] To add checking if requiested iface is supported, ref md "sec_refac_conncomp"
+	// TODO [YB] Probably routing to pair needs to be done first, before the routing to pins
+	if (res == NULL) {
+	    Elem* man = iMan->GetMan();
+	    Vert* vman = man->GetObj(vman);
+	    for (set<MVert*>::iterator it = vman->Pairs().begin(); it != vman->Pairs().end() && res == NULL; it++) {
+		Elem* pe = (*it)->EBase()->GetObj(pe);
+		if (!ctx.IsInContext(pe)) {
+		    res = pe->DoGetObj(aName, aIncUpHier, &ctx);
+		}
+	    }
+	}
+    }
+    return res;
+}
+
+TBool ASocket::IsCompatible(Elem* aPair, TBool aExt)
+{
+    // Going thru non-trivial components and check their compatibility
+    // TODO [YB] Needs to clean up this chunk
+    TBool res = ETrue;
+    TBool ext = aExt;
+    Elem *cp = aPair;
+    // Checking if the pair is Extender
+    if (aPair->EType() == "Extender") {
+	ext = !ext;
+	cp = aPair->GetNode("*:Int");
+    }
+    if (cp != NULL) {
+	Elem* host = iMan->GetMan();
+	for (vector<Elem*>::const_iterator it = host->Comps().begin(); it != host->Comps().end() && res; it++) {
+	    Elem *comp = (*it);
+	    if (comp->Name() != "Agents" && comp->Name() != "Logspec") {
+		MCompatChecker* checker = comp->GetObj(checker);
+		if (checker != NULL) {
+		    GUri uri;
+		    uri.AppendElem(comp->EType(), comp->Name());
+		    Elem *pcomp = cp->GetNode(uri);
+		    if (pcomp != NULL) {
+			res = checker->IsCompatible(pcomp, ext);
+		    }
+		    else {
+			res = EFalse;
+		    }
 		}
 	    }
 	}

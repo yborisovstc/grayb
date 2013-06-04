@@ -19,16 +19,16 @@
 		<cont node="Prop:Provided" val="Role3"/> <cont node="Prop:Required" val="Role4"/>
 	    </node>
 	    <add node="Capsule">
-		<node id="ep" parent="../../../SysComps:sysmod/ConnPoint:Extender"> 
-		    <cont node="Prop:Provided" val="Role3"/> <cont node="Prop:Required" val="Role4"/>
+		<node id="ep" parent="../../../SysComps:sysmod/Vert:Extender"> 
+		    <cont node="ConnPoint:Int/Prop:Provided" val="Role4"/> <cont node="ConnPoint:Int/Prop:Required" val="Role3"/>
 		</node>
 	    </add>
 	</node>
 
 	<node id="Ics2" parent="../IncapsComps:incapsmod/Syst:Incaps">
 	    <add node="Capsule">
-		<node id="ep" parent="../../../SysComps:sysmod/ConnPoint:Extender"> 
-		    <cont node="Prop:Provided" val="Role4"/> <cont node="Prop:Required" val="Role3"/>
+		<node id="ep" parent="../../../SysComps:sysmod/Vert:Extender"> 
+		    <cont node="ConnPoint:Int/Prop:Provided" val="Role3"/> <cont node="ConnPoint:Int/Prop:Required" val="Role4"/>
 		</node>
 	    </add>
 	</node>
