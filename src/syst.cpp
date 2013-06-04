@@ -154,8 +154,12 @@ void *ExtenderAgent::DoGetObj(const char *aName, TBool aIncUpHier, const RqConte
     }
     // Responsible pairs not found, redirect to upper layer
     if (res == NULL && aIncUpHier && iMan != NULL && !ctx.IsInContext(iMan)) {
-	Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
-	res = mgr->DoGetObj(aName, aIncUpHier, &ctx);
+	Elem* host = iMan->GetMan();
+	Elem* hostmgr = host->GetMan();
+	Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
+	if (mgr != NULL && !ctx.IsInContext(mgr)) {
+	    res = mgr->DoGetObj(aName, aIncUpHier, &ctx);
+	}
     }
     return res;
 }

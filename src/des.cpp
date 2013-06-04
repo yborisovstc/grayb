@@ -249,9 +249,9 @@ void ADes::Update()
 
 void ADes::Confirm()
 {
-
     // Confirm all the DES components
-    for (vector<Elem*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
+    Elem* host = iMan->GetMan();
+    for (vector<Elem*>::iterator it = host->Comps().begin(); it != host->Comps().end(); it++) {
 	Elem* eit = (*it);
 	MDesSyncable* msync = eit->GetObj(msync);
 	if (msync != NULL) {

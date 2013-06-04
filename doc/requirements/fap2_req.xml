@@ -141,7 +141,7 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
-	<sect2 id="uc_conn_01"><title>UC_CONN_01 CPs providing interfaces</title>
+	<sect2 id="uc_004"><title>UC_004 CPs providing interfaces</title>
 	    <sect3><title>Description</title>
 		CLIENT requests CP for some interface - CP provides only interface that is specified as provided.
 	    </sect3>
@@ -150,6 +150,13 @@
 		    <listitem>There is no possibility for CLIENT to obtains some other interface of system via the CP. </listitem>
 		    <listitem>Is this constraint really needed? In fact the connecting policies avoid connecing incompatible CP.
 			The only problem can be access through C interface.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extension of</title>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_005"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>
@@ -172,6 +179,27 @@
 	    </sect3>
 	    <sect3><title>Details</title>
 		<itemizedlist>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="uc_005"><title>UC_005 CPs providing multiple instances of interfaces</title>
+	    <sect3><title>Description</title>
+		CLIENT requests CP for instances of some interface - CP provides available instances of specified  interface.
+	    </sect3>
+	    <sect3><title>Details</title>
+		<itemizedlist>
+		    <listitem>One important case is when some system internal component requests ifaces from system connection point. 
+			Multiple connection to that point are allowed. So the requiest shall result in returning the set of iface 
+			implementations.
+		    </listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extension of</title>
+		<xref linkend="uc_004"/>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_002"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>
