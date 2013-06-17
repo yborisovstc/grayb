@@ -151,6 +151,7 @@ Elem* Elem::GetMan()
     return iMan;
 }
 
+// TODO [YB] To remove aIncUpHier - it isn't used anymore
 void *Elem::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
@@ -161,13 +162,12 @@ void *Elem::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
     else if (strcmp(aName, MCompsObserver::Type()) == 0) {
 	res = (MCompsObserver*) this;
     }
-    // TODO [YB] To avoid routing to hier
-    /*
-    if (res == NULL && aIncUpHier && iMan != NULL && !ctx.IsInContext(iMan)) {
-	res = iMan->DoGetObj(aName, aIncUpHier, &ctx);
-    }
-    */
+    return res;
+}
 
+MIfaceProv::TICacheRange Elem::GetIfi(const char *aName, const RqContext* aCtx)
+{
+    MIfaceProv::TICacheRange res;
     return res;
 }
 

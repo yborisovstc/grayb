@@ -2,17 +2,19 @@
 #include "factr.h"
 #include "provdef.h"
 
-GFactory::GFactory(const string& aName): Base(aName)
+GFactory::GFactory(const string& aName): NBase(aName)
 {
     GProvider* baseprov = new ProvDef("ProvDef");
     __ASSERT(baseprov != NULL);
     AddProvider(baseprov);
 }
 
+/*
 void *GFactory::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
+*/
 
 Elem* GFactory::CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv)
 {

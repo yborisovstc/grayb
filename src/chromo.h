@@ -5,10 +5,10 @@
 #include "guri.h"
 #include "mchromo.h"
 
-class ChromoMdl: public Base, public MChromoMdl
+class ChromoMdl: public NBase, public MChromoMdl
 {
     public:
-	ChromoMdl(const string &aName): Base(aName) {}
+	ChromoMdl(const string &aName): NBase(aName) {}
 };
 
 // Node of chromo

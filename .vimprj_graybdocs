@@ -1,0 +1,79 @@
+
+docs=/home/yborisov/projects/fap/git CD=. filter=".doc" {
+ fap-doc=fap-doc CD=. filter="_" {
+  doc_dsa_in_swd=doc_dsa_in_swd CD=. filter="*.xml Makefile *.png" {
+   using_sm_sync_set_in_swd.xml
+   Makefile
+   fig_01.png
+   fig_fap_clsdgm.png
+   fig_snails_snail_str.png
+   fig_snails_str.png
+   fig_sr_01.png
+   fig_sr_02.png
+   fig_sr_03.png
+   fig_sr_04.png
+   fig_state_notation.png
+   fig_state_notation_1.png
+   fig_system_1.png
+   fig_system_str.png
+  }
+  des_emb_trans=doc_des_emb_trans CD=. filter="*" {
+   Makefile
+   des_emb_trans.xml
+  }
+  doc_des_vstudio_dev=doc_des_vstudio_dev CD=. filter="*" {
+   Makefile
+   doc_des_vstudio_creat.xml
+   img=img CD=. filter="*" {
+    desvl_elm_comp.png
+    desvl_elm_state.png
+    desvl_elm_state.xcf
+    desvl_elm_syst.png
+    desvl_increm.png
+    desvl_increm_log.png
+    desvl_rock_log.png
+    desvl_rock_rock.png
+    desvl_rock_root.png
+   }
+  }
+  des_magents_trans=doc_des_magents_trans CD=. filter="*" {
+   Makefile
+   des_magents_trans.xml
+  }
+ }
+ fapws/doc=fapws/doc CD=. filter="*" {
+  requirements=requirements CD=. filter="*.xml Makefile" {
+   fap_req.xml
+   Makefile
+  }
+  design=design CD=. filter="*.xml Makefile" {
+   fap_design.xml
+   Makefile
+  }
+ }
+ fap2/doc=fap2/doc CD=. filter="*" {
+  requirements=requirements CD=. filter="*.xml Makefile" {
+   fap2_req.xml
+   Makefile
+  }
+  design=design CD=. filter="*.xml Makefile" {
+   fap_design.xml
+   Makefile
+  }
+ }
+ grayb/doc=grayb/doc CD=. filter="*" {
+  requirements=requirements CD=. filter="*.xml Makefile" {
+   fap2_req.xml
+   Makefile
+  }
+  design=design CD=. filter="*.xml Makefile" {
+   grayb_design.xml
+   Makefile
+  }
+ }
+}
+fap-md=/home/yborisov/projects/fap/md CD=. filter="*" {
+ Makefile
+ fap_md_yb.xml
+ index.html
+}

@@ -24,51 +24,44 @@ void *ConnPointBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqConte
     else {
 	res = Vert::DoGetObj(aName, EFalse, aCtx);
     }
-    if (aIncUpHier) {
-	if (res == NULL) {
-	    // Redirect to pairs if iface requiested is provided by this CP
-	    //Elem* eprov = GetNode("Prop:Provided");
-	    Elem* eprov = GetNode("Prop:Provided");
-	    Elem* ereq = GetNode("Prop:Required");
-	    if (eprov != NULL) {
-		MProp* prov = eprov->GetObj(prov);
-		if (prov != NULL) {
-		    if (prov->Value() == aName) {
-			// Requested provided iface - cannot be obtain via pairs - redirect to host
-			if (aIncUpHier && iMan != NULL && !ctx.IsInContext(iMan)) {
-			    // TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
-			    Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
-			    res = mgr->DoGetObj(aName, aIncUpHier, &ctx);
-			}
-		    }
-		}
-	    }
-	    if (res == NULL && ereq != NULL) {
-		MProp* req = ereq->GetObj(req);
-		if (req != NULL) {
-		    if (req->Value() == aName) {
-			for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end() && res == NULL; it++) {
-			    Elem* pe = (*it)->EBase()->GetObj(pe);
-			    Elem* peprov = pe != NULL ? pe->GetNode("Prop:Provided"): NULL;
-			    MProp* pprov = peprov != NULL ? peprov->GetObj(pprov): NULL;
-			    if (pprov != NULL && pprov->Value() == aName && !ctx.IsInContext(pe)) {
-				res = pe->DoGetObj(aName, aIncUpHier, &ctx);
-			    }
-			}
-			// Responsible pairs not found, redirect to upper layer
-			if (res == NULL && aIncUpHier && iMan != NULL && !ctx.IsInContext(iMan)) {
-			    Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
-			    res = mgr->DoGetObj(aName, aIncUpHier, &ctx);
-			}
+    if (res == NULL) {
+	// Redirect to pairs if iface requiested is provided by this CP
+	//Elem* eprov = GetNode("Prop:Provided");
+	Elem* eprov = GetNode("Prop:Provided");
+	Elem* ereq = GetNode("Prop:Required");
+	if (eprov != NULL) {
+	    MProp* prov = eprov->GetObj(prov);
+	    if (prov != NULL) {
+		if (prov->Value() == aName) {
+		    // Requested provided iface - cannot be obtain via pairs - redirect to host
+		    if (iMan != NULL && !ctx.IsInContext(iMan)) {
+			// TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
+			Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
+			res = mgr->DoGetObj(aName, aIncUpHier, &ctx);
 		    }
 		}
 	    }
 	}
-	/*
-	if (res == NULL) {
-	    res = Vert::DoGetObj(aName, aIncUpHier, aCtx);
+	if (res == NULL && ereq != NULL) {
+	    MProp* req = ereq->GetObj(req);
+	    if (req != NULL) {
+		if (req->Value() == aName) {
+		    for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end() && res == NULL; it++) {
+			Elem* pe = (*it)->EBase()->GetObj(pe);
+			Elem* peprov = pe != NULL ? pe->GetNode("Prop:Provided"): NULL;
+			MProp* pprov = peprov != NULL ? peprov->GetObj(pprov): NULL;
+			if (pprov != NULL && pprov->Value() == aName && !ctx.IsInContext(pe)) {
+			    res = pe->DoGetObj(aName, aIncUpHier, &ctx);
+			}
+		    }
+		    // Responsible pairs not found, redirect to upper layer
+		    if (res == NULL && iMan != NULL && !ctx.IsInContext(iMan)) {
+			Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
+			res = mgr->DoGetObj(aName, aIncUpHier, &ctx);
+		    }
+		}
+	    }
 	}
-	*/
     }
     return res;
 }
@@ -153,7 +146,7 @@ void *ExtenderAgent::DoGetObj(const char *aName, TBool aIncUpHier, const RqConte
 	}
     }
     // Responsible pairs not found, redirect to upper layer
-    if (res == NULL && aIncUpHier && iMan != NULL && !ctx.IsInContext(iMan)) {
+    if (res == NULL && iMan != NULL && !ctx.IsInContext(iMan)) {
 	Elem* host = iMan->GetMan();
 	Elem* hostmgr = host->GetMan();
 	Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
@@ -209,8 +202,7 @@ void *ASocket::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aC
 	    TBool iscomp = emaster->IsComp(erqst);
 	    if (iscomp) {
 		// Request comes from internal CP - forward it to upper layer
-		//		res = emaster->DoGetObj(aName, ETrue, &ctx);
-		if (aIncUpHier && iMan != NULL && !ctx.IsInContext(iMan)) {
+		if (iMan != NULL && !ctx.IsInContext(iMan)) {
 		    // TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
 		    Elem* host = iMan->GetMan();
 		    Elem* hostmgr = host->GetMan();
@@ -229,7 +221,6 @@ void *ASocket::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aC
 		Elem* eit = (*it);
 		if (!ctx.IsInContext(eit) && eit != iMan) {
 		    res = (*it)->DoGetObj(aName, aIncUpHier, &ctx);
-		    //res = (*it)->DoGetObj(aName, aIncUpHier, aCtx);
 		}
 	    }
 	}

@@ -1,0 +1,124 @@
+<?xml version="1.0" ?>
+
+
+<!-- Test that tests root DES containing other DES
+     Well known model of "Racing snails" are used
+     -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="testroot" parent="Elem">
+    <!-- Module containing components of system layer -->
+    <node id="sysmod" parent="file:../modules/syst.xml#SysComps" />
+    <!-- Module containing components of incaps layer -->
+    <node id="incapsmod" parent="file:../modules/capsula.xml#IncapsComps" />
+    <!-- Module containing components of data -->
+    <node id="datamod" parent="file:../modules/data.xml#DataComps" />
+    <!-- Module containing components of func -->
+    <node id="funcmod" parent="file:../modules/func.xml#FuncComps" />
+    <!-- Module containing components of des layer -->
+    <node id="desmod" parent="file:../modules/des.xml#DesComps" />
+
+    <!-- Snail -->
+    <node id="Snail" parent="DesComps:desmod/Incaps:Des">
+
+	<!-- Configure output to data type to Integer -->
+	<cont node="Elem:Capsule/Extender:Out/StOutSocket:Int/ConnPoint:PinData/Prop:Required" val="MDIntGet"/>
+
+	<!-- State Mass -->
+	<node id="Mass" parent="../DesComps:desmod/State:StateInt">
+	    <!-- <cont node="DataSInt:Confirmed/Prop:Value" val="34"/> -->
+
+	    <node id="Logspec" parent="Elem">
+		<node id="Creation" parent="Elem">
+		</node>
+	    </node>
+
+	    <add node="DataSCInt:Confirmed">
+		<node id="Logspec" parent="Elem">
+		    <node id="Update" parent="../../../../DataComps:datamod/DataLogevent">
+		    </node>
+		</node>
+	    </add>
+
+	    <node id="Trans" parent="../../DesComps:desmod/TrInt:TrIncInt">
+	    </node>
+
+	    <node parent="Edge"> 
+		<cont node="Prop:P1" val="TrIncInt:Trans/ConnPoint:Inp"/> 
+		<cont node="Prop:P2" val="Elem:Capsule/Extender:Inp/StInpSocket:Int/ConnPoint:PinData"/> 
+	    </node>
+
+	    <node parent="Edge"> 
+		<cont node="Prop:P1" val="TrIncInt:Trans/ConnPoint:Out"/> 
+		<cont node="Prop:P2" val="DataSCInt:Prepared/Elem:Capsule/ConnPoint:Inp"/> 
+	    </node>
+
+	</node>
+
+    </node> <!-- Snail -->
+
+    <node id="TestDes" parent="DesComps:desmod/Incaps:Des">
+
+	<!-- Configure output to data type -->
+	<cont node="Elem:Capsule/Extender:Out/StOutSocket:Int/ConnPoint:PinData/Prop:Required" val="MDIntGet"/>
+
+	<!-- Incrementor 1 -->
+	<node id="Incr1" parent="../DesComps:desmod/State:StateInt">
+	    <!-- <cont node="DataSInt:Confirmed/Prop:Value" val="34"/> -->
+
+	    <node id="Logspec" parent="Elem">
+		<node id="Creation" parent="Elem">
+		</node>
+	    </node>
+
+	    <add node="DataSCInt:Confirmed">
+		<node id="Logspec" parent="Elem">
+		    <node id="Update" parent="../../../../DataComps:datamod/DataLogevent">
+		    </node>
+		</node>
+	    </add>
+
+	    <node id="Trans" parent="../../DesComps:desmod/TrInt:TrIncInt">
+	    </node>
+
+	    <node parent="Edge"> 
+		<cont node="Prop:P1" val="TrIncInt:Trans/ConnPoint:Inp"/> 
+		<cont node="Prop:P2" val="Elem:Capsule/Extender:Inp/StInpSocket:Int/ConnPoint:PinData"/> 
+	    </node>
+
+	    <node parent="Edge"> 
+		<cont node="Prop:P1" val="TrIncInt:Trans/ConnPoint:Out"/> 
+		<cont node="Prop:P2" val="DataSCInt:Prepared/Elem:Capsule/ConnPoint:Inp"/> 
+	    </node>
+
+	</node>
+
+
+	<!-- Incrementor 2 -->
+	<node id="Incr2" parent="StateInt:Incr1">
+	</node>
+
+	<!-- Incrementor1 Loop -->
+	<node parent="Edge"> 
+	    <cont node="Prop:P1" val="StateInt:Incr1/Elem:Capsule/Extender:Out"/> 
+	    <cont node="Prop:P2" val="StateInt:Incr1/Elem:Capsule/Extender:Inp"/> 
+	</node>
+
+	<!-- Incrementor2 Loop -->
+	<node parent="Edge"> 
+	    <cont node="Prop:P1" val="Incr1:Incr2/Elem:Capsule/Extender:Out"/> 
+	    <cont node="Prop:P2" val="Incr1:Incr2/Elem:Capsule/Extender:Inp"/> 
+	</node>
+
+	<!-- DES output -->
+	<node parent="Edge"> 
+	    <cont node="Prop:P1" val="Incr1:Incr2/Elem:Capsule/Extender:Out"/> 
+	    <cont node="Prop:P2" val="Elem:Capsule/Extender:Out/StOutSocket:Int"/> 
+	</node>
+
+    </node> <!-- test -->
+
+</node> <!-- testroot -->
+

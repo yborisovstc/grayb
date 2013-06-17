@@ -67,4 +67,19 @@ class AFunIntRes: public AFunInt
 	void UpdateOutp();
 };
 
+// Agent function "Addition of Int data"
+class AAddInt: public AFunInt
+{
+    public:
+	static const char* Type() { return "AAddInt";};
+	AAddInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From FuncBase
+	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
+	// From MDataObserver
+	virtual void OnDataChanged();
+};
+
+
 #endif

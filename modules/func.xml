@@ -10,7 +10,23 @@
     <!-- Module containing components of system layer -->
     <node id="sysmod" parent="file:/usr/share/grayb/modules/syst.xml#SysComps" />
     <!-- Module containing components of incaps layer -->
-    <node id="incapsmod" parent="file:/usr/share/grayb/modules/capsula.xml#IncapsComps" />
+   <node id="incapsmod" parent="file:/usr/share/grayb/modules/capsula.xml#IncapsComps" />
+
+ 
+    <!-- Int function with simgle input  -->
+    <node id="FuncIntSi" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+
+    	<add node="Elem:Capsule"> 
+	    <node id="inp" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+		<cont node="Prop:Required" val="MDIntGet"/>
+		<cont node="Prop:Provided" val="MDataObserver"/>
+	    </node>
+	    <node id="out" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+		<cont node="Prop:Required" val="MDataObserver"/>
+		<cont node="Prop:Provided" val="MDIntGet"/>
+	    </node>
+    	</add>
+    </node>
 
     <node id="FuncIncInt" parent="IncapsComps:incapsmod/Syst:Incaps"> 
 
@@ -48,6 +64,14 @@
 		<cont node="Prop:Required" val="MDIntSet"/>
 	    </node>
     	</add>
+    </node>
+
+    <!-- Function of integer addition -->
+    <node id="FuncAddInt" parent="Incaps:FuncIntSi"> 
+	<add node="Elem:Agents"> 
+	    <node id="func_agt" parent="AAddInt"> 
+	    </node>
+	</add>
     </node>
 
 

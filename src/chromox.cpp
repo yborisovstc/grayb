@@ -14,10 +14,12 @@ ChromoMdlX::~ChromoMdlX()
     Reset(); 
 }
 
+/*
 void *ChromoMdlX::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx) 
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
+*/
 
 void* ChromoMdlX::Init(TNodeType aRootType)
 {

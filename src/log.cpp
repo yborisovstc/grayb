@@ -3,7 +3,7 @@
 
 const TInt KLogRecBufSize = 400;
 
-GLogRec::GLogRec(const string& aName, const string& aLogFileName): Base(aName), iLogFileName(aLogFileName), iLogFileValid(EFalse)
+GLogRec::GLogRec(const string& aName, const string& aLogFileName): NBase(aName), iLogFileName(aLogFileName), iLogFileValid(EFalse)
 {
     remove(iLogFileName.c_str()); 
     iLogFile = fopen(iLogFileName.c_str(), "w+");
@@ -23,10 +23,12 @@ GLogRec::~GLogRec()
 	fclose(iLogFile);
 }
 
+/*
 void *GLogRec::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx) 
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
+*/
 
 void GLogRec::WriteRecord(const char* aText)
 {

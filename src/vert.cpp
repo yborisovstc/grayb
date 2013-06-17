@@ -122,21 +122,6 @@ void *Vert::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 	    }
 	}
     }
-    // Routing to pairs makes the rule of making path to iface to "weak". There can be unexpected paths found
-    /*
-    // Routing to pairs
-    if (res == NULL && aIncUpHier) {
-	for (set<MVert*>::const_iterator it = Pairs().begin(); it != Pairs().end(); it++) {
-	    Base* ep = (*it)->EBase();
-	    if (ep != NULL && !ctx.IsInContext(ep)) {
-		res = ep->DoGetObj(aName, aIncUpHier, &ctx);
-	    }
-	}
-    }
-    */
-    if (res == NULL && aIncUpHier) {
-	res = Elem::DoGetObj(aName, aIncUpHier, aCtx);
-    }
     return res;
 }
 

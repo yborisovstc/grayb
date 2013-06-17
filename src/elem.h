@@ -97,6 +97,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual TICacheRange GetIfi(const char *aName, const RqContext* aCtx = NULL);
 	// From MElem
 	virtual const string& EType() const;
 	virtual const set<string>& CompsTypes();

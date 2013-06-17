@@ -233,3 +233,45 @@ void AFunIntRes::OnDataChanged()
     SetRes(val);
     UpdateOutp();
 }
+
+// Agent function "Addition of Int data"
+AAddInt::AAddInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
+{
+    SetEType(Type());
+    SetParent(Type());
+}
+
+void *AAddInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = AFunInt::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+TBool AAddInt::HandleIoChanged(Elem& aContext, Elem* aCp)
+{
+    TBool res = EFalse;
+    // Checking input change
+    if (aCp->Name() == "inp") {
+	MDIntGet* dget = aCp->GetObj(dget);
+	if (dget != NULL) {
+	    TInt val = dget->Value();
+	    SetRes(val + 1);
+	    res = ETrue;
+	}
+    }
+    return res;
+}
+
+void AAddInt::OnDataChanged()
+{
+    MDIntGet* mget = GetInp("inp");
+    TInt val = mget->Value();
+    SetRes(val + 1);
+}
+

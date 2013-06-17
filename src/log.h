@@ -5,7 +5,7 @@
 #include "mlog.h"
 
 // Log recorder interface
-class GLogRec: public Base, public MLogRec
+class GLogRec: public NBase, public MLogRec
 {
     public:
 	static const char* Type() { return "GLogRec";};
@@ -13,7 +13,7 @@ class GLogRec: public Base, public MLogRec
 	virtual ~GLogRec();
     public:
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	//virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MLogRec
 	virtual void WriteRecord(const char* aText);
 	virtual void WriteFormat(const char* aFmt,...);
