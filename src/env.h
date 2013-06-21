@@ -9,7 +9,7 @@ class GFactory;
 class Elem;
 class GLogRec;
 
-class Env: public NBase, public MEnv
+class Env: public Base, public MEnv
 {
 public:
 	static const char* Type() { return "GEnv";};
@@ -21,7 +21,7 @@ public:
 	void AddProvider(GProvider* aProv);
 public:
 	// From Base
-//	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MEnv
 	virtual MProvider *Provider() const;
 	virtual MLogRec *Logger();

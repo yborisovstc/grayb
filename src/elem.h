@@ -22,6 +22,71 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	typedef multimap<TCkey, Elem*> TMElem;
 
     public:
+	// Iface cache key first part: [iface name, requestor]
+	typedef pair<string, Base*> TICacheKeyF;
+	// Iface cache key: [[iface name, requestor], provider]
+	typedef pair<TICacheKeyF, Base*> TICacheKey;
+	// Iface cache
+	typedef multimap<TICacheKey, void*> TICache;
+	// Iface cache query by TICMapKeyF (iface, requestor)
+	typedef multimap<TICacheKeyF, TICacheKey> TICacheQF;
+	// Iface cache iterator
+	typedef TICache::iterator TICacheIter;
+	// Iface cache const iterator
+	typedef TICache::const_iterator TICacheCIter;
+	// Iface cache query F iterator
+	typedef TICacheQF::iterator TICacheQFIter;
+	// Iface cache range
+	typedef pair<TICacheIter, TICacheIter> TICacheRange;
+	typedef pair<TICacheCIter, TICacheCIter> TICacheCRange;
+	typedef pair<TICacheQFIter, TICacheQFIter> TICacheQFRange;
+
+    public:
+	class IfIterImpl
+    {
+	friend class Base;
+	public:
+	IfIterImpl(Elem* aHost, const string& aIName, Base* aReq, TBool aToEnd = EFalse);
+	IfIterImpl(const IfIterImpl& aImpl): iIName(aImpl.iIName), iReq(aImpl.iReq) {};
+	virtual void Set(const IfIterImpl& aImpl);
+	virtual void Set();
+	virtual void PostIncr();
+	virtual TBool IsEqual(const IfIterImpl& aImpl) const;
+	virtual void*  Get();
+	void Rm();
+	protected:
+	void Init(TBool aToEnd = EFalse);
+	public:
+	Elem* iHost;
+	string iIName; // Iface name
+	Base* iReq; // Requestor
+	TICacheQFRange iQFRange; // Range of  cache query by TICMapKeyF
+	TICacheQFIter iQFIter; // Query result current iterator
+	TICacheRange iCacheRange;
+	TICacheIter iCacheIter; // Cache current iterator
+    };
+
+	class IfIter: public iterator<input_iterator_tag, void*>
+    {
+	public:
+	IfIter(): iImpl(NULL) {};
+	IfIter(IfIterImpl* aImpl): iImpl(aImpl) {};
+	~IfIter() { delete iImpl;};
+	IfIter(const IfIter& aIt) { iImpl = new IfIterImpl(*(aIt.iImpl));};
+	IfIter& operator=(const IfIter& aIt) { iImpl->Set(*(aIt.iImpl)); return *this;};
+	IfIter& operator++() { iImpl->PostIncr(); return *this;};
+	IfIter operator++(int) { IfIter tmp(*this); operator++(); return tmp; };
+	TBool operator==(const IfIter& aIt) { return iImpl->IsEqual((*aIt.iImpl));};
+	TBool operator!=(const IfIter& aIt) { return !operator==(aIt);};
+	void*  operator*() { return iImpl->Get();};
+	public:
+	IfIterImpl* iImpl;
+    };
+
+	typedef pair<IfIter, IfIter> TIfRange;
+
+
+    public:
 	class IterImplBase
     {
 	friend class Elem;
@@ -95,9 +160,10 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	void GetUri(GUri& aUri, Elem* aTop = NULL);
 	virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
 	virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
+	// Iface provider
+	TIfRange GetIfi(const string& aName, const RqContext* aCtx = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	virtual TICacheRange GetIfi(const char *aName, const RqContext* aCtx = NULL);
 	// From MElem
 	virtual const string& EType() const;
 	virtual const set<string>& CompsTypes();
@@ -128,6 +194,8 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	Elem* GetComp(TInt aInd);
 	virtual void DoOnCompChanged(Elem& aComp);
 	TBool IsLogeventCreOn();
+	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
+	void RmIfCache(IfIterImpl& aIt);
     protected:
 	// Element type - parent's name
 	string iEType;
@@ -147,6 +215,10 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	vector<Elem*> iComps;
 	// Components map, not owning
 	multimap<TCkey, Elem*> iMComps;
+	// Ifaces cache
+	TICache iICache;
+	// Ifaces cache query by TICMapKeyF
+	TICacheQF iICacheQF;
 };
 
 inline MLogRec* Elem::Logger() const {return iEnv ? iEnv->Logger(): NULL; }

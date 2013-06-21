@@ -8,6 +8,67 @@
 set<string> Elem::iCompsTypes;
 bool Elem::iInit = false;
 
+
+Elem::IfIterImpl::IfIterImpl(Elem* aHost, const string& aIName, Base* aReq, TBool aToEnd): iHost(aHost), iIName(aIName), iReq(aReq) 
+{
+    Init(aToEnd);
+};
+
+void Elem::IfIterImpl::Init(TBool aToEnd)
+{
+    TICacheKeyF query(iIName, iReq);
+    iQFRange = iHost->iICacheQF.equal_range(query);
+    if (iQFRange.first != iQFRange.second) {
+	iQFIter = iQFRange.first;
+	if (aToEnd) {
+	    while (iQFIter++ != iQFRange.second);
+	    iCacheRange = iHost->iICache.equal_range(iQFIter->second);
+	    iCacheIter = iCacheRange.second;
+	}
+	else {
+	    iCacheRange = iHost->iICache.equal_range(iQFIter->second);
+	    iCacheIter = iCacheRange.first;
+	}
+    }
+}
+
+void Elem::IfIterImpl::Set(const IfIterImpl& aImpl) 
+{
+    iIName=aImpl.iIName; 
+    iReq=aImpl.iReq;
+}
+
+void Elem::IfIterImpl::PostIncr()
+{
+    if (iCacheIter != iCacheRange.second) {
+	iCacheIter++;
+    }
+    else if (iQFIter != iQFRange.second) {
+	iQFIter++;
+	iCacheRange = iHost->iICache.equal_range(iQFIter->second);
+	iCacheIter = iCacheRange.first;
+    }
+}
+
+TBool Elem::IfIterImpl::IsEqual(const IfIterImpl& aImpl) const
+{
+    TBool res = iHost == aImpl.iHost && iIName == aImpl.iIName && iReq == aImpl.iReq && iCacheIter == aImpl.iCacheIter;
+    return res;
+}
+
+void*  Elem::IfIterImpl::Get()
+{
+    void* res = iCacheIter->second;
+    return res;
+}
+
+
+void Elem::IfIterImpl::Rm()
+{
+    iHost->iICache.erase(iCacheIter);
+}
+
+
 Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd): iElem(aElem), iId(aId)
 {
     iCIterRange = iElem.iMComps.equal_range(Elem::TCkey(iId.second, iId.first));
@@ -165,10 +226,34 @@ void *Elem::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
     return res;
 }
 
-MIfaceProv::TICacheRange Elem::GetIfi(const char *aName, const RqContext* aCtx)
+Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
 {
-    MIfaceProv::TICacheRange res;
+    TIfRange res;
+    // Get from cache first
+    IfIter beg(new IfIterImpl(this, aName, aCtx->Requestor()));
+    IfIter end(new IfIterImpl(this, aName, aCtx->Requestor(), ETrue));
+    if (beg != end && *beg == NULL) {
+	((IfIterImpl*)(beg.iImpl))->Rm();
+	// Invalid cache, update cache
+	UpdateIfi(aName, aCtx);
+	beg = IfIter(new IfIterImpl(this, aName, aCtx->Requestor()));
+	end = IfIter(new IfIterImpl(this, aName, aCtx->Requestor(), ETrue));
+    }
+    res = TIfRange(beg, end);
     return res;
+}
+
+void Elem::RmIfCache(IfIterImpl& aIt)
+{
+}
+
+void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
+{
+    void* res = DoGetObj(aName.c_str(), aCtx);
+    if (res != NULL) {
+	pair<TICacheKey, void*> val(TICacheKey(TICacheKeyF(aName, aCtx->Requestor()), this), res);
+	iICache.insert(val);
+    }
 }
 
 const string& Elem::EType() const

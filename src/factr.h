@@ -6,7 +6,7 @@
 
 class GProvider;
 
-class GFactory: public NBase, public MProvider
+class GFactory: public Base, public MProvider
 {
     public:
 	static const char* Type() { return "GFactory";};
@@ -14,7 +14,7 @@ class GFactory: public NBase, public MProvider
 	void LoadPlugins();
 	void AddProvider(GProvider* aProv);
 	// From Base
-//	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MProvider
 	virtual Elem* CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv);
 	virtual Chromo* CreateChromo();

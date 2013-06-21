@@ -10,7 +10,7 @@
 const string KLogFileName = "faplog.txt";
 const char* KRootName = "Root";
 
-Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileName): NBase(aName), iRoot(NULL), iLogger(NULL)
+Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileName): Base(aName), iRoot(NULL), iLogger(NULL)
 {
     iLogger = new GLogRec("Logger", aLogFileName.empty() ? KLogFileName : aLogFileName);
     iProvider = new GFactory("Factory");
@@ -65,11 +65,9 @@ void Env::AddProvider(GProvider* aProv)
     iProvider->AddProvider(aProv);
 }
 
-/*
 void *Env::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
-*/
 
 
