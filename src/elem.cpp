@@ -9,19 +9,15 @@ set<string> Elem::iCompsTypes;
 bool Elem::iInit = false;
 
 
-Elem::IfIterImpl::IfIterImpl(Elem* aHost, const string& aIName, Base* aReq, TBool aToEnd): iHost(aHost), iIName(aIName), iReq(aReq) 
-{
-    Init(aToEnd);
-};
-
-void Elem::IfIterImpl::Init(TBool aToEnd)
+Elem::IfIter::IfIter(Elem* aHost, const string& aIName, Base* aReq, TBool aToEnd): iHost(aHost), iIName(aIName), iReq(aReq) 
 {
     TICacheKeyF query(iIName, iReq);
     iQFRange = iHost->iICacheQF.equal_range(query);
     if (iQFRange.first != iQFRange.second) {
 	iQFIter = iQFRange.first;
 	if (aToEnd) {
-	    while (iQFIter++ != iQFRange.second);
+	    TICacheQFIter tmp(iQFIter);
+	    while (++tmp != iQFRange.second) iQFIter = tmp;
 	    iCacheRange = iHost->iICache.equal_range(iQFIter->second);
 	    iCacheIter = iCacheRange.second;
 	}
@@ -30,42 +26,50 @@ void Elem::IfIterImpl::Init(TBool aToEnd)
 	    iCacheIter = iCacheRange.first;
 	}
     }
+
+};
+
+Elem::IfIter::IfIter(const IfIter& aIt): iHost(aIt.iHost), iIName(aIt.iIName), iReq(aIt.iReq), iQFRange(aIt.iQFRange),
+    iQFIter(aIt.iQFIter), iCacheRange(aIt.iCacheRange), iCacheIter(aIt.iCacheIter)
+{
 }
 
-void Elem::IfIterImpl::Set(const IfIterImpl& aImpl) 
+Elem::IfIter& Elem::IfIter::operator=(const IfIter& aIt)
 {
-    iIName=aImpl.iIName; 
-    iReq=aImpl.iReq;
+    iHost = aIt.iHost; 
+    iIName = aIt.iIName; iReq = aIt.iReq;
+    iQFRange = aIt.iQFRange;
+    iQFIter = aIt.iQFIter;
+    iCacheRange = aIt.iCacheRange;
+    iCacheIter = aIt.iCacheIter;
+    return *this;
 }
 
-void Elem::IfIterImpl::PostIncr()
+Elem::IfIter& Elem::IfIter::operator++()
 {
-    if (iCacheIter != iCacheRange.second) {
-	iCacheIter++;
+    if (++iCacheIter != iCacheRange.second) {
     }
-    else if (iQFIter != iQFRange.second) {
-	iQFIter++;
-	iCacheRange = iHost->iICache.equal_range(iQFIter->second);
-	iCacheIter = iCacheRange.first;
+    else {
+	TICacheQFIter tmp(iQFIter);
+	if (++tmp != iQFRange.second) {
+	    iQFIter++;
+	    iCacheRange = iHost->iICache.equal_range(iQFIter->second);
+	    iCacheIter = iCacheRange.first;
+	}
     }
+    return *this;
 }
 
-TBool Elem::IfIterImpl::IsEqual(const IfIterImpl& aImpl) const
+TBool Elem::IfIter::operator==(const IfIter& aIt)
 {
-    TBool res = iHost == aImpl.iHost && iIName == aImpl.iIName && iReq == aImpl.iReq && iCacheIter == aImpl.iCacheIter;
+    TBool res = iHost == aIt.iHost && iIName == aIt.iIName && iReq == aIt.iReq && iCacheIter == aIt.iCacheIter;
     return res;
 }
 
-void*  Elem::IfIterImpl::Get()
+void*  Elem::IfIter::operator*()
 {
     void* res = iCacheIter->second;
     return res;
-}
-
-
-void Elem::IfIterImpl::Rm()
-{
-    iHost->iICache.erase(iCacheIter);
 }
 
 
@@ -147,7 +151,7 @@ Elem::Elem(const string &aName, Elem* aMan, MEnv* aEnv): Base(aName), iMan(aMan)
     if (!iInit) 
 	Init();
     // Set elem type (parent) by default
-//    iEType = Type();
+    //    iEType = Type();
     iMut = Provider()->CreateChromo();
     iMut->Init(ENt_Node);
     iChromo = Provider()->CreateChromo();
@@ -228,31 +232,50 @@ void *Elem::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 
 Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
 {
-    TIfRange res;
     // Get from cache first
-    IfIter beg(new IfIterImpl(this, aName, aCtx->Requestor()));
-    IfIter end(new IfIterImpl(this, aName, aCtx->Requestor(), ETrue));
-    if (beg != end && *beg == NULL) {
-	((IfIterImpl*)(beg.iImpl))->Rm();
+    IfIter beg(this, aName, aCtx->Requestor());
+    IfIter end(this, aName, aCtx->Requestor(), ETrue);
+    if (beg == end) {
 	// Invalid cache, update cache
 	UpdateIfi(aName, aCtx);
-	beg = IfIter(new IfIterImpl(this, aName, aCtx->Requestor()));
-	end = IfIter(new IfIterImpl(this, aName, aCtx->Requestor(), ETrue));
+	beg = IfIter(this, aName, aCtx->Requestor());
+	end = IfIter(this, aName, aCtx->Requestor(), ETrue);
     }
-    res = TIfRange(beg, end);
-    return res;
+    return TIfRange(beg, end);
 }
 
-void Elem::RmIfCache(IfIterImpl& aIt)
+void Elem::RmIfCache(IfIter& aIt)
 {
+    iICache.erase(aIt.iCacheIter);
+}
+
+void Elem::InvalidateIfCache()
+{
+    iICache.clear();
+    iICacheQF.clear();
+}
+
+void Elem::InsertIfCache(const string& aName, Base* aReq, Base* aProv, void* aVal)
+{
+    TICacheKeyF keyf(aName, aReq);
+    pair<TICacheKey, void*> val(TICacheKey(keyf, aProv), aVal);
+    TICacheCIter res = iICache.insert(val);
+    pair<TICacheKeyF, TICacheKey> qr(keyf, res->first);
+    iICacheQF.insert(qr);
+}
+
+void Elem::InsertIfCache(const string& aName, Base* aReq, Base* aProv, TIfRange aRg)
+{
+    for (IfIter it = aRg.first; it != aRg.second; it++) {
+	InsertIfCache(aName, aReq, aProv, *it);
+    }
 }
 
 void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
 {
     void* res = DoGetObj(aName.c_str(), aCtx);
     if (res != NULL) {
-	pair<TICacheKey, void*> val(TICacheKey(TICacheKeyF(aName, aCtx->Requestor()), this), res);
-	iICache.insert(val);
+	InsertIfCache(aName, aCtx->Requestor(), this, res);
     }
 }
 
@@ -268,20 +291,20 @@ void Elem::SetEType(const string& aEType)
 
 // TODO [YB] Is it redundant? Actually only one type of node allowed -elem
 /*
-TBool Elem::AddNode(const ChromoNode& aSpec)
-{
-    TBool res = EFalse;
-    TNodeType ntype = aSpec.Type();
-    if (ntype == ENt_Node) {
-	Elem* elem = AddElem(aSpec);
-	if (elem != NULL) {
-	    res = ETrue;
-	    Logger()->WriteFormat("Node [%s] - added node [%s] of type [%s]", Name().c_str(), elem->Name().c_str(), elem->EType().c_str());
-	}
-    }
-    return res;
-}
-*/
+   TBool Elem::AddNode(const ChromoNode& aSpec)
+   {
+   TBool res = EFalse;
+   TNodeType ntype = aSpec.Type();
+   if (ntype == ENt_Node) {
+   Elem* elem = AddElem(aSpec);
+   if (elem != NULL) {
+   res = ETrue;
+   Logger()->WriteFormat("Node [%s] - added node [%s] of type [%s]", Name().c_str(), elem->Name().c_str(), elem->EType().c_str());
+   }
+   }
+   return res;
+   }
+   */
 
 TBool Elem::AddNode(const ChromoNode& aSpec)
 {
@@ -314,7 +337,7 @@ Elem* Elem::GetComp(const string& aParent, const string& aName)
 {
     TMElem::iterator it = iMComps.find(TCkey(aName, aParent));
     return (it != iMComps.end()) ? it->second : NULL;
-//    return iMComps.count(TCkey(aName, aParent)) > 0 ? iMComps[TCkey(aName, aParent)] : NULL;
+    //    return iMComps.count(TCkey(aName, aParent)) > 0 ? iMComps[TCkey(aName, aParent)] : NULL;
 }
 
 Elem* Elem::GetComp(TInt aInd)
@@ -350,27 +373,27 @@ Elem* Elem::GetNodeS(const char* aUri)
 
 
 /*
-Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
-{
-    Elem* res = NULL;
-    GUri::TElem elem = *aPathBase;
-    if (elem.first == GUri::KTypeElem) {
-	if (elem.second == "..") {
-	    res = iMan->GetNode(aUri, ++aPathBase);
-	}
-	else {
-	    res = GetComp(elem.first, elem.second);
-	}
-    }
-    else  {
-	res = GetNode(aUri, aPathBase);
-    }
-    if (res != NULL && aPathBase + 1 != aUri.Elems().end()) {
-	res = res->GetNode(aUri, ++aPathBase);
-    }
-    return res;
-}
-*/
+   Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
+   {
+   Elem* res = NULL;
+   GUri::TElem elem = *aPathBase;
+   if (elem.first == GUri::KTypeElem) {
+   if (elem.second == "..") {
+   res = iMan->GetNode(aUri, ++aPathBase);
+   }
+   else {
+   res = GetComp(elem.first, elem.second);
+   }
+   }
+   else  {
+   res = GetNode(aUri, aPathBase);
+   }
+   if (res != NULL && aPathBase + 1 != aUri.Elems().end()) {
+   res = res->GetNode(aUri, ++aPathBase);
+   }
+   return res;
+   }
+   */
 
 Elem* Elem::GetNodeLoc(const GUri::TElem& aElem)
 {
@@ -475,23 +498,23 @@ TBool Elem::MergeMutMove(const ChromoNode& aSpec)
 {
     TBool res = EFalse;
     /*
-    DesUri src(aSpec.Attr(ENa_Id));
-    TNodeType srctype = src.Elems().at(0).first;
-    string srcname = src.Elems().at(0).second;
-    DesUri dest(aSpec.Attr(ENa_MutNode));
-    string destname = dest.Elems().at(0).second;
-    if (srctype == ENt_Object) {
-	CAE_ChromoNode& croot = iChromo->Root();
-	// Find the dest and src
-	CAE_ChromoNode::Iterator nidest = croot.Find(ENt_Object, destname);
-	CAE_ChromoNode::Iterator nisrc = croot.Find(ENt_Object, srcname);
-	// Move node
-	CAE_ChromoNode nsrc = *nisrc;
-	nsrc.MoveNextTo(nidest);
-	res = ETrue;
+       DesUri src(aSpec.Attr(ENa_Id));
+       TNodeType srctype = src.Elems().at(0).first;
+       string srcname = src.Elems().at(0).second;
+       DesUri dest(aSpec.Attr(ENa_MutNode));
+       string destname = dest.Elems().at(0).second;
+       if (srctype == ENt_Object) {
+       CAE_ChromoNode& croot = iChromo->Root();
+    // Find the dest and src
+    CAE_ChromoNode::Iterator nidest = croot.Find(ENt_Object, destname);
+    CAE_ChromoNode::Iterator nisrc = croot.Find(ENt_Object, srcname);
+    // Move node
+    CAE_ChromoNode nsrc = *nisrc;
+    nsrc.MoveNextTo(nidest);
+    res = ETrue;
     }
     else {
-	Logger()->WriteFormat("ERROR: Moving element [%s] - unsupported element type for moving", srcname.c_str());
+    Logger()->WriteFormat("ERROR: Moving element [%s] - unsupported element type for moving", srcname.c_str());
     }
     */
     return res;

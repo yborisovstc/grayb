@@ -258,20 +258,33 @@ TBool AAddInt::HandleIoChanged(Elem& aContext, Elem* aCp)
     TBool res = EFalse;
     // Checking input change
     if (aCp->Name() == "inp") {
-	MDIntGet* dget = aCp->GetObj(dget);
-	if (dget != NULL) {
-	    TInt val = dget->Value();
-	    SetRes(val + 1);
+	    RqContext cont(this);
+	    TIfRange range = aCp->GetIfi("MDIntGet", &cont);
+		TInt val = 0;
+		for (IfIter it = range.first; it != range.second; it++) {
+			MDIntGet* dget = (MDIntGet*) (*it);
+			if (dget != NULL) {
+				val += dget->Value();
+			}
+		}
+	    SetRes(val);
 	    res = ETrue;
-	}
     }
     return res;
 }
 
 void AAddInt::OnDataChanged()
 {
-    MDIntGet* mget = GetInp("inp");
-    TInt val = mget->Value();
-    SetRes(val + 1);
+    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:inp");
+    RqContext cont(this);
+	TIfRange range = einp->GetIfi("MDIntGet", &cont);
+	TInt val = 0;
+	for (IfIter it = range.first; it != range.second; it++) {
+		MDIntGet* dget = (MDIntGet*) (*it);
+		if (dget != NULL) {
+			val += dget->Value();
+		}
+	}
+	SetRes(val);
 }
 

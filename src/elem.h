@@ -42,20 +42,19 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	typedef pair<TICacheQFIter, TICacheQFIter> TICacheQFRange;
 
     public:
-	class IfIterImpl
+	class IfIter: public iterator<input_iterator_tag, void*>
     {
-	friend class Base;
+	friend class Elem;
 	public:
-	IfIterImpl(Elem* aHost, const string& aIName, Base* aReq, TBool aToEnd = EFalse);
-	IfIterImpl(const IfIterImpl& aImpl): iIName(aImpl.iIName), iReq(aImpl.iReq) {};
-	virtual void Set(const IfIterImpl& aImpl);
-	virtual void Set();
-	virtual void PostIncr();
-	virtual TBool IsEqual(const IfIterImpl& aImpl) const;
-	virtual void*  Get();
-	void Rm();
-	protected:
-	void Init(TBool aToEnd = EFalse);
+	IfIter(): iHost(NULL) {};
+	IfIter(Elem* aHost, const string& aIName, Base* aReq, TBool aToEnd = EFalse);
+	IfIter(const IfIter& aIt);
+	IfIter& operator=(const IfIter& aIt);
+	IfIter& operator++();
+	IfIter operator++(int) { IfIter tmp(*this); operator++(); return tmp; };
+	TBool operator==(const IfIter& aIt);
+	TBool operator!=(const IfIter& aIt) { return !operator==(aIt);};
+	void*  operator*();
 	public:
 	Elem* iHost;
 	string iIName; // Iface name
@@ -64,23 +63,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	TICacheQFIter iQFIter; // Query result current iterator
 	TICacheRange iCacheRange;
 	TICacheIter iCacheIter; // Cache current iterator
-    };
 
-	class IfIter: public iterator<input_iterator_tag, void*>
-    {
-	public:
-	IfIter(): iImpl(NULL) {};
-	IfIter(IfIterImpl* aImpl): iImpl(aImpl) {};
-	~IfIter() { delete iImpl;};
-	IfIter(const IfIter& aIt) { iImpl = new IfIterImpl(*(aIt.iImpl));};
-	IfIter& operator=(const IfIter& aIt) { iImpl->Set(*(aIt.iImpl)); return *this;};
-	IfIter& operator++() { iImpl->PostIncr(); return *this;};
-	IfIter operator++(int) { IfIter tmp(*this); operator++(); return tmp; };
-	TBool operator==(const IfIter& aIt) { return iImpl->IsEqual((*aIt.iImpl));};
-	TBool operator!=(const IfIter& aIt) { return !operator==(aIt);};
-	void*  operator*() { return iImpl->Get();};
-	public:
-	IfIterImpl* iImpl;
     };
 
 	typedef pair<IfIter, IfIter> TIfRange;
@@ -88,26 +71,26 @@ class Elem: public Base, public MMutable, public MCompsObserver
 
     public:
 	class IterImplBase
-    {
-	friend class Elem;
-	public:
-	static const char* Type() { return "IterImplBase";};
-	IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd = EFalse);
-	IterImplBase(Elem& aElem);
-	IterImplBase(const IterImplBase& aImpl);
-	virtual void Set(const IterImplBase& aImpl);
-	virtual void PostIncr();
-	virtual TBool IsEqual(const IterImplBase& aImpl) const;
-	virtual TBool IsCompatible(const IterImplBase& aImpl) const;
-	virtual Elem*  GetElem();
-	virtual void* DoGetObj(const char *aName);
-	virtual const void* DoGetObj(const char *aName) const;
-	public:
-	Elem& iElem;
-	GUri::TElem iId;
-	TMElem::iterator iCIter; // Comps iter
-	pair<TMElem::iterator, TMElem::iterator> iCIterRange;
-    };
+	{
+	    friend class Elem;
+	    public:
+	    static const char* Type() { return "IterImplBase";};
+	    IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd = EFalse);
+	    IterImplBase(Elem& aElem);
+	    IterImplBase(const IterImplBase& aImpl);
+	    virtual void Set(const IterImplBase& aImpl);
+	    virtual void PostIncr();
+	    virtual TBool IsEqual(const IterImplBase& aImpl) const;
+	    virtual TBool IsCompatible(const IterImplBase& aImpl) const;
+	    virtual Elem*  GetElem();
+	    virtual void* DoGetObj(const char *aName);
+	    virtual const void* DoGetObj(const char *aName) const;
+	    public:
+	    Elem& iElem;
+	    GUri::TElem iId;
+	    TMElem::iterator iCIter; // Comps iter
+	    pair<TMElem::iterator, TMElem::iterator> iCIterRange;
+	};
 
 	class Iterator: public iterator<input_iterator_tag, Elem*>
     {
@@ -161,7 +144,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
 	virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
 	// Iface provider
-	TIfRange GetIfi(const string& aName, const RqContext* aCtx = NULL);
+	virtual TIfRange GetIfi(const string& aName, const RqContext* aCtx = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MElem
@@ -194,8 +177,12 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	Elem* GetComp(TInt aInd);
 	virtual void DoOnCompChanged(Elem& aComp);
 	TBool IsLogeventCreOn();
+	// Ifaces cache
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
-	void RmIfCache(IfIterImpl& aIt);
+	void RmIfCache(IfIter& aIt);
+	void InvalidateIfCache();
+	void InsertIfCache(const string& aName, Base* aReq, Base* aProv, void* aVal);
+	void InsertIfCache(const string& aName, Base* aReq, Base* aProv, TIfRange aRg);
     protected:
 	// Element type - parent's name
 	string iEType;
@@ -231,10 +218,10 @@ inline MProvider* Elem::Provider() const {return iEnv ? iEnv->Provider(): NULL; 
 class Agent: public Elem
 {
     public:
-    static const char* Type() { return "Agent";};
-    Agent(const string &aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
-    // From Base
-    virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	static const char* Type() { return "Agent";};
+	Agent(const string &aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 };
 
 #endif

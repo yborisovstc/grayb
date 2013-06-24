@@ -137,6 +137,8 @@ TBool Vert::Connect(MVert* aPair)
     TBool res = ETrue;
     __ASSERT(iPairs.count(aPair) == 0);
     iPairs.insert(aPair);
+    // Invalidate ifaces cache
+    InvalidateIfCache();
     __ASSERT(iMan != NULL);
     iMan->OnCompChanged(*this);
     return res;
@@ -171,6 +173,8 @@ void Vert::Disconnect(MVert* aPair)
 {
     __ASSERT(iPairs.count(aPair) > 0);
     iPairs.erase(aPair);
+    // Invalidate ifaces cache
+    InvalidateIfCache();
 }
 
 void Vert::Disconnect(MEdge* aEdge)
@@ -184,15 +188,15 @@ void Vert::Disconnect(MEdge* aEdge)
     RemoveFromMap(aEdge, TCkey("*", "*"));
     Disconnect(aEdge->Pair(this));
     /*
-    MEdge* edge = (*found).second;
-    multimap<TCkey,MEdge*>::iterator fbytypelb = iMEdges.lower_bound(TCkey("*", ee->EType()));
-    multimap<TCkey,MEdge*>::iterator fbytypeub = iMEdges.upper_bound(TCkey("*", ee->EType()));
-    for (multimap<TCkey,MEdge*>::iterator it = fbytypelb; it != fbytypeub; it++) {
-	if (it->second == edge) {
-	    iMEdges.erase(it); break;
-	}
-    }
-    */
+       MEdge* edge = (*found).second;
+       multimap<TCkey,MEdge*>::iterator fbytypelb = iMEdges.lower_bound(TCkey("*", ee->EType()));
+       multimap<TCkey,MEdge*>::iterator fbytypeub = iMEdges.upper_bound(TCkey("*", ee->EType()));
+       for (multimap<TCkey,MEdge*>::iterator it = fbytypelb; it != fbytypeub; it++) {
+       if (it->second == edge) {
+       iMEdges.erase(it); break;
+       }
+       }
+       */
 }
 
 void Vert::RemoveFromMap(MEdge* aEdge, const TCkey& aKey)
@@ -223,13 +227,13 @@ void Vert::DoOnCompChanged(Elem& aComp)
 {
     Elem* eedge = GetCompOwning("Edge", &aComp);
     /*
-    if (aComp.EType() == "Edge") {
-	eedge = &aComp;
-    }
-    else if (aComp.GetMan() != this && aComp.GetMan()->EType() == "Edge") {
-	eedge = aComp.GetMan();
-    }
-    */
+       if (aComp.EType() == "Edge") {
+       eedge = &aComp;
+       }
+       else if (aComp.GetMan() != this && aComp.GetMan()->EType() == "Edge") {
+       eedge = aComp.GetMan();
+       }
+       */
     //if (aComp.EType() == "Edge") {
     if (eedge != NULL) {
 	// Reconnect the edge
@@ -257,7 +261,7 @@ void Vert::DoOnCompChanged(Elem& aComp)
 	    }
 	    else {
 		Logger()->WriteFormat("ERR: Graph [%s] connecting [%s - %s] - cannot find [%s]", Name().c_str(), pt1u.c_str(), pt2u.c_str(), 
-		    (pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
+			(pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
 	    }
 	}
     }

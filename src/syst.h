@@ -10,6 +10,8 @@ class ConnPointBase: public Vert, public MCompatChecker
     public:
 	static const char* Type() { return "ConnPointBase";};
 	ConnPointBase(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// Iface provider
+	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MCompatChecker

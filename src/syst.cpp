@@ -66,6 +66,65 @@ void *ConnPointBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqConte
     return res;
 }
 
+void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
+{
+    void* res = NULL;
+    TIfRange rr;
+    TBool resg = EFalse;
+    RqContext ctx(this, aCtx);
+    if (strcmp(aName.c_str(), Type()) == 0) {
+	res = this;
+    }
+    if (strcmp(aName.c_str(), MCompatChecker::Type()) == 0) {
+	res = (MCompatChecker*) this;
+    }
+    else {
+	res = Vert::DoGetObj(aName.c_str(), EFalse, aCtx);
+    }
+    if (res != NULL) {
+	InsertIfCache(aName, aCtx->Requestor(), this, res);
+    }
+    else {
+	// Redirect to pairs if iface requiested is provided by this CP
+	Elem* eprov = GetNode("Prop:Provided");
+	Elem* ereq = GetNode("Prop:Required");
+	if (eprov != NULL) {
+	    MProp* prov = eprov->GetObj(prov);
+	    if (prov != NULL && prov->Value() == aName) {
+		// Requested provided iface - cannot be obtain via pairs - redirect to host
+		if (iMan != NULL && !ctx.IsInContext(iMan)) {
+		    // TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
+		    Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
+		    rr = mgr->GetIfi(aName, &ctx);
+		    InsertIfCache(aName, aCtx->Requestor(), mgr, rr);
+		    resg = ETrue;
+		}
+	    }
+	}
+	if (!resg && ereq != NULL) {
+	    MProp* req = ereq->GetObj(req);
+	    if (req != NULL && req->Value() == aName) {
+		for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
+		    Elem* pe = (*it)->EBase()->GetObj(pe);
+		    Elem* peprov = pe != NULL ? pe->GetNode("Prop:Provided"): NULL;
+		    MProp* pprov = peprov != NULL ? peprov->GetObj(pprov): NULL;
+		    if (pprov != NULL && pprov->Value() == aName && !ctx.IsInContext(pe)) {
+			res = pe->DoGetObj(aName.c_str(), ETrue, &ctx);
+			InsertIfCache(aName, aCtx->Requestor(), pe, res);
+		    }
+		}
+		// Responsible pairs not found, redirect to upper layer
+		if (res == NULL && iMan != NULL && !ctx.IsInContext(iMan)) {
+		    Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
+		    rr = mgr->GetIfi(aName, &ctx);
+		    InsertIfCache(aName, aCtx->Requestor(), mgr, rr);
+		}
+	    }
+	}
+    }
+}
+
+
 TBool ConnPointBase::IsCompatible(Elem* aPair, TBool aExt)
 {
     TBool res = EFalse;
@@ -342,30 +401,30 @@ void Syst::DoOnCompChanged(Elem& aComp)
 #endif
 			MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
 			MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
-		    if (pt1checker->IsCompatible(pt2) && pt2checker->IsCompatible(pt1)) {
-			// Are compatible - connect
-			edge->SetPoints(pt1v, pt2v);
-			TBool res = edge->Connect();
-			if (res) {
-			    Logger()->WriteFormat("Syst [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			if (pt1checker->IsCompatible(pt2) && pt2checker->IsCompatible(pt1)) {
+			    // Are compatible - connect
+			    edge->SetPoints(pt1v, pt2v);
+			    TBool res = edge->Connect();
+			    if (res) {
+				Logger()->WriteFormat("Syst [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			    }
+			    else {
+				Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			    }
 			}
 			else {
-			    Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			    Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - incompatible roles", Name().c_str(), pt1u.c_str(), pt2u.c_str());
 			}
 		    }
 		    else {
-			Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - incompatible roles", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - ends aren't vertexes", Name().c_str(), pt1u.c_str(), pt2u.c_str());
 		    }
 		}
 		else {
-		    Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - ends aren't vertexes", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+		    Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - cannot find [%s]", Name().c_str(), pt1u.c_str(), pt2u.c_str(), 
+			    (pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
 		}
-	    }
-	    else {
-		Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - cannot find [%s]", Name().c_str(), pt1u.c_str(), pt2u.c_str(), 
-			(pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
 	    }
 	}
     }
-}
 
