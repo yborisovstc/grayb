@@ -33,12 +33,28 @@ class MDIntGet
 	virtual TInt Value() = 0;
 };
 
+class MDBoolGet
+{
+    public:
+	static const char* Type() { return "MDBoolGet";};
+	virtual TBool Value() = 0;
+};
+
 class MDIntSet
 {
     public:
 	static const char* Type() { return "MDIntSet";};
 	virtual void SetValue(TInt aData) = 0;
 };
+
+// Vector Int getting iface
+class MVIntGet
+{
+    public:
+	static const char* Type() { return "MVIntGet";};
+	virtual vector<TInt> Value() = 0;
+};
+
 
 
 class MDataObserver
@@ -47,6 +63,5 @@ class MDataObserver
 	static const char* Type() { return "MDataObserver";};
 	virtual void OnDataChanged() = 0;
 };
-
 
 #endif

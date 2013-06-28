@@ -26,8 +26,48 @@
 	<!-- Configure output to data type to Integer -->
 	<cont node="Elem:Capsule/Extender:Out/StOutSocket:Int/ConnPoint:PinData/Prop:Required" val="MDIntGet"/>
 
+	<!-- Input:  default - Coords of others -->
+	<!-- Output: default - Coord -->
+
 	<!-- State Mass -->
 	<node id="Mass" parent="../DesComps:desmod/State:StateInt">
+	    <!-- <cont node="DataSInt:Confirmed/Prop:Value" val="34"/> -->
+
+	    <node id="Logspec" parent="Elem">
+		<node id="Creation" parent="Elem">
+		</node>
+	    </node>
+
+	    <add node="DataSCInt:Confirmed">
+		<node id="Logspec" parent="Elem">
+		    <node id="Update" parent="../../../../DataComps:datamod/DataLogevent">
+		    </node>
+		</node>
+	    </add>
+
+	    <!-- Input: default - self -->
+	    <!-- Input: self coord -->
+	    <node id="Inp_SelfCoord" parent="../../DesComps:desmod/Extender:StIntInp"/> 
+	    <!-- Input: others coord -->
+	    <node id="Inp_OthersCoord" parent="../../DesComps:desmod/Extender:StIntInp"/> 
+
+	    <node id="Trans" parent="../../DesComps:desmod/TrInt:TrIncInt">
+	    </node>
+
+	    <node parent="Edge"> 
+		<cont node="Prop:P1" val="TrIncInt:Trans/ConnPoint:Inp"/> 
+		<cont node="Prop:P2" val="Elem:Capsule/Extender:Inp/StInpSocket:Int/ConnPoint:PinData"/> 
+	    </node>
+
+	    <node parent="Edge"> 
+		<cont node="Prop:P1" val="TrIncInt:Trans/ConnPoint:Out"/> 
+		<cont node="Prop:P2" val="DataSCInt:Prepared/Elem:Capsule/ConnPoint:Inp"/> 
+	    </node>
+
+	</node> <!-- Mass -->
+
+	<!-- State Coordinate -->
+	<node id="Coord" parent="../DesComps:desmod/State:StateInt">
 	    <!-- <cont node="DataSInt:Confirmed/Prop:Value" val="34"/> -->
 
 	    <node id="Logspec" parent="Elem">
@@ -55,7 +95,9 @@
 		<cont node="Prop:P2" val="DataSCInt:Prepared/Elem:Capsule/ConnPoint:Inp"/> 
 	    </node>
 
-	</node>
+	</node> <!-- Coordinate -->
+
+
 
     </node> <!-- Snail -->
 

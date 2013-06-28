@@ -244,6 +244,16 @@ Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
     return TIfRange(beg, end);
 }
 
+void* Elem::GetSIfi(const string& aName, const RqContext* aCtx)
+{
+    void* res = NULL;
+    TIfRange rg = GetIfi(aName, aCtx);
+    if (rg.first != rg.second) {
+	res = *(rg.first);
+    }
+    return res;
+}
+
 void Elem::RmIfCache(IfIter& aIt)
 {
     iICache.erase(aIt.iCacheIter);
@@ -420,6 +430,7 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
 	    res = iMan->GetNode(aUri, ++aPathBase);
 	}
 	else {
+	    __ASSERT(EFalse);
 	    Logger()->WriteFormat("ERR: [%s]: getting node [%s] - path to top of root", Name().c_str(), aUri.GetUri().c_str());
 	}
     }
@@ -641,7 +652,9 @@ Elem* Elem::AddElem(const ChromoNode& aNode)
 	// No parents found, create from embedded parent
 	elem = Provider()->CreateNode(sparent, sname, this, iEnv);
 	if (elem == NULL) {
-	    Logger()->WriteFormat("ERROR: [%s] - creating elem [%s] - parent [%s] not found", Name().c_str(), sname.c_str(), sparent.c_str());
+	    // TODO [YB] To use full path for this name
+	    Logger()->WriteFormat("ERROR: [%s/%s] - creating elem [%s] - parent [%s] not found", 
+		    iMan->Name().c_str(), Name().c_str(), sname.c_str(), sparent.c_str());
 	}
     }
     else {

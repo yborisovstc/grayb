@@ -12,7 +12,45 @@
     <!-- Module containing components of incaps layer -->
    <node id="incapsmod" parent="file:/usr/share/grayb/modules/capsula.xml#IncapsComps" />
 
- 
+   <!-- Input of Func with Int arg/res -->
+   <node id="Inp_FInt" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+       <cont node="Prop:Required" val="MDIntGet"/>
+       <cont node="Prop:Provided" val="MDataObserver"/>
+   </node>
+
+   <!-- Output of Func with Int arg/res -->
+   <node id="Out_FInt" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+       <cont node="Prop:Required" val="MDataObserver"/>
+       <cont node="Prop:Provided" val="MDIntGet"/>
+   </node>
+
+   <!-- Output of Bool Func -->
+   <node id="Out_FBool" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+       <cont node="Prop:Required" val="MDataObserver"/>
+       <cont node="Prop:Provided" val="MDBoolGet"/>
+   </node>
+
+   <!-- Input of Bool Func -->
+   <node id="Inp_FBool" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+       <cont node="Prop:Required" val="MDBoolGet"/>
+       <cont node="Prop:Provided" val="MDataObserver"/>
+   </node>
+
+   <!-- Output of Func with Vect Int -->
+   <node id="Out_FVInt" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+       <cont node="Prop:Required" val="MDataObserver"/>
+       <cont node="Prop:Provided" val="MVIntGet"/>
+   </node>
+
+    <!-- Int function wo inputs  -->
+    <node id="FuncInt" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+    	<add node="Elem:Capsule"> 
+	    <!-- Output -->
+	    <node id="Out" parent="../../ConnPoint:Out_FVInt"/> 
+    	</add>
+    </node>
+
+
     <!-- Int function with simgle input  -->
     <node id="FuncIntSi" parent="IncapsComps:incapsmod/Syst:Incaps"> 
 
@@ -27,6 +65,15 @@
 	    </node>
     	</add>
     </node>
+
+    <!-- Bool function with simgle input  -->
+    <node id="FuncBoolSi" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+    	<add node="Elem:Capsule"> 
+	    <!-- Output -->
+	    <node id="Out" parent="../../ConnPoint:Out_FBool"/> 
+    	</add>
+    </node>
+
 
     <node id="FuncIncInt" parent="IncapsComps:incapsmod/Syst:Incaps"> 
 
@@ -49,12 +96,10 @@
 
     <!-- Function of integer result -->
     <node id="FuncIntRes" parent="IncapsComps:incapsmod/Syst:Incaps"> 
-
     	<add node="Elem:Agents"> 
 	    <node id="func_agt" parent="AFunIntRes"> 
 	    </node>
     	</add>
-
     	<add node="Elem:Capsule"> 
 	    <node id="inp" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
 		<cont node="Prop:Required" val="MDIntGet"/>
@@ -73,6 +118,52 @@
 	    </node>
 	</add>
     </node>
+
+    <!-- Function of integer addition supporting different types -->
+    <node id="FAddInt" parent="Incaps:FuncIntSi"> 
+	<add node="Elem:Agents"> <node id="func_agt" parent="AFAddInt"/> </add>
+    </node>
+
+    <!-- Function of convolution. Working function is external -->
+    <node id="FConvInt" parent="Incaps:FuncIntSi"> 
+	<add node="Elem:Agents"> <node id="func_agt" parent="AFConvInt"/> </add>
+	<add node="Elem:Capsule"> 
+	    <!-- Output for passing argunent to Working function  -->
+	    <node id="Out_WFarg" parent="../../ConnPoint:Out_FInt"/> 
+	    <!-- Input for getting result from Working function  -->
+	    <node id="Inp_WFres" parent="../../ConnPoint:Inp_FInt"/> 
+	</add>
+    </node>
+
+    <!-- Int  inputs to Int vector conversation -->
+    <node id="FuncInpToVectInt" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+	<add node="Elem:Capsule"> 
+	    <!-- Input -->
+	    <node id="Inp" parent="../../ConnPoint:Inp_FInt"/> 
+	    <!-- Output -->
+	    <node id="Out" parent="../../ConnPoint:Out_FVInt"/> 
+	</add>
+    </node>
+
+    <!-- Function Inp1 GT Inp2  -->
+    <node id="FGTInt" parent="Incaps:FuncBoolSi"> 
+	<add node="Elem:Agents"> <node id="func_agt" parent="AFGTInt"/> </add>
+    	<add node="Elem:Capsule"> 
+	    <node id="Inp1" parent="../../ConnPoint:Inp_FInt"/> 
+	    <node id="Inp2" parent="../../ConnPoint:Inp_FInt"/> 
+    	</add>
+    </node>
+
+    <!-- Function Bool to Int  -->
+    <node id="FBoolToInt" parent="Incaps:FuncInt"> 
+	<add node="Elem:Agents"> <node id="func_agt" parent="AFBoolToInt"/> </add>
+    	<add node="Elem:Capsule"> 
+	    <node id="Inp" parent="../../ConnPoint:Inp_FBool"/> 
+    	</add>
+    </node>
+
+
+
 
 
 </node>

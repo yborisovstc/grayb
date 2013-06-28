@@ -47,6 +47,21 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     else if (aType.compare(AAddInt::Type()) == 0) {
 	res = new AAddInt(aName, aMan, aEnv);
     }
+    else if (aType.compare(AFAddInt::Type()) == 0) {
+	res = new AFAddInt(aName, aMan, aEnv);
+    }
+    else if (aType.compare(AFGTInt::Type()) == 0) {
+	res = new AFGTInt(aName, aMan, aEnv);
+    }
+    else if (aType.compare(AFBoolToInt::Type()) == 0) {
+	res = new AFBoolToInt(aName, aMan, aEnv);
+    }
+    else if (aType.compare(AFConvInt::Type()) == 0) {
+	res = new AFConvInt(aName, aMan, aEnv);
+    }
+    else if (aType.compare(AFIntToVect::Type()) == 0) {
+	res = new AFIntToVect(aName, aMan, aEnv);
+    }
     else if (aType.compare(AFunIntRes::Type()) == 0) {
 	res = new AFunIntRes(aName, aMan, aEnv);
     }

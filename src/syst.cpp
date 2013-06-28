@@ -75,7 +75,7 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
     }
-    if (strcmp(aName.c_str(), MCompatChecker::Type()) == 0) {
+    else if (strcmp(aName.c_str(), MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
     }
     else {

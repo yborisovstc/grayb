@@ -39,6 +39,14 @@
 	</node>
     </node>
 
+    <!-- Input of standard Int State -->
+    <node id="StIntInp" parent="SysComps:sysmod/Vert:Extender"> 
+	<rm node="ConnPoint:Int"/>
+	<node id="Int" parent="../Socket:StInpSocket"> 
+	</node>
+	<cont node="ConnPoint:PinData/Prop:Provided" val="MDIntGet"/>
+    </node>
+
     <!-- Transition of integer data -->
     <node id="TrInt" parent="IncapsComps:incapsmod/Syst:Incaps"> 
 

@@ -1,0 +1,94 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for functions layer
+     Tests function "Inputs Convolution, solution#1" - with working function connected to specific output of base function
+     -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="testroot" parent="Elem">
+    <!-- Module containing components of system layer -->
+    <node id="sysmod" parent="file:../modules/syst.xml#SysComps" />
+    <!-- Module containing components of incaps layer -->
+    <node id="incapsmod" parent="file:../modules/capsula.xml#IncapsComps" />
+    <!-- Module containing components of data -->
+    <node id="datamod" parent="file:../modules/data.xml#DataComps" />
+    <!-- Module containing components of func -->
+    <node id="funcmod" parent="file:../modules/func.xml#FuncComps" />
+
+    <node id="test" parent="IncapsComps:incapsmod/Syst:Incaps">
+
+	<node id="DataS_Int_1" parent="../DataComps:datamod/DataS:DataSInt">
+	    <cont node="Prop:Value" val="10"/> 
+	</node>
+
+	<node id="DataS_Int_2" parent="../DataComps:datamod/DataS:DataSInt">
+	    <cont node="Prop:Value" val="20"/> 
+	</node>
+
+	<node id="DataS_Int_3" parent="../DataComps:datamod/DataS:DataSInt">
+	    <cont node="Prop:Value" val="30"/> 
+	</node>
+
+	<node id="Threshold" parent="../DataComps:datamod/DataS:DataSInt">
+	    <cont node="Prop:Value" val="25"/> 
+	</node>
+
+	<node id="Conv" parent="../funcmod/FConvInt"/>
+	<node id="Comp" parent="../funcmod/FGTInt"/>
+	<node id="ToInt" parent="../funcmod/FBoolToInt"/>
+
+	<node id="Result" parent="../*:funcmod/*:FuncIntRes"/>
+
+	<node id="ResData" parent="../DataComps:datamod/DataS:DataSInt"/>
+
+	<node parent="Edge"> 
+	    <cont node="Prop:P1" val="DataSInt:DataS_Int_1/Elem:Capsule/ConnPoint:out"/> 
+	    <cont node="Prop:P2" val="FAddInt:Conv/Elem:Capsule/ConnPoint:inp"/> 
+	</node>
+
+	<node parent="Edge"> 
+	    <cont node="Prop:P1" val="DataSInt:DataS_Int_2/Elem:Capsule/ConnPoint:out"/> 
+	    <cont node="Prop:P2" val="FAddInt:Conv/Elem:Capsule/ConnPoint:inp"/> 
+	</node>
+
+	<node parent="Edge"> 
+	    <cont node="Prop:P1" val="DataSInt:DataS_Int_3/Elem:Capsule/ConnPoint:out"/> 
+	    <cont node="Prop:P2" val="FAddInt:Conv/Elem:Capsule/ConnPoint:inp"/> 
+	</node>
+
+	<node parent="Edge"> 
+	    <cont node="Prop:P1" val="FAddInt:Conv/Elem:Capsule/ConnPoint:Out_WFarg"/> 
+	    <cont node="Prop:P2" val="FGTInt:Comp/Elem:Capsule/ConnPoint:inp"/> 
+	</node>
+
+	<node parent="Edge"> 
+	    <cont node="Prop:P1" val="FGTInt:Comp/Elem:Capsule/ConnPoint:inp2"/> 
+	    <cont node="Prop:P2" val="DataSInt:Threshold/Elem:Capsule/ConnPoint:out"/> 
+	</node>
+
+	<node parent="Edge"> 
+	    <cont node="Prop:P1" val="FGTInt:Comp/Elem:Capsule/ConnPoint:out"/> 
+	    <cont node="Prop:P2" val="FBoolToInt:Comp/Elem:Capsule/ConnPoint:Inp"/> 
+	</node>
+
+	<node parent="Edge"> 
+	    <cont node="Prop:P1" val="FAddInt:Conv/Elem:Capsule/ConnPoint:Inp_WFres"/> 
+	    <cont node="Prop:P2" val="FBoolToInt:Comp/Elem:Capsule/ConnPoint:Out"/> 
+	</node>
+
+	<node parent="Edge"> 
+	    <cont node="Prop:P1" val="FAddInt:Conv/Elem:Capsule/ConnPoint:out"/> 
+	    <cont node="Prop:P2" val="FuncIntRes:Result/Elem:Capsule/ConnPoint:inp"/> 
+	</node>
+
+	<node parent="Edge"> 
+	    <cont node="Prop:P1" val="FuncIntRes:Result/Elem:Capsule/ConnPoint:out"/> 
+	    <cont node="Prop:P2" val="DataSInt:ResData/Elem:Capsule/ConnPoint:inp"/> 
+	</node>
+
+    </node>
+
+</node>
+

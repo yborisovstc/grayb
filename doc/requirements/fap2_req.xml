@@ -133,6 +133,7 @@
 	    <sect3><title>Extended by</title>
 		<itemizedlist>
 		    <listitem><xref linkend="uc_06"/></listitem>
+		    <listitem><xref linkend="uc_012"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>
@@ -252,6 +253,31 @@
 		form of socket.
 	    </sect3>
 	    <sect3><title>Details</title>
+		<itemizedlist>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="uc_012"><title>UC_012 CPs with no ifaces directly specified</title>
+	    <sect3><title>Description</title>
+		CLIENT: some element of system - also named "interface requestor".
+		CLIENT requests SYSTEM for create some system that can provide several ifaces via one CP (so that CP can be used
+		to connect to systems required different ifaces)
+		- SYSTEM allows to create such system without specifying the particular provided iface (or spedifying the list of ifaces 
+		provided)
+	    </sect3>
+	    <sect3><title>Details</title>
+		<itemizedlist>
+		    <listitem>This usecase allows to have dynamically configured system. One example is function "Add" that
+			can handle different type of data - int, float, complex etc. It is possible to embed agent that suppports 
+			all required ifaces, but we also need to CP allows such flexibility. </listitem>
+		    <listitem>In this case CP can verify compatibility also "dynamically" using not prop with iface specified but
+			asking system if the iface is supported</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extension of</title>
+		<xref linkend="uc_03"/>
+	    </sect3>
+	    <sect3><title>Extended by</title>
 		<itemizedlist>
 		</itemizedlist>
 	    </sect3>
