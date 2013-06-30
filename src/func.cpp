@@ -235,11 +235,15 @@ void AFunIntRes::OnDataChanged()
 {
 //    MDIntGet* mget = GetInp("inp");
     Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:inp");
+    __ASSERT(einp != NULL);
     RqContext cont(this);
     MDIntGet* mget = (MDIntGet*) einp->GetSIfi("MDIntGet", &cont);
-    TInt val = mget->Value();
-    SetRes(val);
-    UpdateOutp();
+    // It is possible that MDIntGet is missing in cases of connection process ongoing
+    if (mget != NULL) {
+	TInt val = mget->Value();
+	SetRes(val);
+	UpdateOutp();
+    }
 }
 
 // Agent function "Addition of Int data"
@@ -392,15 +396,14 @@ TBool AFunc::HandleCompChanged(Elem& aContext, Elem& aComp)
 
 void AFunc::NotifyUpdate()
 {
-    Elem* eout = GetNode("../../Elem:Capsule/ConnPoint:out");
-    if (eout != NULL) {
-	MVert* mvout = eout->GetObj(mvout);
-	MVert* mpair = *(mvout->Pairs().begin());
-	if (mpair != NULL) {
-	    MDataObserver* obsr = mpair->EBase()->GetObj(obsr);
-	    if (obsr != NULL) {
-		obsr->OnDataChanged();
-	    }
+    Elem* eout = GetNode("../../Capsule/out");
+    __ASSERT(eout != NULL);
+    MVert* mvout = eout->GetObj(mvout);
+    MVert* mpair = *(mvout->Pairs().begin());
+    if (mpair != NULL) {
+	MDataObserver* obsr = mpair->EBase()->GetObj(obsr);
+	if (obsr != NULL) {
+	    obsr->OnDataChanged();
 	}
     }
 }
@@ -410,7 +413,7 @@ void AFunc::OnDataChanged()
     NotifyUpdate();
 }
 
-// Function agent base with multitype support
+// Function agent base wo caching
 AFAddInt::AFAddInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
     SetEType(Type());
@@ -434,7 +437,7 @@ void *AFAddInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* a
 
 TInt AFAddInt::Value()
 {
-    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:inp");
+    Elem* einp = GetNode("../../Capsule/inp");
     RqContext cont(this);
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
     TInt val = 0;
@@ -442,6 +445,53 @@ TInt AFAddInt::Value()
 	MDIntGet* dget = (MDIntGet*) (*it);
 	if (dget != NULL) {
 	    val += dget->Value();
+	}
+    }
+    return val;
+}
+
+// Function Sub agent wo caching
+AFSubInt::AFSubInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+{
+    SetEType(Type());
+    SetParent(Type());
+}
+
+void *AFSubInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName, MDIntGet::Type()) == 0) {
+	res = (MDIntGet*) this;
+    }
+    else {
+	res = AFunc::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+TInt AFSubInt::Value()
+{
+    RqContext cont(this);
+    TInt val = 0;
+    // Positives
+    Elem* einp = GetNode("../../Capsule/InpP");
+    TIfRange range = einp->GetIfi("MDIntGet", &cont);
+    for (IfIter it = range.first; it != range.second; it++) {
+	MDIntGet* dget = (MDIntGet*) (*it);
+	if (dget != NULL) {
+	    val += dget->Value();
+	}
+    }
+    // Negatives
+    einp = GetNode("../../Capsule/InpN");
+    range = einp->GetIfi("MDIntGet", &cont);
+    for (IfIter it = range.first; it != range.second; it++) {
+	MDIntGet* dget = (MDIntGet*) (*it);
+	if (dget != NULL) {
+	    val -= dget->Value();
 	}
     }
     return val;
@@ -502,7 +552,14 @@ void *AFConvInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* 
 	res = this;
     }
     else if (strcmp(aName, MDIntGet::Type()) == 0) {
-	res = (MDIntGet*) this;
+	// If iface requested from working function input - redirect to Sample iface holder
+	Elem* wfinp = GetNode("../../Capsule/Out_WFarg");
+	if (aCtx->IsInContext(wfinp)) {
+	    res = (MDIntGet*) &iSampleHolder;
+	}
+	else {
+	    res = (MDIntGet*) this;
+	}
     }
     else {
 	res = AFunc::DoGetObj(aName, aIncUpHier);
@@ -521,7 +578,7 @@ void AFConvInt::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
     else if (strcmp(aName.c_str(), MDIntGet::Type()) == 0) {
 	// If iface requested from working function input - redirect to Sample iface holder
-	Elem* wfinp = GetNode("../../Elem:Capsule/ConnPoint:Inp_FInt");
+	Elem* wfinp = GetNode("../../Capsule/Out_WFarg");
 	if (aCtx->IsInContext(wfinp)) {
 	    res = (MDIntGet*) &iSampleHolder;
 	}
@@ -678,17 +735,16 @@ void *AFGTInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aC
 
 TBool AFGTInt::Value()
 {
-    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:inp");
-    Elem* einp2 = GetNode("../../Elem:Capsule/ConnPoint:inp2");
-    __ASSERT(einp != NULL && einp2 != NULL);
+    Elem* einp1 = GetNode("../../Capsule/Inp1");
+    Elem* einp2 = GetNode("../../Capsule/Inp2");
+    __ASSERT(einp1 != NULL && einp2 != NULL);
     RqContext cont(this);
-    MDIntGet* minp = (MDIntGet*) einp->GetSIfi("MDIntGet", &cont);
+    MDIntGet* minp1 = (MDIntGet*) einp1->GetSIfi("MDIntGet", &cont);
     MDIntGet* minp2 = (MDIntGet*) einp2->GetSIfi("MDIntGet", &cont);
     TBool res = EFalse;
-    if (minp != NULL && minp2 != NULL) {
-	res = (minp2 > minp);
+    if (minp1 != NULL && minp2 != NULL) {
+	res = (minp1->Value() > minp2->Value());
     }
-
     return res;
 }
 
@@ -717,7 +773,7 @@ void *AFBoolToInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext
 
 TInt AFBoolToInt::Value()
 {
-    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:Inp");
+    Elem* einp = GetNode("../../Capsule/Inp");
     __ASSERT(einp != NULL);
     RqContext cont(this);
     MDBoolGet* minp = (MDBoolGet*) einp->GetSIfi("MDBoolGet", &cont);

@@ -123,6 +123,17 @@ class AFAddInt: public AFunc, public MDIntGet
 	virtual TInt Value();
 };
 
+class AFSubInt: public AFunc, public MDIntGet
+{
+    public:
+	static const char* Type() { return "AFSubInt";};
+	AFSubInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MDIntGet
+	virtual TInt Value();
+};
+
 // Inputs to vector conversion
 class AFIntToVect: public AFunc, public MVIntGet
 {

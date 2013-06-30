@@ -201,12 +201,12 @@ void Ut_func::test_FuncSeq3()
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out vertex", mdoutpv != 0);
     MVert* pair = *(mdoutpv->Pairs().begin());
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    Elem* efuninp = root->GetNode("Incaps:test/FuncAddInt:Add/Elem:Capsule/ConnPoint:inp");
+    Elem* efuninp = root->GetNode("Incaps:test/FAddInt:Add/Elem:Capsule/ConnPoint:inp");
     CPPUNIT_ASSERT_MESSAGE("Fail to get fun inp", efuninp != NULL);
     MVert* mpairt = efuninp->GetObj(mpairt);
     CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
 
-    Elem* foutp = root->GetNode("Incaps:test/FuncAddInt:Add/Elem:Capsule/ConnPoint:out");
+    Elem* foutp = root->GetNode("Incaps:test/FAddInt:Add/Elem:Capsule/ConnPoint:out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
     MDIntGet* foutpget = foutp->GetObj(foutpget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
@@ -233,7 +233,7 @@ void Ut_func::test_FuncSeq3()
     nchange.SetAttr(ENa_MutVal, "57");
     dinp->Mutate();
     // Check the function output
-    Elem* foutp1 = root->GetNode("Incaps:test/FuncAddInt:Add/Elem:Capsule/ConnPoint:out");
+    Elem* foutp1 = root->GetNode("Incaps:test/FAddInt:Add/Elem:Capsule/ConnPoint:out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out when inp data changed", foutp1 != 0);
     MDIntGet* foutpget1 = foutp1->GetObj(foutpget1);
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface when input data changed", foutpget1 != 0);
@@ -267,12 +267,12 @@ void Ut_func::test_FuncSeq4()
     MDIntGet* rdataget = resdata->GetObj(rdataget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget != 0);
     TInt rdataval = rdataget->Value();
-    CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval == 1);
+    CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval == 7);
     Elem* resdataprop = root->GetNode("Incaps:test/DataSInt:ResData/Prop:Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata value property", resdataprop != 0);
     MProp* rdmprop = resdataprop->GetObj(rdmprop);
     const string& rdval = rdmprop->Value();
-    CPPUNIT_ASSERT_MESSAGE("Incorrect rdata prop value", rdval == "1");
+    CPPUNIT_ASSERT_MESSAGE("Incorrect rdata prop value", rdval == "7");
 
     // Checking the result update on update of input
     // Mutate the input data first
@@ -286,7 +286,7 @@ void Ut_func::test_FuncSeq4()
     CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
     MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
     const string& rdval1 = rdmprop1->Value();
-    CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "2");
+    CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "6");
 
     delete iEnv;
 }

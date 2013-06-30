@@ -22,7 +22,8 @@ TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 	}
 	else {
 	    FromString(prop->Value());
-	    Logger()->WriteFormat("[%s:%s] value changed to [%s]", EType().c_str(), Name().c_str(), prop->Value().c_str());
+	    Logger()->WriteFormat("[%s/%s/%s] value changed to [%s]", 
+		    iMan->GetMan()->Name().c_str(), iMan->Name().c_str(), Name().c_str(), prop->Value().c_str());
 	}
 	res = ETrue;
     }

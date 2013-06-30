@@ -54,6 +54,26 @@
 	    <node id="Trans" parent="../../DesComps:desmod/TrInt:TrIncInt">
 	    </node>
 
+	    <!-- Transition -->
+	    <node id="Conv" parent="../funcmod/FConvInt"/>
+	    <node id="Comp" parent="../funcmod/FGTInt"/>
+	    <node id="ToInt" parent="../funcmod/FBoolToInt"/>
+	    <node id="Result" parent="../*:funcmod/*:FuncIntRes"/>
+	    <node id="ResData" parent="../DataComps:datamod/DataS:DataSInt"/>
+
+	    <node parent="Edge"> <cont node="Prop:P1" val="DataS_Int_1/Capsule/out"/> <cont node="Prop:P2" val="Conv/Capsule/inp"/> </node>
+	    <node parent="Edge"> <cont node="Prop:P1" val="DataS_Int_2/Capsule/out"/> <cont node="Prop:P2" val="Conv/Capsule/inp"/> </node>
+	    <node parent="Edge"> <cont node="Prop:P1" val="DataS_Int_3/Capsule/out"/> <cont node="Prop:P2" val="Conv/Capsule/inp"/> </node>
+	    <node parent="Edge"> <cont node="Prop:P1" val="Conv/Capsule/Out_WFarg"/> <cont node="Prop:P2" val="Comp/Capsule/Inp1"/> </node>
+	    <node parent="Edge"> <cont node="Prop:P1" val="Threshold/Capsule/out"/> <cont node="Prop:P2" val="Comp/Capsule/Inp2"/> </node>
+	    <node parent="Edge"> <cont node="Prop:P1" val="Comp/Capsule/Out"/> <cont node="Prop:P2" val="ToInt/Capsule/Inp"/> </node>
+	    <node parent="Edge"> <cont node="Prop:P1" val="ToInt/Capsule/Out"/> <cont node="Prop:P2" val="Conv/Capsule/Inp_WFres"/> </node>
+	    <node parent="Edge"> <cont node="Prop:P1" val="Conv/Capsule/out"/> <cont node="Prop:P2" val="Result/Capsule/inp"/> </node>
+	    <node parent="Edge"> <cont node="Prop:P1" val="Result/Capsule/out"/> <cont node="Prop:P2" val="ResData/Capsule/inp"/> </node>
+
+	    <!-- Transition end -->
+
+
 	    <node parent="Edge"> 
 		<cont node="Prop:P1" val="TrIncInt:Trans/ConnPoint:Inp"/> 
 		<cont node="Prop:P2" val="Elem:Capsule/Extender:Inp/StInpSocket:Int/ConnPoint:PinData"/> 

@@ -52,6 +52,8 @@ class Vert: public Elem, public MVert
 	virtual void OnCompDeleting(Elem& aComp);
 	virtual void OnCompAdding(Elem& aComp);
 	virtual void DoOnCompChanged(Elem& aComp);
+	// Iface cache
+	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
     protected:
 	void RemoveFromMap(MEdge* aEdge, const TCkey& aKey);
     protected:

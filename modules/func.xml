@@ -46,7 +46,7 @@
     <node id="FuncInt" parent="IncapsComps:incapsmod/Syst:Incaps"> 
     	<add node="Elem:Capsule"> 
 	    <!-- Output -->
-	    <node id="Out" parent="../../ConnPoint:Out_FVInt"/> 
+	    <node id="out" parent="../../ConnPoint:Out_FInt"/> 
     	</add>
     </node>
 
@@ -70,7 +70,7 @@
     <node id="FuncBoolSi" parent="IncapsComps:incapsmod/Syst:Incaps"> 
     	<add node="Elem:Capsule"> 
 	    <!-- Output -->
-	    <node id="Out" parent="../../ConnPoint:Out_FBool"/> 
+	    <node id="out" parent="../../ConnPoint:Out_FBool"/> 
     	</add>
     </node>
 
@@ -119,9 +119,20 @@
 	</add>
     </node>
 
-    <!-- Function of integer addition supporting different types -->
+    <!-- Function of integer addition wo caching -->
     <node id="FAddInt" parent="Incaps:FuncIntSi"> 
 	<add node="Elem:Agents"> <node id="func_agt" parent="AFAddInt"/> </add>
+    </node>
+
+    <!-- Function of integer addition wo caching -->
+    <node id="FSubInt" parent="Incaps:FuncInt"> 
+	<add node="Elem:Agents"> <node id="func_agt" parent="AFSubInt"/> </add>
+	<add node="Elem:Capsule"> 
+	    <!-- Input positives -->
+	    <node id="InpP" parent="../../Inp_FInt"/> 
+	    <!-- Input negatives -->
+	    <node id="InpN" parent="../../Inp_FInt"/> 
+	</add>
     </node>
 
     <!-- Function of convolution. Working function is external -->

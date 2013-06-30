@@ -125,6 +125,38 @@ void *Vert::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
     return res;
 }
 
+void Vert::UpdateIfi(const string& aName, const RqContext* aCtx)
+{
+    void* res = NULL;
+    TIfRange rr;
+    RqContext ctx(this, aCtx);
+    if (strcmp(aName.c_str(), Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName.c_str(), MVert::Type()) == 0) {
+	res = (MVert*) this;
+    }
+    else {
+	res = Elem::DoGetObj(aName.c_str(), EFalse);
+    }
+    if (res != NULL) {
+	InsertIfCache(aName, aCtx->Requestor(), this, res);
+    }
+    // Support run-time extentions on the base layer, ref md#sec_refac_iface
+    if (res == NULL) {
+	Elem* agents = GetComp("Elem", "Agents");
+	if (agents != NULL) {
+	    for (vector<Elem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && res == NULL; it++) {
+		Elem* eit = (*it);
+		if (!ctx.IsInContext(eit)) {
+		    rr = eit->GetIfi(aName, &ctx);
+		    InsertIfCache(aName, aCtx->Requestor(), eit, rr);
+		}
+	    }
+	}
+    }
+}
+
 Vert::~Vert()
 {
     // TODO [YB] To add notif of edge about deleting
