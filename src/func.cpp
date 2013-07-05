@@ -86,7 +86,8 @@ void *AFunInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aC
 void AFunInt::SetRes(TInt aData)
 {
     if (mData != aData) {
-	Logger()->WriteFormat("AFunInt [%s] updated [%d <- %d]", Name().c_str(), mData, aData);
+	Elem* host = iMan->GetMan();
+	Logger()->WriteFormat("[%s/%s] updated [%d <- %d]", host->Name().c_str(), Name().c_str(), mData, aData);
 	mData = aData;
 	NotifyUpdate();
     }
@@ -496,6 +497,85 @@ TInt AFSubInt::Value()
     }
     return val;
 }
+
+
+// Restriction of value from top and bottom
+AFLimInt::AFLimInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+{
+    SetEType(Type());
+    SetParent(Type());
+}
+
+void *AFLimInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName, MDIntGet::Type()) == 0) {
+	res = (MDIntGet*) this;
+    }
+    else {
+	res = AFunc::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+TInt AFLimInt::Value()
+{
+    TInt val = 0;
+    MDIntGet* minp = (MDIntGet*) GetSIfi("../../Capsule/Inp", "MDIntGet");
+    MDIntGet* mlimu = (MDIntGet*) GetSIfi("../../Capsule/Inp_LimU", "MDIntGet");
+    MDIntGet* mliml = (MDIntGet*) GetSIfi("../../Capsule/Inp_LimL", "MDIntGet");
+    if (minp != NULL && mlimu != NULL && mliml != NULL) {
+	TInt inp = minp->Value();
+	TInt limu = mlimu->Value();
+	TInt liml = mliml->Value();
+	val = (inp > limu) ? limu : inp;
+	val = (val < liml) ? liml : val;
+    }
+    return val;
+}
+
+
+// Restriction of value from top and bottom
+AFDivInt::AFDivInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+{
+    SetEType(Type());
+    SetParent(Type());
+}
+
+void *AFDivInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName, MDIntGet::Type()) == 0) {
+	res = (MDIntGet*) this;
+    }
+    else {
+	res = AFunc::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+TInt AFDivInt::Value()
+{
+    TInt val = 0;
+    MDIntGet* mdvd = (MDIntGet*) GetSIfi("../../Capsule/Inp_DD", "MDIntGet");
+    MDIntGet* mdvr = (MDIntGet*) GetSIfi("../../Capsule/Inp_DR", "MDIntGet");
+    if (mdvd != NULL && mdvr != NULL) {
+	TInt dvd = mdvd->Value();
+	TInt dvr = mdvr->Value();
+	// TODO [YB] To add errors handling
+	if (dvr != 0) {
+	    val = dvd / dvr;
+	}
+    }
+    return val;
+}
+
 
 // Inputs to vector conversion
 AFIntToVect::AFIntToVect(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)

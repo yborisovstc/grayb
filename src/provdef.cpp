@@ -53,6 +53,12 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     else if (aType.compare(AFSubInt::Type()) == 0) {
 	res = new AFSubInt(aName, aMan, aEnv);
     }
+    else if (aType.compare(AFLimInt::Type()) == 0) {
+	res = new AFLimInt(aName, aMan, aEnv);
+    }
+    else if (aType.compare(AFDivInt::Type()) == 0) {
+	res = new AFDivInt(aName, aMan, aEnv);
+    }
     else if (aType.compare(AFGTInt::Type()) == 0) {
 	res = new AFGTInt(aName, aMan, aEnv);
     }

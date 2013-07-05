@@ -9,6 +9,9 @@
 <!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
 
 <node id="testroot" parent="Elem">
+
+    <node id="Logspec" parent="Elem"> <node id="Creation" parent="Elem"/> </node>
+
     <!-- Module containing components of system layer -->
     <node id="sysmod" parent="file:../modules/syst.xml#SysComps" />
     <!-- Module containing components of incaps layer -->
@@ -20,6 +23,52 @@
     <!-- Module containing components of des layer -->
     <node id="desmod" parent="file:../modules/des.xml#DesComps" />
 
+    <!-- System Contants Input socket -->
+    <node id="SysConstInpSocket" parent="sysmod/Vert:Socket">
+	<node id="MaxFeed" parent="../sysmod/ConnPoint"> <cont node="Prop:Provided" val="MDIntGet"/> </node>
+	<node id="MinMass" parent="../sysmod/ConnPoint"> <cont node="Prop:Provided" val="MDIntGet"/> </node>
+	<node id="MaxMass" parent="../sysmod/ConnPoint"> <cont node="Prop:Provided" val="MDIntGet"/> </node>
+    </node>
+
+    <!-- System Contants Input -->
+    <node id="SysConstInp" parent="SysComps:sysmod/Vert:Extender"> 
+	<rm node="ConnPoint:Int"/>
+	<node id="Int" parent="../SysConstInpSocket"/> 
+    </node>
+
+    <!-- System Contants Output socket -->
+    <node id="SysConstOutSocket" parent="SysComps:sysmod/Vert:Socket">
+	<node id="MaxFeed" parent="../sysmod/ConnPoint"> <cont node="Prop:Required" val="MDIntGet"/> </node>
+	<node id="MinMass" parent="../sysmod/ConnPoint"> <cont node="Prop:Required" val="MDIntGet"/> </node>
+	<node id="MaxMass" parent="../sysmod/ConnPoint"> <cont node="Prop:Required" val="MDIntGet"/> </node>
+    </node>
+
+    <!-- System Contants Output -->
+    <node id="SysConstOut" parent="SysComps:sysmod/Vert:Extender"> 
+	<rm node="ConnPoint:Int"/>
+	<node id="Int" parent="../SysConstOutSocket"/> 
+    </node>
+
+    <!-- System Constants -->
+    <node id="SysConsts" parent="IncapsComps:incapsmod/Syst:Incaps">
+	<add node="Elem:Capsule">
+	    <node id="Out" parent="../../SysConstOut"/> 
+	</add>
+
+	<!-- TODO [YB] To use simpler system for constants, DataSCInt is excessibe -->
+	<!-- Maximum of feed available -->
+	<node id="Data_MaxFeed" parent="../datamod/DataSCInt"> <cont node="Value" val="3"/> </node>
+	<!-- Minimal mass -->
+	<node id="Data_MinMass" parent="../datamod/DataSCInt"> <cont node="Value" val="1"/> </node>
+	<!-- Maximum mass -->
+	<node id="Data_MaxMass" parent="../datamod/DataSCInt"> <cont node="Value" val="20"/> </node>
+
+	<!-- TODO [YB] Paths in Edge are hadled differently from other elements. They are handled in system context-->
+	<!-- This can confuse developer when specifying system. -->
+	<node parent="Edge"> <cont node="P1" val="Data_MaxFeed/Capsule/Out"/> <cont node="P2" val="Capsule/Out/Int/MaxFeed"/> </node>
+    </node> <!-- System Constants -->
+
+
     <!-- Snail -->
     <node id="Snail" parent="DesComps:desmod/Incaps:Des">
 
@@ -28,6 +77,14 @@
 
 	<!-- Input:  default - Coords of others -->
 	<!-- Output: default - Coord -->
+
+	<add node="Elem:Capsule">
+	    <!-- System parameters -->
+	    <node id="Inp_SysPars" parent="../../SysConstInp"/> 
+	    <!-- Mass -->
+	    <node id="Out_Mass" parent="../../DesComps:desmod/Extender:StIntOut"/> 
+	</add>
+
 
 	<!-- State Mass -->
 	<node id="Mass" parent="../DesComps:desmod/State:StateInt">
@@ -47,42 +104,43 @@
 
 	    <!-- Input: default - self -->
 	    <!-- Input: self coord -->
-	    <node id="Inp_SelfCoord" parent="../../DesComps:desmod/Extender:StIntInp"/> 
-	    <!-- Input: others coord -->
-	    <node id="Inp_OthersCoord" parent="../../DesComps:desmod/Extender:StIntInp"/> 
-
-	    <node id="Trans" parent="../../DesComps:desmod/TrInt:TrIncInt">
-	    </node>
+	    <add node="Elem:Capsule">
+		<node id="Inp_SelfCoord" parent="../../../DesComps:desmod/Extender:StIntInp"/> 
+		<!-- Input: others coord -->
+		<node id="Inp_OthersCoord" parent="../../../DesComps:desmod/Extender:StIntInp"/> 
+		<!-- System parameters -->
+		<node id="Inp_SysPars" parent="../../../SysConstInp"/> 
+	    </add>
 
 	    <!-- Transition -->
-	    <node id="Conv" parent="../funcmod/FConvInt"/>
-	    <node id="Comp" parent="../funcmod/FGTInt"/>
-	    <node id="ToInt" parent="../funcmod/FBoolToInt"/>
-	    <node id="Result" parent="../*:funcmod/*:FuncIntRes"/>
-	    <node id="ResData" parent="../DataComps:datamod/DataS:DataSInt"/>
+	    <node id="Conv" parent="../../funcmod/TFConvInt"/>
+	    <node id="Comp" parent="../../funcmod/TFGTInt"/>
+	    <node id="ToInt" parent="../../funcmod/TFBoolToInt"/>
+	    <node id="Sub" parent="../../funcmod/TFSubInt"/>
+	    <node id="Sub2" parent="../../funcmod/TFSubInt"/>
+	    <node id="Lim" parent="../../funcmod/TFLimInt"/>
+	    <node id="Data_Const1" parent="../../datamod/DataSCInt"> <cont node="Value" val="1"/> </node>
 
-	    <node parent="Edge"> <cont node="Prop:P1" val="DataS_Int_1/Capsule/out"/> <cont node="Prop:P2" val="Conv/Capsule/inp"/> </node>
-	    <node parent="Edge"> <cont node="Prop:P1" val="DataS_Int_2/Capsule/out"/> <cont node="Prop:P2" val="Conv/Capsule/inp"/> </node>
-	    <node parent="Edge"> <cont node="Prop:P1" val="DataS_Int_3/Capsule/out"/> <cont node="Prop:P2" val="Conv/Capsule/inp"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_OthersCoord/Int/PinData"/> <cont node="P2" val="Conv/Capsule/inp"/> </node>
 	    <node parent="Edge"> <cont node="Prop:P1" val="Conv/Capsule/Out_WFarg"/> <cont node="Prop:P2" val="Comp/Capsule/Inp1"/> </node>
-	    <node parent="Edge"> <cont node="Prop:P1" val="Threshold/Capsule/out"/> <cont node="Prop:P2" val="Comp/Capsule/Inp2"/> </node>
-	    <node parent="Edge"> <cont node="Prop:P1" val="Comp/Capsule/Out"/> <cont node="Prop:P2" val="ToInt/Capsule/Inp"/> </node>
-	    <node parent="Edge"> <cont node="Prop:P1" val="ToInt/Capsule/Out"/> <cont node="Prop:P2" val="Conv/Capsule/Inp_WFres"/> </node>
-	    <node parent="Edge"> <cont node="Prop:P1" val="Conv/Capsule/out"/> <cont node="Prop:P2" val="Result/Capsule/inp"/> </node>
-	    <node parent="Edge"> <cont node="Prop:P1" val="Result/Capsule/out"/> <cont node="Prop:P2" val="ResData/Capsule/inp"/> </node>
-
+	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_SelfCoord/Int/PinData"/> <cont node="P2" val="Comp/Capsule/Inp2"/> </node>
+	    <node parent="Edge"> <cont node="Prop:P1" val="Comp/Capsule/out"/> <cont node="Prop:P2" val="ToInt/Capsule/Inp"/> </node>
+	    <node parent="Edge"> <cont node="Prop:P1" val="ToInt/Capsule/out"/> <cont node="Prop:P2" val="Conv/Capsule/Inp_WFres"/> </node>
+	    <node parent="Edge"> <cont node="Prop:P1" val="Conv/Capsule/out"/> <cont node="Prop:P2" val="Sub/Capsule/InpN"/> </node>
+	    <!-- TODO [YB] !! It is not disable to connect to nodes outside the current system. To prohibite this -->
+	    <!-- This can cause errors that Data_MaxFeed can have some same edges connected -->
+	    <!-- 
+	    <node parent="Edge"> <cont node="P1" val="../../Data_MaxFeed/Capsule/Out"/> <cont node="P2" val="Sub/Capsule/InpP"/> </node>
+	    -->
+	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int/MaxFeed"/> <cont node="P2" val="Sub/Capsule/InpP"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp/Int/PinData"/> <cont node="P2" val="Sub2/Capsule/InpP"/> </node>
+	    <node parent="Edge"> <cont node="Prop:P1" val="Sub/Capsule/out"/> <cont node="Prop:P2" val="Sub2/Capsule/InpP"/> </node>
+	    <node parent="Edge"> <cont node="Prop:P1" val="Data_Const1/Capsule/Out"/> <cont node="Prop:P2" val="Sub2/Capsule/InpN"/> </node>
+	    <node parent="Edge"> <cont node="Prop:P1" val="Sub2/Capsule/out"/> <cont node="Prop:P2" val="Lim/Capsule/Inp"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int/MinMass"/> <cont node="P2" val="Lim/Capsule/Inp_LimL"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int/MaxMass"/> <cont node="P2" val="Lim/Capsule/Inp_LimU"/> </node>
+	    <node parent="Edge"> <cont node="Prop:P1" val="Lim/Capsule/out"/> <cont node="Prop:P2" val="Prepared/Capsule/Inp"/> </node>
 	    <!-- Transition end -->
-
-
-	    <node parent="Edge"> 
-		<cont node="Prop:P1" val="TrIncInt:Trans/ConnPoint:Inp"/> 
-		<cont node="Prop:P2" val="Elem:Capsule/Extender:Inp/StInpSocket:Int/ConnPoint:PinData"/> 
-	    </node>
-
-	    <node parent="Edge"> 
-		<cont node="Prop:P1" val="TrIncInt:Trans/ConnPoint:Out"/> 
-		<cont node="Prop:P2" val="DataSCInt:Prepared/Elem:Capsule/ConnPoint:Inp"/> 
-	    </node>
 
 	</node> <!-- Mass -->
 
@@ -90,95 +148,62 @@
 	<node id="Coord" parent="../DesComps:desmod/State:StateInt">
 	    <!-- <cont node="DataSInt:Confirmed/Prop:Value" val="34"/> -->
 
-	    <node id="Logspec" parent="Elem">
-		<node id="Creation" parent="Elem">
-		</node>
-	    </node>
+	    <node id="Logspec" parent="Elem"> <node id="Creation" parent="Elem"/> </node>
 
 	    <add node="DataSCInt:Confirmed">
 		<node id="Logspec" parent="Elem">
-		    <node id="Update" parent="../../../../DataComps:datamod/DataLogevent">
-		    </node>
+		    <node id="Update" parent="../../../../DataComps:datamod/DataLogevent"/>
 		</node>
 	    </add>
 
-	    <node id="Trans" parent="../../DesComps:desmod/TrInt:TrIncInt">
-	    </node>
+	    <add node="Elem:Capsule">
+		<!-- Std input - self -->
+		<!-- Mass -->
+		<node id="Inp_Mass" parent="../../../DesComps:desmod/Extender:StIntInp"/> 
+		<!-- System parameters -->
+		<node id="Inp_SysPars" parent="../../../SysConstInp"/> 
+	    </add>
 
-	    <node parent="Edge"> 
-		<cont node="Prop:P1" val="TrIncInt:Trans/ConnPoint:Inp"/> 
-		<cont node="Prop:P2" val="Elem:Capsule/Extender:Inp/StInpSocket:Int/ConnPoint:PinData"/> 
-	    </node>
+	    <node id="Div" parent="../../funcmod/TFDivInt"/>
+	    <node id="AddM1" parent="../../funcmod/TFAddInt"/>
 
-	    <node parent="Edge"> 
-		<cont node="Prop:P1" val="TrIncInt:Trans/ConnPoint:Out"/> 
-		<cont node="Prop:P2" val="DataSCInt:Prepared/Elem:Capsule/ConnPoint:Inp"/> 
-	    </node>
+	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int/MaxMass"/> <cont node="P2" val="Div/Capsule/Inp_DD"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_Mass/Int/PinData"/> <cont node="P2" val="Div/Capsule/Inp_DR"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp/Int/PinData"/> <cont node="P2" val="AddM1/Capsule/inp"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="Div/Capsule/out"/> <cont node="P2" val="AddM1/Capsule/inp"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="AddM1/Capsule/out"/> <cont node="P2" val="Prepared/Capsule/Inp"/> </node>
 
 	</node> <!-- Coordinate -->
 
-
+	<!-- Internal connections -->
+	<node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int"/> <cont node="P2" val="Mass/Capsule/Inp_SysPars"/> </node>
+	<node parent="Edge"> <cont node="P1" val="Mass/Capsule/Out"/> <cont node="P2" val="Mass/Capsule/Inp"/> </node>
+	<node parent="Edge"> <cont node="P1" val="Coord/Capsule/Out"/> <cont node="P2" val="Coord/Capsule/Inp"/> </node>
+	<node parent="Edge"> <cont node="P1" val="Mass/Capsule/Out"/> <cont node="P2" val="Coord/Capsule/Inp_Mass"/> </node>
+	<node parent="Edge"> <cont node="P1" val="Mass/Capsule/Out"/> <cont node="P2" val="Capsule/Out_Mass/Int"/> </node>
 
     </node> <!-- Snail -->
 
+    <!-- Test -->
     <node id="TestDes" parent="DesComps:desmod/Incaps:Des">
+
+	<node id="Logspec" parent="Elem"> <node id="Creation" parent="Elem"/> </node>
 
 	<!-- Configure output to data type -->
 	<cont node="Elem:Capsule/Extender:Out/StOutSocket:Int/ConnPoint:PinData/Prop:Required" val="MDIntGet"/>
 
-	<!-- Incrementor 1 -->
-	<node id="Incr1" parent="../DesComps:desmod/State:StateInt">
-	    <!-- <cont node="DataSInt:Confirmed/Prop:Value" val="34"/> -->
-
-	    <node id="Logspec" parent="Elem">
-		<node id="Creation" parent="Elem">
-		</node>
-	    </node>
-
-	    <add node="DataSCInt:Confirmed">
-		<node id="Logspec" parent="Elem">
-		    <node id="Update" parent="../../../../DataComps:datamod/DataLogevent">
-		    </node>
-		</node>
-	    </add>
-
-	    <node id="Trans" parent="../../DesComps:desmod/TrInt:TrIncInt">
-	    </node>
-
-	    <node parent="Edge"> 
-		<cont node="Prop:P1" val="TrIncInt:Trans/ConnPoint:Inp"/> 
-		<cont node="Prop:P2" val="Elem:Capsule/Extender:Inp/StInpSocket:Int/ConnPoint:PinData"/> 
-	    </node>
-
-	    <node parent="Edge"> 
-		<cont node="Prop:P1" val="TrIncInt:Trans/ConnPoint:Out"/> 
-		<cont node="Prop:P2" val="DataSCInt:Prepared/Elem:Capsule/ConnPoint:Inp"/> 
-	    </node>
-
+	<!-- Constants -->
+	<node id="Consts" parent="../SysConsts">
 	</node>
 
-
-	<!-- Incrementor 2 -->
-	<node id="Incr2" parent="StateInt:Incr1">
+	<!-- Snails -->
+	<node id="Snail_1" parent="../Snail">
 	</node>
 
-	<!-- Incrementor1 Loop -->
-	<node parent="Edge"> 
-	    <cont node="Prop:P1" val="StateInt:Incr1/Elem:Capsule/Extender:Out"/> 
-	    <cont node="Prop:P2" val="StateInt:Incr1/Elem:Capsule/Extender:Inp"/> 
+	<node id="Snail_2" parent="../Snail">
 	</node>
 
-	<!-- Incrementor2 Loop -->
-	<node parent="Edge"> 
-	    <cont node="Prop:P1" val="Incr1:Incr2/Elem:Capsule/Extender:Out"/> 
-	    <cont node="Prop:P2" val="Incr1:Incr2/Elem:Capsule/Extender:Inp"/> 
-	</node>
-
-	<!-- DES output -->
-	<node parent="Edge"> 
-	    <cont node="Prop:P1" val="Incr1:Incr2/Elem:Capsule/Extender:Out"/> 
-	    <cont node="Prop:P2" val="Elem:Capsule/Extender:Out/StOutSocket:Int"/> 
-	</node>
+	<node parent="Edge"> <cont node="P1" val="Snail_1/Capsule/Out_Mass"/> <cont node="P2" val="Capsule/Out/Int"/> </node>
 
     </node> <!-- test -->
 

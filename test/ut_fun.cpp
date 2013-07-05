@@ -267,26 +267,34 @@ void Ut_func::test_FuncSeq4()
     MDIntGet* rdataget = resdata->GetObj(rdataget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget != 0);
     TInt rdataval = rdataget->Value();
-    CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval == 7);
+    CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval == 1);
     Elem* resdataprop = root->GetNode("Incaps:test/DataSInt:ResData/Prop:Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata value property", resdataprop != 0);
     MProp* rdmprop = resdataprop->GetObj(rdmprop);
     const string& rdval = rdmprop->Value();
-    CPPUNIT_ASSERT_MESSAGE("Incorrect rdata prop value", rdval == "7");
+    CPPUNIT_ASSERT_MESSAGE("Incorrect rdata prop value", rdval == "1");
 
     // Checking the result update on update of input
     // Mutate the input data first
-    Elem* dinp = root->GetNode("Incaps:test/DataSInt:DataS_Int_1");
+    Elem* dinp = root->GetNode("Incaps:test/DataSInt:Data_SelfCoord");
     ChromoNode nchange = dinp->Mutation().Root().AddChild(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "Prop:Value");
-    nchange.SetAttr(ENa_MutVal, "57");
+    nchange.SetAttr(ENa_MutVal, "80");
     dinp->Mutate();
     // Check the output data
     Elem* resdataprop1 = root->GetNode("Incaps:test/DataSInt:ResData/Prop:Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
     MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
     const string& rdval1 = rdmprop1->Value();
-    CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "6");
+    CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "3");
+
+    // Verifying second part of test - division
+    Elem* resdata2 = root->GetNode("Incaps:test/DataSInt:DivResData/Elem:Capsule/ConnPoint:out");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get res data out", resdata2 != 0);
+    MDIntGet* rdataget2 = resdata2->GetObj(rdataget2);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget2 != 0);
+    TInt rdataval2 = rdataget2->Value();
+    CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval2 == 4);
 
     delete iEnv;
 }

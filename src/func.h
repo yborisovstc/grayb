@@ -134,6 +134,32 @@ class AFSubInt: public AFunc, public MDIntGet
 	virtual TInt Value();
 };
 
+// Restriction of value from top and bottom
+class AFLimInt: public AFunc, public MDIntGet
+{
+    public:
+	static const char* Type() { return "AFLimInt";};
+	AFLimInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MDIntGet
+	virtual TInt Value();
+};
+
+// Division
+class AFDivInt: public AFunc, public MDIntGet
+{
+    public:
+	static const char* Type() { return "AFDivInt";};
+	AFDivInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MDIntGet
+	virtual TInt Value();
+};
+
+
+
 // Inputs to vector conversion
 class AFIntToVect: public AFunc, public MVIntGet
 {

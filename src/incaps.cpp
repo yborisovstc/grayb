@@ -139,6 +139,7 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 	if (!pt1u.empty() && !pt2u.empty()) {
 	    Elem* pt1 = aContext.GetNode(pt1u);
 	    Elem* pt2 = aContext.GetNode(pt2u);
+	    Elem* host = iMan->GetMan();
 	    if (pt1 != NULL && pt2 != NULL) {
 		TBool ispt1ok = IsPtOk(aContext, pt1);
 		TBool ispt2ok = IsPtOk(aContext, pt2);
@@ -162,8 +163,8 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 			    }
 			}
 			else {
-			    Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - incompatible", 
-				    Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			    Logger()->WriteFormat("ERR: [%s/%s] connecting [%s - %s] - incompatible", 
+				    host->Name().c_str(), Name().c_str(), pt1u.c_str(), pt2u.c_str());
 			}
 		    }
 		    else {
@@ -176,8 +177,8 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 		}
 	    } // pt1 != NULL ...
 	    else {
-		Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - cannot find [%s]", Name().c_str(), pt1u.c_str(), pt2u.c_str(), 
-			(pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
+		Logger()->WriteFormat("ERR: [%s/%s] connecting [%s - %s] - cannot find [%s]", 
+			host->Name().c_str(), Name().c_str(), pt1u.c_str(), pt2u.c_str(), (pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
 	    }
 	}
 	res = ETrue;

@@ -254,6 +254,21 @@ void* Elem::GetSIfi(const string& aName, const RqContext* aCtx)
     return res;
 }
 
+void* Elem::GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert) 
+{
+    void* res = NULL;
+    RqContext ctx(this);
+    Elem* req = GetNode(aReqUri);
+    __ASSERT(aReqAssert || (req != NULL));
+    if (req != NULL) {
+	TIfRange rg = req->GetIfi(aName, &ctx);
+	if (rg.first != rg.second) {
+	    res = *(rg.first);
+	}
+    }
+    return res;
+}
+
 void Elem::RmIfCache(IfIter& aIt)
 {
     iICache.erase(aIt.iCacheIter);
@@ -654,7 +669,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode)
 	if (elem == NULL) {
 	    // TODO [YB] To use full path for this name
 	    Logger()->WriteFormat("ERROR: [%s/%s] - creating elem [%s] - parent [%s] not found", 
-		    iMan->Name().c_str(), Name().c_str(), sname.c_str(), sparent.c_str());
+		    iMan != NULL ? iMan->Name().c_str() : "/", Name().c_str(), sname.c_str(), sparent.c_str());
 	}
     }
     else {

@@ -51,6 +51,7 @@
     </node>
 
 
+
     <!-- Int function with simgle input  -->
     <node id="FuncIntSi" parent="IncapsComps:incapsmod/Syst:Incaps"> 
 
@@ -135,6 +136,32 @@
 	</add>
     </node>
 
+    <!-- Function of restriction to upper and lower limits -->
+    <node id="FLimInt" parent="Incaps:FuncInt"> 
+	<add node="Elem:Agents"> <node id="func_agt" parent="AFLimInt"/> </add>
+	<add node="Elem:Capsule"> 
+	    <!-- Input  -->
+	    <node id="Inp" parent="../../Inp_FInt"/> 
+	    <!-- Input positives -->
+	    <node id="Inp_LimU" parent="../../Inp_FInt"/> 
+	    <!-- Input negatives -->
+	    <node id="Inp_LimL" parent="../../Inp_FInt"/> 
+	</add>
+    </node>
+
+    <!-- Function of division -->
+    <node id="FDivInt" parent="Incaps:FuncInt"> 
+	<add node="Elem:Agents"> <node id="func_agt" parent="AFDivInt"/> </add>
+	<add node="Elem:Capsule"> 
+	    <!-- Divided  -->
+	    <node id="Inp_DD" parent="../../Inp_FInt"/> 
+	    <!-- Divisor -->
+	    <node id="Inp_DR" parent="../../Inp_FInt"/> 
+	</add>
+    </node>
+
+
+
     <!-- Function of convolution. Working function is external -->
     <node id="FConvInt" parent="Incaps:FuncIntSi"> 
 	<add node="Elem:Agents"> <node id="func_agt" parent="AFConvInt"/> </add>
@@ -170,6 +197,119 @@
 	<add node="Elem:Agents"> <node id="func_agt" parent="AFBoolToInt"/> </add>
     	<add node="Elem:Capsule"> 
 	    <node id="Inp" parent="../../ConnPoint:Inp_FBool"/> 
+    	</add>
+    </node>
+
+    <!-- Transition function. It doesn's support observation of inputs change -->
+    <!-- Input of Transition Func with Int arg/res -->
+    <node id="Inp_TFInt" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<cont node="Prop:Required" val="MDIntGet"/>
+    </node>
+
+    <!-- Output of Transition Func with Int arg/res -->
+    <node id="Out_TFInt" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<cont node="Prop:Provided" val="MDIntGet"/>
+    </node>
+
+    <!-- Output of Bool Transition Func -->
+    <node id="Out_TFBool" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<cont node="Prop:Provided" val="MDBoolGet"/>
+    </node>
+
+    <!-- Input of Bool Transition Func -->
+    <node id="Inp_TFBool" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+       <cont node="Prop:Required" val="MDBoolGet"/>
+   </node>
+
+    <!-- Int Transition function wo inputs  -->
+    <node id="TFuncInt" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+    	<add node="Elem:Capsule"> 
+	    <!-- Output -->
+	    <node id="out" parent="../../ConnPoint:Out_TFInt"/> 
+    	</add>
+    </node>
+
+    <!-- Bool Transition function wo inputs  -->
+    <node id="TFuncBool" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+    	<add node="Elem:Capsule"> 
+	    <!-- Output -->
+	    <node id="out" parent="../../ConnPoint:Out_TFBool"/> 
+    	</add>
+    </node>
+
+
+
+    <!-- Function of integer addition wo caching -->
+    <node id="TFAddInt" parent="Incaps:TFuncInt"> 
+	<add node="Elem:Agents"> <node id="func_agt" parent="AFAddInt"/> </add>
+	<add node="Elem:Capsule"> 
+	    <!-- Input -->
+	    <node id="inp" parent="../../Inp_TFInt"/> 
+	</add>
+    </node>
+
+    <!-- Function of integer addition wo caching -->
+    <node id="TFSubInt" parent="Incaps:TFuncInt"> 
+	<add node="Elem:Agents"> <node id="func_agt" parent="AFSubInt"/> </add>
+	<add node="Elem:Capsule"> 
+	    <!-- Input positives -->
+	    <node id="InpP" parent="../../Inp_TFInt"/> 
+	    <!-- Input negatives -->
+	    <node id="InpN" parent="../../Inp_TFInt"/> 
+	</add>
+    </node>
+
+    <!-- Function of restriction to upper and lower limits -->
+    <node id="TFLimInt" parent="Incaps:TFuncInt"> 
+	<add node="Elem:Agents"> <node id="func_agt" parent="AFLimInt"/> </add>
+	<add node="Elem:Capsule"> 
+	    <!-- Input  -->
+	    <node id="Inp" parent="../../Inp_TFInt"/> 
+	    <!-- Input positives -->
+	    <node id="Inp_LimU" parent="../../Inp_TFInt"/> 
+	    <!-- Input negatives -->
+	    <node id="Inp_LimL" parent="../../Inp_TFInt"/> 
+	</add>
+    </node>
+
+    <!-- Function of division -->
+    <node id="TFDivInt" parent="Incaps:TFuncInt"> 
+	<add node="Elem:Agents"> <node id="func_agt" parent="AFDivInt"/> </add>
+	<add node="Elem:Capsule"> 
+	    <!-- Divided  -->
+	    <node id="Inp_DD" parent="../../Inp_TFInt"/> 
+	    <!-- Divisor -->
+	    <node id="Inp_DR" parent="../../Inp_TFInt"/> 
+	</add>
+    </node>
+
+
+    <!-- Function of convolution. Working function is external -->
+    <node id="TFConvInt" parent="Incaps:TFuncInt"> 
+	<add node="Elem:Agents"> <node id="func_agt" parent="AFConvInt"/> </add>
+	<add node="Elem:Capsule"> 
+	    <node id="inp" parent="../../Inp_TFInt"/> 
+	    <!-- Output for passing argunent to Working function  -->
+	    <node id="Out_WFarg" parent="../../Out_TFInt"/> 
+	    <!-- Input for getting result from Working function  -->
+	    <node id="Inp_WFres" parent="../../Inp_TFInt"/> 
+	</add>
+    </node>
+
+    <!-- Function Inp1 GT Inp2  -->
+    <node id="TFGTInt" parent="Incaps:TFuncBool"> 
+	<add node="Elem:Agents"> <node id="func_agt" parent="AFGTInt"/> </add>
+    	<add node="Elem:Capsule"> 
+	    <node id="Inp1" parent="../../ConnPoint:Inp_TFInt"/> 
+	    <node id="Inp2" parent="../../ConnPoint:Inp_TFInt"/> 
+    	</add>
+    </node>
+
+    <!-- Function Bool to Int  -->
+    <node id="TFBoolToInt" parent="Incaps:TFuncInt"> 
+	<add node="Elem:Agents"> <node id="func_agt" parent="AFBoolToInt"/> </add>
+    	<add node="Elem:Capsule"> 
+	    <node id="Inp" parent="../../ConnPoint:Inp_TFBool"/> 
     	</add>
     </node>
 

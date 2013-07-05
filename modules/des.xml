@@ -43,8 +43,16 @@
     <node id="StIntInp" parent="SysComps:sysmod/Vert:Extender"> 
 	<rm node="ConnPoint:Int"/>
 	<node id="Int" parent="../Socket:StInpSocket"> 
+	    <cont node="ConnPoint:PinData/Prop:Provided" val="MDIntGet"/>
 	</node>
-	<cont node="ConnPoint:PinData/Prop:Provided" val="MDIntGet"/>
+    </node>
+
+    <!-- Output of standard Int State -->
+    <node id="StIntOut" parent="SysComps:sysmod/Vert:Extender"> 
+	<rm node="ConnPoint:Int"/>
+	<node id="Int" parent="../Socket:StOutSocket"> 
+	    <cont node="ConnPoint:PinData/Prop:Required" val="MDIntGet"/>
+	</node>
     </node>
 
     <!-- Transition of integer data -->

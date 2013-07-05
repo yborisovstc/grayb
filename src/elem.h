@@ -145,7 +145,8 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
 	// Iface provider
 	void* GetSIfi(const string& aName, const RqContext* aCtx = NULL);
-	virtual TIfRange GetIfi(const string& aName, const RqContext* aCtx = NULL);
+	void* GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert = ETrue);
+	TIfRange GetIfi(const string& aName, const RqContext* aCtx = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MElem
