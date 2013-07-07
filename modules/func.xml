@@ -11,6 +11,8 @@
     <node id="sysmod" parent="file:/usr/share/grayb/modules/syst.xml#SysComps" />
     <!-- Module containing components of incaps layer -->
    <node id="incapsmod" parent="file:/usr/share/grayb/modules/capsula.xml#IncapsComps" />
+    <!-- Module containing components of data -->
+    <node id="datamod" parent="file:/usr/share/grayb/modules/data.xml#DataComps" />
 
    <!-- Input of Func with Int arg/res -->
    <node id="Inp_FInt" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
@@ -18,11 +20,24 @@
        <cont node="Prop:Provided" val="MDataObserver"/>
    </node>
 
+   <!-- Extended Input of Func with Int arg/res -->
+   <node id="Inp_FEInt" parent="sysmod/Extender"> 
+       <cont node="Int/Provided" val="MDIntGet"/>
+       <cont node="Int/Required" val="MDataObserver"/>
+   </node>
+
    <!-- Output of Func with Int arg/res -->
    <node id="Out_FInt" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
        <cont node="Prop:Required" val="MDataObserver"/>
        <cont node="Prop:Provided" val="MDIntGet"/>
    </node>
+
+   <!-- Extended Output of Func with Int arg/res -->
+   <node id="Out_FEInt" parent="sysmod/Extender"> 
+       <cont node="Int/Provided" val="MDataObserver"/>
+       <cont node="Int/Required" val="MDIntGet"/>
+   </node>
+
 
    <!-- Output of Bool Func -->
    <node id="Out_FBool" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
@@ -50,6 +65,37 @@
     	</add>
     </node>
 
+    <!-- Input of Transition Func with Int arg/res -->
+    <node id="Inp_TFInt" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<cont node="Prop:Required" val="MDIntGet"/>
+    </node>
+
+    <!-- Output of Transition Func with Int arg/res -->
+    <node id="Out_TFInt" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<cont node="Prop:Provided" val="MDIntGet"/>
+    </node>
+
+    <!-- Extended Input of Transition Func with Int arg/res -->
+    <node id="Inp_TFEInt" parent="sysmod/Extender"> 
+	<cont node="Int/Prop:Provided" val="MDIntGet"/>
+    </node>
+
+    <!-- Extended Output of Transition Func with Int arg/res -->
+    <node id="Out_TFEInt" parent="sysmod/Extender"> 
+	<cont node="Int/Prop:Required" val="MDIntGet"/>
+    </node>
+
+
+
+    <!-- Output of Bool Transition Func -->
+    <node id="Out_TFBool" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<cont node="Prop:Provided" val="MDBoolGet"/>
+    </node>
+
+    <!-- Input of Bool Transition Func -->
+    <node id="Inp_TFBool" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+       <cont node="Prop:Required" val="MDBoolGet"/>
+   </node>
 
 
     <!-- Int function with simgle input  -->
@@ -167,10 +213,13 @@
 	<add node="Elem:Agents"> <node id="func_agt" parent="AFConvInt"/> </add>
 	<add node="Elem:Capsule"> 
 	    <!-- Output for passing argunent to Working function  -->
-	    <node id="Out_WFarg" parent="../../ConnPoint:Out_FInt"/> 
+	    <node id="Out_WFarg" parent="../../Out_FEInt"/> 
 	    <!-- Input for getting result from Working function  -->
-	    <node id="Inp_WFres" parent="../../ConnPoint:Inp_FInt"/> 
+	    <node id="Inp_WFres" parent="../../Inp_FInt"/> 
 	</add>
+	<!-- Value of Working function argument -->
+	<node id="WFArg" parent="../../datamod/DataSNInt"/>
+	<node parent="Edge"> <cont node="P1" val="WFArg/Capsule/out"/> <cont node="P2" val="Capsule/Out_WFarg/Int"/> </node>
     </node>
 
     <!-- Int  inputs to Int vector conversation -->
@@ -201,25 +250,6 @@
     </node>
 
     <!-- Transition function. It doesn's support observation of inputs change -->
-    <!-- Input of Transition Func with Int arg/res -->
-    <node id="Inp_TFInt" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
-	<cont node="Prop:Required" val="MDIntGet"/>
-    </node>
-
-    <!-- Output of Transition Func with Int arg/res -->
-    <node id="Out_TFInt" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
-	<cont node="Prop:Provided" val="MDIntGet"/>
-    </node>
-
-    <!-- Output of Bool Transition Func -->
-    <node id="Out_TFBool" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
-	<cont node="Prop:Provided" val="MDBoolGet"/>
-    </node>
-
-    <!-- Input of Bool Transition Func -->
-    <node id="Inp_TFBool" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
-       <cont node="Prop:Required" val="MDBoolGet"/>
-   </node>
 
     <!-- Int Transition function wo inputs  -->
     <node id="TFuncInt" parent="IncapsComps:incapsmod/Syst:Incaps"> 
@@ -290,10 +320,13 @@
 	<add node="Elem:Capsule"> 
 	    <node id="inp" parent="../../Inp_TFInt"/> 
 	    <!-- Output for passing argunent to Working function  -->
-	    <node id="Out_WFarg" parent="../../Out_TFInt"/> 
+	    <node id="Out_WFarg" parent="../../Out_TFEInt"/> 
 	    <!-- Input for getting result from Working function  -->
 	    <node id="Inp_WFres" parent="../../Inp_TFInt"/> 
 	</add>
+	<!-- Value of Working function argument -->
+	<node id="WFArg" parent="../../datamod/DataSUInt"/>
+	<node parent="Edge"> <cont node="P1" val="WFArg/Capsule/out"/> <cont node="P2" val="Capsule/Out_WFarg/Int"/> </node>
     </node>
 
     <!-- Function Inp1 GT Inp2  -->

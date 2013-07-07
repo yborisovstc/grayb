@@ -43,10 +43,27 @@ class DInt: public DataBase, public MDInt, public MDIntGet, public MDIntSet
 	virtual bool ToString(string& aData); 
 	// From MUpdatable
 	virtual TBool Update();
+	// From Elem
+	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
     protected:
 	TBool IsLogeventUpdate();
-    private:
+    protected:
 	TInt mData;
 };
+
+// Data of integer. Doesn't support nofification of change
+class DNInt: public DInt
+{
+    public:
+	static const char* Type() { return "DNInt";};
+	DNInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MDInt
+	virtual void Set(TInt aData);
+	// From Elem
+	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
+};
+
 
 #endif

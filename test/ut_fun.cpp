@@ -276,7 +276,7 @@ void Ut_func::test_FuncSeq4()
 
     // Checking the result update on update of input
     // Mutate the input data first
-    Elem* dinp = root->GetNode("Incaps:test/DataSInt:Data_SelfCoord");
+    Elem* dinp = root->GetNode("test/Data_SelfCoord");
     ChromoNode nchange = dinp->Mutation().Root().AddChild(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "Prop:Value");
     nchange.SetAttr(ENa_MutVal, "80");

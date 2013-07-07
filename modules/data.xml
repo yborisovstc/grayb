@@ -27,22 +27,39 @@
 	<node id="Value" parent="Prop"/>
     </node>
 
-    <node id="DataSInt" parent="Incaps:DataS"> 
-    	<add node="Elem:Agents"> 
-	    <node id="MACompsObserver" parent="DInt"/> 
-	    <!--
-	    <node id="ADInt" parent="DInt"/> 
-	    -->
+    <!-- Data with separate input for setting and output for getting. W/o notificaion -->
+    <node id="DataSU" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+    	<add node="Elem:Capsule"> 
+	    <node id="inp" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"/> 
+	    <node id="out" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"/> 
     	</add>
+	<node id="Value" parent="Prop"/>
+    </node>
+
+
+    <node id="DataSInt" parent="Incaps:DataS"> 
+    	<add node="Elem:Agents"> <node id="MACompsObserver" parent="DInt"/> </add>
 	<cont node="Elem:Capsule/ConnPoint:inp/Prop:Provided" val="MDIntSet"/>
 	<cont node="Elem:Capsule/ConnPoint:out/Prop:Provided" val="MDIntGet"/>
     </node>
 
+    <!-- Observer iface is declared for purpose of compatibility but isn't supported -->
+    <node id="DataSNInt" parent="Incaps:DataS"> 
+    	<add node="Elem:Agents"> <node id="AData" parent="DNInt"/> </add>
+	<cont node="Elem:Capsule/ConnPoint:inp/Prop:Provided" val="MDIntSet"/>
+	<cont node="Elem:Capsule/ConnPoint:out/Prop:Provided" val="MDIntGet"/>
+    </node>
+
+    <node id="DataSUInt" parent="Incaps:DataSU"> 
+    	<add node="Elem:Agents"> <node id="MACompsObserver" parent="DInt"/> </add>
+	<cont node="Elem:Capsule/ConnPoint:inp/Prop:Provided" val="MDIntSet"/>
+	<cont node="Elem:Capsule/ConnPoint:out/Prop:Provided" val="MDIntGet"/>
+    </node>
+
+
     <node id="DataInt" parent="IncapsComps:incapsmod/Syst:Incaps"> 
 
-    	<add node="Elem:Agents"> 
-	    <node id="ADInt" parent="DInt"/> 
-    	</add>
+    	<add node="Elem:Agents"> <node id="ADInt" parent="DInt"/> </add>
 
     	<add node="Elem:Capsule"> 
 	    <node id="out" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 

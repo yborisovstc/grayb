@@ -204,6 +204,7 @@
 	</node>
 
 	<node parent="Edge"> <cont node="P1" val="Snail_1/Capsule/Out_Mass"/> <cont node="P2" val="Capsule/Out/Int"/> </node>
+	<node parent="Edge"> <cont node="P1" val="Consts/Capsule/Out"/> <cont node="P2" val="Snail_1/Capsule/Inp_SysPars"/> </node>
 
     </node> <!-- test -->
 

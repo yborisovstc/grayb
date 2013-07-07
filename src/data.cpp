@@ -21,9 +21,11 @@ TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 	    Logger()->WriteFormat("ERROR: [%s:%s] missing MProp iface in property [%s]", EType().c_str(), Name().c_str(), aComp.Name().c_str());
 	}
 	else {
+	    string curr;
+	    ToString(curr);
+	    Logger()->WriteFormat("[%s/%s/%s] updated [%s <- %s]", 
+		    iMan->GetMan()->Name().c_str(), iMan->Name().c_str(), Name().c_str(), curr.c_str(), prop->Value().c_str());
 	    FromString(prop->Value());
-	    Logger()->WriteFormat("[%s/%s/%s] value changed to [%s]", 
-		    iMan->GetMan()->Name().c_str(), iMan->Name().c_str(), Name().c_str(), prop->Value().c_str());
 	}
 	res = ETrue;
     }
@@ -97,6 +99,31 @@ void *DInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 	res = DataBase::DoGetObj(aName, aIncUpHier);
     }
     return res;
+}
+
+void DInt::UpdateIfi(const string& aName, const RqContext* aCtx)
+{
+    void* res = NULL;
+    TIfRange rr;
+    RqContext ctx(this, aCtx);
+    if (strcmp(aName.c_str(), Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName.c_str(), MACompsObserver::Type()) == 0) {
+	res = (MACompsObserver*) this;
+    }
+    else if (strcmp(aName.c_str(), MDIntGet::Type()) == 0) {
+	res = (MDIntGet*) this;
+    }
+    else if (strcmp(aName.c_str(), MDIntSet::Type()) == 0) {
+	res = (MDIntSet*) this;
+    }
+    else {
+	res = DataBase::DoGetObj(aName.c_str(), EFalse);
+    }
+    if (res != NULL) {
+	InsertIfCache(aName, aCtx->Requestor(), this, res);
+    }
 }
 
 TInt DInt::Data() const
@@ -179,4 +206,46 @@ TBool DInt::IsLogeventUpdate()
     return node != NULL;
 }
 
+
+// Data of integer. Doesn't support nofification of change
+DNInt::DNInt(const string& aName, Elem* aMan, MEnv* aEnv): DInt(aName, aMan, aEnv)
+{
+    SetEType(Type());
+    SetParent(Type());
+}
+
+void *DNInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = DInt::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void DNInt::UpdateIfi(const string& aName, const RqContext* aCtx)
+{
+    void* res = NULL;
+    TIfRange rr;
+    RqContext ctx(this, aCtx);
+    if (strcmp(aName.c_str(), Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = DInt::DoGetObj(aName.c_str(), EFalse);
+    }
+    if (res != NULL) {
+	InsertIfCache(aName, aCtx->Requestor(), this, res);
+    }
+}
+void DNInt::Set(TInt aData)
+{
+    if (mData != aData) {
+	mData = aData;
+	UpdateProp();
+    }
+}
 

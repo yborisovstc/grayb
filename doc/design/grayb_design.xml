@@ -18,8 +18,10 @@
 	<revhistory>
 	    <revision> <revnumber>0.01</revnumber> <date>03-Mar-2013</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Initial version</revremark> </revision>
-	    <revision> <revnumber>0.01</revnumber> <date>21-Mar-2013</date> <authorinitials>Yuri Borisov</authorinitials>
+	    <revision> <revnumber>0.02</revnumber> <date>21-Mar-2013</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="ds_conn_01"/></revremark> </revision>
+	    <revision> <revnumber>0.03</revnumber> <date>06-Jul-2013</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="ds_ifcache"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -74,6 +76,23 @@
 		    Incaps.  When connecting two sockets the observed hier element, normally Incapsulated system (Incaps)
 		</simpara>
 		<itemizedlist>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_ifcache"><title>Interfaces cache</title>
+	<sect2 id="ds_ifcache_01"><title>DS_IFCACHE_01 Key scheme for cache</title>
+	    <sect3><title>Description</title>
+		<simpara>Current solution [6d15a3f2] uses key [Name, Requestor, Provider] where Requestor and Provider are pointers. This makes some limitation in
+		    requests to cache. For instance the cases cannot be distinquished when agent is requested for iface from one and another conn points, 
+		    because for agents cache the direct Requestor is agents host but not conn points. Refer to unit test ut_func_seq4.xml, agent of "Conv"
+		    needs to distinquish requests from CP "Out" and CP "Out_WFarg" but it's not possible. Is is the indication of the current mechanism not
+		    consistent? Do we need improvement of cache mechanism?</simpara>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<itemizedlist>
+		    <listitem>A: No it is not. We simply need to adjust Conv to the scheme. The current implementation of Conv is not correct. </listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>

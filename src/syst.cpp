@@ -106,9 +106,15 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    if (req != NULL && req->Value() == aName) {
 		for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
 		    Elem* pe = (*it)->EBase()->GetObj(pe);
+		    /*
 		    Elem* peprov = pe != NULL ? pe->GetNode("Prop:Provided"): NULL;
 		    MProp* pprov = peprov != NULL ? peprov->GetObj(pprov): NULL;
 		    if (pprov != NULL && pprov->Value() == aName && !ctx.IsInContext(pe)) {
+			rr = pe->GetIfi(aName, &ctx);
+			InsertIfCache(aName, aCtx->Requestor(), pe, rr);
+		    }
+		    */
+		    if (!ctx.IsInContext(pe)) {
 			rr = pe->GetIfi(aName, &ctx);
 			InsertIfCache(aName, aCtx->Requestor(), pe, rr);
 		    }
@@ -130,11 +136,13 @@ TBool ConnPointBase::IsCompatible(Elem* aPair, TBool aExt)
     TBool res = EFalse;
     TBool ext = aExt;
     Elem *cp = aPair;
-    // Temporary solution, ref to MD sec_refac_conncomp for discussion
     // Checking if the pair is Extender
-    if (aPair->EType() == "Extender") {
+    MCompatChecker* pchkr = aPair->GetObj(pchkr);
+    __ASSERT(pchkr != NULL);
+    Elem* ecp = pchkr->GetExtd(); 
+    if (ecp != NULL ) {
 	ext = !ext;
-	cp = aPair->GetNode("*:Int");
+	cp = ecp;
     }
     if (cp != NULL) {
 	// Check roles conformance
@@ -383,6 +391,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	Elem* emaster = master->GetObj(emaster);
 	Base* rqst = aCtx->Ctx() != NULL ? aCtx->Ctx()->Requestor(): NULL;
 	if (rqst != NULL) {
+	    // Requestor is specified, so try to redirect basing on it
 	    Elem* erqst = rqst->GetObj(erqst);
 	    TBool iscomp = emaster->IsComp(erqst);
 	    if (iscomp) {
@@ -424,6 +433,16 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    rr = pe->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, aCtx->Requestor(), pe, rr);
 		}
+	    }
+	}
+	// Redirect to upper layer
+	if (rr.first == rr.second && iMan != NULL && !ctx.IsInContext(iMan)) {
+	    Elem* host = iMan->GetMan();
+	    Elem* hostmgr = host->GetMan();
+	    Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
+	    if (mgr != NULL && !ctx.IsInContext(mgr)) {
+		rr = mgr->GetIfi(aName, &ctx);
+		InsertIfCache(aName, aCtx->Requestor(), mgr, rr);
 	    }
 	}
     }

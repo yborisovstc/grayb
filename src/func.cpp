@@ -657,14 +657,7 @@ void AFConvInt::UpdateIfi(const string& aName, const RqContext* aCtx)
 	res = this;
     }
     else if (strcmp(aName.c_str(), MDIntGet::Type()) == 0) {
-	// If iface requested from working function input - redirect to Sample iface holder
-	Elem* wfinp = GetNode("../../Capsule/Out_WFarg");
-	if (aCtx->IsInContext(wfinp)) {
-	    res = (MDIntGet*) &iSampleHolder;
-	}
-	else {
-	    res = (MDIntGet*) this;
-	}
+	res = (MDIntGet*) this;
     }
     else {
 	res = AFunc::DoGetObj(aName.c_str(), EFalse, aCtx);
@@ -677,18 +670,22 @@ void AFConvInt::UpdateIfi(const string& aName, const RqContext* aCtx)
 TInt AFConvInt::Value()
 {
     TInt val = 0;
-    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:inp");
+    Elem* einp = GetNode("../../Capsule/inp");
     __ASSERT(einp != NULL);
-    Elem* einpwf = GetNode("../../Elem:Capsule/Inp_FInt:Inp_WFres");
+    Elem* einpwf = GetNode("../../Capsule/Inp_WFres");
     __ASSERT(einpwf != NULL);
+    Elem* eargwf = GetNode("../../WFArg/Capsule/inp");
+    __ASSERT(eargwf != NULL);
     RqContext cont(this);
+    MDIntSet* wfarg = (MDIntSet*) eargwf->GetSIfi(MDIntSet::Type(), &cont);
     MDIntGet* wfres = (MDIntGet*) einpwf->GetSIfi("MDIntGet", &cont);
-    if (wfres != NULL) {
+    if (wfres != NULL && wfarg != NULL) {
 	TIfRange range = einp->GetIfi("MDIntGet", &cont);
 	for (IfIter it = range.first; it != range.second; it++) {
 	    MDIntGet* dget = (MDIntGet*) (*it);
 	    if (dget != NULL) {
-		iSample = dget->Value();
+		TInt sample = dget->Value();
+		wfarg->SetValue(sample);
 		val += wfres->Value();
 	    }
 	}

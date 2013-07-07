@@ -36,7 +36,7 @@
 	    <cont node="Prop:Value" val="3"/> 
 	</node>
 
-	<node id="Data_SelfCoord" parent="../DataComps:datamod/DataS:DataSInt">
+	<node id="Data_SelfCoord" parent="../DataComps:datamod/DataSInt">
 	    <cont node="Prop:Value" val="5"/> 
 	</node>
 
