@@ -62,7 +62,8 @@ Elem::IfIter& Elem::IfIter::operator++()
 
 TBool Elem::IfIter::operator==(const IfIter& aIt)
 {
-    TBool res = iHost == aIt.iHost && iIName == aIt.iIName && iReq == aIt.iReq && iCacheIter == aIt.iCacheIter;
+    TBool res = (iHost == aIt.iHost && iIName == aIt.iIName && iReq == aIt.iReq && iQFRange == aIt.iQFRange 
+	&& iQFIter == aIt.iQFIter && iCacheRange == aIt.iCacheRange && iCacheIter == aIt.iCacheIter);
     return res;
 }
 

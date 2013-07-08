@@ -66,6 +66,8 @@
 	<!-- TODO [YB] Paths in Edge are hadled differently from other elements. They are handled in system context-->
 	<!-- This can confuse developer when specifying system. -->
 	<node parent="Edge"> <cont node="P1" val="Data_MaxFeed/Capsule/Out"/> <cont node="P2" val="Capsule/Out/Int/MaxFeed"/> </node>
+	<node parent="Edge"> <cont node="P1" val="Data_MinMass/Capsule/Out"/> <cont node="P2" val="Capsule/Out/Int/MinMass"/> </node>
+	<node parent="Edge"> <cont node="P1" val="Data_MaxMass/Capsule/Out"/> <cont node="P2" val="Capsule/Out/Int/MaxMass"/> </node>
     </node> <!-- System Constants -->
 
 
