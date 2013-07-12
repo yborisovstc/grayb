@@ -3,6 +3,7 @@ bin_PROGRAMS = ut-grayb-lib
 ut_grayb_lib_SOURCES = \
 		       ut_grayb_main.cpp \
 		       ut_cre.cpp \
+		       ut_conn.cpp \
 		       ut_uri.cpp \
 		       ut_mut.cpp \
 		       ut_fun.cpp \

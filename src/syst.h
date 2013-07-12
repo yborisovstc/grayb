@@ -17,6 +17,7 @@ class ConnPointBase: public Vert, public MCompatChecker
 	// From MCompatChecker
 	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse);
 	virtual Elem* GetExtd();
+//	virtual Elem* GetAssoc(RqContext* aCtx);
 };
 
 // Extention agent. Redirects request for iface to internal CP of extention.

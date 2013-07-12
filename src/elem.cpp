@@ -234,13 +234,14 @@ void *Elem::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
 {
     // Get from cache first
-    IfIter beg(this, aName, aCtx->Requestor());
-    IfIter end(this, aName, aCtx->Requestor(), ETrue);
+    Base* req = aCtx != NULL ? aCtx->Requestor() : NULL;
+    IfIter beg(this, aName, req);
+    IfIter end(this, aName, req, ETrue);
     if (beg == end) {
 	// Invalid cache, update cache
 	UpdateIfi(aName, aCtx);
-	beg = IfIter(this, aName, aCtx->Requestor());
-	end = IfIter(this, aName, aCtx->Requestor(), ETrue);
+	beg = IfIter(this, aName, req);
+	end = IfIter(this, aName, req, ETrue);
     }
     return TIfRange(beg, end);
 }

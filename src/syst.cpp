@@ -72,6 +72,7 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
     TIfRange rr;
     TBool resg = EFalse;
     RqContext ctx(this, aCtx);
+    Base* rqstr = aCtx != NULL ? aCtx->Requestor() : NULL;
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
     }
@@ -96,7 +97,7 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    // TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
 		    Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
 		    rr = mgr->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, aCtx->Requestor(), mgr, rr);
+		    InsertIfCache(aName, rqstr, mgr, rr);
 		    resg = ETrue;
 		}
 	    }
@@ -106,24 +107,16 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    if (req != NULL && req->Value() == aName) {
 		for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
 		    Elem* pe = (*it)->EBase()->GetObj(pe);
-		    /*
-		    Elem* peprov = pe != NULL ? pe->GetNode("Prop:Provided"): NULL;
-		    MProp* pprov = peprov != NULL ? peprov->GetObj(pprov): NULL;
-		    if (pprov != NULL && pprov->Value() == aName && !ctx.IsInContext(pe)) {
-			rr = pe->GetIfi(aName, &ctx);
-			InsertIfCache(aName, aCtx->Requestor(), pe, rr);
-		    }
-		    */
 		    if (!ctx.IsInContext(pe)) {
 			rr = pe->GetIfi(aName, &ctx);
-			InsertIfCache(aName, aCtx->Requestor(), pe, rr);
+			InsertIfCache(aName, rqstr, pe, rr);
 		    }
 		}
 		// Responsible pairs not found, redirect to upper layer
 		if ((rr.first == rr.second) && iMan != NULL && !ctx.IsInContext(iMan)) {
 		    Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
 		    rr = mgr->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, aCtx->Requestor(), mgr, rr);
+		    InsertIfCache(aName, rqstr, mgr, rr);
 		}
 	    }
 	}
@@ -177,6 +170,8 @@ Elem* ConnPointBase::GetExtd()
 {
     return NULL;
 }
+
+
 
 ExtenderAgent::ExtenderAgent(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
@@ -397,10 +392,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    if (iscomp) {
 		// Request comes from internal CP - forward it to upper layer
 		if (iMan != NULL && !ctx.IsInContext(iMan)) {
-		    // TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
-		    Elem* host = iMan->GetMan();
-		    Elem* hostmgr = host->GetMan();
-		    Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
+		    Elem* mgr =  iMan->GetMan()->GetMan();
 		    if (mgr != NULL && !ctx.IsInContext(mgr)) {
 			rr = mgr->GetIfi(aName, &ctx);
 			InsertIfCache(aName, aCtx->Requestor(), mgr, rr);
@@ -408,41 +400,98 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    }
 		}
 	    }
-	}
-	if (!resok) {
-	    Elem* man = iMan->GetMan();
-	    // Redirect to internal pins. Add host into context, this will prevent internals to redirect
-	    // TODO [YB] To avoid routing directly from agent excluding host. This causes incorrect context
-	    for (vector<Elem*>::const_iterator it = man->Comps().begin(); it != man->Comps().end() && res == NULL; it++) {
-		Elem* eit = (*it);
-		if (!ctx.IsInContext(eit) && eit != iMan) {
-		    rr = eit->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, aCtx->Requestor(), eit, rr);
+	    else {
+		// Request from not internals
+		// Find associated pair in context
+		Base* apair = NULL;
+		Base* ctxe = rqst;
+		const RqContext* cct = aCtx->Ctx();
+		Elem* host =  iMan->GetMan();
+		while (ctxe != NULL && apair == NULL) {
+		    MCompatChecker* cp = ctxe->GetObj(cp);
+		    if (cp != NULL && cp->IsCompatible(host)) {
+			apair = ctxe;
+		    }
+		    ctxe = NULL;
+		    if (cct != NULL) {
+			ctxe = cct->Requestor();
+			cct = cct->Ctx();
+		    }
+		}
+		if (apair != NULL) {
+		    // Find associated pairs pin within the context, and redirect to it's pair in current socket
+		    Elem* pereq = ctxe->GetObj(pereq);
+		    GUri uri;
+		    uri.AppendElem(pereq->EType(), pereq->Name());
+		    Elem *pcomp = host->GetNode(uri);
+		    if (pcomp != NULL && !ctx.IsInContext(pcomp)) {
+			rr = pcomp->GetIfi(aName, &ctx);
+			InsertIfCache(aName, aCtx->Requestor(), pcomp, rr);
+		    }
+		}
+	    }
+	    // Redirect to pair. 
+	    // TODO [YB] To add checking if requiested iface is supported, ref md "sec_refac_conncomp"
+	    // TODO [YB] Probably routing to pair needs to be done first, before the routing to pins
+	    if (rr.first == rr.second) {
+		Elem* man = iMan->GetMan();
+		Vert* vman = man->GetObj(vman);
+		for (set<MVert*>::iterator it = vman->Pairs().begin(); it != vman->Pairs().end() && res == NULL; it++) {
+		    Elem* pe = (*it)->EBase()->GetObj(pe);
+		    if (!ctx.IsInContext(pe)) {
+			rr = pe->GetIfi(aName, &ctx);
+			InsertIfCache(aName, aCtx->Requestor(), pe, rr);
+		    }
+		}
+	    }
+	    // Redirect to upper layer
+	    if (rr.first == rr.second && iMan != NULL && !ctx.IsInContext(iMan)) {
+		Elem* host = iMan->GetMan();
+		Elem* hostmgr = host->GetMan();
+		Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
+		if (mgr != NULL && !ctx.IsInContext(mgr)) {
+		    rr = mgr->GetIfi(aName, &ctx);
+		    InsertIfCache(aName, aCtx->Requestor(), mgr, rr);
 		}
 	    }
 	}
-	// Redirect to pair. 
-	// TODO [YB] To add checking if requiested iface is supported, ref md "sec_refac_conncomp"
-	// TODO [YB] Probably routing to pair needs to be done first, before the routing to pins
-	if (rr.first == rr.second) {
-	    Elem* man = iMan->GetMan();
-	    Vert* vman = man->GetObj(vman);
-	    for (set<MVert*>::iterator it = vman->Pairs().begin(); it != vman->Pairs().end() && res == NULL; it++) {
-		Elem* pe = (*it)->EBase()->GetObj(pe);
-		if (!ctx.IsInContext(pe)) {
-		    rr = pe->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, aCtx->Requestor(), pe, rr);
+	else {
+	    // Requestor not specified, anonymous request
+	    if (!resok) {
+		Elem* man = iMan->GetMan();
+		// Redirect to internal pins. Add host into context, this will prevent internals to redirect
+		// TODO [YB] To avoid routing directly from agent excluding host. This causes incorrect context
+		for (vector<Elem*>::const_iterator it = man->Comps().begin(); it != man->Comps().end() && res == NULL; it++) {
+		    Elem* eit = (*it);
+		    if (!ctx.IsInContext(eit) && eit != iMan) {
+			rr = eit->GetIfi(aName, &ctx);
+			InsertIfCache(aName, aCtx->Requestor(), eit, rr);
+		    }
 		}
 	    }
-	}
-	// Redirect to upper layer
-	if (rr.first == rr.second && iMan != NULL && !ctx.IsInContext(iMan)) {
-	    Elem* host = iMan->GetMan();
-	    Elem* hostmgr = host->GetMan();
-	    Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
-	    if (mgr != NULL && !ctx.IsInContext(mgr)) {
-		rr = mgr->GetIfi(aName, &ctx);
-		InsertIfCache(aName, aCtx->Requestor(), mgr, rr);
+	    // Redirect to pair. 
+	    // TODO [YB] To add checking if requiested iface is supported, ref md "sec_refac_conncomp"
+	    // TODO [YB] Probably routing to pair needs to be done first, before the routing to pins
+	    if (rr.first == rr.second) {
+		Elem* man = iMan->GetMan();
+		Vert* vman = man->GetObj(vman);
+		for (set<MVert*>::iterator it = vman->Pairs().begin(); it != vman->Pairs().end() && res == NULL; it++) {
+		    Elem* pe = (*it)->EBase()->GetObj(pe);
+		    if (!ctx.IsInContext(pe)) {
+			rr = pe->GetIfi(aName, &ctx);
+			InsertIfCache(aName, aCtx->Requestor(), pe, rr);
+		    }
+		}
+	    }
+	    // Redirect to upper layer
+	    if (rr.first == rr.second && iMan != NULL && !ctx.IsInContext(iMan)) {
+		Elem* host = iMan->GetMan();
+		Elem* hostmgr = host->GetMan();
+		Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
+		if (mgr != NULL && !ctx.IsInContext(mgr)) {
+		    rr = mgr->GetIfi(aName, &ctx);
+		    InsertIfCache(aName, aCtx->Requestor(), mgr, rr);
+		}
 	    }
 	}
     }

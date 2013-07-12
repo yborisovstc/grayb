@@ -242,8 +242,19 @@
 	    </sect3>
 	    <sect3><title>Details</title>
 		<itemizedlist>
-		    <listitem>Socket is element that contains other CPs</listitem>
+		    <listitem>Socket is element that contains other CPs, or sockets. So socket can be quite complex
+		    hierarhy of elements.</listitem>
 		    <listitem>Sockets are to be compatible in order to be connected.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extension of</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_03"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_011"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>

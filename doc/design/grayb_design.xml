@@ -69,11 +69,20 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_conn_03"><title>DS_CONN_03 CP interface</title>
+	    <sect3><title>Description</title>
+		<simpara>It is required for CPs to provide specific iface. One of the case where it can be used is
+		    finding out "pair" of connection especially if sockets with deep hier are connected (also via extenders).
+		    The problem when complex sockets is that some component within this hier is "virtually" connected
+		to some pair, but there is no simple mechanism to find the "pair".</simpara>
+	    </sect3>
+	</sect2>
 	<sect2 id="ds_conn_02"><title>DS_CONN_02 Sockets</title>
 	    <sect3><title>Description</title>
 		<simpara>
-		    Socket is the complex CP - element that collects some CPs and EPs. Like simple CP Socket is located in system or capsula of
-		    Incaps.  When connecting two sockets the observed hier element, normally Incapsulated system (Incaps)
+		    Socket is the complex CP - element that collects some CPs, EPs, and sockets. 
+		    Like simple CP Socket is located in system or capsula of Incaps.
+		    When connecting two sockets the observed hier element, normally Incapsulated system (Incaps)
 		</simpara>
 		<itemizedlist>
 		</itemizedlist>

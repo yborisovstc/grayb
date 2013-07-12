@@ -22,6 +22,8 @@ class MCompatChecker
 	// Checked
 	// In case if checked is extender, to get extended part
 	virtual Elem* GetExtd() = 0;
+	// Getting associated point
+//	virtual vector<Elem*> GetAssoc(RqContext* aCtx) = 0;
 };
 
 // Graph vertex interface
