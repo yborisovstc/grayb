@@ -17,7 +17,7 @@ class Ut_des : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST_SUITE(Ut_des);
     CPPUNIT_TEST(test_Cre1);
     CPPUNIT_TEST(test_Cre2);
-//    CPPUNIT_TEST(test_Cre4);
+    CPPUNIT_TEST(test_Cre4);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -120,10 +120,7 @@ void Ut_des::test_Cre4()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* doutp = root->GetNode("Des:TestDes/Elem:Capsule/Extender:Out");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get DES out", doutp != 0);
-//    MDIntGet* doutpget = doutp->GetObj(doutpget);
-    MDIntGet* doutpget = (MDIntGet*) root->GetSIfi("TestDes/Capsule/Out", MDIntGet::Type());
+    MDIntGet* doutpget = (MDIntGet*) root->GetSIfi("TestDes/Snail_1/Capsule/Out_Mass/Int/PinData", MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
 //    CPPUNIT_ASSERT_MESSAGE("Fail to get initial value of data iface", doutpget->Value() == 0);
     // Get Sync iface of DES

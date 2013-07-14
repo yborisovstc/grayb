@@ -130,6 +130,7 @@ void Vert::UpdateIfi(const string& aName, const RqContext* aCtx)
     void* res = NULL;
     TIfRange rr;
     RqContext ctx(this, aCtx);
+    TICacheRCtx rctx = ToCacheRCtx(aCtx);
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
     }
@@ -140,7 +141,7 @@ void Vert::UpdateIfi(const string& aName, const RqContext* aCtx)
 	res = Elem::DoGetObj(aName.c_str(), EFalse);
     }
     if (res != NULL) {
-	InsertIfCache(aName, aCtx->Requestor(), this, res);
+	InsertIfCache(aName, rctx, this, res);
     }
     // Support run-time extentions on the base layer, ref md#sec_refac_iface
     if (res == NULL) {
@@ -150,7 +151,7 @@ void Vert::UpdateIfi(const string& aName, const RqContext* aCtx)
 		Elem* eit = (*it);
 		if (!ctx.IsInContext(eit)) {
 		    rr = eit->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, aCtx->Requestor(), eit, rr);
+		    InsertIfCache(aName, rctx, eit, rr);
 		}
 	    }
 	}

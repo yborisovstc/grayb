@@ -22,8 +22,10 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	typedef multimap<TCkey, Elem*> TMElem;
 
     public:
+	// Request context
+	typedef vector<Base*> TICacheRCtx;
 	// Iface cache key first part: [iface name, requestor]
-	typedef pair<string, Base*> TICacheKeyF;
+	typedef pair<string, TICacheRCtx> TICacheKeyF;
 	// Iface cache key: [[iface name, requestor], provider]
 	typedef pair<TICacheKeyF, Base*> TICacheKey;
 	// Iface cache
@@ -47,7 +49,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	friend class Elem;
 	public:
 	IfIter(): iHost(NULL) {};
-	IfIter(Elem* aHost, const string& aIName, Base* aReq, TBool aToEnd = EFalse);
+	IfIter(Elem* aHost, const string& aIName, const TICacheRCtx& aReq, TBool aToEnd = EFalse);
 	IfIter(const IfIter& aIt);
 	IfIter& operator=(const IfIter& aIt);
 	IfIter& operator++();
@@ -58,7 +60,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	public:
 	Elem* iHost;
 	string iIName; // Iface name
-	Base* iReq; // Requestor
+	TICacheRCtx iReq; // Requestor
 	TICacheQFRange iQFRange; // Range of  cache query by TICMapKeyF
 	TICacheQFIter iQFIter; // Query result current iterator
 	TICacheRange iCacheRange;
@@ -123,6 +125,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	void Mutate(TBool aRunTimeOnly = EFalse);
 	string PName() const;
 	const vector<Elem*>& Comps() const;
+	static TICacheRCtx ToCacheRCtx(const RqContext* aCtx);
     public:
 	// aInitCont - the uri of initial context of element, this is requires to element "understand" that it is
 	// in new context now and corrected uris related to initial context
@@ -166,6 +169,12 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	virtual void OnCompChanged(Elem& aComp);
 	// From MMutable
 	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime);
+	// Ifaces cache
+	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
+	void RmIfCache(IfIter& aIt);
+	void InvalidateIfCache();
+	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, void* aVal);
+	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg);
     protected:
 	Elem* AddElem(const ChromoNode& aSpec);
 	static void Init();
@@ -179,12 +188,6 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	Elem* GetComp(TInt aInd);
 	virtual void DoOnCompChanged(Elem& aComp);
 	TBool IsLogeventCreOn();
-	// Ifaces cache
-	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
-	void RmIfCache(IfIter& aIt);
-	void InvalidateIfCache();
-	void InsertIfCache(const string& aName, Base* aReq, Base* aProv, void* aVal);
-	void InsertIfCache(const string& aName, Base* aReq, Base* aProv, TIfRange aRg);
     protected:
 	// Element type - parent's name
 	string iEType;

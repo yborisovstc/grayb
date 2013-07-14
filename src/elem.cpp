@@ -8,8 +8,19 @@
 set<string> Elem::iCompsTypes;
 bool Elem::iInit = false;
 
+Elem::TICacheRCtx Elem::ToCacheRCtx(const RqContext* aCtx) 
+{
+    TICacheRCtx res;
+    const RqContext* cct(aCtx);
+    while (cct != NULL) {
+	Base* rq = cct->Requestor();
+	res.push_back(rq);
+	cct = cct->Ctx();
+    }
+    return res;
+}
 
-Elem::IfIter::IfIter(Elem* aHost, const string& aIName, Base* aReq, TBool aToEnd): iHost(aHost), iIName(aIName), iReq(aReq) 
+Elem::IfIter::IfIter(Elem* aHost, const string& aIName, const TICacheRCtx& aReq, TBool aToEnd): iHost(aHost), iIName(aIName), iReq(aReq) 
 {
     TICacheKeyF query(iIName, iReq);
     iQFRange = iHost->iICacheQF.equal_range(query);
@@ -33,7 +44,6 @@ Elem::IfIter::IfIter(const IfIter& aIt): iHost(aIt.iHost), iIName(aIt.iIName), i
     iQFIter(aIt.iQFIter), iCacheRange(aIt.iCacheRange), iCacheIter(aIt.iCacheIter)
 {
 }
-
 Elem::IfIter& Elem::IfIter::operator=(const IfIter& aIt)
 {
     iHost = aIt.iHost; 
@@ -234,7 +244,7 @@ void *Elem::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
 {
     // Get from cache first
-    Base* req = aCtx != NULL ? aCtx->Requestor() : NULL;
+    TICacheRCtx req = ToCacheRCtx(aCtx);
     IfIter beg(this, aName, req);
     IfIter end(this, aName, req, ETrue);
     if (beg == end) {
@@ -282,7 +292,7 @@ void Elem::InvalidateIfCache()
     iICacheQF.clear();
 }
 
-void Elem::InsertIfCache(const string& aName, Base* aReq, Base* aProv, void* aVal)
+void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, void* aVal)
 {
     TICacheKeyF keyf(aName, aReq);
     pair<TICacheKey, void*> val(TICacheKey(keyf, aProv), aVal);
@@ -291,7 +301,7 @@ void Elem::InsertIfCache(const string& aName, Base* aReq, Base* aProv, void* aVa
     iICacheQF.insert(qr);
 }
 
-void Elem::InsertIfCache(const string& aName, Base* aReq, Base* aProv, TIfRange aRg)
+void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg)
 {
     for (IfIter it = aRg.first; it != aRg.second; it++) {
 	InsertIfCache(aName, aReq, aProv, *it);
@@ -302,7 +312,7 @@ void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
 {
     void* res = DoGetObj(aName.c_str(), aCtx);
     if (res != NULL) {
-	InsertIfCache(aName, aCtx->Requestor(), this, res);
+	InsertIfCache(aName, ToCacheRCtx(aCtx), this, res);
     }
 }
 

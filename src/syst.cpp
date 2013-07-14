@@ -72,6 +72,7 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
     TIfRange rr;
     TBool resg = EFalse;
     RqContext ctx(this, aCtx);
+    TICacheRCtx rctx = ToCacheRCtx(aCtx);
     Base* rqstr = aCtx != NULL ? aCtx->Requestor() : NULL;
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
@@ -83,7 +84,7 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 	res = Vert::DoGetObj(aName.c_str(), EFalse, aCtx);
     }
     if (res != NULL) {
-	InsertIfCache(aName, aCtx->Requestor(), this, res);
+	InsertIfCache(aName, rctx, this, res);
     }
     else {
 	// Redirect to pairs if iface requiested is provided by this CP
@@ -97,7 +98,7 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    // TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
 		    Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
 		    rr = mgr->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, rqstr, mgr, rr);
+		    InsertIfCache(aName, rctx, mgr, rr);
 		    resg = ETrue;
 		}
 	    }
@@ -109,14 +110,14 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    Elem* pe = (*it)->EBase()->GetObj(pe);
 		    if (!ctx.IsInContext(pe)) {
 			rr = pe->GetIfi(aName, &ctx);
-			InsertIfCache(aName, rqstr, pe, rr);
+			InsertIfCache(aName, rctx, pe, rr);
 		    }
 		}
 		// Responsible pairs not found, redirect to upper layer
 		if ((rr.first == rr.second) && iMan != NULL && !ctx.IsInContext(iMan)) {
 		    Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
 		    rr = mgr->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, rqstr, mgr, rr);
+		    InsertIfCache(aName, rctx, mgr, rr);
 		}
 	    }
 	}
@@ -228,6 +229,8 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
     void* res = NULL;
     TIfRange rr;
     RqContext ctx(this, aCtx);
+    Elem* host = iMan->GetMan();
+    TICacheRCtx rctx = ToCacheRCtx(aCtx->Ctx());
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
     }
@@ -238,14 +241,14 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 	res = Elem::DoGetObj(aName.c_str(), EFalse);
     }
     if (res != NULL) {
-	InsertIfCache(aName, aCtx->Requestor(), this, res);
+	InsertIfCache(aName, rctx, this, res);
     }
     if (res == NULL) {
 	// Redirect to internal point or pair depending on the requiestor
 	Elem* intcp = GetNode("../../*:Int");
 	if (intcp != NULL && !ctx.IsInContext(intcp)) {
-	    rr = intcp->GetIfi(aName, &ctx);
-	    InsertIfCache(aName, aCtx->Requestor(), intcp, rr);
+	    rr = intcp->GetIfi(aName, aCtx);
+	    host->InsertIfCache(aName, rctx, intcp, rr);
 	}
 	else {
 	    Elem* host = iMan->GetMan();
@@ -254,8 +257,8 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 		for (set<MVert*>::const_iterator it = vhost->Pairs().begin(); it != vhost->Pairs().end(); it++) {
 		    Elem* ep = (*it)->EBase()->GetObj(ep);
 		    if (ep != NULL && !ctx.IsInContext(ep)) {
-			rr = ep->GetIfi(aName, &ctx);
-			InsertIfCache(aName, aCtx->Requestor(), ep, rr);
+			rr = ep->GetIfi(aName, aCtx);
+			host->InsertIfCache(aName, rctx, ep, rr);
 		    }
 		}
 	    }
@@ -267,8 +270,8 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 	Elem* hostmgr = host->GetMan();
 	Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
 	if (mgr != NULL && !ctx.IsInContext(mgr)) {
-	    rr = mgr->GetIfi(aName, &ctx);
-	    InsertIfCache(aName, aCtx->Requestor(), mgr, rr);
+	    rr = mgr->GetIfi(aName, aCtx);
+	    host->InsertIfCache(aName, rctx, mgr, rr);
 	}
     }
 
@@ -369,6 +372,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
     TIfRange rr;
     TBool resok = EFalse;
     RqContext ctx(this, aCtx);
+    TICacheRCtx rctx = ToCacheRCtx(aCtx);
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
     }
@@ -379,7 +383,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	res = Elem::DoGetObj(aName.c_str(), EFalse);
     }
     if (res != NULL) {
-	InsertIfCache(aName, aCtx->Requestor(), this, res);
+	InsertIfCache(aName, rctx, this, res);
     }
     if (res == NULL && aCtx != NULL) {
 	Base* master = aCtx->Requestor();
@@ -396,7 +400,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    Elem* mgr =  iMan->GetMan()->GetMan();
 		    if (mgr != NULL && !ctx.IsInContext(mgr)) {
 			rr = mgr->GetIfi(aName, &ctx);
-			InsertIfCache(aName, aCtx->Requestor(), mgr, rr);
+			InsertIfCache(aName, rctx, mgr, rr);
 			resok = ETrue;
 		    }
 		}
@@ -405,30 +409,38 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		// Request from not internals
 		// Find associated pair in context
 		Base* apair = NULL;
+		Elem* pcomp = NULL;
 		Base* ctxe = rqst;
 		const RqContext* cct = aCtx->Ctx();
 		Elem* host =  iMan->GetMan();
-		while (ctxe != NULL && apair == NULL) {
+		TBool extd = EFalse;
+		// TODO [YB] To cleanup
+		while (ctxe != NULL && pcomp == NULL) {
 		    MCompatChecker* cp = ctxe->GetObj(cp);
-		    if (cp != NULL && cp->IsCompatible(host)) {
-			apair = ctxe;
+		    // Update extention option if met extention in context
+		    if (cp != NULL) {
+			extd ^= cp->GetExtd() != NULL;
+			if (cp->IsCompatible(host, extd)) {
+			    apair = ctxe;
+			}
 		    }
 		    ctxe = NULL;
 		    if (cct != NULL) {
 			cct = cct->Ctx();
 			ctxe = cct != NULL ? cct->Requestor() : NULL;
 		    }
-		}
-		if (apair != NULL) {
-		    // Find associated pairs pin within the context, and redirect to it's pair in current socket
-		    Elem* pereq = ctxe->GetObj(pereq);
-		    GUri uri;
-		    uri.AppendElem(pereq->EType(), pereq->Name());
-		    Elem *pcomp = host->GetNode(uri);
-		    if (pcomp != NULL && !ctx.IsInContext(pcomp)) {
-			rr = pcomp->GetIfi(aName, &ctx);
-			InsertIfCache(aName, aCtx->Requestor(), pcomp, rr);
+		    if (apair != NULL && ctxe != NULL) {
+			// Find associated pairs pin within the context
+			Elem* pereq = ctxe->GetObj(pereq);
+			GUri uri;
+			uri.AppendElem(pereq->EType(), pereq->Name());
+			pcomp = host->GetNode(uri);
 		    }
+		}
+		if (pcomp != NULL && !ctx.IsInContext(pcomp)) {
+		    // Found associated pairs pin within the context, so redirect to it's pair in current socket
+		    rr = pcomp->GetIfi(aName, &ctx);
+		    InsertIfCache(aName, rctx, pcomp, rr);
 		}
 	    }
 	    // Redirect to pair. 
@@ -442,7 +454,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    if (!ctx.IsInContext(pe)) {
 			//rr = pe->GetIfi(aName, &ctx);
 			rr = pe->GetIfi(aName, aCtx);
-			InsertIfCache(aName, aCtx->Requestor(), pe, rr);
+			InsertIfCache(aName, rctx, pe, rr);
 		    }
 		}
 	    }
@@ -453,7 +465,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
 		if (mgr != NULL && !ctx.IsInContext(mgr)) {
 		    rr = mgr->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, aCtx->Requestor(), mgr, rr);
+		    InsertIfCache(aName, rctx, mgr, rr);
 		}
 	    }
 	}
@@ -467,7 +479,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    Elem* eit = (*it);
 		    if (!ctx.IsInContext(eit) && eit != iMan) {
 			rr = eit->GetIfi(aName, &ctx);
-			InsertIfCache(aName, aCtx->Requestor(), eit, rr);
+			InsertIfCache(aName, rctx, eit, rr);
 		    }
 		}
 	    }
@@ -481,7 +493,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    Elem* pe = (*it)->EBase()->GetObj(pe);
 		    if (!ctx.IsInContext(pe)) {
 			rr = pe->GetIfi(aName, &ctx);
-			InsertIfCache(aName, aCtx->Requestor(), pe, rr);
+			InsertIfCache(aName, rctx, pe, rr);
 		    }
 		}
 	    }
@@ -492,7 +504,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
 		if (mgr != NULL && !ctx.IsInContext(mgr)) {
 		    rr = mgr->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, aCtx->Requestor(), mgr, rr);
+		    InsertIfCache(aName, rctx, mgr, rr);
 		}
 	    }
 	}
