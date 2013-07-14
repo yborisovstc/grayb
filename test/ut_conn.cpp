@@ -55,7 +55,7 @@ void Ut_conn::test_Sock()
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 3);
     doutp = root->GetNode("test/L1/Cp2");
     CPPUNIT_ASSERT_MESSAGE("Fail to get L1 Cp2", doutp != 0);
-    doutpget = doutp->GetObj(doutpget);
+    doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface for Cp2", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface for Cp2", doutpget->Value() == 1);
 

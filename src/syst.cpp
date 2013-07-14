@@ -384,6 +384,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
     if (res == NULL && aCtx != NULL) {
 	Base* master = aCtx->Requestor();
 	Elem* emaster = master->GetObj(emaster);
+	const RqContext* hostctx = aCtx->Ctx();
 	Base* rqst = aCtx->Ctx() != NULL ? aCtx->Ctx()->Requestor(): NULL;
 	if (rqst != NULL) {
 	    // Requestor is specified, so try to redirect basing on it
@@ -414,8 +415,8 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    }
 		    ctxe = NULL;
 		    if (cct != NULL) {
-			ctxe = cct->Requestor();
 			cct = cct->Ctx();
+			ctxe = cct != NULL ? cct->Requestor() : NULL;
 		    }
 		}
 		if (apair != NULL) {
@@ -439,7 +440,8 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		for (set<MVert*>::iterator it = vman->Pairs().begin(); it != vman->Pairs().end() && res == NULL; it++) {
 		    Elem* pe = (*it)->EBase()->GetObj(pe);
 		    if (!ctx.IsInContext(pe)) {
-			rr = pe->GetIfi(aName, &ctx);
+			//rr = pe->GetIfi(aName, &ctx);
+			rr = pe->GetIfi(aName, aCtx);
 			InsertIfCache(aName, aCtx->Requestor(), pe, rr);
 		    }
 		}

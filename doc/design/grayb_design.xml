@@ -22,6 +22,8 @@
 		<revremark>Added <xref linkend="ds_conn_01"/></revremark> </revision>
 	    <revision> <revnumber>0.03</revnumber> <date>06-Jul-2013</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="ds_ifcache"/></revremark> </revision>
+	    <revision> <revnumber>0.04</revnumber> <date>14-Jul-2013</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="ds_base_02"/>. Updated <xref linkend="ds_ifcache_01"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -55,6 +57,19 @@
 		       cannot handle the request.	
 		    </listitem>
 		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_base_02"><title>DS_BASE_02 Native behaviour. Agents.</title>
+	    <sect3><title>Description</title>
+		<simpara>The current implementation of elements extention for adding native bahavior is not consistent.</simpara>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<sect4><title>What are agents: component or internals of element.</title>
+		    <simpara>Currently agents are implemented as components of element. Making them specific is done via collecting them in one
+			specific part of element - "Agents" container. This solution foolows general approach of "cooperation" when the required complexity
+			of system is secured via cooperation between elements. So extending of native behavior of element is done via cooperation of base
+			element to embedded agents. But consequences of that is that agents are "regular" elements.</simpara>
+		</sect4>
 	    </sect3>
 	</sect2>
     </sect1>
@@ -99,10 +114,36 @@
 		    needs to distinquish requests from CP "Out" and CP "Out_WFarg" but it's not possible. Is is the indication of the current mechanism not
 		    consistent? Do we need improvement of cache mechanism?</simpara>
 	    </sect3>
-	    <sect3><title>Discussion</title>
+	    <sect3 id="ds_ifcache_01_disc"><title>Discussion</title>
 		<itemizedlist>
 		    <listitem>A: No it is not. We simply need to adjust Conv to the scheme. The current implementation of Conv is not correct. </listitem>
+		    <listitem>14Jul2013 Yes, the scheme is incorrect. It doesn't provide correct iface instance in case of request thru socket pin, 
+			especially if pins are for the same iface, ref Ut_conn::test_Sock():58 [7618b16c5199]. The first step ut requested iface 
+			MDIntGet from Cp1, socket "Out" updates cache with MDIntGet iface from Cp1. The second step ut requests iface
+			from Cp2, but Out returns the previously cached iface because it cannot distinquish requestor.</listitem>
 		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Solution: refuse ifaces caching approach at all, but use pseudo connections for all connpoints.</title>
+		<simpara>Do we need caching really? Architecturally, caching is just establishing direct pseudo connections, that simplify an access
+		    to iface instances. It is not confirmed that the overhead will be resonable for the case when we have the pseudo connections for 
+		    totally all elements of system. Isn't better to use some intermediate scheme, where only some elements have it, for instance
+		    only connpoints as they conduct most of communications.</simpara>
+	    </sect3>
+	    <sect3><title>Solution: extending of scheme by using full path from requestor.</title>
+		<simpara></simpara> 
+	    </sect3>
+	    <sect3><title>Solution: to avoid having cache in agent (doesn't solve the problem actually)</title>
+		<simpara>Original scheme seems resonable, the requests should be distinquish with even only level of requestor specified. 
+		    The problem we faced is because of having agent as extra layer. Look at example we refeered in <xref linkend="ds_ifcache_01_disc"/>
+		    Ut_conn::test_Sock():58. Ideally the "path" should be: Cp2 - L1 - Out - Cp2 - Data_2. But in reality we have:
+		    Cp2 - L1 - Sock (agent) - Out - Sock (agent) .... So the link L1 - Sock (agent) eliminates the request distinquishness from Cp2. The 
+		    question is "Can we avoid this cashe in agents?". This solution is also related to solution for agents, ref <xref linkend="ds_base_02"/></simpara>
+		<simpara>No, it cannot solve the problem. Theer still will be sutuation where the one level requestor is not enough to correctly resolve
+		    iface in cache. </simpara>
+	    </sect3>
+	    <sect3><title>Solution: using specific CP iface to get pair of socket's pin</title>
+		<simpara>The idea is to fit CP with specific iface that provides getting "virtual" pair in case if CP is socket's pin.
+		    Socket's pin requested for this iface, gets pair and redirect iface request to it. </simpara>
 	    </sect3>
 	</sect2>
     </sect1>
