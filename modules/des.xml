@@ -135,18 +135,6 @@
 	    <node id="Sync" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
 		<cont node="Prop:Required" val="MDesSyncable"/>
 	    </node>
-	    <!-- Input -->
-	    <node id="Inp" parent="../../SysComps:sysmod/Vert:Extender"> 
-		<rm node="ConnPoint:Int"/>
-		<node id="Int" parent="../../../Socket:StInpSocket"> 
-		</node>
-	    </node>
-	    <!-- Output -->
-	    <node id="Out" parent="../../SysComps:sysmod/Vert:Extender"> 
-		<rm node="ConnPoint:Int"/>
-		<node id="Int" parent="../../../Socket:StOutSocket"> 
-		</node>
-	    </node>
 	</add>
     </node>
 

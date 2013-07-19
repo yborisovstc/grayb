@@ -110,6 +110,7 @@ class AFunc: public Elem, public MACompsObserver, public MDataObserver
 	virtual void OnDataChanged();
     protected:
 	void NotifyUpdate();
+	TBool IsLogeventUpdate();
 };
 
 class AFAddInt: public AFunc, public MDIntGet

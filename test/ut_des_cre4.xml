@@ -74,15 +74,13 @@
     <!-- Snail -->
     <node id="Snail" parent="DesComps:desmod/Incaps:Des">
 
-	<!-- Configure output to data type to Integer -->
-	<cont node="Elem:Capsule/Extender:Out/StOutSocket:Int/ConnPoint:PinData/Prop:Required" val="MDIntGet"/>
-
-	<!-- Input:  default - Coords of others -->
-	<!-- Output: default - Coord -->
-
 	<add node="Elem:Capsule">
+	    <!-- Input: Coords of others -->
+	    <node id="Inp" parent="../../DesComps:desmod/Extender:StIntInp"/> 
 	    <!-- System parameters -->
 	    <node id="Inp_SysPars" parent="../../SysConstInp"/> 
+	    <!-- Output: default - Coord -->
+	    <node id="Out" parent="../../DesComps:desmod/Extender:StIntOut"/> 
 	    <!-- Mass -->
 	    <node id="Out_Mass" parent="../../DesComps:desmod/Extender:StIntOut"/> 
 	</add>
@@ -105,8 +103,8 @@
 	    </add>
 
 	    <!-- Input: default - self -->
-	    <!-- Input: self coord -->
 	    <add node="Elem:Capsule">
+		<!-- Input: self coord -->
 		<node id="Inp_SelfCoord" parent="../../../DesComps:desmod/Extender:StIntInp"/> 
 		<!-- Input: others coord -->
 		<node id="Inp_OthersCoord" parent="../../../DesComps:desmod/Extender:StIntInp"/> 
@@ -179,10 +177,15 @@
 
 	<!-- Internal connections -->
 	<node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int"/> <cont node="P2" val="Mass/Capsule/Inp_SysPars"/> </node>
+	<node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int"/> <cont node="P2" val="Coord/Capsule/Inp_SysPars"/> </node>
+	<node parent="Edge"> <cont node="P1" val="Coord/Capsule/Out"/> <cont node="P2" val="Mass/Capsule/Inp_SelfCoord"/> </node>
 	<node parent="Edge"> <cont node="P1" val="Mass/Capsule/Out"/> <cont node="P2" val="Mass/Capsule/Inp"/> </node>
 	<node parent="Edge"> <cont node="P1" val="Coord/Capsule/Out"/> <cont node="P2" val="Coord/Capsule/Inp"/> </node>
 	<node parent="Edge"> <cont node="P1" val="Mass/Capsule/Out"/> <cont node="P2" val="Coord/Capsule/Inp_Mass"/> </node>
+
 	<node parent="Edge"> <cont node="P1" val="Mass/Capsule/Out"/> <cont node="P2" val="Capsule/Out_Mass/Int"/> </node>
+	<node parent="Edge"> <cont node="P1" val="Coord/Capsule/Out"/> <cont node="P2" val="Capsule/Out/Int"/> </node>
+	<node parent="Edge"> <cont node="P1" val="Capsule/Inp/Int"/> <cont node="P2" val="Mass/Capsule/Inp_OthersCoord"/> </node>
 
     </node> <!-- Snail -->
 
@@ -191,8 +194,10 @@
 
 	<node id="Logspec" parent="Elem"> <node id="Creation" parent="Elem"/> </node>
 
-	<!-- Configure output to data type -->
-	<cont node="Elem:Capsule/Extender:Out/StOutSocket:Int/ConnPoint:PinData/Prop:Required" val="MDIntGet"/>
+	<add node="Elem:Capsule">
+	    <!-- Output: Mass -->
+	    <node id="Out" parent="../../DesComps:desmod/Extender:StIntOut"/> 
+	</add>
 
 	<!-- Constants -->
 	<node id="Consts" parent="../SysConsts">
@@ -200,13 +205,44 @@
 
 	<!-- Snails -->
 	<node id="Snail_1" parent="../Snail">
+
+	    <cont node="Mass/Confirmed/Value" val="1"/>
+
+	    <add node="Coord/Div">
+		<node id="Logspec" parent="Elem">
+		    <node id="Update" parent="../../../../../datamod/DataLogevent"/>
+		</node>
+	    </add>
+
+	    <add node="Mass/Conv">
+		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../datamod/DataLogevent"/> </node>
+	    </add>
+
 	</node>
 
 	<node id="Snail_2" parent="../Snail">
+	    <cont node="Mass/Confirmed/Value" val="2"/>
+
+	    <add node="Coord/Div">
+		<node id="Logspec" parent="Elem">
+		    <node id="Update" parent="../../../../../datamod/DataLogevent"/>
+		</node>
+	    </add>
+
+	    <add node="Mass/Conv/WFArg">
+		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../../datamod/DataLogevent"/> </node>
+	    </add>
+
+	    <add node="Mass/Conv">
+		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../datamod/DataLogevent"/> </node>
+	    </add>
 	</node>
 
 	<node parent="Edge"> <cont node="P1" val="Snail_1/Capsule/Out_Mass"/> <cont node="P2" val="Capsule/Out/Int"/> </node>
 	<node parent="Edge"> <cont node="P1" val="Consts/Capsule/Out"/> <cont node="P2" val="Snail_1/Capsule/Inp_SysPars"/> </node>
+	<node parent="Edge"> <cont node="P1" val="Consts/Capsule/Out"/> <cont node="P2" val="Snail_2/Capsule/Inp_SysPars"/> </node>
+	<node parent="Edge"> <cont node="P1" val="Snail_1/Capsule/Out"/> <cont node="P2" val="Snail_2/Capsule/Inp"/> </node>
+	<node parent="Edge"> <cont node="P1" val="Snail_2/Capsule/Out"/> <cont node="P2" val="Snail_1/Capsule/Inp"/> </node>
 
     </node> <!-- test -->
 

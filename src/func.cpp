@@ -414,6 +414,14 @@ void AFunc::OnDataChanged()
     NotifyUpdate();
 }
 
+TBool AFunc::IsLogeventUpdate()
+{
+    Elem* node = GetNode("../../Elem:Logspec/DataLogevent:Update");
+    return node != NULL;
+}
+
+
+
 // Function agent base wo caching
 AFAddInt::AFAddInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
@@ -569,8 +577,22 @@ TInt AFDivInt::Value()
 	TInt dvd = mdvd->Value();
 	TInt dvr = mdvr->Value();
 	// TODO [YB] To add errors handling
+	TBool lupd = IsLogeventUpdate();
+	GUri fullpath;
+	if (lupd) {
+	    Elem* host = iMan->GetMan();
+	    host->GetUri(fullpath);
+	}
 	if (dvr != 0) {
 	    val = dvd / dvr;
+	    if (lupd) {
+		Logger()->WriteFormat("[%s]: Result = %d", fullpath.GetUri(ETrue).c_str(), val);
+	    }
+	}
+	else {
+	    if (lupd) {
+		Logger()->WriteFormat("[%s]: Error: null devider", fullpath.GetUri(ETrue).c_str());
+	    }
 	}
     }
     return val;
@@ -680,6 +702,12 @@ TInt AFConvInt::Value()
     MDIntSet* wfarg = (MDIntSet*) eargwf->GetSIfi(MDIntSet::Type(), &cont);
     MDIntGet* wfres = (MDIntGet*) einpwf->GetSIfi("MDIntGet", &cont);
     if (wfres != NULL && wfarg != NULL) {
+	TBool lupd = IsLogeventUpdate();
+	GUri fullpath;
+	if (lupd) {
+	    Elem* host = iMan->GetMan();
+	    host->GetUri(fullpath);
+	}
 	TIfRange range = einp->GetIfi("MDIntGet", &cont);
 	for (IfIter it = range.first; it != range.second; it++) {
 	    MDIntGet* dget = (MDIntGet*) (*it);
@@ -688,6 +716,9 @@ TInt AFConvInt::Value()
 		wfarg->SetValue(sample);
 		val += wfres->Value();
 	    }
+	}
+	if (lupd) {
+	    Logger()->WriteFormat("[%s]: Result = %d", fullpath.GetUri(ETrue).c_str(), val);
 	}
     }
     return val;

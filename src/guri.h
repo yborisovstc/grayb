@@ -49,8 +49,8 @@ class GUri
 	GUri(const string& aGUri);
 	GUri();
 	const vector<TElem>& Elems() const {return iElems;};
-	string GetUri(vector<TElem>::const_iterator aStart) const;
-	string GetUri() const { return GetUri(iElems.begin());};
+	string GetUri(vector<TElem>::const_iterator aStart, TBool aShort = EFalse) const;
+	string GetUri(TBool aShort = EFalse) const { return GetUri(iElems.begin(), aShort);};
 	const string& GetType() const;
 	const string& Scheme() const;
 	string GetName() const;

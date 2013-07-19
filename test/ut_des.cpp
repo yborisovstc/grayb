@@ -86,7 +86,7 @@ void Ut_des::test_Cre2()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* doutp = root->GetNode("Des:TestDes/Elem:Capsule/Extender:Out");
+    Elem* doutp = root->GetNode("Des:TestDes/Capsule/Out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get DES out", doutp != 0);
     MDIntGet* doutpget = doutp->GetObj(doutpget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
@@ -131,6 +131,7 @@ void Ut_des::test_Cre4()
     // Do some ticks
     const TInt ticksnum = 5;
     for (TInt cnt = 0; cnt < ticksnum; cnt++) {
+	iEnv->Logger()->WriteFormat("[Test] Tick #%4d", cnt);
 	if (sync->IsActive()) {
 	    sync->Update();
 	}

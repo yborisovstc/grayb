@@ -152,9 +152,19 @@ void StateAgent::Confirm()
 	    if (upd->Update()) {
 		// Activate dependencies
 		Elem* eobs = GetNode("../../Elem:Capsule/Extender:Out/StOutSocket:Int/ConnPoint:PinObs");
+		/*
 		MDesObserver* mobs = eobs->GetObj(mobs);
 		if (mobs != NULL) {
 		    mobs->OnUpdated();
+		}
+		*/
+		RqContext ctx(this);
+		TIfRange range = eobs->GetIfi(MDesObserver::Type(), &ctx);
+		for (IfIter it = range.first; it != range.second; it++) {
+		    MDesObserver* mobs = (MDesObserver*) (*it);
+		    if (mobs != NULL) {
+			mobs->OnUpdated();
+		    }
 		}
 		// Activate mgr
 	    }

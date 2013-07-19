@@ -420,6 +420,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    // Update extention option if met extention in context
 		    if (cp != NULL) {
 			extd ^= cp->GetExtd() != NULL;
+			apair = NULL;
 			if (cp->IsCompatible(host, extd)) {
 			    apair = ctxe;
 			}

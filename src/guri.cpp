@@ -169,14 +169,16 @@ void GUri::Parse()
     }
 }
 
-string GUri::GetUri(vector<TElem>::const_iterator aStart) const
+string GUri::GetUri(vector<TElem>::const_iterator aStart, TBool aShort) const
 {
     string res;
     // Hier
     for (vector<GUri::TElem>::const_iterator it = aStart; it != iElems.end(); it++) {
 	GUri::TElem elem = *it;
-	if (!elem.first.empty() && elem.first != KTypeAny) {
-	    res.append(elem.first + ":");
+	if (!aShort) {
+	    if (!elem.first.empty() && elem.first != KTypeAny) {
+		res.append(elem.first + ":");
+	    }
 	}
 	res.append(elem.second);
 	if (it + 1 != iElems.end()) {

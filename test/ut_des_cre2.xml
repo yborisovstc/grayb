@@ -22,8 +22,10 @@
 
     <node id="TestDes" parent="DesComps:desmod/Incaps:Des">
 
-	<!-- Configure output to data type -->
-	<cont node="Elem:Capsule/Extender:Out/StOutSocket:Int/ConnPoint:PinData/Prop:Required" val="MDIntGet"/>
+	<add node="Elem:Capsule">
+	    <!-- Output: Mass -->
+	    <node id="Out" parent="../../DesComps:desmod/Extender:StIntOut"/> 
+	</add>
 
 	<!-- Incrementor 1 -->
 	<node id="Incr1" parent="../DesComps:desmod/State:StateInt">
@@ -74,10 +76,7 @@
 	</node>
 
 	<!-- DES output -->
-	<node parent="Edge"> 
-	    <cont node="Prop:P1" val="Incr1:Incr2/Elem:Capsule/Extender:Out"/> 
-	    <cont node="Prop:P2" val="Elem:Capsule/Extender:Out/StOutSocket:Int"/> 
-	</node>
+	<node parent="Edge"> <cont node="P1" val="Incr1:Incr2/Capsule/Out"/> <cont node="P2" val="Capsule/Out/Int"/> </node>
 
     </node> <!-- test -->
 

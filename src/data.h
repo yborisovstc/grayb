@@ -19,6 +19,7 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable
     protected:
 	void UpdateProp();
 	void NotifyUpdate();
+	TBool IsLogeventUpdate();
 };
 
 // Data is representing some static model
@@ -45,8 +46,6 @@ class DInt: public DataBase, public MDInt, public MDIntGet, public MDIntSet
 	virtual TBool Update();
 	// From Elem
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
-    protected:
-	TBool IsLogeventUpdate();
     protected:
 	TInt mData;
 };

@@ -17,14 +17,21 @@ TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
     TBool res = EFalse;
     if (aComp.Name() == "Value" && aComp.EType() == "Prop") {
 	MProp* prop = aComp.GetObj(prop);
+	TBool lupd = IsLogeventUpdate();
+	GUri fullpath;
+	if (lupd) {
+	    Elem* host = iMan->GetMan();
+	    host->GetUri(fullpath);
+	}
 	if (prop == NULL) {
 	    Logger()->WriteFormat("ERROR: [%s:%s] missing MProp iface in property [%s]", EType().c_str(), Name().c_str(), aComp.Name().c_str());
 	}
 	else {
 	    string curr;
 	    ToString(curr);
-	    Logger()->WriteFormat("[%s/%s/%s] updated [%s <- %s]", 
-		    iMan->GetMan()->Name().c_str(), iMan->Name().c_str(), Name().c_str(), curr.c_str(), prop->Value().c_str());
+	    if (lupd) {
+		Logger()->WriteFormat("[%s]: Updated [%s <- %s]", fullpath.GetUri(ETrue).c_str(), curr.c_str(), prop->Value().c_str());
+	    }
 	    FromString(prop->Value());
 	}
 	res = ETrue;
@@ -73,6 +80,12 @@ void DataBase::UpdateProp()
     }
 }
 	
+TBool DataBase::IsLogeventUpdate() 
+{
+    Elem* node = GetNode("../../Elem:Logspec/DataLogevent:Update");
+    return node != NULL;
+}
+
 
 DInt::DInt(const string& aName, Elem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(0)
 {
@@ -179,7 +192,9 @@ TBool DInt::Update()
 		TInt idata = inp->Value();
 		if (IsLogeventUpdate()) {
 		    Elem* host = iMan->GetMan();
-		    Logger()->WriteFormat("[%s/%s]: Updated [%d <- %d]", host->GetMan()->Name().c_str(), host->Name().c_str(), mData, idata);
+		    GUri fullpath;
+		    host->GetUri(fullpath);
+		    Logger()->WriteFormat("[%s]: Updated [%d <- %d]", fullpath.GetUri(ETrue).c_str(), mData, idata);
 		}
 		mData = idata;
 		res = ETrue;
@@ -199,12 +214,6 @@ TBool DInt::Update()
     return res;
 }
 
-
-TBool DInt::IsLogeventUpdate() 
-{
-    Elem* node = GetNode("../../Elem:Logspec/DataLogevent:Update");
-    return node != NULL;
-}
 
 
 // Data of integer. Doesn't support nofification of change

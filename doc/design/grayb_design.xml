@@ -128,6 +128,10 @@
 		    to iface instances. It is not confirmed that the overhead will be resonable for the case when we have the pseudo connections for 
 		    totally all elements of system. Isn't better to use some intermediate scheme, where only some elements have it, for instance
 		    only connpoints as they conduct most of communications.</simpara>
+		<simpara>To implement this some specific iface for CP needs to be introduced: to get cp pair, to get iface from this pair host,
+		    probably something else.</simpara>
+		<simpara>Pros of this solution is that it is a bit simpler for understanding. Cons for the solution is that two steps needs for 
+		getting iface: step_1 is to get cp pair, step_2 is to get iface from this pair host.</simpara>
 	    </sect3>
 	    <sect3><title>Solution: extending of scheme by using full path from requestor.</title>
 		<simpara></simpara> 
