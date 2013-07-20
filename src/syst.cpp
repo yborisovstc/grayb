@@ -419,10 +419,14 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    MCompatChecker* cp = ctxe->GetObj(cp);
 		    // Update extention option if met extention in context
 		    if (cp != NULL) {
-			extd ^= cp->GetExtd() != NULL;
+		//	extd ^= cp->GetExtd() != NULL;
 			apair = NULL;
-			if (cp->IsCompatible(host, extd)) {
-			    apair = ctxe;
+//			if (cp->IsCompatible(host, extd)) {
+			if (cp->IsCompatible(host)) {
+			    Elem* extd = cp->GetExtd();
+			    if (extd != host) {
+				apair = extd != NULL ? extd : ctxe;
+			    }
 			}
 		    }
 		    ctxe = NULL;
