@@ -542,6 +542,20 @@ TInt AFLimInt::Value()
 	val = (inp > limu) ? limu : inp;
 	val = (val < liml) ? liml : val;
     }
+    else {
+	GUri fullpath;
+	Elem* host = iMan->GetMan();
+	host->GetUri(fullpath);
+	if (minp == NULL) {
+	    Logger()->WriteFormat("[%s]: Error - Inp not connected", fullpath.GetUri(ETrue).c_str());
+	}
+	else if (mlimu == NULL) {
+	    Logger()->WriteFormat("[%s]: Error - Inp_LimU not connected", fullpath.GetUri(ETrue).c_str());
+	}
+	else if (mliml == NULL) {
+	    Logger()->WriteFormat("[%s]: Error - Inp_LimL not connected", fullpath.GetUri(ETrue).c_str());
+	}
+    }
     return val;
 }
 

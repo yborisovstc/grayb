@@ -265,7 +265,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 	}
     }
     // Responsible pairs not found, redirect to upper layer
-    if (rr.first != rr.second && iMan != NULL && !ctx.IsInContext(iMan)) {
+    if (rr.first == rr.second && iMan != NULL) {
 	Elem* host = iMan->GetMan();
 	Elem* hostmgr = host->GetMan();
 	Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
@@ -413,16 +413,17 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		Base* ctxe = rqst;
 		const RqContext* cct = aCtx->Ctx();
 		Elem* host =  iMan->GetMan();
-		TBool extd = EFalse;
+		TBool isextd = EFalse;
 		// TODO [YB] To cleanup
 		while (ctxe != NULL && pcomp == NULL) {
 		    MCompatChecker* cp = ctxe->GetObj(cp);
 		    // Update extention option if met extention in context
 		    if (cp != NULL) {
-		//	extd ^= cp->GetExtd() != NULL;
+//			isextd ^= cp->GetExtd() != NULL;
 			apair = NULL;
-//			if (cp->IsCompatible(host, extd)) {
-			if (cp->IsCompatible(host)) {
+			if (cp->IsCompatible(host, isextd)) {
+			    isextd ^= ETrue;
+			//if (cp->IsCompatible(host)) {
 			    Elem* extd = cp->GetExtd();
 			    if (extd != host) {
 				apair = extd != NULL ? extd : ctxe;
@@ -464,7 +465,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		}
 	    }
 	    // Redirect to upper layer
-	    if (rr.first == rr.second && iMan != NULL && !ctx.IsInContext(iMan)) {
+	    if (rr.first == rr.second && iMan != NULL) {
 		Elem* host = iMan->GetMan();
 		Elem* hostmgr = host->GetMan();
 		Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
