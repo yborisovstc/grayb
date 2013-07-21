@@ -57,7 +57,7 @@
 
 	<!-- TODO [YB] To use simpler system for constants, DataSCInt is excessibe -->
 	<!-- Maximum of feed available -->
-	<node id="Data_MaxFeed" parent="../datamod/DataSCInt"> <cont node="Value" val="3"/> </node>
+	<node id="Data_MaxFeed" parent="../datamod/DataSCInt"> <cont node="Value" val="2"/> </node>
 	<!-- Minimal mass -->
 	<node id="Data_MinMass" parent="../datamod/DataSCInt"> <cont node="Value" val="1"/> </node>
 	<!-- Maximum mass -->
@@ -208,34 +208,30 @@
 
 	    <cont node="Mass/Confirmed/Value" val="1"/>
 
-	    <add node="Coord/Div">
-		<node id="Logspec" parent="Elem">
-		    <node id="Update" parent="../../../../../datamod/DataLogevent"/>
-		</node>
-	    </add>
-
-	    <add node="Mass/Conv">
+	    <!-- <add node="Coord/Div">
 		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../datamod/DataLogevent"/> </node>
-	    </add>
+	    </add> -->
+
+	    <!-- <add node="Mass/Conv">
+		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../datamod/DataLogevent"/> </node>
+	    </add> -->
 
 	</node>
 
 	<node id="Snail_2" parent="../Snail">
 	    <cont node="Mass/Confirmed/Value" val="2"/>
 
-	    <add node="Coord/Div">
-		<node id="Logspec" parent="Elem">
-		    <node id="Update" parent="../../../../../datamod/DataLogevent"/>
-		</node>
-	    </add>
-
-	    <add node="Mass/Conv/WFArg">
-		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../../datamod/DataLogevent"/> </node>
-	    </add>
-
-	    <add node="Mass/Conv">
+	    <!-- <add node="Coord/Div">
 		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../datamod/DataLogevent"/> </node>
-	    </add>
+	    </add> -->
+
+	    <!-- <add node="Mass/Conv/WFArg">
+		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../../datamod/DataLogevent"/> </node>
+	    </add> -->
+
+	    <!-- <add node="Mass/Conv">
+		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../datamod/DataLogevent"/> </node>
+	    </add> -->
 	</node>
 
 	<node parent="Edge"> <cont node="P1" val="Snail_1/Capsule/Out_Mass"/> <cont node="P2" val="Capsule/Out/Int"/> </node>

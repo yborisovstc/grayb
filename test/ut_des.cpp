@@ -122,14 +122,14 @@ void Ut_des::test_Cre4()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MDIntGet* doutpget = (MDIntGet*) root->GetSIfi("TestDes/Snail_1/Capsule/Out_Mass/Int/PinData", MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
-//    CPPUNIT_ASSERT_MESSAGE("Fail to get initial value of data iface", doutpget->Value() == 0);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get initial value of data iface", doutpget->Value() == 1);
     // Get Sync iface of DES
     Elem* esync = root->GetNode("Des:TestDes/Elem:Capsule/ConnPoint:Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get DES's Syncable iface", esync != 0);
     MDesSyncable* sync = esync->GetObj(sync);
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
     // Do some ticks
-    const TInt ticksnum = 5;
+    const TInt ticksnum = 11;
     for (TInt cnt = 0; cnt < ticksnum; cnt++) {
 	iEnv->Logger()->WriteFormat("[Test] Tick #%4d", cnt);
 	if (sync->IsActive()) {
@@ -139,7 +139,7 @@ void Ut_des::test_Cre4()
 	    sync->Confirm();
 	}
     }
- //   CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 5);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get final value of data iface", doutpget->Value() == 10);
 
     delete iEnv;
 }

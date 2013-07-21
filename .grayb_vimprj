@@ -108,12 +108,14 @@ doc=doc CD=. filter="*" {
  }
 }
 test=test CD=. filter="*.cpp *.h *.xml *.am *.txt" {
+  ut_conn.cpp
   ut_cre.cpp
   ut_des.cpp
   ut_fun.cpp
   ut_grayb_main.cpp
   ut_mut.cpp
   ut_uri.cpp
+  ut_conn_sock.xml
   ut_cre_1.xml
   ut_cre_data.xml
   ut_cre_gr.xml
@@ -128,10 +130,13 @@ test=test CD=. filter="*.cpp *.h *.xml *.am *.txt" {
   ut_des_cre4.xml
   ut_func_seq1.xml
   ut_func_seq2.xml
+  ut_func_seq3.xml
+  ut_func_seq4.xml
   ut_mut_syst.xml
   ut_mutadd_1.xml
   ut_uri_base.xml
   Makefile.am
+  ut_conn_sock.txt
   ut_cre_1.txt
   ut_cre_data.txt
   ut_cre_gr.txt
@@ -139,7 +144,11 @@ test=test CD=. filter="*.cpp *.h *.xml *.am *.txt" {
   ut_cre_syst.txt
   ut_des_cre1.txt
   ut_des_cre2.txt
+  ut_des_cre4.txt
   ut_func_seq1.txt
+  ut_func_seq2.txt
+  ut_func_seq3.txt
+  ut_func_seq4.txt
   ut_mut_syst.txt
   ut_mutadd_1.txt
   ut_uri_base.txt
@@ -439,16 +448,13 @@ fap-balls=/home/yborisov/projects/fap/git/fap-balls CD=. filter="*.ac *.am" {
  }
 }
 fap-snails=/home/yborisov/projects/fap/git/fap-snails CD=. filter="*" {
- Makefile
-  moc_snails.cpp
-  snails
-  snails.cpp
-  snails.h
-  snails.pro
-  ut_emtran_spec_2.xml
-  ut_spec_ext_mut.xml
-  moc_snails.o
-  snails.o
+ snails.cpp
+ snails.h
+ snails.pro
+ ut_spec_ext_mut.xml
+ images=images CD=. filter="*" {
+  snail.png
+ }
 }
 fapws=/home/yborisov/projects/fap/git/fapws CD=. filter="*" {
  AUTHORS

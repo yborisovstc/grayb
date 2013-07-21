@@ -399,7 +399,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		if (iMan != NULL && !ctx.IsInContext(iMan)) {
 		    Elem* mgr =  iMan->GetMan()->GetMan();
 		    if (mgr != NULL && !ctx.IsInContext(mgr)) {
-			rr = mgr->GetIfi(aName, &ctx);
+			rr = mgr->GetIfi(aName, aCtx);
 			InsertIfCache(aName, rctx, mgr, rr);
 			resok = ETrue;
 		    }
@@ -419,11 +419,9 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    MCompatChecker* cp = ctxe->GetObj(cp);
 		    // Update extention option if met extention in context
 		    if (cp != NULL) {
-//			isextd ^= cp->GetExtd() != NULL;
 			apair = NULL;
 			if (cp->IsCompatible(host, isextd)) {
 			    isextd ^= ETrue;
-			//if (cp->IsCompatible(host)) {
 			    Elem* extd = cp->GetExtd();
 			    if (extd != host) {
 				apair = extd != NULL ? extd : ctxe;
@@ -445,7 +443,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		}
 		if (pcomp != NULL && !ctx.IsInContext(pcomp)) {
 		    // Found associated pairs pin within the context, so redirect to it's pair in current socket
-		    rr = pcomp->GetIfi(aName, &ctx);
+		    rr = pcomp->GetIfi(aName, aCtx);
 		    InsertIfCache(aName, rctx, pcomp, rr);
 		}
 	    }
@@ -458,7 +456,6 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		for (set<MVert*>::iterator it = vman->Pairs().begin(); it != vman->Pairs().end() && res == NULL; it++) {
 		    Elem* pe = (*it)->EBase()->GetObj(pe);
 		    if (!ctx.IsInContext(pe)) {
-			//rr = pe->GetIfi(aName, &ctx);
 			rr = pe->GetIfi(aName, aCtx);
 			InsertIfCache(aName, rctx, pe, rr);
 		    }
@@ -470,7 +467,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		Elem* hostmgr = host->GetMan();
 		Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
 		if (mgr != NULL && !ctx.IsInContext(mgr)) {
-		    rr = mgr->GetIfi(aName, &ctx);
+		    rr = mgr->GetIfi(aName, aCtx);
 		    InsertIfCache(aName, rctx, mgr, rr);
 		}
 	    }
