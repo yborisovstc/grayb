@@ -316,14 +316,23 @@ void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
 }
 
-const string& Elem::EType() const
+const string Elem::EType(TBool aShort) const
 {
-    return iEType;
+    if (aShort) {
+	size_t pos = iEType.find_first_of(GUri::KParentSep, 0);
+	   return iEType.substr(0, pos);
+    }
+    else  {
+	return iEType;
+    }
 }
 
-void Elem::SetEType(const string& aEType)
+void Elem::SetEType(const string& aPName, const string& aPEType)
 {
-    iEType = aEType;
+    iEType = aPName;
+    if (!aPEType.empty()) {
+	iEType += GUri::KParentSep + aPEType;
+    }
 }
 
 // TODO [YB] Is it redundant? Actually only one type of node allowed -elem
@@ -770,7 +779,7 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
     // Mutate run-time only - don't update chromo
     heir->Mutate(ETrue);
     // Mutated with parent's own chromo - so panent's name is the type now. Set also the parent, but it will be updated further
-    heir->SetEType(Name());
+    heir->SetEType(Name(), EType());
     heir->SetParent(Name());
     heir->SetMan(NULL);
     heir->SetMan(aMan);
@@ -964,6 +973,13 @@ TBool Elem::IsLogeventCreOn()
 {
     Elem* node = GetNode("Elem:Logspec/Elem:Creation");
     return node != NULL;
+}
+
+// TODO [YB] To implement with usage of URI but not just string
+TBool Elem::IsHeirOf(const string& aParent) const
+{
+    int pos = iEType.find_last_of(aParent);
+    return pos != string::npos;
 }
 
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)

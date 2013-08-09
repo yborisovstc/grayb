@@ -10,53 +10,32 @@ map<TNodeType, string> KNodeTypesNames;
 map<TNodeAttr, string> KNodeAttrsNames;
 map<string, TNodeAttr> KNodeAttrs;
 
-const string GUri::KTypeElem = "Elem";
-const string GUri::KTypeAny = "*";
+const string GUriBase::KTypeAny = "*";
 const string KTypeUnknown = "";
 
 const string KSchemeSep = ":";
-const string KBaseSep = "#";
-const string KParentSep = ":";
-const string KElemSep = "/";
+const char GUriBase::KBaseSep = '#';
+const char GUriBase::KParentSep = ':';
+const char GUriBase::KNodeSep = '/';
+const char KGroupStart = '(';
+const char KGroupEnd = ')';
 
-TBool GUri::iInit = EFalse;
+TBool GUriBase::iInit = EFalse;
 
-const string& GUri::NodeAttrName(TNodeAttr aAttr)
-{
-    if (!iInit) Construct();
-    return KNodeAttrsNames[aAttr];
-}
 
-const string& GUri::NodeTypeName(TNodeType aType)
-{
-    if (!iInit) Construct();
-    return KNodeTypesNames[aType];
-}
 
-TNodeAttr GUri::NodeAttr(const string& aAttrName)
-{
-    if (!iInit) Construct();
-    return KNodeAttrs.count(aAttrName) > 0 ? KNodeAttrs[aAttrName] : ENa_Unknown;
-}
-
-TNodeType GUri::NodeType(const string& aTypeName)
-{
-    if (!iInit) Construct();
-    return KNodeTypes.count(aTypeName) > 0 ? KNodeTypes[aTypeName] : ENt_Unknown;
-}
-
-GUri::GUri(const string& aUri): iUri(aUri)
-{
-    Construct();
-    Parse();
-}
-
-GUri::GUri(): iUri()
+GUriBase::GUriBase(const string& aUri): iUri(aUri)
 {
     Construct();
 }
 
-void GUri::Construct()
+GUriBase::GUriBase(): iUri()
+{
+    Construct();
+}
+
+// TODO [YB] To move all methods for node types/names to chromo
+void GUriBase::Construct()
 {
     if (KNodeTypes.size() == 0)
     {
@@ -88,10 +67,99 @@ void GUri::Construct()
     iInit = ETrue;
 }
 
-const string& GUri::Scheme() const
+const string& GUriBase::NodeAttrName(TNodeAttr aAttr)
+{
+    if (!iInit) Construct();
+    return KNodeAttrsNames[aAttr];
+}
+
+const string& GUriBase::NodeTypeName(TNodeType aType)
+{
+    if (!iInit) Construct();
+    return KNodeTypesNames[aType];
+}
+
+TNodeAttr GUriBase::NodeAttr(const string& aAttrName)
+{
+    if (!iInit) Construct();
+    return KNodeAttrs.count(aAttrName) > 0 ? KNodeAttrs[aAttrName] : ENa_Unknown;
+}
+
+TNodeType GUriBase::NodeType(const string& aTypeName)
+{
+    if (!iInit) Construct();
+    return KNodeTypes.count(aTypeName) > 0 ? KNodeTypes[aTypeName] : ENt_Unknown;
+}
+
+const string& GUriBase::GetLoc() const
+{
+    TInt size = iElems.size();
+    return size == 0 ? KTypeUnknown : iElems.at(size -1).first;
+}
+
+const string& GUriBase::Scheme() const
 {
     return iScheme;
 }
+
+string GUriBase::GetName() const
+{
+    TInt size = iElems.size();
+    return size == 0 ? string() : iElems.at(size -1).second;
+}
+
+void GUriBase::AppendElem(const string& aType, const string& aName)
+{
+    iElems.push_back(TElem(aType, aName));
+}
+
+void GUriBase::AppendElem(const TElem& aElem)
+{
+    iElems.push_back(aElem);
+}
+
+void GUriBase::PrependElem(const string& aType, const string& aName)
+{
+    iElems.insert(iElems.begin(), TElem(aType, aName));
+}
+
+void GUriBase::AppendQueryElem(TQueryOpr aOpr, TNodeAttr aAttr, const string& aValue)
+{
+    iQueryElems.push_back(TQueryElem(aOpr, TQueryCnd(aAttr, aValue)));
+}
+
+string GUriBase::GetUri(vector<TElem>::const_iterator aStart, TBool aShort) const
+{
+    return DoGetUri(aStart, aShort);
+}
+
+string GUriBase::SelectGroup(const string& aData, int aEndPos)
+{
+    char tag = KGroupEnd;    
+    int count = 0;
+    int endpos = aEndPos;
+    string tags(KGroupStart, 1); tags.append(KGroupEnd, 1);
+    while (endpos != string::npos && tag != KGroupStart) {
+	endpos = aData.find_last_of(tags, endpos);
+	tag = aData.at(endpos);
+	count++;
+    }
+    while (endpos != string::npos && count-- > 0) {
+	endpos = aData.find_last_of(KGroupStart, endpos);
+    }
+    return aData.substr(endpos, aEndPos);
+}
+
+
+GUri::GUri(const string& aUri): GUriBase(aUri)
+{
+    Parse();
+}
+
+GUri::GUri(): GUriBase()
+{
+}
+
 
 void GUri::Parse()
 {
@@ -169,7 +237,7 @@ void GUri::Parse()
     }
 }
 
-string GUri::GetUri(vector<TElem>::const_iterator aStart, TBool aShort) const
+string GUri::DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort) const
 {
     string res;
     // Hier
@@ -201,38 +269,6 @@ string GUri::GetUri(vector<TElem>::const_iterator aStart, TBool aShort) const
     return res;
 }
 
-const string& GUri::GetType() const
-{
-    TInt size = iElems.size();
-    return size == 0 ? KTypeUnknown : iElems.at(size -1).first;
-}
-
-string GUri::GetName() const
-{
-    TInt size = iElems.size();
-    return size == 0 ? string() : iElems.at(size -1).second;
-}
-
-void GUri::AppendElem(const string& aType, const string& aName)
-{
-    iElems.push_back(TElem(aType, aName));
-}
-
-void GUri::AppendElem(const TElem& aElem)
-{
-    iElems.push_back(aElem);
-}
-
-void GUri::PrependElem(const string& aType, const string& aName)
-{
-    iElems.insert(iElems.begin(), TElem(aType, aName));
-}
-
-void GUri::AppendQueryElem(TQueryOpr aOpr, TNodeAttr aAttr, const string& aValue)
-{
-    iQueryElems.push_back(TQueryElem(aOpr, TQueryCnd(aAttr, aValue)));
-}
-
 /*
 void GUri::ToString(string& aRes)
 {
@@ -252,3 +288,86 @@ void GUri::ToString(string& aRes)
     }
 }
 */
+
+
+
+GUriIh::GUriIh(const string& aUri): GUriBase(aUri)
+{
+    Parse();
+}
+
+GUriIh::GUriIh(): GUriBase()
+{
+}
+
+
+void GUriIh::Parse()
+{
+    TBool fin = EFalse;
+    size_t elem_beg = 0;
+    size_t elem_end = string::npos;
+    string frag = iUri;
+    string seps;
+    seps.append(1, KNodeSep);
+    seps.append(1, KParentSep);
+    while (!fin) {
+	size_t name_sep_pos = frag.find_last_of(seps);
+	if (name_sep_pos == string::npos) {
+	    // No name sep, just simple name, setup elem and finish
+	    string loc = "";
+	    string name = frag;
+	    iElems.push_back(TElem(loc, name));
+	    iElems.push_back(TElem(loc, KTypeAny));
+	    fin = ETrue;
+	}
+	else if (frag.at(name_sep_pos) == KNodeSep) {
+	    // No inheritance chain, fill out uri elemaent and finish
+	    string loc = frag.substr(elem_beg, name_sep_pos);
+	    string name = frag.substr(name_sep_pos + 1, elem_end);
+	    iElems.push_back(TElem(loc, name));
+	    fin = ETrue;
+	}
+	else if (frag.at(name_sep_pos) == KParentSep) {
+	    // inheritance chain presenting, parse it
+	    if (name_sep_pos == 0) {
+		// Empty inheritance, empty loc - add elem 
+		string loc = "";
+		string name = frag;
+		iElems.push_back(TElem(loc, name));
+		fin = ETrue;
+	    }
+	    else if (frag.at(name_sep_pos - 1) == KNodeSep) {
+		// Empty inheritance but some loc - add elem
+		string loc = frag.substr(elem_beg, name_sep_pos - 1);
+		string name = frag;
+		iElems.push_back(TElem(loc, name));
+		fin = ETrue;
+	    }
+	    else if (frag.at(name_sep_pos - 1) == KGroupEnd) {
+		// Grouping in inheritance chain
+		frag = SelectGroup(frag, name_sep_pos - 1);
+	    }
+	}
+    }
+}
+
+string GUriIh::DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort) const
+{
+    string res;
+    // Hier
+    for (vector<GUri::TElem>::const_iterator it = aStart; it != iElems.end(); it++) {
+	GUri::TElem elem = *it;
+	if (!aShort) {
+	    if (!elem.first.empty() && elem.first != KTypeAny) {
+		res.append(elem.first + KNodeSep);
+	    }
+	}
+	res.append(elem.second);
+	if (it + 1 != iElems.end()) {
+	    res.append(1, KParentSep);
+	}
+    }
+    return res;
+}
+
+

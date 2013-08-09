@@ -118,7 +118,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	Elem(const string &aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	Elem* GetNode(const GUri& aUri);
 	virtual ~Elem();
-	void SetEType(const string& aEType);
+	void SetEType(const string& aPName, const string& aPEType = string());
 	void SetParent(const string& aParent);
 	void SetMan(Elem* aMan);
 	void SetMutation(const ChromoNode& aMuta);
@@ -142,6 +142,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	// Debug helpers
 	Elem* GetNodeS(const char* aUri);
 	TBool IsName(const char* aName);
+	TBool IsHeirOf(const string& aParent) const;
 	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
 	void GetUri(GUri& aUri, Elem* aTop = NULL);
 	virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
@@ -153,7 +154,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MElem
-	virtual const string& EType() const;
+	virtual const string EType(TBool aShort = ETrue) const;
 	virtual const set<string>& CompsTypes();
 	virtual Elem* GetMan();
 	virtual Elem* GetNode(const string& aUri);
@@ -189,7 +190,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	virtual void DoOnCompChanged(Elem& aComp);
 	TBool IsLogeventCreOn();
     protected:
-	// Element type - parent's name
+	// Element type - parent's chain
 	string iEType;
 	// Environment
 	MEnv* iEnv;

@@ -30,8 +30,27 @@ enum TNodeAttr
     ENa_MutVal = 12,
 };
 
-// Graph URI, dedicated only for locating graph element within native graph hier, ref md sec_refac_primhier
-class GUri
+// Node identification can be done by specifying it's "position" within given type of coordinates.
+// There are three coordinate types for now: network hier, native hier and inheritance chain
+// Currently non-unique name approach is used, thus all coord types may be required to specify position.
+// The "position" can be specifyed in term of relation, which are associated to coord types. 
+// One approach is that network hier and native hier is not "orthogonal", i.e the network hier is like
+// "continuation" for native hier from root node, so we can consider two these coord aa "extended" native hier
+// There are two types of relation: relation owner-owned in native hier and parent-child in inheritance chain.
+// So each node relates to two other: owner (relation owner-owned) and parent (relation parent-child)
+// If continue the relation from owner and parent we will get the "colored" tree build with two types (color) 
+// relation. Currently uri implementaion does't support parsing into the tree, it is "linear" i.e. uses
+// only onle relation type. This simplities the parsed representation but needs two type of uri's - one for hier
+// and another for inheritance, which is not universal.
+
+// Currently the simplified URI scheme is used, where native hier is not specified for parents, so the
+// The idea is that if the hier name is umique for particular node then inher chain is unique also
+// thus any parts of inher chain from chain begin can be used for unique identificatio of node ancestor
+// strucrure is lienar nw_hier '#' native_hier '/' inheritance_chain ':' name
+
+
+// URI base
+class GUriBase
 {
     public:
 	enum TQueryOpr {
@@ -39,19 +58,19 @@ class GUri
 	    EQop_And
 	};
     public:
-	// Element type: type (parent), name
+	// Element of chain: location, name
 	typedef pair<string, string> TElem;
 	typedef pair<TNodeAttr, string> TQueryCnd;
 	typedef pair<TQueryOpr, TQueryCnd> TQueryElem;
 	typedef vector<TElem>::const_iterator const_elem_iter;
 	typedef vector<TElem>::iterator elem_iter;
     public:
-	GUri(const string& aGUri);
-	GUri();
+	GUriBase(const string& aGUri);
+	GUriBase();
 	const vector<TElem>& Elems() const {return iElems;};
 	string GetUri(vector<TElem>::const_iterator aStart, TBool aShort = EFalse) const;
 	string GetUri(TBool aShort = EFalse) const { return GetUri(iElems.begin(), aShort);};
-	const string& GetType() const;
+	const string& GetLoc() const;
 	const string& Scheme() const;
 	string GetName() const;
 	void AppendElem(const string& aType, const string& aName);
@@ -64,19 +83,47 @@ class GUri
 	static TNodeType NodeType(const string& aTypeName);
 	//void ToString(string& aRes);
     protected:
+	virtual string DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort = EFalse) const = 0;
 	static void Construct();
-    private:
-	void Parse();
-    private:
+	static string SelectGroup(const string& aData, int aEndPos);
+    protected:
 	string iUri;
 	string iScheme;
+	// Nw hier part
 	string iBase;
 	vector<TElem> iElems;
 	vector<TQueryElem> iQueryElems;
 	static TBool iInit;
     public:
-	static const string KTypeElem;
 	static const string KTypeAny;
+	static const char KParentSep;
+	static const char KNodeSep;
+	static const char KBaseSep;
+};
+
+
+
+// URI for native hier coord. Inheritnace coord is provided as extended location thru GetLoc
+class GUri: public GUriBase
+{
+    public:
+	GUri(const string& aGUri);
+	GUri();
+    protected:
+	virtual string DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort = EFalse) const;
+	void Parse();
+};
+
+// URI for inheritance coord. Native hier coord is provided as extended location thru GetLoc
+// !! Not completed, not used for now
+class GUriIh: public GUriBase
+{
+    public:
+	GUriIh(const string& aGUri);
+	GUriIh();
+    protected:
+	virtual string DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort = EFalse) const;
+	void Parse();
 };
 
 #endif

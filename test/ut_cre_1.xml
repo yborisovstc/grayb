@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 
-<!-- Unit test for ceation of graph 
-     -->
+<!-- Unit test for ceation of graph -->
 
 
 <!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
