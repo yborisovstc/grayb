@@ -115,6 +115,8 @@ class Elem: public Base, public MMutable, public MCompsObserver
 
     public:
 	static const char* Type() { return "Elem";};
+	// Predefined extended type, for core elements only
+	static string PEType();
 	Elem(const string &aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	Elem* GetNode(const GUri& aUri);
 	virtual ~Elem();

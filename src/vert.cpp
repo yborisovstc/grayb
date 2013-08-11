@@ -85,10 +85,16 @@ Elem*  Vert::IterImplVert::GetElem()
 }
 
 // Vertex
+
+string Vert::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
+
 Vert::Vert(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     //iEType = Type();
-    SetEType(Type());
+    SetEType(Type(), Elem::PEType());
     SetParent(Type());
     // Create component for run-time extentions
     Elem* agents = Provider()->CreateNode("Elem", "Agents", this, iEnv);

@@ -33,6 +33,7 @@ class Edge: public Elem, public MEdge
 
     public:
 	static const char* Type() { return "Edge";};
+	static string PEType();
 	Edge(const string& aName, Elem* aMan, MEnv* aEnv);
 	virtual ~Edge();
     public:

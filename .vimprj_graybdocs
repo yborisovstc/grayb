@@ -71,6 +71,16 @@ docs=/home/yborisov/projects/fap/git CD=. filter=".doc" {
    Makefile
   }
  }
+ fap2-studio-gtk/doc=fap2-studio-gtk/doc CD=. filter="*" {
+  requirements=requirements CD=. filter="*.xml Makefile" {
+   fap2_req.xml
+   Makefile
+  }
+  design=design CD=. filter="*.xml Makefile" {
+   grayb_design.xml
+   Makefile
+  }
+ }
 }
 fap-md=/home/yborisov/projects/fap/md CD=. filter="*" {
  Makefile

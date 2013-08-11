@@ -1,9 +1,14 @@
 #include "prop.h"
 
 
+string Prop::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
+
 Prop::Prop(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 

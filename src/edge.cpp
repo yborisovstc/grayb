@@ -124,6 +124,11 @@ Elem*  Edge::IterImplEdge::GetElem()
 
 bool Edge::iInit = false;
 
+string Edge::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
+
 void Edge::Init()
 {
     Elem::Init();
@@ -135,7 +140,7 @@ Edge::Edge(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     if (!iInit) 
 	Init();
-    SetEType(Type());
+    SetEType(Type(), Elem::PEType());
     SetParent(Type());
     // Adding properties "Points"
     Elem* p1 = Provider()->CreateNode("Prop", "P1", this, iEnv);

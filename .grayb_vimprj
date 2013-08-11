@@ -413,6 +413,50 @@ fap-studio-gtk=/home/yborisov/projects/fap/git/fap-studio-gtk CD=. filter="autog
    rock_2.xml
  }
 }
+fap2-studio-gtk=/home/yborisov/projects/fap/git/fap2-studio-gtk CD=. filter="autogen.sh Makefile *.am *.ac *.in AUTHORS COPYING ChangeLog README NEWS" {
+ autogen.sh
+  Makefile
+  Makefile.am
+  configure.ac
+  Makefile.in
+  AUTHORS
+  COPYING
+  ChangeLog
+  README
+  NEWS
+  debian=debian CD=. filter="*" {
+   changelog
+    compat
+    control
+    copyright
+    fap-studio-gtk.install
+    rules
+    stamp-autogen
+    stamp-autotools-files
+    stamp-makefile-build
+    stamp-makefile-check
+    fap-studio-gtk.debhelper.log
+  }
+ src=src CD=. filter="*.cpp *.h *.xml *.am *.rc" {
+  app.cpp
+  elemdetrp.cpp
+  hierdetailview.cpp
+  main.cpp
+  mainwnd.cpp
+  app.h
+  elemdetrp.h
+  hierdetailview.h
+  mainwnd.h
+  Makefile.am
+ }
+ templates=templates CD=. filter="*" {
+  empty.xml
+ }
+ examples=examples CD=. filter="*" {
+  rock_1.xml
+   rock_2.xml
+ }
+}
 fap-balls=/home/yborisov/projects/fap/git/fap-balls CD=. filter="*.ac *.am" {
  configure.ac
   Makefile.am

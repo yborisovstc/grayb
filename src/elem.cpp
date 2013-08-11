@@ -8,6 +8,11 @@
 set<string> Elem::iCompsTypes;
 bool Elem::iInit = false;
 
+string Elem::PEType()
+{
+    return string() + GUri::KParentSep + Elem::Type();
+}
+
 Elem::TICacheRCtx Elem::ToCacheRCtx(const RqContext* aCtx) 
 {
     TICacheRCtx res;
@@ -319,8 +324,8 @@ void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
 const string Elem::EType(TBool aShort) const
 {
     if (aShort) {
-	size_t pos = iEType.find_first_of(GUri::KParentSep, 0);
-	   return iEType.substr(0, pos);
+	size_t pos = iEType.find_last_of(GUri::KParentSep);
+	   return iEType.substr(pos + 1);
     }
     else  {
 	return iEType;
@@ -329,10 +334,7 @@ const string Elem::EType(TBool aShort) const
 
 void Elem::SetEType(const string& aPName, const string& aPEType)
 {
-    iEType = aPName;
-    if (!aPEType.empty()) {
-	iEType += GUri::KParentSep + aPEType;
-    }
+    iEType = aPEType + GUri::KParentSep + aPName;
 }
 
 // TODO [YB] Is it redundant? Actually only one type of node allowed -elem
@@ -779,7 +781,7 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
     // Mutate run-time only - don't update chromo
     heir->Mutate(ETrue);
     // Mutated with parent's own chromo - so panent's name is the type now. Set also the parent, but it will be updated further
-    heir->SetEType(Name(), EType());
+    heir->SetEType(Name(), EType(EFalse));
     heir->SetParent(Name());
     heir->SetMan(NULL);
     heir->SetMan(aMan);
@@ -978,7 +980,7 @@ TBool Elem::IsLogeventCreOn()
 // TODO [YB] To implement with usage of URI but not just string
 TBool Elem::IsHeirOf(const string& aParent) const
 {
-    int pos = iEType.find_last_of(aParent);
+    int pos = iEType.find(aParent);
     return pos != string::npos;
 }
 
