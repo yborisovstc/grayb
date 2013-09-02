@@ -19,3 +19,8 @@ Chromo* GProvider::CreateChromo()
 {
     return NULL;
 }
+
+void GProvider::AppendNodesInfo(vector<string>& aInfo)
+{
+}
+

@@ -100,3 +100,9 @@ Chromo* ProvDef::CreateChromo()
     return new ChromoX();
 }
 
+void ProvDef::AppendNodesInfo(vector<string>& aInfo)
+{
+    aInfo.push_back(Elem::Type());
+    aInfo.push_back(Edge::Type());
+}
+

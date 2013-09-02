@@ -43,3 +43,10 @@ void GFactory::AddProvider(GProvider* aProv)
     iProviders.insert(pair<string, GProvider*>(aProv->Name(), aProv));
 }
 
+void GFactory::AppendNodesInfo(vector<string>& aInfo)
+{
+    for (map<string, GProvider*>::iterator it = iProviders.begin(); it != iProviders.end(); it++) {
+	it->second->AppendNodesInfo(aInfo);
+    }
+}
+

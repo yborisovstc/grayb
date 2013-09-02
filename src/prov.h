@@ -17,6 +17,7 @@ class GProvider: public Base, public MProvider
 	// From MProvider
 	virtual Elem* CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv);
 	virtual Chromo* CreateChromo();
+	virtual void AppendNodesInfo(vector<string>& aInfo);
 };
 
 #endif
