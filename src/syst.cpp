@@ -5,9 +5,14 @@
 #include "mvert.h"
 #include "mprop.h"
 
+string ConnPointBase::PEType()
+{
+    return Vert::PEType() + GUri::KParentSep + Type();
+}
+
 ConnPointBase::ConnPointBase(const string& aName, Elem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), Vert::PEType());
     SetParent(Type());
 }
 
@@ -173,10 +178,14 @@ Elem* ConnPointBase::GetExtd()
 }
 
 
+string ExtenderAgent::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
 
 ExtenderAgent::ExtenderAgent(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 
@@ -294,10 +303,14 @@ Elem* ExtenderAgent::GetExtd()
 }
 
 
+string ASocket::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
 
 ASocket::ASocket(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 
@@ -561,9 +574,16 @@ Elem* ASocket::GetExtd()
 
 
 
+
+// System
+string Syst::PEType()
+{
+    return Vert::PEType() + GUri::KParentSep + Type();
+}
+
 Syst::Syst(const string& aName, Elem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), Vert::PEType());
     SetParent(Type());
 }
 

@@ -104,5 +104,28 @@ void ProvDef::AppendNodesInfo(vector<string>& aInfo)
 {
     aInfo.push_back(Elem::Type());
     aInfo.push_back(Edge::Type());
+    aInfo.push_back(Vert::Type());
+    aInfo.push_back(Prop::Type());
+    aInfo.push_back(ConnPointBase::Type());
+    aInfo.push_back(Syst::Type());
+    aInfo.push_back(Incaps::Type());
+    aInfo.push_back(DInt::Type());
+    aInfo.push_back(DNInt::Type());
+    aInfo.push_back(AIncInt::Type());
+    aInfo.push_back(AAddInt::Type());
+    aInfo.push_back(AFAddInt::Type());
+    aInfo.push_back(AFSubInt::Type());
+    aInfo.push_back(AFLimInt::Type());
+    aInfo.push_back(AFDivInt::Type());
+    aInfo.push_back(AFGTInt::Type());
+    aInfo.push_back(AFBoolToInt::Type());
+    aInfo.push_back(AFConvInt::Type());
+    aInfo.push_back(AFIntToVect::Type());
+    aInfo.push_back(AFunIntRes::Type());
+    aInfo.push_back(ExtenderAgent::Type());
+    aInfo.push_back(StateAgent::Type());
+    aInfo.push_back(ATrIncInt::Type());
+    aInfo.push_back(ASocket::Type());
+    aInfo.push_back(ADes::Type());
 }
 

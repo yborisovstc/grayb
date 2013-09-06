@@ -9,6 +9,7 @@ class ConnPointBase: public Vert, public MCompatChecker
 {
     public:
 	static const char* Type() { return "ConnPointBase";};
+	static string PEType();
 	ConnPointBase(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// Iface provider
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
@@ -25,6 +26,7 @@ class ExtenderAgent: public Elem, public MCompatChecker
 {
     public:
 	static const char* Type() { return "ExtenderAgent";};
+	static string PEType();
 	ExtenderAgent(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -40,6 +42,7 @@ class ASocket: public Elem, public MCompatChecker
 {
     public:
 	static const char* Type() { return "ASocket";};
+	static string PEType();
 	ASocket(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -50,11 +53,12 @@ class ASocket: public Elem, public MCompatChecker
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
 };
 
-
+// System: relates to others via proxies - ConnPoints, that specialized relation with roles
 class Syst: public Vert
 {
     public:
 	static const char* Type() { return "Syst";};
+	static string PEType();
 	Syst(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
