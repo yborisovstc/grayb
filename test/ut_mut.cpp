@@ -42,7 +42,7 @@ void Ut_mut::tearDown()
 
 void Ut_mut::test_Add()
 {
-    printf("\n === Test of mutation of type adding\n");
+    printf("\n === Test#1 of mutation\n");
 
     iEnv = new Env("Env", "ut_mutadd_1.xml", "ut_mutadd_1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
@@ -76,6 +76,14 @@ void Ut_mut::test_Add()
     // Check the element added
     Elem* eadded1 = root->GetNode("elem5:new_elem1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get elem added", eadded1 != 0);
+     // Mutation of type "Rename node"
+    ChromoNode mren = root->Mutation().Root().AddChild(ENt_Change);
+    mren.SetAttr(ENa_MutNode, "elem5");
+    mren.SetAttr(ENa_MutAttr, GUriBase::NodeAttrName(ENa_Id));
+    mren.SetAttr(ENa_MutVal, "elem5_renamed");
+    root->Mutate();
+    Elem* eren = root->GetNode("elem5_renamed");
+    CPPUNIT_ASSERT_MESSAGE("Fail to rename node", eren != 0);
  
     delete iEnv;
 }

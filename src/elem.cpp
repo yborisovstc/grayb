@@ -603,10 +603,10 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 		GUri unode(snode);
 		RmNode(unode);
 	    }
+	    else if (rnotype == ENt_Change) {
+		ChangeAttr(rno);
+	    }
 	    /*
-	       else if (rnotype == ENt_Change) {
-	       ChangeAttr_v2(rno);
-	       }
 	       else if (rnotype == ENt_MutMove) 
 	       {
 	       MoveElem_v1(rno);
@@ -625,6 +625,38 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 TBool Elem::ChangeCont(const string& aVal) 
 {
     return EFalse;
+}
+
+void Elem::ChangeAttr(const ChromoNode& aSpec)
+{
+    string snode = aSpec.Attr(ENa_MutNode);
+    string mattrs = aSpec.Attr(ENa_MutAttr);
+    string mval = aSpec.Attr(ENa_MutVal);
+    Elem* node = GetNode(snode);
+    if (node != NULL) {
+	TBool res = node->ChangeAttr(GUri::NodeAttr(mattrs), mval);
+	if (!res) {
+	    Logger()->WriteFormat("ERROR: Changing [%s] - failure", snode.c_str());
+	}
+    }
+    else {
+	Logger()->WriteFormat("ERROR: Changing [%s] - cannot find node", snode.c_str());
+    }
+}
+
+TBool Elem::ChangeAttr(TNodeAttr aAttr, const string& aVal) 
+{ 
+    TBool res = EFalse;
+    if (aAttr == ENa_Id) {
+	string sOldName(Name());
+	iName = aVal;
+	res = iMan->OnCompRenamed(*this, sOldName);
+	if (!res) {
+	    // Rollback
+	    iName = sOldName;
+	}
+    }
+    return res;
 }
 
 TBool Elem::DoMutChangeCont(const ChromoNode& aSpec)
@@ -794,10 +826,19 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
 
 TBool Elem::AppendComp(Elem* aComp)
 {
+    TBool res = RegisterComp(aComp);
+    if (res)
+    {
+	iComps.push_back(aComp);
+    }
+    return res;
+}
+
+TBool Elem::RegisterComp(Elem* aComp)
+{
     TBool res = ETrue;
     if (iMComps.count(TCkey(aComp->Name(), aComp->EType())) == 0)
     {
-	iComps.push_back(aComp);
 	iMComps.insert(pair<TCkey, Elem*>(TCkey(aComp->Name(), aComp->EType()), aComp));
 	iMComps.insert(pair<TCkey, Elem*>(TCkey(aComp->Name(), "*"), aComp));
 	iMComps.insert(pair<TCkey, Elem*>(TCkey("*", "*"), aComp));
@@ -806,7 +847,76 @@ TBool Elem::AppendComp(Elem* aComp)
 	Logger()->WriteFormat("ERROR: [%s] - Adding elem [%s] - name already exists", Name().c_str(), aComp->Name().c_str());
 	res = EFalse;
     }
+    return res;
+}
+/*
+TBool Elem::UnregisterComp(Elem* aComp, const string& aName)
+{
+    TBool res = EFalse;
+    TInt r1 = iMComps.count(TCkey(aName, aComp->EType()));
+    TInt r2 = iMComps.count(TCkey(aName, "*"));
+    TInt r3 = iMComps.count(TCkey("*", "*"));
+    if (iMComps.count(TCkey(aName, aComp->EType())) > 0) {
+	// Removing old name related records in register
+	//   Name-Type is unique record, erasing it
+	iMComps.erase(TCkey(aName, aComp->EType()));
+	//   Name-AnyType is not unique, erasing only records for this comp
+	TMElem::iterator it = iMComps.find(TCkey(aName, "*"));
+	while (it != iMComps.end()) {
+	    if (it->second == aComp) {
+		iMComps.erase(it);
+		it = iMComps.find(TCkey(aName, "*"));
+	    }
+	    else {
+		it++;
+	    }
+	}
+	//   AnyName-AnyType is not unique, erasing only records for this comp
+	it = iMComps.find(TCkey("*", "*"));
+	while (it != iMComps.end()) {
+	    if (it->second == aComp) {
+		iMComps.erase(it);
+		it = iMComps.find(TCkey("*", "*"));
+	    }
+	    else {
+		it++;
+	    }
+	}
+	res = ETrue;
+    }
+    return res;
+}
+*/
 
+TBool Elem::UnregisterComp(Elem* aComp, const string& aName)
+{
+    TBool res = EFalse;
+    const string& name = aName.empty() ? aComp->Name() : aName;
+    assert (iMComps.count(TCkey(name, aComp->EType())) > 0); 
+    // Removing old name related records in register
+    //   Name-Type is unique record, erasing it
+    iMComps.erase(TCkey(name, aComp->EType()));
+    //   Name-AnyType is not unique, erasing only records for this comp
+    TBool found = EFalse;
+    pair<TMElem::iterator, TMElem::iterator> range = iMComps.equal_range(TCkey(name, "*"));
+    for (TMElem::iterator it = range.first; it != range.second && !found; it++) {
+	if (it->second == aComp) {
+	    iMComps.erase(it);
+	    found = ETrue;
+	}
+    }
+    __ASSERT(found);
+    //   AnyName-AnyType is not unique, erasing only records for this comp
+    range = iMComps.equal_range(TCkey("*", "*"));
+    found = EFalse;
+    for (TMElem::iterator it = range.first; it != range.second && !found; it++) {
+	if (it->second == aComp) {
+	    iMComps.erase(it);
+	    found = ETrue;
+	}
+    }
+    __ASSERT(found);
+    res = ETrue;
     return res;
 }
 
@@ -820,7 +930,9 @@ void Elem::OnCompDeleting(Elem& aComp)
 {
     // Deattach the comp's chromo
     iChromo->Root().RmChild(aComp.Chromos().Root(), ETrue);
-    // Remove from comps
+    // Unregister first
+    UnregisterComp(&aComp);
+    /*
     TMElem::iterator it = iMComps.find(TCkey(aComp.Name(), aComp.EType()));
     __ASSERT(it != iMComps.end());
     Elem* targ = it->second;
@@ -844,6 +956,8 @@ void Elem::OnCompDeleting(Elem& aComp)
 	}
     }
     __ASSERT(found);
+    */
+    // Then remove from comps
     for (vector<Elem*>::iterator oit = iComps.begin(); oit != iComps.end(); oit++) {
 	if (*oit == &aComp) {
 	    iComps.erase(oit); break;
@@ -870,6 +984,18 @@ void Elem::OnCompChanged(Elem& aComp)
     if (!res) {
 	DoOnCompChanged(aComp);
     }
+}
+
+TBool Elem::OnCompRenamed(Elem& aComp, const string& aOldName)
+{
+    TBool res = EFalse;
+    // Unregister the comp with its old name
+    res = UnregisterComp(&aComp, aOldName);
+    if (res) {
+	// Register the comp againg with its current name
+	res = RegisterComp(&aComp);
+    }
+    return res;
 }
 
 void Elem::DoOnCompChanged(Elem& aComp)

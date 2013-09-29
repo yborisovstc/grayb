@@ -162,6 +162,9 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	virtual Elem* GetNode(const string& aUri);
 	virtual Elem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase);
 	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);
+	// TODO [YB] The only attr allowed for change is name. To consider replacing
+	// of ChangeAttr to Rename 
+	virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal);
 	virtual TBool ChangeCont(const string& aVal); 
 	virtual TBool AddNode(const ChromoNode& aSpec);
 	virtual TBool RmNode(const GUri& aUri);
@@ -170,6 +173,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	virtual void OnCompDeleting(Elem& aComp);
 	virtual void OnCompAdding(Elem& aComp);
 	virtual void OnCompChanged(Elem& aComp);
+	virtual TBool OnCompRenamed(Elem& aComp, const string& aOldName);
 	// From MMutable
 	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime);
 	// Ifaces cache
@@ -184,6 +188,10 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	inline MLogRec* Logger() const;
 	inline MProvider* Provider() const;
 	TBool AppendComp(Elem* aComp);
+	TBool RegisterComp(Elem* aComp);
+	// aName is required because the comp can be renamed already. This is the case of 
+	// comp renaming: comp is renamed first, then the renaming is handled
+	TBool UnregisterComp(Elem* aComp, const string& aName = string());
 	Elem* GetComp(const string& aParent, const string& aName);
 	TBool DoMutChangeCont(const ChromoNode& aSpec);
 	TBool MergeMutation(const ChromoNode& aSpec);
@@ -191,12 +199,13 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	Elem* GetComp(TInt aInd);
 	virtual void DoOnCompChanged(Elem& aComp);
 	TBool IsLogeventCreOn();
+	void ChangeAttr(const ChromoNode& aSpec);
     protected:
 	// Element type - parent's chain
 	string iEType;
 	// Environment
 	MEnv* iEnv;
-	// Managed (higher) element of hier
+	// Managing (higher) element of hier
 	Elem* iMan;
 	// Chromo
 	Chromo* iChromo;
