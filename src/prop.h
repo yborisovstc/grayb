@@ -18,6 +18,7 @@ class Prop: public Elem, public MProp
 	// From MProp
 	virtual const string& Value() const;
 	// From MElem
+	virtual void GetCont(string& aCont); 
 	virtual TBool ChangeCont(const string& aVal); 
     protected:
 	string iValue;

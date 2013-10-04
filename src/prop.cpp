@@ -39,3 +39,7 @@ TBool Prop::ChangeCont(const string& aVal)
     return res;
 }
 
+void Prop::GetCont(string& aCont)
+{
+    aCont = iValue;
+}

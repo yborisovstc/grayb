@@ -165,6 +165,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	// TODO [YB] The only attr allowed for change is name. To consider replacing
 	// of ChangeAttr to Rename 
 	virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal);
+	virtual void GetCont(string& aCont); 
 	virtual TBool ChangeCont(const string& aVal); 
 	virtual TBool AddNode(const ChromoNode& aSpec);
 	virtual TBool RmNode(const GUri& aUri);

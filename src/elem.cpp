@@ -627,6 +627,10 @@ TBool Elem::ChangeCont(const string& aVal)
     return EFalse;
 }
 
+void Elem::GetCont(string& aCont)
+{
+}
+
 void Elem::ChangeAttr(const ChromoNode& aSpec)
 {
     string snode = aSpec.Attr(ENa_MutNode);
