@@ -189,6 +189,18 @@ void Edge::SetPoints(MVert* aPoint1, MVert* aPoint2)
     iPoint2 = aPoint2;
 }
 
+void Edge::SetPoint1(MVert* aPoint)
+{
+    __ASSERT(iPoint1 == NULL && aPoint != NULL);
+    iPoint1 = aPoint;
+}
+
+void Edge::SetPoint2(MVert* aPoint)
+{
+    __ASSERT(iPoint2 == NULL && aPoint != NULL);
+    iPoint2 = aPoint;
+}
+
 TBool Edge::Connect()
 {
     TBool res = EFalse;
@@ -199,14 +211,14 @@ TBool Edge::Connect()
 
 void Edge::Disconnect()
 {
-    if (iPoint1 != NULL && iPoint2 != NULL) {
-	//iPoint1->Disconnect(iPoint2);
-	//iPoint2->Disconnect(iPoint1);
+    if (iPoint1 != NULL) {
 	iPoint1->Disconnect(this);
-	iPoint2->Disconnect(this);
-	iPoint1 = NULL;
-	iPoint2 = NULL;
     }
+    if (iPoint2 != NULL) {
+	iPoint2->Disconnect(this);
+    }
+    iPoint1 = NULL;
+    iPoint2 = NULL;
 }
 
 MVert* Edge::Pair(const MVert* aPoint)

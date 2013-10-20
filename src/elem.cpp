@@ -403,13 +403,15 @@ Elem* Elem::GetNode(const GUri& aUri)
 { 
     Elem* res = NULL;
     GUri::const_elem_iter it = aUri.Elems().begin(); 
-    if (it->second.empty()) {
-	Elem* root = GetRoot();
-	it++;
-	res = root->GetNode(aUri, ++it);
-    }
-    else {
-	res = GetNode(aUri, it); 
+    if (it != aUri.Elems().end()) {
+	if (it->second.empty()) {
+	    Elem* root = GetRoot();
+	    it++;
+	    res = root->GetNode(aUri, ++it);
+	}
+	else {
+	    res = GetNode(aUri, it); 
+	}
     }
     return res;
 }

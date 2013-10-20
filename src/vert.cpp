@@ -173,13 +173,15 @@ Vert::~Vert()
 
 TBool Vert::Connect(MVert* aPair)
 {
-    TBool res = ETrue;
-    __ASSERT(iPairs.count(aPair) == 0);
-    iPairs.insert(aPair);
-    // Invalidate ifaces cache
-    InvalidateIfCache();
-    __ASSERT(iMan != NULL);
-    iMan->OnCompChanged(*this);
+    TBool res = EFalse;
+    if (aPair != NULL && iPairs.count(aPair) == 0) {
+	iPairs.insert(aPair);
+	// Invalidate ifaces cache
+	InvalidateIfCache();
+	__ASSERT(iMan != NULL);
+	iMan->OnCompChanged(*this);
+	res = ETrue;
+    }
     return res;
 }
 
@@ -210,7 +212,7 @@ set<MVert*>& Vert::Pairs()
 
 void Vert::Disconnect(MVert* aPair)
 {
-    __ASSERT(iPairs.count(aPair) > 0);
+    __ASSERT(aPair != NULL && iPairs.count(aPair) > 0);
     iPairs.erase(aPair);
     // Invalidate ifaces cache
     InvalidateIfCache();
@@ -220,12 +222,14 @@ void Vert::Disconnect(MEdge* aEdge)
 {
     Edge* ee = aEdge->EBase()->GetObj(ee);
     multimap<TCkey,MEdge*>::iterator found = iMEdges.find(TCkey(ee->Name(), ee->EType()));
-    __ASSERT(found != iMEdges.end());
-    iMEdges.erase(found);
-    RemoveFromMap(aEdge, TCkey("*", ee->EType()));
-    RemoveFromMap(aEdge, TCkey(ee->Name(), "*"));
-    RemoveFromMap(aEdge, TCkey("*", "*"));
-    Disconnect(aEdge->Pair(this));
+    if (found != iMEdges.end()) {
+	iMEdges.erase(found);
+	RemoveFromMap(aEdge, TCkey("*", ee->EType()));
+	RemoveFromMap(aEdge, TCkey(ee->Name(), "*"));
+	RemoveFromMap(aEdge, TCkey("*", "*"));
+	__ASSERT(aEdge->Pair(this) != NULL);
+	Disconnect(aEdge->Pair(this));
+    }
     /*
        MEdge* edge = (*found).second;
        multimap<TCkey,MEdge*>::iterator fbytypelb = iMEdges.lower_bound(TCkey("*", ee->EType()));
@@ -280,15 +284,51 @@ void Vert::DoOnCompChanged(Elem& aComp)
 	__ASSERT(edge != NULL);
 	edge->Disconnect();
 	const string& pt1u = edge->Point1u();
-	const string& pt2u = edge->Point2u();
-	if (!pt1u.empty() && !pt2u.empty()) {
+	if (!pt1u.empty()) {
 	    Elem* pt1 = GetNode(pt1u);
-	    Elem* pt2 = GetNode(pt2u);
-	    if (pt1 != NULL && pt2 != NULL) {
+	    if (pt1 != NULL) {
 		MVert* pt1v = pt1->GetObj(pt1v);
+		if (pt1v != NULL) {
+		    edge->SetPoint1(pt1v);
+		}
+	    }
+	    else {
+		Logger()->WriteFormat("ERR: Vert [%s] connecting [%s] - cannot find", Name().c_str(), pt1u.c_str());
+	    }
+	}
+	const string& pt2u = edge->Point2u();
+	if (!pt2u.empty()) {
+	    Elem* pt2 = GetNode(pt2u);
+	    if (pt2 != NULL) {
 		MVert* pt2v = pt2->GetObj(pt2v);
-		if (pt1v != NULL && pt2v != NULL) {
-		    edge->SetPoints(pt1v, pt2v);
+		if (pt2v != NULL) {
+		    edge->SetPoint2(pt2v);
+		}
+	    }
+	    else {
+		Logger()->WriteFormat("ERR: Vert [%s] connecting [%s] - cannot find", Name().c_str(), pt2u.c_str());
+	    }
+	}
+	if (edge->Point1() != NULL && edge->Point2() != NULL) {
+	    TBool res = edge->Connect();
+	    if (res) {
+		Logger()->WriteFormat("Vert [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+	    }
+	    else {
+		Logger()->WriteFormat("ERR: Vert [%s] connected [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+	    }
+	}
+	/*
+	   const string& pt1u = edge->Point1u();
+	   const string& pt2u = edge->Point2u();
+	   if (!pt1u.empty() && !pt2u.empty()) {
+	   Elem* pt1 = GetNode(pt1u);
+	   Elem* pt2 = GetNode(pt2u);
+	   if (pt1 != NULL && pt2 != NULL) {
+	   MVert* pt1v = pt1->GetObj(pt1v);
+	   MVert* pt2v = pt2->GetObj(pt2v);
+	   if (pt1v != NULL && pt2v != NULL) {
+	   edge->SetPoints(pt1v, pt2v);
 		    TBool res = edge->Connect();
 		    if (res) {
 			Logger()->WriteFormat("Graph [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
@@ -303,6 +343,7 @@ void Vert::DoOnCompChanged(Elem& aComp)
 			(pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
 	    }
 	}
+	*/
     }
 }
 

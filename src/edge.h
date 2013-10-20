@@ -40,6 +40,8 @@ class Edge: public Elem, public MEdge
 	const string& Point1u();
 	const string& Point2u();
 	void SetPoints(MVert* aPoint1, MVert* aPoint2);
+	void SetPoint1(MVert* aPoint);
+	void SetPoint2(MVert* aPoint);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MEdge
