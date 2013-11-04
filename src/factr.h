@@ -19,6 +19,7 @@ class GFactory: public Base, public MProvider
 	virtual Elem* CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv);
 	virtual Chromo* CreateChromo();
 	virtual void AppendNodesInfo(vector<string>& aInfo);
+	virtual const string& ModulesPath() const;
     protected:
 	map<string, GProvider*> iProviders;
 };

@@ -50,3 +50,10 @@ void GFactory::AppendNodesInfo(vector<string>& aInfo)
     }
 }
 
+const string& GFactory::ModulesPath() const
+{
+    GProvider* defprov = iProviders.at("ProvDef");
+    __ASSERT(defprov != NULL);
+    return defprov->ModulesPath();
+}
+

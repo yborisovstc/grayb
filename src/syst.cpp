@@ -618,56 +618,62 @@ void Syst::DoOnCompChanged(Elem& aComp)
 	__ASSERT(edge != NULL);
 	edge->Disconnect();
 	const string& pt1u = edge->Point1u();
-	const string& pt2u = edge->Point2u();
-	if (!pt1u.empty() && !pt2u.empty()) {
+	if (!pt1u.empty()) {
 	    Elem* pt1 = GetNode(pt1u);
-	    Elem* pt2 = GetNode(pt2u);
-	    if (pt1 != NULL && pt2 != NULL) {
+	    if (pt1 != NULL) {
 		MVert* pt1v = pt1->GetObj(pt1v);
+		if (pt1v != NULL) {
+		    edge->SetPoint1(pt1v);
+		}
+	    }
+	    else {
+		Logger()->WriteFormat("ERR: Syst [%s] connecting [%s] - cannot find", Name().c_str(), pt1u.c_str());
+	    }
+	}
+	const string& pt2u = edge->Point2u();
+	if (!pt2u.empty()) {
+	    Elem* pt2 = GetNode(pt2u);
+	    if (pt2 != NULL) {
 		MVert* pt2v = pt2->GetObj(pt2v);
-		if (pt1v != NULL && pt2v != NULL) {
-		    // Check roles conformance
-#if 0
-		    // Point#1 provided
-		    //Elem* ept1provi = pt1->GetNode("*:Prov");
-		    Elem* ept1prov = pt1->GetNode("Prop:Provided");
-		    MProp* ppt1prov = ept1prov->GetObj(ppt1prov);
-		    Elem* ept2req = pt2->GetNode("Prop:Required");
-		    MProp* ppt2req = ept2req->GetObj(ppt2req);
-		    // Point#2 provided
-		    //Elem* ept2provi = pt2->GetNode("*:Prov");
-		    Elem* ept2prov = pt2->GetNode("Prop:Provided");
-		    MProp* ppt2prov = ept2prov->GetObj(ppt2prov);
-		    Elem* ept1req = pt1->GetNode("Prop:Required");
-		    MProp* ppt1req = ept1req->GetObj(ppt1req);
-		    if (ppt1prov->Value() == ppt2req->Value() && ppt2prov->Value() == ppt1req->Value()) {
-#endif
-			MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
-			MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
-			if (pt1checker->IsCompatible(pt2) && pt2checker->IsCompatible(pt1)) {
-			    // Are compatible - connect
-			    edge->SetPoints(pt1v, pt2v);
-			    TBool res = edge->Connect();
-			    if (res) {
-				Logger()->WriteFormat("Syst [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
-			    }
-			    else {
-				Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
-			    }
-			}
-			else {
-			    Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - incompatible roles", Name().c_str(), pt1u.c_str(), pt2u.c_str());
-			}
+		if (pt2v != NULL) {
+		    edge->SetPoint2(pt2v);
+		}
+	    }
+	    else {
+		Logger()->WriteFormat("ERR: Vert [%s] connecting [%s] - cannot find", Name().c_str(), pt2u.c_str());
+	    }
+	}
+	Elem* pt1 = GetNode(pt1u);
+	Elem* pt2 = GetNode(pt2u);
+	if (pt1 != NULL && pt2 != NULL) {
+	    MVert* pt1v = pt1->GetObj(pt1v);
+	    MVert* pt2v = pt2->GetObj(pt2v);
+	    if (pt1v != NULL && pt2v != NULL) {
+		// Check roles conformance
+		MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
+		MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
+		if (pt1checker->IsCompatible(pt2) && pt2checker->IsCompatible(pt1)) {
+		    // Are compatible - connect
+		    TBool res = edge->Connect();
+		    if (res) {
+			Logger()->WriteFormat("Syst [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
 		    }
 		    else {
-			Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - ends aren't vertexes", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
 		    }
 		}
 		else {
-		    Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - cannot find [%s]", Name().c_str(), pt1u.c_str(), pt2u.c_str(), 
-			    (pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
+		    Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - incompatible roles", Name().c_str(), pt1u.c_str(), pt2u.c_str());
 		}
 	    }
+	    else {
+		Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - ends aren't vertexes", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+	    }
+	}
+	else {
+	    Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - cannot find [%s]", Name().c_str(), pt1u.c_str(), pt2u.c_str(), 
+		    (pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
 	}
     }
+}
 

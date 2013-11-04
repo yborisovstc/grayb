@@ -9,6 +9,8 @@
 #include "func.h"
 #include "des.h"
 
+// TODO [YB] To import from build variable
+const string KModulesPath = "/usr/share/grayb/modules/";
 
 ProvDef::ProvDef(const string &aName): GProvider(aName)
 {
@@ -129,3 +131,7 @@ void ProvDef::AppendNodesInfo(vector<string>& aInfo)
     aInfo.push_back(ADes::Type());
 }
 
+const string& ProvDef::ModulesPath() const
+{
+    return KModulesPath;
+}

@@ -15,7 +15,6 @@ public:
 	static const char* Type() { return "GEnv";};
 	Env(const string& aName, const string& aSpecFile, const string& aLogFileName = string());
 	virtual ~Env();
-	inline Elem* Root();
 	// Separated from constructor because constr can be followed by second phase - setting providers etc.
 	void ConstructSystem();
 	void AddProvider(GProvider* aProv);
@@ -25,6 +24,7 @@ public:
 	// From MEnv
 	virtual MProvider *Provider() const;
 	virtual MLogRec *Logger();
+	virtual Elem* Root();
 private:
 	GLogRec* iLogger; 
 	Elem* iRoot;
@@ -32,7 +32,6 @@ private:
 	string iSystSpec;
 };
 
-inline Elem* Env::Root() { return iRoot; }
 
 
 #endif

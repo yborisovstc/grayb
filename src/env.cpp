@@ -60,6 +60,11 @@ MLogRec *Env::Logger()
     return iLogger;
 }
 
+Elem* Env::Root() 
+{ 
+    return iRoot; 
+}
+
 void Env::AddProvider(GProvider* aProv)
 {
     iProvider->AddProvider(aProv);

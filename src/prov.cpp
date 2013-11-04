@@ -1,5 +1,6 @@
 #include "prov.h"
 
+const string KModPath;
 
 GProvider::GProvider(const string &aName): Base(aName)
 {
@@ -24,3 +25,7 @@ void GProvider::AppendNodesInfo(vector<string>& aInfo)
 {
 }
 
+const string& GProvider::ModulesPath() const
+{
+    return KModPath;
+}
