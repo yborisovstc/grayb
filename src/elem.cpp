@@ -563,26 +563,20 @@ TBool Elem::MergeMutation(const ChromoNode& aSpec)
 TBool Elem::MergeMutMove(const ChromoNode& aSpec)
 {
     TBool res = EFalse;
-    /*
-       DesUri src(aSpec.Attr(ENa_Id));
-       TNodeType srctype = src.Elems().at(0).first;
-       string srcname = src.Elems().at(0).second;
-       DesUri dest(aSpec.Attr(ENa_MutNode));
-       string destname = dest.Elems().at(0).second;
-       if (srctype == ENt_Object) {
-       CAE_ChromoNode& croot = iChromo->Root();
+    GUri src(aSpec.Attr(ENa_Id));
+    string srcname = src.Elems().at(0).second;
+    GUri dest(aSpec.Attr(ENa_MutNode));
+    string destname = dest.Elems().at(0).second;
+    ChromoNode& croot = iChromo->Root();
     // Find the dest and src
-    CAE_ChromoNode::Iterator nidest = croot.Find(ENt_Object, destname);
-    CAE_ChromoNode::Iterator nisrc = croot.Find(ENt_Object, srcname);
-    // Move node
-    CAE_ChromoNode nsrc = *nisrc;
-    nsrc.MoveNextTo(nidest);
-    res = ETrue;
+    ChromoNode::Iterator nidest = croot.Find(ENt_Node, destname);
+    ChromoNode::Iterator nisrc = croot.Find(ENt_Node, srcname);
+    if (nidest != croot.End() && nisrc != croot.End()) {
+	// Move node
+	ChromoNode nsrc = *nisrc;
+	nsrc.MoveNextTo(nidest);
+	res = ETrue;
     }
-    else {
-    Logger()->WriteFormat("ERROR: Moving element [%s] - unsupported element type for moving", srcname.c_str());
-    }
-    */
     return res;
 }
 
@@ -623,12 +617,10 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 	    else if (rnotype == ENt_Change) {
 		ChangeAttr(rno);
 	    }
-	    /*
-	       else if (rnotype == ENt_MutMove) 
-	       {
-	       MoveElem_v1(rno);
-	       }
-	       */
+	    else if (rnotype == ENt_Move) 
+	    {
+		MoveNode(rno);
+	    }
 	    else {
 		Logger()->WriteFormat("ERROR: Mutating node [%s] - unknown mutation type [%d]", Name().c_str(), rnotype);
 	    }
@@ -896,45 +888,6 @@ TBool Elem::IsCompRegistered(Elem* aComp) const
     return (iMComps.count(TCkey(comp->Name(), comp->EType())) > 0);
 }
 
-/*
-TBool Elem::UnregisterComp(Elem* aComp, const string& aName)
-{
-    TBool res = EFalse;
-    TInt r1 = iMComps.count(TCkey(aName, aComp->EType()));
-    TInt r2 = iMComps.count(TCkey(aName, "*"));
-    TInt r3 = iMComps.count(TCkey("*", "*"));
-    if (iMComps.count(TCkey(aName, aComp->EType())) > 0) {
-	// Removing old name related records in register
-	//   Name-Type is unique record, erasing it
-	iMComps.erase(TCkey(aName, aComp->EType()));
-	//   Name-AnyType is not unique, erasing only records for this comp
-	TMElem::iterator it = iMComps.find(TCkey(aName, "*"));
-	while (it != iMComps.end()) {
-	    if (it->second == aComp) {
-		iMComps.erase(it);
-		it = iMComps.find(TCkey(aName, "*"));
-	    }
-	    else {
-		it++;
-	    }
-	}
-	//   AnyName-AnyType is not unique, erasing only records for this comp
-	it = iMComps.find(TCkey("*", "*"));
-	while (it != iMComps.end()) {
-	    if (it->second == aComp) {
-		iMComps.erase(it);
-		it = iMComps.find(TCkey("*", "*"));
-	    }
-	    else {
-		it++;
-	    }
-	}
-	res = ETrue;
-    }
-    return res;
-}
-*/
-
 TBool Elem::UnregisterComp(Elem* aComp, const string& aName)
 {
     TBool res = EFalse;
@@ -963,6 +916,23 @@ TBool Elem::UnregisterComp(Elem* aComp, const string& aName)
 	}
     }
     __ASSERT(found);
+    res = ETrue;
+    return res;
+}
+
+TBool Elem::MoveComp(Elem* aComp, Elem* aDest)
+{
+    TBool res = EFalse;
+    vector<Elem*>::iterator it;
+    for (it = iComps.begin(); it != iComps.end() && *it != aComp; it++);
+    iComps.erase(it);
+    if (aDest != NULL) {
+	for (it = iComps.begin(); it != iComps.end() && *it != aDest; it++);
+	iComps.insert(it, aComp);
+    }
+    else {
+	iComps.push_back(aComp);
+    }
     res = ETrue;
     return res;
 }
@@ -1134,6 +1104,32 @@ TBool Elem::RmNode(const GUri& aUri)
     else {
 	Logger()->WriteFormat("ERR: [%s] - Removing elem [%s] - not found", Name().c_str(), aUri.GetUri().c_str());
     }
+}
+
+TBool Elem::MoveNode(const ChromoNode& aSpec)
+{
+    TBool res = EFalse;
+    string srcs = aSpec.Attr(ENa_Id);
+    TBool dest_spec = aSpec.AttrExists(ENa_MutNode);
+    string dests = dest_spec ? aSpec.Attr(ENa_MutNode): string();
+    Elem* snode = GetNode(srcs);
+    Elem* dnode = dest_spec ? GetNode(dests) : NULL;
+    Elem* owner = snode->GetMan();
+    if (snode != NULL) {
+	if (owner != NULL && owner == snode->GetMan()) {
+	    res = owner->MoveComp(snode, dnode);
+	    if (!res) {
+		Logger()->WriteFormat("ERROR: Moving element [%s] - failure", srcs.c_str());
+	    }
+	}
+	else {
+	    Logger()->WriteFormat("ERROR: Moving element [%s] - node not owned", srcs.c_str());
+	}
+    }
+    else {
+	Logger()->WriteFormat("ERROR: Moving element [%s] - node not found", srcs.c_str());
+    }
+    return res;
 }
 
 TBool Elem::IsName(const char* aName)

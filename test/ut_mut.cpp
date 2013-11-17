@@ -16,6 +16,7 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST_SUITE(Ut_mut);
     CPPUNIT_TEST(test_Add);
     CPPUNIT_TEST(test_MutSyst);
+    CPPUNIT_TEST(test_Move);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -23,6 +24,7 @@ public:
 private:
     void test_Add();
     void test_MutSyst();
+    void test_Move();
 private:
     Env* iEnv;
 };
@@ -134,6 +136,41 @@ void Ut_mut::test_MutSyst()
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair of Syst:Syst1/ConnPoint:cp", pair_1 != 0);
     const string pname_1 = pair_1->EBase()->Name();
     CPPUNIT_ASSERT_MESSAGE("Wrong name of pair of Syst:Syst1/ConnPoint:cp", pname_1 == "cp2");
+ 
+    delete iEnv;
+}
+
+void Ut_mut::test_Move()
+{
+    printf("\n === Test of mutation: moving node\n");
+
+    iEnv = new Env("Env", "ut_mutmove_1.xml", "ut_mutmove_1.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    // Check creation first
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    Elem* e2 = root->GetNode("Elem:elem1/Elem:elem2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get e2", e2 != 0);
+    Elem* e4 = root->GetNode("elem1:elem3/elem2:elem4");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get e4", e4 != 0);
+
+    // Mutation of type "Move node"
+    ChromoNode mmove = root->Mutation().Root().AddChild(ENt_Move);
+    mmove.SetAttr(ENa_Id, "elem5");
+    mmove.SetAttr(ENa_MutNode, "elem3");
+    root->Mutate();
+    Elem* emoved = root->GetNode("elem5");
+    Elem* ebase = root->GetNode("elem3");
+    CPPUNIT_ASSERT_MESSAGE("Fail to rename node", emoved != NULL && ebase != NULL);
+    Elem* enext = NULL;
+    for (vector<Elem*>::iterator it = root->Comps().begin(); it != root->Comps().end(); it++) {
+	if (*it == emoved) {
+	    it++; enext = *it; break;
+	}
+    }
+    CPPUNIT_ASSERT_MESSAGE("Fail to rename node", enext != NULL && enext == ebase);
+
  
     delete iEnv;
 }

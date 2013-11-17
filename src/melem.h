@@ -42,6 +42,7 @@ class MElem
 	virtual void GetCont(string& aCont) = 0; 
 	virtual TBool ChangeCont(const string& aVal) = 0; 
 	virtual TBool AddNode(const ChromoNode& aSpec) = 0;
+	virtual TBool MoveNode(const ChromoNode& aSpec) = 0;
 };
 
 #endif

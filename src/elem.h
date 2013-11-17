@@ -171,6 +171,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	virtual TBool ChangeCont(const string& aVal); 
 	virtual TBool AddNode(const ChromoNode& aSpec);
 	virtual TBool RmNode(const GUri& aUri);
+	virtual TBool MoveNode(const ChromoNode& aSpec);
 	vector<Elem*>& Comps();
 	// From MCompsObserver
 	virtual void OnCompDeleting(Elem& aComp);
@@ -191,6 +192,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	inline MLogRec* Logger() const;
 	inline MProvider* Provider() const;
 	TBool AppendComp(Elem* aComp);
+	TBool MoveComp(Elem* aComp, Elem* aDest);
 	TBool RegisterComp(Elem* aComp);
 	TBool IsCompRegistered(Elem* aComp) const;
 	// aName is required because the comp can be renamed already. This is the case of 

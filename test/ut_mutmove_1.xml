@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for ceation moving of node
+     -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Elem">
+    <node id="elem1" parent="Elem">
+	<node id="elem2" parent="Elem"/>
+    </node>
+    <node id="elem3" parent="elem1">
+	<node id="elem4" parent="../elem1/elem2"/>
+    </node>
+    <node id="elem5" parent="elem1/elem2"/>
+    <move id="elem5" node="elem3" />
+
+</node>
+
