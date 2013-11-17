@@ -162,7 +162,8 @@ void Elem::Init()
     iInit = true;
 }
 
-Elem::Elem(const string &aName, Elem* aMan, MEnv* aEnv): Base(aName), iMan(aMan), iEnv(aEnv)
+Elem::Elem(const string &aName, Elem* aMan, MEnv* aEnv): Base(aName), iMan(aMan), iEnv(aEnv),
+    iObserver(NULL)
 {
     if (!iInit) 
 	Init();
@@ -183,6 +184,9 @@ Elem::~Elem()
     // Notify the man of deleting
     if (iMan != NULL) {
 	iMan->OnCompDeleting(*this);
+    }
+    if (iObserver != NULL) {
+	iObserver->OnCompDeleting(*this);
     }
     // Remove the comps, using iterator refresh because the map is updated on each comp deletion
     vector<Elem*>::reverse_iterator it = iComps.rbegin();
@@ -225,6 +229,12 @@ void Elem::SetMan(Elem* aMan)
     __ASSERT(iMan == NULL && aMan != NULL || iMan != NULL && aMan == NULL);
     // TODO [YB] To add notifications here
     iMan = aMan;
+}
+
+void Elem::SetObserver(MCompsObserver* aObserver)
+{
+    __ASSERT(iObserver == NULL && aObserver != NULL || iObserver != NULL && aObserver == NULL);
+    iObserver = aObserver;
 }
 
 Elem* Elem::GetMan()
@@ -517,6 +527,11 @@ void Elem::SetMutation(const ChromoNode& aMuta)
     iMut->Set(aMuta);
 }
 
+void Elem::AppendMutation(const ChromoNode& aMuta)
+{
+    iMut->Root().AddChild(aMuta);
+}
+
 void Elem::Mutate(TBool aRunTimeOnly)
 {
     ChromoNode& root = iMut->Root();
@@ -763,6 +778,14 @@ Elem* Elem::AddElem(const ChromoNode& aNode)
 	    if (IsLogeventCreOn()) {
 		Logger()->WriteFormat("[%s] - added node [%s:%s]", Name().c_str(), elem->EType().c_str(), elem->Name().c_str());
 	    }
+	    /*
+	    if (iMan != NULL) {
+		iMan->OnCompAdding(*elem);
+	    }
+	    if (iObserver != NULL) {
+		iObserver->OnCompAdding(*elem);
+	    }
+	    */
 	}
     }
     return elem;
@@ -836,6 +859,12 @@ TBool Elem::AppendComp(Elem* aComp)
     if (res)
     {
 	iComps.push_back(aComp);
+	if (iMan != NULL) {
+	    iMan->OnCompAdding(*aComp);
+	}
+	if (iObserver != NULL) {
+	    iObserver->OnCompAdding(*aComp);
+	}
     }
     return res;
 }
@@ -855,6 +884,18 @@ TBool Elem::RegisterComp(Elem* aComp)
     }
     return res;
 }
+
+TBool Elem::IsCompRegistered(Elem* aComp) const
+{
+    Elem* comp = aComp;
+    Elem* man = comp->GetMan();
+    while (man != this) {
+	comp = man;
+	man = comp->GetMan();	
+    }
+    return (iMComps.count(TCkey(comp->Name(), comp->EType())) > 0);
+}
+
 /*
 TBool Elem::UnregisterComp(Elem* aComp, const string& aName)
 {
@@ -934,45 +975,39 @@ Elem* Elem::GetNode(const string& aUri)
 
 void Elem::OnCompDeleting(Elem& aComp)
 {
-    // Deattach the comp's chromo
-    iChromo->Root().RmChild(aComp.Chromos().Root(), ETrue);
-    // Unregister first
-    UnregisterComp(&aComp);
-    /*
-    TMElem::iterator it = iMComps.find(TCkey(aComp.Name(), aComp.EType()));
-    __ASSERT(it != iMComps.end());
-    Elem* targ = it->second;
-    iMComps.erase(it);
-    TMElem::iterator lb = iMComps.lower_bound(TCkey(aComp.Name(), "*"));
-    TMElem::iterator ub = iMComps.upper_bound(TCkey(aComp.Name(), "*"));
-    TBool found = false;
-    for (it = lb, found = false; it != ub && !found; it++) {
-	if (it->second == targ) {
-	    iMComps.erase(it);
-	    found = true;
-	}
+    // Translate to hier
+    if (iMan != NULL) {
+	iMan->OnCompDeleting(aComp);
     }
-    __ASSERT(found);
-    lb = iMComps.lower_bound(TCkey("*", "*"));
-    ub = iMComps.upper_bound(TCkey("*", "*"));
-    for (it = lb, found = false; it != ub && !found; it++) {
-	if (it->second == targ) {
-	    iMComps.erase(it);
-	    found = true;
-	}
+    if (iObserver != NULL) {
+	iObserver->OnCompDeleting(aComp);
     }
-    __ASSERT(found);
-    */
-    // Then remove from comps
-    for (vector<Elem*>::iterator oit = iComps.begin(); oit != iComps.end(); oit++) {
-	if (*oit == &aComp) {
-	    iComps.erase(oit); break;
-	}	
+    // Handle for direct child
+    if (aComp.GetMan() == this) {
+	// Deattach the comp's chromo
+	iChromo->Root().RmChild(aComp.Chromos().Root(), ETrue);
+	// Unregister first
+	UnregisterComp(&aComp);
+	// Then remove from comps
+	for (vector<Elem*>::iterator oit = iComps.begin(); oit != iComps.end(); oit++) {
+	    if (*oit == &aComp) {
+		iComps.erase(oit); break;
+	    }	
+	}
     }
 }
 
 void Elem::OnCompAdding(Elem& aComp)
 {
+    // If the comp is already registered then propagate the event
+    if (IsCompRegistered(&aComp)) {
+	if (iMan != NULL) {
+	    iMan->OnCompAdding(aComp);
+	}
+	if (iObserver != NULL) {
+	    iObserver->OnCompAdding(aComp);
+	}
+    }
 }
 
 void Elem::OnCompChanged(Elem& aComp)
@@ -1008,6 +1043,9 @@ void Elem::DoOnCompChanged(Elem& aComp)
 {
     if (iMan != NULL) {
 	iMan->OnCompChanged(aComp);
+    }
+    if (iObserver != NULL) {
+	iObserver->OnCompChanged(aComp);
     }
 }
 

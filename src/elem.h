@@ -123,7 +123,9 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	void SetEType(const string& aPName, const string& aPEType = string());
 	void SetParent(const string& aParent);
 	void SetMan(Elem* aMan);
+	void SetObserver(MCompsObserver* aObserver);
 	void SetMutation(const ChromoNode& aMuta);
+	void AppendMutation(const ChromoNode& aMuta);
 	void Mutate(TBool aRunTimeOnly = EFalse);
 	string PName() const;
 	const vector<Elem*>& Comps() const;
@@ -190,6 +192,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	inline MProvider* Provider() const;
 	TBool AppendComp(Elem* aComp);
 	TBool RegisterComp(Elem* aComp);
+	TBool IsCompRegistered(Elem* aComp) const;
 	// aName is required because the comp can be renamed already. This is the case of 
 	// comp renaming: comp is renamed first, then the renaming is handled
 	TBool UnregisterComp(Elem* aComp, const string& aName = string());
@@ -208,6 +211,8 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	MEnv* iEnv;
 	// Managing (higher) element of hier
 	Elem* iMan;
+	// Observer, mostly for root - normally elem notifies to Mgr
+	MCompsObserver* iObserver;
 	// Chromo
 	Chromo* iChromo;
 	// Mutation
