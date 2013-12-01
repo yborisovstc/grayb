@@ -9,9 +9,15 @@
 // The only case is that there can be some Syst CPs that needs to be disabled for connecting. 
 // Then these CPs can be moved outside of Incaps Capsula
 
-Incaps::Incaps(const string& aName, Elem* aMan, MEnv* aEnv): Syst(aName, aMan, aEnv)
+
+string Incaps::PEType()
 {
-    SetEType(Type());
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
+
+Incaps::Incaps(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+{
+    SetEType(Type(), Elem::PEType());
     SetParent(Type());
     /*
     // Set mutation and mutate
@@ -33,74 +39,10 @@ void *Incaps::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCt
 	res = (MACompsObserver*) this;
     }
     else {
-	res = Syst::DoGetObj(aName, aIncUpHier, aCtx);
+	res = Elem::DoGetObj(aName, aIncUpHier, aCtx);
     }
     return res;
 }
-
-/*
-void Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
-{
-    if (aComp.EType() == "Edge") {
-	// Reconnect the edge
-	Edge* edge = aComp.GetObj(edge);	
-	__ASSERT(edge != NULL);
-	edge->Disconnect();
-	const string& pt1u = edge->Point1u();
-	const string& pt2u = edge->Point2u();
-	if (!pt1u.empty() && !pt2u.empty()) {
-	    Elem* pt1 = GetNode(pt1u);
-	    Elem* pt2 = GetNode(pt2u);
-	    if (pt1 != NULL && pt2 != NULL) {
-		// Check if CPs belongs to capsule
-		Elem* pt1man = pt1->GetMan();
-		Elem* pt2man = pt2->GetMan(); 
-		if (pt1man->Name() == "Capsule" && pt2man->Name() == "Capsule") {
-		    MVert* pt1v = pt1->GetObj(pt1v);
-		    MVert* pt2v = pt2->GetObj(pt2v);
-		    if (pt1v != NULL && pt2v != NULL) {
-			// Check roles conformance
-			// Point#1 provided
-			Elem* ept1prov = pt1->GetNode("Prop:Provided");
-			MProp* ppt1prov = ept1prov->GetObj(ppt1prov);
-			Elem* ept2req = pt2->GetNode("Prop:Required");
-			MProp* ppt2req = ept2req->GetObj(ppt2req);
-			// Point#2 provided
-			Elem* ept2prov = pt2->GetNode("Prop:Provided");
-			MProp* ppt2prov = ept2prov->GetObj(ppt2prov);
-			Elem* ept1req = pt1->GetNode("Prop:Required");
-			MProp* ppt1req = ept1req->GetObj(ppt1req);
-			if (ppt1prov->Value() == ppt2req->Value() && ppt2prov->Value() == ppt1req->Value()) {
-			    // Roles are compatible - connect
-			    edge->SetPoints(pt1v, pt2v);
-			    TBool res = edge->Connect();
-			    if (res) {
-				Logger()->WriteFormat("Incaps [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
-			    }
-			    else {
-				Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
-			    }
-			}
-			else {
-			    Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - incompatible roles", Name().c_str(), pt1u.c_str(), pt2u.c_str());
-			}
-		    }
-		    else {
-			Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - ends aren't vertexes", Name().c_str(), pt1u.c_str(), pt2u.c_str());
-		    }
-		} // pt1man->Name() == "Capsule"
-		else {
-		    Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - not capsule cp", Name().c_str(), pt1u.c_str(), pt2u.c_str());
-		}
-	    } // pt1 != NULL ...
-	    else {
-		Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - cannot find [%s]", Name().c_str(), pt1u.c_str(), pt2u.c_str(), 
-			(pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
-	    }
-	}
-    }
-}
-*/
 
 TBool Incaps::IsPtOk(Elem& aContext, Elem* aPt) {
     TBool res = EFalse;
@@ -135,52 +77,71 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 	__ASSERT(edge != NULL);
 	edge->Disconnect();
 	const string& pt1u = edge->Point1u();
-	const string& pt2u = edge->Point2u();
-	if (!pt1u.empty() && !pt2u.empty()) {
+	if (!pt1u.empty()) {
 	    Elem* pt1 = aContext.GetNode(pt1u);
+	    if (pt1 != NULL) {
+		MVert* pt1v = pt1->GetObj(pt1v);
+		if (pt1v != NULL) {
+		    edge->SetPoint1(pt1v);
+		}
+	    }
+	    else {
+		Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s] - cannot find", Name().c_str(), pt1u.c_str());
+	    }
+	}
+	const string& pt2u = edge->Point2u();
+	if (!pt2u.empty()) {
 	    Elem* pt2 = aContext.GetNode(pt2u);
-	    Elem* host = iMan->GetMan();
-	    if (pt1 != NULL && pt2 != NULL) {
-		TBool ispt1ok = IsPtOk(aContext, pt1);
-		TBool ispt2ok = IsPtOk(aContext, pt2);
-		if (ispt1ok && ispt2ok) {
-		    MVert* pt1v = pt1->GetObj(pt1v);
-		    MVert* pt2v = pt2->GetObj(pt2v);
-		    if (pt1v != NULL && pt2v != NULL) {
-			MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
-			MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
-			if (pt1checker->IsCompatible(pt2) && pt2checker->IsCompatible(pt1)) {
-			    // Are compatible - connect
-			    edge->SetPoints(pt1v, pt2v);
-			    TBool res = edge->Connect();
-			    if (res) {
-				if (IsLogeventCreOn()) {
-				    Logger()->WriteFormat("Incaps [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
-				}
-			    }
-			    else {
-				Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+	    if (pt2 != NULL) {
+		MVert* pt2v = pt2->GetObj(pt2v);
+		if (pt2v != NULL) {
+		    edge->SetPoint2(pt2v);
+		}
+	    }
+	    else {
+		Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s] - cannot find", Name().c_str(), pt2u.c_str());
+	    }
+	}
+	Elem* pt1 = aContext.GetNode(pt1u);
+	Elem* pt2 = aContext.GetNode(pt2u);
+	Elem* host = iMan->GetMan();
+	if (pt1 != NULL && pt2 != NULL) {
+	    TBool ispt1ok = IsPtOk(aContext, pt1);
+	    TBool ispt2ok = IsPtOk(aContext, pt2);
+	    if (ispt1ok && ispt2ok) {
+		MVert* pt1v = pt1->GetObj(pt1v);
+		MVert* pt2v = pt2->GetObj(pt2v);
+		if (pt1v != NULL && pt2v != NULL) {
+		    MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
+		    MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
+		    TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
+		    TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
+		    if (ispt1cptb && ispt2cptb) {
+			// Are compatible - connect
+			TBool res = edge->Connect();
+			if (res) {
+			    if (IsLogeventCreOn()) {
+				Logger()->WriteFormat("Incaps [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
 			    }
 			}
 			else {
-			    Logger()->WriteFormat("ERR: [%s/%s] connecting [%s - %s] - incompatible", 
-				    host->Name().c_str(), Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			    Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
 			}
 		    }
 		    else {
-			Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - ends aren't vertexes", 
-				Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			Logger()->WriteFormat("ERR: [%s/%s] connecting [%s - %s] - incompatible", 
+				host->Name().c_str(), Name().c_str(), pt1u.c_str(), pt2u.c_str());
 		    }
 		}
 		else {
-		    Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - not allowed cp", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+		    Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - ends aren't vertexes", 
+			    Name().c_str(), pt1u.c_str(), pt2u.c_str());
 		}
-	    } // pt1 != NULL ...
-	    else {
-		Logger()->WriteFormat("ERR: [%s/%s] connecting [%s - %s] - cannot find [%s]", 
-			host->Name().c_str(), Name().c_str(), pt1u.c_str(), pt2u.c_str(), (pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
 	    }
-	}
+	    else {
+		Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - not allowed cp", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+	    }
+	} 
 	res = ETrue;
     }
     return res;

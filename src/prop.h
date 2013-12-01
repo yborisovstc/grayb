@@ -24,4 +24,16 @@ class Prop: public Elem, public MProp
 	string iValue;
 };
 
+// Desctiption. Just prop introduced for describing of something
+class Description: public Prop
+{
+    public:
+	static const char* Type() { return "Description";};
+	static string PEType();
+	Description(const string& aName, Elem* aMan, MEnv* aEnv);
+    public:
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+};
+
 #endif

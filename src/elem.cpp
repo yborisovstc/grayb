@@ -545,6 +545,7 @@ void Elem::Mutate(TBool aRunTimeOnly)
     }
 }
 
+// TODO [YB] Is megre the valid idea at all ?
 TBool Elem::MergeMutation(const ChromoNode& aSpec)
 {
     TBool res = EFalse;
@@ -566,15 +567,21 @@ TBool Elem::MergeMutMove(const ChromoNode& aSpec)
     GUri src(aSpec.Attr(ENa_Id));
     string srcname = src.Elems().at(0).second;
     GUri dest(aSpec.Attr(ENa_MutNode));
-    string destname = dest.Elems().at(0).second;
+    string destname = dest.Elems().size() > 0 ? dest.Elems().at(0).second : string();
     ChromoNode& croot = iChromo->Root();
     // Find the dest and src
     ChromoNode::Iterator nidest = croot.Find(ENt_Node, destname);
     ChromoNode::Iterator nisrc = croot.Find(ENt_Node, srcname);
-    if (nidest != croot.End() && nisrc != croot.End()) {
+    if (nidest == croot.End()) {
+	// Move node to end
+	ChromoNode nsrc = *nisrc;
+	nsrc.MoveToEnd();
+	res = ETrue;
+    }
+    else if (nidest != croot.End() && nisrc != croot.End()) {
 	// Move node
 	ChromoNode nsrc = *nisrc;
-	nsrc.MoveNextTo(nidest);
+	nsrc.MovePrevTo(nidest);
 	res = ETrue;
     }
     return res;

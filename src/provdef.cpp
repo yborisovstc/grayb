@@ -28,6 +28,9 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     else if (aType.compare(Prop::Type()) == 0) {
 	res = new Prop(aName, aMan, aEnv);
     }
+    else if (aType.compare(Description::Type()) == 0) {
+	res = new Description(aName, aMan, aEnv);
+    }
     else if (aType.compare(Elem::Type()) == 0) {
 	res = new Elem(aName, aMan, aEnv);
     }
@@ -108,6 +111,7 @@ void ProvDef::AppendNodesInfo(vector<string>& aInfo)
     aInfo.push_back(Edge::Type());
     aInfo.push_back(Vert::Type());
     aInfo.push_back(Prop::Type());
+    aInfo.push_back(Description::Type());
     aInfo.push_back(ConnPointBase::Type());
     aInfo.push_back(Syst::Type());
     aInfo.push_back(Incaps::Type());

@@ -73,6 +73,7 @@ class GUriBase
 	const string& GetLoc() const;
 	const string& Scheme() const;
 	string GetName() const;
+	void Append(const GUriBase& aUri);
 	void AppendElem(const string& aType, const string& aName);
 	void AppendElem(const TElem& aElem);
 	void PrependElem(const string& aType, const string& aName);
@@ -109,6 +110,7 @@ class GUri: public GUriBase
     public:
 	GUri(const string& aGUri);
 	GUri();
+	GUri& operator+=(const GUri& aUri);
     protected:
 	virtual string DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort = EFalse) const;
 	void Parse();

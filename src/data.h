@@ -8,6 +8,7 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable
 {
     public:
 	static const char* Type() { return "DataBase";};
+	static string PEType();
 	DataBase(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
     protected:
 	virtual bool FromString(const string& aData) = 0; 
@@ -29,6 +30,7 @@ class DInt: public DataBase, public MDInt, public MDIntGet, public MDIntSet
 {
     public:
 	static const char* Type() { return "DInt";};
+	static string PEType();
 	DInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -55,6 +57,7 @@ class DNInt: public DInt
 {
     public:
 	static const char* Type() { return "DNInt";};
+	static string PEType();
 	DNInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);

@@ -5,9 +5,14 @@
 #include "mdata.h"
 #include "func.h"
 
+string FuncBase::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
+
 FuncBase::FuncBase(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 
@@ -62,9 +67,15 @@ void FuncBase::NotifyUpdate()
 }
 
 // Agent base of Int function
+
+string AFunInt::PEType()
+{
+    return FuncBase::PEType() + GUri::KParentSep + Type();
+}
+
 AFunInt::AFunInt(const string& aName, Elem* aMan, MEnv* aEnv): FuncBase(aName, aMan, aEnv), mData(0)
 {
-    SetEType(Type());
+    SetEType(Type(), FuncBase::PEType());
     SetParent(Type());
 }
 
@@ -120,9 +131,14 @@ MDIntGet* AFunInt::GetInp(const string& aInpName)
 }
 
 
+string AIncInt::PEType()
+{
+    return AFunInt::PEType() + GUri::KParentSep + Type();
+}
+
 AIncInt::AIncInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), AFunInt::PEType());
     SetParent(Type());
 }
 
@@ -174,9 +190,15 @@ void AIncInt::OnDataChanged()
 }
 
 // Agent of Int function result
+
+string AFunIntRes::PEType()
+{
+    return AFunInt::PEType() + GUri::KParentSep + Type();
+}
+
 AFunIntRes::AFunIntRes(const string& aName, Elem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), AFunInt::PEType());
     SetParent(Type());
 }
 
@@ -248,9 +270,15 @@ void AFunIntRes::OnDataChanged()
 }
 
 // Agent function "Addition of Int data"
+
+string AAddInt::PEType()
+{
+    return AFunInt::PEType() + GUri::KParentSep + Type();
+}
+
 AAddInt::AAddInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), AFunInt::PEType());
     SetParent(Type());
 }
 
@@ -303,9 +331,15 @@ void AAddInt::OnDataChanged()
 
 
 // Agent function "Count of data matched a criteria"
+
+string ACountCritInt::PEType()
+{
+    return AFunInt::PEType() + GUri::KParentSep + Type();
+}
+
 ACountCritInt::ACountCritInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), AFunInt::PEType());
     SetParent(Type());
 }
 
@@ -358,9 +392,15 @@ void ACountCritInt::OnDataChanged()
 
 
 // Function agent base without result caching
+
+string AFunc::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
+
 AFunc::AFunc(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 
@@ -423,9 +463,15 @@ TBool AFunc::IsLogeventUpdate()
 
 
 // Function agent base wo caching
+
+string AFAddInt::PEType()
+{
+    return AFunc::PEType() + GUri::KParentSep + Type();
+}
+
 AFAddInt::AFAddInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), AFunc::PEType());
     SetParent(Type());
 }
 
@@ -460,9 +506,15 @@ TInt AFAddInt::Value()
 }
 
 // Function Sub agent wo caching
+
+string AFSubInt::PEType()
+{
+    return AFunc::PEType() + GUri::KParentSep + Type();
+}
+
 AFSubInt::AFSubInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), AFunc::PEType());
     SetParent(Type());
 }
 
@@ -508,9 +560,15 @@ TInt AFSubInt::Value()
 
 
 // Restriction of value from top and bottom
+
+string AFLimInt::PEType()
+{
+    return AFunc::PEType() + GUri::KParentSep + Type();
+}
+
 AFLimInt::AFLimInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), AFunc::PEType());
     SetParent(Type());
 }
 
@@ -561,9 +619,15 @@ TInt AFLimInt::Value()
 
 
 // Restriction of value from top and bottom
+
+string AFDivInt::PEType()
+{
+    return AFunc::PEType() + GUri::KParentSep + Type();
+}
+
 AFDivInt::AFDivInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), AFunc::PEType());
     SetParent(Type());
 }
 
@@ -614,9 +678,15 @@ TInt AFDivInt::Value()
 
 
 // Inputs to vector conversion
+
+string AFIntToVect::PEType()
+{
+    return AFunc::PEType() + GUri::KParentSep + Type();
+}
+
 AFIntToVect::AFIntToVect(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), AFunc::PEType());
     SetParent(Type());
 }
 
@@ -654,10 +724,15 @@ vector<TInt> AFIntToVect::Value()
 
 
 // Convolution of inputs. Used external working function.
+
+string AFConvInt::PEType()
+{
+    return AFunc::PEType() + GUri::KParentSep + Type();
+}
+
 AFConvInt::AFConvInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
-    SetEType(Type());
-    SetParent(Type());
+    SetEType(Type(), AFunc::PEType());
     iSampleHolder.iHost = this;
 }
 
@@ -742,9 +817,15 @@ TInt AFConvInt::Value()
 
 
 // Function agent base with multitype support
+
+string AFuncm::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
+
 AFuncm::AFuncm(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 
@@ -806,6 +887,17 @@ void AFuncm::OnDataChanged()
 }
 
 
+string AFuncmAdd::PEType()
+{
+    return AFuncm::PEType() + GUri::KParentSep + Type();
+}
+
+AFuncmAdd::AFuncmAdd(const string& aName, Elem* aMan, MEnv* aEnv): AFuncm(aName, aMan, aEnv)
+{
+    SetEType(Type(), AFuncm::PEType());
+    SetParent(Type());
+}
+
 void *AFuncmAdd::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
@@ -834,9 +926,15 @@ TInt AFuncmAdd::ExcInt::Value()
 }
 
 // Agent for Greater Than Int functin
+
+string AFGTInt::PEType()
+{
+    return AFunc::PEType() + GUri::KParentSep + Type();
+}
+
 AFGTInt::AFGTInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), AFunc::PEType());
     SetParent(Type());
 }
 
@@ -872,9 +970,15 @@ TBool AFGTInt::Value()
 
 
 // Agent for Bool to Int functin
+
+string AFBoolToInt::PEType()
+{
+    return AFunc::PEType() + GUri::KParentSep + Type();
+}
+
 AFBoolToInt::AFBoolToInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), AFunc::PEType());
     SetParent(Type());
 }
 

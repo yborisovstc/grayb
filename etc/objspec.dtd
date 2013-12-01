@@ -75,7 +75,7 @@
 
 <!-- Moving attributes:
      id - moved node name
-     node - base node, to top if omitted
+     node - base node to put source before it, to bottom if omitted
      -->
 <!ATTLIST move
    id CDATA #REQUIRED

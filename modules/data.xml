@@ -18,6 +18,8 @@
 
     <!-- Data with separate input for setting and output for getting -->
     <node id="DataS" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+	<node id="D_1" parent="Description">
+	    <cont val="Base of Data with separate input for setting and output for getting"/></node>
     	<add node="Elem:Capsule"> 
 	    <node id="inp" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"/> 
 	    <node id="out" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
@@ -38,6 +40,7 @@
 
 
     <node id="DataSInt" parent="Incaps:DataS"> 
+	<cont node="Description:D_1" val="Integer Data with separate input for setting and output for getting"/>
     	<add node="Elem:Agents"> <node id="MACompsObserver" parent="DInt"/> </add>
 	<cont node="Elem:Capsule/ConnPoint:inp/Prop:Provided" val="MDIntSet"/>
 	<cont node="Elem:Capsule/ConnPoint:out/Prop:Provided" val="MDIntGet"/>

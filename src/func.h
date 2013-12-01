@@ -8,6 +8,7 @@ class FuncBase: public Elem, public MACompsObserver, public MDataObserver
 {
     public:
 	static const char* Type() { return "FuncBase";};
+	static string PEType();
 	FuncBase(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -25,6 +26,7 @@ class AFunInt: public FuncBase, public MDIntGet
 {
     public:
 	static const char* Type() { return "AFunInt";};
+	static string PEType();
 	AFunInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -42,6 +44,7 @@ class AIncInt: public AFunInt
 {
     public:
 	static const char* Type() { return "AIncInt";};
+	static string PEType();
 	AIncInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -56,6 +59,7 @@ class AFunIntRes: public AFunInt
 {
     public:
 	static const char* Type() { return "AFunIntRes";};
+	static string PEType();
 	AFunIntRes(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -72,6 +76,7 @@ class AAddInt: public AFunInt
 {
     public:
 	static const char* Type() { return "AAddInt";};
+	static string PEType();
 	AAddInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -86,6 +91,7 @@ class ACountCritInt: public AFunInt
 {
     public:
 	static const char* Type() { return "ACountCritInt";};
+	static string PEType();
 	ACountCritInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -101,6 +107,7 @@ class AFunc: public Elem, public MACompsObserver, public MDataObserver
 
     public:
 	static const char* Type() { return "AFunc";};
+	static string PEType();
 	AFunc(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -117,6 +124,7 @@ class AFAddInt: public AFunc, public MDIntGet
 {
     public:
 	static const char* Type() { return "AFAddInt";};
+	static string PEType();
 	AFAddInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -128,6 +136,7 @@ class AFSubInt: public AFunc, public MDIntGet
 {
     public:
 	static const char* Type() { return "AFSubInt";};
+	static string PEType();
 	AFSubInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -140,6 +149,7 @@ class AFLimInt: public AFunc, public MDIntGet
 {
     public:
 	static const char* Type() { return "AFLimInt";};
+	static string PEType();
 	AFLimInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -152,6 +162,7 @@ class AFDivInt: public AFunc, public MDIntGet
 {
     public:
 	static const char* Type() { return "AFDivInt";};
+	static string PEType();
 	AFDivInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -166,6 +177,7 @@ class AFIntToVect: public AFunc, public MVIntGet
 {
     public:
 	static const char* Type() { return "AFIntToVect";};
+	static string PEType();
 	AFIntToVect(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -186,6 +198,7 @@ class AFConvInt: public AFunc, public MDIntGet
 	};
     public:
 	static const char* Type() { return "AFConvInt";};
+	static string PEType();
 	AFConvInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -214,6 +227,7 @@ class AFuncm: public Elem, public MACompsObserver, public MDataObserver
 	};
     public:
 	static const char* Type() { return "AFunc";};
+	static string PEType();
 	AFuncm(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -237,6 +251,7 @@ class AFuncmAdd: public AFuncm
 	};
     public:
 	static const char* Type() { return "AFuncAdd";};
+	static string PEType();
 	AFuncmAdd(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -247,6 +262,7 @@ class AFGTInt: public AFunc, public MDBoolGet
 {
     public:
 	static const char* Type() { return "AFGTInt";};
+	static string PEType();
 	AFGTInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -259,6 +275,7 @@ class AFBoolToInt: public AFunc, public MDIntGet
 {
     public:
 	static const char* Type() { return "AFBoolToInt";};
+	static string PEType();
 	AFBoolToInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);

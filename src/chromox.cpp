@@ -416,6 +416,22 @@ void ChromoMdlX::MoveNextTo(void* aHandle, void* aDest)
     xmlAddNextSibling(dest, src);
 }
 
+void ChromoMdlX::MovePrevTo(void* aHandle, void* aDest)
+{
+    xmlNodePtr src = (xmlNodePtr) aHandle;
+    xmlNodePtr dest = (xmlNodePtr) aDest;
+    xmlAddPrevSibling(dest, src);
+}
+
+void ChromoMdlX::MoveToEnd(void* aHandle)
+{
+    xmlNodePtr src = (xmlNodePtr) aHandle;
+    xmlNodePtr dest = ((xmlNodePtr) aHandle)->next;
+    if (dest != NULL) {
+	xmlAddSibling(dest, src);
+    }
+}
+
 
 ChromoX::ChromoX(): iRootNode(iMdl, NULL)
 {

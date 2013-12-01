@@ -30,6 +30,8 @@ class MChromoMdl
 	virtual void RmChild(void* aParent, void* aChild, TBool aDeattachOnly = EFalse) = 0;
 	virtual void Rm(void* aHandle) = 0;
 	virtual void MoveNextTo(void* aHandle, void* aDest) = 0;
+	virtual void MovePrevTo(void* aHandle, void* aDest) = 0;
+	virtual void MoveToEnd(void* aHandle) = 0;
 	virtual void SetAttr(void* aNode, TNodeAttr aType, const char* aVal) = 0;
 	virtual void SetAttr(void* aNode, TNodeAttr aType, TNodeType aVal) = 0;
 	virtual void SetAttr(void* aNode, TNodeAttr aType, TNodeAttr aVal) = 0;

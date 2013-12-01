@@ -3,10 +3,11 @@
 
 #include "syst.h"
 
-class Incaps: public Syst, public MACompsObserver
+class Incaps: public Elem, public MACompsObserver
 {
     public:
 	static const char* Type() { return "IncapsAgent";};
+	static string PEType();
 	Incaps(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);

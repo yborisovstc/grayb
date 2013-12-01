@@ -43,3 +43,33 @@ void Prop::GetCont(string& aCont)
 {
     aCont = iValue;
 }
+
+
+
+string Description::PEType()
+{
+    return Prop::PEType() + GUri::KParentSep + Type();
+}
+
+Description::Description(const string& aName, Elem* aMan, MEnv* aEnv): Prop(aName, aMan, aEnv)
+{
+    SetEType(Type(), Prop::PEType());
+    SetParent(Type());
+}
+
+void *Description::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName, MProp::Type()) == 0) {
+	res = (MProp*) this;
+    }
+    else {
+	res = Prop::DoGetObj(aName, aIncUpHier, aCtx);
+    }
+    return res;
+}
+
+

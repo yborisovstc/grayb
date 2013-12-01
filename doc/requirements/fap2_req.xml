@@ -30,8 +30,41 @@
 	<title>References</title>
     </bibliolist>
 
+    <sect1 id="nimp"><title>Treaceability: not implemented yet</title>
+	<itemizedlist>
+	    <listitem> <xref linkend="uc_014"/> </listitem>
+	</itemizedlist>
+    </sect1>
+
     
     <sect1 id="uc"> <title>Use cases</title>
+	<sect2 id="uc_000"><title>UC_000 Usecase template</title>
+	    <sect3><title>Actors</title>
+		CLIENT: some element of system - also named "interface requestor".
+	    </sect3>
+	    <sect3><title>Preconditions</title>
+	    </sect3>
+	    <sect3><title>Assumptions</title>
+	    </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>Normal flow</simpara>
+	    </sect3>
+	    <sect3><title>Alternative</title>
+		<simpara>Alternative flows</simpara>
+	    </sect3>
+	    <sect3><title>Exceptions</title>
+	    </sect3>
+	    <sect3><title>Variations</title>
+	    </sect3>
+	    <sect3><title>Extends</title>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
 	<sect2 id="uc_01"><title>UC_01 Logging</title>
 	    <sect3><title>Description</title>
 		CLIENT requests logging and specifies logging parameters - SYSTEM provides CLIENT with logging data
@@ -291,6 +324,54 @@
 	    <sect3><title>Extended by</title>
 		<itemizedlist>
 		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="uc_013"><title>UC_013 Mutation</title>
+	    <sect3><title>Actors</title>
+		CLIENT: user of FAP model
+	    </sect3>
+	    <sect3><title>Precondition</title>
+	    </sect3>
+	    <sect3><title>Normal</title>
+		CLIENT prepares specification of change in MODEL and requests MODEL for changing - MODEL performs the mutation and responce CLIENT of 
+		mutation result
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_014"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="uc_014"><title>UC_014 Trying of mutation</title>
+	    <sect3><title>Actors</title>
+		CLIENT: user of FAP model
+	    </sect3>
+	    <sect3><title>Precondition</title>
+	    </sect3>
+	    <sect3><title>Normal</title>
+		CLIENT has some options of changing MODEL, CLIENT want to check if these options are valid for MODEL - MODEL provides
+		means of checking the validity of changes.
+	    </sect3>
+	    <sect3><title>Alternative</title>
+	    </sect3>
+	    <sect3><title>Exceptions</title>
+	    </sect3>
+	    <sect3><title>Extends</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_013"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<itemizedlist>
+		    <listitem>Example of this UC is studio application that uses model and allows user to create and change it. User for instance
+			can create system with childs inside plus edge. Then user can try to connect the edge to some elements. So user pull the connection 
+			point of the edge thru the list of the elements whereas the application shows to the user if the element is sutable for connection. 
+			So the container element should give to application some mechanism to try connection and verify if it would be ok.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title>
 	    </sect3>
 	</sect2>
     </sect1>

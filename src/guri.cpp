@@ -108,6 +108,13 @@ string GUriBase::GetName() const
     return size == 0 ? string() : iElems.at(size -1).second;
 }
 
+void GUriBase::Append(const GUriBase& aUri)
+{
+    for (const_elem_iter it = aUri.Elems().begin(); it != aUri.Elems().end(); it++) {
+	AppendElem(*it);
+    }
+}
+
 void GUriBase::AppendElem(const string& aType, const string& aName)
 {
     iElems.push_back(TElem(aType, aName));
@@ -267,6 +274,12 @@ string GUri::DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort) const
 	}
     }
     return res;
+}
+
+GUri& GUri::operator+=(const GUri& aUri)
+{
+    Append(aUri);
+    return *this;
 }
 
 /*

@@ -35,6 +35,8 @@ class ChromoMdlX: public ChromoMdl
 	virtual void RmChild(void* aParent, void* aChild, TBool aDeattachOnly = EFalse);
 	virtual void Rm(void* aNode);
 	virtual void MoveNextTo(void* aHandle, void* aDest);
+	virtual void MovePrevTo(void* aHandle, void* aDest);
+	virtual void MoveToEnd(void* aHandle);
 	virtual void SetAttr(void* aNode, TNodeAttr aType, const char* aVal);
 	virtual void SetAttr(void* aNode, TNodeAttr aType, TNodeType aVal);
 	virtual void SetAttr(void* aNode, TNodeAttr aType, TNodeAttr aVal);

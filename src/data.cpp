@@ -6,9 +6,15 @@
 #include "data.h"
 #include "vert.h"
 
+
+string DataBase::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
+
 DataBase::DataBase(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 
@@ -87,9 +93,14 @@ TBool DataBase::IsLogeventUpdate()
 }
 
 
+string DInt::PEType()
+{
+    return DataBase::PEType() + GUri::KParentSep + Type();
+}
+
 DInt::DInt(const string& aName, Elem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(0)
 {
-    SetEType(Type());
+    SetEType(Type(), DataBase::PEType());
     SetParent(Type());
 }
 
@@ -217,9 +228,15 @@ TBool DInt::Update()
 
 
 // Data of integer. Doesn't support nofification of change
+
+string DNInt::PEType()
+{
+    return DInt::PEType() + GUri::KParentSep + Type();
+}
+
 DNInt::DNInt(const string& aName, Elem* aMan, MEnv* aEnv): DInt(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), DInt::PEType());
     SetParent(Type());
 }
 

@@ -100,6 +100,8 @@ class ChromoNode
 	void Dump(MLogRec* aLogRec) const { iMdl.Dump(iHandle, aLogRec);};
 	string GetName(const string& aTname);
 	void MoveNextTo(Iterator& aDest) { iMdl.MoveNextTo(iHandle, aDest.iHandle);};
+	void MovePrevTo(Iterator& aDest) { iMdl.MovePrevTo(iHandle, aDest.iHandle);};
+	void MoveToEnd() { iMdl.MoveToEnd(iHandle);};
     private :
 	ChromoMdl& iMdl;
 	void* iHandle;

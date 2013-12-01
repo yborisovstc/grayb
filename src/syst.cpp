@@ -137,35 +137,37 @@ TBool ConnPointBase::IsCompatible(Elem* aPair, TBool aExt)
     Elem *cp = aPair;
     // Checking if the pair is Extender
     MCompatChecker* pchkr = aPair->GetObj(pchkr);
-    __ASSERT(pchkr != NULL);
-    Elem* ecp = pchkr->GetExtd(); 
-    if (ecp != NULL ) {
-	ext = !ext;
-	cp = ecp;
-    }
-    if (cp != NULL) {
-	// Check roles conformance
-	Elem* ept1prov = GetNode("Prop:Provided");
-	Elem* ept2req = cp->GetNode("Prop:Required");
-	Elem* ept2prov = cp->GetNode("Prop:Provided");
-	Elem* ept1req = GetNode("Prop:Required");
-	if (ept1prov && ept2req && ept2prov && ept1req) {
-	    // Point#1 provided
-	    MProp* ppt1prov = ept1prov->GetObj(ppt1prov);
-	    MProp* ppt2req = ept2req->GetObj(ppt2req);
-	    // Point#2 provided
-	    MProp* ppt2prov = ept2prov->GetObj(ppt2prov);
-	    MProp* ppt1req = ept1req->GetObj(ppt1req);
-	    if (ppt1prov && ppt2req && ppt2prov && ppt1req) {
-		if (ext) {
-		    res = (ppt1prov->Value() == ppt2prov->Value() && ppt2req->Value() == ppt1req->Value());
+    // Consider all pairs not supporting MCompatChecker as not compatible 
+    if (pchkr != NULL) {
+	Elem* ecp = pchkr->GetExtd(); 
+	if (ecp != NULL ) {
+	    ext = !ext;
+	    cp = ecp;
+	}
+	if (cp != NULL) {
+	    // Check roles conformance
+	    Elem* ept1prov = GetNode("Prop:Provided");
+	    Elem* ept2req = cp->GetNode("Prop:Required");
+	    Elem* ept2prov = cp->GetNode("Prop:Provided");
+	    Elem* ept1req = GetNode("Prop:Required");
+	    if (ept1prov && ept2req && ept2prov && ept1req) {
+		// Point#1 provided
+		MProp* ppt1prov = ept1prov->GetObj(ppt1prov);
+		MProp* ppt2req = ept2req->GetObj(ppt2req);
+		// Point#2 provided
+		MProp* ppt2prov = ept2prov->GetObj(ppt2prov);
+		MProp* ppt1req = ept1req->GetObj(ppt1req);
+		if (ppt1prov && ppt2req && ppt2prov && ppt1req) {
+		    if (ext) {
+			res = (ppt1prov->Value() == ppt2prov->Value() && ppt2req->Value() == ppt1req->Value());
+		    }
+		    else {
+			res = (ppt1prov->Value() == ppt2req->Value() && ppt2prov->Value() == ppt1req->Value());
+		    }
 		}
 		else {
-		    res = (ppt1prov->Value() == ppt2req->Value() && ppt2prov->Value() == ppt1req->Value());
+		    res = EFalse;
 		}
-	    }
-	    else {
-		res = EFalse;
 	    }
 	}
     }
@@ -640,7 +642,7 @@ void Syst::DoOnCompChanged(Elem& aComp)
 		}
 	    }
 	    else {
-		Logger()->WriteFormat("ERR: Vert [%s] connecting [%s] - cannot find", Name().c_str(), pt2u.c_str());
+		Logger()->WriteFormat("ERR: Syst [%s] connecting [%s] - cannot find", Name().c_str(), pt2u.c_str());
 	    }
 	}
 	Elem* pt1 = GetNode(pt1u);
@@ -652,7 +654,9 @@ void Syst::DoOnCompChanged(Elem& aComp)
 		// Check roles conformance
 		MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
 		MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
-		if (pt1checker->IsCompatible(pt2) && pt2checker->IsCompatible(pt1)) {
+		TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
+		TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
+		if (ispt1cptb && ispt2cptb) {
 		    // Are compatible - connect
 		    TBool res = edge->Connect();
 		    if (res) {
@@ -669,10 +673,6 @@ void Syst::DoOnCompChanged(Elem& aComp)
 	    else {
 		Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - ends aren't vertexes", Name().c_str(), pt1u.c_str(), pt2u.c_str());
 	    }
-	}
-	else {
-	    Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - cannot find [%s]", Name().c_str(), pt1u.c_str(), pt2u.c_str(), 
-		    (pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
 	}
     }
 }

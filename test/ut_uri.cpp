@@ -15,14 +15,14 @@
 class Ut_uri : public CPPUNIT_NS::TestFixture
 {
     CPPUNIT_TEST_SUITE(Ut_uri);
-    CPPUNIT_TEST(test_UriParsing);
+    CPPUNIT_TEST(test_UriOpr);
     CPPUNIT_TEST(test_UriBase);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
     virtual void tearDown();
 private:
-    void test_UriParsing();
+    void test_UriOpr();
     void test_UriBase();
 private:
     Env* iEnv;
@@ -41,19 +41,14 @@ void Ut_uri::tearDown()
     CPPUNIT_ASSERT_EQUAL_MESSAGE("tearDown", 0, 0);
 }
 
-void Ut_uri::test_UriParsing()
+void Ut_uri::test_UriOpr()
 {
-    printf("\n === Test of uri parsing\n");
-    /*
-    GUriIh uri("name");
-    CPPUNIT_ASSERT_MESSAGE("Fail parse 'name'", uri.GetName() == "name" && uri.GetLoc() == "");
-    GUriIh uri2("location/name");
-    CPPUNIT_ASSERT_MESSAGE("Fail parse 'location/name'", uri2.GetName() == "name" && uri2.GetLoc() == "location");
-    GUriIh uri3("location/Parent1:name");
-    string parent = uri3.Elems().at(1).second;
-    CPPUNIT_ASSERT_MESSAGE("Fail parse 'location/name'", uri2.GetName() == "name" && uri2.GetLoc() == "location" &&
-	    parent == "Parent1");
-	    */
+    printf("\n === Test of uri operations\n");
+    GUri uri_a("Elem:Node1/Elem:Node2");
+    GUri uri_b("Elem:Node3");
+    uri_a += uri_b;
+    string uri_as = uri_a.GetUri();
+    CPPUNIT_ASSERT_MESSAGE("Fail to uri +=", uri_as == "Elem:Node1/Elem:Node2/Elem:Node3");
 }
 
 void Ut_uri::test_UriBase()
