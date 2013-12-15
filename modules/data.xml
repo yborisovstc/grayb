@@ -46,6 +46,12 @@
 	<cont node="Elem:Capsule/ConnPoint:out/Prop:Provided" val="MDIntGet"/>
     </node>
 
+    <node id="DataSIInt" parent="DataS:DataSInt"> 
+	<cont node="Description:D_1" val="Initital data - Integer Data without input."/>
+	<rm node="Elem:Capsule/ConnPoint:inp"/>
+    </node>
+
+
     <!-- Observer iface is declared for purpose of compatibility but isn't supported -->
     <node id="DataSNInt" parent="Incaps:DataS"> 
     	<add node="Elem:Agents"> <node id="AData" parent="DNInt"/> </add>
@@ -58,6 +64,16 @@
 	<cont node="Elem:Capsule/ConnPoint:inp/Prop:Provided" val="MDIntSet"/>
 	<cont node="Elem:Capsule/ConnPoint:out/Prop:Provided" val="MDIntGet"/>
     </node>
+
+    <!-- Terminal data, input only, provided data observer, required gettng data -->
+    <node id="DataTInt" parent="Incaps:DataS"> 
+	<cont node="Description:D_1" val="Terminal data, input only. Monitoring input and update itself"/>
+    	<add node="Elem:Agents"> <node id="ADInt" parent="DInt"/> </add>
+	<cont node="Elem:Capsule/ConnPoint:inp/Prop:Provided" val="MDataObserver"/>
+	<cont node="Elem:Capsule/ConnPoint:inp/Prop:Required" val="MDIntGet"/>
+	<rm node="Elem:Capsule/ConnPoint:out"/>
+    </node>
+
 
 
     <node id="DataInt" parent="IncapsComps:incapsmod/Syst:Incaps"> 

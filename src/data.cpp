@@ -70,6 +70,9 @@ void *DataBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* a
     else if (strcmp(aName, MUpdatable::Type()) == 0) {
 	res = (MUpdatable*) this;
     }
+    else if (strcmp(aName, MDataObserver::Type()) == 0) {
+	res = (MDataObserver*) this;
+    }
     else {
 	res = Elem::DoGetObj(aName, aIncUpHier);
     }
@@ -90,6 +93,12 @@ TBool DataBase::IsLogeventUpdate()
 {
     Elem* node = GetNode("../../Elem:Logspec/DataLogevent:Update");
     return node != NULL;
+}
+
+void DataBase::OnDataChanged()
+{
+    // Update data
+    Update();
 }
 
 
@@ -193,7 +202,10 @@ TBool DInt::Update()
 {
     TBool res = EFalse;
     MDIntGet* inp = NULL;
-    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:Inp");
+    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:inp");
+    if (einp == NULL) {
+	einp = GetNode("../../Elem:Capsule/ConnPoint:Inp");
+    }
     if (einp != NULL) {
 	Vert* vert = einp->GetObj(vert);
 	MVert* pair = *(vert->Pairs().begin());
@@ -207,7 +219,7 @@ TBool DInt::Update()
 		    host->GetUri(fullpath);
 		    Logger()->WriteFormat("[%s]: Updated [%d <- %d]", fullpath.GetUri(ETrue).c_str(), mData, idata);
 		}
-		mData = idata;
+		Set(idata);
 		res = ETrue;
 	    }
 	}

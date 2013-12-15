@@ -20,22 +20,22 @@
     <!-- Output socket -->
     <node id="StOutSocket" parent="SysComps:sysmod/Vert:Socket">
 	<!-- Pin Des observer. Requires DES observer interface to handle activation of the state -->
-	<node id="PinObs" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<node id="PinObs" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
 	    <cont node="Prop:Provided" val="MDesObserver"/>
 	</node>
 	<!-- Pin Data observer. Provides data interface -->
-	<node id="PinData" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<node id="PinData" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
 	</node>
     </node>
 
     <!-- Input socket -->
     <node id="StInpSocket" parent="SysComps:sysmod/Vert:Socket">
 	<!-- Pin Des observer. Requires DES observer interface to handle activation of the state -->
-	<node id="PinObs" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<node id="PinObs" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
 	    <cont node="Prop:Required" val="MDesObserver"/>
 	</node>
 	<!-- Pin Data observer. Provides data interface -->
-	<node id="PinData" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<node id="PinData" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
 	</node>
     </node>
 
@@ -56,18 +56,17 @@
     </node>
 
     <!-- Transition of integer data -->
-    <node id="TrInt" parent="IncapsComps:incapsmod/Syst:Incaps"> 
-
-	<node id="Inp" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+    <node id="TrInt" parent="Syst"> 
+	<node id="Inp" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
 	    <cont node="Prop:Required" val="MDIntGet"/>
 	</node>
-	<node id="Out" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<node id="Out" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
 	    <cont node="Prop:Provided" val="MDIntGet"/>
 	</node>
     </node>
 
     <!-- Transition of integer data : Increment -->
-    <node id="TrIncInt" parent="Incaps:TrInt"> 
+    <node id="TrIncInt" parent="Syst:TrInt"> 
 	<add node="Elem:Agents"> 
 	    <node id="TrAgt" parent="ATrIncInt"> 
 	    </node>
@@ -85,7 +84,7 @@
 	<add node="Elem:Capsule">
 	    <!-- TODO [YB] Do we need dedicated CP or component has to notify it's mgr? -->
 	    <node id="Sync" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
-		<cont node="Prop:Required" val="MDesSyncable"/>
+		<cont node="Prop:Provided" val="MDesSyncable"/>
 	    </node>
 	    <!-- Input -->
 	    <node id="Inp" parent="../../SysComps:sysmod/Vert:Extender"> 
@@ -103,10 +102,10 @@
     </node>
 
     <node id="StateInt" parent="Incaps:State"> 
-	<node id="Confirmed" parent="../../DataComps:datamod/DataSC:DataSCInt">
+	<node id="Confirmed" parent="../DataComps:datamod/DataSC:DataSCInt">
 	</node>
 
-	<node id="Prepared" parent="../../DataComps:datamod/DataSC:DataSCInt">
+	<node id="Prepared" parent="../DataComps:datamod/DataSC:DataSCInt">
 	</node>
 
 	<cont node="Elem:Capsule/Extender:Inp/StInpSocket:Int/ConnPoint:PinData/Prop:Provided" val="MDIntGet"/>
@@ -133,7 +132,20 @@
 
 	<add node="Elem:Capsule">
 	    <node id="Sync" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
-		<cont node="Prop:Required" val="MDesSyncable"/>
+		<cont node="Prop:Provided" val="MDesSyncable"/>
+	    </node>
+	</add>
+    </node>
+
+    <!-- DES ticks source -->
+    <node id="DesTicker" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+	<add node="Elem:Capsule">
+	    <node id="Out" parent="../../sysmod/ConnPoint"> 
+		<cont node="Required" val="MDesSyncable"/>
+	    </node>
+	</add>
+	<add node="Elem:Agents"> 
+	    <node id="DesSyncAgent" parent="ADesSync"> 
 	    </node>
 	</add>
     </node>

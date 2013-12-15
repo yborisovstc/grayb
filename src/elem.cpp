@@ -987,6 +987,7 @@ void Elem::OnCompAdding(Elem& aComp)
     }
 }
 
+// TODO [YB] To include agents as member of elem. This will be more effective
 void Elem::OnCompChanged(Elem& aComp)
 {
     Elem* agents = GetComp("Elem", "Agents");
@@ -999,9 +1000,12 @@ void Elem::OnCompChanged(Elem& aComp)
 	    }
 	}
     }
+    DoOnCompChanged(aComp);
+    /*
     if (!res) {
 	DoOnCompChanged(aComp);
     }
+    */
 }
 
 TBool Elem::OnCompRenamed(Elem& aComp, const string& aOldName)

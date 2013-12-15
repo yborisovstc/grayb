@@ -72,6 +72,7 @@ include_HEADERS = \
 		  mvert.h \
 		  log.h \
 		  menv.h \
+		  mdes.h \
 		  env.h \
 		  guri.h \
 		  mprov.h \

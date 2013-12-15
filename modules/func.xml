@@ -218,7 +218,7 @@
 	    <node id="Inp_WFres" parent="../../Inp_FInt"/> 
 	</add>
 	<!-- Value of Working function argument -->
-	<node id="WFArg" parent="../../datamod/DataSNInt"/>
+	<node id="WFArg" parent="../datamod/DataSNInt"/>
 	<node parent="Edge"> <cont node="P1" val="WFArg/Capsule/out"/> <cont node="P2" val="Capsule/Out_WFarg/Int"/> </node>
     </node>
 
@@ -325,7 +325,7 @@
 	    <node id="Inp_WFres" parent="../../Inp_TFInt"/> 
 	</add>
 	<!-- Value of Working function argument -->
-	<node id="WFArg" parent="../../datamod/DataSUInt"/>
+	<node id="WFArg" parent="../datamod/DataSUInt"/>
 	<node parent="Edge"> <cont node="P1" val="WFArg/Capsule/out"/> <cont node="P2" val="Capsule/Out_WFarg/Int"/> </node>
     </node>
 

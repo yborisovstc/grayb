@@ -319,6 +319,7 @@ void Vert::DoOnCompChanged(Elem& aComp)
 	    }
 	}
     }
+    Elem::DoOnCompChanged(aComp);
 }
 
 

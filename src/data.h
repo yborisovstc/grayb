@@ -4,7 +4,7 @@
 #include "elem.h"
 #include "mdata.h"
 
-class DataBase: public Elem, public MACompsObserver, public MUpdatable
+class DataBase: public Elem, public MACompsObserver, public MUpdatable, public MDataObserver
 {
     public:
 	static const char* Type() { return "DataBase";};
@@ -17,6 +17,8 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
+	// From MDataObserver
+	virtual void OnDataChanged();
     protected:
 	void UpdateProp();
 	void NotifyUpdate();

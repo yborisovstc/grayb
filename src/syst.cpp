@@ -675,5 +675,6 @@ void Syst::DoOnCompChanged(Elem& aComp)
 	    }
 	}
     }
+    Vert::DoOnCompChanged(aComp);
 }
 
