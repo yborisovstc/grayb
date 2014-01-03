@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for reconnecting edge
+     -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Vert">
+    <node id="v1" parent="Vert"/>
+    <node id="v2" parent="Vert"/>
+    <node id="v3" parent="Vert"/>
+    <node parent="Edge"> <cont node="P1" val="Vert:v1"/> <cont node="P2" val="Vert:v2"/> </node>
+</node>
+

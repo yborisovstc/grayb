@@ -143,6 +143,9 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	Elem* GetCompOwningN(const string& aParent, Elem* aElem);
 	Elem* GetRoot() const;
 	TBool IsComp(Elem* aElem);
+	// Checks if elements chromo is attached. Ref UC_019 for details
+	TBool IsChromoAttached() const;
+	Elem* GetAttachingMgr();
 	// Debug helpers
 	Elem* GetNodeS(const char* aUri);
 	TBool IsName(const char* aName);
@@ -161,6 +164,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	virtual const string EType(TBool aShort = ETrue) const;
 	virtual const set<string>& CompsTypes();
 	virtual Elem* GetMan();
+	virtual const Elem* GetMan() const;
 	virtual Elem* GetNode(const string& aUri);
 	virtual Elem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase);
 	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);

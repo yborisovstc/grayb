@@ -73,11 +73,11 @@
 	    </sect3>
 	    <sect3><title>Extended by</title>
 		<itemizedlist>
-		    <listitem><xref linkend="uc_01_02"/></listitem>
+		    <listitem><xref linkend="uc_020"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>
-	<sect2 id="uc_01_02"><title>UC_002 Logging configuration of element</title>
+	<sect2 id="uc_020"><title>UC_020 Logging configuration of element</title>
 	    <sect3><title>Description</title>
 		CLIENT selects some particular element and requests logging configuration - SYSTEM provides CLIENT with means of 
 		logging configuration.
@@ -89,7 +89,7 @@
 	    </sect3>
 	</sect2>
 
-	<sect2 id="uc_graph_01"><title>UC_GRAPH_01 Getting parent nodes available.</title>
+	<sect2 id="uc_021"><title>UC_021 Getting parent nodes available.</title>
 	    <sect3><title>Description</title>
 		CLIENT requests adding new graph node into the graph - SYSTEM offers the following ways to do this:
 		<itemizedlist>
@@ -99,17 +99,25 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
-	<sect2 id="uc_graph_02"><title>UC_GRAPH_02 Creation from spec</title>
+
+	<sect2 id="uc_002"><title>UC_002 Creation from spec</title>
 	    <sect3><title>Description</title>
 		CLIENT requests creation of graph by spec - SYSTEM creates the graph using the spec given.
 	    </sect3>
 	    <sect3><title>Extentions</title>
 		<itemizedlist>
-		    <listitem><xref linkend="uc_graph_02_1"/></listitem>
+		    <listitem><xref linkend="uc_017"/></listitem>
+		    <listitem><xref linkend="uc_016"/></listitem>
 		</itemizedlist>
 	    </sect3>
+	    <sect3><title>Discussion</title>
+		<orderedlist>
+		    <listitem>Actually the spec is the sequence of the changes (mutations) of system. </listitem>
+		</orderedlist>
+	    </sect3>
 	</sect2>
-	<sect2 id="uc_graph_02_1"><title>UC_GRAPH_02.1 Spec of creation </title>
+
+	<sect2 id="uc_017"><title>UC_017 Spec of creation </title>
 	    <sect3><title>Description</title>
 		[Ext UC_GRAPH_02] Graph spec consists of:
 		<itemizedlist>
@@ -119,25 +127,29 @@
 		</itemizedlist>
 		<simpara>The mutation can be as:</simpara>
 		<itemizedlist>
-		    <listitem>Adding node or edge</listitem>
-		    <listitem>Changing of node or edge attributes</listitem>
-		    <listitem>Mutating of graph element if it's representing graph itself.</listitem>
+		    <listitem>Adding node</listitem>
+		    <listitem>Changing of node attributes</listitem>
 		</itemizedlist>
 		<simpara>The spec can be consider as "chromosome" of a graph. The spec can </simpara>
 	    </sect3>
 	    <sect3><title>Extentions</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_018"/></listitem>
+		</itemizedlist>
 	    </sect3>
 	</sect2>
+
 	<sect2 id="uc_graph_03"><title>UC_GRAPH_03 Serialization as spec</title>
 	    <sect3><title>Description</title>
 		CLIENT requests serialization - SYSTEM serialize the graph as graph spec.
 	    </sect3>
 	    <sect3><title>Extentions</title>
 		<itemizedlist>
-		    <listitem><xref linkend="uc_graph_02_1"/></listitem>
+		    <listitem><xref linkend="uc_017"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+
 	<sect2 id="uc_grahp_04"><title>UC_GRAHP_04 Providing ifaces</title>
 	    <sect3><title>Description</title>
 		CLIENT requests element for some interface - SYSTEM ensures elements providing interface or indicates that the interface 
@@ -167,6 +179,7 @@
 		<itemizedlist>
 		    <listitem><xref linkend="uc_06"/></listitem>
 		    <listitem><xref linkend="uc_012"/></listitem>
+		    <listitem><xref linkend="uc_015"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>
@@ -374,6 +387,104 @@
 	    <sect3><title>Clarification</title>
 	    </sect3>
 	</sect2>
+
+	<sect2 id="uc_015"><title>UC_015 Edges correcting when removing vert</title>
+	    <sect3><title>Actors</title>
+		VERT: some vertex witin upper node.
+		EDGE: edge 
+		UPPER_NODE: node that contains VERT and EDGE
+	    </sect3>
+	    <sect3><title>Preconditions</title>
+		EDGE is connected to VERT
+	    </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>Mutation of UPPER_NODE is done that removes VERT, UPPER_NODE disconnects EDGE from VERT so that connection point previously 
+		connected to VERT gets free.</simpara>
+	    </sect3>
+	    <sect3><title>Extends</title>
+		<xref linkend="uc_015"/>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_016"><title>UC_016 Node containing spec keeping all mutations</title>
+	    <sect3><title>Actors</title>
+		CLIENT: some subject using system.
+		NODE: some node of system
+	    </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>CLIENT requests NODE for some series of mutations. NODE performs mutation and stores the mutation series in nodes spec. </simpara>
+	    </sect3>
+	    <sect3><title>Extends</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_002"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<orderedlist>
+		    <listitem>The current implementation (332ab196bc0988f1e471ebfa708f44310b5f9f94) doesn't conform to this usecase. This is because the node deletion 
+		   mutation isn't kept in spec. Instead of this the runtime node removes and also removes its spec, so the parent spec gets missing this child spec. </listitem>
+		</orderedlist>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_018"><title>UC_018 Adding node</title>
+	    <sect3><title>Actors</title>
+		CLIENT: some subject using system.
+		NODE: some node of system
+	    </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>CLIENT requests NODE for mutation by adding the node basing on given parent - NODE performs the mutation </simpara>
+	    </sect3>
+	    <sect3><title>Extends</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_017"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_019"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<orderedlist>
+		</orderedlist>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_019"><title>UC_019 Nodes spec not containing parents spec</title>
+	    <sect3><title>Actors</title>
+		CLIENT: some subject using system.
+		PARENT: some parent node within the system
+		NODE: some node of system
+		CHILD: node created basing on PARENT
+	    </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>CLIENT requests NODE for mutation by adding the node basing on PARENT - NODE performs the mutation so creates new CHILD basing on PARENT, 
+		    NODE doens't include PARENTs spec into CHILDs spec.</simpara>
+	    </sect3>
+	    <sect3><title>Extends</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_018"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<orderedlist>
+		    <listitem>This has serious consequences when building DES. For instance the case discovered when using DES Studio app: parent has some internal node named "Int_Node", 
+			then we create CHILD basing on that parent. From Studio we can the whole run-time structure of child, so we can see that child contains node named "Int_Node".
+			Then we open this "Int_Node" and try to mutate it somehow. As result we can see the mutation in Studio (i.e in DES run-time structure) but when we check
+			the spec we cannot see the mutation we did. This is because the "Int_Node" spec is not included ("attached") to CHILDs spec thus isn't stored.</listitem>
+		    <listitem>This specific means that we need to keep all parents "alive". If some parent is deleted that it will be not possible 
+			to inherit even from the parent's child.</listitem>
+		</orderedlist>
+	    </sect3>
+	</sect2>
+
     </sect1>
 
 </article>

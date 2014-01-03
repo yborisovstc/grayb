@@ -276,6 +276,13 @@ string GUri::DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort) const
     return res;
 }
 
+GUri GUri::operator+(const GUri& aUri)
+{
+    GUri res(*this);
+    res.Append(aUri);
+    return res;
+}
+
 GUri& GUri::operator+=(const GUri& aUri)
 {
     Append(aUri);

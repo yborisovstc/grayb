@@ -59,6 +59,7 @@ class Vert: public Elem, public MVert
 	void RemoveFromMap(MEdge* aEdge, const TCkey& aKey);
     protected:
 	set<MVert*> iPairs;
+	// TODO [YB] Do we need map with ECkey? There is no edges type variation at the moment.
 	multimap<TCkey, MEdge*> iMEdges;
 };
 

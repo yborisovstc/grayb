@@ -48,7 +48,7 @@ class Edge: public Elem, public MEdge
 	virtual Base* EBase();
 	virtual const Base* EBase() const;
 	virtual TBool Connect();
-	virtual void Disconnect();
+	virtual void Disconnect(MVert* aPoint = NULL);
 	virtual MVert* Pair(const MVert* aPoint);
 	virtual MVert* Point1() const;
 	virtual MVert* Point2() const;
@@ -61,6 +61,8 @@ class Edge: public Elem, public MEdge
     protected:
 	// Sign of inited
 	static bool iInit;
+	// Just one-way relation to vert. It does't mean the full point to point relation
+	// is established.
 	MVert* iPoint1;
 	MVert* iPoint2;
 };

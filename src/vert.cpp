@@ -166,6 +166,21 @@ void Vert::UpdateIfi(const string& aName, const RqContext* aCtx)
 
 Vert::~Vert()
 {
+    // Solution for UC_015: vertex "locally" (w/o involving upper vertex) disconnects from edges, 
+    // not affecting edges chromo but only runtime data. This is aligned with common concept that disables internal mutations.
+    // So edge still will be pointing to deleted vertex causing error.
+    //
+    // Cache edges first because disconnecting will affect iMEdges
+    vector<MEdge*> edges;
+    pair<TEdgesMap::iterator, TEdgesMap::iterator> range = iMEdges.equal_range(TCkey("*", "*"));
+    for (TEdgesMap::iterator it = range.first; it != range.second; it++) {
+	edges.push_back(it->second);
+    }
+    // Disconnect edges
+    for (vector<MEdge*>::iterator ite = edges.begin(); ite != edges.end(); ite++) {
+	MEdge* edge = *ite;
+	edge->Disconnect(this);
+    }
     // TODO [YB] To add notif of edge about deleting
     iMEdges.clear();
     iPairs.clear();

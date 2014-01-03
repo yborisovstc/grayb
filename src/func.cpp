@@ -461,6 +461,38 @@ TBool AFunc::IsLogeventUpdate()
 }
 
 
+// Integer Function agent base wo caching
+
+string AFuncInt::PEType()
+{
+    return AFunc::PEType() + GUri::KParentSep + Type();
+}
+
+AFuncInt::AFuncInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+{
+    SetEType(Type(), AFunc::PEType());
+    SetParent(Type());
+}
+
+void *AFuncInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName, MDIntGet::Type()) == 0) {
+	res = (MDIntGet*) this;
+    }
+    else {
+	res = AFunc::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void AFuncInt::GetCont(string& aCont)
+{
+}
+
 
 // Function agent base wo caching
 

@@ -209,7 +209,7 @@ TBool Edge::Connect()
     return res;
 }
 
-void Edge::Disconnect()
+void Edge::Disconnect(MVert* aPoint)
 {
     if (iPoint1 != NULL) {
 	iPoint1->Disconnect(this);
@@ -217,8 +217,12 @@ void Edge::Disconnect()
     if (iPoint2 != NULL) {
 	iPoint2->Disconnect(this);
     }
-    iPoint1 = NULL;
-    iPoint2 = NULL;
+    if (aPoint == NULL || aPoint == iPoint1) {
+	iPoint1 = NULL;
+    }
+    if (aPoint == NULL || aPoint == iPoint2) {
+	iPoint2 = NULL;
+    }
 }
 
 MVert* Edge::Pair(const MVert* aPoint)

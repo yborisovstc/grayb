@@ -202,7 +202,13 @@ Elem::~Elem()
 	iMut = NULL;
     }
     if (iChromo != NULL) {
-	delete iChromo;
+	// Remove chromo only if it is deattached from parent's chromo. Ref UC_016. Normally the parent does
+	// not deattach the childs chromo even if the child is deleted. This allows to keep node creation 
+	// mutation in parents chromo even if the child is deleted then. 
+	ChromoNode::Iterator pint = iChromo->Root().Parent();
+	if (pint == iChromo->Root().End()) {
+	    delete iChromo;
+	}
 	iChromo = NULL;
     }
 }
@@ -238,6 +244,11 @@ void Elem::SetObserver(MCompsObserver* aObserver)
 }
 
 Elem* Elem::GetMan()
+{
+    return iMan;
+}
+
+const Elem* Elem::GetMan() const
 {
     return iMan;
 }
@@ -431,30 +442,6 @@ Elem* Elem::GetNodeS(const char* aUri)
     return GetNode(aUri);
 }
 
-
-/*
-   Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
-   {
-   Elem* res = NULL;
-   GUri::TElem elem = *aPathBase;
-   if (elem.first == GUri::KTypeElem) {
-   if (elem.second == "..") {
-   res = iMan->GetNode(aUri, ++aPathBase);
-   }
-   else {
-   res = GetComp(elem.first, elem.second);
-   }
-   }
-   else  {
-   res = GetNode(aUri, aPathBase);
-   }
-   if (res != NULL && aPathBase + 1 != aUri.Elems().end()) {
-   res = res->GetNode(aUri, ++aPathBase);
-   }
-   return res;
-   }
-   */
-
 Elem* Elem::GetNodeLoc(const GUri::TElem& aElem)
 {
     return GetComp(aElem.first, aElem.second);
@@ -551,7 +538,10 @@ TBool Elem::MergeMutation(const ChromoNode& aSpec)
     TBool res = EFalse;
     ChromoNode& chrroot = iChromo->Root();
     TNodeType rnotype = aSpec.Type();
-    if (rnotype == ENt_Move) {
+    // TODO Disabling merge because it's not working for non-local movement
+    // ref MergeMutMove. To consider rework merge algorithm
+    if (EFalse) {
+    //if (rnotype == ENt_Move) {
 	res = MergeMutMove(aSpec);
     }
     else {
@@ -561,6 +551,9 @@ TBool Elem::MergeMutation(const ChromoNode& aSpec)
     return res;
 }
 
+// TODO This merge algorithm doesn't work for movement non local nodes
+// for instance movement components in owned node.
+// In this case more complicated algorithm is required to merge "add" mutations
 TBool Elem::MergeMutMove(const ChromoNode& aSpec)
 {
     TBool res = EFalse;
@@ -795,6 +788,7 @@ const set<string>& Elem::CompsTypes()
     return iCompsTypes;
 }
 
+// Note that parents chromo is not copied to heirs chromo, ref UC_019
 Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont */)
 {
     Elem* heir = NULL;
@@ -807,8 +801,10 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
     if (!sparent.empty()) {
 	if (prnturi.Scheme().empty()) {
 	    // Local parent
-	    // Correct uri because parent uri is relative to the man context
-	    prnturi.PrependElem("node", "..");
+	    // If uri is not absolute then correct uri because parent uri is relative to the man context
+	    if (!prnturi.Elems().begin()->second.empty()) {
+		prnturi.PrependElem("node", "..");
+	    }
 	    parent = GetNode(prnturi);
 	}
 	else {
@@ -838,7 +834,7 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
     // Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo
     ChromoNode root = iChromo->Root();
     heir->SetMutation(root);
-    // Mutate run-time only - don't update chromo
+    // Mutate run-time only - !! DON'T UPDATE CHROMO, ref UC_019
     heir->Mutate(ETrue);
     // Mutated with parent's own chromo - so panent's name is the type now. Set also the parent, but it will be updated further
     heir->SetEType(Name(), EType(EFalse));
@@ -961,8 +957,12 @@ void Elem::OnCompDeleting(Elem& aComp)
     }
     // Handle for direct child
     if (aComp.GetMan() == this) {
+	// Don't deattach the childs chromo. Ref UC_016. The childs chromo (childs creation mutation) needs
+	// to be kept in parents chromo.
+	/*
 	// Deattach the comp's chromo
 	iChromo->Root().RmChild(aComp.Chromos().Root(), ETrue);
+	*/
 	// Unregister first
 	UnregisterComp(&aComp);
 	// Then remove from comps
@@ -1155,10 +1155,42 @@ TBool Elem::IsLogeventCreOn()
 }
 
 // TODO [YB] To implement with usage of URI but not just string
+// TODO [YB] The problem is more serious: we need to check the full type
+// (all parents chain) to detect inheritance.
 TBool Elem::IsHeirOf(const string& aParent) const
 {
     int pos = iEType.find(aParent);
     return pos != string::npos;
+}
+
+// Checks if elements chromo is attached. Ref UC_019 for details
+TBool Elem::IsChromoAttached() const
+{
+    bool res = true;
+    if (iMan != NULL) {
+	ChromoNode root = iChromo->Root();
+	ChromoNode::Iterator rparentit = root.Parent();
+	if (rparentit != root.End()) {
+	    ChromoNode rparent = *rparentit;
+	    res = (rparent.Type() == ENt_Node);
+	}
+    }
+    return res;
+}
+
+Elem* Elem::GetAttachingMgr()
+{
+    Elem* res = NULL;
+    Elem* cand = this;
+    while (res == NULL && cand != NULL) {
+	if (cand->IsChromoAttached()) {
+	    res = cand;
+	}
+	else {
+	    cand = cand->GetMan();
+	}
+    }
+    return res;
 }
 
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)

@@ -8,8 +8,13 @@
 
 ATrBase::ATrBase(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), Elem::PEType());
     SetParent(Type());
+}
+
+string ATrBase::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
 }
 
 void *ATrBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -27,8 +32,13 @@ void *ATrBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aC
 // Agent base of Int function
 ATrInt::ATrInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrBase(aName, aMan, aEnv), mData(0)
 {
-    SetEType(Type());
+    SetEType(Type(), ATrBase::PEType());
     SetParent(Type());
+}
+
+string ATrInt::PEType()
+{
+    return ATrBase::PEType() + GUri::KParentSep + Type();
 }
 
 void *ATrInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -64,8 +74,13 @@ MDIntGet* ATrInt::GetInp(const string& aInpName)
 
 ATrIncInt::ATrIncInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
-    SetEType(Type());
+    SetEType(Type(), ATrInt::PEType());
     SetParent(Type());
+}
+
+string ATrIncInt::PEType()
+{
+    return ATrInt::PEType() + GUri::KParentSep + Type();
 }
 
 void *ATrIncInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -92,8 +107,13 @@ TInt ATrIncInt::Value()
 
 StateAgent::StateAgent(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
 {
-    SetEType(Type());
+    SetEType(Type(), Elem::PEType());
     SetParent(Type());
+}
+
+string StateAgent::PEType()
+{
+    return StateAgent::PEType() + GUri::KParentSep + Type();
 }
 
 void *StateAgent::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -224,9 +244,14 @@ void StateAgent::OnActivated()
 
 /* DES base agent */
 
+string ADes::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
+
 ADes::ADes(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
 {
-    SetEType(Type());
+    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 

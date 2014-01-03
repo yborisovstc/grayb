@@ -10,6 +10,7 @@ class ATrBase: public Elem
 {
     public:
 	static const char* Type() { return "ATrBase";};
+	static string PEType();
 	ATrBase(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -20,6 +21,7 @@ class ATrInt: public ATrBase, public MDIntGet
 {
     public:
 	static const char* Type() { return "ATrInt";};
+	static string PEType();
 	ATrInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -34,6 +36,7 @@ class ATrIncInt: public ATrInt
 {
     public:
 	static const char* Type() { return "ATrIncInt";};
+	static string PEType();
 	ATrIncInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -46,6 +49,7 @@ class StateAgent: public Elem, public MDesSyncable, public MDesObserver
 {
     public:
 	static const char* Type() { return "StateAgent";};
+	static string PEType();
 	StateAgent(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -75,6 +79,7 @@ class ADes: public Elem, public MDesSyncable, public MDesObserver
 {
     public:
 	static const char* Type() { return "ADes";};
+	static string PEType();
 	ADes(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);

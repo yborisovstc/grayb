@@ -110,6 +110,7 @@ class GUri: public GUriBase
     public:
 	GUri(const string& aGUri);
 	GUri();
+	GUri operator+(const GUri& aUri);
 	GUri& operator+=(const GUri& aUri);
     protected:
 	virtual string DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort = EFalse) const;

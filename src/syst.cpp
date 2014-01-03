@@ -538,32 +538,37 @@ TBool ASocket::IsCompatible(Elem* aPair, TBool aExt)
     TBool ext = aExt;
     Elem *cp = aPair;
     MCompatChecker* pchkr = aPair->GetObj(pchkr);
-    __ASSERT(pchkr != NULL);
-    Elem* ecp = pchkr->GetExtd(); 
-    // Checking if the pair is Extender
-    if (ecp != NULL ) {
-	ext = !ext;
-	cp = ecp;
-    }
-    if (cp != NULL) {
-	Elem* host = iMan->GetMan();
-	for (vector<Elem*>::const_iterator it = host->Comps().begin(); it != host->Comps().end() && res; it++) {
-	    Elem *comp = (*it);
-	    if (comp->Name() != "Agents" && comp->Name() != "Logspec") {
-		MCompatChecker* checker = comp->GetObj(checker);
-		if (checker != NULL) {
-		    GUri uri;
-		    uri.AppendElem(comp->EType(), comp->Name());
-		    Elem *pcomp = cp->GetNode(uri);
-		    if (pcomp != NULL) {
-			res = checker->IsCompatible(pcomp, ext);
-		    }
-		    else {
-			res = EFalse;
+    if (pchkr != NULL) {
+	Elem* ecp = pchkr->GetExtd(); 
+	// Checking if the pair is Extender
+	if (ecp != NULL ) {
+	    ext = !ext;
+	    cp = ecp;
+	}
+	if (cp != NULL) {
+	    Elem* host = iMan->GetMan();
+	    for (vector<Elem*>::const_iterator it = host->Comps().begin(); it != host->Comps().end() && res; it++) {
+		Elem *comp = (*it);
+		if (comp->Name() != "Agents" && comp->Name() != "Logspec") {
+		    MCompatChecker* checker = comp->GetObj(checker);
+		    if (checker != NULL) {
+			GUri uri;
+		//	uri.AppendElem(comp->EType(), comp->Name());
+			uri.AppendElem("*", comp->Name());
+			Elem *pcomp = cp->GetNode(uri);
+			if (pcomp != NULL) {
+			    res = checker->IsCompatible(pcomp, ext);
+			}
+			else {
+			    res = EFalse;
+			}
 		    }
 		}
 	    }
 	}
+    }
+    else {
+	res = EFalse;
     }
     return res;
 }

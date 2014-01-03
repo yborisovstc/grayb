@@ -125,9 +125,13 @@ TNodeType ChromoMdlX::GetType(const string& aId)
 
 TNodeType ChromoMdlX::GetType(const void* aHandle)
 {
+    TNodeType res = ENt_Unknown;
     xmlNodePtr node = (xmlNodePtr) aHandle;
-    const char* type_name = (const char*) node->name;
-    return GUri::NodeType(type_name);
+    if (node->name != NULL) {
+	const char* type_name = (const char*) node->name;
+	res = GUri::NodeType(type_name);
+    }
+    return res;
 }
 
 void *ChromoMdlX::GetFirstChild(const void *aHandle, TNodeType aType)

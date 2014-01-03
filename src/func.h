@@ -102,6 +102,7 @@ class ACountCritInt: public AFunInt
 };
 
 // Function agent base without result caching
+// It implements elem content methods in purpose of monitoring the value from client side
 class AFunc: public Elem, public MACompsObserver, public MDataObserver
 {
 
@@ -118,6 +119,20 @@ class AFunc: public Elem, public MACompsObserver, public MDataObserver
     protected:
 	void NotifyUpdate();
 	TBool IsLogeventUpdate();
+};
+
+class AFuncInt: public AFunc, public MDIntGet
+{
+    public:
+	static const char* Type() { return "AFuncInt";};
+	static string PEType();
+	AFuncInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MDIntGet
+	virtual TInt Value();
+	// From MElem
+	virtual void GetCont(string& aCont); 
 };
 
 class AFAddInt: public AFunc, public MDIntGet
