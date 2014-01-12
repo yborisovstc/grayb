@@ -282,6 +282,12 @@ Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
     return TIfRange(beg, end);
 }
 
+void* Elem::GetSIfiC(const string& aName, Base* aRequestor)
+{
+    RqContext ctx(aRequestor);
+    return GetSIfi(aName, &ctx);
+}
+
 void* Elem::GetSIfi(const string& aName, const RqContext* aCtx)
 {
     void* res = NULL;
@@ -323,8 +329,18 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
     TICacheKeyF keyf(aName, aReq);
     pair<TICacheKey, void*> val(TICacheKey(keyf, aProv), aVal);
     TICacheCIter res = iICache.insert(val);
-    pair<TICacheKeyF, TICacheKey> qr(keyf, res->first);
-    iICacheQF.insert(qr);
+    // Push to query map if not already exists
+    bool exists = false;
+    TICacheQFRange frange = iICacheQF.equal_range(keyf);  
+    for (TICacheQFIter it = frange.first; it != frange.second && !exists; it++) {
+	if (it->second == res->first) {
+	    exists = ETrue;
+	}
+    }
+    if (!exists) {
+	pair<TICacheKeyF, TICacheKey> qr(keyf, res->first);
+	iICacheQF.insert(qr);
+    }
 }
 
 void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg)
@@ -428,7 +444,12 @@ Elem* Elem::GetNode(const GUri& aUri)
 	if (it->second.empty()) {
 	    Elem* root = GetRoot();
 	    it++;
-	    res = root->GetNode(aUri, ++it);
+	    if (++it != aUri.Elems().end()) {
+		res = root->GetNode(aUri, it);
+	    }
+	    else {
+		res = root;
+	    }
 	}
 	else {
 	    res = GetNode(aUri, it); 
@@ -631,7 +652,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
     }
 }
 
-TBool Elem::ChangeCont(const string& aVal) 
+TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly) 
 {
     return EFalse;
 }
@@ -686,7 +707,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec)
 	node = GetNode(unode);
     }
     if (node != NULL) {
-	res = node->ChangeCont(mval);
+	res = node->ChangeCont(mval, EFalse);
 	if (!res) {
 	    Logger()->WriteFormat("ERROR: Changing [%s] - failure", snode.c_str());
 	}
@@ -988,6 +1009,13 @@ void Elem::OnCompAdding(Elem& aComp)
 }
 
 // TODO [YB] To include agents as member of elem. This will be more effective
+// TODO [YB] The current scheme doesn't allow element to get notification of related node change.
+// The only notification thry hier can be get via MCompsObserver, but not relation thru edges.
+// Thus is node A is related to node B via the chain of edges, the change of B or even the change
+// of the relation chain cannot be observed by node A. This is the serious lack. This is because the 
+// If providing mechanism is used instead of full relations tracking in Vert. So node A has Ifaces cache
+// that includes ifaces from node B but there is no mechanism of the changes in the cache. To consider
+// to implement cache update notification. Ref UC_010 
 void Elem::OnCompChanged(Elem& aComp)
 {
     Elem* agents = GetComp("Elem", "Agents");
@@ -1000,12 +1028,19 @@ void Elem::OnCompChanged(Elem& aComp)
 	    }
 	}
     }
-    DoOnCompChanged(aComp);
     /*
+    DoOnCompChanged(aComp);
+    */
     if (!res) {
 	DoOnCompChanged(aComp);
     }
-    */
+    // Propagate notification to upper level
+    if (iMan != NULL) {
+	iMan->OnCompChanged(aComp);
+    }
+    if (iObserver != NULL) {
+	iObserver->OnCompChanged(aComp);
+    }
 }
 
 TBool Elem::OnCompRenamed(Elem& aComp, const string& aOldName)
@@ -1020,14 +1055,18 @@ TBool Elem::OnCompRenamed(Elem& aComp, const string& aOldName)
     return res;
 }
 
-void Elem::DoOnCompChanged(Elem& aComp)
+void Elem::OnContentChanged(Elem& aComp)
 {
     if (iMan != NULL) {
-	iMan->OnCompChanged(aComp);
+	iMan->OnContentChanged(aComp);
     }
     if (iObserver != NULL) {
-	iObserver->OnCompChanged(aComp);
+	iObserver->OnContentChanged(aComp);
     }
+}
+
+void Elem::DoOnCompChanged(Elem& aComp)
+{
 }
 
 Elem* Elem::GetCompOwning(const string& aParent, Elem* aElem)
@@ -1092,6 +1131,13 @@ void Elem::GetUri(GUri& aUri, Elem* aTop)
 	    aUri.PrependElem("", "");
 	}
     }
+}
+
+string Elem::GetUri(Elem* aTop)
+{
+    GUri uri;
+    GetUri(uri, aTop);
+    return uri.GetUri();
 }
 
 Elem* Elem::GetRoot() const
@@ -1164,6 +1210,8 @@ TBool Elem::IsHeirOf(const string& aParent) const
 }
 
 // Checks if elements chromo is attached. Ref UC_019 for details
+// The whole path to root needs to be checked because it is possible
+// that the comps chromo is attached but some its mgr is deattached
 TBool Elem::IsChromoAttached() const
 {
     bool res = true;
@@ -1173,6 +1221,9 @@ TBool Elem::IsChromoAttached() const
 	if (rparentit != root.End()) {
 	    ChromoNode rparent = *rparentit;
 	    res = (rparent.Type() == ENt_Node);
+	}
+	if (res) {
+	    res = iMan->IsChromoAttached();
 	}
     }
     return res;

@@ -56,6 +56,7 @@ void *ATrInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCt
     return res;
 }
 
+/*
 MDIntGet* ATrInt::GetInp(const string& aInpName)
 {
     MDIntGet* res = NULL;
@@ -71,6 +72,35 @@ MDIntGet* ATrInt::GetInp(const string& aInpName)
     }
     return res;
 }
+*/
+
+MDIntGet* ATrInt::GetInp(const string& aInpName)
+{
+    MDIntGet* res = NULL;
+    TIfRange rg = GetInpRg(aInpName);
+    if (rg.first != rg.second) {
+	res = (MDIntGet*) (*rg.first);
+    }
+    return res;
+}
+
+Elem::TIfRange ATrInt::GetInpRg(const string& aInpName)
+{
+    TIfRange res;
+    string uri = "../../" + aInpName;
+    Elem* einp = GetNode(uri);
+    if (einp != NULL) {
+	RqContext cont(this);
+	res = einp->GetIfi(MDIntGet::Type(), &cont);
+    }
+    else {
+	Logger()->Write(MLogRec::EErr, this, "Cannot get input [%s]", uri.c_str());
+    }
+    return res;
+}
+
+
+// Agent of function "Increment of Int data"
 
 ATrIncInt::ATrIncInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
@@ -98,10 +128,149 @@ void *ATrIncInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* 
 TInt ATrIncInt::Value()
 {
     MDIntGet* mget = GetInp("Inp");
-    TInt val = mget->Value();
-    mData = val + 1;
+    if (mget != NULL) {
+	TInt val = mget->Value();
+	mData = val + 1;
+    }
+    else {
+	Logger()->Write(MLogRec::EErr, this, "Cannot get data from input [Inp]");
+    }
     return mData;
 }
+
+// Agent of function "Subtraction of Int data"
+
+ATrSubInt::ATrSubInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
+{
+    SetEType(Type(), ATrInt::PEType());
+    SetParent(Type());
+}
+
+string ATrSubInt::PEType()
+{
+    return ATrInt::PEType() + GUri::KParentSep + Type();
+}
+
+void *ATrSubInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = ATrInt::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+TInt ATrSubInt::Value()
+{
+    TInt res = 0;
+    TIfRange range = GetInpRg("Inp");
+    for (IfIter it = range.first; it != range.second; it++) {
+	MDIntGet* dget = (MDIntGet*) (*it);
+	if (dget != NULL) {
+	    res += dget->Value();
+	}
+    }
+    range = GetInpRg("Inp_Sub");
+    for (IfIter it = range.first; it != range.second; it++) {
+	MDIntGet* dget = (MDIntGet*) (*it);
+	if (dget != NULL) {
+	    res -= dget->Value();
+	}
+    }
+    if (res != mData) {
+	mData = res;
+    }
+    return res;
+}
+
+
+// Agent function "Multiplying of Int data"
+
+ATrMplInt::ATrMplInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
+{
+    SetEType(Type(), ATrInt::PEType());
+    SetParent(Type());
+}
+
+string ATrMplInt::PEType()
+{
+    return ATrInt::PEType() + GUri::KParentSep + Type();
+}
+
+void *ATrMplInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = ATrInt::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+TInt ATrMplInt::Value()
+{
+    TInt res = 1;
+    TIfRange range = GetInpRg("Inp");
+    for (IfIter it = range.first; it != range.second; it++) {
+	MDIntGet* dget = (MDIntGet*) (*it);
+	if (dget != NULL) {
+	    res *= dget->Value();
+	}
+    }
+    return res;
+}
+
+// Agent function "Dividing of Int data"
+
+ATrDivInt::ATrDivInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
+{
+    SetEType(Type(), ATrInt::PEType());
+    SetParent(Type());
+}
+
+string ATrDivInt::PEType()
+{
+    return ATrInt::PEType() + GUri::KParentSep + Type();
+}
+
+void *ATrDivInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = ATrInt::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+TInt ATrDivInt::Value()
+{
+    TInt res = 0;
+    MDIntGet* dd = GetInp("Inp");
+    MDIntGet* dr = GetInp("Inp_DR");
+    if (dd != NULL && dr != NULL) {
+	TInt drv = dr->Value();
+	if (drv != 0) {
+	    res = dd->Value() / drv;
+	}
+	else {
+	    Logger()->Write(MLogRec::EErr, this, "Divider value is zero");
+	}
+    }
+    else {
+	Logger()->Write(MLogRec::EErr, this, "Inputs aren't exists");
+    }
+    return res;
+}
+
+
 
 /* State base agent */
 
@@ -195,14 +364,9 @@ void StateAgent::Confirm()
 	    if (upd->Update()) {
 		// Activate dependencies
 		Elem* eobs = GetNode("../../Elem:Capsule/Extender:Out/StOutSocket:Int/ConnPoint:PinObs");
-		/*
-		MDesObserver* mobs = eobs->GetObj(mobs);
-		if (mobs != NULL) {
-		    mobs->OnUpdated();
-		}
-		*/
 		RqContext ctx(this);
 		// Request w/o context because of possible redirecting request to itself
+		// TODO [YB] To check if iterator is not damage during the cycle, to cache to vector if so
 		TIfRange range = eobs->GetIfi(MDesObserver::Type());
 		for (IfIter it = range.first; it != range.second; it++) {
 		    MDesObserver* mobs = (MDesObserver*) (*it);

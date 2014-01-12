@@ -152,9 +152,11 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	TBool IsHeirOf(const string& aParent) const;
 	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
 	void GetUri(GUri& aUri, Elem* aTop = NULL);
+	string GetUri(Elem* aTop = NULL);
 	virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
 	virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
 	// Iface provider
+	void* GetSIfiC(const string& aName, Base* aRequestor);
 	void* GetSIfi(const string& aName, const RqContext* aCtx = NULL);
 	void* GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert = ETrue);
 	TIfRange GetIfi(const string& aName, const RqContext* aCtx = NULL);
@@ -172,7 +174,8 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	// of ChangeAttr to Rename 
 	virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal);
 	virtual void GetCont(string& aCont); 
-	virtual TBool ChangeCont(const string& aVal); 
+	//virtual TBool ChangeCont(const string& aVal); 
+	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue); 
 	virtual TBool AddNode(const ChromoNode& aSpec);
 	virtual TBool RmNode(const GUri& aUri);
 	virtual TBool MoveNode(const ChromoNode& aSpec);
@@ -182,6 +185,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	virtual void OnCompAdding(Elem& aComp);
 	virtual void OnCompChanged(Elem& aComp);
 	virtual TBool OnCompRenamed(Elem& aComp, const string& aOldName);
+	virtual void OnContentChanged(Elem& aComp);
 	// From MMutable
 	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime);
 	// Ifaces cache

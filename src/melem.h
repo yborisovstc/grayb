@@ -16,6 +16,8 @@ class MCompsObserver
 	virtual void OnCompDeleting(Elem& aComp) = 0;
 	virtual void OnCompAdding(Elem& aComp) = 0;
 	virtual void OnCompChanged(Elem& aComp) = 0;
+	// For run-time only. Use OnCompChanged when the content is changed via mutation
+	virtual void OnContentChanged(Elem& aComp) = 0;
 };
 
 // Agent - comps observer
@@ -40,7 +42,7 @@ class MElem
 	virtual MElem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase) = 0;
 	virtual Elem* GetNodeLoc(const GUri::TElem& aElem) = 0;
 	virtual void GetCont(string& aCont) = 0; 
-	virtual TBool ChangeCont(const string& aVal) = 0; 
+	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue) = 0; 
 	virtual TBool AddNode(const ChromoNode& aSpec) = 0;
 	virtual TBool MoveNode(const ChromoNode& aSpec) = 0;
 };

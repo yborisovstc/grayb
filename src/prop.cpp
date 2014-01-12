@@ -29,12 +29,16 @@ const string& Prop::Value() const
     return iValue;
 }
 
-TBool Prop::ChangeCont(const string& aVal)
+TBool Prop::ChangeCont(const string& aVal, TBool aRtOnly)
 {
     TBool res = ETrue;
     if (aVal != iValue) {
 	iValue = aVal;
-	iMan->OnCompChanged(*this);
+	if (aRtOnly) {
+	    iMan->OnContentChanged(*this);
+	} else {
+	    iMan->OnCompChanged(*this);
+	}
     }
     return res;
 }

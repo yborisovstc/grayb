@@ -3,6 +3,7 @@
 #include <elem.h>
 #include <mvert.h>
 #include <mdata.h>
+#include <medge.h>
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -134,5 +135,25 @@ void Ut_conn::test_Reconn()
     set<MVert*>& pairs = mv2-> Pairs();
     int pnum = pairs.size();
     CPPUNIT_ASSERT_MESSAGE("Wrong number of v2 pairs after disconnection", pnum == 0);
-
+    // Verify edges point previously connected to v1 is disconnected
+    Elem* ee1 = root->GetNode("e1");
+    MEdge* me1 = ee1->GetObj(me1);
+    MVert* p1 = me1->Point1();
+    CPPUNIT_ASSERT_MESSAGE("Edges Point1 is not disconnected", p1 == 0);
+    // Delete v3
+    smutr = root->Mutation().Root();
+    mutn = smutr.AddChild(ENt_Rm);
+    mutn.SetAttr(ENa_MutNode, "v3");
+    root->Mutate();
+    // Verify the connection pair is disconnected
+    Elem* ev5 = root->GetNode("v5");
+    MVert* mv5 = ev5->GetObj(mv5);
+    set<MVert*>& pairs5 = mv5-> Pairs();
+    int pnum5 = pairs5.size();
+    CPPUNIT_ASSERT_MESSAGE("Wrong number of v5 pairs after disconnection", pnum5 == 0);
+    // Verify edges point previously connected to v1 is disconnected
+    Elem* ee2 = root->GetNode("e2");
+    MEdge* me2 = ee2->GetObj(me2);
+    MVert* p2_2 = me2->Point2();
+    CPPUNIT_ASSERT_MESSAGE("Edges Point2 is not disconnected within e2", p2_2 == 0);
 }

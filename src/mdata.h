@@ -3,6 +3,7 @@
 
 #include "plat.h"
 #include <set>
+#include <vector>
 
 using namespace std;
 

@@ -22,6 +22,8 @@
 		<revremark>Added <xref linkend="uc_03"/></revremark> </revision>
 	    <revision> <revnumber>0.03</revnumber> <date>28-Mar-2013</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_grahp_04"/></revremark> </revision>
+	    <revision> <revnumber>0.04</revnumber> <date>11-Jan-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="uc_022"/>, <xref linkend="uc_024"/>, <xref linkend="uc_025"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -32,6 +34,9 @@
 
     <sect1 id="nimp"><title>Treaceability: not implemented yet</title>
 	<itemizedlist>
+	    <listitem> <xref linkend="uc_025"/>, ref discussion <xref linkend="uc_025_disc_notsec"/> </listitem>
+	    <listitem> <xref linkend="uc_024"/> </listitem>
+	    <listitem> <xref linkend="uc_010"/> </listitem>
 	    <listitem> <xref linkend="uc_014"/> </listitem>
 	</itemizedlist>
     </sect1>
@@ -59,12 +64,16 @@
 	    <sect3><title>Extends</title>
 	    </sect3>
 	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem></listitem>
+		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Discussion</title>
 	    </sect3>
 	    <sect3><title>Clarification</title>
 	    </sect3>
 	</sect2>
+
 	<sect2 id="uc_01"><title>UC_01 Logging</title>
 	    <sect3><title>Description</title>
 		CLIENT requests logging and specifies logging parameters - SYSTEM provides CLIENT with logging data
@@ -77,6 +86,7 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+
 	<sect2 id="uc_020"><title>UC_020 Logging configuration of element</title>
 	    <sect3><title>Description</title>
 		CLIENT selects some particular element and requests logging configuration - SYSTEM provides CLIENT with means of 
@@ -119,7 +129,7 @@
 
 	<sect2 id="uc_017"><title>UC_017 Spec of creation </title>
 	    <sect3><title>Description</title>
-		[Ext UC_GRAPH_02] Graph spec consists of:
+		Graph spec consists of:
 		<itemizedlist>
 		    <listitem>Name</listitem>
 		    <listitem>Parent</listitem>
@@ -128,25 +138,39 @@
 		<simpara>The mutation can be as:</simpara>
 		<itemizedlist>
 		    <listitem>Adding node</listitem>
-		    <listitem>Changing of node attributes</listitem>
+		    <listitem>Removing node</listitem>
+		    <listitem>Renaming node</listitem>
+		    <listitem>Changing content of node</listitem>
 		</itemizedlist>
 		<simpara>The spec can be consider as "chromosome" of a graph. The spec can </simpara>
+	    </sect3>
+	    <sect3><title>Extends</title>
+		<xref linkend="uc_002"/>
 	    </sect3>
 	    <sect3><title>Extentions</title>
 		<itemizedlist>
 		    <listitem><xref linkend="uc_018"/></listitem>
 		</itemizedlist>
 	    </sect3>
+	    <sect3><title>Discussion</title>
+		<simpara>In fact the spec can be considered as series of mutation, because of adding node with given name and parent also is mutation of upper level node in the native hierarchy.</simpara>
+	    </sect3>
 	</sect2>
 
-	<sect2 id="uc_graph_03"><title>UC_GRAPH_03 Serialization as spec</title>
+	<sect2 id="uc_023"><title>UC_023 Serialization as spec</title>
 	    <sect3><title>Description</title>
-		CLIENT requests serialization - SYSTEM serialize the graph as graph spec.
+		CLIENT requests serialization - SYSTEM serialize the graph as graph spec, CLIENT request re-creating SYSTEM from serialized spec (de-serialization) - SYSTEM is re-created.
+	    </sect3>
+	    <sect3><title>Extends</title>
+		<xref linkend="uc_002"/>
 	    </sect3>
 	    <sect3><title>Extentions</title>
 		<itemizedlist>
 		    <listitem><xref linkend="uc_017"/></listitem>
 		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<simpara></simpara>
 	    </sect3>
 	</sect2>
 
@@ -163,6 +187,7 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+
 	<sect2 id="uc_03"><title>UC_03 Connection</title>
 	    <sect3><title>Description</title>
 		CLIENT requests connecting two systems - SYSTEM allows connecting systems so one system gets able to communicate to another.
@@ -183,6 +208,7 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+
 	<sect2 id="uc_06"><title>UC_06 Extention</title>
 	    <sect3><title>Description</title>
 		CLIENT requests to exhibit iface of  some internal component of the system - SYSTEM provides this via having CP that on 
@@ -200,6 +226,7 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+
 	<sect2 id="uc_007"><title>UC_007 CPs providing interfaces</title>
 	    <sect3><title>Description</title>
 		CLIENT requests CP for some interface - CP provides only interface that is specified as provided.
@@ -221,6 +248,7 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+
 	<sect2 id="uc_008"><title>UC_008 CPs providing multiple instances of interfaces</title>
 	    <sect3><title>Description</title>
 		CLIENT requests CP for instances of some interface - CP provides available instances of specified  interface.
@@ -261,11 +289,11 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
-	<sect2 id="uc_010"><title>UC_010 Interface requestor being notified of interface added</title>
+	<sect2 id="uc_010"><title>UC_010 Interface requestor being notified of interface added/removed</title>
 	    <sect3><title>Description</title>
 		CLIENT: some element of system - also named "interface requestor".
 		CLIENT requests SYSTEM for interface - SYSTEM returns the interface (or instances of 
-		interface). Some new interface that meets the request has been added - SYSTEM notifies CLIENT of that, so
+		interface). Some new interface that meets the request has been added or some current interfaces are removed - SYSTEM notifies CLIENT of that, so
 		CLIENT can request refreshing interfaces in cache.
 	    </sect3>
 	    <sect3><title>Details</title>
@@ -352,9 +380,11 @@
 	    <sect3><title>Extended by</title>
 		<itemizedlist>
 		    <listitem><xref linkend="uc_014"/></listitem>
+		    <listitem><xref linkend="uc_022"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+
 	<sect2 id="uc_014"><title>UC_014 Trying of mutation</title>
 	    <sect3><title>Actors</title>
 		CLIENT: user of FAP model
@@ -482,6 +512,122 @@
 		    <listitem>This specific means that we need to keep all parents "alive". If some parent is deleted that it will be not possible 
 			to inherit even from the parent's child.</listitem>
 		</orderedlist>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_022"><title>UC_022 Mutation: renaming node</title>
+	    <sect3><title>Actors</title>
+		CLIENT: some element of system
+	    </sect3>
+	    <sect3><title>Preconditions</title>
+	    </sect3>
+	    <sect3><title>Assumptions</title>
+	    </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>CLIENT requests NODE for mutation by renaming the node basing on given parent - NODE performs the mutation </simpara>
+	    </sect3>
+	    <sect3><title>Alternative</title>
+		<simpara>Alternative flows</simpara>
+	    </sect3>
+	    <sect3><title>Exceptions</title>
+	    </sect3>
+	    <sect3><title>Variations</title>
+	    </sect3>
+	    <sect3><title>Extends</title>
+		<xref linkend="uc_013"/>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_024"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_024"><title>UC_024 Mutation: edges correcting when renaming node</title>
+	    <sect3><title>Actors</title>
+		VERT: some vertex witin upper node.
+		EDGE: edge 
+		UPPER_NODE: node that contains VERT and EDGE
+	    </sect3>
+	    <sect3><title>Preconditions</title>
+		EDGE is connected to VERT
+	    </sect3>
+	    <sect3><title>Assumptions</title>
+	    </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>Mutation of UPPER_NODE is done that renames VERT, UPPER_NODE updates EDGE so that connection point previously 
+		connected to VERT remains correct.</simpara>
+	    </sect3>
+	    <sect3><title>Alternative</title>
+		<simpara>Alternative flows</simpara>
+	    </sect3>
+	    <sect3><title>Exceptions</title>
+	    </sect3>
+	    <sect3><title>Variations</title>
+	    </sect3>
+	    <sect3><title>Extends</title>
+		<xref linkend="uc_022"/>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_025"><title>UC_025 Consistency of mutations sequence by serialization</title>
+	    <sect3><title>Actors</title>
+		CLIENT: some user of the system.
+	    </sect3>
+	    <sect3><title>Preconditions</title>
+	    </sect3>
+	    <sect3><title>Assumptions</title>
+	    </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>CLIENT initiates the series of mutation of SYSTEM, CLIENT serializes the mutated system, CLIENT re-creates SYSTEM from serialized spec - SYSTEM is created consiststently, applying 
+		all the mutation in right sequence.</simpara>
+	    </sect3>
+	    <sect3><title>Alternative</title>
+		<simpara>Alternative flows</simpara>
+	    </sect3>
+	    <sect3><title>Exceptions</title>
+	    </sect3>
+	    <sect3><title>Variations</title>
+	    </sect3>
+	    <sect3><title>Extends</title>
+		<xref linkend="uc_023"/>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<sect4 id="uc_025_disc_notsec"><title>Not secured in current implementation</title>
+		    <simpara>The case is not trivial in fact. The current implementation doesn't secure this behavior. Let's consider the sequence of mutations: </simpara>
+		    <programlisting>
+			1. creating Node A 
+			2. including Node A_1 into node A
+			3. some construction of A_1
+			4. creating in A node A_2 inherited from A_1
+			5. some changes in A_2 that depends on parents structure
+			6. changing something in A_1 that was the dependencies when changing A_2 (per previous item)
+			serializing
+			de-serializing
+		    </programlisting>
+		    <simpara>In result some errors will be occur on de-serializing. This is because mutation #6 can go directly to A_1 chromo (this is current behavior of Studio App) 
+			and A_1 is creating first including mutation per item #5, then A_2, but some structure of A_2 
+			parent (A_1) that is used by #5. In other word currently the initial sequence of mutations are changed via serialization.
+			So applying mutation #6 locally to A_1 chromo breaks the correct mutation sequence.</simpara>
+		    <simpara>The possible solution would be applying mutations on upper level in this situation instead of locally to A_1</simpara>
+		</sect4>
+	    </sect3>
+	    <sect3><title>Clarification</title>
 	    </sect3>
 	</sect2>
 

@@ -86,7 +86,7 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 		}
 	    }
 	    else {
-		Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s] - cannot find", Name().c_str(), pt1u.c_str());
+		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find", pt1u.c_str());
 	    }
 	}
 	const string& pt2u = edge->Point2u();
@@ -99,7 +99,7 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 		}
 	    }
 	    else {
-		Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s] - cannot find", Name().c_str(), pt2u.c_str());
+		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find", pt2u.c_str());
 	    }
 	}
 	Elem* pt1 = aContext.GetNode(pt1u);

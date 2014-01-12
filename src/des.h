@@ -27,6 +27,7 @@ class ATrInt: public ATrBase, public MDIntGet
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
     protected:
 	MDIntGet* GetInp(const string& aInpName);
+	TIfRange GetInpRg(const string& aInpName);
     protected:
 	TInt mData;
 };
@@ -43,6 +44,46 @@ class ATrIncInt: public ATrInt
 	// From MDIntGet
 	virtual TInt Value();
 };
+
+// Agent function "Subtraction of Int data"
+class ATrSubInt: public ATrInt
+{
+    public:
+	static const char* Type() { return "ATrSubInt";};
+	static string PEType();
+	ATrSubInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MDIntGet
+	virtual TInt Value();
+};
+
+// Agent function "Multiplying of Int data"
+class ATrMplInt: public ATrInt
+{
+    public:
+	static const char* Type() { return "ATrMplInt";};
+	static string PEType();
+	ATrMplInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MDIntGet
+	virtual TInt Value();
+};
+
+// Agent function "Deviding of Int data"
+class ATrDivInt: public ATrInt
+{
+    public:
+	static const char* Type() { return "ATrDivInt";};
+	static string PEType();
+	ATrDivInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MDIntGet
+	virtual TInt Value();
+};
+
 
 // State base agent
 class StateAgent: public Elem, public MDesSyncable, public MDesObserver

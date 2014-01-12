@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include "log.h"
+#include "elem.h"
 
 const TInt KLogRecBufSize = 400;
+
+const char* CtgText[MLogRec::ECtg_Max] = {"ERR", "WARN", "INFO", "DBG"};
+const char* KColSep = "; ";
 
 GLogRec::GLogRec(const string& aName, const string& aLogFileName): Base(aName), iLogFileName(aLogFileName), iLogFileValid(EFalse)
 {
@@ -44,6 +48,24 @@ void GLogRec::WriteFormat(const char* aFmt,...)
     va_list list;
     va_start(list,aFmt);
     vsprintf(buf, aFmt, list);
+    TInt len = strlen(buf);
+    WriteRecord(buf);
+}
+
+void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...)
+{
+    char buf[KLogRecBufSize] = "";
+    char buf1[KLogRecBufSize] = "";
+    strcpy(buf, CtgText[aCtg]);
+    strcat(buf, KColSep);
+    GUri fullpath;
+    aNode->GetUri(fullpath);
+    strcat(buf, fullpath.GetUri().c_str());
+    strcat(buf, KColSep);
+    va_list list;
+    va_start(list,aFmt);
+    vsprintf(buf1, aFmt, list);
+    strcat(buf, buf1);
     TInt len = strlen(buf);
     WriteRecord(buf);
 }

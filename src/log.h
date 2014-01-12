@@ -15,9 +15,11 @@ class GLogRec: public Base, public MLogRec
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MLogRec
-	virtual void WriteRecord(const char* aText);
 	virtual void WriteFormat(const char* aFmt,...);
+	virtual void Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...);
 	virtual void Flush();
+    protected:
+	void WriteRecord(const char* aText);
     protected:
 	FILE* iLogFile;
 	string iLogFileName;

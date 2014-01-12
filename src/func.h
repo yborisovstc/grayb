@@ -119,7 +119,10 @@ class AFunc: public Elem, public MACompsObserver, public MDataObserver
     protected:
 	void NotifyUpdate();
 	TBool IsLogeventUpdate();
+	inline Elem* Host();
 };
+
+inline Elem* AFunc::Host() { return iMan->GetMan();};
 
 class AFuncInt: public AFunc, public MDIntGet
 {
@@ -127,12 +130,15 @@ class AFuncInt: public AFunc, public MDIntGet
 	static const char* Type() { return "AFuncInt";};
 	static string PEType();
 	AFuncInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	virtual TInt GetValue() = 0;
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	// From MDIntGet
-	virtual TInt Value();
 	// From MElem
 	virtual void GetCont(string& aCont); 
+	// From MDIntGet
+	virtual TInt Value();
+    protected:
+	TInt mData;
 };
 
 class AFAddInt: public AFunc, public MDIntGet
@@ -147,16 +153,15 @@ class AFAddInt: public AFunc, public MDIntGet
 	virtual TInt Value();
 };
 
-class AFSubInt: public AFunc, public MDIntGet
+class AFSubInt: public AFuncInt
 {
     public:
 	static const char* Type() { return "AFSubInt";};
 	static string PEType();
 	AFSubInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	virtual TInt GetValue();
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	// From MDIntGet
-	virtual TInt Value();
 };
 
 // Restriction of value from top and bottom
@@ -201,7 +206,7 @@ class AFIntToVect: public AFunc, public MVIntGet
 };
 
 // Convolution of inputs. Used external working function.
-class AFConvInt: public AFunc, public MDIntGet
+class AFConvInt: public AFuncInt
 {
     public:
 	class Sample: public MDIntGet {
@@ -218,7 +223,7 @@ class AFConvInt: public AFunc, public MDIntGet
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MDIntGet
-	virtual TInt Value();
+	virtual TInt GetValue();
 	// Ifaces cache
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
     private:

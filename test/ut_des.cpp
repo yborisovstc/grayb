@@ -52,9 +52,12 @@ void Ut_des::test_Cre1()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* doutp = root->GetNode("Incaps:test/StateInt:State1/Elem:Capsule/Extender:Out");
+    // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
+    //Elem* doutp = root->GetNode("Incaps:test/StateInt:State1/Elem:Capsule/Extender:Out");
+    Elem* doutp = root->GetNode("Incaps:test/StateInt:State1/Elem:Capsule/Extender:Out/Int/PinData");
     CPPUNIT_ASSERT_MESSAGE("Fail to get state out", doutp != 0);
-    MDIntGet* doutpget = doutp->GetObj(doutpget);
+//    MDIntGet* doutpget = doutp->GetObj(doutpget);
+    MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 0);
     // Sync the state
@@ -86,9 +89,12 @@ void Ut_des::test_Cre2()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* doutp = root->GetNode("Des:TestDes/Capsule/Out");
+    // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
+//    Elem* doutp = root->GetNode("Des:TestDes/Capsule/Out");
+    Elem* doutp = root->GetNode("Des:TestDes/Capsule/Out/Int/PinData");
     CPPUNIT_ASSERT_MESSAGE("Fail to get DES out", doutp != 0);
-    MDIntGet* doutpget = doutp->GetObj(doutpget);
+    //MDIntGet* doutpget = doutp->GetObj(doutpget);
+    MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get initial value of data iface", doutpget->Value() == 0);
     // Get Sync iface of DES

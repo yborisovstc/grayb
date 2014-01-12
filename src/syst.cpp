@@ -333,6 +333,7 @@ void *ASocket::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aC
     else {
 	res = Elem::DoGetObj(aName, EFalse);
     }
+    /*
     if (res == NULL && aCtx != NULL) {
 	Base* master = aCtx->Requestor();
 	Elem* emaster = master->GetObj(emaster);
@@ -378,6 +379,7 @@ void *ASocket::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aC
 	    }
 	}
     }
+    */
     return res;
 }
 
@@ -452,7 +454,10 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 			// Find associated pairs pin within the context
 			Elem* pereq = ctxe->GetObj(pereq);
 			GUri uri;
-			uri.AppendElem(pereq->EType(), pereq->Name());
+			// Using only name as signature of socket pin. This is because even the compatible
+			// types can differ
+			//uri.AppendElem(pereq->EType(), pereq->Name());
+			uri.AppendElem("*", pereq->Name());
 			pcomp = host->GetNode(uri);
 		    }
 		}
@@ -634,7 +639,7 @@ void Syst::DoOnCompChanged(Elem& aComp)
 		}
 	    }
 	    else {
-		Logger()->WriteFormat("ERR: Syst [%s] connecting [%s] - cannot find", Name().c_str(), pt1u.c_str());
+		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find", pt1u.c_str());
 	    }
 	}
 	const string& pt2u = edge->Point2u();
@@ -647,7 +652,7 @@ void Syst::DoOnCompChanged(Elem& aComp)
 		}
 	    }
 	    else {
-		Logger()->WriteFormat("ERR: Syst [%s] connecting [%s] - cannot find", Name().c_str(), pt2u.c_str());
+		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find", pt2u.c_str());
 	    }
 	}
 	Elem* pt1 = GetNode(pt1u);

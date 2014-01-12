@@ -55,6 +55,11 @@
 	</node>
     </node>
 
+    <!-- Input of int transition -->
+    <node id="TrIntInp" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<cont node="Prop:Required" val="MDIntGet"/>
+    </node>
+
     <!-- Transition of integer data -->
     <node id="TrInt" parent="Syst"> 
 	<node id="Inp" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
@@ -72,6 +77,31 @@
 	    </node>
 	</add>
     </node>
+
+    <!-- Transition of integer data : Multiplication -->
+    <node id="TrMplInt" parent="Syst:TrInt"> 
+	<add node="Elem:Agents"> 
+	    <node id="TrAgt" parent="ATrMplInt"> 
+	    </node>
+	</add>
+    </node>
+
+    <!-- Transition of integer data : Division -->
+    <node id="TrDivInt" parent="Syst:TrInt"> 
+	<add node="Elem:Agents"> 
+	    <node id="TrAgt" parent="ATrDivInt"/> 
+	</add>
+	<node id="Inp_DR" parent="../TrIntInp"/> 
+    </node>
+
+    <!-- Transition of integer data : Subtraction -->
+    <node id="TrSubInt" parent="Syst:TrInt"> 
+	<add node="Elem:Agents"> 
+	    <node id="TrAgt" parent="ATrSubInt"/> 
+	</add>
+	<node id="Inp_Sub" parent="../TrIntInp"/> 
+    </node>
+
 
     <!-- State base -->
     <node id="State" parent="IncapsComps:incapsmod/Syst:Incaps"> 

@@ -91,6 +91,15 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     else if (aType.compare(ATrIncInt::Type()) == 0) {
 	res = new ATrIncInt(aName, aMan, aEnv);
     }
+    else if (aType.compare(ATrSubInt::Type()) == 0) {
+	res = new ATrSubInt(aName, aMan, aEnv);
+    }
+    else if (aType.compare(ATrMplInt::Type()) == 0) {
+	res = new ATrMplInt(aName, aMan, aEnv);
+    }
+    else if (aType.compare(ATrDivInt::Type()) == 0) {
+	res = new ATrDivInt(aName, aMan, aEnv);
+    }
     else if (aType.compare(ASocket::Type()) == 0) {
 	res = new ASocket(aName, aMan, aEnv);
     }
@@ -131,6 +140,9 @@ void ProvDef::AppendNodesInfo(vector<string>& aInfo)
     aInfo.push_back(ExtenderAgent::Type());
     aInfo.push_back(StateAgent::Type());
     aInfo.push_back(ATrIncInt::Type());
+    aInfo.push_back(ATrSubInt::Type());
+    aInfo.push_back(ATrMplInt::Type());
+    aInfo.push_back(ATrDivInt::Type());
     aInfo.push_back(ASocket::Type());
     aInfo.push_back(ADes::Type());
 }

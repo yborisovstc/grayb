@@ -468,7 +468,7 @@ string AFuncInt::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFuncInt::AFuncInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+AFuncInt::AFuncInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv), mData(0)
 {
     SetEType(Type(), AFunc::PEType());
     SetParent(Type());
@@ -489,8 +489,21 @@ void *AFuncInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* a
     return res;
 }
 
+TInt AFuncInt::Value()
+{
+    TInt data = GetValue();
+    if (data != mData) {
+	mData = data;
+	iMan->OnContentChanged(*this);
+    }
+    return mData;
+}
+
 void AFuncInt::GetCont(string& aCont)
 {
+    stringstream ss;
+    ss << Value();
+    aCont = ss.str();
 }
 
 
@@ -541,12 +554,12 @@ TInt AFAddInt::Value()
 
 string AFSubInt::PEType()
 {
-    return AFunc::PEType() + GUri::KParentSep + Type();
+    return AFuncInt::PEType() + GUri::KParentSep + Type();
 }
 
-AFSubInt::AFSubInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+AFSubInt::AFSubInt(const string& aName, Elem* aMan, MEnv* aEnv): AFuncInt(aName, aMan, aEnv)
 {
-    SetEType(Type(), AFunc::PEType());
+    SetEType(Type(), AFuncInt::PEType());
     SetParent(Type());
 }
 
@@ -556,16 +569,13 @@ void *AFSubInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* a
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
-    else if (strcmp(aName, MDIntGet::Type()) == 0) {
-	res = (MDIntGet*) this;
-    }
     else {
-	res = AFunc::DoGetObj(aName, aIncUpHier);
+	res = AFuncInt::DoGetObj(aName, aIncUpHier);
     }
     return res;
 }
 
-TInt AFSubInt::Value()
+TInt AFSubInt::GetValue()
 {
     RqContext cont(this);
     TInt val = 0;
@@ -633,17 +643,14 @@ TInt AFLimInt::Value()
 	val = (val < liml) ? liml : val;
     }
     else {
-	GUri fullpath;
-	Elem* host = iMan->GetMan();
-	host->GetUri(fullpath);
 	if (minp == NULL) {
-	    Logger()->WriteFormat("[%s]: Error - Inp not connected", fullpath.GetUri(ETrue).c_str());
+	    Logger()->Write(MLogRec::EErr, Host(), "Inp not connected");
 	}
 	else if (mlimu == NULL) {
-	    Logger()->WriteFormat("[%s]: Error - Inp_LimU not connected", fullpath.GetUri(ETrue).c_str());
+	    Logger()->Write(MLogRec::EErr, Host(), "Inp_LimU not connected");
 	}
 	else if (mliml == NULL) {
-	    Logger()->WriteFormat("[%s]: Error - Inp_LimL not connected", fullpath.GetUri(ETrue).c_str());
+	    Logger()->Write(MLogRec::EErr, Host(), "Inp_LimL not connected");
 	}
     }
     return val;
@@ -759,12 +766,12 @@ vector<TInt> AFIntToVect::Value()
 
 string AFConvInt::PEType()
 {
-    return AFunc::PEType() + GUri::KParentSep + Type();
+    return AFuncInt::PEType() + GUri::KParentSep + Type();
 }
 
-AFConvInt::AFConvInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+AFConvInt::AFConvInt(const string& aName, Elem* aMan, MEnv* aEnv): AFuncInt(aName, aMan, aEnv)
 {
-    SetEType(Type(), AFunc::PEType());
+    SetEType(Type(), AFuncInt::PEType());
     iSampleHolder.iHost = this;
 }
 
@@ -785,7 +792,7 @@ void *AFConvInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* 
 	}
     }
     else {
-	res = AFunc::DoGetObj(aName, aIncUpHier);
+	res = AFuncInt::DoGetObj(aName, aIncUpHier);
     }
     return res;
 }
@@ -803,14 +810,14 @@ void AFConvInt::UpdateIfi(const string& aName, const RqContext* aCtx)
 	res = (MDIntGet*) this;
     }
     else {
-	res = AFunc::DoGetObj(aName.c_str(), EFalse, aCtx);
+	res = AFuncInt::DoGetObj(aName.c_str(), EFalse, aCtx);
     }
     if (res != NULL) {
 	InsertIfCache(aName, ToCacheRCtx(aCtx), this, res);
     }
 }
 
-TInt AFConvInt::Value()
+TInt AFConvInt::GetValue()
 {
     TInt val = 0;
     Elem* einp = GetNode("../../Capsule/inp");
@@ -839,7 +846,7 @@ TInt AFConvInt::Value()
 	    }
 	}
 	if (lupd) {
-	    Logger()->WriteFormat("[%s]: Result = %d", fullpath.GetUri(ETrue).c_str(), val);
+	    Logger()->Write(MLogRec::EDbg, this,  "Result = %d", val);
 	}
     }
     return val;

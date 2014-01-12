@@ -231,6 +231,8 @@ void Vert::Disconnect(MVert* aPair)
     iPairs.erase(aPair);
     // Invalidate ifaces cache
     InvalidateIfCache();
+    __ASSERT(iMan != NULL);
+    iMan->OnCompChanged(*this);
 }
 
 void Vert::Disconnect(MEdge* aEdge)
@@ -245,16 +247,6 @@ void Vert::Disconnect(MEdge* aEdge)
 	__ASSERT(aEdge->Pair(this) != NULL);
 	Disconnect(aEdge->Pair(this));
     }
-    /*
-       MEdge* edge = (*found).second;
-       multimap<TCkey,MEdge*>::iterator fbytypelb = iMEdges.lower_bound(TCkey("*", ee->EType()));
-       multimap<TCkey,MEdge*>::iterator fbytypeub = iMEdges.upper_bound(TCkey("*", ee->EType()));
-       for (multimap<TCkey,MEdge*>::iterator it = fbytypelb; it != fbytypeub; it++) {
-       if (it->second == edge) {
-       iMEdges.erase(it); break;
-       }
-       }
-       */
 }
 
 void Vert::RemoveFromMap(MEdge* aEdge, const TCkey& aKey)

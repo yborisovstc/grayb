@@ -13,7 +13,8 @@ dist_modules_DATA = \
 	     modules/capsula.xml \
 	     modules/data.xml \
 	     modules/func.xml \
-	     modules/des.xml 
+	     modules/des.xml \
+	     modules/vis.xml 
 
 
 EXTRA_DIST = \

@@ -10,6 +10,11 @@
     <node id="v1" parent="Vert"/>
     <node id="v2" parent="Vert"/>
     <node id="v3" parent="Vert"/>
-    <node parent="Edge"> <cont node="P1" val="Vert:v1"/> <cont node="P2" val="Vert:v2"/> </node>
+    <add node="v3">
+	<node id="v4" parent="Vert"/>
+    </add>
+    <node id="v5" parent="Vert"/>
+    <node id="e1" parent="Edge"> <cont node="P1" val="v1"/> <cont node="P2" val="Vert:v2"/> </node>
+    <node id="e2" parent="Edge"> <cont node="P1" val="v5"/> <cont node="P2" val="v3/v4"/> </node>
 </node>
 
