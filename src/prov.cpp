@@ -16,6 +16,11 @@ Elem* GProvider::CreateNode(const string& aType, const string& aName, Elem* aMan
     return NULL;
 }
 
+Elem* GProvider::GetNode(const string& aUri)
+{
+    return NULL;
+}
+
 Chromo* GProvider::CreateChromo()
 {
     return NULL;

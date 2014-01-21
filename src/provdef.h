@@ -11,6 +11,7 @@ class ProvDef: public GProvider
 	ProvDef(const string &aName);
 	// From MProvider
 	virtual Elem* CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv);
+	virtual Elem* GetNode(const string& aUri);
 	virtual Chromo* CreateChromo();
 	virtual void AppendNodesInfo(vector<string>& aInfo);
 	virtual const string& ModulesPath() const;

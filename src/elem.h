@@ -20,6 +20,8 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	typedef pair<string, string> TCkey;
 	typedef pair<TCkey, Elem*> TCelem;
 	typedef multimap<TCkey, Elem*> TMElem;
+	// Register of heirs
+	typedef map<string, Elem*> THeirsReg;
 
     public:
 	// Request context
@@ -167,8 +169,11 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	virtual const set<string>& CompsTypes();
 	virtual Elem* GetMan();
 	virtual const Elem* GetMan() const;
+	Elem* GetParent();
+	const Elem* GetParent() const;
+	void SetParent(Elem* aParent);
 	virtual Elem* GetNode(const string& aUri);
-	virtual Elem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase);
+	virtual Elem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere = EFalse);
 	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);
 	// TODO [YB] The only attr allowed for change is name. To consider replacing
 	// of ChangeAttr to Rename 
@@ -239,6 +244,11 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	TICache iICache;
 	// Ifaces cache query by TICMapKeyF
 	TICacheQF iICacheQF;
+	// Children register
+	THeirsReg iHeirs;
+	// Parent
+	Elem* iParent;
+	
 };
 
 inline MLogRec* Elem::Logger() const {return iEnv ? iEnv->Logger(): NULL; }

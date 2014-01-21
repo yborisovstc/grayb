@@ -14,6 +14,7 @@ class MProvider
 {
     public:
 	virtual Elem* CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv) = 0;
+	virtual Elem* GetNode(const string& aUri) = 0;
 	virtual Chromo* CreateChromo() = 0;
 	virtual void AppendNodesInfo(vector<string>& aInfo) = 0;
 	virtual const string& ModulesPath() const = 0;

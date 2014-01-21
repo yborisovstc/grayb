@@ -53,8 +53,8 @@ class Edge: public Elem, public MEdge
 	virtual MVert* Point1() const;
 	virtual MVert* Point2() const;
 	// From Elem
-	virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
-	virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
+	//virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
+	//virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
 	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);
     protected:
 	static void Init();

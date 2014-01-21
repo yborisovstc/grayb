@@ -7,7 +7,7 @@ Vert::IterImplVert::IterImplVert(Elem& aElem, GUri::TElem aId, TBool aToEnd): It
 {
     Vert* vert = iElem.GetObj(vert);
     __ASSERT(vert != NULL);
-    iEIterRange = vert->iMEdges.equal_range(Elem::TCkey(iId.second, iId.first));
+    iEIterRange = vert->iMEdges.equal_range(Elem::TCkey(iId.second.second, iId.first));
     iEIter = aToEnd ? iEIterRange.second : iEIterRange.first;
 };
 
@@ -336,14 +336,14 @@ Elem* Vert::GetNodeLoc(const GUri::TElem& aElem)
     // Try hier first
     res = Elem::GetNodeLoc(aElem);
     // Check edge then
-    multimap<TCkey,MEdge*>::iterator found = iMEdges.find(TCkey(aElem.second, aElem.first));
+    multimap<TCkey,MEdge*>::iterator found = iMEdges.find(TCkey(aElem.second.second, aElem.first));
     if (found != iMEdges.end()) {
 	if (res == NULL) {
 	    Base* bres = (*found).second->EBase();
 	    res = bres->GetObj(res);
 	}
 	else {
-	    Logger()->WriteFormat("ERR: Vert [%s] URI elem [%s:%s] - resolution conflict", Name().c_str(), aElem.second.c_str(), aElem.first.c_str()); 
+	    Logger()->Write(MLogRec::EErr, this, "URI elem [%s:%s] - resolution conflict", aElem.second.second.c_str(), aElem.first.c_str()); 
 	    res = NULL;
 	}
     }

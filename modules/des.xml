@@ -7,40 +7,33 @@
 
 <node id="DesComps" parent="Elem">
 
-    <!-- Module containing components of system layer -->
-    <node id="sysmod" parent="file:/usr/share/grayb/modules/syst.xml#SysComps" />
-    <!-- Module containing components of incaps layer -->
-    <node id="incapsmod" parent="file:/usr/share/grayb/modules/capsula.xml#IncapsComps" />
-    <!-- Module containing components of data -->
-    <node id="datamod" parent="file:/usr/share/grayb/modules/data.xml#DataComps" />
-
     <!-- DES logging event -->
     <node id="DesLogevent" parent="Elem" />
     
     <!-- Output socket -->
-    <node id="StOutSocket" parent="SysComps:sysmod/Vert:Socket">
+    <node id="StOutSocket" parent="**/SysComps:*/Vert:Socket">
 	<!-- Pin Des observer. Requires DES observer interface to handle activation of the state -->
-	<node id="PinObs" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<node id="PinObs" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 	    <cont node="Prop:Provided" val="MDesObserver"/>
 	</node>
 	<!-- Pin Data observer. Provides data interface -->
-	<node id="PinData" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<node id="PinData" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 	</node>
     </node>
 
     <!-- Input socket -->
-    <node id="StInpSocket" parent="SysComps:sysmod/Vert:Socket">
+    <node id="StInpSocket" parent="**/SysComps:*/Vert:Socket">
 	<!-- Pin Des observer. Requires DES observer interface to handle activation of the state -->
-	<node id="PinObs" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<node id="PinObs" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 	    <cont node="Prop:Required" val="MDesObserver"/>
 	</node>
 	<!-- Pin Data observer. Provides data interface -->
-	<node id="PinData" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<node id="PinData" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 	</node>
     </node>
 
     <!-- Input of standard Int State -->
-    <node id="StIntInp" parent="SysComps:sysmod/Vert:Extender"> 
+    <node id="StIntInp" parent="**/SysComps:*/Vert:Extender"> 
 	<rm node="ConnPoint:Int"/>
 	<node id="Int" parent="../Socket:StInpSocket"> 
 	    <cont node="ConnPoint:PinData/Prop:Provided" val="MDIntGet"/>
@@ -48,7 +41,7 @@
     </node>
 
     <!-- Output of standard Int State -->
-    <node id="StIntOut" parent="SysComps:sysmod/Vert:Extender"> 
+    <node id="StIntOut" parent="**/SysComps:*/Vert:Extender"> 
 	<rm node="ConnPoint:Int"/>
 	<node id="Int" parent="../Socket:StOutSocket"> 
 	    <cont node="ConnPoint:PinData/Prop:Required" val="MDIntGet"/>
@@ -56,16 +49,16 @@
     </node>
 
     <!-- Input of int transition -->
-    <node id="TrIntInp" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+    <node id="TrIntInp" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 	<cont node="Prop:Required" val="MDIntGet"/>
     </node>
 
     <!-- Transition of integer data -->
     <node id="TrInt" parent="Syst"> 
-	<node id="Inp" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<node id="Inp" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 	    <cont node="Prop:Required" val="MDIntGet"/>
 	</node>
-	<node id="Out" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<node id="Out" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 	    <cont node="Prop:Provided" val="MDIntGet"/>
 	</node>
     </node>
@@ -104,7 +97,7 @@
 
 
     <!-- State base -->
-    <node id="State" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+    <node id="State" parent="**/IncapsComps:*/Syst:Incaps"> 
 
 	<add node="Elem:Agents"> 
 	    <node id="StateAgt" parent="StateAgent"> 
@@ -113,17 +106,17 @@
 
 	<add node="Elem:Capsule">
 	    <!-- TODO [YB] Do we need dedicated CP or component has to notify it's mgr? -->
-	    <node id="Sync" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	    <node id="Sync" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 		<cont node="Prop:Provided" val="MDesSyncable"/>
 	    </node>
 	    <!-- Input -->
-	    <node id="Inp" parent="../../SysComps:sysmod/Vert:Extender"> 
+	    <node id="Inp" parent="**/SysComps:*/Vert:Extender"> 
 		<rm node="ConnPoint:Int"/>
 		<node id="Int" parent="../../../Socket:StInpSocket"> 
 		</node>
 	    </node>
 	    <!-- Output -->
-	    <node id="Out" parent="../../SysComps:sysmod/Vert:Extender"> 
+	    <node id="Out" parent="**/SysComps:*/Vert:Extender"> 
 		<rm node="ConnPoint:Int"/>
 		<node id="Int" parent="../../../Socket:StOutSocket"> 
 		</node>
@@ -132,10 +125,10 @@
     </node>
 
     <node id="StateInt" parent="Incaps:State"> 
-	<node id="Confirmed" parent="../DataComps:datamod/DataSC:DataSCInt">
+	<node id="Confirmed" parent="**/DataComps:*/DataSC:DataSCInt">
 	</node>
 
-	<node id="Prepared" parent="../DataComps:datamod/DataSC:DataSCInt">
+	<node id="Prepared" parent="**/DataComps:*/DataSC:DataSCInt">
 	</node>
 
 	<cont node="Elem:Capsule/Extender:Inp/StInpSocket:Int/ConnPoint:PinData/Prop:Provided" val="MDIntGet"/>
@@ -153,7 +146,7 @@
     </node>
 
     <!-- DES base -->
-    <node id="Des" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+    <node id="Des" parent="**/IncapsComps:*/Syst:Incaps"> 
 
 	<add node="Elem:Agents"> 
 	    <node id="DesAgt" parent="ADes"> 
@@ -161,16 +154,16 @@
 	</add>
 
 	<add node="Elem:Capsule">
-	    <node id="Sync" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	    <node id="Sync" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 		<cont node="Prop:Provided" val="MDesSyncable"/>
 	    </node>
 	</add>
     </node>
 
     <!-- DES ticks source -->
-    <node id="DesTicker" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+    <node id="DesTicker" parent="**/IncapsComps:*/Syst:Incaps"> 
 	<add node="Elem:Capsule">
-	    <node id="Out" parent="../../sysmod/ConnPoint"> 
+	    <node id="Out" parent="**/SysComps:*/ConnPoint"> 
 		<cont node="Required" val="MDesSyncable"/>
 	    </node>
 	</add>

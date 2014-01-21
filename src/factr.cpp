@@ -23,6 +23,10 @@ Elem* GFactory::CreateNode(const string& aType, const string& aName, Elem* aMan,
     return res;
 }
 
+Elem* GFactory::GetNode(const string& aUri)
+{
+}
+
 Chromo* GFactory::CreateChromo()
 {
     Chromo* res = NULL;

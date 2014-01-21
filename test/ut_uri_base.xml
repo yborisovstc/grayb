@@ -26,6 +26,9 @@
 
 	<node id="Incr2" parent="../FuncComps:funcmod/Incaps:FuncIncInt"/>
 
+	<node id="Cp1" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"/>
+	<node id="Cp2" parent="**/SysComps:*/ConnPointBase:ConnPoint"/>
+
 	<node id="Result" parent="../FuncComps:funcmod/Incaps:FuncIntRes"/>
 
 	<node id="ResData" parent="../DataComps:datamod/DataS:DataSInt"/>

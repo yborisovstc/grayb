@@ -13,7 +13,7 @@ Edge::IterImplEdge::IterImplEdge(Elem& aElem, GUri::TElem aId, TBool aToEnd): It
 	MVert* mpt1 = edge->iPoint1;
 	if (mpt1 != NULL) {
 	    Elem* pt1 = mpt1->EBase()->GetObj(pt1);
-	    if ((iId.second == "*" || pt1->Name() == iId.second) && (iId.first == "*" || pt1->EType() == iId.first)) {
+	    if ((iId.second.second == "*" || pt1->Name() == iId.second.second) && (iId.first == "*" || pt1->EType() == iId.first)) {
 		iPIter = EP1;
 	    }
 	}
@@ -21,7 +21,7 @@ Edge::IterImplEdge::IterImplEdge(Elem& aElem, GUri::TElem aId, TBool aToEnd): It
 	    MVert* mpt2 = edge->iPoint2;
 	    if (mpt2 != NULL) {
 		Elem* pt2 = mpt2->EBase()->GetObj(pt2);
-		if ((iId.second == "*" || pt2->Name() == iId.second) && (iId.first == "*" || pt2->EType() == iId.first)) {
+		if ((iId.second.second == "*" || pt2->Name() == iId.second.second) && (iId.first == "*" || pt2->EType() == iId.first)) {
 		    iPIter = EP2;
 		}
 	    }
@@ -53,7 +53,7 @@ void Edge::IterImplEdge::PostIncr()
 	    MVert* mpt2 = edge->iPoint2;
 	    if (mpt2 != NULL) {
 		Elem* pt2 = mpt2->EBase()->GetObj(pt2);
-		if ((iId.second == "*" || pt2->Name() == iId.second) && (iId.first == "*" || pt2->EType() == iId.first)) {
+		if ((iId.second.second == "*" || pt2->Name() == iId.second.second) && (iId.first == "*" || pt2->EType() == iId.first)) {
 		    iPIter = EP2;
 		}
 	    }
@@ -267,11 +267,11 @@ Elem* Edge::GetNodeLoc(const GUri::TElem& aElem)
     Elem* p1 = iPoint1 != NULL ? iPoint1->EBase()->GetObj(p1) : NULL;
     Elem* p2 = iPoint2 != NULL ? iPoint2->EBase()->GetObj(p1) : NULL;
     Elem* pres = NULL;
-    if (p1 != NULL && (aElem.second == "*" || aElem.second != "*" && p1->Name() == aElem.second) && 
+    if (p1 != NULL && (aElem.second.second == "*" || aElem.second.second != "*" && p1->Name() == aElem.second.second) && 
 	    (aElem.first == "*" || aElem.first != "*" && p1->EType() == aElem.first)) {
 	pres = p1;
     }
-    else if (p2 != NULL && (aElem.second == "*" || aElem.second != "*" && p2->Name() == aElem.second) && 
+    else if (p2 != NULL && (aElem.second.second == "*" || aElem.second.second != "*" && p2->Name() == aElem.second.second) && 
 	    (aElem.first == "*" || aElem.first != "*" && p2->EType() == aElem.first)) {
 	pres = p1;
     }
@@ -280,13 +280,13 @@ Elem* Edge::GetNodeLoc(const GUri::TElem& aElem)
 	    res = pres;
 	}
 	else {
-	    Logger()->WriteFormat("ERR: Vert [%s] URI elem [%s:%s] - resolution conflict", Name().c_str(), aElem.second.c_str(), aElem.first.c_str()); 
+	    Logger()->Write(MLogRec::EErr, this,  "URI elem [%s:%s] - resolution conflict", aElem.second.second.c_str(), aElem.first.c_str()); 
 	    res = NULL;
 	}
     }
     return res;
 }
-
+/*
 Elem::Iterator Edge::NodesLoc_Begin(const GUri::TElem& aId)
 {
     return Iterator(new IterImplEdge(*this, aId));
@@ -296,5 +296,5 @@ Elem::Iterator Edge::NodesLoc_End(const GUri::TElem& aId)
 {
     return Iterator(new IterImplEdge(*this, aId, ETrue));
 }
-
+*/
 

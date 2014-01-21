@@ -53,7 +53,7 @@ void* ChromoMdlX::Find(const void* aHandle, const string& aUri)
 		TNodeType type = GetType((void*) res);
 		char *name = (char*) xmlGetProp(res, (const xmlChar *) GUri::NodeAttrName(ENa_Id).c_str());
 		char *parent = (char*) xmlGetProp(res, (const xmlChar *) GUri::NodeAttrName(ENa_Parent).c_str());
-		if (type == ENt_Node && (elem.first == "*" || elem.first.compare(parent) == 0) && elem.second.compare(name) == 0) {
+		if (type == ENt_Node && (elem.first == "*" || elem.first.compare(parent) == 0) && elem.second.second.compare(name) == 0) {
 		    break;
 		}
 	    }
@@ -99,7 +99,7 @@ void* ChromoMdlX::Set(const string& aUri)
 	// TODO [YB] - to consider if it would be better to update Find to accept the abs uri
 	GUri desurib = GUri(desuri);
 	GUri::const_elem_iter it = desurib.Elems().begin();
-	if (it->second.empty()) {
+	if (it->second.second.empty()) {
 	    it++;
 	}
 	desuri = desurib.GetUri(it);

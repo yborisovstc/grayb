@@ -109,6 +109,10 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     return res;
 }
 
+Elem* ProvDef::GetNode(const string& aUri)
+{
+}
+
 Chromo* ProvDef::CreateChromo()
 {
     return new ChromoX();

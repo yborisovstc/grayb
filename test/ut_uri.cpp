@@ -119,6 +119,23 @@ void Ut_uri::test_UriBase()
    // Elem* resdata1 = root->GetNode("Incaps:test/DataSInt:ResData/Elem:Capsule/ConnPoint:out");
     Elem* resdata1 = root->GetNode("Incaps:test/DataSInt:ResData/*:*/ConnPoint:out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out (asterisk URI)", resdata1 != 0);
+    // Checking URI with "anywhere" pattern from root
+    Elem* node0 = root->GetNode("/testroot/test/Incr2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get node (/testroot/test/Incr2)", node0 != 0);
+    Elem* node1 = root->GetNode("/**/Incr2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get node (/**/Incr2)", node1 != 0 && node1->GetUri(NULL) == node0->GetUri(NULL));
+    // Checking URI with beginning "anywhere" pattern
+    Elem* node2 = root->GetNode("**/Incr2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get node (**/Incr2)", node2 != 0 && node2->GetUri(NULL) == node0->GetUri(NULL));
+    // Checking "anywhere" pattern for direct root comp
+    Elem* elm1 = root->GetNode("**/SysComps:*");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get base elm1", elm1 != 0);
+    // Checking creation from parent specified with URI with "anywhere" pattern
+    Elem* cp1 = root->GetNode("/testroot/test/Cp1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get base CP1", cp1 != 0);
+    Elem* cp2 = root->GetNode("/testroot/test/Cp2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get CP2", cp2 != 0);
+ 
     // Checking getting uri basing on hier mgr
     GUri rduri;
     resdata1->GetUri(rduri, root);

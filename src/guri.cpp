@@ -11,6 +11,7 @@ map<TNodeAttr, string> KNodeAttrsNames;
 map<string, TNodeAttr> KNodeAttrs;
 
 const string GUriBase::KTypeAny = "*";
+const string GUriBase::KTypeAnywhere = "**";
 const string KTypeUnknown = "";
 
 const string KSchemeSep = ":";
@@ -105,7 +106,7 @@ const string& GUriBase::Scheme() const
 string GUriBase::GetName() const
 {
     TInt size = iElems.size();
-    return size == 0 ? string() : iElems.at(size -1).second;
+    return size == 0 ? string() : iElems.at(size -1).second.second;
 }
 
 void GUriBase::Append(const GUriBase& aUri)
@@ -115,9 +116,9 @@ void GUriBase::Append(const GUriBase& aUri)
     }
 }
 
-void GUriBase::AppendElem(const string& aType, const string& aName)
+void GUriBase::AppendElem(const string& aType, const string& aName, char aRelType)
 {
-    iElems.push_back(TElem(aType, aName));
+    iElems.push_back(TElem(aType, TRel(aRelType, aName)));
 }
 
 void GUriBase::AppendElem(const TElem& aElem)
@@ -125,9 +126,9 @@ void GUriBase::AppendElem(const TElem& aElem)
     iElems.push_back(aElem);
 }
 
-void GUriBase::PrependElem(const string& aType, const string& aName)
+void GUriBase::PrependElem(const string& aType, const string& aName, char aRelType)
 {
-    iElems.insert(iElems.begin(), TElem(aType, aName));
+    iElems.insert(iElems.begin(), TElem(aType, TRel(aRelType, aName)));
 }
 
 void GUriBase::AppendQueryElem(TQueryOpr aOpr, TNodeAttr aAttr, const string& aValue)
@@ -156,6 +157,12 @@ string GUriBase::SelectGroup(const string& aData, int aEndPos)
     }
     return aData.substr(endpos, aEndPos);
 }
+
+GUriBase::TElem GUriBase::Elem(char aRelType, const string& aName, const string& aExt)
+{
+    return TElem(aExt, GUri::TRel(aRelType, aName));
+}
+
 
 
 GUri::GUri(const string& aUri): GUriBase(aUri)
@@ -189,9 +196,9 @@ void GUri::Parse()
     size_t query_beg = frag.find_first_of('?', 0);
     string hier = frag.substr(0, query_beg);
     size_t elem_beg = 0;
+    // Path
     size_t elem_end = hier.find_first_of('/', 0);
     string elem = hier.substr(0, elem_end);
-    // Hier
     while (!(elem.empty() && elem_end == string::npos)) {
 	size_t type_end = elem.find_first_of(':');
 	size_t name_beg = 0;
@@ -204,7 +211,7 @@ void GUri::Parse()
 	    name_beg = type_end + 1;
 	}
 	string name = elem.substr(name_beg);
-	iElems.push_back(TElem(type, name));
+	AppendElem(type, name);
 	if (elem_end == string::npos) {
 	    elem.clear();
 	} 
@@ -255,7 +262,7 @@ string GUri::DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort) const
 		res.append(elem.first + ":");
 	    }
 	}
-	res.append(elem.second);
+	res.append(elem.second.second);
 	if (it + 1 != iElems.end()) {
 	    res.append("/");
 	}
@@ -310,18 +317,19 @@ void GUri::ToString(string& aRes)
 */
 
 
+#if 0
 
-GUriIh::GUriIh(const string& aUri): GUriBase(aUri)
+IUri::IUri(const string& aUri): GUriBase(aUri)
 {
     Parse();
 }
 
-GUriIh::GUriIh(): GUriBase()
+IUri::IUri(): GUriBase()
 {
 }
 
 
-void GUriIh::Parse()
+void IUri::Parse()
 {
     TBool fin = EFalse;
     size_t elem_beg = 0;
@@ -371,7 +379,7 @@ void GUriIh::Parse()
     }
 }
 
-string GUriIh::DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort) const
+string IUri::DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort) const
 {
     string res;
     // Hier
@@ -390,4 +398,5 @@ string GUriIh::DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort) cons
     return res;
 }
 
+#endif
 

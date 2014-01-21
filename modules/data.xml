@@ -1,28 +1,23 @@
 <?xml version="1.0" ?>
 
 <!-- Base elements for data keeping systems
+     Required the modules SysComps and IncapsComps 
      -->
 
 <!DOCTYPE node SYSTEM "/usr/share/grayb/conf/objspec.dtd"> 
 
 <node id="DataComps" parent="Elem">
-
-    <!-- Module containing components of system layer -->
-    <node id="sysmod" parent="file:/usr/share/grayb/modules/syst.xml#SysComps" />
-    <!-- Module containing components of incaps layer -->
-    <node id="incapsmod" parent="file:/usr/share/grayb/modules/capsula.xml#IncapsComps" />
-
  
     <!-- DES logging event -->
     <node id="DataLogevent" parent="Elem" />
 
     <!-- Data with separate input for setting and output for getting -->
-    <node id="DataS" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+    <node id="DataS" parent="**/IncapsComps:*/Syst:Incaps"> 
 	<node id="D_1" parent="Description">
 	    <cont val="Base of Data with separate input for setting and output for getting"/></node>
     	<add node="Elem:Capsule"> 
-	    <node id="inp" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"/> 
-	    <node id="out" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	    <node id="inp" parent="**/SysComps:*/ConnPointBase:ConnPoint"/> 
+	    <node id="out" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 		<cont node="Prop:Required" val="MDataObserver"/>
 	    </node>
     	</add>
@@ -30,10 +25,10 @@
     </node>
 
     <!-- Data with separate input for setting and output for getting. W/o notificaion -->
-    <node id="DataSU" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+    <node id="DataSU" parent="**/IncapsComps:*/Syst:Incaps"> 
     	<add node="Elem:Capsule"> 
-	    <node id="inp" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"/> 
-	    <node id="out" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"/> 
+	    <node id="inp" parent="**/SysComps:*/ConnPointBase:ConnPoint"/> 
+	    <node id="out" parent="**/SysComps:*/ConnPointBase:ConnPoint"/> 
     	</add>
 	<node id="Value" parent="Prop"/>
     </node>
@@ -76,12 +71,12 @@
 
 
 
-    <node id="DataInt" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+    <node id="DataInt" parent="**/IncapsComps:*/Syst:Incaps"> 
 
     	<add node="Elem:Agents"> <node id="ADInt" parent="DInt"/> </add>
 
     	<add node="Elem:Capsule"> 
-	    <node id="out" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	    <node id="out" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 		<cont node="Prop:Provided" val="MDInt"/>
 	    </node>
     	</add>
@@ -94,11 +89,11 @@
 
 
     <!-- Data base -->
-    <node id="DataSC" parent="IncapsComps:incapsmod/Syst:Incaps"> 
+    <node id="DataSC" parent="**/IncapsComps:*/Syst:Incaps"> 
     	<add node="Elem:Capsule"> 
-	    <node id="Inp" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"/> 
-	    <node id="Out" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"/> 
-	    <node id="Upd" parent="../../SysComps:sysmod/ConnPointBase:ConnPoint"/> 
+	    <node id="Inp" parent="**/SysComps:*/ConnPointBase:ConnPoint"/> 
+	    <node id="Out" parent="**/SysComps:*/ConnPointBase:ConnPoint"/> 
+	    <node id="Upd" parent="**/SysComps:*/ConnPointBase:ConnPoint"/> 
     	</add>
 	<node id="Value" parent="Prop"/>
     </node>

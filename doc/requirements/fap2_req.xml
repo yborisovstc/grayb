@@ -9,7 +9,7 @@
 	<author><personname><firstname>Yuri</firstname><surname>Borisov</surname></personname>
 	    <email>yuri.borisov.v@gmail.com</email></author> 
 
-	<releaseinfo>Ver.0.01 at 30-Nov-2011</releaseinfo>
+	<releaseinfo>Ver.0.05 at 12-Jan-2014</releaseinfo>
 
 	<abstract>
 	    <simpara>This document collects use-cases and software requirements for Discrete Events System framework ver 2.</simpara>
@@ -24,6 +24,8 @@
 		<revremark>Added <xref linkend="uc_grahp_04"/></revremark> </revision>
 	    <revision> <revnumber>0.04</revnumber> <date>11-Jan-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_022"/>, <xref linkend="uc_024"/>, <xref linkend="uc_025"/></revremark> </revision>
+	    <revision> <revnumber>0.05</revnumber> <date>12-Jan-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="uc_026"/>, <xref linkend="uc_027"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -34,6 +36,7 @@
 
     <sect1 id="nimp"><title>Treaceability: not implemented yet</title>
 	<itemizedlist>
+	    <listitem> <xref linkend="uc_027"/> </listitem>
 	    <listitem> <xref linkend="uc_025"/>, ref discussion <xref linkend="uc_025_disc_notsec"/> </listitem>
 	    <listitem> <xref linkend="uc_024"/> </listitem>
 	    <listitem> <xref linkend="uc_010"/> </listitem>
@@ -43,6 +46,7 @@
 
     
     <sect1 id="uc"> <title>Use cases</title>
+
 	<sect2 id="uc_000"><title>UC_000 Usecase template</title>
 	    <sect3><title>Actors</title>
 		CLIENT: some element of system - also named "interface requestor".
@@ -150,6 +154,7 @@
 	    <sect3><title>Extentions</title>
 		<itemizedlist>
 		    <listitem><xref linkend="uc_018"/></listitem>
+		    <listitem><xref linkend="uc_026"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Discussion</title>
@@ -269,6 +274,7 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+
 	<sect2 id="uc_009"><title>UC_009 Caching of Interfaces</title>
 	    <sect3><title>Description</title>
 		CLIENT: some element of system.
@@ -289,6 +295,7 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+
 	<sect2 id="uc_010"><title>UC_010 Interface requestor being notified of interface added/removed</title>
 	    <sect3><title>Description</title>
 		CLIENT: some element of system - also named "interface requestor".
@@ -309,6 +316,7 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+
 	<sect2 id="uc_005"><title>UC_005 Sockets</title>
 	    <sect3><title>Description</title>
 		CLIENT requests connection of endpoints that are more complex that single CP - SYSTEM provides the means of connecting in 
@@ -332,6 +340,7 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+
 	<sect2 id="uc_011"><title>UC_011 Extention of sockets</title>
 	    <sect3><title>Description</title>
 		CLIENT requests extending of some internal socket - SYSTEM extends the socket via proper extention point
@@ -342,6 +351,7 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+
 	<sect2 id="uc_012"><title>UC_012 CPs with no ifaces directly specified</title>
 	    <sect3><title>Description</title>
 		CLIENT: some element of system - also named "interface requestor".
@@ -367,6 +377,7 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+
 	<sect2 id="uc_013"><title>UC_013 Mutation</title>
 	    <sect3><title>Actors</title>
 		CLIENT: user of FAP model
@@ -547,20 +558,20 @@
 	    </sect3>
 	</sect2>
 
-	<sect2 id="uc_024"><title>UC_024 Mutation: edges correcting when renaming node</title>
+	<sect2 id="uc_024"><title>UC_024 Mutation: node references correcting when renaming node</title>
 	    <sect3><title>Actors</title>
+		NODE: some node within UPPER_NODE
 		VERT: some vertex witin upper node.
 		EDGE: edge 
 		UPPER_NODE: node that contains VERT and EDGE
 	    </sect3>
 	    <sect3><title>Preconditions</title>
-		EDGE is connected to VERT
+		Some references to NODE are specified in SYSTEM spec
 	    </sect3>
 	    <sect3><title>Assumptions</title>
 	    </sect3>
 	    <sect3><title>Normal</title>
-		<simpara>Mutation of UPPER_NODE is done that renames VERT, UPPER_NODE updates EDGE so that connection point previously 
-		connected to VERT remains correct.</simpara>
+		<simpara>Mutation is done that renames NODE, SYSTEM corrects the node refereces.</simpara>
 	    </sect3>
 	    <sect3><title>Alternative</title>
 		<simpara>Alternative flows</simpara>
@@ -575,6 +586,8 @@
 	    <sect3><title>Extended by</title>
 	    </sect3>
 	    <sect3><title>Discussion</title>
+		<simpara>Example: Mutation of UPPER_NODE is done that renames VERT, UPPER_NODE updates EDGE so that connection point previously 
+		connected to VERT remains correct.</simpara>
 	    </sect3>
 	    <sect3><title>Clarification</title>
 	    </sect3>
@@ -626,6 +639,71 @@
 			So applying mutation #6 locally to A_1 chromo breaks the correct mutation sequence.</simpara>
 		    <simpara>The possible solution would be applying mutations on upper level in this situation instead of locally to A_1</simpara>
 		</sect4>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_026"><title>UC_026 Mutation: referencing to nodes</title>
+	    <sect3><title>Actors</title>
+		CLIENT: some user of system.
+	    </sect3>
+	    <sect3><title>Preconditions</title>
+	    </sect3>
+	    <sect3><title>Assumptions</title>
+	    </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>CLIENT requested some mutation, CLIENT referenced to some node as mutation spec paremeter - SYSTEM resolved the reference spec and uses the node references in the mutation.</simpara>
+	    </sect3>
+	    <sect3><title>Alternative</title>
+	    </sect3>
+	    <sect3><title>Exceptions</title>
+	    </sect3>
+	    <sect3><title>Variations</title>
+	    </sect3>
+	    <sect3><title>Extends</title>
+		<xref linkend="uc_017"/>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_027"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_027"><title>UC_027 Mutation: referencing to nodes: implicit URI</title>
+	    <sect3><title>Actors</title>
+		CLIENT: some user of system.
+	    </sect3>
+	    <sect3><title>Preconditions</title>
+	    </sect3>
+	    <sect3><title>Assumptions</title>
+	    </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>CLIENT requested some mutation, CLIENT referenced to some node as mutation spec paremeter using implicit URI - SYSTEM resolved the reference spec and uses the node references in the mutation.</simpara>
+	    </sect3>
+	    <sect3><title>Alternative</title>
+	    </sect3>
+	    <sect3><title>Exceptions</title>
+	    </sect3>
+	    <sect3><title>Variations</title>
+	    </sect3>
+	    <sect3><title>Extends</title>
+		<xref linkend="uc_026"/>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<simpara>This use case is applicable when specifying for instance parent node for new node creation mutation, when CLIENT doesn't know the location of parent node in native hier but knows 
+		    parent's type only. For instance if CLIENT creates new node based on parent from component of some module. So CLIENT specifies only URI with type. SYSTEM has to be able to find parent
+		    by this implicit URI</simpara>
 	    </sect3>
 	    <sect3><title>Clarification</title>
 	    </sect3>

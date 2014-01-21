@@ -9,7 +9,7 @@
 	<author><personname><firstname>Yuri</firstname><surname>Borisov</surname></personname>
 	    <email>yuri.borisov.v@gmail.com</email></author> 
 
-	<releaseinfo>Ver.0.01 at 03-Mar-2013</releaseinfo>
+	<releaseinfo>Ver.0.05 at 18-Jan-2014</releaseinfo>
 
 	<abstract>
 	    <simpara>This document collects use-cases and software desing for Discrete Events System framework ver 2.</simpara>
@@ -24,6 +24,8 @@
 		<revremark>Added <xref linkend="ds_ifcache"/></revremark> </revision>
 	    <revision> <revnumber>0.04</revnumber> <date>14-Jul-2013</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="ds_base_02"/>. Updated <xref linkend="ds_ifcache_01"/></revremark> </revision>
+	    <revision> <revnumber>0.05</revnumber> <date>18-Jan-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="ds_base_03"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -72,6 +74,35 @@
 		</sect4>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_base_03"><title>DS_BASE_03 Syntax of URI</title>
+	    <simpara>The unified URI can be considered as node(s) determination request. The general form is as:</simpara>
+	    <programlisting>
+		uri = {"(" id_node_base_rel rel_sep ")"} node_name
+	    </programlisting>
+	    <simpara>Example is as:</simpara>
+	    <programlisting>
+		(hier_predecessor/)(inheritance_predecessor:)(vertex_pair~) name
+
+		where:
+		hier_predecessor - owner in base hierarchy
+		/ - base hier separator - sign of base hier relation
+		inheritance_predecessor - parent
+		: - inheritance separator - sign of inheritance relation
+		vertex_pair
+		~ - vertex relation separator - sign of vertexes relations
+	    </programlisting>
+	    <simpara>So the uri is hierarchical (tree form) of relation specifying. This spec should be full enough to specify one node or set of nodes.</simpara> 
+	    <simpara>The parentheseses are required to separate the branch of URI hierarchical tree. Having several layers in this tree causes the nested parentheseses that makes 
+		this syntax rather incovenient even complete.
+		The syntax of URI can be simplified in order to avoid parentheseses
+		(they are very inconvenience indeed) by applying some restrictions to relations. For instance the currently used form of URI - GUri can be considered as
+		the variant of generic form if we apply the restriction "chain of relation of some type can include only relation of this type". In this case the branches can 
+		be resolved simply by relation type separator:</simpara>
+	    <programlisting>
+		n1/n2/n3/p3:p2:p1:node
+	    </programlisting>
+	    <simpara>No need to isolate the branch because the end of inheritance relation branch (p3:p2:p1) can be simply determined by changing of relation separator from ":" to "/"</simpara>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_conn"><title>Connections</title>
@@ -89,7 +120,7 @@
 		<simpara>It is required for CPs to provide specific iface. One of the case where it can be used is
 		    finding out "pair" of connection especially if sockets with deep hier are connected (also via extenders).
 		    The problem when complex sockets is that some component within this hier is "virtually" connected
-		to some pair, but there is no simple mechanism to find the "pair".</simpara>
+		    to some pair, but there is no simple mechanism to find the "pair".</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_conn_02"><title>DS_CONN_02 Sockets</title>
@@ -131,7 +162,7 @@
 		<simpara>To implement this some specific iface for CP needs to be introduced: to get cp pair, to get iface from this pair host,
 		    probably something else.</simpara>
 		<simpara>Pros of this solution is that it is a bit simpler for understanding. Cons for the solution is that two steps needs for 
-		getting iface: step_1 is to get cp pair, step_2 is to get iface from this pair host.</simpara>
+		    getting iface: step_1 is to get cp pair, step_2 is to get iface from this pair host.</simpara>
 	    </sect3>
 	    <sect3><title>Solution: extending of scheme by using full path from requestor.</title>
 		<simpara></simpara> 
@@ -151,5 +182,6 @@
 	    </sect3>
 	</sect2>
     </sect1>
+
 
 </article>

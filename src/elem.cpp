@@ -91,7 +91,7 @@ void*  Elem::IfIter::operator*()
 
 Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd): iElem(aElem), iId(aId)
 {
-    iCIterRange = iElem.iMComps.equal_range(Elem::TCkey(iId.second, iId.first));
+    iCIterRange = iElem.iMComps.equal_range(Elem::TCkey(iId.second.second, iId.first));
     iCIter = aToEnd ? iCIterRange.second : iCIterRange.first;
 };
 
@@ -163,7 +163,7 @@ void Elem::Init()
 }
 
 Elem::Elem(const string &aName, Elem* aMan, MEnv* aEnv): Base(aName), iMan(aMan), iEnv(aEnv),
-    iObserver(NULL)
+    iObserver(NULL), iParent(NULL)
 {
     if (!iInit) 
 	Init();
@@ -441,11 +441,16 @@ Elem* Elem::GetNode(const GUri& aUri)
     Elem* res = NULL;
     GUri::const_elem_iter it = aUri.Elems().begin(); 
     if (it != aUri.Elems().end()) {
-	if (it->second.empty()) {
+	TBool anywhere = (*it).second.second == GUri::KTypeAnywhere; 
+	if (it->second.second.empty() || anywhere) {
 	    Elem* root = GetRoot();
-	    it++;
+	    if (!anywhere) {
+		it++;
+		GUri::TElem elem = *it;
+		anywhere = elem.second.second == GUri::KTypeAnywhere; 
+	    }
 	    if (++it != aUri.Elems().end()) {
-		res = root->GetNode(aUri, it);
+		res = root->GetNode(aUri, it, anywhere);
 	    }
 	    else {
 		res = root;
@@ -465,7 +470,7 @@ Elem* Elem::GetNodeS(const char* aUri)
 
 Elem* Elem::GetNodeLoc(const GUri::TElem& aElem)
 {
-    return GetComp(aElem.first, aElem.second);
+    return GetComp(aElem.first, aElem.second.second);
 }
 
 Elem::Iterator Elem::NodesLoc_Begin(const GUri::TElem& aId)
@@ -478,12 +483,13 @@ Elem::Iterator Elem::NodesLoc_End(const GUri::TElem& aId)
     return Iterator(new IterImplBase(*this, aId, ETrue));
 }
 
-Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase) 
+Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere) 
 {
     Elem* res = NULL;
     GUri::const_elem_iter uripos = aPathBase;
     GUri::TElem elem = *uripos;
-    if (elem.second == "..") {
+    TBool anywhere = aAnywhere;
+    if (elem.second.second == "..") {
 	if (iMan != NULL) {
 	    res = iMan->GetNode(aUri, ++aPathBase);
 	}
@@ -493,6 +499,10 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
 	}
     }
     else {
+	if (!anywhere && elem.second.second == GUri::KTypeAnywhere) {
+	    elem = GUri::Elem(GUri::KParentSep, GUri::KTypeAny, GUri::KTypeAny);
+	    anywhere = ETrue;
+	}
 	Iterator it = NodesLoc_Begin(elem);
 	Iterator itend = NodesLoc_End(elem);
 	if (it != itend) {
@@ -518,6 +528,26 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
 		if (++it != itend) {
 		    res = NULL;
 		    Logger()->WriteFormat("ERR: [%s]: getting node [%s] - multiple choice", Name().c_str(), aUri.GetUri().c_str());
+		}
+	    }
+	}
+	if (res == NULL && anywhere && uripos != aUri.Elems().end()) {
+	    // Try to search in all nodes
+	    elem = GUri::Elem(GUri::KParentSep, GUri::KTypeAny, GUri::KTypeAny);
+	    Iterator it = NodesLoc_Begin(elem);
+	    Iterator itend = NodesLoc_End(elem);
+	    for (; it != itend; it++) {
+		Elem* node = *it;
+		Elem* res1 = node->GetNode(aUri, uripos, anywhere);
+		if (res1 != NULL) {
+		    if (res == NULL) {
+			res = res1;
+		    }
+		    else {
+			res = NULL;
+			Logger()->WriteFormat("ERR: [%s]: getting node [%s] - multiple choice", Name().c_str(), aUri.GetUri().c_str());
+			break;
+		    }
 		}
 	    }
 	}
@@ -562,7 +592,7 @@ TBool Elem::MergeMutation(const ChromoNode& aSpec)
     // TODO Disabling merge because it's not working for non-local movement
     // ref MergeMutMove. To consider rework merge algorithm
     if (EFalse) {
-    //if (rnotype == ENt_Move) {
+	//if (rnotype == ENt_Move) {
 	res = MergeMutMove(aSpec);
     }
     else {
@@ -570,89 +600,89 @@ TBool Elem::MergeMutation(const ChromoNode& aSpec)
 	res = ETrue;
     }
     return res;
-}
-
-// TODO This merge algorithm doesn't work for movement non local nodes
-// for instance movement components in owned node.
-// In this case more complicated algorithm is required to merge "add" mutations
-TBool Elem::MergeMutMove(const ChromoNode& aSpec)
-{
-    TBool res = EFalse;
-    GUri src(aSpec.Attr(ENa_Id));
-    string srcname = src.Elems().at(0).second;
-    GUri dest(aSpec.Attr(ENa_MutNode));
-    string destname = dest.Elems().size() > 0 ? dest.Elems().at(0).second : string();
-    ChromoNode& croot = iChromo->Root();
-    // Find the dest and src
-    ChromoNode::Iterator nidest = croot.Find(ENt_Node, destname);
-    ChromoNode::Iterator nisrc = croot.Find(ENt_Node, srcname);
-    if (nidest == croot.End()) {
-	// Move node to end
-	ChromoNode nsrc = *nisrc;
-	nsrc.MoveToEnd();
-	res = ETrue;
     }
-    else if (nidest != croot.End() && nisrc != croot.End()) {
-	// Move node
-	ChromoNode nsrc = *nisrc;
-	nsrc.MovePrevTo(nidest);
-	res = ETrue;
-    }
-    return res;
-}
 
-void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
-{
-    const ChromoNode& mroot = aMutSpec;
-    ChromoNode& chrroot = iChromo->Root();
-    for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End(); rit++)
+    // TODO This merge algorithm doesn't work for movement non local nodes
+    // for instance movement components in owned node.
+    // In this case more complicated algorithm is required to merge "add" mutations
+    TBool Elem::MergeMutMove(const ChromoNode& aSpec)
     {
 	TBool res = EFalse;
-	ChromoNode rno = (*rit);
-	TNodeType rnotype = rno.Type();
-	if (rnotype == ENt_Node) {
-	    Elem* node = AddElem(rno);
-	    if (node != NULL) {
-		if (!aRunTime) {
-		    // Attach comp chromo
-		    chrroot.AddChild(node->iChromo->Root(), EFalse);
+	GUri src(aSpec.Attr(ENa_Id));
+	string srcname = src.Elems().at(0).second.second;
+	GUri dest(aSpec.Attr(ENa_MutNode));
+	string destname = dest.Elems().size() > 0 ? dest.Elems().at(0).second.second : string();
+	ChromoNode& croot = iChromo->Root();
+	// Find the dest and src
+	ChromoNode::Iterator nidest = croot.Find(ENt_Node, destname);
+	ChromoNode::Iterator nisrc = croot.Find(ENt_Node, srcname);
+	if (nidest == croot.End()) {
+	    // Move node to end
+	    ChromoNode nsrc = *nisrc;
+	    nsrc.MoveToEnd();
+	    res = ETrue;
+	}
+	else if (nidest != croot.End() && nisrc != croot.End()) {
+	    // Move node
+	    ChromoNode nsrc = *nisrc;
+	    nsrc.MovePrevTo(nidest);
+	    res = ETrue;
+	}
+	return res;
+    }
+
+    void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
+    {
+	const ChromoNode& mroot = aMutSpec;
+	ChromoNode& chrroot = iChromo->Root();
+	for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End(); rit++)
+	{
+	    TBool res = EFalse;
+	    ChromoNode rno = (*rit);
+	    TNodeType rnotype = rno.Type();
+	    if (rnotype == ENt_Node) {
+		Elem* node = AddElem(rno);
+		if (node != NULL) {
+		    if (!aRunTime) {
+			// Attach comp chromo
+			chrroot.AddChild(node->iChromo->Root(), EFalse);
+		    }
+		}
+		else {
+		    string pname = rno.Attr(ENa_Parent);
+		    Logger()->WriteFormat("ERROR: Node [%s] - adding node of type [%s] failed", Name().c_str(), pname.c_str());
 		}
 	    }
 	    else {
-		string pname = rno.Attr(ENa_Parent);
-		Logger()->WriteFormat("ERROR: Node [%s] - adding node of type [%s] failed", Name().c_str(), pname.c_str());
-	    }
-	}
-	else {
-	    if (rnotype == ENt_Add) {
-		AddNode(rno);
-	    }
-	    else if (rnotype == ENt_Cont) {
-		DoMutChangeCont(rno);
-	    }
-	    else if (rnotype == ENt_Rm) {
-		string snode = rno.Attr(ENa_MutNode);
-		GUri unode(snode);
-		RmNode(unode);
-	    }
-	    else if (rnotype == ENt_Change) {
-		ChangeAttr(rno);
-	    }
-	    else if (rnotype == ENt_Move) 
-	    {
-		MoveNode(rno);
-	    }
-	    else {
-		Logger()->WriteFormat("ERROR: Mutating node [%s] - unknown mutation type [%d]", Name().c_str(), rnotype);
-	    }
-	    if (!aRunTime) {
-		MergeMutation(rno);
+		if (rnotype == ENt_Add) {
+		    AddNode(rno);
+		}
+		else if (rnotype == ENt_Cont) {
+		    DoMutChangeCont(rno);
+		}
+		else if (rnotype == ENt_Rm) {
+		    string snode = rno.Attr(ENa_MutNode);
+		    GUri unode(snode);
+		    RmNode(unode);
+		}
+		else if (rnotype == ENt_Change) {
+		    ChangeAttr(rno);
+		}
+		else if (rnotype == ENt_Move) 
+		{
+		    MoveNode(rno);
+		}
+		else {
+		    Logger()->WriteFormat("ERROR: Mutating node [%s] - unknown mutation type [%d]", Name().c_str(), rnotype);
+		}
+		if (!aRunTime) {
+		    MergeMutation(rno);
+		}
 	    }
 	}
     }
-}
 
-TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly) 
+	TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly) 
 {
     return EFalse;
 }
@@ -823,7 +853,8 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
 	if (prnturi.Scheme().empty()) {
 	    // Local parent
 	    // If uri is not absolute then correct uri because parent uri is relative to the man context
-	    if (!prnturi.Elems().begin()->second.empty()) {
+	    const string& firstelem = prnturi.Elems().begin()->second.second;
+	    if (!firstelem.empty() && !(firstelem == GUri::KTypeAnywhere)) {
 		prnturi.PrependElem("node", "..");
 	    }
 	    parent = GetNode(prnturi);
@@ -892,6 +923,7 @@ TBool Elem::RegisterComp(Elem* aComp)
     {
 	iMComps.insert(pair<TCkey, Elem*>(TCkey(aComp->Name(), aComp->EType()), aComp));
 	iMComps.insert(pair<TCkey, Elem*>(TCkey(aComp->Name(), "*"), aComp));
+	iMComps.insert(pair<TCkey, Elem*>(TCkey("*", aComp->EType()), aComp));
 	iMComps.insert(pair<TCkey, Elem*>(TCkey("*", "*"), aComp));
     }
     else {
@@ -923,6 +955,16 @@ TBool Elem::UnregisterComp(Elem* aComp, const string& aName)
     //   Name-AnyType is not unique, erasing only records for this comp
     TBool found = EFalse;
     pair<TMElem::iterator, TMElem::iterator> range = iMComps.equal_range(TCkey(name, "*"));
+    for (TMElem::iterator it = range.first; it != range.second && !found; it++) {
+	if (it->second == aComp) {
+	    iMComps.erase(it);
+	    found = ETrue;
+	}
+    }
+    __ASSERT(found);
+    //   AnyName-Type is not unique, erasing only records for this comp
+    found = EFalse;
+    range = iMComps.equal_range(TCkey("*", aComp->EType()));
     for (TMElem::iterator it = range.first; it != range.second && !found; it++) {
 	if (it->second == aComp) {
 	    iMComps.erase(it);
@@ -1242,6 +1284,22 @@ Elem* Elem::GetAttachingMgr()
 	}
     }
     return res;
+}
+
+Elem* Elem::GetParent()
+{
+    return iParent;
+}
+
+const Elem* Elem::GetParent() const
+{
+    return iParent;
+}
+
+void Elem::SetParent(Elem* aParent)
+{
+    __ASSERT(aParent != NULL && iParent == NULL || aParent == NULL && iParent != NULL);
+    iParent = aParent;
 }
 
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)

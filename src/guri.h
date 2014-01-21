@@ -58,8 +58,10 @@ class GUriBase
 	    EQop_And
 	};
     public:
-	// Element of chain: location, name
-	typedef pair<string, string> TElem;
+	// Realation: relation type symbol, name
+	typedef pair<char, string> TRel;
+	// Element of chain: location, relation
+	typedef pair<string, TRel> TElem;
 	typedef pair<TNodeAttr, string> TQueryCnd;
 	typedef pair<TQueryOpr, TQueryCnd> TQueryElem;
 	typedef vector<TElem>::const_iterator const_elem_iter;
@@ -74,15 +76,16 @@ class GUriBase
 	const string& Scheme() const;
 	string GetName() const;
 	void Append(const GUriBase& aUri);
-	void AppendElem(const string& aType, const string& aName);
+	void AppendElem(const string& aType, const string& aName, char aRelType = KParentSep);
 	void AppendElem(const TElem& aElem);
-	void PrependElem(const string& aType, const string& aName);
+	void PrependElem(const string& aType, const string& aName, char aRelType = KParentSep);
 	void AppendQueryElem(TQueryOpr aOpr, TNodeAttr aAttr, const string& aValue);
 	static const string& NodeAttrName(TNodeAttr aAttr);
 	static const string& NodeTypeName(TNodeType aType);
 	static TNodeAttr NodeAttr(const string& aAttrName);
 	static TNodeType NodeType(const string& aTypeName);
 	//void ToString(string& aRes);
+	static TElem Elem(char aRelType, const string& aName, const string& aExt);
     protected:
 	virtual string DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort = EFalse) const = 0;
 	static void Construct();
@@ -97,16 +100,21 @@ class GUriBase
 	static TBool iInit;
     public:
 	static const string KTypeAny;
+	static const string KTypeAnywhere;
 	static const char KParentSep;
 	static const char KNodeSep;
 	static const char KBaseSep;
 };
 
 
-
 // URI for native hier coord. Inheritnace coord is provided as extended location thru GetLoc
 class GUri: public GUriBase
 {
+    public:
+	enum TCoord {
+	    EHier,
+	    EInher
+	};
     public:
 	GUri(const string& aGUri);
 	GUri();
@@ -117,16 +125,18 @@ class GUri: public GUriBase
 	void Parse();
 };
 
+#if 0
 // URI for inheritance coord. Native hier coord is provided as extended location thru GetLoc
 // !! Not completed, not used for now
-class GUriIh: public GUriBase
+class IUri: public GUriBase
 {
     public:
-	GUriIh(const string& aGUri);
-	GUriIh();
+	IUri(const string& aUri);
+	IUri();
     protected:
 	virtual string DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort = EFalse) const;
 	void Parse();
 };
+#endif
 
 #endif

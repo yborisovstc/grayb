@@ -7,30 +7,26 @@
 
 <node id="VisComps" parent="Elem">
 
-    <!-- Modules -->
-    <node id="sysmod" parent="file:/usr/share/grayb/modules/syst.xml#SysComps" />
-    <node id="desmod" parent="file:/usr/share/grayb/modules/des.xml#DesComps"/>
-
     <!-- Parent's representative CP -->
-    <node id="Parent" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+    <node id="Parent" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 	<cont node="Prop:Required" val="MVisChild"/>
 	<cont node="Prop:Provided" val="MVisContainer"/>
     </node>
 
     <!-- Child's representaitve CP -->
-    <node id="Child" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+    <node id="Child" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 	<cont node="Prop:Required" val="MVisContainer"/>
 	<cont node="Prop:Provided" val="MVisChild"/>
     </node>
 
     <!-- Child's representaitve Extender -->
-    <node id="Child" parent="SysComps:sysmod/Vert:Extender"> 
+    <node id="Child" parent="**/SysComps:*/Vert:Extender"> 
 	<rm node="ConnPoint:Int"/>
 	<node id="Int" parent="../ConnPoint:Parent"/> 
     </node>
 
     <!-- Data Int provider representaitve CP -->
-    <node id="DIntProv" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
+    <node id="DIntProv" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 	<cont node="Prop:Provided" val="MDIntGet"/>
     </node>
 
@@ -40,7 +36,7 @@
 	    <node id="WinAgent" parent="AWindow"/> 
 	</add>
 	<!-- Parent's representative -->
-	<node id="Parent" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<node id="Parent" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 	    <cont node="Prop:Required" val="MVisChild"/>
 	    <cont node="Prop:Provided" val="MVisContainer"/>
 	</node>
@@ -49,16 +45,16 @@
     <!-- Widget base -->
     <node id="Widget" parent="Syst"> 
 	<!-- Child's representaitve -->
-	<node id="Child" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<node id="Child" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 	    <cont node="Prop:Required" val="MVisContainer"/>
 	    <cont node="Prop:Provided" val="MVisChild"/>
 	</node>
-	<node id="Inp_X" parent="../DesComps:desmod/StIntInp"/> 
-	<node id="Inp_Y" parent="../DesComps:desmod/StIntInp"/> 
-	<node id="Inp_W" parent="../DesComps:desmod/StIntInp"/> 
-	<node id="Inp_H" parent="../DesComps:desmod/StIntInp"/> 
-	<node id="Prov_PW" parent="../DesComps:desmod/StIntOut"/> 
-	<node id="Prov_PH" parent="../DesComps:desmod/StIntOut"/> 
+	<node id="Inp_X" parent="**/DesComps:*/StIntInp"/> 
+	<node id="Inp_Y" parent="**/DesComps:*/StIntInp"/> 
+	<node id="Inp_W" parent="**/DesComps:*/StIntInp"/> 
+	<node id="Inp_H" parent="**/DesComps:*/StIntInp"/> 
+	<node id="Prov_PW" parent="**/DesComps:*/StIntOut"/> 
+	<node id="Prov_PH" parent="**/DesComps:*/StIntOut"/> 
     </node>
 
     <!-- Container doing fixed layout -->
@@ -67,12 +63,12 @@
 	    <node id="WinAgent" parent="AVisFixed"/> 
 	</add>
 	<!-- Child's representaitve -->
-	<node id="Child" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<node id="Child" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 	    <cont node="Prop:Required" val="MVisContainer"/>
 	    <cont node="Prop:Provided" val="MVisChild"/>
 	</node>
 	<!-- Parent's representative -->
-	<node id="Parent" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
+	<node id="Parent" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
 	    <cont node="Prop:Required" val="MVisChild"/>
 	    <cont node="Prop:Provided" val="MVisContainer"/>
 	</node>
