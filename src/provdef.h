@@ -8,7 +8,11 @@ class Vert;
 class ProvDef: public GProvider
 {
     public:
-	ProvDef(const string &aName);
+	typedef pair<string, Elem*> TRegVal;
+	typedef map<string, Elem*> TReg;
+    public:
+	ProvDef(const string &aName, MEnv* aEnv);
+	virtual ~ProvDef();
 	// From MProvider
 	virtual Elem* CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv);
 	virtual Elem* GetNode(const string& aUri);
@@ -17,6 +21,8 @@ class ProvDef: public GProvider
 	virtual const string& ModulesPath() const;
     private:
 	vector<string> iNodesInfo;
+	Elem* iElem;
+	TReg iReg;
 };
 
 

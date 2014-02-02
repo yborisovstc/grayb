@@ -16,6 +16,12 @@ FuncBase::FuncBase(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMa
     SetParent(Type());
 }
 
+FuncBase::FuncBase(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+{
+    SetEType(Elem::PEType());
+    SetParent(Elem::PEType());
+}
+
 void *FuncBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
@@ -37,7 +43,7 @@ void *FuncBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* a
 TBool FuncBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
     TBool res = EFalse;
-    Elem* caps = aContext.GetNode("Elem:Capsule");
+    Elem* caps = aContext.GetNode("Capsule");
     if (caps != NULL) {
 	Elem* cp = caps->GetCompOwning("ConnPoint", &aComp);
 	if (cp != NULL) {
@@ -53,7 +59,7 @@ void FuncBase::OnDataChanged()
 
 void FuncBase::NotifyUpdate()
 {
-    Elem* eout = GetNode("../../Elem:Capsule/ConnPoint:out");
+    Elem* eout = GetNode("../../Capsule/out");
     if (eout != NULL) {
 	MVert* mvout = eout->GetObj(mvout);
 	MVert* mpair = *(mvout->Pairs().begin());
@@ -64,6 +70,11 @@ void FuncBase::NotifyUpdate()
 	    }
 	}
     }
+}
+
+TBool FuncBase::HandleIoChanged(Elem& aContext, Elem* aCp)
+{
+    return EFalse;
 }
 
 // Agent base of Int function
@@ -77,6 +88,12 @@ AFunInt::AFunInt(const string& aName, Elem* aMan, MEnv* aEnv): FuncBase(aName, a
 {
     SetEType(Type(), FuncBase::PEType());
     SetParent(Type());
+}
+
+AFunInt::AFunInt(Elem* aMan, MEnv* aEnv): FuncBase(Type(), aMan, aEnv), mData(0)
+{
+    SetEType(FuncBase::PEType());
+    SetParent(FuncBase::PEType());
 }
 
 void *AFunInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -98,7 +115,7 @@ void AFunInt::SetRes(TInt aData)
 {
     if (mData != aData) {
 	Elem* host = iMan->GetMan();
-	Logger()->WriteFormat("[%s/%s] updated [%d <- %d]", host->Name().c_str(), Name().c_str(), mData, aData);
+	Logger()->Write(MLogRec::EInfo, host, "Updated [%d <- %d]", aData, mData);
 	mData = aData;
 	NotifyUpdate();
     }
@@ -117,7 +134,7 @@ TInt AFunInt::Value()
 MDIntGet* AFunInt::GetInp(const string& aInpName)
 {
     MDIntGet* res = NULL;
-    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:" + aInpName);
+    Elem* einp = GetNode("../../Capsule/" + aInpName);
     if (einp != NULL) {
 	Vert* vert = einp->GetObj(vert);
 	MVert* pair = *(vert->Pairs().begin());
@@ -140,6 +157,12 @@ AIncInt::AIncInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunInt(aName, aM
 {
     SetEType(Type(), AFunInt::PEType());
     SetParent(Type());
+}
+
+AIncInt::AIncInt(Elem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
+{
+    SetEType(AFunInt::PEType());
+    SetParent(AFunInt::PEType());
 }
 
 void *AIncInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -202,6 +225,12 @@ AFunIntRes::AFunIntRes(const string& aName, Elem* aMan, MEnv* aEnv): AFunInt(aNa
     SetParent(Type());
 }
 
+AFunIntRes::AFunIntRes(Elem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
+{
+    SetEType(AFunInt::PEType());
+    SetParent(AFunInt::PEType());
+}
+
 void *AFunIntRes::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
@@ -240,7 +269,7 @@ TBool AFunIntRes::HandleIoChanged(Elem& aContext, Elem* aCp)
 
 void AFunIntRes::UpdateOutp()
 {
-    Elem* out = GetNode("../../Elem:Capsule/ConnPoint:out");
+    Elem* out = GetNode("../../Capsule/out");
     if (out != NULL) {
 	Vert* vert = out->GetObj(vert);
 	MVert* pair = *(vert->Pairs().begin());
@@ -257,7 +286,7 @@ void AFunIntRes::UpdateOutp()
 void AFunIntRes::OnDataChanged()
 {
 //    MDIntGet* mget = GetInp("inp");
-    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:inp");
+    Elem* einp = GetNode("../../Capsule/inp");
     __ASSERT(einp != NULL);
     RqContext cont(this);
     MDIntGet* mget = (MDIntGet*) einp->GetSIfi("MDIntGet", &cont);
@@ -280,6 +309,12 @@ AAddInt::AAddInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunInt(aName, aM
 {
     SetEType(Type(), AFunInt::PEType());
     SetParent(Type());
+}
+
+AAddInt::AAddInt(Elem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
+{
+    SetEType(AFunInt::PEType());
+    SetParent(AFunInt::PEType());
 }
 
 void *AAddInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -316,7 +351,7 @@ TBool AAddInt::HandleIoChanged(Elem& aContext, Elem* aCp)
 
 void AAddInt::OnDataChanged()
 {
-    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:inp");
+    Elem* einp = GetNode("../../Capsule/inp");
     RqContext cont(this);
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
     TInt val = 0;
@@ -377,7 +412,7 @@ TBool ACountCritInt::HandleIoChanged(Elem& aContext, Elem* aCp)
 
 void ACountCritInt::OnDataChanged()
 {
-    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:inp");
+    Elem* einp = GetNode("../../Capsule/inp");
     RqContext cont(this);
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
     TInt val = 0;
@@ -404,6 +439,12 @@ AFunc::AFunc(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEn
     SetParent(Type());
 }
 
+AFunc::AFunc(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+{
+    SetEType(Elem::PEType());
+    SetParent(Elem::PEType());
+}
+
 void *AFunc::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
@@ -425,7 +466,7 @@ void *AFunc::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx
 TBool AFunc::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
     TBool res = ETrue;
-    Elem* caps = aContext.GetNode("Elem:Capsule");
+    Elem* caps = aContext.GetNode("Capsule");
     if (caps != NULL) {
 	Elem* cp = caps->GetCompOwning("ConnPoint", &aComp);
 	if (cp != NULL) {
@@ -456,7 +497,7 @@ void AFunc::OnDataChanged()
 
 TBool AFunc::IsLogeventUpdate()
 {
-    Elem* node = GetNode("../../Elem:Logspec/DataLogevent:Update");
+    Elem* node = GetNode("../../Logspec/Update");
     return node != NULL;
 }
 
@@ -473,6 +514,13 @@ AFuncInt::AFuncInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aM
     SetEType(Type(), AFunc::PEType());
     SetParent(Type());
 }
+
+AFuncInt::AFuncInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv), mData(0)
+{
+    SetEType(AFunc::PEType());
+    SetParent(AFunc::PEType());
+}
+
 
 void *AFuncInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
@@ -506,6 +554,10 @@ void AFuncInt::GetCont(string& aCont)
     aCont = ss.str();
 }
 
+TInt AFuncInt::GetValue()
+{
+    return 0;
+}
 
 // Function agent base wo caching
 
@@ -518,6 +570,12 @@ AFAddInt::AFAddInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aM
 {
     SetEType(Type(), AFunc::PEType());
     SetParent(Type());
+}
+
+AFAddInt::AFAddInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
+{
+    SetEType(AFunc::PEType());
+    SetParent(AFunc::PEType());
 }
 
 void *AFAddInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -562,6 +620,13 @@ AFSubInt::AFSubInt(const string& aName, Elem* aMan, MEnv* aEnv): AFuncInt(aName,
     SetEType(Type(), AFuncInt::PEType());
     SetParent(Type());
 }
+
+AFSubInt::AFSubInt(Elem* aMan, MEnv* aEnv): AFuncInt(Type(), aMan, aEnv)
+{
+    SetEType(AFuncInt::PEType());
+    SetParent(AFuncInt::PEType());
+}
+
 
 void *AFSubInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
@@ -613,6 +678,13 @@ AFLimInt::AFLimInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aM
     SetEType(Type(), AFunc::PEType());
     SetParent(Type());
 }
+
+AFLimInt::AFLimInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
+{
+    SetEType(AFunc::PEType());
+    SetParent(AFunc::PEType());
+}
+
 
 void *AFLimInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
@@ -668,6 +740,12 @@ AFDivInt::AFDivInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aM
 {
     SetEType(Type(), AFunc::PEType());
     SetParent(Type());
+}
+
+AFDivInt::AFDivInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
+{
+    SetEType(AFunc::PEType());
+    SetParent(AFunc::PEType());
 }
 
 void *AFDivInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -747,7 +825,7 @@ void *AFIntToVect::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext
 vector<TInt> AFIntToVect::Value()
 {
     vector<TInt> res;
-    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:inp");
+    Elem* einp = GetNode("../../Capsule/inp");
     __ASSERT(einp != NULL);
     RqContext cont(this);
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
@@ -772,6 +850,14 @@ string AFConvInt::PEType()
 AFConvInt::AFConvInt(const string& aName, Elem* aMan, MEnv* aEnv): AFuncInt(aName, aMan, aEnv)
 {
     SetEType(Type(), AFuncInt::PEType());
+    SetParent(Type());
+    iSampleHolder.iHost = this;
+}
+
+AFConvInt::AFConvInt(Elem* aMan, MEnv* aEnv): AFuncInt(Type(), aMan, aEnv)
+{
+    SetEType(AFuncInt::PEType());
+    SetParent(AFuncInt::PEType());
     iSampleHolder.iHost = this;
 }
 
@@ -895,7 +981,7 @@ void *AFuncm::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCt
 TBool AFuncm::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
     TBool res = ETrue;
-    Elem* caps = aContext.GetNode("Elem:Capsule");
+    Elem* caps = aContext.GetNode("Capsule");
     if (caps != NULL) {
 	Elem* cp = caps->GetCompOwning("ConnPoint", &aComp);
 	if (cp != NULL) {
@@ -907,7 +993,7 @@ TBool AFuncm::HandleCompChanged(Elem& aContext, Elem& aComp)
 
 void AFuncm::NotifyUpdate()
 {
-    Elem* eout = GetNode("../../Elem:Capsule/ConnPoint:out");
+    Elem* eout = GetNode("../../Capsule/out");
     if (eout != NULL) {
 	MVert* mvout = eout->GetObj(mvout);
 	MVert* mpair = *(mvout->Pairs().begin());
@@ -951,7 +1037,7 @@ void *AFuncmAdd::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* 
 
 TInt AFuncmAdd::ExcInt::Value()
 {
-    Elem* einp = iHost.GetNode("../../Elem:Capsule/ConnPoint:inp");
+    Elem* einp = iHost.GetNode("../../Capsule/inp");
     RqContext cont(&iHost);
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
     TInt val = 0;
@@ -975,6 +1061,12 @@ AFGTInt::AFGTInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan
 {
     SetEType(Type(), AFunc::PEType());
     SetParent(Type());
+}
+
+AFGTInt::AFGTInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
+{
+    SetEType(AFunc::PEType());
+    SetParent(AFunc::PEType());
 }
 
 void *AFGTInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -1019,6 +1111,12 @@ AFBoolToInt::AFBoolToInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aNa
 {
     SetEType(Type(), AFunc::PEType());
     SetParent(Type());
+}
+
+AFBoolToInt::AFBoolToInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
+{
+    SetEType(AFunc::PEType());
+    SetParent(AFunc::PEType());
 }
 
 void *AFBoolToInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)

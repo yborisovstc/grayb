@@ -53,7 +53,9 @@ void* ChromoMdlX::Find(const void* aHandle, const string& aUri)
 		TNodeType type = GetType((void*) res);
 		char *name = (char*) xmlGetProp(res, (const xmlChar *) GUri::NodeAttrName(ENa_Id).c_str());
 		char *parent = (char*) xmlGetProp(res, (const xmlChar *) GUri::NodeAttrName(ENa_Parent).c_str());
-		if (type == ENt_Node && (elem.first == "*" || elem.first.compare(parent) == 0) && elem.second.second.compare(name) == 0) {
+		string eparent;
+		char rel = GUri::GetExtFirstPart(elem.first, eparent);
+		if (type == ENt_Node && rel == GUri::KParentSep && (eparent == GUri::KTypeAny || eparent.compare(parent) == 0) && elem.second.second.compare(name) == 0) {
 		    break;
 		}
 	    }

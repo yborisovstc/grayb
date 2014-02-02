@@ -42,7 +42,7 @@
 
     <!-- Data Source -->
     <node id="DSource" parent="incapsmod/Incaps">
-	<add node="Elem:Capsule">
+	<add node="Capsule">
 	    <node id="Out" parent="../../OutSocket"/> 
 	</add>
 

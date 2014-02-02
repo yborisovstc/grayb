@@ -13,7 +13,7 @@ const char* KRootName = "Root";
 Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileName): Base(aName), iRoot(NULL), iLogger(NULL)
 {
     iLogger = new GLogRec("Logger", aLogFileName.empty() ? KLogFileName : aLogFileName);
-    iProvider = new GFactory("Factory");
+    iProvider = new GFactory("Factory", this);
     iProvider->LoadPlugins();
     iSystSpec = aSpecFile;
     srand(time(NULL));
@@ -39,7 +39,9 @@ void Env::ConstructSystem()
 	const ChromoNode& root = spec->Root();
 //	iRoot = new Elem(root.Name(), NULL, this);
 	string sparent = root.Attr(ENa_Parent);
+	Elem* parent = iProvider->GetNode(sparent);
 	iRoot = iProvider->CreateNode(sparent, root.Name(), NULL, this);
+	parent->AppendChild(iRoot);
 	if (iRoot != NULL) {
 	    iRoot->SetMutation(root);
 	    iRoot->Mutate();

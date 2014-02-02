@@ -76,9 +76,9 @@ class GUriBase
 	const string& Scheme() const;
 	string GetName() const;
 	void Append(const GUriBase& aUri);
-	void AppendElem(const string& aType, const string& aName, char aRelType = KParentSep);
+	void AppendElem(const string& aType, const string& aName, char aRelType = KNodeSep);
 	void AppendElem(const TElem& aElem);
-	void PrependElem(const string& aType, const string& aName, char aRelType = KParentSep);
+	void PrependElem(const string& aType, const string& aName, char aRelType = KNodeSep);
 	void AppendQueryElem(TQueryOpr aOpr, TNodeAttr aAttr, const string& aValue);
 	static const string& NodeAttrName(TNodeAttr aAttr);
 	static const string& NodeTypeName(TNodeType aType);
@@ -86,10 +86,13 @@ class GUriBase
 	static TNodeType NodeType(const string& aTypeName);
 	//void ToString(string& aRes);
 	static TElem Elem(char aRelType, const string& aName, const string& aExt);
+	TBool IsErr() const { return iErr;};
+	static char GetExtFirstPart(const string& aExt, string& aPart);
     protected:
 	virtual string DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort = EFalse) const = 0;
 	static void Construct();
 	static string SelectGroup(const string& aData, int aEndPos);
+	static size_t FindGroup(const string& aStr, size_t aPos);
     protected:
 	string iUri;
 	string iScheme;
@@ -98,6 +101,7 @@ class GUriBase
 	vector<TElem> iElems;
 	vector<TQueryElem> iQueryElems;
 	static TBool iInit;
+	TBool iErr;
     public:
 	static const string KTypeAny;
 	static const string KTypeAnywhere;

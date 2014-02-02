@@ -5,7 +5,6 @@
      This test is just for conn points connection
      -->
 
-
 <!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
 
 <node id="test" parent="Syst">
@@ -17,26 +16,24 @@
 	    <node id="Creation" parent="Elem">
 	    </node>
 	</node>
-	<node id="cp" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"> 
-	    <cont node="Prop:Provided" val="Role1"/> <cont node="Prop:Required" val="Role2"/>
+	<node id="cp" parent="../sysmod/ConnPoint"> 
+	    <cont node="Provided" val="Role1"/> <cont node="Required" val="Role2"/>
 	</node>
-	<node id="ep" parent="../SysComps:sysmod/Vert:Extender"> 
-	    <cont node="ConnPoint:Int/Prop:Provided" val="Role4"/> <cont node="ConnPoint:Int/Prop:Required" val="Role3"/>
+	<node id="ep" parent="../sysmod/Extender"> 
+	    <cont node="Int/Provided" val="Role4"/> <cont node="Int/Required" val="Role3"/>
 	</node>
     </node>
 
-    <node id="cp1" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
-	<cont node="Prop:Provided" val="Role1"/> <cont node="Prop:Required" val="Role2"/></node>
-    <node id="cp2" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
-	<cont node="Prop:Provided" val="Role2"/> <cont node="Prop:Required" val="Role1"/></node>
-    <node id="cp3" parent="SysComps:sysmod/ConnPointBase:ConnPoint"> 
-	<cont node="Prop:Provided" val="Role4"/> <cont node="Prop:Required" val="Role3"/></node>
-    <node parent="Edge"> <cont node="Prop:P1" val="ConnPoint:cp1"/> <cont node="Prop:P2" val="ConnPoint:cp2"/> </node>
+    <node id="cp1" parent="sysmod/ConnPoint"> 
+	<cont node="Provided" val="Role1"/> <cont node="Required" val="Role2"/></node>
+    <node id="cp2" parent="sysmod/ConnPoint"> 
+	<cont node="Provided" val="Role2"/> <cont node="Required" val="Role1"/></node>
+    <node id="cp3" parent="sysmod/ConnPoint"> 
+	<cont node="Provided" val="Role4"/> <cont node="Required" val="Role3"/></node>
+    <node parent="Edge"> <cont node="P1" val="cp1"/> <cont node="P2" val="cp2"/> </node>
 
-    <node parent="Edge"> <cont node="Prop:P1" val="Syst:Syst1/ConnPoint:cp"/> <cont node="Prop:P2" val="ConnPoint:cp2"/> </node>
-    <node parent="Edge"> <cont node="Prop:P1" val="Syst:Syst1/Extender:ep"/> <cont node="Prop:P2" val="ConnPoint:cp3"/> </node>
-    <!--
-    -->
+    <node parent="Edge"> <cont node="P1" val="Syst1/cp"/> <cont node="P2" val="cp2"/> </node>
+    <node parent="Edge"> <cont node="P1" val="Syst1/ep"/> <cont node="P2" val="cp3"/> </node>
 
 </node>
 

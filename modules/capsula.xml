@@ -8,10 +8,8 @@
 
 <node id="IncapsComps" parent="Elem">
 
-
     <node id="Incaps" parent="Syst"> 
-
-    	<add node="Elem:Agents"> 
+    	<add node="Agents"> 
 	    <node id="MACompsObserver" parent="IncapsAgent"> 
 	    </node>
     	</add>

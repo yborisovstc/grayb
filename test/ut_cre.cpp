@@ -54,10 +54,11 @@ void Ut_cre::test_Cre()
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
+    Elem* ee = root->GetNode(":Elem");
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* e2 = root->GetNode("Elem:elem1/Elem:elem2");
+    Elem* e2 = root->GetNode("elem1/elem2");
     CPPUNIT_ASSERT_MESSAGE("Fail to get e2", e2 != 0);
-    Elem* e4 = root->GetNode("elem1:elem3/elem2:elem4");
+    Elem* e4 = root->GetNode("elem3/elem4");
     CPPUNIT_ASSERT_MESSAGE("Fail to get e4", e4 != 0);
 
     delete iEnv;
@@ -72,7 +73,7 @@ void Ut_cre::test_CreGr()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* v1 = root->GetNode("Vert:v1");
+    Elem* v1 = root->GetNode("(Vert:)v1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get v1", v1 != 0);
     MVert* mv1 = v1->GetObj(mv1);
     CPPUNIT_ASSERT_MESSAGE("Fail to get mv1", mv1 != 0);
@@ -93,7 +94,7 @@ void Ut_cre::test_CreSyst()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* cp1 = root->GetNode("ConnPoint:cp1");
+    Elem* cp1 = root->GetNode("(ConnPoint:)cp1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get cp1", cp1 != 0);
     MVert* mcp1 = cp1->GetObj(mcp1);
     CPPUNIT_ASSERT_MESSAGE("Fail to get mcp1", mcp1 != 0);
@@ -114,16 +115,16 @@ void Ut_cre::test_CreIncaps()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* ep1 = root->GetNode("Incaps:test/Incaps:Ics1/Elem:Capsule/Extender:ep");
+    Elem* ep1 = root->GetNode("test/Ics1/Capsule/ep");
     CPPUNIT_ASSERT_MESSAGE("Fail to get ep1", ep1 != 0);
     MVert* mep1 = ep1->GetObj(mep1);
     CPPUNIT_ASSERT_MESSAGE("Fail to get mep1", mep1 != 0);
     MVert* pair = *(mep1->Pairs().begin());
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    Elem* epairt = root->GetNode("Incaps:test/Incaps:Ics2/Elem:Capsule/Extender:ep");
+    Elem* epairt = root->GetNode("test/(Incaps:)Ics2/Capsule/ep");
     MVert* mpairt = epairt->GetObj(mpairt);
     CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
-    Elem* wep1 = root->GetNode("Incaps:test/Incaps:Ics1/ConnPoint:cp_int");
+    Elem* wep1 = root->GetNode("test/Ics1/(ConnPoint:)cp_int");
     CPPUNIT_ASSERT_MESSAGE("Fail to get wrong edge ep1", wep1 != NULL);
 
     delete iEnv;
@@ -138,7 +139,7 @@ void Ut_cre::test_CreData()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* doutp = root->GetNode("Incaps:test/DataSInt:DataS_Int_1/Elem:Capsule/ConnPoint:out");
+    Elem* doutp = root->GetNode("(Incaps:)test/(DataSInt:)DataS_Int_1/(Elem:)Capsule/(ConnPoint:)out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
     MDIntGet* doutpget = doutp->GetObj(doutpget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
@@ -147,12 +148,12 @@ void Ut_cre::test_CreData()
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out vertex", mdoutpv != 0);
     MVert* pair = *(mdoutpv->Pairs().begin());
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    Elem* efuninp = root->GetNode("Incaps:test/FuncIncInt:Incr/Elem:Capsule/ConnPoint:inp");
+    Elem* efuninp = root->GetNode("test/Incr/Capsule/inp");
     CPPUNIT_ASSERT_MESSAGE("Fail to get fun inp", efuninp != NULL);
     MVert* mpairt = efuninp->GetObj(mpairt);
     CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
 
-    Elem* foutp = root->GetNode("Incaps:test/FuncIncInt:Incr/Elem:Capsule/ConnPoint:out");
+    Elem* foutp = root->GetNode("test/Incr/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
     MDIntGet* foutpget = foutp->GetObj(doutpget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);

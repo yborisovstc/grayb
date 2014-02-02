@@ -16,41 +16,41 @@
     <!-- Module containing components of func -->
     <node id="funcmod" parent="file:../modules/func.xml#FuncComps" />
 
-    <node id="test" parent="IncapsComps:incapsmod/Syst:Incaps">
+    <node id="test" parent="(IncapsComps:)incapsmod/(Syst:)Incaps">
 
-	<node id="DataS_Int_1" parent="../DataComps:datamod/DataS:DataSInt">
-	    <cont node="Prop:Value" val="34"/> 
+	<node id="DataS_Int_1" parent="../(DataComps:)datamod/(DataS:)DataSInt">
+	    <cont node="(Prop:)Value" val="34"/> 
 	</node>
 
-	<node id="Incr" parent="../FuncComps:funcmod/Incaps:FuncIncInt"/>
+	<node id="Incr" parent="../(FuncComps:)funcmod/(Incaps:)FuncIncInt"/>
 
-	<node id="Incr2" parent="../FuncComps:funcmod/Incaps:FuncIncInt"/>
+	<node id="Incr2" parent="../(FuncComps:)funcmod/(Incaps:)FuncIncInt"/>
 
-	<node id="Cp1" parent="../SysComps:sysmod/ConnPointBase:ConnPoint"/>
-	<node id="Cp2" parent="**/SysComps:*/ConnPointBase:ConnPoint"/>
+	<node id="Cp1" parent="../(SysComps:)sysmod/(ConnPointBase:)ConnPoint"/>
+	<node id="Cp2" parent="**/(SysComps:)*/(ConnPointBase:)ConnPoint"/>
 
-	<node id="Result" parent="../FuncComps:funcmod/Incaps:FuncIntRes"/>
+	<node id="Result" parent="../(FuncComps:)funcmod/(Incaps:)FuncIntRes"/>
 
-	<node id="ResData" parent="../DataComps:datamod/DataS:DataSInt"/>
-
-	<node parent="Edge"> 
-	    <cont node="Prop:P1" val="DataSInt:DataS_Int_1/Elem:Capsule/ConnPoint:out"/> 
-	    <cont node="Prop:P2" val="FuncIncInt:Incr/Elem:Capsule/ConnPoint:inp"/> 
-	</node>
+	<node id="ResData" parent="../(DataComps:)datamod/(DataS:)DataSInt"/>
 
 	<node parent="Edge"> 
-	    <cont node="Prop:P1" val="FuncIncInt:Incr/Elem:Capsule/ConnPoint:out"/> 
-	    <cont node="Prop:P2" val="FuncIncInt:Incr2/Elem:Capsule/ConnPoint:inp"/> 
+	    <cont node="(Prop:)P1" val="(DataSInt:)DataS_Int_1/(Elem:)Capsule/(ConnPoint:)out"/> 
+	    <cont node="(Prop:)P2" val="(FuncIncInt:)Incr/(Elem:)Capsule/(ConnPoint:)inp"/> 
 	</node>
 
 	<node parent="Edge"> 
-	    <cont node="Prop:P1" val="FuncIncInt:Incr2/Elem:Capsule/ConnPoint:out"/> 
-	    <cont node="Prop:P2" val="FuncIntRes:Result/Elem:Capsule/ConnPoint:inp"/> 
+	    <cont node="(Prop:)P1" val="(FuncIncInt:)Incr/(Elem:)Capsule/(ConnPoint:)out"/> 
+	    <cont node="(Prop:)P2" val="(FuncIncInt:)Incr2/(Elem:)Capsule/(ConnPoint:)inp"/> 
 	</node>
 
 	<node parent="Edge"> 
-	    <cont node="Prop:P1" val="FuncIntRes:Result/Elem:Capsule/ConnPoint:out"/> 
-	    <cont node="Prop:P2" val="DataSInt:ResData/Elem:Capsule/ConnPoint:inp"/> 
+	    <cont node="(Prop:)P1" val="(FuncIncInt:)Incr2/(Elem:)Capsule/(ConnPoint:)out"/> 
+	    <cont node="(Prop:)P2" val="(FuncIntRes:)Result/(Elem:)Capsule/(ConnPoint:)inp"/> 
+	</node>
+
+	<node parent="Edge"> 
+	    <cont node="(Prop:)P1" val="(FuncIntRes:)Result/(Elem:)Capsule/(ConnPoint:)out"/> 
+	    <cont node="(Prop:)P2" val="(DataSInt:)ResData/(Elem:)Capsule/(ConnPoint:)inp"/> 
 	</node>
 
     </node>

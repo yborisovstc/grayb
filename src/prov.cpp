@@ -2,7 +2,7 @@
 
 const string KModPath;
 
-GProvider::GProvider(const string &aName): Base(aName)
+GProvider::GProvider(const string &aName, MEnv* aEnv): Base(aName), iEnv(aEnv)
 {
 }
 

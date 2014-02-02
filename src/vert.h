@@ -36,6 +36,7 @@ class Vert: public Elem, public MVert
 	static const char* Type() { return "Vert";};
 	static string PEType();
 	Vert(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	Vert(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~Vert();
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -47,8 +48,8 @@ class Vert: public Elem, public MVert
 	virtual set<MVert*>& Pairs();
 	virtual Base* EBase();
 	// From Elem
-	virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
-	virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
+	//virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
+	//virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
 	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);
 	virtual void OnCompDeleting(Elem& aComp);
 	virtual void OnCompAdding(Elem& aComp);

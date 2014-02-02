@@ -2,9 +2,9 @@
 #include "factr.h"
 #include "provdef.h"
 
-GFactory::GFactory(const string& aName): Base(aName)
+GFactory::GFactory(const string& aName, MEnv* aEnv): Base(aName), iEnv(aEnv)
 {
-    GProvider* baseprov = new ProvDef("ProvDef");
+    GProvider* baseprov = new ProvDef("ProvDef", iEnv);
     __ASSERT(baseprov != NULL);
     AddProvider(baseprov);
 }
@@ -25,6 +25,11 @@ Elem* GFactory::CreateNode(const string& aType, const string& aName, Elem* aMan,
 
 Elem* GFactory::GetNode(const string& aUri)
 {
+    Elem* res = NULL;
+    for (map<string, GProvider*>::iterator it = iProviders.begin(); it != iProviders.end() && res == NULL; it++) {
+	res = it->second->GetNode(aUri);
+    }
+    return res;
 }
 
 Chromo* GFactory::CreateChromo()

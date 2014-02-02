@@ -12,6 +12,7 @@ class ATrBase: public Elem
 	static const char* Type() { return "ATrBase";};
 	static string PEType();
 	ATrBase(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ATrBase(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 };
@@ -23,8 +24,11 @@ class ATrInt: public ATrBase, public MDIntGet
 	static const char* Type() { return "ATrInt";};
 	static string PEType();
 	ATrInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ATrInt(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MDIntGet
+	virtual TInt Value();
     protected:
 	MDIntGet* GetInp(const string& aInpName);
 	TIfRange GetInpRg(const string& aInpName);
@@ -39,6 +43,7 @@ class ATrIncInt: public ATrInt
 	static const char* Type() { return "ATrIncInt";};
 	static string PEType();
 	ATrIncInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ATrIncInt(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MDIntGet
@@ -52,6 +57,7 @@ class ATrSubInt: public ATrInt
 	static const char* Type() { return "ATrSubInt";};
 	static string PEType();
 	ATrSubInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ATrSubInt(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MDIntGet
@@ -65,6 +71,7 @@ class ATrMplInt: public ATrInt
 	static const char* Type() { return "ATrMplInt";};
 	static string PEType();
 	ATrMplInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ATrMplInt(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MDIntGet
@@ -78,6 +85,7 @@ class ATrDivInt: public ATrInt
 	static const char* Type() { return "ATrDivInt";};
 	static string PEType();
 	ATrDivInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ATrDivInt(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MDIntGet
@@ -92,6 +100,7 @@ class StateAgent: public Elem, public MDesSyncable, public MDesObserver
 	static const char* Type() { return "StateAgent";};
 	static string PEType();
 	StateAgent(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	StateAgent(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Elem
@@ -122,6 +131,7 @@ class ADes: public Elem, public MDesSyncable, public MDesObserver
 	static const char* Type() { return "ADes";};
 	static string PEType();
 	ADes(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ADes(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Elem

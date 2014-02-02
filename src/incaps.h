@@ -9,6 +9,7 @@ class Incaps: public Elem, public MACompsObserver
 	static const char* Type() { return "IncapsAgent";};
 	static string PEType();
 	Incaps(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	Incaps(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MACompsObserver

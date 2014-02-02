@@ -10,15 +10,18 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable, public M
 	static const char* Type() { return "DataBase";};
 	static string PEType();
 	DataBase(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	DataBase(Elem* aMan = NULL, MEnv* aEnv = NULL);
     protected:
-	virtual bool FromString(const string& aData) = 0; 
-	virtual bool ToString(string& aData) = 0; 
+	virtual bool FromString(const string& aData); 
+	virtual bool ToString(string& aData); 
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
 	// From MDataObserver
 	virtual void OnDataChanged();
+	// From MUpdatable
+	virtual TBool Update();
     protected:
 	void UpdateProp();
 	void NotifyUpdate();
@@ -34,6 +37,7 @@ class DInt: public DataBase, public MDInt, public MDIntGet, public MDIntSet
 	static const char* Type() { return "DInt";};
 	static string PEType();
 	DInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	DInt(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MDInt
@@ -61,6 +65,7 @@ class DNInt: public DInt
 	static const char* Type() { return "DNInt";};
 	static string PEType();
 	DNInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	DNInt(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MDInt

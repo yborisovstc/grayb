@@ -20,12 +20,15 @@ const char GUriBase::KParentSep = ':';
 const char GUriBase::KNodeSep = '/';
 const char KGroupStart = '(';
 const char KGroupEnd = ')';
+const char KCurUnit = '.';
+const string KGroupMark = "()";
+const string KRelTypesMarks = "/:";
 
 TBool GUriBase::iInit = EFalse;
 
 
 
-GUriBase::GUriBase(const string& aUri): iUri(aUri)
+GUriBase::GUriBase(const string& aUri): iUri(aUri), iErr(EFalse)
 {
     Construct();
 }
@@ -163,6 +166,20 @@ GUriBase::TElem GUriBase::Elem(char aRelType, const string& aName, const string&
     return TElem(aExt, GUri::TRel(aRelType, aName));
 }
 
+char GUriBase::GetExtFirstPart(const string& aExt, string& aPart)
+{
+    aPart.append(GUri::KTypeAny);
+    char rel = GUri::KParentSep;
+    if (!aExt.empty()) {
+	char srel = aExt.at(aExt.size() - 1);
+	if (srel == GUri::KParentSep || srel == GUri::KNodeSep) {
+	    rel = srel;
+	    aPart = aExt.substr(0, aExt.size() - 1);
+	}
+    }
+    return rel;
+}
+
 
 
 GUri::GUri(const string& aUri): GUriBase(aUri)
@@ -174,10 +191,33 @@ GUri::GUri(): GUriBase()
 {
 }
 
+// Finds the end of group. Nested group are taken into account
+size_t GUriBase::FindGroup(const string& aStr, size_t aPos) 
+{
+    size_t res = string::npos;
+    size_t pos = aStr.find_first_of(KGroupStart, aPos); 
+    TInt count = 1;
+    if (pos == aPos) {
+	pos += 1;
+	while (count > 0) {
+	    pos = aStr.find_first_of(KGroupMark, pos); 
+	    if (pos == string::npos) {
+		res = aStr.size() + 1;
+		break;
+	    }
+	    else {
+		count += (aStr.at(pos) == KGroupStart) ? 1 : -1;
+		res = pos;
+	    }
+	}
+    }
+    return res;
+}
 
 void GUri::Parse()
 {
     TBool fin = EFalse;
+    TBool err = EFalse;
     string frag;
     size_t base_end = iUri.find_first_of('#', 0);
     if (base_end != string::npos) {
@@ -195,58 +235,58 @@ void GUri::Parse()
     }
     size_t query_beg = frag.find_first_of('?', 0);
     string hier = frag.substr(0, query_beg);
-    size_t elem_beg = 0;
     // Path
-    size_t elem_end = hier.find_first_of('/', 0);
-    string elem = hier.substr(0, elem_end);
-    while (!(elem.empty() && elem_end == string::npos)) {
-	size_t type_end = elem.find_first_of(':');
-	size_t name_beg = 0;
-	string type;
-	if (type_end == string::npos) {
-	    type = KTypeAny;
+    // Check the relation symbol, if omitted that assume it's hier
+    if (!hier.empty()) {
+	size_t pos = 0;
+	char rtype = KNodeSep;
+	char rs = hier.at(pos);
+	char rs1 = hier.at(pos + 1);
+	TBool curunit = EFalse;
+	if (rs == KCurUnit && rs1 != KCurUnit) {
+	    curunit = ETrue;
+	    pos += 1;
 	}
-	else {
-	    type = elem.substr(0, type_end);
-	    name_beg = type_end + 1;
+	rs = hier.at(pos);
+	size_t rs_pos = KRelTypesMarks.find_first_of(rs, 0);
+	if (rs_pos != string::npos) {
+	    rtype = rs;
+	    pos += 1;
 	}
-	string name = elem.substr(name_beg);
-	AppendElem(type, name);
-	if (elem_end == string::npos) {
-	    elem.clear();
-	} 
-	else {
-	    elem_beg = elem_end + 1;
-	    elem_end = hier.find_first_of('/', elem_beg);
-	    elem = hier.substr(elem_beg, elem_end == string::npos ? elem_end : elem_end - elem_beg);
+	else if (!curunit) {
+	    curunit = ETrue;
 	}
-    }
-    // Query
-    if (query_beg != string::npos) {
-	// Just one condition for now
-	string query = frag.substr(query_beg+1);
-	size_t cond_beg = 0;
-	size_t cond_end = query.find_first_of("&", cond_beg);
-	string cond = query.substr(cond_beg, cond_end);
-	TQueryOpr op = EQop_Unknown;
-	while (cond_beg != string::npos && !cond.empty()) {
-	    size_t attr_beg = 0;
-	    size_t attr_end = cond.find_first_of('=', 0);
-	    size_t val_beg = attr_end + 1;
-	    size_t val_end = string::npos;
-	    string attrs = cond.substr(attr_beg, attr_end);
-	    string val = cond.substr(val_beg, val_end);
-	    TNodeAttr attr = KNodeAttrs.count(attrs) > 0 ? KNodeAttrs[attrs] : ENa_Unknown;
-	    AppendQueryElem(op, attr, val);
-	    char ops = cond_end == string::npos ? ' ' : query.at(cond_end);
-	    op = EQop_Unknown;
-	    if (ops == '&') 
-		op = EQop_And;
-	    cond_beg = cond_end == string::npos ? string::npos : cond_end + 1;
-	    if (cond_beg != string::npos) {
-		cond_end = query.find_first_of("&", cond_beg);
-		cond = query.substr(cond_beg, cond_end);
+	if (!curunit) {
+	    // Root
+	    AppendElem("", "", rtype);
+	}
+	do {
+	    // Selecting next unit
+	    string ext;
+	    size_t ext_end = FindGroup(hier, pos);
+	    size_t name_beg = 0;
+	    if (ext_end != string::npos) {
+		if (ext_end >= hier.size()) {
+		    err = ETrue;
+		}
+		else {
+		    ext = hier.substr(pos + 1, ext_end - pos - 1);
+		    pos = ext_end + 1;
+		}
 	    }
+	    if (!err) {
+		size_t name_end = hier.find_first_of(KRelTypesMarks, pos);
+		string name = hier.substr(pos, name_end - pos);
+		AppendElem(ext, name, rtype);
+		pos = name_end;
+		if (pos != string::npos) {
+		    rtype = hier.at(pos);
+		    pos += 1;
+		}
+	    }
+	} while (!err && pos != string::npos && pos < hier.size());
+	if (!iErr && err) {
+	    iErr = err;
 	}
     }
 }
@@ -259,12 +299,14 @@ string GUri::DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort) const
 	GUri::TElem elem = *it;
 	if (!aShort) {
 	    if (!elem.first.empty() && elem.first != KTypeAny) {
-		res.append(elem.first + ":");
+		res.append(1, KGroupStart);
+		res.append(elem.first);
+		res.append(1, KGroupEnd);
 	    }
 	}
 	res.append(elem.second.second);
 	if (it + 1 != iElems.end()) {
-	    res.append("/");
+	    res.append(1, elem.second.first);
 	}
     }
     // Query
@@ -297,24 +339,24 @@ GUri& GUri::operator+=(const GUri& aUri)
 }
 
 /*
-void GUri::ToString(string& aRes)
-{
-    if (!iScheme.empty()) {
-	aRes.append(iScheme + KSchemeSep);
-    }
-    if (!iBase.empty()) {
-	aRes.append(iBase + KBaseSep);
-    }
-    for (vector<GUri::TElem>::const_iterator it = iElems.begin(); it != iElems.end(); it++) {
-	if (!it->second.empty()) {
-	    aRes.append(it->first + KParentSep + it->second);
-	}
-	if (it + 1 != iElems.end()) {
-	    aRes.append(KElemSep);
-	}
-    }
-}
-*/
+   void GUri::ToString(string& aRes)
+   {
+   if (!iScheme.empty()) {
+   aRes.append(iScheme + KSchemeSep);
+   }
+   if (!iBase.empty()) {
+   aRes.append(iBase + KBaseSep);
+   }
+   for (vector<GUri::TElem>::const_iterator it = iElems.begin(); it != iElems.end(); it++) {
+   if (!it->second.empty()) {
+   aRes.append(it->first + KParentSep + it->second);
+   }
+   if (it + 1 != iElems.end()) {
+   aRes.append(KElemSep);
+   }
+   }
+   }
+   */
 
 
 #if 0

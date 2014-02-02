@@ -8,166 +8,166 @@
 <node id="FuncComps" parent="Elem">
 
    <!-- Input of Func with Int arg/res -->
-   <node id="Inp_FInt" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-       <cont node="Prop:Required" val="MDIntGet"/>
-       <cont node="Prop:Provided" val="MDataObserver"/>
+   <node id="Inp_FInt" parent="**/(SysComps:)*/ConnPoint"> 
+       <cont node="Required" val="MDIntGet"/>
+       <cont node="Provided" val="MDataObserver"/>
    </node>
 
    <!-- Extended Input of Func with Int arg/res -->
-   <node id="Inp_FEInt" parent="**/SysComps:*/Extender"> 
+   <node id="Inp_FEInt" parent="**/(SysComps:)*/Extender"> 
        <cont node="Int/Provided" val="MDIntGet"/>
        <cont node="Int/Required" val="MDataObserver"/>
    </node>
 
    <!-- Output of Func with Int arg/res -->
-   <node id="Out_FInt" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-       <cont node="Prop:Required" val="MDataObserver"/>
-       <cont node="Prop:Provided" val="MDIntGet"/>
+   <node id="Out_FInt" parent="**/(SysComps:)*/ConnPoint"> 
+       <cont node="Required" val="MDataObserver"/>
+       <cont node="Provided" val="MDIntGet"/>
    </node>
 
    <!-- Extended Output of Func with Int arg/res -->
-   <node id="Out_FEInt" parent="**/SysComps:*/Extender"> 
+   <node id="Out_FEInt" parent="**/(SysComps:)*/Extender"> 
        <cont node="Int/Provided" val="MDataObserver"/>
        <cont node="Int/Required" val="MDIntGet"/>
    </node>
 
 
    <!-- Output of Bool Func -->
-   <node id="Out_FBool" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-       <cont node="Prop:Required" val="MDataObserver"/>
-       <cont node="Prop:Provided" val="MDBoolGet"/>
+   <node id="Out_FBool" parent="**/(SysComps:)*/ConnPoint"> 
+       <cont node="Required" val="MDataObserver"/>
+       <cont node="Provided" val="MDBoolGet"/>
    </node>
 
    <!-- Input of Bool Func -->
-   <node id="Inp_FBool" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-       <cont node="Prop:Required" val="MDBoolGet"/>
-       <cont node="Prop:Provided" val="MDataObserver"/>
+   <node id="Inp_FBool" parent="**/(SysComps:)*/ConnPoint"> 
+       <cont node="Required" val="MDBoolGet"/>
+       <cont node="Provided" val="MDataObserver"/>
    </node>
 
    <!-- Output of Func with Vect Int -->
-   <node id="Out_FVInt" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-       <cont node="Prop:Required" val="MDataObserver"/>
-       <cont node="Prop:Provided" val="MVIntGet"/>
+   <node id="Out_FVInt" parent="**/(SysComps:)*/ConnPoint"> 
+       <cont node="Required" val="MDataObserver"/>
+       <cont node="Provided" val="MVIntGet"/>
    </node>
 
     <!-- Int function wo inputs  -->
-    <node id="FuncInt" parent="**/IncapsComps:*/Syst:Incaps"> 
-    	<add node="Elem:Capsule"> 
+    <node id="FuncInt" parent="**/(IncapsComps:)*/Incaps"> 
+    	<add node="Capsule"> 
 	    <!-- Output -->
-	    <node id="out" parent="../../ConnPoint:Out_FInt"/> 
+	    <node id="out" parent="../../Out_FInt"/> 
     	</add>
     </node>
 
     <!-- Input of Transition Func with Int arg/res -->
-    <node id="Inp_TFInt" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-	<cont node="Prop:Required" val="MDIntGet"/>
+    <node id="Inp_TFInt" parent="**/(SysComps:)*/ConnPoint"> 
+	<cont node="Required" val="MDIntGet"/>
     </node>
 
     <!-- Output of Transition Func with Int arg/res -->
-    <node id="Out_TFInt" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-	<cont node="Prop:Provided" val="MDIntGet"/>
+    <node id="Out_TFInt" parent="**/(SysComps:)*/ConnPoint"> 
+	<cont node="Provided" val="MDIntGet"/>
     </node>
 
     <!-- Extended Input of Transition Func with Int arg/res -->
-    <node id="Inp_TFEInt" parent="**/SysComps:*/Extender"> 
-	<cont node="Int/Prop:Provided" val="MDIntGet"/>
+    <node id="Inp_TFEInt" parent="**/(SysComps:)*/Extender"> 
+	<cont node="Int/Provided" val="MDIntGet"/>
     </node>
 
     <!-- Extended Output of Transition Func with Int arg/res -->
-    <node id="Out_TFEInt" parent="**/SysComps:*/Extender"> 
-	<cont node="Int/Prop:Required" val="MDIntGet"/>
+    <node id="Out_TFEInt" parent="**/(SysComps:)*/Extender"> 
+	<cont node="Int/Required" val="MDIntGet"/>
     </node>
 
 
 
     <!-- Output of Bool Transition Func -->
-    <node id="Out_TFBool" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-	<cont node="Prop:Provided" val="MDBoolGet"/>
+    <node id="Out_TFBool" parent="**/(SysComps:)*/ConnPoint"> 
+	<cont node="Provided" val="MDBoolGet"/>
     </node>
 
     <!-- Input of Bool Transition Func -->
-    <node id="Inp_TFBool" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-       <cont node="Prop:Required" val="MDBoolGet"/>
+    <node id="Inp_TFBool" parent="**/(SysComps:)*/ConnPoint"> 
+       <cont node="Required" val="MDBoolGet"/>
    </node>
 
 
     <!-- Int function with simgle input  -->
-    <node id="FuncIntSi" parent="**/IncapsComps:*/Syst:Incaps"> 
+    <node id="FuncIntSi" parent="**/(IncapsComps:)*/Incaps"> 
 
-    	<add node="Elem:Capsule"> 
-	    <node id="inp" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-		<cont node="Prop:Required" val="MDIntGet"/>
-		<cont node="Prop:Provided" val="MDataObserver"/>
+    	<add node="Capsule"> 
+	    <node id="inp" parent="**/(SysComps:)*/ConnPoint"> 
+		<cont node="Required" val="MDIntGet"/>
+		<cont node="Provided" val="MDataObserver"/>
 	    </node>
-	    <node id="out" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-		<cont node="Prop:Required" val="MDataObserver"/>
-		<cont node="Prop:Provided" val="MDIntGet"/>
+	    <node id="out" parent="**/(SysComps:)*/ConnPoint"> 
+		<cont node="Required" val="MDataObserver"/>
+		<cont node="Provided" val="MDIntGet"/>
 	    </node>
     	</add>
     </node>
 
     <!-- Bool function with simgle input  -->
-    <node id="FuncBoolSi" parent="**/IncapsComps:*/Syst:Incaps"> 
-    	<add node="Elem:Capsule"> 
+    <node id="FuncBoolSi" parent="**/(IncapsComps:)*/Incaps"> 
+    	<add node="Capsule"> 
 	    <!-- Output -->
-	    <node id="out" parent="../../ConnPoint:Out_FBool"/> 
+	    <node id="out" parent="../../Out_FBool"/> 
     	</add>
     </node>
 
 
-    <node id="FuncIncInt" parent="**/IncapsComps:*/Syst:Incaps"> 
+    <node id="FuncIncInt" parent="**/(IncapsComps:)*/Incaps"> 
 
-    	<add node="Elem:Agents"> 
+    	<add node="Agents"> 
 	    <node id="func_agt" parent="AIncInt"> 
 	    </node>
     	</add>
 
-    	<add node="Elem:Capsule"> 
-	    <node id="inp" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-		<cont node="Prop:Required" val="MDIntGet"/>
-		<cont node="Prop:Provided" val="MDataObserver"/>
+    	<add node="Capsule"> 
+	    <node id="inp" parent="**/(SysComps:)*/ConnPoint"> 
+		<cont node="Required" val="MDIntGet"/>
+		<cont node="Provided" val="MDataObserver"/>
 	    </node>
-	    <node id="out" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-		<cont node="Prop:Required" val="MDataObserver"/>
-		<cont node="Prop:Provided" val="MDIntGet"/>
+	    <node id="out" parent="**/(SysComps:)*/ConnPoint"> 
+		<cont node="Required" val="MDataObserver"/>
+		<cont node="Provided" val="MDIntGet"/>
 	    </node>
     	</add>
     </node>
 
     <!-- Function of integer result -->
-    <node id="FuncIntRes" parent="**/IncapsComps:*/Syst:Incaps"> 
-    	<add node="Elem:Agents"> 
+    <node id="FuncIntRes" parent="**/(IncapsComps:)*/Incaps"> 
+    	<add node="Agents"> 
 	    <node id="func_agt" parent="AFunIntRes"> 
 	    </node>
     	</add>
-    	<add node="Elem:Capsule"> 
-	    <node id="inp" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-		<cont node="Prop:Required" val="MDIntGet"/>
-		<cont node="Prop:Provided" val="MDataObserver"/>
+    	<add node="Capsule"> 
+	    <node id="inp" parent="**/(SysComps:)*/ConnPoint"> 
+		<cont node="Required" val="MDIntGet"/>
+		<cont node="Provided" val="MDataObserver"/>
 	    </node>
-	    <node id="out" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-		<cont node="Prop:Required" val="MDIntSet"/>
+	    <node id="out" parent="**/(SysComps:)*/ConnPoint"> 
+		<cont node="Required" val="MDIntSet"/>
 	    </node>
     	</add>
     </node>
 
     <!-- Function of integer addition -->
-    <node id="FuncAddInt" parent="Incaps:FuncIntSi"> 
-	<add node="Elem:Agents"> 
+    <node id="FuncAddInt" parent="FuncIntSi"> 
+	<add node="Agents"> 
 	    <node id="func_agt" parent="AAddInt"> 
 	    </node>
 	</add>
     </node>
 
     <!-- Function of integer addition wo caching -->
-    <node id="FAddInt" parent="Incaps:FuncIntSi"> 
-	<add node="Elem:Agents"> <node id="func_agt" parent="AFAddInt"/> </add>
+    <node id="FAddInt" parent="FuncIntSi"> 
+	<add node="Agents"> <node id="func_agt" parent="AFAddInt"/> </add>
     </node>
 
     <!-- Function of integer addition wo caching -->
-    <node id="FSubInt" parent="Incaps:FuncInt"> 
-	<add node="Elem:Agents"> <node id="func_agt" parent="AFSubInt"/> </add>
-	<add node="Elem:Capsule"> 
+    <node id="FSubInt" parent="FuncInt"> 
+	<add node="Agents"> <node id="func_agt" parent="AFSubInt"/> </add>
+	<add node="Capsule"> 
 	    <!-- Input positives -->
 	    <node id="InpP" parent="../../Inp_FInt"/> 
 	    <!-- Input negatives -->
@@ -176,9 +176,9 @@
     </node>
 
     <!-- Function of restriction to upper and lower limits -->
-    <node id="FLimInt" parent="Incaps:FuncInt"> 
-	<add node="Elem:Agents"> <node id="func_agt" parent="AFLimInt"/> </add>
-	<add node="Elem:Capsule"> 
+    <node id="FLimInt" parent="FuncInt"> 
+	<add node="Agents"> <node id="func_agt" parent="AFLimInt"/> </add>
+	<add node="Capsule"> 
 	    <!-- Input  -->
 	    <node id="Inp" parent="../../Inp_FInt"/> 
 	    <!-- Input positives -->
@@ -189,9 +189,9 @@
     </node>
 
     <!-- Function of division -->
-    <node id="FDivInt" parent="Incaps:FuncInt"> 
-	<add node="Elem:Agents"> <node id="func_agt" parent="AFDivInt"/> </add>
-	<add node="Elem:Capsule"> 
+    <node id="FDivInt" parent="FuncInt"> 
+	<add node="Agents"> <node id="func_agt" parent="AFDivInt"/> </add>
+	<add node="Capsule"> 
 	    <!-- Divided  -->
 	    <node id="Inp_DD" parent="../../Inp_FInt"/> 
 	    <!-- Divisor -->
@@ -202,79 +202,79 @@
 
 
     <!-- Function of convolution. Working function is external -->
-    <node id="FConvInt" parent="Incaps:FuncIntSi"> 
-	<add node="Elem:Agents"> <node id="func_agt" parent="AFConvInt"/> </add>
-	<add node="Elem:Capsule"> 
+    <node id="FConvInt" parent="FuncIntSi"> 
+	<add node="Agents"> <node id="func_agt" parent="AFConvInt"/> </add>
+	<add node="Capsule"> 
 	    <!-- Output for passing argunent to Working function  -->
 	    <node id="Out_WFarg" parent="../../Out_FEInt"/> 
 	    <!-- Input for getting result from Working function  -->
 	    <node id="Inp_WFres" parent="../../Inp_FInt"/> 
 	</add>
 	<!-- Value of Working function argument -->
-	<node id="WFArg" parent="**/DataComps:*/DataSNInt"/>
+	<node id="WFArg" parent="**/(DataComps:)*/DataSNInt"/>
 	<node parent="Edge"> <cont node="P1" val="WFArg/Capsule/out"/> <cont node="P2" val="Capsule/Out_WFarg/Int"/> </node>
     </node>
 
     <!-- Int  inputs to Int vector conversation -->
-    <node id="FuncInpToVectInt" parent="**/IncapsComps:*/Syst:Incaps"> 
-	<add node="Elem:Capsule"> 
+    <node id="FuncInpToVectInt" parent="**/(IncapsComps:)*/Incaps"> 
+	<add node="Capsule"> 
 	    <!-- Input -->
-	    <node id="Inp" parent="../../ConnPoint:Inp_FInt"/> 
+	    <node id="Inp" parent="../../Inp_FInt"/> 
 	    <!-- Output -->
-	    <node id="Out" parent="../../ConnPoint:Out_FVInt"/> 
+	    <node id="Out" parent="../../Out_FVInt"/> 
 	</add>
     </node>
 
     <!-- Function Inp1 GT Inp2  -->
-    <node id="FGTInt" parent="Incaps:FuncBoolSi"> 
-	<add node="Elem:Agents"> <node id="func_agt" parent="AFGTInt"/> </add>
-    	<add node="Elem:Capsule"> 
-	    <node id="Inp1" parent="../../ConnPoint:Inp_FInt"/> 
-	    <node id="Inp2" parent="../../ConnPoint:Inp_FInt"/> 
+    <node id="FGTInt" parent="FuncBoolSi"> 
+	<add node="Agents"> <node id="func_agt" parent="AFGTInt"/> </add>
+    	<add node="Capsule"> 
+	    <node id="Inp1" parent="../../Inp_FInt"/> 
+	    <node id="Inp2" parent="../../Inp_FInt"/> 
     	</add>
     </node>
 
     <!-- Function Bool to Int  -->
-    <node id="FBoolToInt" parent="Incaps:FuncInt"> 
-	<add node="Elem:Agents"> <node id="func_agt" parent="AFBoolToInt"/> </add>
-    	<add node="Elem:Capsule"> 
-	    <node id="Inp" parent="../../ConnPoint:Inp_FBool"/> 
+    <node id="FBoolToInt" parent="FuncInt"> 
+	<add node="Agents"> <node id="func_agt" parent="AFBoolToInt"/> </add>
+    	<add node="Capsule"> 
+	    <node id="Inp" parent="../../Inp_FBool"/> 
     	</add>
     </node>
 
     <!-- Transition function. It doesn's support observation of inputs change -->
 
     <!-- Int Transition function wo inputs  -->
-    <node id="TFuncInt" parent="**/IncapsComps:*/Syst:Incaps"> 
-    	<add node="Elem:Capsule"> 
+    <node id="TFuncInt" parent="**/(IncapsComps:)*/Incaps"> 
+    	<add node="Capsule"> 
 	    <!-- Output -->
-	    <node id="out" parent="../../ConnPoint:Out_TFInt"/> 
+	    <node id="out" parent="../../Out_TFInt"/> 
     	</add>
     </node>
 
     <!-- Bool Transition function wo inputs  -->
-    <node id="TFuncBool" parent="**/IncapsComps:*/Syst:Incaps"> 
-    	<add node="Elem:Capsule"> 
+    <node id="TFuncBool" parent="**/(IncapsComps:)*/Incaps"> 
+    	<add node="Capsule"> 
 	    <!-- Output -->
-	    <node id="out" parent="../../ConnPoint:Out_TFBool"/> 
+	    <node id="out" parent="../../Out_TFBool"/> 
     	</add>
     </node>
 
 
 
     <!-- Function of integer addition wo caching -->
-    <node id="TFAddInt" parent="Incaps:TFuncInt"> 
-	<add node="Elem:Agents"> <node id="func_agt" parent="AFAddInt"/> </add>
-	<add node="Elem:Capsule"> 
+    <node id="TFAddInt" parent="TFuncInt"> 
+	<add node="Agents"> <node id="func_agt" parent="AFAddInt"/> </add>
+	<add node="Capsule"> 
 	    <!-- Input -->
 	    <node id="inp" parent="../../Inp_TFInt"/> 
 	</add>
     </node>
 
     <!-- Function of integer addition wo caching -->
-    <node id="TFSubInt" parent="Incaps:TFuncInt"> 
-	<add node="Elem:Agents"> <node id="func_agt" parent="AFSubInt"/> </add>
-	<add node="Elem:Capsule"> 
+    <node id="TFSubInt" parent="TFuncInt"> 
+	<add node="Agents"> <node id="func_agt" parent="AFSubInt"/> </add>
+	<add node="Capsule"> 
 	    <!-- Input positives -->
 	    <node id="InpP" parent="../../Inp_TFInt"/> 
 	    <!-- Input negatives -->
@@ -283,9 +283,9 @@
     </node>
 
     <!-- Function of restriction to upper and lower limits -->
-    <node id="TFLimInt" parent="Incaps:TFuncInt"> 
-	<add node="Elem:Agents"> <node id="func_agt" parent="AFLimInt"/> </add>
-	<add node="Elem:Capsule"> 
+    <node id="TFLimInt" parent="TFuncInt"> 
+	<add node="Agents"> <node id="func_agt" parent="AFLimInt"/> </add>
+	<add node="Capsule"> 
 	    <!-- Input  -->
 	    <node id="Inp" parent="../../Inp_TFInt"/> 
 	    <!-- Input positives -->
@@ -296,9 +296,9 @@
     </node>
 
     <!-- Function of division -->
-    <node id="TFDivInt" parent="Incaps:TFuncInt"> 
-	<add node="Elem:Agents"> <node id="func_agt" parent="AFDivInt"/> </add>
-	<add node="Elem:Capsule"> 
+    <node id="TFDivInt" parent="TFuncInt"> 
+	<add node="Agents"> <node id="func_agt" parent="AFDivInt"/> </add>
+	<add node="Capsule"> 
 	    <!-- Divided  -->
 	    <node id="Inp_DD" parent="../../Inp_TFInt"/> 
 	    <!-- Divisor -->
@@ -308,9 +308,9 @@
 
 
     <!-- Function of convolution. Working function is external -->
-    <node id="TFConvInt" parent="Incaps:TFuncInt"> 
-	<add node="Elem:Agents"> <node id="func_agt" parent="AFConvInt"/> </add>
-	<add node="Elem:Capsule"> 
+    <node id="TFConvInt" parent="TFuncInt"> 
+	<add node="Agents"> <node id="func_agt" parent="AFConvInt"/> </add>
+	<add node="Capsule"> 
 	    <node id="inp" parent="../../Inp_TFInt"/> 
 	    <!-- Output for passing argunent to Working function  -->
 	    <node id="Out_WFarg" parent="../../Out_TFEInt"/> 
@@ -318,24 +318,24 @@
 	    <node id="Inp_WFres" parent="../../Inp_TFInt"/> 
 	</add>
 	<!-- Value of Working function argument -->
-	<node id="WFArg" parent="**/DataComps:*/DataSUInt"/>
+	<node id="WFArg" parent="**/(DataComps:)*/DataSUInt"/>
 	<node parent="Edge"> <cont node="P1" val="WFArg/Capsule/out"/> <cont node="P2" val="Capsule/Out_WFarg/Int"/> </node>
     </node>
 
     <!-- Function Inp1 GT Inp2  -->
-    <node id="TFGTInt" parent="Incaps:TFuncBool"> 
-	<add node="Elem:Agents"> <node id="func_agt" parent="AFGTInt"/> </add>
-    	<add node="Elem:Capsule"> 
-	    <node id="Inp1" parent="../../ConnPoint:Inp_TFInt"/> 
-	    <node id="Inp2" parent="../../ConnPoint:Inp_TFInt"/> 
+    <node id="TFGTInt" parent="TFuncBool"> 
+	<add node="Agents"> <node id="func_agt" parent="AFGTInt"/> </add>
+    	<add node="Capsule"> 
+	    <node id="Inp1" parent="../../Inp_TFInt"/> 
+	    <node id="Inp2" parent="../../Inp_TFInt"/> 
     	</add>
     </node>
 
     <!-- Function Bool to Int  -->
-    <node id="TFBoolToInt" parent="Incaps:TFuncInt"> 
-	<add node="Elem:Agents"> <node id="func_agt" parent="AFBoolToInt"/> </add>
-    	<add node="Elem:Capsule"> 
-	    <node id="Inp" parent="../../ConnPoint:Inp_TFBool"/> 
+    <node id="TFBoolToInt" parent="TFuncInt"> 
+	<add node="Agents"> <node id="func_agt" parent="AFBoolToInt"/> </add>
+    	<add node="Capsule"> 
+	    <node id="Inp" parent="../../Inp_TFBool"/> 
     	</add>
     </node>
 

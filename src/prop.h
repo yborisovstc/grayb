@@ -12,6 +12,7 @@ class Prop: public Elem, public MProp
 	static const char* Type() { return "Prop";};
 	static string PEType();
 	Prop(const string& aName, Elem* aMan, MEnv* aEnv);
+	Prop(Elem* aMan, MEnv* aEnv);
     public:
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -31,6 +32,7 @@ class Description: public Prop
 	static const char* Type() { return "Description";};
 	static string PEType();
 	Description(const string& aName, Elem* aMan, MEnv* aEnv);
+	Description(Elem* aMan, MEnv* aEnv);
     public:
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);

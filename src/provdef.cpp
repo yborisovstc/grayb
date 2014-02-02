@@ -12,8 +12,13 @@
 // TODO [YB] To import from build variable
 const string KModulesPath = "/usr/share/grayb/modules/";
 
-ProvDef::ProvDef(const string &aName): GProvider(aName)
+ProvDef::ProvDef(const string &aName, MEnv* aEnv): GProvider(aName, aEnv)
 {
+}
+
+ProvDef::~ProvDef()
+{
+    delete iElem;
 }
 
 Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv)
@@ -109,8 +114,163 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     return res;
 }
 
+// TODO [YB] To create parent based on PEType
 Elem* ProvDef::GetNode(const string& aUri)
 {
+    Elem* res = NULL;
+    if (iReg.count(aUri) > 0) {
+	res = iReg.at(aUri);
+    }
+    else { 
+	Elem* parent = NULL;
+	if (aUri.compare(Elem::Type()) == 0) {
+	    res = new Elem(NULL, iEnv);
+	    iReg.insert(TRegVal(aUri, res));
+	}
+	else if (aUri.compare(Vert::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new Vert(NULL, iEnv);
+	}
+	else if (aUri.compare(Edge::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new Edge(NULL, iEnv);
+	}
+	else if (aUri.compare(Prop::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new Prop(NULL, iEnv);
+	}
+	else if (aUri.compare(ExtenderAgent::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new ExtenderAgent(NULL, iEnv);
+	}
+	else if (aUri.compare(ASocket::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new ASocket(NULL, iEnv);
+	}
+	else if (aUri.compare(Incaps::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new Incaps(NULL, iEnv);
+	}
+	else if (aUri.compare(DataBase::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new DataBase(NULL, iEnv);
+	}
+	else if (aUri.compare(FuncBase::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new FuncBase(NULL, iEnv);
+	}
+	else if (aUri.compare(ATrBase::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new ATrBase(NULL, iEnv);
+	}
+	else if (aUri.compare(AFunc::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new AFunc(NULL, iEnv);
+	}
+	else if (aUri.compare(StateAgent::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new StateAgent(NULL, iEnv);
+	}
+	else if (aUri.compare(ADes::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new ADes(NULL, iEnv);
+	}
+	else if (aUri.compare(Syst::Type()) == 0) {
+	    parent = GetNode("Vert");
+	    res = new Syst(NULL, iEnv);
+	}
+	else if (aUri.compare(ConnPointBase::Type()) == 0) {
+	    parent = GetNode("Vert");
+	    res = new ConnPointBase(NULL, iEnv);
+	}
+	else if (aUri.compare(Description::Type()) == 0) {
+	    parent = GetNode("Prop");
+	    res = new Description(NULL, iEnv);
+	}
+	else if (aUri.compare(DInt::Type()) == 0) {
+	    parent = GetNode("DataBase");
+	    res = new DInt(NULL, iEnv);
+	}
+	else if (aUri.compare(DNInt::Type()) == 0) {
+	    parent = GetNode("DInt");
+	    res = new DNInt(NULL, iEnv);
+	}
+	else if (aUri.compare(AFunInt::Type()) == 0) {
+	    parent = GetNode("FuncBase");
+	    res = new AFunInt(NULL, iEnv);
+	}
+	else if (aUri.compare(AIncInt::Type()) == 0) {
+	    parent = GetNode("AFunInt");
+	    res = new AIncInt(NULL, iEnv);
+	}
+	else if (aUri.compare(AFunIntRes::Type()) == 0) {
+	    parent = GetNode("AFunInt");
+	    res = new AFunIntRes(NULL, iEnv);
+	}
+	else if (aUri.compare(AAddInt::Type()) == 0) {
+	    parent = GetNode("AFunInt");
+	    res = new AAddInt(NULL, iEnv);
+	}
+	else if (aUri.compare(AFuncInt::Type()) == 0) {
+	    parent = GetNode("AFunc");
+	    res = new AFuncInt(NULL, iEnv);
+	}
+	else if (aUri.compare(AFAddInt::Type()) == 0) {
+	    parent = GetNode("AFunc");
+	    res = new AFAddInt(NULL, iEnv);
+	}
+	else if (aUri.compare(AFSubInt::Type()) == 0) {
+	    parent = GetNode("AFuncInt");
+	    res = new AFSubInt(NULL, iEnv);
+	}
+	else if (aUri.compare(AFConvInt::Type()) == 0) {
+	    parent = GetNode("AFuncInt");
+	    res = new AFConvInt(NULL, iEnv);
+	}
+	else if (aUri.compare(AFLimInt::Type()) == 0) {
+	    parent = GetNode("AFunc");
+	    res = new AFLimInt(NULL, iEnv);
+	}
+	else if (aUri.compare(AFDivInt::Type()) == 0) {
+	    parent = GetNode("AFunc");
+	    res = new AFDivInt(NULL, iEnv);
+	}
+	else if (aUri.compare(AFGTInt::Type()) == 0) {
+	    parent = GetNode("AFunc");
+	    res = new AFGTInt(NULL, iEnv);
+	}
+	else if (aUri.compare(AFBoolToInt::Type()) == 0) {
+	    parent = GetNode("AFunc");
+	    res = new AFBoolToInt(NULL, iEnv);
+	}
+	else if (aUri.compare(ATrInt::Type()) == 0) {
+	    parent = GetNode("ATrBase");
+	    res = new ATrInt(NULL, iEnv);
+	}
+	else if (aUri.compare(ATrIncInt::Type()) == 0) {
+	    parent = GetNode("ATrInt");
+	    res = new ATrIncInt(NULL, iEnv);
+	}
+	else if (aUri.compare(ATrSubInt::Type()) == 0) {
+	    parent = GetNode("ATrInt");
+	    res = new ATrSubInt(NULL, iEnv);
+	}
+	else if (aUri.compare(ATrMplInt::Type()) == 0) {
+	    parent = GetNode("ATrInt");
+	    res = new ATrMplInt(NULL, iEnv);
+	}
+	else if (aUri.compare(ATrDivInt::Type()) == 0) {
+	    parent = GetNode("ATrInt");
+	    res = new ATrDivInt(NULL, iEnv);
+	}
+	if (res != NULL) {
+	    if (parent != NULL) {
+		parent->AppendChild(res);
+	    }
+	    iReg.insert(TRegVal(aUri, res));
+	}
+    }
+    return res;
 }
 
 Chromo* ProvDef::CreateChromo()

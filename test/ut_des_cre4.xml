@@ -24,34 +24,34 @@
     <node id="desmod" parent="file:../modules/des.xml#DesComps" />
 
     <!-- System Contants Input socket -->
-    <node id="SysConstInpSocket" parent="sysmod/Vert:Socket">
-	<node id="MaxFeed" parent="../sysmod/ConnPoint"> <cont node="Prop:Provided" val="MDIntGet"/> </node>
-	<node id="MinMass" parent="../sysmod/ConnPoint"> <cont node="Prop:Provided" val="MDIntGet"/> </node>
-	<node id="MaxMass" parent="../sysmod/ConnPoint"> <cont node="Prop:Provided" val="MDIntGet"/> </node>
+    <node id="SysConstInpSocket" parent="sysmod/Socket">
+	<node id="MaxFeed" parent="../sysmod/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
+	<node id="MinMass" parent="../sysmod/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
+	<node id="MaxMass" parent="../sysmod/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
     </node>
 
     <!-- System Contants Input -->
-    <node id="SysConstInp" parent="SysComps:sysmod/Vert:Extender"> 
-	<rm node="ConnPoint:Int"/>
+    <node id="SysConstInp" parent="sysmod/Extender"> 
+	<rm node="Int"/>
 	<node id="Int" parent="../SysConstInpSocket"/> 
     </node>
 
     <!-- System Contants Output socket -->
-    <node id="SysConstOutSocket" parent="SysComps:sysmod/Vert:Socket">
-	<node id="MaxFeed" parent="../sysmod/ConnPoint"> <cont node="Prop:Required" val="MDIntGet"/> </node>
-	<node id="MinMass" parent="../sysmod/ConnPoint"> <cont node="Prop:Required" val="MDIntGet"/> </node>
-	<node id="MaxMass" parent="../sysmod/ConnPoint"> <cont node="Prop:Required" val="MDIntGet"/> </node>
+    <node id="SysConstOutSocket" parent="sysmod/Socket">
+	<node id="MaxFeed" parent="../sysmod/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
+	<node id="MinMass" parent="../sysmod/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
+	<node id="MaxMass" parent="../sysmod/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
     </node>
 
     <!-- System Contants Output -->
-    <node id="SysConstOut" parent="SysComps:sysmod/Vert:Extender"> 
-	<rm node="ConnPoint:Int"/>
+    <node id="SysConstOut" parent="sysmod/Extender"> 
+	<rm node="Int"/>
 	<node id="Int" parent="../SysConstOutSocket"/> 
     </node>
 
     <!-- System Constants -->
-    <node id="SysConsts" parent="IncapsComps:incapsmod/Syst:Incaps">
-	<add node="Elem:Capsule">
+    <node id="SysConsts" parent="incapsmod/Incaps">
+	<add node="Capsule">
 	    <node id="Out" parent="../../SysConstOut"/> 
 	</add>
 
@@ -72,42 +72,42 @@
 
 
     <!-- Snail -->
-    <node id="Snail" parent="DesComps:desmod/Incaps:Des">
+    <node id="Snail" parent="desmod/Des">
 
-	<add node="Elem:Capsule">
+	<add node="Capsule">
 	    <!-- Input: Coords of others -->
-	    <node id="Inp" parent="../../DesComps:desmod/Extender:StIntInp"/> 
+	    <node id="Inp" parent="../../desmod/StIntInp"/> 
 	    <!-- System parameters -->
 	    <node id="Inp_SysPars" parent="../../SysConstInp"/> 
 	    <!-- Output: default - Coord -->
-	    <node id="Out" parent="../../DesComps:desmod/Extender:StIntOut"/> 
+	    <node id="Out" parent="../../desmod/StIntOut"/> 
 	    <!-- Mass -->
-	    <node id="Out_Mass" parent="../../DesComps:desmod/Extender:StIntOut"/> 
+	    <node id="Out_Mass" parent="../../desmod/StIntOut"/> 
 	</add>
 
 
 	<!-- State Mass -->
-	<node id="Mass" parent="../DesComps:desmod/State:StateInt">
-	    <!-- <cont node="DataSInt:Confirmed/Prop:Value" val="34"/> -->
+	<node id="Mass" parent="../desmod/StateInt">
+	    <!-- <cont node="DataSInt:Confirmed/Value" val="34"/> -->
 
 	    <node id="Logspec" parent="Elem">
 		<node id="Creation" parent="Elem">
 		</node>
 	    </node>
 
-	    <add node="DataSCInt:Confirmed">
+	    <add node="Confirmed">
 		<node id="Logspec" parent="Elem">
-		    <node id="Update" parent="../../../../DataComps:datamod/DataLogevent">
+		    <node id="Update" parent="../../../../datamod/DataLogevent">
 		    </node>
 		</node>
 	    </add>
 
 	    <!-- Input: default - self -->
-	    <add node="Elem:Capsule">
+	    <add node="Capsule">
 		<!-- Input: self coord -->
-		<node id="Inp_SelfCoord" parent="../../../DesComps:desmod/Extender:StIntInp"/> 
+		<node id="Inp_SelfCoord" parent="../../../desmod/StIntInp"/> 
 		<!-- Input: others coord -->
-		<node id="Inp_OthersCoord" parent="../../../DesComps:desmod/Extender:StIntInp"/> 
+		<node id="Inp_OthersCoord" parent="../../../desmod/StIntInp"/> 
 		<!-- System parameters -->
 		<node id="Inp_SysPars" parent="../../../SysConstInp"/> 
 	    </add>
@@ -122,11 +122,11 @@
 	    <node id="Data_Const1" parent="../../datamod/DataSCInt"> <cont node="Value" val="1"/> </node>
 
 	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_OthersCoord/Int/PinData"/> <cont node="P2" val="Conv/Capsule/inp"/> </node>
-	    <node parent="Edge"> <cont node="Prop:P1" val="Conv/Capsule/Out_WFarg"/> <cont node="Prop:P2" val="Comp/Capsule/Inp1"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="Conv/Capsule/Out_WFarg"/> <cont node="P2" val="Comp/Capsule/Inp1"/> </node>
 	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_SelfCoord/Int/PinData"/> <cont node="P2" val="Comp/Capsule/Inp2"/> </node>
-	    <node parent="Edge"> <cont node="Prop:P1" val="Comp/Capsule/out"/> <cont node="Prop:P2" val="ToInt/Capsule/Inp"/> </node>
-	    <node parent="Edge"> <cont node="Prop:P1" val="ToInt/Capsule/out"/> <cont node="Prop:P2" val="Conv/Capsule/Inp_WFres"/> </node>
-	    <node parent="Edge"> <cont node="Prop:P1" val="Conv/Capsule/out"/> <cont node="Prop:P2" val="Sub/Capsule/InpN"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="Comp/Capsule/out"/> <cont node="P2" val="ToInt/Capsule/Inp"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="ToInt/Capsule/out"/> <cont node="P2" val="Conv/Capsule/Inp_WFres"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="Conv/Capsule/out"/> <cont node="P2" val="Sub/Capsule/InpN"/> </node>
 	    <!-- TODO [YB] !! It is not disable to connect to nodes outside the current system. To prohibite this -->
 	    <!-- This can cause errors that Data_MaxFeed can have some same edges connected -->
 	    <!-- 
@@ -134,32 +134,32 @@
 	    -->
 	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int/MaxFeed"/> <cont node="P2" val="Sub/Capsule/InpP"/> </node>
 	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp/Int/PinData"/> <cont node="P2" val="Sub2/Capsule/InpP"/> </node>
-	    <node parent="Edge"> <cont node="Prop:P1" val="Sub/Capsule/out"/> <cont node="Prop:P2" val="Sub2/Capsule/InpP"/> </node>
-	    <node parent="Edge"> <cont node="Prop:P1" val="Data_Const1/Capsule/Out"/> <cont node="Prop:P2" val="Sub2/Capsule/InpN"/> </node>
-	    <node parent="Edge"> <cont node="Prop:P1" val="Sub2/Capsule/out"/> <cont node="Prop:P2" val="Lim/Capsule/Inp"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="Sub/Capsule/out"/> <cont node="P2" val="Sub2/Capsule/InpP"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="Data_Const1/Capsule/Out"/> <cont node="P2" val="Sub2/Capsule/InpN"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="Sub2/Capsule/out"/> <cont node="P2" val="Lim/Capsule/Inp"/> </node>
 	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int/MinMass"/> <cont node="P2" val="Lim/Capsule/Inp_LimL"/> </node>
 	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int/MaxMass"/> <cont node="P2" val="Lim/Capsule/Inp_LimU"/> </node>
-	    <node parent="Edge"> <cont node="Prop:P1" val="Lim/Capsule/out"/> <cont node="Prop:P2" val="Prepared/Capsule/Inp"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="Lim/Capsule/out"/> <cont node="P2" val="Prepared/Capsule/Inp"/> </node>
 	    <!-- Transition end -->
 
 	</node> <!-- Mass -->
 
 	<!-- State Coordinate -->
-	<node id="Coord" parent="../DesComps:desmod/State:StateInt">
-	    <!-- <cont node="DataSInt:Confirmed/Prop:Value" val="34"/> -->
+	<node id="Coord" parent="../desmod/StateInt">
+	    <!-- <cont node="DataSInt:Confirmed/Value" val="34"/> -->
 
 	    <node id="Logspec" parent="Elem"> <node id="Creation" parent="Elem"/> </node>
 
-	    <add node="DataSCInt:Confirmed">
+	    <add node="Confirmed">
 		<node id="Logspec" parent="Elem">
-		    <node id="Update" parent="../../../../DataComps:datamod/DataLogevent"/>
+		    <node id="Update" parent="../../../../datamod/DataLogevent"/>
 		</node>
 	    </add>
 
-	    <add node="Elem:Capsule">
+	    <add node="Capsule">
 		<!-- Std input - self -->
 		<!-- Mass -->
-		<node id="Inp_Mass" parent="../../../DesComps:desmod/Extender:StIntInp"/> 
+		<node id="Inp_Mass" parent="../../../desmod/StIntInp"/> 
 		<!-- System parameters -->
 		<node id="Inp_SysPars" parent="../../../SysConstInp"/> 
 	    </add>
@@ -190,13 +190,13 @@
     </node> <!-- Snail -->
 
     <!-- Test -->
-    <node id="TestDes" parent="DesComps:desmod/Incaps:Des">
+    <node id="TestDes" parent="desmod/Des">
 
 	<node id="Logspec" parent="Elem"> <node id="Creation" parent="Elem"/> </node>
 
-	<add node="Elem:Capsule">
+	<add node="Capsule">
 	    <!-- Output: Mass -->
-	    <node id="Out" parent="../../DesComps:desmod/Extender:StIntOut"/> 
+	    <node id="Out" parent="../../desmod/StIntOut"/> 
 	</add>
 
 	<!-- Constants -->

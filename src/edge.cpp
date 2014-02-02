@@ -152,6 +152,22 @@ Edge::Edge(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
     __ASSERT(res);
 }
 
+Edge::Edge(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
+{
+    if (!iInit) 
+	Init();
+    SetEType(Elem::PEType());
+    SetParent(Elem::PEType());
+    // Adding properties "Points"
+    Elem* p1 = Provider()->CreateNode("Prop", "P1", this, iEnv);
+    Elem* p2 = Provider()->CreateNode("Prop", "P2", this, iEnv);
+    __ASSERT(p1 != NULL && p2 != NULL);
+    TBool res = AppendComp(p1);
+    __ASSERT(res);
+    res = AppendComp(p2);
+    __ASSERT(res);
+}
+
 Edge::~Edge() 
 {
     Disconnect();
@@ -232,7 +248,7 @@ MVert* Edge::Pair(const MVert* aPoint)
 
 const string& Edge::Point1u()
 {
-    Elem* pte = GetNode("Prop:P1");
+    Elem* pte = GetNode("P1");
     __ASSERT(pte != NULL);
     MProp* pt = pte->GetObj(pt);
     __ASSERT(pt != NULL);
@@ -241,7 +257,7 @@ const string& Edge::Point1u()
 
 const string& Edge::Point2u()
 {
-    Elem* pte = GetNode("Prop:P2");
+    Elem* pte = GetNode("P2");
     __ASSERT(pte != NULL);
     MProp* pt = pte->GetObj(pt);
     __ASSERT(pt != NULL);

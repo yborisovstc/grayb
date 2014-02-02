@@ -12,6 +12,12 @@ ATrBase::ATrBase(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan,
     SetParent(Type());
 }
 
+ATrBase::ATrBase(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+{
+    SetEType(Elem::PEType());
+    SetParent(Elem::PEType());
+}
+
 string ATrBase::PEType()
 {
     return Elem::PEType() + GUri::KParentSep + Type();
@@ -30,10 +36,17 @@ void *ATrBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aC
 }
 
 // Agent base of Int function
+
 ATrInt::ATrInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrBase(aName, aMan, aEnv), mData(0)
 {
     SetEType(Type(), ATrBase::PEType());
     SetParent(Type());
+}
+
+ATrInt::ATrInt(Elem* aMan, MEnv* aEnv): ATrBase(Type(), aMan, aEnv), mData(0)
+{
+    SetEType(ATrBase::PEType());
+    SetParent(ATrBase::PEType());
 }
 
 string ATrInt::PEType()
@@ -55,24 +68,6 @@ void *ATrInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCt
     }
     return res;
 }
-
-/*
-MDIntGet* ATrInt::GetInp(const string& aInpName)
-{
-    MDIntGet* res = NULL;
-    Elem* einp = GetNode("../../ConnPoint:" + aInpName);
-    if (einp != NULL) {
-	Vert* vert = einp->GetObj(vert);
-	MVert* pair = *(vert->Pairs().begin());
-	if (pair != NULL) {
-	    res = pair->EBase()->GetObj(res);
-	}
-	// Attempt to use the iface getting rule basing on vert pairs was denied
-	//res = einp->GetObj(res);
-    }
-    return res;
-}
-*/
 
 MDIntGet* ATrInt::GetInp(const string& aInpName)
 {
@@ -99,6 +94,12 @@ Elem::TIfRange ATrInt::GetInpRg(const string& aInpName)
     return res;
 }
 
+TInt ATrInt::Value()
+{
+    return 0;
+}
+
+
 
 // Agent of function "Increment of Int data"
 
@@ -106,6 +107,12 @@ ATrIncInt::ATrIncInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName,
 {
     SetEType(Type(), ATrInt::PEType());
     SetParent(Type());
+}
+
+ATrIncInt::ATrIncInt(Elem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
+{
+    SetEType(ATrInt::PEType());
+    SetParent(ATrInt::PEType());
 }
 
 string ATrIncInt::PEType()
@@ -144,6 +151,12 @@ ATrSubInt::ATrSubInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName,
 {
     SetEType(Type(), ATrInt::PEType());
     SetParent(Type());
+}
+
+ATrSubInt::ATrSubInt(Elem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
+{
+    SetEType(ATrInt::PEType());
+    SetParent(ATrInt::PEType());
 }
 
 string ATrSubInt::PEType()
@@ -195,6 +208,12 @@ ATrMplInt::ATrMplInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName,
     SetParent(Type());
 }
 
+ATrMplInt::ATrMplInt(Elem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
+{
+    SetEType(ATrInt::PEType());
+    SetParent(ATrInt::PEType());
+}
+
 string ATrMplInt::PEType()
 {
     return ATrInt::PEType() + GUri::KParentSep + Type();
@@ -231,6 +250,12 @@ ATrDivInt::ATrDivInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName,
 {
     SetEType(Type(), ATrInt::PEType());
     SetParent(Type());
+}
+
+ATrDivInt::ATrDivInt(Elem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
+{
+    SetEType(ATrInt::PEType());
+    SetParent(ATrInt::PEType());
 }
 
 string ATrDivInt::PEType()
@@ -278,6 +303,12 @@ StateAgent::StateAgent(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName,
 {
     SetEType(Type(), Elem::PEType());
     SetParent(Type());
+}
+
+StateAgent::StateAgent(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iActive(ETrue)
+{
+    SetEType(Elem::PEType());
+    SetParent(Elem::PEType());
 }
 
 string StateAgent::PEType()
@@ -343,7 +374,7 @@ void StateAgent::ResetActive()
 
 void StateAgent::Update()
 {
-    Elem* eprepu = GetNode("../../DataSCInt:Prepared/Elem:Capsule/ConnPoint:Upd");
+    Elem* eprepu = GetNode("../../Prepared/Capsule/Upd");
     if (eprepu != NULL) {
 	MUpdatable* upd = eprepu->GetObj(upd);
 	if (upd != NULL) {
@@ -357,13 +388,13 @@ void StateAgent::Update()
 
 void StateAgent::Confirm()
 {
-    Elem* econfu = GetNode("../../DataSCInt:Confirmed/Elem:Capsule/ConnPoint:Upd");
+    Elem* econfu = GetNode("../../Confirmed/Capsule/Upd");
     if (econfu != NULL) {
 	MUpdatable* upd = econfu->GetObj(upd);
 	if (upd != NULL) {
 	    if (upd->Update()) {
 		// Activate dependencies
-		Elem* eobs = GetNode("../../Elem:Capsule/Extender:Out/StOutSocket:Int/ConnPoint:PinObs");
+		Elem* eobs = GetNode("../../Capsule/Out/Int/PinObs");
 		RqContext ctx(this);
 		// Request w/o context because of possible redirecting request to itself
 		// TODO [YB] To check if iterator is not damage during the cycle, to cache to vector if so
@@ -417,6 +448,12 @@ ADes::ADes(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetEType(Type(), Elem::PEType());
     SetParent(Type());
+}
+
+ADes::ADes(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iActive(ETrue)
+{
+    SetEType(Elem::PEType());
+    SetParent(Elem::PEType());
 }
 
 void *ADes::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -511,66 +548,3 @@ void ADes::OnActivated()
 {
 }
 
-/*
-void State::OnCompChanged(Elem& aComp)
-{
-    if (aComp.EType() == "Edge") {
-	// Reconnect the edge
-	Edge* edge = aComp.GetObj(edge);	
-	__ASSERT(edge != NULL);
-	edge->Disconnect();
-	const string& pt1u = edge->Point1u();
-	const string& pt2u = edge->Point2u();
-	if (!pt1u.empty() && !pt2u.empty()) {
-	    Elem* pt1 = GetNode(pt1u);
-	    Elem* pt2 = GetNode(pt2u);
-	    if (pt1 != NULL && pt2 != NULL) {
-		// Check if CPs belongs to capsule
-		Elem* pt1man = pt1->GetMan();
-		Elem* pt2man = pt2->GetMan(); 
-		if (pt1man->Name() == "Capsule" && pt2man->Name() == "Capsule") {
-		    MVert* pt1v = pt1->GetObj(pt1v);
-		    MVert* pt2v = pt2->GetObj(pt2v);
-		    if (pt1v != NULL && pt2v != NULL) {
-			// Check roles conformance
-			// Point#1 provided
-			Elem* ept1prov = pt1->GetNode("Prop:Provided");
-			MProp* ppt1prov = ept1prov->GetObj(ppt1prov);
-			Elem* ept2req = pt2->GetNode("Prop:Required");
-			MProp* ppt2req = ept2req->GetObj(ppt2req);
-			// Point#2 provided
-			Elem* ept2prov = pt2->GetNode("Prop:Provided");
-			MProp* ppt2prov = ept2prov->GetObj(ppt2prov);
-			Elem* ept1req = pt1->GetNode("Prop:Required");
-			MProp* ppt1req = ept1req->GetObj(ppt1req);
-			if (ppt1prov->Value() == ppt2req->Value() && ppt2prov->Value() == ppt1req->Value()) {
-			    // Roles are compatible - connect
-			    edge->SetPoints(pt1v, pt2v);
-			    TBool res = edge->Connect();
-			    if (res) {
-				Logger()->WriteFormat("State [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
-			    }
-			    else {
-				Logger()->WriteFormat("ERR: State [%s] connecting [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
-			    }
-			}
-			else {
-			    Logger()->WriteFormat("ERR: State [%s] connecting [%s - %s] - incompatible roles", Name().c_str(), pt1u.c_str(), pt2u.c_str());
-			}
-		    }
-		    else {
-			Logger()->WriteFormat("ERR: State [%s] connecting [%s - %s] - ends aren't vertexes", Name().c_str(), pt1u.c_str(), pt2u.c_str());
-		    }
-		} // pt1man->Name() == "Capsule"
-		else {
-		    Logger()->WriteFormat("ERR: State [%s] connecting [%s - %s] - not capsule cp", Name().c_str(), pt1u.c_str(), pt2u.c_str());
-		}
-	    } // pt1 != NULL ...
-	    else {
-		Logger()->WriteFormat("ERR: State [%s] connecting [%s - %s] - cannot find [%s]", Name().c_str(), pt1u.c_str(), pt2u.c_str(), 
-			(pt1 == NULL)? pt1u.c_str(): pt2u.c_str());
-	    }
-	}
-    }
-}
-*/

@@ -11,6 +11,7 @@ class ConnPointBase: public Vert, public MCompatChecker
 	static const char* Type() { return "ConnPointBase";};
 	static string PEType();
 	ConnPointBase(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ConnPointBase(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// Iface provider
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
 	// From Base
@@ -28,6 +29,7 @@ class ExtenderAgent: public Elem, public MCompatChecker
 	static const char* Type() { return "ExtenderAgent";};
 	static string PEType();
 	ExtenderAgent(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ExtenderAgent(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MCompatChecker
@@ -44,6 +46,7 @@ class ASocket: public Elem, public MCompatChecker
 	static const char* Type() { return "ASocket";};
 	static string PEType();
 	ASocket(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ASocket(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MCompatChecker
@@ -60,6 +63,7 @@ class Syst: public Vert
 	static const char* Type() { return "Syst";};
 	static string PEType();
 	Syst(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	Syst(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MCompsObserver

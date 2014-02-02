@@ -10,7 +10,7 @@ class GFactory: public Base, public MProvider
 {
     public:
 	static const char* Type() { return "GFactory";};
-	GFactory(const string& aName);
+	GFactory(const string& aName, MEnv* aEnv);
 	void LoadPlugins();
 	void AddProvider(GProvider* aProv);
 	// From Base
@@ -23,6 +23,7 @@ class GFactory: public Base, public MProvider
 	virtual const string& ModulesPath() const;
     protected:
 	map<string, GProvider*> iProviders;
+	MEnv* iEnv;
 };
 
 

@@ -18,40 +18,40 @@
     <!-- Module containing components of func -->
     <node id="funcmod" parent="file:../modules/func.xml#FuncComps" />
 
-    <node id="test" parent="IncapsComps:incapsmod/Syst:Incaps">
+    <node id="test" parent="incapsmod/Incaps">
 
-	<node id="DataS_Int_1" parent="../DataComps:datamod/DataS:DataSInt">
-	    <cont node="Prop:Value" val="34"/> 
+	<node id="DataS_Int_1" parent="../datamod/DataSInt">
+	    <cont node="Value" val="34"/> 
 	</node>
 
-	<node id="DataS_Int_2" parent="../DataComps:datamod/DataS:DataSInt">
-	    <cont node="Prop:Value" val="26"/> 
+	<node id="DataS_Int_2" parent="../datamod/DataSInt">
+	    <cont node="Value" val="26"/> 
 	</node>
 
 	<node id="Add" parent="../funcmod/FAddInt"/>
 
-	<node id="Result" parent="../*:funcmod/*:FuncIntRes"/>
+	<node id="Result" parent="../funcmod/FuncIntRes"/>
 
-	<node id="ResData" parent="../DataComps:datamod/DataS:DataSInt"/>
+	<node id="ResData" parent="../datamod/DataSInt"/>
 
 	<node parent="Edge"> 
-	    <cont node="Prop:P1" val="DataSInt:DataS_Int_1/Elem:Capsule/ConnPoint:out"/> 
-	    <cont node="Prop:P2" val="FAddInt:Add/Elem:Capsule/ConnPoint:inp"/> 
+	    <cont node="P1" val="DataS_Int_1/Capsule/out"/> 
+	    <cont node="P2" val="Add/Capsule/inp"/> 
 	</node>
 
 	<node parent="Edge"> 
-	    <cont node="Prop:P1" val="DataSInt:DataS_Int_2/Elem:Capsule/ConnPoint:out"/> 
-	    <cont node="Prop:P2" val="FAddInt:Add/Elem:Capsule/ConnPoint:inp"/> 
+	    <cont node="P1" val="DataS_Int_2/Capsule/out"/> 
+	    <cont node="P2" val="Add/Capsule/inp"/> 
 	</node>
 
 	<node parent="Edge"> 
-	    <cont node="Prop:P1" val="FAddInt:Add/Elem:Capsule/ConnPoint:out"/> 
-	    <cont node="Prop:P2" val="FuncIntRes:Result/Elem:Capsule/ConnPoint:inp"/> 
+	    <cont node="P1" val="Add/Capsule/out"/> 
+	    <cont node="P2" val="Result/Capsule/inp"/> 
 	</node>
 
 	<node parent="Edge"> 
-	    <cont node="Prop:P1" val="FuncIntRes:Result/Elem:Capsule/ConnPoint:out"/> 
-	    <cont node="Prop:P2" val="DataSInt:ResData/Elem:Capsule/ConnPoint:inp"/> 
+	    <cont node="P1" val="Result/Capsule/out"/> 
+	    <cont node="P2" val="ResData/Capsule/inp"/> 
 	</node>
 
     </node>

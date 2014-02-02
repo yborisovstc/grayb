@@ -13,7 +13,7 @@ class Chromo;
 class MProvider;
 
 // Element of native hier - mutable
-class Elem: public Base, public MMutable, public MCompsObserver
+class Elem: public Base, public MMutable, public MCompsObserver, public MChildsObserver
 {
     public:
 	// name, parent
@@ -21,7 +21,9 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	typedef pair<TCkey, Elem*> TCelem;
 	typedef multimap<TCkey, Elem*> TMElem;
 	// Register of heirs
-	typedef map<string, Elem*> THeirsReg;
+	typedef pair<string, Elem*> TNKey;
+	// Regiser keyed by name, multimap
+	typedef multimap<string, Elem*> TNMReg;
 
     public:
 	// Request context
@@ -82,6 +84,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	    IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd = EFalse);
 	    IterImplBase(Elem& aElem);
 	    IterImplBase(const IterImplBase& aImpl);
+	    char SRel() const;
 	    virtual void Set(const IterImplBase& aImpl);
 	    virtual void PostIncr();
 	    virtual TBool IsEqual(const IterImplBase& aImpl) const;
@@ -94,6 +97,8 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	    GUri::TElem iId;
 	    TMElem::iterator iCIter; // Comps iter
 	    pair<TMElem::iterator, TMElem::iterator> iCIterRange;
+	    TNMReg::iterator iChildsIter;
+	    pair<TNMReg::iterator, TNMReg::iterator> iChildsRange;
 	};
 
 	class Iterator: public iterator<input_iterator_tag, Elem*>
@@ -120,6 +125,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	// Predefined extended type, for core elements only
 	static string PEType();
 	Elem(const string &aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	Elem(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	Elem* GetNode(const GUri& aUri);
 	virtual ~Elem();
 	void SetEType(const string& aPName, const string& aPEType = string());
@@ -144,6 +150,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	// Gets the comp with given name and owning given element
 	Elem* GetCompOwningN(const string& aParent, Elem* aElem);
 	Elem* GetRoot() const;
+	Elem* GetInhRoot() const;
 	TBool IsComp(Elem* aElem);
 	// Checks if elements chromo is attached. Ref UC_019 for details
 	TBool IsChromoAttached() const;
@@ -182,9 +189,13 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	//virtual TBool ChangeCont(const string& aVal); 
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue); 
 	virtual TBool AddNode(const ChromoNode& aSpec);
+	TBool AppendChild(Elem* aChild);
 	virtual TBool RmNode(const GUri& aUri);
 	virtual TBool MoveNode(const ChromoNode& aSpec);
 	vector<Elem*>& Comps();
+	// From MChildsObserver
+	virtual void OnChildDeleting(Elem* aChild);
+	virtual TBool OnChildRenamed(Elem* aChild, const string& aOldName);
 	// From MCompsObserver
 	virtual void OnCompDeleting(Elem& aComp);
 	virtual void OnCompAdding(Elem& aComp);
@@ -207,10 +218,12 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	TBool AppendComp(Elem* aComp);
 	TBool MoveComp(Elem* aComp, Elem* aDest);
 	TBool RegisterComp(Elem* aComp);
+	TBool RegisterChild(Elem* aChild);
 	TBool IsCompRegistered(Elem* aComp) const;
 	// aName is required because the comp can be renamed already. This is the case of 
 	// comp renaming: comp is renamed first, then the renaming is handled
 	TBool UnregisterComp(Elem* aComp, const string& aName = string());
+	TBool UnregisterChild(Elem* aChild, const string& aName = string());
 	Elem* GetComp(const string& aParent, const string& aName);
 	TBool DoMutChangeCont(const ChromoNode& aSpec);
 	TBool MergeMutation(const ChromoNode& aSpec);
@@ -232,10 +245,10 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	Chromo* iChromo;
 	// Mutation
 	Chromo* iMut;
-	// Components types
-	static set<string> iCompsTypes;
 	// Sign of inited
 	static bool iInit;
+	// Components types
+	static set<string> iCompsTypes;
 	// Components, owninig container
 	vector<Elem*> iComps;
 	// Components map, not owning
@@ -245,7 +258,7 @@ class Elem: public Base, public MMutable, public MCompsObserver
 	// Ifaces cache query by TICMapKeyF
 	TICacheQF iICacheQF;
 	// Children register
-	THeirsReg iHeirs;
+	TNMReg iChilds;
 	// Parent
 	Elem* iParent;
 	

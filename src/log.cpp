@@ -60,7 +60,7 @@ void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...)
     strcat(buf, KColSep);
     GUri fullpath;
     aNode->GetUri(fullpath);
-    strcat(buf, fullpath.GetUri().c_str());
+    strcat(buf, fullpath.GetUri(ETrue).c_str());
     strcat(buf, KColSep);
     va_list list;
     va_start(list,aFmt);

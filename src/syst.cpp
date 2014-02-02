@@ -16,6 +16,12 @@ ConnPointBase::ConnPointBase(const string& aName, Elem* aMan, MEnv* aEnv): Vert(
     SetParent(Type());
 }
 
+ConnPointBase::ConnPointBase(Elem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
+{
+    SetEType(Vert::PEType());
+    SetParent(Vert::PEType());
+}
+
 void *ConnPointBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
@@ -32,8 +38,8 @@ void *ConnPointBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqConte
     if (res == NULL) {
 	// Redirect to pairs if iface requiested is provided by this CP
 	//Elem* eprov = GetNode("Prop:Provided");
-	Elem* eprov = GetNode("Prop:Provided");
-	Elem* ereq = GetNode("Prop:Required");
+	Elem* eprov = GetNode("(Prop:)Provided");
+	Elem* ereq = GetNode("(Prop:)Required");
 	if (eprov != NULL) {
 	    MProp* prov = eprov->GetObj(prov);
 	    if (prov != NULL) {
@@ -53,7 +59,7 @@ void *ConnPointBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqConte
 		if (req->Value() == aName) {
 		    for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end() && res == NULL; it++) {
 			Elem* pe = (*it)->EBase()->GetObj(pe);
-			Elem* peprov = pe != NULL ? pe->GetNode("Prop:Provided"): NULL;
+			Elem* peprov = pe != NULL ? pe->GetNode("(Prop:)Provided"): NULL;
 			MProp* pprov = peprov != NULL ? peprov->GetObj(pprov): NULL;
 			if (pprov != NULL && pprov->Value() == aName && !ctx.IsInContext(pe)) {
 			    res = pe->DoGetObj(aName, aIncUpHier, &ctx);
@@ -93,8 +99,8 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
     else {
 	// Redirect to pairs if iface requiested is provided by this CP
-	Elem* eprov = GetNode("Prop:Provided");
-	Elem* ereq = GetNode("Prop:Required");
+	Elem* eprov = GetNode("(Prop:)Provided");
+	Elem* ereq = GetNode("(Prop:)Required");
 	if (eprov != NULL) {
 	    MProp* prov = eprov->GetObj(prov);
 	    if (prov != NULL && prov->Value() == aName) {
@@ -146,10 +152,10 @@ TBool ConnPointBase::IsCompatible(Elem* aPair, TBool aExt)
 	}
 	if (cp != NULL) {
 	    // Check roles conformance
-	    Elem* ept1prov = GetNode("Prop:Provided");
-	    Elem* ept2req = cp->GetNode("Prop:Required");
-	    Elem* ept2prov = cp->GetNode("Prop:Provided");
-	    Elem* ept1req = GetNode("Prop:Required");
+	    Elem* ept1prov = GetNode("(Prop:)Provided");
+	    Elem* ept2req = cp->GetNode("(Prop:)Required");
+	    Elem* ept2prov = cp->GetNode("(Prop:)Provided");
+	    Elem* ept1req = GetNode("(Prop:)Required");
 	    if (ept1prov && ept2req && ept2prov && ept1req) {
 		// Point#1 provided
 		MProp* ppt1prov = ept1prov->GetObj(ppt1prov);
@@ -191,6 +197,12 @@ ExtenderAgent::ExtenderAgent(const string& aName, Elem* aMan, MEnv* aEnv): Elem(
     SetParent(Type());
 }
 
+ExtenderAgent::ExtenderAgent(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+{
+    SetEType(Elem::PEType());
+    SetParent(Elem::PEType());
+}
+
 void *ExtenderAgent::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
@@ -206,7 +218,7 @@ void *ExtenderAgent::DoGetObj(const char *aName, TBool aIncUpHier, const RqConte
     }
     if (res == NULL) {
 	// Redirect to internal point or pair depending on the requiestor
-	Elem* intcp = GetNode("../../*:Int");
+	Elem* intcp = GetNode("../../Int");
 	if (intcp != NULL && !ctx.IsInContext(intcp)) {
 	    res = intcp->DoGetObj(aName, ETrue, &ctx);
 	}
@@ -256,7 +268,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
     if (res == NULL) {
 	// Redirect to internal point or pair depending on the requiestor
-	Elem* intcp = GetNode("../../*:Int");
+	Elem* intcp = GetNode("../../Int");
 	if (intcp != NULL && !ctx.IsInContext(intcp)) {
 	    rr = intcp->GetIfi(aName, aCtx);
 	    host->InsertIfCache(aName, rctx, intcp, rr);
@@ -291,7 +303,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 TBool ExtenderAgent::IsCompatible(Elem* aPair, TBool aExt)
 {
     TBool res = EFalse;
-    Elem* intcp = GetNode("../../*:Int");
+    Elem* intcp = GetNode("../../Int");
     MCompatChecker* mint = intcp->GetObj(mint);
     if (mint != NULL) {
 	res = mint->IsCompatible(aPair, !aExt);
@@ -314,6 +326,12 @@ ASocket::ASocket(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan,
 {
     SetEType(Type(), Elem::PEType());
     SetParent(Type());
+}
+
+ASocket::ASocket(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+{
+    SetEType(Elem::PEType());
+    SetParent(Elem::PEType());
 }
 
 void *ASocket::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -599,6 +617,12 @@ Syst::Syst(const string& aName, Elem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
     SetParent(Type());
 }
 
+Syst::Syst(Elem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
+{
+    SetEType(Vert::PEType());
+    SetParent(Vert::PEType());
+}
+
 void *Syst::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
@@ -629,9 +653,11 @@ void Syst::DoOnCompChanged(Elem& aComp)
 	Edge* edge = eedge->GetObj(edge);	
 	__ASSERT(edge != NULL);
 	edge->Disconnect();
+	Elem* pt1 = NULL;
+	Elem* pt2 = NULL;
 	const string& pt1u = edge->Point1u();
 	if (!pt1u.empty()) {
-	    Elem* pt1 = GetNode(pt1u);
+	    pt1 = GetNode(pt1u);
 	    if (pt1 != NULL) {
 		MVert* pt1v = pt1->GetObj(pt1v);
 		if (pt1v != NULL) {
@@ -644,7 +670,7 @@ void Syst::DoOnCompChanged(Elem& aComp)
 	}
 	const string& pt2u = edge->Point2u();
 	if (!pt2u.empty()) {
-	    Elem* pt2 = GetNode(pt2u);
+	    pt2 = GetNode(pt2u);
 	    if (pt2 != NULL) {
 		MVert* pt2v = pt2->GetObj(pt2v);
 		if (pt2v != NULL) {
@@ -655,8 +681,6 @@ void Syst::DoOnCompChanged(Elem& aComp)
 		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find", pt2u.c_str());
 	    }
 	}
-	Elem* pt1 = GetNode(pt1u);
-	Elem* pt2 = GetNode(pt2u);
 	if (pt1 != NULL && pt2 != NULL) {
 	    MVert* pt1v = pt1->GetObj(pt1v);
 	    MVert* pt2v = pt2->GetObj(pt2v);
@@ -670,14 +694,14 @@ void Syst::DoOnCompChanged(Elem& aComp)
 		    // Are compatible - connect
 		    TBool res = edge->Connect();
 		    if (res) {
-			Logger()->WriteFormat("Syst [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			Logger()->Write(MLogRec::EInfo, this, "Connected [%s - %s]", pt1u.c_str(), pt2u.c_str());
 		    }
 		    else {
-			Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			Logger()->Write(MLogRec::EErr, this, "Connecting [%s - %s] failed", pt1u.c_str(), pt2u.c_str());
 		    }
 		}
 		else {
-		    Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - incompatible roles", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+		    Logger()->Write(MLogRec::EErr, this, "Connecting [%s - %s] - incompatible roles", pt1u.c_str(), pt2u.c_str());
 		}
 	    }
 	    else {
@@ -685,6 +709,8 @@ void Syst::DoOnCompChanged(Elem& aComp)
 	    }
 	}
     }
-    Vert::DoOnCompChanged(aComp);
+    else {
+	Vert::DoOnCompChanged(aComp);
+    }
 }
 

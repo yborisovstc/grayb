@@ -20,63 +20,63 @@
     <!-- Module containing components of des layer -->
     <node id="desmod" parent="file:../modules/des.xml#DesComps" />
 
-    <node id="TestDes" parent="DesComps:desmod/Incaps:Des">
+    <node id="TestDes" parent="desmod/Des">
 
-	<add node="Elem:Capsule">
+	<add node="Capsule">
 	    <!-- Output: Mass -->
-	    <node id="Out" parent="../../DesComps:desmod/Extender:StIntOut"/> 
+	    <node id="Out" parent="../../desmod/StIntOut"/> 
 	</add>
 
 	<!-- Incrementor 1 -->
-	<node id="Incr1" parent="../DesComps:desmod/State:StateInt">
-	    <!-- <cont node="DataSInt:Confirmed/Prop:Value" val="34"/> -->
+	<node id="Incr1" parent="../desmod/StateInt">
+	    <!-- <cont node="DataSInt:Confirmed/Value" val="34"/> -->
 
 	    <node id="Logspec" parent="Elem">
 		<node id="Creation" parent="Elem">
 		</node>
 	    </node>
 
-	    <add node="DataSCInt:Confirmed">
+	    <add node="Confirmed">
 		<node id="Logspec" parent="Elem">
-		    <node id="Update" parent="../../../../DataComps:datamod/DataLogevent">
+		    <node id="Update" parent="../../../../datamod/DataLogevent">
 		    </node>
 		</node>
 	    </add>
 
-	    <node id="Trans" parent="../../DesComps:desmod/TrInt:TrIncInt">
+	    <node id="Trans" parent="../../desmod/TrIncInt">
 	    </node>
 
 	    <node parent="Edge"> 
-		<cont node="Prop:P1" val="TrIncInt:Trans/ConnPoint:Inp"/> 
-		<cont node="Prop:P2" val="Elem:Capsule/Extender:Inp/StInpSocket:Int/ConnPoint:PinData"/> 
+		<cont node="P1" val="Trans/Inp"/> 
+		<cont node="P2" val="Capsule/Inp/Int/PinData"/> 
 	    </node>
 
 	    <node parent="Edge"> 
-		<cont node="Prop:P1" val="TrIncInt:Trans/ConnPoint:Out"/> 
-		<cont node="Prop:P2" val="DataSCInt:Prepared/Elem:Capsule/ConnPoint:Inp"/> 
+		<cont node="P1" val="Trans/Out"/> 
+		<cont node="P2" val="Prepared/Capsule/Inp"/> 
 	    </node>
 
 	</node>
 
 
 	<!-- Incrementor 2 -->
-	<node id="Incr2" parent="StateInt:Incr1">
+	<node id="Incr2" parent="Incr1">
 	</node>
 
 	<!-- Incrementor1 Loop -->
 	<node parent="Edge"> 
-	    <cont node="Prop:P1" val="StateInt:Incr1/Elem:Capsule/Extender:Out"/> 
-	    <cont node="Prop:P2" val="StateInt:Incr1/Elem:Capsule/Extender:Inp"/> 
+	    <cont node="P1" val="Incr1/Capsule/Out"/> 
+	    <cont node="P2" val="Incr1/Capsule/Inp"/> 
 	</node>
 
 	<!-- Incrementor2 Loop -->
 	<node parent="Edge"> 
-	    <cont node="Prop:P1" val="Incr1:Incr2/Elem:Capsule/Extender:Out"/> 
-	    <cont node="Prop:P2" val="Incr1:Incr2/Elem:Capsule/Extender:Inp"/> 
+	    <cont node="P1" val="Incr2/Capsule/Out"/> 
+	    <cont node="P2" val="Incr2/Capsule/Inp"/> 
 	</node>
 
 	<!-- DES output -->
-	<node parent="Edge"> <cont node="P1" val="Incr1:Incr2/Capsule/Out"/> <cont node="P2" val="Capsule/Out/Int"/> </node>
+	<node parent="Edge"> <cont node="P1" val="Incr2/Capsule/Out"/> <cont node="P2" val="Capsule/Out/Int"/> </node>
 
     </node> <!-- test -->
 

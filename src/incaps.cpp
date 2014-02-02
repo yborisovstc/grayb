@@ -29,6 +29,12 @@ Incaps::Incaps(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, a
     */
 }
 
+Incaps::Incaps(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+{
+    SetEType(Elem::PEType());
+    SetParent(Elem::PEType());
+}
+
 void *Incaps::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
@@ -49,7 +55,7 @@ TBool Incaps::IsPtOk(Elem& aContext, Elem* aPt) {
     Elem* man = aContext.GetCompOwning("Incaps", aPt);
     if (man != NULL) {
 	if (man->GetMan() == &aContext) {
-	    Elem* caps = man->GetNode("Elem:Capsule");
+	    Elem* caps = man->GetNode("Capsule");
 	    res = caps->IsComp(aPt);
 	}
     }
@@ -121,25 +127,23 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 			TBool res = edge->Connect();
 			if (res) {
 			    if (IsLogeventCreOn()) {
-				Logger()->WriteFormat("Incaps [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+				Logger()->Write(MLogRec::EInfo, host, "Connected [%s - %s]", pt1u.c_str(), pt2u.c_str());
 			    }
 			}
 			else {
-			    Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			    Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] failed", pt1u.c_str(), pt2u.c_str());
 			}
 		    }
 		    else {
-			Logger()->WriteFormat("ERR: [%s/%s] connecting [%s - %s] - incompatible", 
-				host->Name().c_str(), Name().c_str(), pt1u.c_str(), pt2u.c_str());
+			Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] - incompatible", pt1u.c_str(), pt2u.c_str());
 		    }
 		}
 		else {
-		    Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - ends aren't vertexes", 
-			    Name().c_str(), pt1u.c_str(), pt2u.c_str());
+		    Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] - ends aren't vertexes", pt1u.c_str(), pt2u.c_str());
 		}
 	    }
 	    else {
-		Logger()->WriteFormat("ERR: Incaps [%s] connecting [%s - %s] - not allowed cp", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+		Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] - not allowed cp", pt1u.c_str(), pt2u.c_str());
 	    }
 	} 
 	res = ETrue;

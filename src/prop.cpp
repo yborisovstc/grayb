@@ -12,6 +12,12 @@ Prop::Prop(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
     SetParent(Type());
 }
 
+Prop::Prop(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+{
+    SetEType(Elem::PEType());
+    SetParent(Elem::PEType());
+}
+
 void *Prop::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
@@ -59,6 +65,12 @@ Description::Description(const string& aName, Elem* aMan, MEnv* aEnv): Prop(aNam
 {
     SetEType(Type(), Prop::PEType());
     SetParent(Type());
+}
+
+Description::Description(Elem* aMan, MEnv* aEnv): Prop(Type(), aMan, aEnv)
+{
+    SetEType(Prop::PEType());
+    SetParent(Prop::PEType());
 }
 
 void *Description::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)

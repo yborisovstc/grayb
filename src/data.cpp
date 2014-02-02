@@ -18,6 +18,12 @@ DataBase::DataBase(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMa
     SetParent(Type());
 }
 
+DataBase::DataBase(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+{
+    SetEType(Elem::PEType());
+    SetParent(Elem::PEType());
+}
+
 TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
     TBool res = EFalse;
@@ -47,7 +53,7 @@ TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 
 void DataBase::NotifyUpdate()
 {
-    Elem* eout = GetNode("../../Elem:Capsule/ConnPoint:out");
+    Elem* eout = GetNode("../../Capsule/out");
     // TODO [YB] Scheme of getting iface should be enough to get MDataObserver directly from eout. Seems the chunk below is redundant.
     if (eout != NULL) {
 	MVert* mvout = eout->GetObj(mvout);
@@ -81,7 +87,7 @@ void *DataBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* a
 
 void DataBase::UpdateProp()
 {
-    Elem* eprop = GetNode("../../Prop:Value");
+    Elem* eprop = GetNode("../../Value");
     if (eprop != NULL) {
 	string res;
 	ToString(res);
@@ -91,7 +97,7 @@ void DataBase::UpdateProp()
 	
 TBool DataBase::IsLogeventUpdate() 
 {
-    Elem* node = GetNode("../../Elem:Logspec/DataLogevent:Update");
+    Elem* node = GetNode("../../Logspec/Update");
     return node != NULL;
 }
 
@@ -100,6 +106,22 @@ void DataBase::OnDataChanged()
     // Update data
     Update();
 }
+
+TBool DataBase::Update()
+{
+    return EFalse;
+}
+
+bool DataBase::FromString(const string& aData) 
+{
+    return EFalse;
+}
+
+bool DataBase::ToString(string& aData) 
+{
+    return EFalse;
+}
+
 
 
 string DInt::PEType()
@@ -111,6 +133,12 @@ DInt::DInt(const string& aName, Elem* aMan, MEnv* aEnv): DataBase(aName, aMan, a
 {
     SetEType(Type(), DataBase::PEType());
     SetParent(Type());
+}
+
+DInt::DInt(Elem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(0)
+{
+    SetEType(DataBase::PEType());
+    SetParent(DataBase::PEType());
 }
 
 void *DInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -202,9 +230,9 @@ TBool DInt::Update()
 {
     TBool res = EFalse;
     MDIntGet* inp = NULL;
-    Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:inp");
+    Elem* einp = GetNode("../../Capsule/inp");
     if (einp == NULL) {
-	einp = GetNode("../../Elem:Capsule/ConnPoint:Inp");
+	einp = GetNode("../../Capsule/Inp");
     }
     if (einp != NULL) {
 	Vert* vert = einp->GetObj(vert);
@@ -250,6 +278,12 @@ DNInt::DNInt(const string& aName, Elem* aMan, MEnv* aEnv): DInt(aName, aMan, aEn
 {
     SetEType(Type(), DInt::PEType());
     SetParent(Type());
+}
+
+DNInt::DNInt(Elem* aMan, MEnv* aEnv): DInt(Type(), aMan, aEnv)
+{
+    SetEType(DInt::PEType());
+    SetParent(DInt::PEType());
 }
 
 void *DNInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)

@@ -93,7 +93,6 @@ string Vert::PEType()
 
 Vert::Vert(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    //iEType = Type();
     SetEType(Type(), Elem::PEType());
     SetParent(Type());
     // Create component for run-time extentions
@@ -101,6 +100,18 @@ Vert::Vert(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
     __ASSERT(agents != NULL);
     TBool res = AppendComp(agents);
     __ASSERT(res);
+}
+
+Vert::Vert(Elem* aMan, MEnv* aEnv):Elem(Type(), aMan, aEnv)
+{
+    SetEType(Elem::PEType());
+    SetParent(Elem::PEType());
+    // Create component for run-time extentions
+    Elem* agents = Provider()->CreateNode("Elem", "Agents", this, iEnv);
+    __ASSERT(agents != NULL);
+    TBool res = AppendComp(agents);
+    __ASSERT(res);
+
 }
 
 void *Vert::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -300,7 +311,7 @@ void Vert::DoOnCompChanged(Elem& aComp)
 		}
 	    }
 	    else {
-		Logger()->WriteFormat("ERR: Vert [%s] connecting [%s] - cannot find", Name().c_str(), pt1u.c_str());
+		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find", pt1u.c_str());
 	    }
 	}
 	const string& pt2u = edge->Point2u();
@@ -313,13 +324,13 @@ void Vert::DoOnCompChanged(Elem& aComp)
 		}
 	    }
 	    else {
-		Logger()->WriteFormat("ERR: Vert [%s] connecting [%s] - cannot find", Name().c_str(), pt2u.c_str());
+		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find", pt2u.c_str());
 	    }
 	}
 	if (edge->Point1() != NULL && edge->Point2() != NULL) {
 	    TBool res = edge->Connect();
 	    if (res) {
-		Logger()->WriteFormat("Vert [%s] connected [%s - %s]", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+		Logger()->Write(MLogRec::EInfo, this, "Connected [%s - %s]", pt1u.c_str(), pt2u.c_str());
 	    }
 	    else {
 		Logger()->WriteFormat("ERR: Vert [%s] connected [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
@@ -350,6 +361,7 @@ Elem* Vert::GetNodeLoc(const GUri::TElem& aElem)
     return res;
 }
 
+/*
 Elem::Iterator Vert::NodesLoc_Begin(const GUri::TElem& aId)
 {
     return Iterator(new IterImplVert(*this, aId));
@@ -359,4 +371,5 @@ Elem::Iterator Vert::NodesLoc_End(const GUri::TElem& aId)
 {
     return Iterator(new IterImplVert(*this, aId, ETrue));
 }
+*/
 

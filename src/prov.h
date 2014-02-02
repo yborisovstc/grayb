@@ -11,7 +11,7 @@ class GProvider: public Base, public MProvider
 {
     public:
 	static const char* Type() { return "GProvider";};
-	GProvider(const string &aName);
+	GProvider(const string &aName, MEnv* aEnv);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MProvider
@@ -20,6 +20,8 @@ class GProvider: public Base, public MProvider
 	virtual Chromo* CreateChromo();
 	virtual void AppendNodesInfo(vector<string>& aInfo);
 	virtual const string& ModulesPath() const;
+    protected:
+	MEnv* iEnv;
 };
 
 #endif
