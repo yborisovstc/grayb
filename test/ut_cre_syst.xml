@@ -10,7 +10,7 @@
 
 <node id="test" parent="Syst">
     <!-- Module containing components of system layer -->
-    <node id="sysmod" parent="file:../modules/syst.xml#SysComps" />
+    <node id="file:../modules/syst.xml#SysComps" />
 
     <node id="Role1" parent="Elem"/>
     <node id="Role2" parent="Elem"/>

@@ -12,12 +12,12 @@
     <node id="DataLogevent" parent="Elem" />
 
     <!-- Data with separate input for setting and output for getting -->
-    <node id="DataS" parent="**/(IncapsComps:)*/Incaps"> 
+    <node id="DataS" parent=":Elem:IncapsComps/Incaps"> 
 	<node id="D_1" parent="Description">
 	    <cont val="Base of Data with separate input for setting and output for getting"/></node>
     	<add node="Capsule"> 
-	    <node id="inp" parent="**/(SysComps:)*/ConnPoint"/> 
-	    <node id="out" parent="**/(SysComps:)*/ConnPoint"> 
+	    <node id="inp" parent=":Elem:SysComps/ConnPoint"/> 
+	    <node id="out" parent=":Elem:SysComps/ConnPoint"> 
 		<cont node="Required" val="MDataObserver"/>
 	    </node>
     	</add>
@@ -25,10 +25,10 @@
     </node>
 
     <!-- Data with separate input for setting and output for getting. W/o notificaion -->
-    <node id="DataSU" parent="**/(IncapsComps:)*/Incaps"> 
+    <node id="DataSU" parent=":Elem:IncapsComps/Incaps"> 
     	<add node="Capsule"> 
-	    <node id="inp" parent="**/(SysComps:)*/ConnPoint"/> 
-	    <node id="out" parent="**/(SysComps:)*/ConnPoint"/> 
+	    <node id="inp" parent=":Elem:SysComps/ConnPoint"/> 
+	    <node id="out" parent=":Elem:SysComps/ConnPoint"/> 
     	</add>
 	<node id="Value" parent="Prop"/>
     </node>
@@ -71,12 +71,12 @@
 
 
 
-    <node id="DataInt" parent="**/(IncapsComps:)*/Incaps"> 
+    <node id="DataInt" parent=":Elem:IncapsComps/Incaps"> 
 
     	<add node="Agents"> <node id="ADInt" parent="DInt"/> </add>
 
     	<add node="Capsule"> 
-	    <node id="out" parent="**/(SysComps:)*/ConnPoint"> 
+	    <node id="out" parent=":Elem:SysComps/ConnPoint"> 
 		<cont node="Provided" val="MDInt"/>
 	    </node>
     	</add>
@@ -89,11 +89,11 @@
 
 
     <!-- Data base -->
-    <node id="DataSC" parent="**/(IncapsComps:)*/Incaps"> 
+    <node id="DataSC" parent=":Elem:IncapsComps/Incaps"> 
     	<add node="Capsule"> 
-	    <node id="Inp" parent="**/(SysComps:)*/ConnPoint"/> 
-	    <node id="Out" parent="**/(SysComps:)*/ConnPoint"/> 
-	    <node id="Upd" parent="**/(SysComps:)*/ConnPoint"/> 
+	    <node id="Inp" parent=":Elem:SysComps/ConnPoint"/> 
+	    <node id="Out" parent=":Elem:SysComps/ConnPoint"/> 
+	    <node id="Upd" parent=":Elem:SysComps/ConnPoint"/> 
     	</add>
 	<node id="Value" parent="Prop"/>
     </node>

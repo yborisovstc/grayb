@@ -1,17 +1,11 @@
 
-<!-- Logging data. States the data of FAP element that should be logged -->
-<!ELEMENT logdata EMPTY>
-
-<!-- Logspec includes attribute "levent" and assosiated logging data set -->
-<!ELEMENT logspec (logdata+)>
-
 <!-- Mutation - addition -->
 <!ELEMENT add (node*, logspec* )>
 
 <!-- Mutation - change content -->
 <!ELEMENT cont EMPTY>
 
-<!-- Mutation - moving -->
+<!-- Mutation - moving component within the owner node -->
 <!ELEMENT move EMPTY>
 
 <!-- Mutation - Removing node -->
@@ -21,17 +15,11 @@
 <!ELEMENT change EMPTY >
 
 <!-- Element of base hier -->
-<!ELEMENT node (node*, logspec*, add*, rm*, change*, cont*, move*)* >
- 
-<!-- Logging event: tran - transitioning, upd - updated, cre - created, any - all events -->
-<!ATTLIST logspec event (tran | upd | cre | any) #REQUIRED>
-
-<!-- Logging data: tran - transition expressions, cur - current value, new - new value, dep - pependencies -->
-<!ATTLIST logdata id (trex | cur | new | dep) #REQUIRED>
+<!ELEMENT node (node*, add*, rm*, change*, cont*, move*)* >
 
 <!-- Inherited Object  attributes:
-     type - parent name,
      id - instance name,
+     parent - parent name, if omitted then id specified the node to be added as is
      -->
 <!ATTLIST node 
    id CDATA #IMPLIED
@@ -44,7 +32,6 @@
 <!ATTLIST add 
     node CDATA #IMPLIED
 >
-
 
 <!-- Removing node attributes:
   node - mutated node - DES URI

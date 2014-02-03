@@ -832,81 +832,104 @@ Elem* Elem::AddElem(const ChromoNode& aNode)
     Elem* elem = NULL;
     // Obtain parent first
     Elem *parent = NULL;
-    // Check the scheme
-    GUri prnturi(sparent);
-    TBool ext_parent = ETrue;
-    if (prnturi.Scheme().empty()) {
-	// Local parent
-	parent = GetNode(prnturi);
-	/*
-	if (parent == NULL) {
+    // Check if the parent is specified
+    if (!sparent.empty()) {
+	// Check the parent scheme
+	GUri prnturi(sparent);
+	TBool ext_parent = ETrue;
+	if (prnturi.Scheme().empty()) {
+	    // Local parent
+	    parent = GetNode(prnturi);
+	    /*
+	       if (parent == NULL) {
 	    // No parents found, request provider for native one
 	    parent = Provider()->GetNode(sparent);
-	}
-	*/
-	ext_parent = EFalse;
-    }
-    else {
-	// TODO [YB] To add seaching the module - it will allow to specify just file of spec wo full uri
-	Chromo *spec = Provider()->CreateChromo();
-	TBool res = spec->Set(sparent);
-	if (res) {
-	    const ChromoNode& root = spec->Root();
-	    parent = AddElem(root);
-	    delete spec;
-	}
-    }
-    if (parent == NULL) {
-	// No parents found, create from embedded parent
-	parent = Provider()->GetNode(sparent);
-	elem = Provider()->CreateNode(sparent, sname, this, iEnv);
-	if (parent != NULL) {
-	    parent->AppendChild(elem);
-	}
-	else  {
-	    Logger()->Write(MLogRec::EErr, this, "Creating [%s] - parent [%s] not found", sname.c_str(), sparent.c_str());
-	}
-    }
-    else {
-	// Create heir from the parent
-	elem = parent->CreateHeir(sname, this);
-	parent->AppendChild(elem);
-	// TODO [YB] Seems to be just temporal solution. To consider using context instead.
-	// Make heir based on the parent: re-parent the heir (currently it's of grandparent's parent) and clean the chromo
-	//elem->SetEType(sparent); // The type is set when creating heir
-	ChromoNode hroot = elem->Chromos().Root();
-	hroot.SetAttr(ENa_Parent, sparent);
-	// Remove external parent from system
-	// [YB] DON'T remove parent, otherwise the inheritance chain will be broken
-	if (ext_parent) {
-	   // delete parent;
-	}
-    }
-    if (elem == NULL) {
-	Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] - failed", sname.c_str());
-    }
-    else {
-	TBool res = AppendComp(elem);
-	if (!res) {
-	    Logger()->Write(MLogRec::EErr, this, "Adding node [%s:%s] failed", elem->EType().c_str(), elem->Name().c_str());
-	    delete elem;
-	    elem = NULL;
-	}
-	else {
-	    // Mutate object 
-	    elem->SetMutation(aNode);
-	    elem->Mutate();
-	    if (IsLogeventCreOn()) {
-		Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
-	    }
-	    /*
-	    if (iMan != NULL) {
-		iMan->OnCompAdding(*elem);
-	    }
-	    if (iObserver != NULL) {
-		iObserver->OnCompAdding(*elem);
 	    }
 	    */
+	    ext_parent = EFalse;
+	}
+	else {
+	    // TODO [YB] To add seaching the module - it will allow to specify just file of spec wo full uri
+	    Chromo *spec = Provider()->CreateChromo();
+	    TBool res = spec->Set(sparent);
+	    if (res) {
+		const ChromoNode& root = spec->Root();
+		parent = AddElem(root);
+		delete spec;
+	    }
+	}
+	if (parent == NULL) {
+	    // No parents found, create from embedded parent
+	    parent = Provider()->GetNode(sparent);
+	    elem = Provider()->CreateNode(sparent, sname, this, iEnv);
+	    if (parent != NULL) {
+		parent->AppendChild(elem);
+	    }
+	    else  {
+		Logger()->Write(MLogRec::EErr, this, "Creating [%s] - parent [%s] not found", sname.c_str(), sparent.c_str());
+	    }
+	}
+	else {
+	    // Create heir from the parent
+	    elem = parent->CreateHeir(sname, this);
+	    // TODO [YB] Seems to be just temporal solution. To consider using context instead.
+	    // Make heir based on the parent: re-parent the heir (currently it's of grandparent's parent) and clean the chromo
+	    //elem->SetEType(sparent); // The type is set when creating heir
+	    ChromoNode hroot = elem->Chromos().Root();
+	    hroot.SetAttr(ENa_Parent, sparent);
+	    // Remove external parent from system
+	    // [YB] DON'T remove parent, otherwise the inheritance chain will be broken
+	    if (ext_parent) {
+		// delete parent;
+	    }
+	}
+	if (elem == NULL) {
+	    Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] - failed", sname.c_str());
+	}
+	else {
+	    TBool res = AppendComp(elem);
+	    if (!res) {
+		Logger()->Write(MLogRec::EErr, this, "Adding node [%s:%s] failed", elem->EType().c_str(), elem->Name().c_str());
+		delete elem;
+		elem = NULL;
+	    }
+	    else {
+		// Mutate object 
+		elem->SetMutation(aNode);
+		elem->Mutate();
+		if (IsLogeventCreOn()) {
+		    Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
+		}
+	    }
+	}
+    }
+    else {
+	// Parent is not specified. Add the node as is
+	GUri srcuri(sname);
+	if (srcuri.Scheme().empty()) {
+	    // Local node
+	    Elem* src = GetNode(srcuri);
+	    if (src != NULL) {
+		Chromo* spec = src->iChromo;
+		const ChromoNode& root = spec->Root();
+		AddElem(root);
+	    }
+	    else {
+		Logger()->Write(MLogRec::EErr, this, "Adding [%s] - not found", sname.c_str());
+	    }
+	}
+	else {
+	    // Remote node
+	    Chromo *spec = Provider()->CreateChromo();
+	    TBool res = spec->Set(sname);
+	    if (res) {
+		const ChromoNode& root = spec->Root();
+		elem = AddElem(root);
+		delete spec;
+	    }
+	    else {
+		Logger()->Write(MLogRec::EErr, this, "Adding [%s] - not found", sname.c_str());
+	    }
 	}
     }
     return elem;
@@ -937,9 +960,9 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
 	    }
 	    parent = GetNode(prnturi);
 	    /*
-	    if (parent == NULL) {
-		// No parents found, request provider for native one
-		parent = Provider()->GetNode(sparent);
+	       if (parent == NULL) {
+	    // No parents found, request provider for native one
+	    parent = Provider()->GetNode(sparent);
 	    }
 	    */
 	}
@@ -958,7 +981,10 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
 	    // No parents found, create from embedded parent
 	    parent = Provider()->GetNode(sparent);
 	    heir = Provider()->CreateNode(sparent, aName, iMan, iEnv);
-	    if (parent == NULL) {
+	    if (parent != NULL) {
+		parent->AppendChild(heir);
+	    }
+	    else {
 		Logger()->Write(MLogRec::EErr, this, "Creating child [%s] - parent [%s] not found", aName.c_str(), sparent.c_str());
 	    }
 	}
@@ -976,6 +1002,9 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
 	heir->SetParent(Name());
 	heir->SetMan(NULL);
 	heir->SetMan(aMan);
+	// Re-adopte the child
+	parent->RemoveChild(heir);
+	AppendChild(heir);
     }
     else {
 	// Inheritance root - create native element
@@ -984,7 +1013,7 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
     }
     // Remove external parent from system
     if (parent != NULL && ext_parent) {
-	delete parent;
+	//delete parent;
     }
     return heir;
 }
@@ -997,7 +1026,12 @@ TBool Elem::AppendChild(Elem* aChild)
 	aChild->SetParent(this);
     }
     return res;
+}
 
+void Elem::RemoveChild(Elem* aChild)
+{
+    UnregisterChild(aChild);
+    aChild->SetParent(NULL);
 }
 
 TBool Elem::AppendComp(Elem* aComp)
@@ -1329,7 +1363,7 @@ Elem* Elem::GetInhRoot() const
 {
     Elem* res = (Elem*) this;
     if (iParent != NULL) {
-	res = iParent->GetRoot();
+	res = iParent->GetInhRoot();
     }
     return res;
 
@@ -1359,7 +1393,8 @@ TBool Elem::MoveNode(const ChromoNode& aSpec)
     Elem* dnode = dest_spec ? GetNode(dests) : NULL;
     Elem* owner = snode->GetMan();
     if (snode != NULL) {
-	if (owner != NULL && owner == snode->GetMan()) {
+	if (owner != NULL && (dnode == NULL || owner == dnode->GetMan())) {
+	    // Source and dest has one owner - shifting local node
 	    res = owner->MoveComp(snode, dnode);
 	    if (!res) {
 		Logger()->WriteFormat("ERROR: Moving element [%s] - failure", srcs.c_str());
@@ -1370,7 +1405,7 @@ TBool Elem::MoveNode(const ChromoNode& aSpec)
 	}
     }
     else {
-	Logger()->WriteFormat("ERROR: Moving element [%s] - node not found", srcs.c_str());
+	Logger()->Write(MLogRec::EErr, this, "Moving node [%s] - not found", srcs.c_str());
     }
     return res;
 }

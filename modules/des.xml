@@ -11,29 +11,29 @@
     <node id="DesLogevent" parent="Elem" />
     
     <!-- Output socket -->
-    <node id="StOutSocket" parent="**/(SysComps:)*/Socket">
+    <node id="StOutSocket" parent="**/SysComps/Socket">
 	<!-- Pin Des observer. Requires DES observer interface to handle activation of the state -->
-	<node id="PinObs" parent="**/(SysComps:)*/ConnPoint"> 
+	<node id="PinObs" parent="**/SysComps/ConnPoint"> 
 	    <cont node="Provided" val="MDesObserver"/>
 	</node>
 	<!-- Pin Data observer. Provides data interface -->
-	<node id="PinData" parent="**/(SysComps:)*/ConnPoint"> 
+	<node id="PinData" parent="**/SysComps/ConnPoint"> 
 	</node>
     </node>
 
     <!-- Input socket -->
-    <node id="StInpSocket" parent="**/(SysComps:)*/Socket">
+    <node id="StInpSocket" parent="**/SysComps/Socket">
 	<!-- Pin Des observer. Requires DES observer interface to handle activation of the state -->
-	<node id="PinObs" parent="**/(SysComps:)*/ConnPoint"> 
+	<node id="PinObs" parent="**/SysComps/ConnPoint"> 
 	    <cont node="Required" val="MDesObserver"/>
 	</node>
 	<!-- Pin Data observer. Provides data interface -->
-	<node id="PinData" parent="**/(SysComps:)*/ConnPoint"> 
+	<node id="PinData" parent="**/SysComps/ConnPoint"> 
 	</node>
     </node>
 
     <!-- Input of standard Int State -->
-    <node id="StIntInp" parent="**/(SysComps:)*/Extender"> 
+    <node id="StIntInp" parent="**/SysComps/Extender"> 
 	<rm node="Int"/>
 	<node id="Int" parent="../StInpSocket"> 
 	    <cont node="PinData/Provided" val="MDIntGet"/>
@@ -41,7 +41,7 @@
     </node>
 
     <!-- Output of standard Int State -->
-    <node id="StIntOut" parent="**/(SysComps:)*/Extender"> 
+    <node id="StIntOut" parent="**/SysComps/Extender"> 
 	<rm node="Int"/>
 	<node id="Int" parent="../StOutSocket"> 
 	    <cont node="PinData/Required" val="MDIntGet"/>
@@ -49,16 +49,16 @@
     </node>
 
     <!-- Input of int transition -->
-    <node id="TrIntInp" parent="**/(SysComps:)*/ConnPoint"> 
+    <node id="TrIntInp" parent="**/SysComps/ConnPoint"> 
 	<cont node="Required" val="MDIntGet"/>
     </node>
 
     <!-- Transition of integer data -->
     <node id="TrInt" parent="Syst"> 
-	<node id="Inp" parent="**/(SysComps:)*/ConnPoint"> 
+	<node id="Inp" parent="**/SysComps/ConnPoint"> 
 	    <cont node="Required" val="MDIntGet"/>
 	</node>
-	<node id="Out" parent="**/(SysComps:)*/ConnPoint"> 
+	<node id="Out" parent="**/SysComps/ConnPoint"> 
 	    <cont node="Provided" val="MDIntGet"/>
 	</node>
     </node>
@@ -97,7 +97,7 @@
 
 
     <!-- State base -->
-    <node id="State" parent="**/(IncapsComps:)*/Incaps"> 
+    <node id="State" parent="**/IncapsComps/Incaps"> 
 
 	<add node="Agents"> 
 	    <node id="StateAgt" parent="StateAgent"> 
@@ -106,17 +106,17 @@
 
 	<add node="Capsule">
 	    <!-- TODO [YB] Do we need dedicated CP or component has to notify it's mgr? -->
-	    <node id="Sync" parent="**/(SysComps:)*/ConnPoint"> 
+	    <node id="Sync" parent="**/SysComps/ConnPoint"> 
 		<cont node="Provided" val="MDesSyncable"/>
 	    </node>
 	    <!-- Input -->
-	    <node id="Inp" parent="**/(SysComps:)*/Extender"> 
+	    <node id="Inp" parent="**/SysComps/Extender"> 
 		<rm node="Int"/>
 		<node id="Int" parent="../../../StInpSocket"> 
 		</node>
 	    </node>
 	    <!-- Output -->
-	    <node id="Out" parent="**/(SysComps:)*/Extender"> 
+	    <node id="Out" parent="**/SysComps/Extender"> 
 		<rm node="Int"/>
 		<node id="Int" parent="../../../StOutSocket"> 
 		</node>
@@ -125,10 +125,10 @@
     </node>
 
     <node id="StateInt" parent="State"> 
-	<node id="Confirmed" parent="**/(DataComps:)*/DataSCInt">
+	<node id="Confirmed" parent="**/DataComps/DataSCInt">
 	</node>
 
-	<node id="Prepared" parent="**/(DataComps:)*/DataSCInt">
+	<node id="Prepared" parent="**/DataComps/DataSCInt">
 	</node>
 
 	<cont node="Capsule/Inp/Int/PinData/Provided" val="MDIntGet"/>
@@ -146,7 +146,7 @@
     </node>
 
     <!-- DES base -->
-    <node id="Des" parent="**/(IncapsComps:)*/Incaps"> 
+    <node id="Des" parent="**/IncapsComps/Incaps"> 
 
 	<add node="Agents"> 
 	    <node id="DesAgt" parent="ADes"> 
@@ -154,16 +154,16 @@
 	</add>
 
 	<add node="Capsule">
-	    <node id="Sync" parent="**/(SysComps:)*/ConnPoint"> 
+	    <node id="Sync" parent="**/SysComps/ConnPoint"> 
 		<cont node="Provided" val="MDesSyncable"/>
 	    </node>
 	</add>
     </node>
 
     <!-- DES ticks source -->
-    <node id="DesTicker" parent="**/(IncapsComps:)*/Incaps"> 
+    <node id="DesTicker" parent="**/IncapsComps/Incaps"> 
 	<add node="Capsule">
-	    <node id="Out" parent="**/(SysComps:)*/ConnPoint"> 
+	    <node id="Out" parent="**/SysComps/ConnPoint"> 
 		<cont node="Required" val="MDesSyncable"/>
 	    </node>
 	</add>

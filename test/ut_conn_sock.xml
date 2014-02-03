@@ -8,54 +8,54 @@
 
 <node id="testroot" parent="Elem">
     <!-- Module containing components of system layer -->
-    <node id="sysmod" parent="file:../modules/syst.xml#SysComps" />
+    <node id="file:../modules/syst.xml#SysComps" />
     <!-- Module containing components of incaps layer -->
-    <node id="incapsmod" parent="file:../modules/capsula.xml#IncapsComps" />
+    <node id="file:../modules/capsula.xml#IncapsComps" />
     <!-- Module containing components of data -->
-    <node id="datamod" parent="file:../modules/data.xml#DataComps" />
+    <node id="file:../modules/data.xml#DataComps" />
 
     <!-- Input socket -->
-    <node id="InpSocket" parent="sysmod/Socket">
-	<node id="Cp1" parent="../sysmod/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
-	<node id="Cp2" parent="../sysmod/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
-	<node id="Cp3" parent="../sysmod/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
+    <node id="InpSocket" parent="SysComps/Socket">
+	<node id="Cp1" parent="../SysComps/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
+	<node id="Cp2" parent="../SysComps/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
+	<node id="Cp3" parent="../SysComps/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
     </node>
 
     <!-- Test Input -->
-    <node id="TInp" parent="sysmod/Extender"> 
+    <node id="TInp" parent="SysComps/Extender"> 
 	<rm node="Int"/>
 	<node id="Int" parent="../InpSocket"/> 
     </node>
 
     <!-- Test Output socket -->
-    <node id="OutSocket" parent="sysmod/Socket">
-	<node id="Cp1" parent="../sysmod/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
-	<node id="Cp2" parent="../sysmod/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
-	<node id="Cp3" parent="../sysmod/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
+    <node id="OutSocket" parent="SysComps/Socket">
+	<node id="Cp1" parent="../SysComps/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
+	<node id="Cp2" parent="../SysComps/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
+	<node id="Cp3" parent="../SysComps/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
     </node>
 
     <!-- Test Output -->
-    <node id="TOut" parent="sysmod/Extender"> 
+    <node id="TOut" parent="SysComps/Extender"> 
 	<rm node="Int"/>
 	<node id="Int" parent="../OutSocket"/> 
     </node>
 
     <!-- Data Source -->
-    <node id="DSource" parent="incapsmod/Incaps">
+    <node id="DSource" parent="IncapsComps/Incaps">
 	<add node="Capsule">
 	    <node id="Out" parent="../../OutSocket"/> 
 	</add>
 
-	<node id="Data_1" parent="../datamod/DataSCInt"> <cont node="Value" val="3"/> </node>
-	<node id="Data_2" parent="../datamod/DataSCInt"> <cont node="Value" val="1"/> </node>
-	<node id="Data_3" parent="../datamod/DataSCInt"> <cont node="Value" val="20"/> </node>
+	<node id="Data_1" parent="../DataComps/DataSCInt"> <cont node="Value" val="3"/> </node>
+	<node id="Data_2" parent="../DataComps/DataSCInt"> <cont node="Value" val="1"/> </node>
+	<node id="Data_3" parent="../DataComps/DataSCInt"> <cont node="Value" val="20"/> </node>
 
 	<node parent="Edge"> <cont node="P1" val="Data_1/Capsule/Out"/> <cont node="P2" val="Capsule/Out/Cp1"/> </node>
 	<node parent="Edge"> <cont node="P1" val="Data_2/Capsule/Out"/> <cont node="P2" val="Capsule/Out/Cp2"/> </node>
 	<node parent="Edge"> <cont node="P1" val="Data_3/Capsule/Out"/> <cont node="P2" val="Capsule/Out/Cp3"/> </node>
     </node> <!-- Data source -->
 
-    <node id="test" parent="incapsmod/Incaps">
+    <node id="test" parent="IncapsComps/Incaps">
 
 	<node id="L1" parent="../InpSocket"/>
 	<node id="Data" parent="../DSource"/>

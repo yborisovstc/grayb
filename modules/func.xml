@@ -8,50 +8,50 @@
 <node id="FuncComps" parent="Elem">
 
    <!-- Input of Func with Int arg/res -->
-   <node id="Inp_FInt" parent="**/(SysComps:)*/ConnPoint"> 
+   <node id="Inp_FInt" parent=":Elem:SysComps/ConnPoint"> 
        <cont node="Required" val="MDIntGet"/>
        <cont node="Provided" val="MDataObserver"/>
    </node>
 
    <!-- Extended Input of Func with Int arg/res -->
-   <node id="Inp_FEInt" parent="**/(SysComps:)*/Extender"> 
+   <node id="Inp_FEInt" parent=":Elem:SysComps/Extender"> 
        <cont node="Int/Provided" val="MDIntGet"/>
        <cont node="Int/Required" val="MDataObserver"/>
    </node>
 
    <!-- Output of Func with Int arg/res -->
-   <node id="Out_FInt" parent="**/(SysComps:)*/ConnPoint"> 
+   <node id="Out_FInt" parent=":Elem:SysComps/ConnPoint"> 
        <cont node="Required" val="MDataObserver"/>
        <cont node="Provided" val="MDIntGet"/>
    </node>
 
    <!-- Extended Output of Func with Int arg/res -->
-   <node id="Out_FEInt" parent="**/(SysComps:)*/Extender"> 
+   <node id="Out_FEInt" parent=":Elem:SysComps/Extender"> 
        <cont node="Int/Provided" val="MDataObserver"/>
        <cont node="Int/Required" val="MDIntGet"/>
    </node>
 
 
    <!-- Output of Bool Func -->
-   <node id="Out_FBool" parent="**/(SysComps:)*/ConnPoint"> 
+   <node id="Out_FBool" parent=":Elem:SysComps/ConnPoint"> 
        <cont node="Required" val="MDataObserver"/>
        <cont node="Provided" val="MDBoolGet"/>
    </node>
 
    <!-- Input of Bool Func -->
-   <node id="Inp_FBool" parent="**/(SysComps:)*/ConnPoint"> 
+   <node id="Inp_FBool" parent=":Elem:SysComps/ConnPoint"> 
        <cont node="Required" val="MDBoolGet"/>
        <cont node="Provided" val="MDataObserver"/>
    </node>
 
    <!-- Output of Func with Vect Int -->
-   <node id="Out_FVInt" parent="**/(SysComps:)*/ConnPoint"> 
+   <node id="Out_FVInt" parent=":Elem:SysComps/ConnPoint"> 
        <cont node="Required" val="MDataObserver"/>
        <cont node="Provided" val="MVIntGet"/>
    </node>
 
     <!-- Int function wo inputs  -->
-    <node id="FuncInt" parent="**/(IncapsComps:)*/Incaps"> 
+    <node id="FuncInt" parent=":Elem:IncapsComps/Incaps"> 
     	<add node="Capsule"> 
 	    <!-- Output -->
 	    <node id="out" parent="../../Out_FInt"/> 
@@ -59,47 +59,47 @@
     </node>
 
     <!-- Input of Transition Func with Int arg/res -->
-    <node id="Inp_TFInt" parent="**/(SysComps:)*/ConnPoint"> 
+    <node id="Inp_TFInt" parent=":Elem:SysComps/ConnPoint"> 
 	<cont node="Required" val="MDIntGet"/>
     </node>
 
     <!-- Output of Transition Func with Int arg/res -->
-    <node id="Out_TFInt" parent="**/(SysComps:)*/ConnPoint"> 
+    <node id="Out_TFInt" parent=":Elem:SysComps/ConnPoint"> 
 	<cont node="Provided" val="MDIntGet"/>
     </node>
 
     <!-- Extended Input of Transition Func with Int arg/res -->
-    <node id="Inp_TFEInt" parent="**/(SysComps:)*/Extender"> 
+    <node id="Inp_TFEInt" parent=":Elem:SysComps/Extender"> 
 	<cont node="Int/Provided" val="MDIntGet"/>
     </node>
 
     <!-- Extended Output of Transition Func with Int arg/res -->
-    <node id="Out_TFEInt" parent="**/(SysComps:)*/Extender"> 
+    <node id="Out_TFEInt" parent=":Elem:SysComps/Extender"> 
 	<cont node="Int/Required" val="MDIntGet"/>
     </node>
 
 
 
     <!-- Output of Bool Transition Func -->
-    <node id="Out_TFBool" parent="**/(SysComps:)*/ConnPoint"> 
+    <node id="Out_TFBool" parent=":Elem:SysComps/ConnPoint"> 
 	<cont node="Provided" val="MDBoolGet"/>
     </node>
 
     <!-- Input of Bool Transition Func -->
-    <node id="Inp_TFBool" parent="**/(SysComps:)*/ConnPoint"> 
+    <node id="Inp_TFBool" parent=":Elem:SysComps/ConnPoint"> 
        <cont node="Required" val="MDBoolGet"/>
    </node>
 
 
     <!-- Int function with simgle input  -->
-    <node id="FuncIntSi" parent="**/(IncapsComps:)*/Incaps"> 
+    <node id="FuncIntSi" parent=":Elem:IncapsComps/Incaps"> 
 
     	<add node="Capsule"> 
-	    <node id="inp" parent="**/(SysComps:)*/ConnPoint"> 
+	    <node id="inp" parent=":Elem:SysComps/ConnPoint"> 
 		<cont node="Required" val="MDIntGet"/>
 		<cont node="Provided" val="MDataObserver"/>
 	    </node>
-	    <node id="out" parent="**/(SysComps:)*/ConnPoint"> 
+	    <node id="out" parent=":Elem:SysComps/ConnPoint"> 
 		<cont node="Required" val="MDataObserver"/>
 		<cont node="Provided" val="MDIntGet"/>
 	    </node>
@@ -107,7 +107,7 @@
     </node>
 
     <!-- Bool function with simgle input  -->
-    <node id="FuncBoolSi" parent="**/(IncapsComps:)*/Incaps"> 
+    <node id="FuncBoolSi" parent=":Elem:IncapsComps/Incaps"> 
     	<add node="Capsule"> 
 	    <!-- Output -->
 	    <node id="out" parent="../../Out_FBool"/> 
@@ -115,7 +115,7 @@
     </node>
 
 
-    <node id="FuncIncInt" parent="**/(IncapsComps:)*/Incaps"> 
+    <node id="FuncIncInt" parent=":Elem:IncapsComps/Incaps"> 
 
     	<add node="Agents"> 
 	    <node id="func_agt" parent="AIncInt"> 
@@ -123,11 +123,11 @@
     	</add>
 
     	<add node="Capsule"> 
-	    <node id="inp" parent="**/(SysComps:)*/ConnPoint"> 
+	    <node id="inp" parent=":Elem:SysComps/ConnPoint"> 
 		<cont node="Required" val="MDIntGet"/>
 		<cont node="Provided" val="MDataObserver"/>
 	    </node>
-	    <node id="out" parent="**/(SysComps:)*/ConnPoint"> 
+	    <node id="out" parent=":Elem:SysComps/ConnPoint"> 
 		<cont node="Required" val="MDataObserver"/>
 		<cont node="Provided" val="MDIntGet"/>
 	    </node>
@@ -135,17 +135,17 @@
     </node>
 
     <!-- Function of integer result -->
-    <node id="FuncIntRes" parent="**/(IncapsComps:)*/Incaps"> 
+    <node id="FuncIntRes" parent=":Elem:IncapsComps/Incaps"> 
     	<add node="Agents"> 
 	    <node id="func_agt" parent="AFunIntRes"> 
 	    </node>
     	</add>
     	<add node="Capsule"> 
-	    <node id="inp" parent="**/(SysComps:)*/ConnPoint"> 
+	    <node id="inp" parent=":Elem:SysComps/ConnPoint"> 
 		<cont node="Required" val="MDIntGet"/>
 		<cont node="Provided" val="MDataObserver"/>
 	    </node>
-	    <node id="out" parent="**/(SysComps:)*/ConnPoint"> 
+	    <node id="out" parent=":Elem:SysComps/ConnPoint"> 
 		<cont node="Required" val="MDIntSet"/>
 	    </node>
     	</add>
@@ -211,12 +211,12 @@
 	    <node id="Inp_WFres" parent="../../Inp_FInt"/> 
 	</add>
 	<!-- Value of Working function argument -->
-	<node id="WFArg" parent="**/(DataComps:)*/DataSNInt"/>
+	<node id="WFArg" parent="**/DataComps/DataSNInt"/>
 	<node parent="Edge"> <cont node="P1" val="WFArg/Capsule/out"/> <cont node="P2" val="Capsule/Out_WFarg/Int"/> </node>
     </node>
 
     <!-- Int  inputs to Int vector conversation -->
-    <node id="FuncInpToVectInt" parent="**/(IncapsComps:)*/Incaps"> 
+    <node id="FuncInpToVectInt" parent=":Elem:IncapsComps/Incaps"> 
 	<add node="Capsule"> 
 	    <!-- Input -->
 	    <node id="Inp" parent="../../Inp_FInt"/> 
@@ -245,7 +245,7 @@
     <!-- Transition function. It doesn's support observation of inputs change -->
 
     <!-- Int Transition function wo inputs  -->
-    <node id="TFuncInt" parent="**/(IncapsComps:)*/Incaps"> 
+    <node id="TFuncInt" parent=":Elem:IncapsComps/Incaps"> 
     	<add node="Capsule"> 
 	    <!-- Output -->
 	    <node id="out" parent="../../Out_TFInt"/> 
@@ -253,7 +253,7 @@
     </node>
 
     <!-- Bool Transition function wo inputs  -->
-    <node id="TFuncBool" parent="**/(IncapsComps:)*/Incaps"> 
+    <node id="TFuncBool" parent=":Elem:IncapsComps/Incaps"> 
     	<add node="Capsule"> 
 	    <!-- Output -->
 	    <node id="out" parent="../../Out_TFBool"/> 
@@ -318,7 +318,7 @@
 	    <node id="Inp_WFres" parent="../../Inp_TFInt"/> 
 	</add>
 	<!-- Value of Working function argument -->
-	<node id="WFArg" parent="**/(DataComps:)*/DataSUInt"/>
+	<node id="WFArg" parent="**/DataComps/DataSUInt"/>
 	<node parent="Edge"> <cont node="P1" val="WFArg/Capsule/out"/> <cont node="P2" val="Capsule/Out_WFarg/Int"/> </node>
     </node>
 

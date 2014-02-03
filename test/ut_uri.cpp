@@ -128,7 +128,7 @@ void Ut_uri::test_UriBase()
     Elem* node2 = root->GetNode("**/Incr2");
     CPPUNIT_ASSERT_MESSAGE("Fail to get node (**/Incr2)", node2 != 0 && node2->GetUri(NULL) == node0->GetUri(NULL));
     // Checking "anywhere" pattern for direct root comp
-    Elem* elm1 = root->GetNode("**/(SysComps:)*");
+    Elem* elm1 = root->GetNode("**/SysComps");
     CPPUNIT_ASSERT_MESSAGE("Fail to get base elm1", elm1 != 0);
     // Checking creation from parent specified with URI with "anywhere" pattern
     Elem* cp1 = root->GetNode("/testroot/test/Cp1");
@@ -161,12 +161,14 @@ void Ut_uri::test_UriBase()
     */
  
     // Checking getting uri basing on inheritance relations
-    Elem* node_ni_1 = root->GetNode("/testroot/incapsmod/Incaps");
+    Elem* node_ni_1 = root->GetNode("/testroot/IncapsComps/Incaps");
     Elem* node_ih_1 = root->GetNode(":Elem:Vert:Syst:Incaps");
     CPPUNIT_ASSERT_MESSAGE("Fail to get node by inh URI", node_ni_1 != NULL && node_ih_1 != NULL && node_ni_1 == node_ih_1);
+    Elem* node_ih_2 = root->GetNode(":Elem:IncapsComps/Incaps");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get node by inh URI", node_ni_1 != NULL && node_ih_2 != NULL && node_ni_1 == node_ih_2);
     // With any pattern
-    Elem* incapsmod_ni_1 = root->GetNode("/testroot/incapsmod");
-    Elem* incapsmod_ih_1 = root->GetNode(":Elem:IncapsComps:*");
+    Elem* incapsmod_ni_1 = root->GetNode("/testroot/IncapsComps");
+    Elem* incapsmod_ih_1 = root->GetNode(":Elem:IncapsComps");
     CPPUNIT_ASSERT_MESSAGE("Fail to get node by inh URI and -any- pattern", incapsmod_ni_1 != NULL && incapsmod_ih_1 != NULL && incapsmod_ni_1 == incapsmod_ih_1);
 }
 

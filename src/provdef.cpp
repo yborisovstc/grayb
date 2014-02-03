@@ -18,7 +18,6 @@ ProvDef::ProvDef(const string &aName, MEnv* aEnv): GProvider(aName, aEnv)
 
 ProvDef::~ProvDef()
 {
-    delete iElem;
 }
 
 Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv)

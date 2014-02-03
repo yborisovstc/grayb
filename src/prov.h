@@ -10,8 +10,12 @@ class Vert;
 class GProvider: public Base, public MProvider
 {
     public:
+	typedef pair<string, Elem*> TRegVal;
+	typedef map<string, Elem*> TReg;
+    public:
 	static const char* Type() { return "GProvider";};
 	GProvider(const string &aName, MEnv* aEnv);
+	virtual ~GProvider();
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MProvider
@@ -22,6 +26,7 @@ class GProvider: public Base, public MProvider
 	virtual const string& ModulesPath() const;
     protected:
 	MEnv* iEnv;
+	TReg iReg;
 };
 
 #endif

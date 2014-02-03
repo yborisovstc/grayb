@@ -9,19 +9,19 @@
 
 <node id="testroot" parent="Elem">
     <!-- Module containing components of system layer -->
-    <node id="sysmod" parent="file:../modules/syst.xml#SysComps" />
+    <node id="file:../modules/syst.xml#SysComps" />
     <!-- Module containing components of incaps layer -->
-    <node id="incapsmod" parent="file:../modules/capsula.xml#IncapsComps" />
+    <node id="file:../modules/capsula.xml#IncapsComps" />
     <!-- Module containing components of data -->
-    <node id="datamod" parent="file:../modules/data.xml#DataComps" />
+    <node id="file:../modules/data.xml#DataComps" />
     <!-- Module containing components of func -->
-    <node id="funcmod" parent="file:../modules/func.xml#FuncComps" />
+    <node id="file:../modules/func.xml#FuncComps" />
     <!-- Module containing components of des layer -->
-    <node id="desmod" parent="file:../modules/des.xml#DesComps" />
+    <node id="file:../modules/des.xml#DesComps" />
 
-    <node id="test" parent="incapsmod/Incaps">
+    <node id="test" parent="IncapsComps/Incaps">
 
-	<node id="State1" parent="../desmod/StateInt">
+	<node id="State1" parent="../DesComps/StateInt">
 	    <!-- <cont node="DataSInt:Confirmed/Value" val="34"/> -->
 
 	    <node id="Logspec" parent="Elem">
@@ -31,12 +31,12 @@
 
 	    <add node="(DataSCInt:)Confirmed">
 		<node id="Logspec" parent="Elem">
-		    <node id="Update" parent="../../../../datamod/DataLogevent">
+		    <node id="Update" parent="../../../../DataComps/DataLogevent">
 		    </node>
 		</node>
 	    </add>
 
-	    <node id="Trans" parent="../../desmod/(TrInt:)TrIncInt">
+	    <node id="Trans" parent="../../DesComps/(TrInt:)TrIncInt">
 	    </node>
 
 	    <node parent="Edge"> 

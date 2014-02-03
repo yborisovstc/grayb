@@ -13,55 +13,55 @@
     <node id="Logspec" parent="Elem"> <node id="Creation" parent="Elem"/> </node>
 
     <!-- Module containing components of system layer -->
-    <node id="sysmod" parent="file:../modules/syst.xml#SysComps" />
+    <node id="file:../modules/syst.xml#SysComps" />
     <!-- Module containing components of incaps layer -->
-    <node id="incapsmod" parent="file:../modules/capsula.xml#IncapsComps" />
+    <node id="file:../modules/capsula.xml#IncapsComps" />
     <!-- Module containing components of data -->
-    <node id="datamod" parent="file:../modules/data.xml#DataComps" />
+    <node id="file:../modules/data.xml#DataComps" />
     <!-- Module containing components of func -->
-    <node id="funcmod" parent="file:../modules/func.xml#FuncComps" />
+    <node id="file:../modules/func.xml#FuncComps" />
     <!-- Module containing components of des layer -->
-    <node id="desmod" parent="file:../modules/des.xml#DesComps" />
+    <node id="file:../modules/des.xml#DesComps" />
 
     <!-- System Contants Input socket -->
-    <node id="SysConstInpSocket" parent="sysmod/Socket">
-	<node id="MaxFeed" parent="../sysmod/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
-	<node id="MinMass" parent="../sysmod/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
-	<node id="MaxMass" parent="../sysmod/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
+    <node id="SysConstInpSocket" parent="SysComps/Socket">
+	<node id="MaxFeed" parent="../SysComps/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
+	<node id="MinMass" parent="../SysComps/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
+	<node id="MaxMass" parent="../SysComps/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
     </node>
 
     <!-- System Contants Input -->
-    <node id="SysConstInp" parent="sysmod/Extender"> 
+    <node id="SysConstInp" parent="SysComps/Extender"> 
 	<rm node="Int"/>
 	<node id="Int" parent="../SysConstInpSocket"/> 
     </node>
 
     <!-- System Contants Output socket -->
-    <node id="SysConstOutSocket" parent="sysmod/Socket">
-	<node id="MaxFeed" parent="../sysmod/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
-	<node id="MinMass" parent="../sysmod/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
-	<node id="MaxMass" parent="../sysmod/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
+    <node id="SysConstOutSocket" parent="SysComps/Socket">
+	<node id="MaxFeed" parent="../SysComps/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
+	<node id="MinMass" parent="../SysComps/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
+	<node id="MaxMass" parent="../SysComps/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
     </node>
 
     <!-- System Contants Output -->
-    <node id="SysConstOut" parent="sysmod/Extender"> 
+    <node id="SysConstOut" parent="SysComps/Extender"> 
 	<rm node="Int"/>
 	<node id="Int" parent="../SysConstOutSocket"/> 
     </node>
 
     <!-- System Constants -->
-    <node id="SysConsts" parent="incapsmod/Incaps">
+    <node id="SysConsts" parent="IncapsComps/Incaps">
 	<add node="Capsule">
 	    <node id="Out" parent="../../SysConstOut"/> 
 	</add>
 
 	<!-- TODO [YB] To use simpler system for constants, DataSCInt is excessibe -->
 	<!-- Maximum of feed available -->
-	<node id="Data_MaxFeed" parent="../datamod/DataSCInt"> <cont node="Value" val="2"/> </node>
+	<node id="Data_MaxFeed" parent="../DataComps/DataSCInt"> <cont node="Value" val="2"/> </node>
 	<!-- Minimal mass -->
-	<node id="Data_MinMass" parent="../datamod/DataSCInt"> <cont node="Value" val="1"/> </node>
+	<node id="Data_MinMass" parent="../DataComps/DataSCInt"> <cont node="Value" val="1"/> </node>
 	<!-- Maximum mass -->
-	<node id="Data_MaxMass" parent="../datamod/DataSCInt"> <cont node="Value" val="20"/> </node>
+	<node id="Data_MaxMass" parent="../DataComps/DataSCInt"> <cont node="Value" val="20"/> </node>
 
 	<!-- TODO [YB] Paths in Edge are hadled differently from other elements. They are handled in system context-->
 	<!-- This can confuse developer when specifying system. -->
@@ -72,22 +72,22 @@
 
 
     <!-- Snail -->
-    <node id="Snail" parent="desmod/Des">
+    <node id="Snail" parent="DesComps/Des">
 
 	<add node="Capsule">
 	    <!-- Input: Coords of others -->
-	    <node id="Inp" parent="../../desmod/StIntInp"/> 
+	    <node id="Inp" parent="../../DesComps/StIntInp"/> 
 	    <!-- System parameters -->
 	    <node id="Inp_SysPars" parent="../../SysConstInp"/> 
 	    <!-- Output: default - Coord -->
-	    <node id="Out" parent="../../desmod/StIntOut"/> 
+	    <node id="Out" parent="../../DesComps/StIntOut"/> 
 	    <!-- Mass -->
-	    <node id="Out_Mass" parent="../../desmod/StIntOut"/> 
+	    <node id="Out_Mass" parent="../../DesComps/StIntOut"/> 
 	</add>
 
 
 	<!-- State Mass -->
-	<node id="Mass" parent="../desmod/StateInt">
+	<node id="Mass" parent="../DesComps/StateInt">
 	    <!-- <cont node="DataSInt:Confirmed/Value" val="34"/> -->
 
 	    <node id="Logspec" parent="Elem">
@@ -97,7 +97,7 @@
 
 	    <add node="Confirmed">
 		<node id="Logspec" parent="Elem">
-		    <node id="Update" parent="../../../../datamod/DataLogevent">
+		    <node id="Update" parent="../../../../DataComps/DataLogevent">
 		    </node>
 		</node>
 	    </add>
@@ -105,21 +105,21 @@
 	    <!-- Input: default - self -->
 	    <add node="Capsule">
 		<!-- Input: self coord -->
-		<node id="Inp_SelfCoord" parent="../../../desmod/StIntInp"/> 
+		<node id="Inp_SelfCoord" parent="../../../DesComps/StIntInp"/> 
 		<!-- Input: others coord -->
-		<node id="Inp_OthersCoord" parent="../../../desmod/StIntInp"/> 
+		<node id="Inp_OthersCoord" parent="../../../DesComps/StIntInp"/> 
 		<!-- System parameters -->
 		<node id="Inp_SysPars" parent="../../../SysConstInp"/> 
 	    </add>
 
 	    <!-- Transition -->
-	    <node id="Conv" parent="../../funcmod/TFConvInt"/>
-	    <node id="Comp" parent="../../funcmod/TFGTInt"/>
-	    <node id="ToInt" parent="../../funcmod/TFBoolToInt"/>
-	    <node id="Sub" parent="../../funcmod/TFSubInt"/>
-	    <node id="Sub2" parent="../../funcmod/TFSubInt"/>
-	    <node id="Lim" parent="../../funcmod/TFLimInt"/>
-	    <node id="Data_Const1" parent="../../datamod/DataSCInt"> <cont node="Value" val="1"/> </node>
+	    <node id="Conv" parent="../../FuncComps/TFConvInt"/>
+	    <node id="Comp" parent="../../FuncComps/TFGTInt"/>
+	    <node id="ToInt" parent="../../FuncComps/TFBoolToInt"/>
+	    <node id="Sub" parent="../../FuncComps/TFSubInt"/>
+	    <node id="Sub2" parent="../../FuncComps/TFSubInt"/>
+	    <node id="Lim" parent="../../FuncComps/TFLimInt"/>
+	    <node id="Data_Const1" parent="../../DataComps/DataSCInt"> <cont node="Value" val="1"/> </node>
 
 	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_OthersCoord/Int/PinData"/> <cont node="P2" val="Conv/Capsule/inp"/> </node>
 	    <node parent="Edge"> <cont node="P1" val="Conv/Capsule/Out_WFarg"/> <cont node="P2" val="Comp/Capsule/Inp1"/> </node>
@@ -145,27 +145,27 @@
 	</node> <!-- Mass -->
 
 	<!-- State Coordinate -->
-	<node id="Coord" parent="../desmod/StateInt">
+	<node id="Coord" parent="../DesComps/StateInt">
 	    <!-- <cont node="DataSInt:Confirmed/Value" val="34"/> -->
 
 	    <node id="Logspec" parent="Elem"> <node id="Creation" parent="Elem"/> </node>
 
 	    <add node="Confirmed">
 		<node id="Logspec" parent="Elem">
-		    <node id="Update" parent="../../../../datamod/DataLogevent"/>
+		    <node id="Update" parent="../../../../DataComps/DataLogevent"/>
 		</node>
 	    </add>
 
 	    <add node="Capsule">
 		<!-- Std input - self -->
 		<!-- Mass -->
-		<node id="Inp_Mass" parent="../../../desmod/StIntInp"/> 
+		<node id="Inp_Mass" parent="../../../DesComps/StIntInp"/> 
 		<!-- System parameters -->
 		<node id="Inp_SysPars" parent="../../../SysConstInp"/> 
 	    </add>
 
-	    <node id="Div" parent="../../funcmod/TFDivInt"/>
-	    <node id="AddM1" parent="../../funcmod/TFAddInt"/>
+	    <node id="Div" parent="../../FuncComps/TFDivInt"/>
+	    <node id="AddM1" parent="../../FuncComps/TFAddInt"/>
 
 	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int/MaxMass"/> <cont node="P2" val="Div/Capsule/Inp_DD"/> </node>
 	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_Mass/Int/PinData"/> <cont node="P2" val="Div/Capsule/Inp_DR"/> </node>
@@ -190,13 +190,13 @@
     </node> <!-- Snail -->
 
     <!-- Test -->
-    <node id="TestDes" parent="desmod/Des">
+    <node id="TestDes" parent="DesComps/Des">
 
 	<node id="Logspec" parent="Elem"> <node id="Creation" parent="Elem"/> </node>
 
 	<add node="Capsule">
 	    <!-- Output: Mass -->
-	    <node id="Out" parent="../../desmod/StIntOut"/> 
+	    <node id="Out" parent="../../DesComps/StIntOut"/> 
 	</add>
 
 	<!-- Constants -->
@@ -209,11 +209,11 @@
 	    <cont node="Mass/Confirmed/Value" val="1"/>
 
 	    <!-- <add node="Coord/Div">
-		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../datamod/DataLogevent"/> </node>
+		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../DataComps/DataLogevent"/> </node>
 	    </add> -->
 
 	    <!-- <add node="Mass/Conv">
-		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../datamod/DataLogevent"/> </node>
+		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../DataComps/DataLogevent"/> </node>
 	    </add> -->
 
 	</node>
@@ -222,15 +222,15 @@
 	    <cont node="Mass/Confirmed/Value" val="2"/>
 
 	    <!-- <add node="Coord/Div">
-		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../datamod/DataLogevent"/> </node>
+		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../DataComps/DataLogevent"/> </node>
 	    </add> -->
 
 	    <!-- <add node="Mass/Conv/WFArg">
-		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../../datamod/DataLogevent"/> </node>
+		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../../DataComps/DataLogevent"/> </node>
 	    </add> -->
 
 	    <!-- <add node="Mass/Conv">
-		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../datamod/DataLogevent"/> </node>
+		<node id="Logspec" parent="Elem"> <node id="Update" parent="../../../../../DataComps/DataLogevent"/> </node>
 	    </add> -->
 	</node>
 

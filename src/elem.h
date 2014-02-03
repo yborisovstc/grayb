@@ -190,6 +190,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue); 
 	virtual TBool AddNode(const ChromoNode& aSpec);
 	TBool AppendChild(Elem* aChild);
+	void RemoveChild(Elem* aChild);
 	virtual TBool RmNode(const GUri& aUri);
 	virtual TBool MoveNode(const ChromoNode& aSpec);
 	vector<Elem*>& Comps();

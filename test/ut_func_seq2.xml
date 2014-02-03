@@ -9,29 +9,29 @@
 
 <node id="testroot" parent="Elem">
     <!-- Module containing components of system layer -->
-    <node id="sysmod" parent="file:../modules/syst.xml#SysComps" />
+    <node id="file:../modules/syst.xml#SysComps" />
     <!-- Module containing components of incaps layer -->
-    <node id="incapsmod" parent="file:../modules/capsula.xml#IncapsComps" />
+    <node id="file:../modules/capsula.xml#IncapsComps" />
     <!-- Module containing components of data -->
-    <node id="datamod" parent="file:../modules/data.xml#DataComps" />
+    <node id="file:../modules/data.xml#DataComps" />
     <!-- Module containing components of func -->
-    <node id="funcmod" parent="file:../modules/func.xml#FuncComps" />
+    <node id="file:../modules/func.xml#FuncComps" />
 
-    <node id="test" parent="incapsmod/Incaps">
+    <node id="test" parent="IncapsComps/Incaps">
 
-	<node id="DataS_Int_1" parent="../datamod/DataSInt">
+	<node id="DataS_Int_1" parent="../DataComps/DataSInt">
 	    <cont node="Value" val="34"/> 
 	</node>
 
-	<node id="DataS_Int_2" parent="../datamod/DataSInt">
+	<node id="DataS_Int_2" parent="../DataComps/DataSInt">
 	    <cont node="Value" val="26"/> 
 	</node>
 
-	<node id="Add" parent="../funcmod/FuncAddInt"/>
+	<node id="Add" parent="../FuncComps/FuncAddInt"/>
 
-	<node id="Result" parent="../funcmod/FuncIntRes"/>
+	<node id="Result" parent="../FuncComps/FuncIntRes"/>
 
-	<node id="ResData" parent="../datamod/DataSInt"/>
+	<node id="ResData" parent="../DataComps/DataSInt"/>
 
 	<node parent="Edge"> 
 	    <cont node="P1" val="DataS_Int_1/Capsule/out"/> 
