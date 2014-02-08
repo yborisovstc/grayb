@@ -155,6 +155,14 @@ void Ut_mut::test_Move()
     Elem* e4 = root->GetNode("(elem1:)elem3/(elem2:)elem4");
     CPPUNIT_ASSERT_MESSAGE("Fail to get e4", e4 != 0);
 
+    // Moving remote node
+    ChromoNode mmovermt = root->Mutation().Root().AddChild(ENt_Move);
+    mmovermt.SetAttr(ENa_Id, "file:../modules/syst.xml#");
+    mmovermt.SetAttr(ENa_MutNode, "/test");
+    root->Mutate();
+    Elem* eext = root->GetNode("/test/SysComps/Extender");
+    CPPUNIT_ASSERT_MESSAGE("Fail get extender from moved remote module", eext != NULL);
+
     // Mutation of type "Move node"
     ChromoNode mmove = root->Mutation().Root().AddChild(ENt_Move);
     mmove.SetAttr(ENa_Id, "elem5");

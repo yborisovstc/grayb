@@ -1,6 +1,6 @@
 
 <!-- Mutation - addition -->
-<!ELEMENT add (node*, logspec* )>
+<!ELEMENT add (node*)>
 
 <!-- Mutation - change content -->
 <!ELEMENT cont EMPTY>

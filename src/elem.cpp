@@ -905,6 +905,8 @@ Elem* Elem::AddElem(const ChromoNode& aNode)
     }
     else {
 	// Parent is not specified. Add the node as is
+	// TODO [YB] !!! Does this contradicts to global concept of node creation (deriving from parent + mutations than) ??
+	// To reconsider and remove if contradicted 
 	GUri srcuri(sname);
 	if (srcuri.Scheme().empty()) {
 	    // Local node
@@ -919,7 +921,8 @@ Elem* Elem::AddElem(const ChromoNode& aNode)
 	    }
 	}
 	else {
-	    // Remote node
+	    // Remote node. Attaching the whole remote node. !! This is meta-mutation, i.e. mutation replaced by the whole remote chromo
+	    // TODO [YB] Does this meta-mutation contradicts to the concept that mutation must keep as is.
 	    Chromo *spec = Provider()->CreateChromo();
 	    TBool res = spec->Set(sname);
 	    if (res) {
@@ -1389,23 +1392,53 @@ TBool Elem::MoveNode(const ChromoNode& aSpec)
     string srcs = aSpec.Attr(ENa_Id);
     TBool dest_spec = aSpec.AttrExists(ENa_MutNode);
     string dests = dest_spec ? aSpec.Attr(ENa_MutNode): string();
-    Elem* snode = GetNode(srcs);
     Elem* dnode = dest_spec ? GetNode(dests) : NULL;
-    Elem* owner = snode->GetMan();
-    if (snode != NULL) {
-	if (owner != NULL && (dnode == NULL || owner == dnode->GetMan())) {
-	    // Source and dest has one owner - shifting local node
-	    res = owner->MoveComp(snode, dnode);
-	    if (!res) {
-		Logger()->Write(MLogRec::EErr, this, "Moving element [%s] - failure", srcs.c_str());
+    GUri srcsuri(srcs);
+    if (srcsuri.Scheme().empty()) {
+	// Local node
+	Elem* snode = GetNode(srcs);
+	Elem* owner = snode->GetMan();
+	if (snode != NULL) {
+	    if (owner != NULL && (dnode == NULL || owner == dnode->GetMan())) {
+		// Source and dest has one owner - shifting local node
+		res = owner->MoveComp(snode, dnode);
+		if (!res) {
+		    Logger()->Write(MLogRec::EErr, this, "Moving element [%s] - failure", srcs.c_str());
+		}
+	    }
+	    else {
+		// Inter-nodes movement
+		const ChromoNode& root = snode->Chromos().Root();
+		Elem* res = NULL;
+		if (dnode != NULL) {
+		    res = dnode->AddElem(root);
+		}
+		else {
+		    res = AddElem(root);
+		}
+		if (res != NULL) {
+		    delete snode;
+		}
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Moving element [%s] - node not owned", srcs.c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Moving node [%s] - not found", srcs.c_str());
 	}
     }
     else {
-	Logger()->Write(MLogRec::EErr, this, "Moving node [%s] - not found", srcs.c_str());
+	// Remote node
+	Chromo *spec = Provider()->CreateChromo();
+	TBool res = spec->Set(srcs);
+	if (res) {
+	    const ChromoNode& root = spec->Root();
+	    if (dnode != NULL) {
+		dnode->AddElem(root);
+	    }
+	    else {
+		AddElem(root);
+	    }
+	    delete spec;
+	}
     }
     return res;
 }
