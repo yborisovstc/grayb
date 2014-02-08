@@ -16,6 +16,7 @@ class GProvider: public Base, public MProvider
 	static const char* Type() { return "GProvider";};
 	GProvider(const string &aName, MEnv* aEnv);
 	virtual ~GProvider();
+	void SetEnv(MEnv* aEnv);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MProvider

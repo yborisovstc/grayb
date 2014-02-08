@@ -36,13 +36,13 @@ TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 	    host->GetUri(fullpath);
 	}
 	if (prop == NULL) {
-	    Logger()->WriteFormat("ERROR: [%s:%s] missing MProp iface in property [%s]", EType().c_str(), Name().c_str(), aComp.Name().c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Missing MProp iface in property [%s]", aComp.Name().c_str());
 	}
 	else {
 	    string curr;
 	    ToString(curr);
 	    if (lupd) {
-		Logger()->WriteFormat("[%s]: Updated [%s <- %s]", fullpath.GetUri(ETrue).c_str(), curr.c_str(), prop->Value().c_str());
+		Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", prop->Value().c_str(), curr.c_str());
 	    }
 	    FromString(prop->Value());
 	}
@@ -245,7 +245,7 @@ TBool DInt::Update()
 		    Elem* host = iMan->GetMan();
 		    GUri fullpath;
 		    host->GetUri(fullpath);
-		    Logger()->WriteFormat("[%s]: Updated [%d <- %d]", fullpath.GetUri(ETrue).c_str(), mData, idata);
+		    Logger()->Write(MLogRec::EInfo, this, "Updated [%d <- %d]", idata, mData);
 		}
 		Set(idata);
 		res = ETrue;

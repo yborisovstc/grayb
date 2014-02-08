@@ -10,6 +10,12 @@ GProvider::~GProvider()
 {
 }
 
+void GProvider::SetEnv(MEnv* aEnv)
+{
+    assert(iEnv == NULL || aEnv == NULL);
+    iEnv = aEnv;
+}
+
 void *GProvider::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;

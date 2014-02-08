@@ -560,7 +560,7 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aA
 	}
 	else {
 	    __ASSERT(EFalse);
-	    Logger()->WriteFormat("ERR: [%s]: getting node [%s] - path to top of root", Name().c_str(), aUri.GetUri().c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Getting node [%s] - path to top of root", aUri.GetUri().c_str());
 	}
     }
     else {
@@ -582,7 +582,7 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aA
 			}
 			else {
 			    res = NULL;
-			    Logger()->WriteFormat("ERR: [%s]: getting node [%s] - multiple choice", Name().c_str(), aUri.GetUri().c_str());
+			    Logger()->Write(MLogRec::EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
 			    break;
 			}
 		    }
@@ -592,7 +592,7 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aA
 		res = *it;
 		if (++it != itend) {
 		    res = NULL;
-		    Logger()->WriteFormat("ERR: [%s]: getting node [%s] - multiple choice", Name().c_str(), aUri.GetUri().c_str());
+		    Logger()->Write(MLogRec::EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
 		}
 	    }
 	}
@@ -610,7 +610,7 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aA
 		    }
 		    else {
 			res = NULL;
-			Logger()->WriteFormat("ERR: [%s]: getting node [%s] - multiple choice", Name().c_str(), aUri.GetUri().c_str());
+			Logger()->Write(MLogRec::EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
 			break;
 		    }
 		}
@@ -1375,11 +1375,11 @@ TBool Elem::RmNode(const GUri& aUri)
     if (node != NULL) {
 	delete node;
 	if (IsLogeventCreOn()) {
-	    Logger()->WriteFormat("[%s] - removed elem [%s]", Name().c_str(), aUri.GetUri().c_str());
+	    Logger()->Write(MLogRec::EInfo, this, "Removed elem [%s]", aUri.GetUri().c_str());
 	}
     }
     else {
-	Logger()->WriteFormat("ERR: [%s] - Removing elem [%s] - not found", Name().c_str(), aUri.GetUri().c_str());
+	Logger()->Write(MLogRec::EErr, this, "Removing elem [%s] - not found", aUri.GetUri().c_str());
     }
 }
 
@@ -1397,11 +1397,11 @@ TBool Elem::MoveNode(const ChromoNode& aSpec)
 	    // Source and dest has one owner - shifting local node
 	    res = owner->MoveComp(snode, dnode);
 	    if (!res) {
-		Logger()->WriteFormat("ERROR: Moving element [%s] - failure", srcs.c_str());
+		Logger()->Write(MLogRec::EErr, this, "Moving element [%s] - failure", srcs.c_str());
 	    }
 	}
 	else {
-	    Logger()->WriteFormat("ERROR: Moving element [%s] - node not owned", srcs.c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Moving element [%s] - node not owned", srcs.c_str());
 	}
     }
     else {

@@ -8,75 +8,76 @@
 <node id="VisComps" parent="Elem">
 
     <!-- Parent's representative CP -->
-    <node id="Parent" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-	<cont node="Prop:Required" val="MVisChild"/>
-	<cont node="Prop:Provided" val="MVisContainer"/>
+    <node id="Parent" parent=":Elem:SysComps/ConnPoint"> 
+	<cont node="Required" val="MVisChild"/>
+	<cont node="Provided" val="MVisContainer"/>
     </node>
 
     <!-- Child's representaitve CP -->
-    <node id="Child" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-	<cont node="Prop:Required" val="MVisContainer"/>
-	<cont node="Prop:Provided" val="MVisChild"/>
+    <node id="Child" parent=":Elem:SysComps/ConnPoint"> 
+	<cont node="Required" val="MVisContainer"/>
+	<cont node="Provided" val="MVisChild"/>
     </node>
 
     <!-- Child's representaitve Extender -->
-    <node id="Child" parent="**/SysComps:*/Vert:Extender"> 
-	<rm node="ConnPoint:Int"/>
-	<node id="Int" parent="../ConnPoint:Parent"/> 
+    <node id="Child" parent=":Elem:SysComps/Extender"> 
+	<rm node="Int"/>
+	<node id="Int" parent="../Parent"/> 
     </node>
 
-    <!-- Data Int provider representaitve CP -->
-    <node id="DIntProv" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-	<cont node="Prop:Provided" val="MDIntGet"/>
+
+<!-- Data Int provider representaitve CP -->
+    <node id="DIntProv" parent=":Elem:SysComps/ConnPoint"> 
+	<cont node="Provided" val="MDIntGet"/>
     </node>
 
     <!-- Top level window -->
     <node id="Window" parent="Syst"> 
-	<add node="Elem:Agents"> 
+	<add node="Agents"> 
 	    <node id="WinAgent" parent="AWindow"/> 
 	</add>
 	<!-- Parent's representative -->
-	<node id="Parent" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-	    <cont node="Prop:Required" val="MVisChild"/>
-	    <cont node="Prop:Provided" val="MVisContainer"/>
+	<node id="Parent" parent=":Elem:SysComps/ConnPoint"> 
+	    <cont node="Required" val="MVisChild"/>
+	    <cont node="Provided" val="MVisContainer"/>
 	</node>
     </node>
 
     <!-- Widget base -->
     <node id="Widget" parent="Syst"> 
 	<!-- Child's representaitve -->
-	<node id="Child" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-	    <cont node="Prop:Required" val="MVisContainer"/>
-	    <cont node="Prop:Provided" val="MVisChild"/>
+	<node id="Child" parent=":Elem:SysComps/ConnPoint"> 
+	    <cont node="Required" val="MVisContainer"/>
+	    <cont node="Provided" val="MVisChild"/>
 	</node>
-	<node id="Inp_X" parent="**/DesComps:*/StIntInp"/> 
-	<node id="Inp_Y" parent="**/DesComps:*/StIntInp"/> 
-	<node id="Inp_W" parent="**/DesComps:*/StIntInp"/> 
-	<node id="Inp_H" parent="**/DesComps:*/StIntInp"/> 
-	<node id="Prov_PW" parent="**/DesComps:*/StIntOut"/> 
-	<node id="Prov_PH" parent="**/DesComps:*/StIntOut"/> 
+	<node id="Inp_X" parent=":Elem:DesComps/StIntInp"/> 
+	<node id="Inp_Y" parent=":Elem:DesComps/StIntInp"/> 
+	<node id="Inp_W" parent=":Elem:DesComps/StIntInp"/> 
+	<node id="Inp_H" parent=":Elem:DesComps/StIntInp"/> 
+	<node id="Prov_PW" parent=":Elem:DesComps/StIntOut"/> 
+	<node id="Prov_PH" parent=":Elem:DesComps/StIntOut"/> 
     </node>
 
     <!-- Container doing fixed layout -->
     <node id="Fixed" parent="Syst"> 
-	<add node="Elem:Agents"> 
+	<add node="Agents"> 
 	    <node id="WinAgent" parent="AVisFixed"/> 
 	</add>
 	<!-- Child's representaitve -->
-	<node id="Child" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-	    <cont node="Prop:Required" val="MVisContainer"/>
-	    <cont node="Prop:Provided" val="MVisChild"/>
+	<node id="Child" parent=":Elem:SysComps/ConnPoint"> 
+	    <cont node="Required" val="MVisContainer"/>
+	    <cont node="Provided" val="MVisChild"/>
 	</node>
 	<!-- Parent's representative -->
-	<node id="Parent" parent="**/SysComps:*/ConnPointBase:ConnPoint"> 
-	    <cont node="Prop:Required" val="MVisChild"/>
-	    <cont node="Prop:Provided" val="MVisContainer"/>
+	<node id="Parent" parent=":Elem:SysComps/ConnPoint"> 
+	    <cont node="Required" val="MVisChild"/>
+	    <cont node="Provided" val="MVisContainer"/>
 	</node>
     </node>
 
     <!-- Drawing area -->
     <node id="Drawing" parent="Widget"> 
-	<add node="Elem:Agents"> 
+	<add node="Agents"> 
 	    <node id="WinAgent" parent="AVisDrawing"/> 
 	</add>
     </node>

@@ -4,6 +4,7 @@
 #include "log.h"
 #include "factr.h"
 #include "elem.h"
+#include "prov.h"
 #include "chromo.h"
 #include <stdlib.h>
 
@@ -70,6 +71,8 @@ Elem* Env::Root()
 void Env::AddProvider(GProvider* aProv)
 {
     iProvider->AddProvider(aProv);
+    aProv->SetEnv(NULL);
+    aProv->SetEnv(this);
 }
 
 void *Env::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
