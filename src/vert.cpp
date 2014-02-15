@@ -282,20 +282,12 @@ void Vert::OnCompDeleting(Elem& aComp)
 
 void Vert::OnCompAdding(Elem& aComp)
 {
+    Elem::OnCompAdding(aComp);
 }
 
 void Vert::DoOnCompChanged(Elem& aComp)
 {
     Elem* eedge = GetCompOwning("Edge", &aComp);
-    /*
-       if (aComp.EType() == "Edge") {
-       eedge = &aComp;
-       }
-       else if (aComp.GetMan() != this && aComp.GetMan()->EType() == "Edge") {
-       eedge = aComp.GetMan();
-       }
-       */
-    //if (aComp.EType() == "Edge") {
     if (eedge != NULL) {
 	// Reconnect the edge
 	Edge* edge = eedge->GetObj(edge);	

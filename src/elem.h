@@ -12,6 +12,21 @@
 class Chromo;
 class MProvider;
 
+// Rank
+
+class Rank: public vector<TInt>
+{
+    public:
+	Rank(): vector<TInt>() {};
+	string ToString() const;
+//	TBool IsEqual(const Rank& aArg) const;
+	TInt Compare(const Rank& aArg) const;
+	TBool operator==(const Rank& aArg) const {return Compare(aArg) == 0;};
+	TBool operator<(const Rank& aArg) const {return Compare(aArg) == -1;};
+	TBool operator>(const Rank& aArg) const {return Compare(aArg) == 1;};
+};
+
+
 // Element of native hier - mutable
 class Elem: public Base, public MMutable, public MCompsObserver, public MChildsObserver
 {
@@ -24,6 +39,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	typedef pair<string, Elem*> TNKey;
 	// Regiser keyed by name, multimap
 	typedef multimap<string, Elem*> TNMReg;
+	// Rank of node
+	typedef vector<TInt> TRank;
 
     public:
 	// Request context
@@ -177,6 +194,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual Elem* GetMan();
 	virtual const Elem* GetMan() const;
 	Elem* GetParent();
+	void GetRank(Rank& aRank);
 	const Elem* GetParent() const;
 	void SetParent(Elem* aParent);
 	virtual Elem* GetNode(const string& aUri);

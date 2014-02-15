@@ -124,6 +124,12 @@ void GUriBase::AppendElem(const string& aType, const string& aName, char aRelTyp
     iElems.push_back(TElem(aType, TRel(aRelType, aName)));
 }
 
+void GUriBase::AppendElem(const string& aExt, const char aExtRel, const string& aName, char aRelType)
+{
+    AppendElem(aExt + string(1, aExtRel), aName, aRelType);
+
+}
+
 void GUriBase::AppendElem(const TElem& aElem)
 {
     iElems.push_back(aElem);

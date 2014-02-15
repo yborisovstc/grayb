@@ -129,13 +129,6 @@ string Edge::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-void Edge::Init()
-{
-    Elem::Init();
-    //    iCompsTypes.insert("Prop");
-    iInit = true;
-}
-
 Edge::Edge(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
 {
     if (!iInit) 

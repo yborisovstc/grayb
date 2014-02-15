@@ -3,6 +3,52 @@
 #include "mprov.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <sstream>
+
+string Rank::ToString() const
+{
+    stringstream res;
+    TBool start = ETrue;
+    for (vector<TInt>::const_iterator it = begin(); it != end(); it++, start = EFalse) {
+	if (!start) {
+	    res << ".";
+	}
+	res << *it;
+    }
+    return res.str();
+}
+
+/*
+TBool Rank::IsEqual(const Rank& aArg) const
+{
+    TBool res = size() == aArg.size();
+    if (res) {
+	for (TInt cnt = 0; cnt < size() && res; cnt++) {
+	    res = (at(cnt) == aArg.at(cnt));
+	}
+    }
+    return res;
+}
+*/
+
+TInt Rank::Compare(const Rank& aArg) const
+{
+    TInt res = 0;
+    TInt minsize = min(size(), aArg.size());
+    for (TInt cnt = 0; cnt < minsize && res == 0; cnt++) {
+	if (at(cnt) < aArg.at(cnt)) {
+	    res = -1;
+	}
+	else if (at(cnt) > aArg.at(cnt)) {
+	    res = 1;
+	}
+    }
+    if (res == 0 && size() != aArg.size()) {
+	res = (size() == minsize) ? -1 : 1;
+    }
+    return res;
+}
+
 
 
 set<string> Elem::iCompsTypes;
@@ -657,7 +703,6 @@ TBool Elem::MergeMutation(const ChromoNode& aSpec)
     // TODO Disabling merge because it's not working for non-local movement
     // ref MergeMutMove. To consider rework merge algorithm
     if (EFalse) {
-	//if (rnotype == ENt_Move) {
 	res = MergeMutMove(aSpec);
     }
     else {
@@ -665,89 +710,89 @@ TBool Elem::MergeMutation(const ChromoNode& aSpec)
 	res = ETrue;
     }
     return res;
-    }
+}
 
-    // TODO This merge algorithm doesn't work for movement non local nodes
-    // for instance movement components in owned node.
-    // In this case more complicated algorithm is required to merge "add" mutations
-    TBool Elem::MergeMutMove(const ChromoNode& aSpec)
+// TODO This merge algorithm doesn't work for movement non local nodes
+// for instance movement components in owned node.
+// In this case more complicated algorithm is required to merge "add" mutations
+TBool Elem::MergeMutMove(const ChromoNode& aSpec)
+{
+    TBool res = EFalse;
+    GUri src(aSpec.Attr(ENa_Id));
+    string srcname = src.Elems().at(0).second.second;
+    GUri dest(aSpec.Attr(ENa_MutNode));
+    string destname = dest.Elems().size() > 0 ? dest.Elems().at(0).second.second : string();
+    ChromoNode& croot = iChromo->Root();
+    // Find the dest and src
+    ChromoNode::Iterator nidest = croot.Find(ENt_Node, destname);
+    ChromoNode::Iterator nisrc = croot.Find(ENt_Node, srcname);
+    if (nidest == croot.End()) {
+	// Move node to end
+	ChromoNode nsrc = *nisrc;
+	nsrc.MoveToEnd();
+	res = ETrue;
+    }
+    else if (nidest != croot.End() && nisrc != croot.End()) {
+	// Move node
+	ChromoNode nsrc = *nisrc;
+	nsrc.MovePrevTo(nidest);
+	res = ETrue;
+    }
+    return res;
+}
+
+void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
+{
+    const ChromoNode& mroot = aMutSpec;
+    ChromoNode& chrroot = iChromo->Root();
+    for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End(); rit++)
     {
 	TBool res = EFalse;
-	GUri src(aSpec.Attr(ENa_Id));
-	string srcname = src.Elems().at(0).second.second;
-	GUri dest(aSpec.Attr(ENa_MutNode));
-	string destname = dest.Elems().size() > 0 ? dest.Elems().at(0).second.second : string();
-	ChromoNode& croot = iChromo->Root();
-	// Find the dest and src
-	ChromoNode::Iterator nidest = croot.Find(ENt_Node, destname);
-	ChromoNode::Iterator nisrc = croot.Find(ENt_Node, srcname);
-	if (nidest == croot.End()) {
-	    // Move node to end
-	    ChromoNode nsrc = *nisrc;
-	    nsrc.MoveToEnd();
-	    res = ETrue;
-	}
-	else if (nidest != croot.End() && nisrc != croot.End()) {
-	    // Move node
-	    ChromoNode nsrc = *nisrc;
-	    nsrc.MovePrevTo(nidest);
-	    res = ETrue;
-	}
-	return res;
-    }
-
-    void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
-    {
-	const ChromoNode& mroot = aMutSpec;
-	ChromoNode& chrroot = iChromo->Root();
-	for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End(); rit++)
-	{
-	    TBool res = EFalse;
-	    ChromoNode rno = (*rit);
-	    TNodeType rnotype = rno.Type();
-	    if (rnotype == ENt_Node) {
-		Elem* node = AddElem(rno);
-		if (node != NULL) {
-		    if (!aRunTime) {
-			// Attach comp chromo
-			chrroot.AddChild(node->iChromo->Root(), EFalse);
-		    }
-		}
-		else {
-		    string pname = rno.Attr(ENa_Parent);
-		    Logger()->Write(MLogRec::EErr, this, "Adding node with parent [%s] failed", pname.c_str());
+	ChromoNode rno = (*rit);
+	TNodeType rnotype = rno.Type();
+	if (rnotype == ENt_Node) {
+	    Elem* node = AddElem(rno);
+	    if (node != NULL) {
+		if (!aRunTime) {
+		    // Attach comp chromo
+		    chrroot.AddChild(node->iChromo->Root(), EFalse);
 		}
 	    }
 	    else {
-		if (rnotype == ENt_Add) {
-		    AddNode(rno);
-		}
-		else if (rnotype == ENt_Cont) {
-		    DoMutChangeCont(rno);
-		}
-		else if (rnotype == ENt_Rm) {
-		    string snode = rno.Attr(ENa_MutNode);
-		    GUri unode(snode);
-		    RmNode(unode);
-		}
-		else if (rnotype == ENt_Change) {
-		    ChangeAttr(rno);
-		}
-		else if (rnotype == ENt_Move) 
-		{
-		    MoveNode(rno);
-		}
-		else {
-		    Logger()->WriteFormat("ERROR: Mutating node [%s] - unknown mutation type [%d]", Name().c_str(), rnotype);
-		}
-		if (!aRunTime) {
-		    MergeMutation(rno);
-		}
+		string pname = rno.Attr(ENa_Parent);
+		Logger()->Write(MLogRec::EErr, this, "Adding node with parent [%s] failed", pname.c_str());
+	    }
+	}
+	else {
+	    if (rnotype == ENt_Add) {
+		AddNode(rno);
+	    }
+	    else if (rnotype == ENt_Cont) {
+		DoMutChangeCont(rno);
+	    }
+	    else if (rnotype == ENt_Rm) {
+		string snode = rno.Attr(ENa_MutNode);
+		GUri unode(snode);
+		RmNode(unode);
+	    }
+	    else if (rnotype == ENt_Change) {
+		ChangeAttr(rno);
+	    }
+	    else if (rnotype == ENt_Move) 
+	    {
+		MoveNode(rno);
+	    }
+	    else {
+		Logger()->WriteFormat("ERROR: Mutating node [%s] - unknown mutation type [%d]", Name().c_str(), rnotype);
+	    }
+	    if (!aRunTime) {
+		MergeMutation(rno);
 	    }
 	}
     }
+}
 
-	TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly) 
+TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly) 
 {
     return EFalse;
 }
@@ -903,39 +948,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode)
 	    }
 	}
     }
-    else {
-	// Parent is not specified. Add the node as is
-	// TODO [YB] !!! Does this contradicts to global concept of node creation (deriving from parent + mutations than) ??
-	// To reconsider and remove if contradicted 
-	GUri srcuri(sname);
-	if (srcuri.Scheme().empty()) {
-	    // Local node
-	    Elem* src = GetNode(srcuri);
-	    if (src != NULL) {
-		Chromo* spec = src->iChromo;
-		const ChromoNode& root = spec->Root();
-		AddElem(root);
-	    }
-	    else {
-		Logger()->Write(MLogRec::EErr, this, "Adding [%s] - not found", sname.c_str());
-	    }
-	}
-	else {
-	    // Remote node. Attaching the whole remote node. !! This is meta-mutation, i.e. mutation replaced by the whole remote chromo
-	    // TODO [YB] Does this meta-mutation contradicts to the concept that mutation must keep as is.
-	    Chromo *spec = Provider()->CreateChromo();
-	    TBool res = spec->Set(sname);
-	    if (res) {
-		const ChromoNode& root = spec->Root();
-		elem = AddElem(root);
-		delete spec;
-	    }
-	    else {
-		Logger()->Write(MLogRec::EErr, this, "Adding [%s] - not found", sname.c_str());
-	    }
-	}
-    }
-    return elem;
+return elem;
 }
 
 const set<string>& Elem::CompsTypes()
@@ -1240,8 +1253,8 @@ void Elem::OnCompChanged(Elem& aComp)
 	}
     }
     /*
-    DoOnCompChanged(aComp);
-    */
+       DoOnCompChanged(aComp);
+       */
     if (!res) {
 	DoOnCompChanged(aComp);
     }
@@ -1327,6 +1340,17 @@ TBool Elem::IsComp(Elem* aElem)
 	man = man->GetMan();	
     }
     return man == this;
+}
+
+void Elem::GetRank(Rank& aRank) 
+{
+    if (iMan != NULL) {
+	TInt res = 0;
+	for (vector<Elem*>::const_iterator it = iMan->Comps().begin(); it != iMan->Comps().end() && *it != this; it++, res++);
+	//aRank.push_back(res);
+	aRank.insert(aRank.begin(), res);
+	iMan->GetRank(aRank);
+    }
 }
 
 void Elem::GetUri(GUri& aUri, Elem* aTop)

@@ -9,7 +9,7 @@
 
 <node id="test" parent="Syst">
     <!-- Module containing components of system layer -->
-    <node id="file:../modules/syst.xml#SysComps" />
+    <move id="file:../modules/syst.xml#SysComps" />
 
     <node id="Syst1" parent="Syst">
 	<node id="Logspec" parent="Elem">

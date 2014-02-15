@@ -11,13 +11,13 @@
     <!-- Module containing components of system layer -->
     <move id="file:../modules/syst.xml#SysComps" />
     <!-- Module containing components of incaps layer -->
-    <node id="file:../modules/capsula.xml#IncapsComps" />
+    <move id="file:../modules/capsula.xml#IncapsComps" />
     <!-- Module containing components of data -->
-    <node id="file:../modules/data.xml#DataComps" />
+    <move id="file:../modules/data.xml#DataComps" />
     <!-- Module containing components of func -->
-    <node id="file:../modules/func.xml#FuncComps" />
+    <move id="file:../modules/func.xml#FuncComps" />
     <!-- Module containing components of des layer -->
-    <node id="file:../modules/des.xml#DesComps" />
+    <move id="file:../modules/des.xml#DesComps" />
 
     <node id="test" parent="IncapsComps/Incaps">
 

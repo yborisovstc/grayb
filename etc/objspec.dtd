@@ -23,7 +23,7 @@
      -->
 <!ATTLIST node 
    id CDATA #IMPLIED
-   parent CDATA #IMPLIED
+   parent CDATA #REQUIRED
 >
 
 <!-- Adding node attributes:

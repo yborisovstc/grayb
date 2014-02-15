@@ -10,13 +10,13 @@
 
 <node id="testroot" parent="Elem">
     <!-- Module containing components of system layer -->
-    <node id="file:../modules/syst.xml#SysComps" />
+    <move id="file:../modules/syst.xml#SysComps" />
     <!-- Module containing components of incaps layer -->
-    <node id="file:../modules/capsula.xml#IncapsComps" />
+    <move id="file:../modules/capsula.xml#IncapsComps" />
     <!-- Module containing components of data -->
-    <node id="file:../modules/data.xml#DataComps" />
+    <move id="file:../modules/data.xml#DataComps" />
     <!-- Module containing components of func -->
-    <node id="file:../modules/func.xml#FuncComps" />
+    <move id="file:../modules/func.xml#FuncComps" />
 
     <node id="test" parent="IncapsComps/Incaps">
 

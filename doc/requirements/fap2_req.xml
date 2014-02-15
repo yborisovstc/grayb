@@ -26,6 +26,8 @@
 		<revremark>Added <xref linkend="uc_022"/>, <xref linkend="uc_024"/>, <xref linkend="uc_025"/></revremark> </revision>
 	    <revision> <revnumber>0.05</revnumber> <date>12-Jan-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_026"/>, <xref linkend="uc_027"/></revremark> </revision>
+	    <revision> <revnumber>0.06</revnumber> <date>10-Feb-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="uc_028"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -36,6 +38,7 @@
 
     <sect1 id="nimp"><title>Treaceability: not implemented yet</title>
 	<itemizedlist>
+	    <listitem> <xref linkend="uc_028"/> </listitem>
 	    <listitem> <xref linkend="uc_027"/> </listitem>
 	    <listitem> <xref linkend="uc_025"/>, ref discussion <xref linkend="uc_025_disc_notsec"/> </listitem>
 	    <listitem> <xref linkend="uc_024"/> </listitem>
@@ -550,6 +553,7 @@
 	    <sect3><title>Extended by</title>
 		<itemizedlist>
 		    <listitem><xref linkend="uc_024"/></listitem>
+		    <listitem><xref linkend="uc_028"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Discussion</title>
@@ -588,6 +592,41 @@
 	    <sect3><title>Discussion</title>
 		<simpara>Example: Mutation of UPPER_NODE is done that renames VERT, UPPER_NODE updates EDGE so that connection point previously 
 		connected to VERT remains correct.</simpara>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_028"><title>UC_028 Mutation, renaming: preventing unappropriate mutation</title>
+	    <sect3><title>Actors</title>
+		NODE: some node within UPPER_NODE
+		REF_NODE: some node that is referring to NODE
+	    </sect3>
+	    <sect3><title>Preconditions</title>
+		Some references to NODE are specified in SYSTEM spec for REF_NODE
+	    </sect3>
+	    <sect3><title>Assumptions</title>
+	    </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>CLIENT requests NODE renaming mutation that can invalidate SYSTEM, SYSTEM denies the mutation and indicates the error</simpara>
+	    </sect3>
+	    <sect3><title>Alternative</title>
+		<simpara>Alternative flows</simpara>
+	    </sect3>
+	    <sect3><title>Exceptions</title>
+	    </sect3>
+	    <sect3><title>Variations</title>
+	    </sect3>
+	    <sect3><title>Extends</title>
+		<xref linkend="uc_022"/>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<simpara>Unappropriate renaming may be in case if REF_NODE has lower range (later mutation) that the owner of NODE. So if the renaming 
+		    mutation is applied to the owner of NODE the mutation itself will be higher range than REF_NODE, i.e. the error occurs when recreating the system, 
+		   because the mutation will be done first and then creation of REF_NODE. 
+		</simpara>
 	    </sect3>
 	    <sect3><title>Clarification</title>
 	    </sect3>

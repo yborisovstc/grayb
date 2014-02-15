@@ -77,6 +77,7 @@ class GUriBase
 	string GetName() const;
 	void Append(const GUriBase& aUri);
 	void AppendElem(const string& aType, const string& aName, char aRelType = KNodeSep);
+	void AppendElem(const string& aExt, const char aExtRel, const string& aName, char aRelType = KNodeSep);
 	void AppendElem(const TElem& aElem);
 	void PrependElem(const string& aType, const string& aName, char aRelType = KNodeSep);
 	void AppendQueryElem(TQueryOpr aOpr, TNodeAttr aAttr, const string& aValue);

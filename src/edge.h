@@ -58,12 +58,9 @@ class Edge: public Elem, public MEdge
 	//virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
 	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);
     protected:
-	static void Init();
-    protected:
 	// Sign of inited
 	static bool iInit;
-	// Just one-way relation to vert. It does't mean the full point to point relation
-	// is established.
+	// Just one-way relation to vert. It does't mean the full point to point relation is established.
 	MVert* iPoint1;
 	MVert* iPoint2;
 };
