@@ -27,6 +27,7 @@ class MChromoMdl
 	virtual void* AddChildDef(void* aParent, const void* aHandle, TBool aCopy = ETrue) = 0;
 	virtual void* AddNext(const void* aPrev, const void* aHandle, TBool aCopy = ETrue) = 0;
 	virtual void* AddNext(const void* aPrev, TNodeType aNode) = 0;
+	virtual void* AddPrev(const void* aNext, const void* aHandle, TBool aCopy = ETrue) = 0;
 	virtual void RmChild(void* aParent, void* aChild, TBool aDeattachOnly = EFalse) = 0;
 	virtual void Rm(void* aHandle) = 0;
 	virtual void MoveNextTo(void* aHandle, void* aDest) = 0;

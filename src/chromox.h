@@ -32,6 +32,7 @@ class ChromoMdlX: public ChromoMdl
 	virtual void* AddChildDef(void* aParent, const void* aHandle, TBool aCopy = ETrue);
 	virtual void* AddNext(const void* aPrev, const void* aHandle, TBool aCopy = ETrue);
 	virtual void* AddNext(const void* aPrev, TNodeType aNode);
+	virtual void* AddPrev(const void* aNext, const void* aHandle, TBool aCopy = ETrue);
 	virtual void RmChild(void* aParent, void* aChild, TBool aDeattachOnly = EFalse);
 	virtual void Rm(void* aNode);
 	virtual void MoveNextTo(void* aHandle, void* aDest);

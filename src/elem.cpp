@@ -18,18 +18,16 @@ string Rank::ToString() const
     return res.str();
 }
 
-/*
-TBool Rank::IsEqual(const Rank& aArg) const
+TBool Rank::IsRankOf(const Rank& aArg) const
 {
-    TBool res = size() == aArg.size();
+    TBool res = size() >= aArg.size();
     if (res) {
-	for (TInt cnt = 0; cnt < size() && res; cnt++) {
+	for (TInt cnt = 0; cnt < aArg.size() && res; cnt++) {
 	    res = (at(cnt) == aArg.at(cnt));
 	}
     }
     return res;
 }
-*/
 
 TInt Rank::Compare(const Rank& aArg) const
 {
@@ -298,7 +296,8 @@ Elem::~Elem()
     // Disconnect from the childs
     for (TNMReg::iterator it = iChilds.begin(); it != iChilds.end(); it++) {
 	Elem* child = it->second;
-	child->SetParent(NULL);
+	child->OnParentDeleting(this);
+	//child->SetParent(NULL);
     }
     iChilds.clear();
     iEnv = NULL; // Not owned
@@ -463,6 +462,7 @@ void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
 }
 
+/*
 const string Elem::EType(TBool aShort) const
 {
     if (aShort) {
@@ -471,6 +471,20 @@ const string Elem::EType(TBool aShort) const
     }
     else  {
 	return iEType;
+    }
+}
+*/
+
+const string Elem::EType(TBool aShort) const
+{
+    if (iParent == NULL) {
+	return string();
+    }
+    if (aShort) {
+	return iParent->Name();
+    }
+    else {
+	return iParent->EType(aShort) + GUri::KParentSep + iParent->Name();
     }
 }
 
@@ -511,6 +525,9 @@ TBool Elem::AddNode(const ChromoNode& aSpec)
 		Logger()->Write(MLogRec::EErr, this, "Adding node into [%s] - failure", snode.c_str());
 	    }
 	    else {
+		TInt lr = iChromo->Root().GetLocalSize();
+		// Adding dependency to object of change
+		node->AddDep(this, lr);
 		if (IsLogeventCreOn()) {
 		    Logger()->Write(MLogRec::EInfo, this, "Added node [%s] into [%s]", mno.Name().c_str(), snode.c_str());
 		}
@@ -908,7 +925,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode)
 	    parent = Provider()->GetNode(sparent);
 	    elem = Provider()->CreateNode(sparent, sname, this, iEnv);
 	    if (parent != NULL) {
-		parent->AppendChild(elem);
+		//parent->AppendChild(elem);
 	    }
 	    else  {
 		Logger()->Write(MLogRec::EErr, this, "Creating [%s] - parent [%s] not found", sname.c_str(), sparent.c_str());
@@ -998,7 +1015,7 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
 	    parent = Provider()->GetNode(sparent);
 	    heir = Provider()->CreateNode(sparent, aName, iMan, iEnv);
 	    if (parent != NULL) {
-		parent->AppendChild(heir);
+		//parent->AppendChild(heir);
 	    }
 	    else {
 		Logger()->Write(MLogRec::EErr, this, "Creating child [%s] - parent [%s] not found", aName.c_str(), sparent.c_str());
@@ -1342,7 +1359,7 @@ TBool Elem::IsComp(Elem* aElem)
     return man == this;
 }
 
-void Elem::GetRank(Rank& aRank) 
+void Elem::GetRank(Rank& aRank) const
 {
     if (iMan != NULL) {
 	TInt res = 0;
@@ -1351,6 +1368,16 @@ void Elem::GetRank(Rank& aRank)
 	aRank.insert(aRank.begin(), res);
 	iMan->GetRank(aRank);
     }
+}
+
+TInt Elem::GetLocalRank() const
+{
+    TInt res = -1;
+    if (iMan != NULL) {
+	res = 0;
+	for (vector<Elem*>::const_iterator it = iMan->Comps().begin(); it != iMan->Comps().end() && *it != this; it++, res++);
+    }
+    return res;
 }
 
 void Elem::GetUri(GUri& aUri, Elem* aTop)
@@ -1398,16 +1425,39 @@ Elem* Elem::GetInhRoot() const
 
 TBool Elem::RmNode(const GUri& aUri)
 {
+    TBool res = EFalse;
     Elem* node = GetNode(aUri);
     if (node != NULL) {
-	delete node;
-	if (IsLogeventCreOn()) {
-	    Logger()->Write(MLogRec::EInfo, this, "Removed elem [%s]", aUri.GetUri().c_str());
+	// Check dependent mutations
+	TBool safemut = ETrue;
+	const TDep& dep = node->GetMajorDep();
+	if (dep.first != NULL) {
+	    Rank rank;
+	    GetRank(rank);
+	    Rank deprank;
+	    dep.first->GetRank(deprank);
+	    if (dep.second != -1) {
+		deprank.push_back(dep.second);
+	    }
+	    if (deprank > rank && !deprank.IsRankOf(rank)) {
+		safemut = EFalse;
+	    }
+	}
+	if (safemut) {
+	    res = ETrue;
+	    delete node;
+	    if (IsLogeventCreOn()) {
+		Logger()->Write(MLogRec::EInfo, this, "Removed elem [%s]", aUri.GetUri().c_str());
+	    }
+	}
+	else {
+	    Logger()->Write(MLogRec::EErr, this, "Removing elem [%s] - unsafe, used in: [%s]", aUri.GetUri().c_str(), dep.first->GetUri().c_str());
 	}
     }
     else {
 	Logger()->Write(MLogRec::EErr, this, "Removing elem [%s] - not found", aUri.GetUri().c_str());
     }
+    return res;
 }
 
 TBool Elem::MoveNode(const ChromoNode& aSpec)
@@ -1483,7 +1533,7 @@ TBool Elem::IsLogeventCreOn()
 // (all parents chain) to detect inheritance.
 TBool Elem::IsHeirOf(const string& aParent) const
 {
-    int pos = iEType.find(aParent);
+    int pos = EType().find(aParent);
     return pos != string::npos;
 }
 
@@ -1554,6 +1604,95 @@ TBool Elem::OnChildRenamed(Elem* aChild, const string& aOldName)
 	res = RegisterChild(aChild);
     }
     return res;
+}
+
+void Elem::AddDep(Elem* aNode, TInt aRank)
+{
+    TBool exists = EFalse;
+    for (TDeps::const_iterator it = iDeps.begin(); it != iDeps.end() && !exists; it++) {
+	exists = it->first == aNode;
+    }
+    if (!exists) {
+	iDeps.push_back(TDep(aNode, aRank));
+    }
+}
+
+void Elem::RemoveDep(Elem* aNode)
+{
+    for (TDeps::iterator it = iDeps.begin(); it != iDeps.end(); it++) {
+	if (it->first == aNode) {
+	    iDeps.erase(it);
+	    break;
+	}
+    }
+}
+
+Elem* Elem::GetMajorChild(Rank& rr)
+{
+    Elem* res = NULL;
+    // Child theyself
+    for (TNMReg::iterator it = iChilds.begin(); it != iChilds.end(); it++) {
+	Rank rd;
+	it->second->GetRank(rd);
+	if (rd > rr) {
+	    rr = rd;
+	    res = it->second;
+	}
+    }
+    // Childs of childs
+    for (TNMReg::iterator it = iChilds.begin(); it != iChilds.end(); it++) {
+	Elem* res1 = it->second->GetMajorChild(rr);
+	if (res1 != NULL) {
+	    res = res1;
+	}
+    }
+    return res;
+}
+
+Elem::TDep Elem::GetMajorDep()
+{
+    TDep res(NULL, -1);
+    Rank rr;
+    // Childs
+    res.first = GetMajorChild(rr);
+    // Other deps
+    TInt lrr = 0;
+    for (TDeps::const_iterator it = iDeps.begin(); it != iDeps.end(); it++) {
+	TDep dep = *it;
+	Rank rd;
+	dep.first->GetRank(rd);
+	if (rd > rr || rd == rr && dep.second > lrr) {
+	    rr = rd;
+	    lrr = dep.second;
+	    res = dep;
+	    // Depencence childs
+	    Elem* dc = dep.first->GetMajorChild(rr);
+	    if (dc != NULL) {
+		res.first = dc;
+		res.second = -1;
+	    }
+	}
+    }
+    return res;
+}
+
+// Handles parent deleting, ref uc_029
+void Elem::OnParentDeleting(Elem* aParent)
+{
+    // Only local parent deletion is handled for nowc:w
+    __ASSERT(aParent == iParent);
+    // Copy parents choromo and reparent to grandparent
+    ChromoNode phroot = iParent->Chromos().Root();
+    ChromoNode hroot = iChromo->Root();
+    ChromoNode fchild = *(hroot.Begin());
+    for (ChromoNode::Iterator it = phroot.Begin(); it != phroot.End(); it++) {
+	ChromoNode cn = *it;
+	hroot.AddPrev(fchild, cn);
+    }
+    hroot.SetAttr(ENa_Parent, phroot.Attr(ENa_Parent));
+    Elem* gparent = iParent->GetParent();
+    gparent->RegisterChild(this);
+    iParent = gparent;
 }
 
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)

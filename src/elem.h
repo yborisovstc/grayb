@@ -19,7 +19,7 @@ class Rank: public vector<TInt>
     public:
 	Rank(): vector<TInt>() {};
 	string ToString() const;
-//	TBool IsEqual(const Rank& aArg) const;
+	TBool IsRankOf(const Rank& aArg) const;
 	TInt Compare(const Rank& aArg) const;
 	TBool operator==(const Rank& aArg) const {return Compare(aArg) == 0;};
 	TBool operator<(const Rank& aArg) const {return Compare(aArg) == -1;};
@@ -28,7 +28,8 @@ class Rank: public vector<TInt>
 
 
 // Element of native hier - mutable
-class Elem: public Base, public MMutable, public MCompsObserver, public MChildsObserver
+class Elem: public Base, public MMutable, public MCompsObserver, public MChildsObserver, 
+    public MChild
 {
     public:
 	// name, parent
@@ -41,6 +42,11 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	typedef multimap<string, Elem*> TNMReg;
 	// Rank of node
 	typedef vector<TInt> TRank;
+	// Deps elem
+	typedef pair<Elem*, TInt> TDep;
+	// Deps 
+	typedef vector<TDep> TDeps;
+	
 
     public:
 	// Request context
@@ -194,7 +200,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual Elem* GetMan();
 	virtual const Elem* GetMan() const;
 	Elem* GetParent();
-	void GetRank(Rank& aRank);
+	void GetRank(Rank& aRank) const;
+	TInt GetLocalRank() const;
 	const Elem* GetParent() const;
 	void SetParent(Elem* aParent);
 	virtual Elem* GetNode(const string& aUri);
@@ -212,6 +219,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual TBool RmNode(const GUri& aUri);
 	virtual TBool MoveNode(const ChromoNode& aSpec);
 	vector<Elem*>& Comps();
+	// From MChild
+	virtual void OnParentDeleting(Elem* aParent);
 	// From MChildsObserver
 	virtual void OnChildDeleting(Elem* aChild);
 	virtual TBool OnChildRenamed(Elem* aChild, const string& aOldName);
@@ -229,6 +238,11 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void InvalidateIfCache();
 	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, void* aVal);
 	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg);
+	// Deps
+	void AddDep(Elem* aNode, TInt aRank);
+	void RemoveDep(Elem* aNode);
+	TDep GetMajorDep();
+	Elem* GetMajorChild(Rank& rr);
     protected:
 	Elem* AddElem(const ChromoNode& aSpec);
 	static void Init();
@@ -253,6 +267,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void ChangeAttr(const ChromoNode& aSpec);
     protected:
 	// Element type - parent's chain
+	// TODO [YB] Is it needed now after implementing inheritance chain?
 	string iEType;
 	// Environment
 	MEnv* iEnv;
@@ -280,7 +295,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TNMReg iChilds;
 	// Parent
 	Elem* iParent;
-	
+	// Dependent nodes, relations to keep model consistent on mutations, ref uc_028, ds_mut
+	TDeps iDeps;
 };
 
 inline MLogRec* Elem::Logger() const {return iEnv ? iEnv->Logger(): NULL; }

@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for securing mutation will not breake model consistency 
+elem3 depends on elem2 but client tries to mutate elem1 by
+removing elem2 - breakege -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Elem">
+    <node id="elem1" parent="Elem">
+	<node id="elem2" parent="Elem"/>
+    </node>
+    <!-- Dependency of type "object of change" -->
+    <add node="elem1/elem2">
+	<node id="elem4" parent="Elem"/>
+    </add>
+</node>
+

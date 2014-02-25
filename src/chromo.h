@@ -55,6 +55,7 @@ class ChromoNode
 	ChromoNode(ChromoMdl& aMdl, void* aHandle): iMdl(aMdl), iHandle(aHandle) {};
 	ChromoNode(const ChromoNode& aNode): iMdl(aNode.iMdl), iHandle(aNode.iHandle) {};
 	ChromoNode& operator=(const ChromoNode& aNode) { iMdl = aNode.iMdl; iHandle = aNode.iHandle; return *this; };
+	TBool operator==(const ChromoNode& aNode) { return &iMdl == &(aNode.iMdl) && iHandle == aNode.iHandle;};
 	Iterator Begin() { return Iterator(iMdl, iMdl.GetFirstChild(iHandle)); };
 	Const_Iterator Begin() const { return Const_Iterator(iMdl, iMdl.GetFirstChild(iHandle)); };
 	Iterator End() { return Iterator(iMdl, NULL); };
@@ -87,6 +88,8 @@ class ChromoNode
 	ChromoNode AddNext(const ChromoNode& aPrev, const ChromoNode& aNode, TBool aCopy = ETrue) { return 
 	    ChromoNode(iMdl, iMdl.AddNext(aPrev.Handle(), aNode.Handle(), aCopy)); };
 	ChromoNode AddNext(TNodeType aType) { return ChromoNode(iMdl, iMdl.AddNext(iHandle, aType));};
+	ChromoNode AddPrev(const ChromoNode& aNext, const ChromoNode& aNode, TBool aCopy = ETrue) { return 
+	    ChromoNode(iMdl, iMdl.AddPrev(aNext.Handle(), aNode.Handle(), aCopy)); };
 	// Be careful while removing node got from iterator. Iterator is not cleaned thus it returns wrong node on ++
 	void RmChild(const ChromoNode& aChild, TBool aDeattachOnly = EFalse) { iMdl.RmChild(iHandle, aChild.iHandle, aDeattachOnly); };
 	void Rm() { iMdl.Rm(iHandle); };
@@ -94,6 +97,7 @@ class ChromoNode
 	void SetAttr(TNodeAttr aType, TNodeType aVal) { iMdl.SetAttr(iHandle, aType, aVal); };
 	void SetAttr(TNodeAttr aType, TNodeAttr aVal) { iMdl.SetAttr(iHandle, aType, aVal); };
 	ChromoNode::Iterator Parent();
+	ChromoNode::Const_Iterator Parent() const;
 	ChromoNode::Iterator Find(TNodeType aType, const string& aName);
 	ChromoNode::Const_Iterator Find(TNodeType aType, const string& aName) const;
 	ChromoNode::Iterator Find(TNodeType aType, const string& aName, TNodeAttr aAttr, const string& aAttrVal);
@@ -102,6 +106,9 @@ class ChromoNode
 	void MoveNextTo(Iterator& aDest) { iMdl.MoveNextTo(iHandle, aDest.iHandle);};
 	void MovePrevTo(Iterator& aDest) { iMdl.MovePrevTo(iHandle, aDest.iHandle);};
 	void MoveToEnd() { iMdl.MoveToEnd(iHandle);};
+	TInt GetLocalRank();
+	// The number of direct childs
+	TInt GetLocalSize();
     private :
 	ChromoMdl& iMdl;
 	void* iHandle;

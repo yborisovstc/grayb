@@ -42,7 +42,7 @@ void Env::ConstructSystem()
 	string sparent = root.Attr(ENa_Parent);
 	Elem* parent = iProvider->GetNode(sparent);
 	iRoot = iProvider->CreateNode(sparent, root.Name(), NULL, this);
-	parent->AppendChild(iRoot);
+	//parent->AppendChild(iRoot);
 	if (iRoot != NULL) {
 	    iRoot->SetMutation(root);
 	    iRoot->Mutate();

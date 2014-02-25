@@ -310,6 +310,12 @@ void* ChromoMdlX::AddNext(const void* aPrev, TNodeType aNode)
     return xmlAddNextSibling((xmlNodePtr) aPrev, node);
 }
 
+void* ChromoMdlX::AddPrev(const void* aNext, const void* aHandle, TBool aCopy)
+{
+    xmlNodePtr node = aCopy ? xmlCopyNode((xmlNodePtr) aHandle, 1) : (xmlNodePtr) aHandle;
+    return xmlAddPrevSibling((xmlNodePtr) aNext, node);
+}
+
 void ChromoMdlX::SetAttr(void* aNode, TNodeAttr aType, const char* aVal)
 {
     string name = GUri::NodeAttrName(aType);

@@ -75,6 +75,12 @@ ChromoNode::Iterator ChromoNode::Parent()
     return  (parent == NULL) ?  End() : Iterator(ChromoNode(iMdl, parent));
 }
 
+ChromoNode::Const_Iterator ChromoNode::Parent() const
+{
+    void* parent = iMdl.Parent(iHandle);
+    return  (parent == NULL) ?  End() : Const_Iterator(ChromoNode(iMdl, parent));
+}
+
 ChromoNode::Iterator ChromoNode::Find(TNodeType aType, const string& aName) 
 { 
     ChromoNode::Iterator res = End();
@@ -114,5 +120,23 @@ ChromoNode::Iterator ChromoNode::Find(TNodeType aType, const string& aName, TNod
     return res;
 };
 
+TInt ChromoNode::GetLocalRank()
+{
+    TInt res = 0;
+    TBool found = false;
+    ChromoNode prnt = *Parent();
+    for (Iterator it = prnt.Begin(); it != prnt.End() && !found; it++, res++) {
+	if (*it == *this) {
+	    found = ETrue;
+	}
+    }
+    return res;
+}
 
+TInt ChromoNode::GetLocalSize()
+{
+    TInt res = 0;
+    for (Iterator it = Begin(); it != End(); it++, res++);
+    return res;
+}
 

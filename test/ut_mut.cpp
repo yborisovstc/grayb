@@ -17,6 +17,9 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Add);
     CPPUNIT_TEST(test_MutSyst);
     CPPUNIT_TEST(test_Move);
+    CPPUNIT_TEST(test_MutDepsRm);
+    CPPUNIT_TEST(test_MutDepsRm2);
+    CPPUNIT_TEST(test_MutRmParent);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -25,6 +28,9 @@ private:
     void test_Add();
     void test_MutSyst();
     void test_Move();
+    void test_MutDepsRm();
+    void test_MutDepsRm2();
+    void test_MutRmParent();
 private:
     Env* iEnv;
 };
@@ -181,4 +187,105 @@ void Ut_mut::test_Move()
 
  
     delete iEnv;
+}
+
+// Preventing of mutation braking model consistency
+// Mutation - rm, dependency - child
+void Ut_mut::test_MutDepsRm()
+{
+    printf("\n === Test of mutation consistency\n");
+
+    iEnv = new Env("Env", "ut_mut_dep_1.xml", "ut_mut_dep_1.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+     // Check creation first
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    Elem* e2 = root->GetNode("elem1/elem2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem2", e2 != 0);
+    Elem* e3 = root->GetNode("(elem2:)elem3");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem3", e3 != 0);
+    // Check major child
+    Rank rmc;
+    Elem* mc = e2->GetMajorChild(rmc);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major child", mc == e3);
+    // Get major dep
+    Elem::TDep mdep = e2->GetMajorDep();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major dep", mdep.first == e3 && mdep.second == -1);
+    // Try to remove elem2 from elem1 - unsafe mutation
+    Elem* e1 = root->GetNode("elem1");
+    ChromoNode mut = e1->Mutation().Root().AddChild(ENt_Rm);
+    mut.SetAttr(ENa_MutNode, "elem2");
+    e1->Mutate();
+    // Check that the mutation is refused
+    e2 = root->GetNode("elem1/elem2");
+    CPPUNIT_ASSERT_MESSAGE("Mutation -rm- of elem2 is not refused", e2 != NULL);
+    // Try to remove elem2 from root - safe mutation
+    mut = root->Mutation().Root().AddChild(ENt_Rm);
+    mut.SetAttr(ENa_MutNode, "elem1/elem2");
+    root->Mutate();
+    // Check that the mutation is not refused
+    e2 = root->GetNode("elem1/elem2");
+    CPPUNIT_ASSERT_MESSAGE("Root mutation -rm- of elem2 is refused", e2 == NULL);
+}
+
+// Preventing of mutation braking model consistency
+// Mutation - rm, dependency - object of change
+void Ut_mut::test_MutDepsRm2()
+{
+    printf("\n === Test of mutation consistency, mut -rm-, dep - object \n");
+
+    iEnv = new Env("Env", "ut_mut_dep_2.xml", "ut_mut_dep_2.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+     // Check creation first
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    Elem* e2 = root->GetNode("elem1/elem2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem2", e2 != 0);
+    // Get major dep
+    Elem::TDep mdep = e2->GetMajorDep();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major dep", mdep.first == root && mdep.second == 1);
+    // Try to remove elem2 from elem1 - unsafe mutation
+    Elem* e1 = root->GetNode("elem1");
+    ChromoNode mut = e1->Mutation().Root().AddChild(ENt_Rm);
+    mut.SetAttr(ENa_MutNode, "elem2");
+    e1->Mutate();
+    // Check that the mutation is refused
+    e2 = root->GetNode("elem1/elem2");
+    CPPUNIT_ASSERT_MESSAGE("Mutation -rm- of elem2 is not refused", e2 != NULL);
+    // Try to remove elem2 from root - safe mutation
+    mut = root->Mutation().Root().AddChild(ENt_Rm);
+    mut.SetAttr(ENa_MutNode, "elem1/elem2");
+    root->Mutate();
+    // Check that the mutation is not refused
+    e2 = root->GetNode("elem1/elem2");
+    CPPUNIT_ASSERT_MESSAGE("Root mutation -rm- of elem2 is refused", e2 == NULL);
+}
+
+// Handling of parents removing, ref uc_029
+void Ut_mut::test_MutRmParent()
+{
+    printf("\n === Test of mutation consistency\n");
+
+    iEnv = new Env("Env", "ut_mutadd_1.xml", "ut_mut_rm_parent.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+     // Check creation first
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    Elem* e2 = root->GetNode("elem1/elem2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem2", e2 != 0);
+    // Remove elem2, which is parent of elem5 
+    ChromoNode mut = root->Mutation().Root().AddChild(ENt_Rm);
+    mut.SetAttr(ENa_MutNode, "elem1/elem2");
+    root->Mutate();
+    // Create child from elem5
+    ChromoNode madd = root->Mutation().Root().AddChild(ENt_Node);
+    madd.SetAttr(ENa_Id, "elem6");
+    madd.SetAttr(ENa_Parent, "elem5");
+    root->Mutate();
+    // Check that the mutation is performed
+    Elem* e6 = root->GetNode("elem6");
+    CPPUNIT_ASSERT_MESSAGE("Creating elem6 as child of elem5 failed", e6 != NULL);
 }

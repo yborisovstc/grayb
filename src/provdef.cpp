@@ -110,6 +110,12 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     else if (aType.compare(ADes::Type()) == 0) {
 	res = new ADes(aName, aMan, aEnv);
     }
+    if (res != NULL) {
+	Elem* parent = GetNode(aType);
+	if (parent != NULL) {
+	    parent->AppendChild(res);
+	}
+    }
     return res;
 }
 

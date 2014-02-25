@@ -9,7 +9,7 @@
 	<author><personname><firstname>Yuri</firstname><surname>Borisov</surname></personname>
 	    <email>yuri.borisov.v@gmail.com</email></author> 
 
-	<releaseinfo>Ver.0.05 at 12-Jan-2014</releaseinfo>
+	<releaseinfo>Ver.0.07 at 21-Jan-2014</releaseinfo>
 
 	<abstract>
 	    <simpara>This document collects use-cases and software requirements for Discrete Events System framework ver 2.</simpara>
@@ -28,6 +28,8 @@
 		<revremark>Added <xref linkend="uc_026"/>, <xref linkend="uc_027"/></revremark> </revision>
 	    <revision> <revnumber>0.06</revnumber> <date>10-Feb-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_028"/></revremark> </revision>
+	    <revision> <revnumber>0.07</revnumber> <date>21-Feb-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="uc_029"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -38,6 +40,7 @@
 
     <sect1 id="nimp"><title>Treaceability: not implemented yet</title>
 	<itemizedlist>
+	    <listitem> <xref linkend="uc_029"/> </listitem>
 	    <listitem> <xref linkend="uc_028"/> </listitem>
 	    <listitem> <xref linkend="uc_027"/> </listitem>
 	    <listitem> <xref linkend="uc_025"/>, ref discussion <xref linkend="uc_025_disc_notsec"/> </listitem>
@@ -491,6 +494,7 @@
 	    <sect3><title>Extended by</title>
 		<itemizedlist>
 		    <listitem><xref linkend="uc_019"/></listitem>
+		    <listitem><xref linkend="uc_029"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Discussion</title>
@@ -743,6 +747,43 @@
 		<simpara>This use case is applicable when specifying for instance parent node for new node creation mutation, when CLIENT doesn't know the location of parent node in native hier but knows 
 		    parent's type only. For instance if CLIENT creates new node based on parent from component of some module. So CLIENT specifies only URI with type. SYSTEM has to be able to find parent
 		    by this implicit URI</simpara>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_029"><title>UC_029 Mutation: creating node: missing parent in parents chain</title>
+	    <sect3><title>Actors</title>
+		CLIENT: some user of system.
+		NODE: some node within systems native hierarchy
+		PARENT_NODE: node that specified as parent for creation node mutation
+	    </sect3>
+	    <sect3><title>Preconditions</title>
+		PARENT_NODE doen't have the whole parents chain. Some parent in chain is missing, e.g deleted.
+	    </sect3>
+	    <sect3><title>Assumptions</title>
+	    </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>CLIENT requested mutation of adding node into NODE, the mutation contaings reference to some PARENT_NODE as parent for this mutation
+		    - SYSTEM adds node irrespective that there is no the whole parents chain for creation node.</simpara>
+	    </sect3>
+	    <sect3><title>Alternative</title>
+	    </sect3>
+	    <sect3><title>Exceptions</title>
+	    </sect3>
+	    <sect3><title>Variations</title>
+	    </sect3>
+	    <sect3><title>Extends</title>
+		<xref linkend="uc_018"/>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<simpara>Currnet implementation (on 21-Feb-2014) supports creation node only if the complete parents chain exists. But often can be the case when some parent in the
+		chain is deleted. In this case the system has to attach the whole deleting parents chromo to the child so the child posesses the complete chromo and can create the heir.</simpara>
 	    </sect3>
 	    <sect3><title>Clarification</title>
 	    </sect3>

@@ -187,19 +187,35 @@
 
     <sect1 id="ds_mut"><title>Mutations</title>
 	<sect2 id="ds_mut_unappr"><title>Avoidng unappropriate mutations</title>
-	    <sect3><title>Introduction</title>
+	    <sect3><title>Rank</title>
+		<simpara>We define rank as a vector the i-th element of which is the order of elements owner of i-th level.</simpara>
+		<itemizedlist>
+		    <listitem>Rank A is greater that rank B if A[i] > B[i] for some i. </listitem>
+		    <listitem>We call the number of elements of rank tuple as depth of rank</listitem>
+		    <listitem>We are saying that rank R is the rank of level N if N is R depth - 1. The lower level we call "higher" </listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3 id="ds_mut_unappr_intro"><title>Introduction</title>
 		<simpara>Ref <ulink url="../requirements/index.html#uc_028"/> for use-case.</simpara>
 		<simpara>Two structures are under operation when creating system: mutations tree and system native run-time hierarchy. Mutations are the
 		    specification of the changes but native hier is the result of applying the mutaions sequence. The mutations are applied in the order
 		    that is determined by the structures of mutations tree. The number of step when particular mutation will be applied is the mutations rank.</simpara>
-		<simpara>Almost are mutations includes referece to some node of current native hier. These relations can be considered as dependencies network. 
+		<simpara>Almost are mutations includes reference to some node of current native hier. These relations can be considered as dependencies network. 
 		    Applying mutation Mn can brake the system if the mutaions is placed in unappropriate position within mutation tree. The brackage happens for
 		    instance if the mutation related to node NN is placed in the position with the rank lower that rank of another mutation related to NN and
 		    "not knowing" of the first mutation.</simpara>
+		<simpara>Below is the example of mutation braking system consistency:
+		    <figure id="fig_mut_uappr_intro_ex1"><imageobject> <imagedata fileref="pics/pic_mut_uc1.png"/> </imageobject></figure>
+		</simpara>
 		<simpara>Mutation tree has the node. The nodes that has leaves (non-terminal node) produces native hier node. Ref to mutation spec DTD to 
 		    confirm that. Terminal nodes can be both node creation mutation and change mutations.</simpara>
-		<simpara>What relations from mutation to hier node can be? They are specified in DTD: parent (mut "node"), object of change (mut "add, rm, change, cont"),
-		    value (mut "change", "cont") </simpara>
+		<simpara>What relations from mutation to hier node can be? They are specified in DTD: 
+		    <orderedlist>
+			<listitem> parent (mut "node") </listitem>
+			<listitem id="ds_mut_unappr_intro_dep_obj"> object of change (mut "add, rm, change, cont") </listitem>
+			<listitem id="ds_mut_unappr_intro_dep_par"> parameter (val in mut "change", "cont") </listitem>
+		    </orderedlist>
+		</simpara>
 		<simpara>So one way of preventing unappropriate mutation is to place it into the position with rank greater than the maximum rank of all
 		    related to given node mutations. But how to get this maximum rank? The problem is that mutations are not run-time object that can be armed with
 		    run-time relation. Mutations are just elements of chromo. So it is doubtful to create effective scheme of creating that relation network.</simpara>
@@ -211,29 +227,42 @@
 		    chromo, so the current mutation is to be go to this chromo. The problem here is that creating of this dependencies network is complicated even
 		    on run-time model level. The dependency is produced by any reference to the node, for instance by referring to node in URI extention part. </simpara>
 	    </sect3>
-	    <sect3><title>Rank</title>
-		<simpara>We define rank as a vector the i-th element of which is the order of elements owner of i-th level.</simpara>
-		<itemizedlist>
-		    <listitem>Rank A is greater that rank B if A[i] > B[i] for some i. </listitem>
-		    <listitem>We call the number of elements of rank tuple as depth of rank</listitem>
-		    <listitem>We are saying that rank R is the rank of level N if N is R depth - 1. The lower level we call "higher" </listitem>
-		</itemizedlist>
-	    </sect3>
 	    <sect3><title>Run_time_deps</title>
 		<simpara>Theses</simpara>
 		<orderedlist>
-		    <listitem>In node Na depends on node Nb then Na depends also on owners and parents of node Nb. All owners and parents Nb must have lower
+		    <listitem>If node Na depends on node Nb then Na depends also on owners and parents of node Nb. All owners and parents Nb must have lower
 			rank that Nb. That means that we shouldn't take care of nodes specified in uri as prefix (owners, parents) including uri extention.</listitem>
+		    <listitem>If node Na depends on node Nb then all children of Na also depend on Nb.</listitem>
 		    <listitem>We can consider mutation as harmless if the mutation supplements run-time model. The following mutation are harmless: 
 			node, add. We can consider a mutation as unsafe if the mutation change or reduces run-time model. Unsafe mutations are: rm, change, cont.</listitem>
 		    <listitem>The register of deps in node Na contains all nodes that depends on node Na. So the client is able ot get the max rank of nodes that are
 			dependent on the current node.</listitem>
+		    <listitem>The dependant is actually the mutation, but only mutation within run-time node (there can be mutaion in some node but it is possible 
+			that it doesn't reflect any node in run-time model, for instance if some root node is mutated first by adding component node and than by
+			removing it - all mutation within adding component node part of chromo will not be in run-time. 
+			Mutations are not reflecing directly to run-time model even -node-.
+			So the dependency can be defined as the node which chromo containg mutation plus mutation rank in chromo. Another solution could be to 
+			define dependency directly as mutaion.</listitem>
 		</orderedlist>
+		<simpara>So the algorithm of taking into account dependencies for mutation of type -rm- is as:</simpara>
+		<itemizedlist>
+		<listitem>Get the node being removed </listitem>
+		<listitem>From this node get the major dependent node - the dependent node with biggest rank. The depencend node is run-time node containing dependent mutation, 
+		    or child of this node (ref Theses) or child of node being removed.</listitem>
+		<listitem>Mutate the dependency instead of initial node.</listitem>
+		</itemizedlist>
+		<simpara>Below is shown the example of using dependencies</simpara>
+		    <figure id="fig_mut_uappr_intro_ex2"><imageobject> <imagedata fileref="pics/pic_mut_uc2.png"/> </imageobject></figure>
 	    </sect3>
 	    <sect3><title>Restrictions of mutations</title>
 		<simpara>We introduce the restriction of mutations that can simplify the validation of mutations</simpara>
 		<orderedlist>
-		    <listitem>Rank depth of mutations must be less or equal of rank depth of mutated node </listitem>
+		    <listitem>Rank depth of mutations of dependency type "object" and "parameter" (ref <xref linkend="ds_mut_unappr_intro_dep_obj"/>, 
+			<xref linkend="ds_mut_unappr_intro_dep_par"/>) must be less or equal of rank depth of mutated node. 
+			In other words the object of mutation must be owned of node that contains the mutations. </listitem>
+		    <listitem>It is not allowed to remove a node if the node has childs. This restriction can be removed in the future. Currently it is 
+			not supporting of creating child when some parent in parents chain is missed. Potentially
+		    there is no fundamental problem with removing parent. But even in this case we need to take into account the childs as the deps.</listitem>
 		</orderedlist>
 	    </sect3>
 	</sect2>

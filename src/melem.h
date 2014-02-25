@@ -27,6 +27,12 @@ class MChildsObserver
 	virtual TBool OnChildRenamed(Elem* aComp, const string& aOldName) = 0;
 };
 
+class MChild
+{
+    public:
+	virtual void OnParentDeleting(Elem* aParent) = 0;
+};
+
 // Agent - comps observer
 class MACompsObserver
 {
