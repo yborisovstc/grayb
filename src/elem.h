@@ -32,13 +32,9 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
     public MChild
 {
     public:
-	// name, parent
-	typedef pair<string, string> TCkey;
-	typedef pair<TCkey, Elem*> TCelem;
-	typedef multimap<TCkey, Elem*> TMElem;
-	// Register of heirs
-	typedef pair<string, Elem*> TNKey;
 	// Regiser keyed by name, multimap
+	typedef string TNMKey;
+	typedef pair<TNMKey, Elem*> TNMVal;
 	typedef multimap<string, Elem*> TNMReg;
 	// Rank of node
 	typedef vector<TInt> TRank;
@@ -118,8 +114,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	    public:
 	    Elem& iElem;
 	    GUri::TElem iId;
-	    TMElem::iterator iCIter; // Comps iter
-	    pair<TMElem::iterator, TMElem::iterator> iCIterRange;
+	    TNMReg::iterator iCIter; // Comps iter
+	    pair<TNMReg::iterator, TNMReg::iterator> iCIterRange;
 	    TNMReg::iterator iChildsIter;
 	    pair<TNMReg::iterator, TNMReg::iterator> iChildsRange;
 	};
@@ -252,7 +248,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool MoveComp(Elem* aComp, Elem* aDest);
 	TBool RegisterComp(Elem* aComp);
 	TBool RegisterChild(Elem* aChild);
-	TBool IsCompRegistered(Elem* aComp) const;
+	TBool IsCompRegistered(Elem* aComp);
 	// aName is required because the comp can be renamed already. This is the case of 
 	// comp renaming: comp is renamed first, then the renaming is handled
 	TBool UnregisterComp(Elem* aComp, const string& aName = string());
@@ -261,7 +257,6 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool DoMutChangeCont(const ChromoNode& aSpec);
 	TBool MergeMutation(const ChromoNode& aSpec);
 	TBool MergeMutMove(const ChromoNode& aSpec);
-	Elem* GetComp(TInt aInd);
 	virtual void DoOnCompChanged(Elem& aComp);
 	TBool IsLogeventCreOn();
 	void ChangeAttr(const ChromoNode& aSpec);
@@ -286,7 +281,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// Components, owninig container
 	vector<Elem*> iComps;
 	// Components map, not owning
-	multimap<TCkey, Elem*> iMComps;
+	TNMReg iMComps;
 	// Ifaces cache
 	TICache iICache;
 	// Ifaces cache query by TICMapKeyF

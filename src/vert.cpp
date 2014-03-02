@@ -2,88 +2,6 @@
 #include "mprov.h"
 #include "edge.h"
 
-// Nodes iterator
-Vert::IterImplVert::IterImplVert(Elem& aElem, GUri::TElem aId, TBool aToEnd): IterImplBase(aElem, aId, aToEnd)
-{
-    Vert* vert = iElem.GetObj(vert);
-    __ASSERT(vert != NULL);
-    iEIterRange = vert->iMEdges.equal_range(Elem::TCkey(iId.second.second, iId.first));
-    iEIter = aToEnd ? iEIterRange.second : iEIterRange.first;
-};
-
-Vert::IterImplVert::IterImplVert(const IterImplVert& aIt): IterImplBase(aIt),
-    iEIterRange(aIt.iEIterRange), iEIter(aIt.iEIter) 
-{
-};
-
-void Vert::IterImplVert::Set(const IterImplBase& aImpl)
-{
-    const IterImplVert* src = static_cast<const IterImplVert*>(aImpl.DoGetObj(Type()));
-    __ASSERT(src != NULL);
-    iEIterRange = src->iEIterRange;
-    iEIter = src->iEIter; 
-}
-
-void Vert::IterImplVert::PostIncr()
-{
-    if (iCIter != iCIterRange.second) {
-	IterImplBase::PostIncr();
-    }
-    else {
-	iEIter++;
-    }
-}
-
-TBool Vert::IterImplVert::IsCompatible(const IterImplBase& aImpl) const
-{
-    const IterImplVert* src = static_cast<const IterImplVert*>(aImpl.DoGetObj(Type()));
-    return src != NULL;
-}
-
-TBool Vert::IterImplVert::IsEqual(const IterImplBase& aImpl) const
-{
-    TBool res = IterImplBase::IsEqual(aImpl);
-    if (res) {
-	const IterImplVert* src = static_cast<const IterImplVert*>(aImpl.DoGetObj(Type()));
-	__ASSERT(src != NULL);
-	res = iEIter == src->iEIter;
-    }
-    return res;
-}
-
-void *Vert::IterImplVert::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    return res;
-}
-
-const void *Vert::IterImplVert::DoGetObj(const char *aName) const
-{
-    const void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    return res;
-}
-
-Elem*  Vert::IterImplVert::GetElem()
-{
-    Elem* res = NULL;
-    if (iCIter != iCIterRange.second) {
-	res = IterImplBase::GetElem();
-    }
-    else {
-	if (iEIter != iEIterRange.second) {
-	    MEdge* enode = iEIter->second;
-	    res = enode->EBase()->GetObj(res);
-	}
-    }
-    return res;
-}
-
 // Vertex
 
 string Vert::PEType()
@@ -195,8 +113,7 @@ Vert::~Vert()
     //
     // Cache edges first because disconnecting will affect iMEdges
     vector<MEdge*> edges;
-    pair<TEdgesMap::iterator, TEdgesMap::iterator> range = iMEdges.equal_range(TCkey("*", "*"));
-    for (TEdgesMap::iterator it = range.first; it != range.second; it++) {
+    for (TEdgesMap::iterator it = iMEdges.begin(); it != iMEdges.end(); it++) {
 	edges.push_back(it->second);
     }
     // Disconnect edges
@@ -227,13 +144,10 @@ TBool Vert::Connect(MEdge* aEdge)
 {
     TBool res = ETrue;
     Edge* ee = aEdge->EBase()->GetObj(ee);
-    __ASSERT(iMEdges.find(TCkey(ee->Name(), ee->EType())) == iMEdges.end());
+    __ASSERT(iMEdges.find(TNMKey(ee->Name())) == iMEdges.end());
     res = Connect(aEdge->Pair(this));
     if (res) {
-	iMEdges.insert(pair<TCkey, MEdge*>(TCkey(ee->Name(), ee->EType()), aEdge));
-	iMEdges.insert(pair<TCkey, MEdge*>(TCkey(ee->Name(), "*"), aEdge));
-	iMEdges.insert(pair<TCkey, MEdge*>(TCkey("*", ee->EType()), aEdge));
-	iMEdges.insert(pair<TCkey, MEdge*>(TCkey("*", "*"), aEdge));
+	iMEdges.insert(pair<TNMKey, MEdge*>(TNMKey(ee->Name()), aEdge));
     }
     return res;
 }
@@ -261,18 +175,15 @@ void Vert::Disconnect(MVert* aPair)
 void Vert::Disconnect(MEdge* aEdge)
 {
     Edge* ee = aEdge->EBase()->GetObj(ee);
-    multimap<TCkey,MEdge*>::iterator found = iMEdges.find(TCkey(ee->Name(), ee->EType()));
+    TEdgesMap::iterator found = iMEdges.find(TNMKey(ee->Name()));
     if (found != iMEdges.end()) {
-	iMEdges.erase(found);
-	RemoveFromMap(aEdge, TCkey("*", ee->EType()));
-	RemoveFromMap(aEdge, TCkey(ee->Name(), "*"));
-	RemoveFromMap(aEdge, TCkey("*", "*"));
+	RemoveFromMap(aEdge, TNMKey(ee->Name()));
 	__ASSERT(aEdge->Pair(this) != NULL);
 	Disconnect(aEdge->Pair(this));
     }
 }
 
-void Vert::RemoveFromMap(MEdge* aEdge, const TCkey& aKey)
+void Vert::RemoveFromMap(MEdge* aEdge, const TNMKey& aKey)
 {
     __ASSERT(aEdge != NULL);
     TBool found = EFalse;
@@ -344,36 +255,4 @@ void Vert::DoOnCompChanged(Elem& aComp)
     Elem::DoOnCompChanged(aComp);
 }
 
-
-Elem* Vert::GetNodeLoc(const GUri::TElem& aElem)
-{
-    Elem* res = NULL;
-    // Try hier first
-    res = Elem::GetNodeLoc(aElem);
-    // Check edge then
-    multimap<TCkey,MEdge*>::iterator found = iMEdges.find(TCkey(aElem.second.second, aElem.first));
-    if (found != iMEdges.end()) {
-	if (res == NULL) {
-	    Base* bres = (*found).second->EBase();
-	    res = bres->GetObj(res);
-	}
-	else {
-	    Logger()->Write(MLogRec::EErr, this, "URI elem [%s:%s] - resolution conflict", aElem.second.second.c_str(), aElem.first.c_str()); 
-	    res = NULL;
-	}
-    }
-    return res;
-}
-
-/*
-Elem::Iterator Vert::NodesLoc_Begin(const GUri::TElem& aId)
-{
-    return Iterator(new IterImplVert(*this, aId));
-}
-
-Elem::Iterator Vert::NodesLoc_End(const GUri::TElem& aId)
-{
-    return Iterator(new IterImplVert(*this, aId, ETrue));
-}
-*/
 

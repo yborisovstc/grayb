@@ -8,7 +8,9 @@
 
 <node id="test" parent="Elem">
     <node id="elem1" parent="Elem">
-	<node id="elem2" parent="Elem"/>
+	<node id="elem2" parent="Elem">
+	    <node id="elem2_1" parent="Elem"/>
+	</node>
     </node>
     <node id="elem3" parent="elem1">
 	<node id="elem4" parent="../elem1/elem2"/>

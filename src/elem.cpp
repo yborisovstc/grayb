@@ -144,7 +144,7 @@ Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd): iE
 	}
     }
     if (rel == GUri::KNodeSep) {
-	iCIterRange = iElem.iMComps.equal_range(Elem::TCkey(iId.second.second, ext));
+	iCIterRange = iElem.iMComps.equal_range(Elem::TNMKey(iId.second.second));
 	iCIter = aToEnd ? iCIterRange.second : iCIterRange.first;
     }
     else {
@@ -542,19 +542,14 @@ TBool Elem::AddNode(const ChromoNode& aSpec)
 
 Elem* Elem::GetComp(const string& aParent, const string& aName)
 {
-    TMElem::iterator it = iMComps.find(TCkey(aName, aParent));
-    return (it != iMComps.end()) ? it->second : NULL;
-    //    return iMComps.count(TCkey(aName, aParent)) > 0 ? iMComps[TCkey(aName, aParent)] : NULL;
-}
-
-Elem* Elem::GetComp(TInt aInd)
-{
-    Elem *res = NULL;
-    map<TCkey, Elem*>::iterator it = iMComps.begin();
-    for (TInt cnt = 0; cnt < aInd; cnt++) { 
-	it++;
+    Elem* res = NULL;
+    pair<TNMReg::iterator, TNMReg::iterator> range = iMComps.equal_range(TNMKey(aName));
+    for (TNMReg::iterator it = range.first; it != range.second && res == NULL; it++) {
+	Elem* node = it->second;
+	if (node->EType() == aParent) {
+	    res = node;
+	}
     }
-    res = it->second;
     return res;
 }
 
@@ -1086,15 +1081,12 @@ TBool Elem::AppendComp(Elem* aComp)
 TBool Elem::RegisterComp(Elem* aComp)
 {
     TBool res = ETrue;
-    if (iMComps.count(TCkey(aComp->Name(), aComp->EType())) == 0)
-    {
-	iMComps.insert(pair<TCkey, Elem*>(TCkey(aComp->Name(), aComp->EType()), aComp));
-	iMComps.insert(pair<TCkey, Elem*>(TCkey(aComp->Name(), "*"), aComp));
-	iMComps.insert(pair<TCkey, Elem*>(TCkey("*", aComp->EType()), aComp));
-	iMComps.insert(pair<TCkey, Elem*>(TCkey("*", "*"), aComp));
+    if (GetComp(aComp->EType(), aComp->Name()) == NULL) {
+	iMComps.insert(TNMVal(TNMKey(aComp->Name()), aComp));
+	iMComps.insert(TNMVal(TNMKey("*"), aComp));
     }
     else {
-	Logger()->Write(MLogRec::EErr, this, "Adding elem [%s] - name already exists", aComp->Name().c_str());
+	Logger()->Write(MLogRec::EErr, this, "Registering component [%s] - already exists", aComp->Name().c_str());
 	res = EFalse;
     }
     return res;
@@ -1103,7 +1095,7 @@ TBool Elem::RegisterComp(Elem* aComp)
 TBool Elem::RegisterChild(Elem* aChild)
 {
     TBool res = ETrue;
-    iChilds.insert(TNKey(aChild->Name(), aChild));
+    iChilds.insert(TNMVal(aChild->Name(), aChild));
     return res;
 }
 
@@ -1125,7 +1117,7 @@ TBool Elem::UnregisterChild(Elem* aChild, const string& aName)
     return res;
 }
 
-TBool Elem::IsCompRegistered(Elem* aComp) const
+TBool Elem::IsCompRegistered(Elem* aComp)
 {
     Elem* comp = aComp;
     Elem* man = comp->GetMan();
@@ -1133,41 +1125,27 @@ TBool Elem::IsCompRegistered(Elem* aComp) const
 	comp = man;
 	man = comp->GetMan();	
     }
-    return (iMComps.count(TCkey(comp->Name(), comp->EType())) > 0);
+    return (GetComp(comp->EType(), comp->Name()) != NULL);
 }
 
 TBool Elem::UnregisterComp(Elem* aComp, const string& aName)
 {
     TBool res = EFalse;
     const string& name = aName.empty() ? aComp->Name() : aName;
-    assert (iMComps.count(TCkey(name, aComp->EType())) > 0); 
+    assert (GetComp(aComp->EType(), name) != NULL); 
     // Removing old name related records in register
-    //   Name-Type is unique record, erasing it
-    iMComps.erase(TCkey(name, aComp->EType()));
-    //   Name-AnyType is not unique, erasing only records for this comp
     TBool found = EFalse;
-    pair<TMElem::iterator, TMElem::iterator> range = iMComps.equal_range(TCkey(name, "*"));
-    for (TMElem::iterator it = range.first; it != range.second && !found; it++) {
+    pair<TNMReg::iterator, TNMReg::iterator> range = iMComps.equal_range(TNMKey(name));
+    for (TNMReg::iterator it = range.first; it != range.second && !found; it++) {
 	if (it->second == aComp) {
 	    iMComps.erase(it);
 	    found = ETrue;
 	}
     }
     __ASSERT(found);
-    //   AnyName-Type is not unique, erasing only records for this comp
     found = EFalse;
-    range = iMComps.equal_range(TCkey("*", aComp->EType()));
-    for (TMElem::iterator it = range.first; it != range.second && !found; it++) {
-	if (it->second == aComp) {
-	    iMComps.erase(it);
-	    found = ETrue;
-	}
-    }
-    __ASSERT(found);
-    //   AnyName-AnyType is not unique, erasing only records for this comp
-    range = iMComps.equal_range(TCkey("*", "*"));
-    found = EFalse;
-    for (TMElem::iterator it = range.first; it != range.second && !found; it++) {
+    range = iMComps.equal_range(TNMKey("*"));
+    for (TNMReg::iterator it = range.first; it != range.second && !found; it++) {
 	if (it->second == aComp) {
 	    iMComps.erase(it);
 	    found = ETrue;
@@ -1533,7 +1511,7 @@ TBool Elem::IsLogeventCreOn()
 // (all parents chain) to detect inheritance.
 TBool Elem::IsHeirOf(const string& aParent) const
 {
-    int pos = EType().find(aParent);
+    int pos = EType(EFalse).find(aParent);
     return pos != string::npos;
 }
 
@@ -1679,7 +1657,9 @@ Elem::TDep Elem::GetMajorDep()
 // Handles parent deleting, ref uc_029
 void Elem::OnParentDeleting(Elem* aParent)
 {
-    // Only local parent deletion is handled for nowc:w
+    /* TODO [YB] this solution contradicts to principles of incrementing creations
+     * to redesign
+    // Only local parent deletion is handled for now
     __ASSERT(aParent == iParent);
     // Copy parents choromo and reparent to grandparent
     ChromoNode phroot = iParent->Chromos().Root();
@@ -1693,6 +1673,7 @@ void Elem::OnParentDeleting(Elem* aParent)
     Elem* gparent = iParent->GetParent();
     gparent->RegisterChild(this);
     iParent = gparent;
+    */
 }
 
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)

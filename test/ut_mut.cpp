@@ -288,4 +288,7 @@ void Ut_mut::test_MutRmParent()
     // Check that the mutation is performed
     Elem* e6 = root->GetNode("elem6");
     CPPUNIT_ASSERT_MESSAGE("Creating elem6 as child of elem5 failed", e6 != NULL);
+    // Check that the elem6 contains mutation from deleted parent elem2
+    Elem* e2_1 = root->GetNode("elem6/elem2_1");
+    CPPUNIT_ASSERT_MESSAGE("elem6 containing deleted parent comp elem2_1 failed", e2_1 != NULL);
 }

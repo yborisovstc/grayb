@@ -10,27 +10,7 @@ class Edge;
 class Vert: public Elem, public MVert
 {
     public:
-	typedef multimap<TCkey, MEdge*> TEdgesMap;
-    public:
-	class IterImplVert: public IterImplBase
-	{
-	    friend class Elem;
-	    public:
-	    static const char* Type() { return "IterImplVert";};
-	    IterImplVert(Elem& aElem, GUri::TElem aId, TBool aToEnd = EFalse);
-	    IterImplVert(Elem& aElem);
-	    IterImplVert(const IterImplVert& aImpl);
-	    virtual void Set(const IterImplBase& aImpl);
-	    virtual void PostIncr();
-	    virtual TBool IsEqual(const IterImplBase& aImpl) const;
-	    virtual TBool IsCompatible(const IterImplBase& aImpl) const;
-	    virtual Elem*  GetElem();
-	    virtual void* DoGetObj(const char *aName);
-	    virtual const void* DoGetObj(const char *aName) const;
-	    public:
-	    TEdgesMap::iterator iEIter; // Edges iter
-	    pair<TEdgesMap::iterator, TEdgesMap::iterator> iEIterRange;
-	};
+	typedef multimap<TNMKey, MEdge*> TEdgesMap;
 
     public:
 	static const char* Type() { return "Vert";};
@@ -48,20 +28,17 @@ class Vert: public Elem, public MVert
 	virtual set<MVert*>& Pairs();
 	virtual Base* EBase();
 	// From Elem
-	//virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
-	//virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
-	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);
 	virtual void OnCompDeleting(Elem& aComp);
 	virtual void OnCompAdding(Elem& aComp);
 	virtual void DoOnCompChanged(Elem& aComp);
 	// Iface cache
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
     protected:
-	void RemoveFromMap(MEdge* aEdge, const TCkey& aKey);
+	void RemoveFromMap(MEdge* aEdge, const TNMKey& aKey);
     protected:
 	set<MVert*> iPairs;
 	// TODO [YB] Do we need map with ECkey? There is no edges type variation at the moment.
-	multimap<TCkey, MEdge*> iMEdges;
+	TEdgesMap iMEdges;
 };
 
 #endif
