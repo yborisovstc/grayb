@@ -62,7 +62,7 @@
 	<node id="Data" parent="../DSource"/>
 
 	<node parent="Edge"> <cont node="P1" val="L1"/> <cont node="P2" val="E1"/> </node>
-	<node parent="Edge"> <cont node="P1" val="E1/Int"/> <cont node="P2" val="Data/Capsule/Out"/> </node>
+	<node parent="Edge"> <cont node="P1" val="E1/(InpSocket:)Int"/> <cont node="P2" val="Data/Capsule/Out"/> </node>
 
     </node>
 

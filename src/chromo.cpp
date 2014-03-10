@@ -140,3 +140,6 @@ TInt ChromoNode::GetLocalSize()
     return res;
 }
 
+ChromoNode& ChromoNode::GetNode(const GUri& aUri) const
+{
+}

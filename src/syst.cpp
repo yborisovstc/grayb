@@ -629,16 +629,6 @@ void *Syst::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
-    /* Removing agents for they are supported on Vert level
-       else  {
-       Elem* agents = GetComp("Elem", "Agents");
-       if (agents != NULL) {
-       for (vector<Elem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && res == NULL; it++) {
-       res = (*it)->DoGetObj(aName, EFalse);
-       }
-       }
-       }
-       */
     if (res == NULL) {
 	res = Vert::DoGetObj(aName, aIncUpHier, aCtx);
     }

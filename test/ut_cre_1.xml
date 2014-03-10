@@ -13,6 +13,7 @@
     <node id="elem3" parent="elem1">
 	<node id="Logspec" parent="Elem"> <node id="Creation" parent="Elem"/> </node>
 	<node id="elem4" parent="../elem1/elem2"/>
+	<node id="elem4" parent="../elem1"/>
     </node>
     <node id="elem5" parent="elem1/elem2"/>
 

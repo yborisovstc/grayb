@@ -58,7 +58,7 @@ void Ut_cre::test_Cre()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     Elem* e2 = root->GetNode("elem1/elem2");
     CPPUNIT_ASSERT_MESSAGE("Fail to get e2", e2 != 0);
-    Elem* e4 = root->GetNode("elem3/elem4");
+    Elem* e4 = root->GetNode("elem3/(elem2:)elem4");
     CPPUNIT_ASSERT_MESSAGE("Fail to get e4", e4 != 0);
     Rank rk_e4;
     e4->GetRank(rk_e4);
@@ -85,6 +85,7 @@ void Ut_cre::test_CreGr()
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     Elem* v1 = root->GetNode("(Vert:)v1");
+    //Elem* av1 = v1->GetNode("(Elem:)Agents");
     CPPUNIT_ASSERT_MESSAGE("Fail to get v1", v1 != 0);
     MVert* mv1 = v1->GetObj(mv1);
     CPPUNIT_ASSERT_MESSAGE("Fail to get mv1", mv1 != 0);

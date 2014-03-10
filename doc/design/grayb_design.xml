@@ -266,6 +266,60 @@
 		</orderedlist>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_rm_prnt"><title>Deleting of parent- how to keep system consistency [uc_029]</title>
+	    <sect3><title>Criticizm</title>
+		<simpara>Seems the current scheme of creation node is totally inconsistent with principles of incremental creation. The scheme
+		    is working but the problem is that it is based on run-time parents that is not always real case. More correct scheme would be that
+		basing on non-run-time parents, i.e. on chromos. This would be working for all the cases.</simpara>
+	    </sect3>
+	    <sect3><title>Possible solutions</title>
+		<sect4><title>To check the parent - if run-time parent doesn't exist then get its chromo from system chromo.</title>
+		    <simpara>This approach goes to using parent's chromo instead of run-time nodes as is in current solution. Can we use chromo? The doubts are
+			because of the incremental mutation scheme principle "Chromosome as subject and system as object of creation". 
+			This means that the references in chromo (to object node, to parent etc.) are the references within system but not within chromo itserf.</simpara>
+		    <simpara>Usecase is: root node N_R, its comp N_A contains N_A_1, then N_A gets removed, creator makes mutation in N_R to create N_B for that this N_A_1 is in parents chain. 
+			The problem here is that even we get N_A_1 chromo to mutate, the mutation has to be done in context of N_A that is also removed. So the references from
+			mutations within N_A_1 chromo to internals of N_A are broken. How the mutaion with chromo N_A_1 can be done? It shuldn't be a problem if we take into 
+			account the principle "Mutations references of types other than -parent- can point only to onwned node". This means that the mutation within N_A_1 can 
+			contains references only inside of N_A_1. The only parent reference can be to outside of local conext, but as was discussed parents relation is safe in root chromo.</simpara>
+		    <simpara>The weaknes of this solution is that it requires that parents chromo node can be found from the node being mutated with -node- mutation. So 
+			we need to have ChromoNode methods like GetNode, the analogue of such method in run-time Elem. But chromo has only one explicit relations net - native hierarchy of
+		   ownership. Chromo doesn't support hierarchy of inheritance. This makes the problem to use this approach because inheritance based URIs cannot be resolved in chromo. </simpara>
+		</sect4>
+		<sect4><title>To not actually remove run-time node but mark it as removed</title>
+		    <simpara>Node having this mark shall deny any mutations. The clients should ignore and hide "removed" nodes.</simpara>
+		    <simpara>Weaknesses?</simpara>
+		    <itemizedlist>
+			<listitem> Seems just workaround. </listitem>
+			<listitem>Comp is not deleted actually, so it is kept in owner comps register. This can cause problem with multiple choice when resolving component. 
+			Currently the following mutation is quite popular, in Extender for instance: to remove default Int and to create custom Int. But in this case there will be two Ints.</listitem>
+		    </itemizedlist>
+		</sect4>
+	    </sect3>
+	    <sect3><title>QnA</title>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_rn_prnt"><title>Renaming of parent - how to keep system consistency [uc_031]</title>
+	    <sect3><title>Intro</title>
+		<simpara>Ref <ulink url="../requirements/index.html#uc_031"/> for use-case</simpara>
+	    </sect3>
+	    <sect3><title>Analysis</title>
+		<simpara>Current implementation is just notify the owner of renaming, so owner makes the correction into components register. UC_031 is not considered currently.
+		    But it seems there is no fundamental limitation as for removing of parent, ref <xref lindend="ds_rm_prnt"/>. This is because the parent is accessible from child
+		node in runtime. The only problem is that currently the child refers to parent via chromo data on creation heir, ref Elem::CreateHeir.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mv_local"><title>Local Moving of node.</title>
+	    <sect3><title>Intro</title>
+		<simpara>Actually local moving of node is not single mutation but two mutations: re-creating node in new context and removing initial node.</simpara>
+	    </sect3>
+	    <sect3><title>How to transform chromo for new context</title>
+		<simpara>One of the problem when re-creating node in new context is transformation node's chromo to be sutable for new context. </simpara>
+		<simpara>There can be some solution considered. One of them is to transform source node chromo to destination node context. This approach is rather complicated for
+		    implementation. Another approach is to use currently implemented mechanism of creatng heir. So we can create heir from source node (this is done by source node 
+		    in original context, so doesn't cause any troubles. Then we can re-adopt the heir from source node to its parent.</simpara>
+	    </sect3>
+	</sect2>
     </sect1>
 
 </article>

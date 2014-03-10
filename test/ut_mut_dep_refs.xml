@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for securing mutation will not breake model consistency 
+     dependency is reference to node
+-test- depends on v1_0 and v2_0 but client tries to mutate v1 by
+removing v1_0 - breakage -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Vert">
+    <node id="v1" parent="Vert">
+	<node id="v1_0" parent="Vert"/>
+    </node>
+    <node id="v2" parent="Vert">
+	<node id="v2_0" parent="Vert"/>
+    </node>
+    <node id="edge1" parent="Edge"/> 
+    <cont node="edge1/P1" id="v1/v1_0"/> 
+    <cont node="edge1/P2" id="v2/v2_0"/>
+</node>
+

@@ -30,6 +30,8 @@
 		<revremark>Added <xref linkend="uc_028"/></revremark> </revision>
 	    <revision> <revnumber>0.07</revnumber> <date>21-Feb-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_029"/></revremark> </revision>
+	    <revision> <revnumber>0.07</revnumber> <date>07-Mar-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="uc_031"/>, <xref linkend="uc_032"/>, <xref linkend="uc_033"/>, <xref linkend="uc_034"/>, <xref linkend="uc_035"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -40,7 +42,9 @@
 
     <sect1 id="nimp"><title>Treaceability: not implemented yet</title>
 	<itemizedlist>
-	    <listitem> <xref linkend="uc_029"/> </listitem>
+	    <listitem> <xref linkend="uc_034"/> </listitem>
+	    <listitem> <xref linkend="uc_031"/> </listitem>
+	    <listitem> <xref linkend="uc_030"/> </listitem>
 	    <listitem> <xref linkend="uc_028"/> </listitem>
 	    <listitem> <xref linkend="uc_027"/> </listitem>
 	    <listitem> <xref linkend="uc_025"/>, ref discussion <xref linkend="uc_025_disc_notsec"/> </listitem>
@@ -50,6 +54,11 @@
 	</itemizedlist>
     </sect1>
 
+    <sect1 id="trac_impl"><title>Treaceability: implemented</title>
+	<itemizedlist>
+	    <listitem> <xref linkend="uc_029"/>, via marking removed node as deleted but keeping it in runtime model </listitem>
+	</itemizedlist>
+    </sect1>
     
     <sect1 id="uc"> <title>Use cases</title>
 
@@ -398,6 +407,7 @@
 		<itemizedlist>
 		    <listitem><xref linkend="uc_014"/></listitem>
 		    <listitem><xref linkend="uc_022"/></listitem>
+		    <listitem><xref linkend="uc_018"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>
@@ -752,7 +762,7 @@
 	    </sect3>
 	</sect2>
 
-	<sect2 id="uc_029"><title>UC_029 Mutation: creating node: missing parent in parents chain</title>
+	<sect2 id="uc_029"><title>UC_029 Mutation: creating node: missing parent in parents chain because of parent deleted</title>
 	    <sect3><title>Actors</title>
 		CLIENT: some user of system.
 		NODE: some node within systems native hierarchy
@@ -789,6 +799,198 @@
 	    </sect3>
 	</sect2>
 
+	<sect2 id="uc_030"><title>UC_030 Mutation: creating node: missing parents outer mutations</title>
+	    <sect3><title>Actors</title>
+		CLIENT: some user of system.
+		NODE: some node within systems native hierarchy
+		PARENT_NODE: node that specified as parent for creation node mutation
+	    </sect3>
+	    <sect3><title>Preconditions</title>
+		PARENT_NODE was mutated by some outer mutation, i.e. mutation that are placed not in PARENT_NODE itself but in some owners chromo. This 
+		outer mutation can be reasoned for instance by the securing systems consistency.
+	    </sect3>
+	    <sect3><title>Assumptions</title>
+	    </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>CLIENT requested mutation of adding node into NODE, the mutation contaings reference to PARENT_NODE as parent for this mutation
+		    - SYSTEM adds node and the outer mutations of PARENT_NODE are not included to nodes chromo.</simpara>
+	    </sect3>
+	    <sect3><title>Alternative</title>
+	    </sect3>
+	    <sect3><title>Exceptions</title>
+	    </sect3>
+	    <sect3><title>Variations</title>
+	    </sect3>
+	    <sect3><title>Extends</title>
+		<xref linkend="uc_018"/>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<simpara>This usecase shows that outer mutation cannot be considered as part of genotype because they doesn't affect parents chromo but only parent run-time object, i.e phenotype.</simpara>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_031"><title>UC_031 Mutation: creating node: missing parent in parents chain because of parent renamed</title>
+	    <sect3><title>Actors</title>
+		CLIENT: some user of system.
+		NODE: some node within systems native hierarchy
+		PARENT: node that specified as parent for creation node mutation
+		SUB_PARENT: parent of PARENT
+	    </sect3>
+	    <sect3><title>Preconditions</title>
+		SUB_PARENT is renamed
+	    </sect3>
+	    <sect3><title>Assumptions</title>
+	    </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>CLIENT requested mutation of adding node into NODE, the mutation contaings reference to PARENT as parent for this mutation
+		    - SYSTEM adds node irrespective that there is no the whole parents chain for creation node.</simpara>
+	    </sect3>
+	    <sect3><title>Alternative</title>
+	    </sect3>
+	    <sect3><title>Exceptions</title>
+	    </sect3>
+	    <sect3><title>Variations</title>
+	    </sect3>
+	    <sect3><title>Extends</title>
+		<xref linkend="uc_018"/>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_032"><title>UC_032 Mutation: moving node</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> CLIENT: some element of system </listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>CLIENT requests NODE for mutation by moving the node A into node B - SYSTEM performs the mutation if doesn't face limitation of this. </simpara>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title>
+		<xref linkend="uc_017"/>
+	    </sect3>
+	    <sect3><title>Extended by</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_033"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title> </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
+	<sect2 id="uc_033"><title>UC_033 Mutation: moving node: local nodes</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> CLIENT: some element of system </listitem>
+		    <listitem> NODE: some node within the native hier of system</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>CLIENT request system to mutate NODE by moving NODEs component A into NODEs component B - SYSTEM performs the mutation if doesn't face limitation of this. </simpara>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title>
+		<xref linkend="uc_032"/>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_034"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title> 
+		<simpara>Moving of node is not "pure" mutation but combination of adding the "copy" of node A into node B and removing inital A node.</simpara>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_034"><title>UC_034 Mutation: moving node: local nodes: considering of context change</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> CLIENT: some element of system </listitem>
+		    <listitem> NODE: some node within the native hier of system</listitem>
+		    <listitem> NODE_A, NODE_B: some components of NODE</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<simpara>NODE_A chromo contains context dependent references, for instance relative references.</simpara>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>CLIENT request system to mutate NODE by moving NODE_A into NODE_B - SYSTEM performs the mutation if doesn't face limitation of this, SYSTEM transforms context dependent 
+		    references within NODE_A chromo properly. </simpara>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title>
+		<xref linkend="uc_033"/>
+	    </sect3>
+	    <sect3><title>Extended by</title> </sect3>
+	    <sect3><title>Discussion</title> 
+		<simpara>Moving of node is not "pure" mutation but combination of adding the "copy" of node A into node B and removing inital A node.</simpara>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_035"><title>UC_035 Mutation: moving node: remote nodes</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> CLIENT: some element of system </listitem>
+		    <listitem> NODE: some node within the native hier of system</listitem>
+		    <listitem> REMOTE_NODE: some node specified outside root ot NODE</listitem>
+		    <listitem> NODE_B: some component of NODE</listitem>
+		    <listitem> NODE_A: some component of REMOTE_NODE</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>CLIENT request system to mutate NODE by moving NODE_A to NODE_B - SYSTEM performs the mutation if doesn't face limitation of this. </simpara>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title>
+		<xref linkend="uc_032"/>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_034"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title> 
+		<simpara>Moving of node is not "pure" mutation but simply adding the "copy" of node A into node B</simpara>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+	
     </sect1>
 
 </article>

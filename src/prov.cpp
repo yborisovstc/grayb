@@ -31,6 +31,15 @@ Elem* GProvider::GetNode(const string& aUri)
     return NULL;
 }
 
+TBool GProvider::IsProvided(Elem* aElem) const
+{
+    TBool res = false;
+    for (TReg::const_iterator it = iReg.begin(); it != iReg.end() && !res; it++) {
+	res = aElem == it->second;
+    }
+    return res;
+}
+
 Chromo* GProvider::CreateChromo()
 {
     return NULL;

@@ -53,16 +53,17 @@
 
 <!-- Change content attributes:
      node - changed elem
-     val - new value,
+     val - new value OR id - new value - ref to node,
      -->
 <!ATTLIST cont
    node CDATA #IMPLIED
-   val CDATA #REQUIRED
+   val CDATA #IMPLIED
+   id CDATA #IMPLIED
 >
 
 <!-- Moving attributes:
-     id - moved node name
-     node - base node to put source before it, to bottom if omitted
+     id - moved node URI
+     node - destination node
      -->
 <!ATTLIST move
    id CDATA #REQUIRED

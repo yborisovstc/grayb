@@ -19,7 +19,9 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Move);
     CPPUNIT_TEST(test_MutDepsRm);
     CPPUNIT_TEST(test_MutDepsRm2);
+    CPPUNIT_TEST(test_MutDepsRmRef);
     CPPUNIT_TEST(test_MutRmParent);
+    CPPUNIT_TEST(test_MutRenameParent);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -30,7 +32,9 @@ private:
     void test_Move();
     void test_MutDepsRm();
     void test_MutDepsRm2();
+    void test_MutDepsRmRef();
     void test_MutRmParent();
+    void test_MutRenameParent();
 private:
     Env* iEnv;
 };
@@ -169,22 +173,13 @@ void Ut_mut::test_Move()
     Elem* eext = root->GetNode("/test/SysComps/Extender");
     CPPUNIT_ASSERT_MESSAGE("Fail get extender from moved remote module", eext != NULL);
 
-    // Mutation of type "Move node"
+    // Moving local node
     ChromoNode mmove = root->Mutation().Root().AddChild(ENt_Move);
     mmove.SetAttr(ENa_Id, "elem5");
-    mmove.SetAttr(ENa_MutNode, "elem3");
+    mmove.SetAttr(ENa_MutNode, "elem3/elem4");
     root->Mutate();
-    Elem* emoved = root->GetNode("elem5");
-    Elem* ebase = root->GetNode("elem3");
-    CPPUNIT_ASSERT_MESSAGE("Fail to rename node", emoved != NULL && ebase != NULL);
-    Elem* enext = NULL;
-    for (vector<Elem*>::iterator it = root->Comps().begin(); it != root->Comps().end(); it++) {
-	if (*it == emoved) {
-	    it++; enext = *it; break;
-	}
-    }
-    CPPUNIT_ASSERT_MESSAGE("Fail to rename node", enext != NULL && enext == ebase);
-
+    Elem* emoved = root->GetNode("elem3/elem4/elem5");
+    CPPUNIT_ASSERT_MESSAGE("Fail to move local node elem5", emoved != NULL);
  
     delete iEnv;
 }
@@ -224,9 +219,9 @@ void Ut_mut::test_MutDepsRm()
     mut = root->Mutation().Root().AddChild(ENt_Rm);
     mut.SetAttr(ENa_MutNode, "elem1/elem2");
     root->Mutate();
-    // Check that the mutation is not refused
+    // Check that the mutation is not refused, but e2 not deleted, just marked as removed
     e2 = root->GetNode("elem1/elem2");
-    CPPUNIT_ASSERT_MESSAGE("Root mutation -rm- of elem2 is refused", e2 == NULL);
+    CPPUNIT_ASSERT_MESSAGE("Root mutation -rm- of elem2 is refused", e2 != NULL && e2->IsRemoved() );
 }
 
 // Preventing of mutation braking model consistency
@@ -263,10 +258,42 @@ void Ut_mut::test_MutDepsRm2()
     CPPUNIT_ASSERT_MESSAGE("Root mutation -rm- of elem2 is refused", e2 == NULL);
 }
 
+// Preventing of mutation braking model consistency
+// Mutation - rm, dependency - ref to node
+void Ut_mut::test_MutDepsRmRef()
+{
+    printf("\n === Test of mutation consistency, mut -rm-, dep - ref to node \n");
+
+    iEnv = new Env("Env", "ut_mut_dep_refs.xml", "ut_mut_dep_refs.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+     // Check creation first
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    Elem* v1_0 = root->GetNode("v1/v1_0");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get v1/v1_0", v1_0 != 0);
+    // Try to remove v1_0 from v1 - unsafe mutation
+    Elem* v1 = root->GetNode("v1");
+    ChromoNode mut = v1->Mutation().Root().AddChild(ENt_Rm);
+    mut.SetAttr(ENa_MutNode, "v1_0");
+    v1->Mutate();
+    // Check that the mutation is refused
+    v1_0 = root->GetNode("v1/v1_0");
+    CPPUNIT_ASSERT_MESSAGE("Mutation -rm- of v1_0 is not refused", v1_0 != NULL);
+    // Try to remove elem2 from root - safe mutation
+    mut = root->Mutation().Root().AddChild(ENt_Rm);
+    mut.SetAttr(ENa_MutNode, "v1/v1_0");
+    root->Mutate();
+    // Check that the mutation is not refused
+    v1_0 = root->GetNode("v1/v1_0");
+    CPPUNIT_ASSERT_MESSAGE("Mutation -rm- of v1_0 from root is refused", v1_0 == NULL);
+}
+
+
 // Handling of parents removing, ref uc_029
 void Ut_mut::test_MutRmParent()
 {
-    printf("\n === Test of mutation consistency\n");
+    printf("\n === Test of system consistency after parent removed\n");
 
     iEnv = new Env("Env", "ut_mutadd_1.xml", "ut_mut_rm_parent.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
@@ -279,6 +306,64 @@ void Ut_mut::test_MutRmParent()
     // Remove elem2, which is parent of elem5 
     ChromoNode mut = root->Mutation().Root().AddChild(ENt_Rm);
     mut.SetAttr(ENa_MutNode, "elem1/elem2");
+    root->Mutate();
+    // Create child from elem5
+    ChromoNode madd = root->Mutation().Root().AddChild(ENt_Node);
+    madd.SetAttr(ENa_Id, "elem6");
+    madd.SetAttr(ENa_Parent, "elem5");
+    root->Mutate();
+    // Check that the mutation is performed
+    Elem* e6 = root->GetNode("elem6");
+    CPPUNIT_ASSERT_MESSAGE("Creating elem6 as child of elem5 failed", e6 != NULL);
+    // Check that the elem6 contains mutation from deleted parent elem2
+    Elem* e2_1 = root->GetNode("elem6/elem2_1");
+    CPPUNIT_ASSERT_MESSAGE("elem6 containing deleted parent comp elem2_1 failed", e2_1 != NULL);
+
+    // Trying to remove elem4 from elem3. elem4 doens't have direct deps but via comp elem4_1
+    // System must deny removing elem4 from elem3
+    Elem* e3 = root->GetNode("elem3");
+    mut = e3->Mutation().Root().AddChild(ENt_Rm);
+    mut.SetAttr(ENa_MutNode, "elem4");
+    e3->Mutate();
+    // Check that the mutation is dinied
+    Elem* e4 = root->GetNode("elem3/elem4");
+    CPPUNIT_ASSERT_MESSAGE("Removing elem4 from elem3 isn't denied", e4 != NULL && !e4->IsRemoved());
+
+    // Remove elem3/elem4- owner of elem4_1, which is parent of elem4_1i 
+    // The deps are mutations that referred to components of the node
+    // System should not remove the node if there are inheritance deps, also from nodes comps
+    mut = root->Mutation().Root().AddChild(ENt_Rm);
+    mut.SetAttr(ENa_MutNode, "elem3/elem4");
+    root->Mutate();
+    // Create child from elem4_1i
+    madd = root->Mutation().Root().AddChild(ENt_Node);
+    madd.SetAttr(ENa_Id, "elem7");
+    madd.SetAttr(ENa_Parent, "elem4_1i");
+    root->Mutate();
+    // Check that the mutation is performed
+    Elem* e7 = root->GetNode("elem7");
+    CPPUNIT_ASSERT_MESSAGE("Creating elem7 as child of elem4_1i (comp of removed elem4) failed", e7 != NULL);
+    root->Mutate();
+}
+
+// Handling of parents renaming, ref uc_031
+void Ut_mut::test_MutRenameParent()
+{
+    printf("\n === Test of system consistency after parent renamed\n");
+
+    iEnv = new Env("Env", "ut_mutadd_1.xml", "ut_mut_rn_parent.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+     // Check creation first
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    Elem* e2 = root->GetNode("elem1/elem2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem2", e2 != 0);
+    // Rename elem2, which is parent of elem5 
+    ChromoNode mut = root->Mutation().Root().AddChild(ENt_Change);
+    mut.SetAttr(ENa_MutNode, "elem1/elem2");
+    mut.SetAttr(ENa_MutAttr, GUriBase::NodeAttrName(ENa_Id));
+    mut.SetAttr(ENa_MutVal, "elem2_renamed");
     root->Mutate();
     // Create child from elem5
     ChromoNode madd = root->Mutation().Root().AddChild(ENt_Node);

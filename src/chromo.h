@@ -109,6 +109,7 @@ class ChromoNode
 	TInt GetLocalRank();
 	// The number of direct childs
 	TInt GetLocalSize();
+	ChromoNode& GetNode(const GUri& aUri) const;
     private :
 	ChromoMdl& iMdl;
 	void* iHandle;

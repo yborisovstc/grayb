@@ -32,6 +32,16 @@ Elem* GFactory::GetNode(const string& aUri)
     return res;
 }
 
+TBool GFactory::IsProvided(Elem* aElem) const
+{
+    TBool res = EFalse;
+    for (map<string, GProvider*>::const_iterator it = iProviders.begin(); it != iProviders.end() && !res; it++) {
+	res = it->second->IsProvided(aElem);
+    }
+    return res;
+
+}
+
 Chromo* GFactory::CreateChromo()
 {
     Chromo* res = NULL;

@@ -114,6 +114,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	    public:
 	    Elem& iElem;
 	    GUri::TElem iId;
+	    char iExtsrel;
+	    string iExt;
 	    TNMReg::iterator iCIter; // Comps iter
 	    pair<TNMReg::iterator, TNMReg::iterator> iCIterRange;
 	    TNMReg::iterator iChildsIter;
@@ -147,6 +149,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	Elem(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	Elem* GetNode(const GUri& aUri);
 	virtual ~Elem();
+	TBool IsRemoved() const;
+	void SetRemoved();
 	void SetEType(const string& aPName, const string& aPEType = string());
 	void SetParent(const string& aParent);
 	void SetMan(Elem* aMan);
@@ -171,6 +175,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	Elem* GetRoot() const;
 	Elem* GetInhRoot() const;
 	TBool IsComp(Elem* aElem);
+	Elem* GetCommonOwner(Elem* aElem);
 	// Checks if elements chromo is attached. Ref UC_019 for details
 	TBool IsChromoAttached() const;
 	Elem* GetAttachingMgr();
@@ -238,7 +243,12 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void AddDep(Elem* aNode, TInt aRank);
 	void RemoveDep(Elem* aNode);
 	TDep GetMajorDep();
+	void GetMajorDep(TDep& aDep, Rank& aRank);
 	Elem* GetMajorChild(Rank& rr);
+	void GetMajorChild(Elem*& aElem, Rank& rr);
+	TBool IsMutSafe(Elem* aRef);
+	// Chromo
+	ChromoNode GetChNode(const GUri& aUri) const;
     protected:
 	Elem* AddElem(const ChromoNode& aSpec);
 	static void Init();
@@ -260,6 +270,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual void DoOnCompChanged(Elem& aComp);
 	TBool IsLogeventCreOn();
 	void ChangeAttr(const ChromoNode& aSpec);
+	TBool HasChilds() const;
+	TBool HasInherDeps() const;
     protected:
 	// Element type - parent's chain
 	// TODO [YB] Is it needed now after implementing inheritance chain?
@@ -292,6 +304,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	Elem* iParent;
 	// Dependent nodes, relations to keep model consistent on mutations, ref uc_028, ds_mut
 	TDeps iDeps;
+	// Sign of that node is removed
+	TBool isRemoved;
 };
 
 inline MLogRec* Elem::Logger() const {return iEnv ? iEnv->Logger(): NULL; }
