@@ -40,6 +40,8 @@ class Edge: public Elem, public MEdge
     public:
 	const string& Point1u();
 	const string& Point2u();
+	Elem* Point1r();
+	Elem* Point2r();
 	void SetPoints(MVert* aPoint1, MVert* aPoint2);
 	void SetPoint1(MVert* aPoint);
 	void SetPoint2(MVert* aPoint);

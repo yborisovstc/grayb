@@ -257,6 +257,26 @@ const string& Edge::Point2u()
     return pt->Value();
 }
 
+Elem* Edge::Point1r()
+{
+    Elem* pte = GetNode("P1");
+    __ASSERT(pte != NULL);
+    MProp* pt = pte->GetObj(pt);
+    __ASSERT(pt != NULL);
+    const string& uri = pt->Value();
+    return pte->GetNode(uri);
+}
+
+Elem* Edge::Point2r()
+{
+    Elem* pte = GetNode("P2");
+    __ASSERT(pte != NULL);
+    MProp* pt = pte->GetObj(pt);
+    __ASSERT(pt != NULL);
+    const string& uri = pt->Value();
+    return pte->GetNode(uri);
+}
+
 Base* Edge::EBase()
 {
     return (Base*) this;

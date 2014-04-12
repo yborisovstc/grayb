@@ -12,21 +12,6 @@
 class Chromo;
 class MProvider;
 
-// Rank
-
-class Rank: public vector<TInt>
-{
-    public:
-	Rank(): vector<TInt>() {};
-	string ToString() const;
-	TBool IsRankOf(const Rank& aArg) const;
-	TInt Compare(const Rank& aArg) const;
-	TBool operator==(const Rank& aArg) const {return Compare(aArg) == 0;};
-	TBool operator<(const Rank& aArg) const {return Compare(aArg) == -1;};
-	TBool operator>(const Rank& aArg) const {return Compare(aArg) == 1;};
-};
-
-
 // Element of native hier - mutable
 class Elem: public Base, public MMutable, public MCompsObserver, public MChildsObserver, 
     public MChild
@@ -42,6 +27,10 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	typedef pair<Elem*, TInt> TDep;
 	// Deps 
 	typedef vector<TDep> TDeps;
+	// Elem of deps to mutation: chromo node handle, type of dep
+	typedef pair<void*, TNodeAttr> TMDep;
+	// Deps to Mutations
+	typedef vector<TMDep> TMDeps;
 	
 
     public:
@@ -185,7 +174,9 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool IsHeirOf(const string& aParent) const;
 	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
 	void GetUri(GUri& aUri, Elem* aTop = NULL);
+	void GetRUri(GUri& aUri, Elem* aTop = NULL);
 	string GetUri(Elem* aTop = NULL);
+	string GetRUri(Elem* aTop = NULL);
 	virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
 	virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
 	// Iface provider
@@ -247,8 +238,11 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	Elem* GetMajorChild(Rank& rr);
 	void GetMajorChild(Elem*& aElem, Rank& rr);
 	TBool IsMutSafe(Elem* aRef);
+	void AddMDep(ChromoNode& aMut, TNodeAttr aAttr);
+	void RemoveMDep(const ChromoNode& aMut);
 	// Chromo
 	ChromoNode GetChNode(const GUri& aUri) const;
+	void CompactChromo();
     protected:
 	Elem* AddElem(const ChromoNode& aSpec);
 	static void Init();
@@ -304,6 +298,9 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	Elem* iParent;
 	// Dependent nodes, relations to keep model consistent on mutations, ref uc_028, ds_mut
 	TDeps iDeps;
+	// Dependencies on mutations
+	// TODO [YB] Not used, to remove
+	TMDeps iMDeps;
 	// Sign of that node is removed
 	TBool isRemoved;
 };

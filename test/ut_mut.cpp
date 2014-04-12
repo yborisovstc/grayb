@@ -130,10 +130,10 @@ void Ut_mut::test_MutSyst()
     madd.SetAttr(ENa_Parent, "Edge");
     ChromoNode cnt1 = madd.AddChild(ENt_Cont);
     cnt1.SetAttr(ENa_MutNode, "P1");
-    cnt1.SetAttr(ENa_MutVal, "Syst1/cp");
+    cnt1.SetAttr(ENa_Id, "../Syst1/cp");
     ChromoNode cnt2 = madd.AddChild(ENt_Cont);
     cnt2.SetAttr(ENa_MutNode, "P2");
-    cnt2.SetAttr(ENa_MutVal, "cp2");
+    cnt2.SetAttr(ENa_Id, "../cp2");
     root->Mutate();
     // Check the element added
     Elem* eadded = root->GetNode("edge1");

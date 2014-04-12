@@ -227,10 +227,10 @@
 		    chromo, so the current mutation is to be go to this chromo. The problem here is that creating of this dependencies network is complicated even
 		    on run-time model level. The dependency is produced by any reference to the node, for instance by referring to node in URI extention part. </simpara>
 	    </sect3>
-	    <sect3><title>Run_time_deps</title>
+	    <sect3 id="ds_mut_unappr_rt"><title>Run_time_deps</title>
 		<simpara>Theses</simpara>
 		<orderedlist>
-		    <listitem>If node Na depends on node Nb then Na depends also on owners and parents of node Nb. All owners and parents Nb must have lower
+		    <listitem id="ds_mut_unappr_rt_ths1">If node Na depends on node Nb then Na depends also on owners and parents of node Nb. All owners and parents Nb must have lower
 			rank that Nb. That means that we shouldn't take care of nodes specified in uri as prefix (owners, parents) including uri extention.</listitem>
 		    <listitem>If node Na depends on node Nb then all children of Na also depend on Nb.</listitem>
 		    <listitem>We can consider mutation as harmless if the mutation supplements run-time model. The following mutation are harmless: 
@@ -243,6 +243,15 @@
 			Mutations are not reflecing directly to run-time model even -node-.
 			So the dependency can be defined as the node which chromo containg mutation plus mutation rank in chromo. Another solution could be to 
 			define dependency directly as mutaion.</listitem>
+		    <listitem>There are deps "model-on-chromo" and "chromo-on-model". We can consider the type of dep as the type of mut argument</listitem>
+		    <listitem>We need to consider not only simple deps but chain of deps. The example of chain is inheritance chain, node3 on node1:
+			<programlisting>
+			    mut1 on node1 as -parent-
+			    node2 on mut1 as -id-
+			    mut2 on node2 as -parent-
+			    node3 on mut2 as -id-
+			</programlisting>
+		    </listitem>
 		</orderedlist>
 		<simpara>So the algorithm of taking into account dependencies for mutation of type -rm- is as:</simpara>
 		<itemizedlist>
@@ -305,7 +314,7 @@
 	    </sect3>
 	    <sect3><title>Analysis</title>
 		<simpara>Current implementation is just notify the owner of renaming, so owner makes the correction into components register. UC_031 is not considered currently.
-		    But it seems there is no fundamental limitation as for removing of parent, ref <xref lindend="ds_rm_prnt"/>. This is because the parent is accessible from child
+		    But it seems there is no fundamental limitation as for removing of parent, ref <xref linkend="ds_rm_prnt"/>. This is because the parent is accessible from child
 		node in runtime. The only problem is that currently the child refers to parent via chromo data on creation heir, ref Elem::CreateHeir.</simpara>
 	    </sect3>
 	</sect2>
@@ -319,6 +328,34 @@
 		    implementation. Another approach is to use currently implemented mechanism of creatng heir. So we can create heir from source node (this is done by source node 
 		    in original context, so doesn't cause any troubles. Then we can re-adopt the heir from source node to its parent.</simpara>
 	    </sect3>
+	</sect2>
+	<sect2 id="ds_mut_sqeezing"><title>Squeezing of mutations</title>
+	    <sect3><title>Intro</title>
+		<simpara>Squeezing of mutation seems at the first glance obvious and simple. Indeed, if there are two adjacent renamings the same node then why we cannot
+		    remove the first one because its effect is completelly eliminated by the mutation following. So generalizing this particular case to all the mutations we
+		    can go to the simple idea that all mutations can be checked for being excessive and removed or maybe merged. But this simple idea became not realistic on
+		    detailed analysis. </simpara>
+	    </sect3>
+	    <sect3><title>Approaches: reverse engineering</title>
+		<simpara>One of the approach for squeezing the mutaions is: as the result of all mutations is the created system, then all what we need is to get the system,
+		    and "regenerate" the mutatation from the system, i.e. to do kind of "reverse engineering". The problem here is that is is not possible to do it by using some
+		    simple algorithm. First of all there is no possibility to "eliminate" any mutation applied to part of node that comes from parent, so called detached chromo. 
+		    But these mutations can have references to node that then changed by further muatinons. Let's look at the example:</simpara>
+		<programlisting>
+		    add node="node_1" {
+		    node id=node_1_0 parent="some_node"
+		    }
+		    rename node="some_node" val="some_node_renamed"
+		</programlisting>
+		<simpara>So there is no way to restore the -add- mutation from model. In other words the "outer" mutations aka "phenotype" are ambuguous, so we cannot say from what they 
+	       were applied. So no possibility to recreate them from the model.</simpara>
+	    </sect3>
+	    <sect3><title>Approaches: Direct merging.</title>
+		<simpara>Let's assume that we have all relations between the model and mutaions in chromo. There are relations of two directions: rt node to mutations and mutations to node. This 
+		    allows getting relations quickly from both parts.
+		    The relations includes the reference to muation, and the type: </simpara>
+	    </sect3>
+
 	</sect2>
     </sect1>
 

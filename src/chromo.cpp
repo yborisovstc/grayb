@@ -1,6 +1,49 @@
 #include "chromo.h"
 #include <stdlib.h>
 
+string Rank::ToString() const
+{
+    stringstream res;
+    TBool start = ETrue;
+    for (vector<TInt>::const_iterator it = begin(); it != end(); it++, start = EFalse) {
+	if (!start) {
+	    res << ".";
+	}
+	res << *it;
+    }
+    return res.str();
+}
+
+TBool Rank::IsRankOf(const Rank& aArg) const
+{
+    TBool res = size() >= aArg.size();
+    if (res) {
+	for (TInt cnt = 0; cnt < aArg.size() && res; cnt++) {
+	    res = (at(cnt) == aArg.at(cnt));
+	}
+    }
+    return res;
+}
+
+TInt Rank::Compare(const Rank& aArg) const
+{
+    TInt res = 0;
+    TInt minsize = min(size(), aArg.size());
+    for (TInt cnt = 0; cnt < minsize && res == 0; cnt++) {
+	if (at(cnt) < aArg.at(cnt)) {
+	    res = -1;
+	}
+	else if (at(cnt) > aArg.at(cnt)) {
+	    res = 1;
+	}
+    }
+    if (res == 0 && size() != aArg.size()) {
+	res = (size() == minsize) ? -1 : 1;
+    }
+    return res;
+}
+
+
 // Chromo
 
 void Chromo::GetPath(const string& aUri, string& aPath)

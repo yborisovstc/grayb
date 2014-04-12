@@ -15,6 +15,7 @@ class MChromoMdl
 	virtual void* Parent(const void* aHandle) = 0;
 	virtual void* Next(const void* aHandle, TNodeType aType = ENt_Unknown) = 0;
 	virtual void* NextText(const void* aHandle) = 0;
+	virtual void* Prev(const void* aHandle, TNodeType aType = ENt_Unknown) = 0;
 	virtual void* GetFirstChild(const void* aHandle, TNodeType aType = ENt_Unknown) = 0;
 	virtual void* GetLastChild(const void* aHandle, TNodeType aType = ENt_Unknown) = 0;
 	virtual void* GetFirstTextChild(const void* aHandle) = 0;

@@ -5,6 +5,20 @@
 #include "guri.h"
 #include "mchromo.h"
 
+// Rank
+class Rank: public vector<TInt>
+{
+    public:
+	Rank(): vector<TInt>() {};
+	string ToString() const;
+	TBool IsRankOf(const Rank& aArg) const;
+	TInt Compare(const Rank& aArg) const;
+	TBool operator==(const Rank& aArg) const {return Compare(aArg) == 0;};
+	TBool operator<(const Rank& aArg) const {return Compare(aArg) == -1;};
+	TBool operator>(const Rank& aArg) const {return Compare(aArg) == 1;};
+};
+
+
 class ChromoMdl: public Base, public MChromoMdl
 {
     public:
@@ -15,41 +29,58 @@ class ChromoMdl: public Base, public MChromoMdl
 class ChromoNode
 {
     public:
-	class Iterator: public iterator<input_iterator_tag, ChromoNode>
-    {
-	friend class ChromoNode;
-	public:
-	Iterator(const ChromoNode& aNode): iMdl(aNode.iMdl), iHandle(aNode.iHandle) {};
-	Iterator(ChromoMdl& aMdl, void* aHandle): iMdl(aMdl), iHandle(aHandle) {};
-	Iterator(const Iterator& aIt): iMdl(aIt.iMdl), iHandle(aIt.iHandle) {};
-	Iterator& operator=(const Iterator& aIt) { iMdl = aIt.iMdl; iHandle = aIt.iHandle; return *this; };
-	Iterator& operator++() { iHandle = iMdl.Next(iHandle); return *this; };
-	Iterator operator++(int) { Iterator tmp(*this); operator++(); return tmp; };
-	TBool operator==(const Iterator& aIt) { return (iHandle == aIt.iHandle); };
-	TBool operator!=(const Iterator& aIt) { return !(iHandle == aIt.iHandle); };
-	ChromoNode operator*() { return ChromoNode(iMdl, iHandle);};
-	public:
-	ChromoMdl& iMdl;
-	void* iHandle; // NULL point to the past-of-the-end element
-    };
-    public:
-	class Const_Iterator: public iterator<input_iterator_tag, ChromoNode>
-    {
-	friend class ChromoNode;
-	public:
-	Const_Iterator(const ChromoNode& aNode): iMdl(aNode.iMdl), iHandle(aNode.iHandle) {};
-	Const_Iterator(ChromoMdl& aMdl, void* aHandle): iMdl(aMdl), iHandle(aHandle) {};
-	Const_Iterator(const Const_Iterator& aIt): iMdl(aIt.iMdl), iHandle(aIt.iHandle) {};
-	Const_Iterator& operator=(const Const_Iterator& aIt) { iMdl = aIt.iMdl; iHandle = aIt.iHandle; return *this; };
-	Const_Iterator& operator++() { iHandle = iMdl.Next(iHandle); return *this; };
-	Const_Iterator operator++(int) { Const_Iterator tmp(*this); operator++(); return tmp; };
-	TBool operator==(const Const_Iterator& aIt) { return (iHandle == aIt.iHandle); };
-	TBool operator!=(const Const_Iterator& aIt) { return !(iHandle == aIt.iHandle); };
-	ChromoNode operator*() { return ChromoNode(iMdl, iHandle);};
-	public:
-	ChromoMdl& iMdl;
-	void* iHandle; // NULL point to the past-of-the-end element
-    };
+
+	class Iterator: public iterator<input_iterator_tag, ChromoNode> {
+	    friend class ChromoNode;
+	    public:
+	    Iterator(const ChromoNode& aNode): iMdl(aNode.iMdl), iHandle(aNode.iHandle) {};
+	    Iterator(ChromoMdl& aMdl, void* aHandle): iMdl(aMdl), iHandle(aHandle) {};
+	    Iterator(const Iterator& aIt): iMdl(aIt.iMdl), iHandle(aIt.iHandle) {};
+	    Iterator& operator=(const Iterator& aIt) { iMdl = aIt.iMdl; iHandle = aIt.iHandle; return *this; };
+	    Iterator& operator++() { iHandle = iMdl.Next(iHandle); return *this; };
+	    Iterator operator++(int) { Iterator tmp(*this); operator++(); return tmp; };
+	    TBool operator==(const Iterator& aIt) { return (iHandle == aIt.iHandle); };
+	    TBool operator!=(const Iterator& aIt) { return !(iHandle == aIt.iHandle); };
+	    ChromoNode operator*() { return ChromoNode(iMdl, iHandle);};
+	    public:
+	    ChromoMdl& iMdl;
+	    void* iHandle; // NULL point to the past-of-the-end element
+	};
+
+	class Const_Iterator: public iterator<input_iterator_tag, ChromoNode> {
+	    friend class ChromoNode;
+	    public:
+	    Const_Iterator(const ChromoNode& aNode): iMdl(aNode.iMdl), iHandle(aNode.iHandle) {};
+	    Const_Iterator(ChromoMdl& aMdl, void* aHandle): iMdl(aMdl), iHandle(aHandle) {};
+	    Const_Iterator(const Const_Iterator& aIt): iMdl(aIt.iMdl), iHandle(aIt.iHandle) {};
+	    Const_Iterator& operator=(const Const_Iterator& aIt) { iMdl = aIt.iMdl; iHandle = aIt.iHandle; return *this; };
+	    Const_Iterator& operator++() { iHandle = iMdl.Next(iHandle); return *this; };
+	    Const_Iterator operator++(int) { Const_Iterator tmp(*this); operator++(); return tmp; };
+	    TBool operator==(const Const_Iterator& aIt) { return (iHandle == aIt.iHandle); };
+	    TBool operator!=(const Const_Iterator& aIt) { return !(iHandle == aIt.iHandle); };
+	    ChromoNode operator*() { return ChromoNode(iMdl, iHandle);};
+	    public:
+	    ChromoMdl& iMdl;
+	    void* iHandle; // NULL point to the past-of-the-end element
+	};
+
+	class Reverse_Iterator: public iterator<input_iterator_tag, ChromoNode> {
+	    friend class ChromoNode;
+	    public:
+	    Reverse_Iterator(const ChromoNode& aNode): iMdl(aNode.iMdl), iHandle(aNode.iHandle) {};
+	    Reverse_Iterator(ChromoMdl& aMdl, void* aHandle): iMdl(aMdl), iHandle(aHandle) {};
+	    Reverse_Iterator(const Reverse_Iterator& aIt): iMdl(aIt.iMdl), iHandle(aIt.iHandle) {};
+	    Reverse_Iterator& operator=(const Reverse_Iterator& aIt) { iMdl = aIt.iMdl; iHandle = aIt.iHandle; return *this; };
+	    Reverse_Iterator& operator++() { iHandle = iMdl.Prev(iHandle); return *this; };
+	    Reverse_Iterator operator++(int) { Reverse_Iterator tmp(*this); operator++(); return tmp; };
+	    TBool operator==(const Reverse_Iterator& aIt) { return (iHandle == aIt.iHandle); };
+	    TBool operator!=(const Reverse_Iterator& aIt) { return !(iHandle == aIt.iHandle); };
+	    ChromoNode operator*() { return ChromoNode(iMdl, iHandle);};
+	    public:
+	    ChromoMdl& iMdl;
+	    void* iHandle; // NULL point to the past-of-the-end element
+	};
+
 
     public:
 	ChromoNode(ChromoMdl& aMdl, void* aHandle): iMdl(aMdl), iHandle(aHandle) {};
@@ -60,6 +91,8 @@ class ChromoNode
 	Const_Iterator Begin() const { return Const_Iterator(iMdl, iMdl.GetFirstChild(iHandle)); };
 	Iterator End() { return Iterator(iMdl, NULL); };
 	Const_Iterator End() const { return Const_Iterator(iMdl, NULL); };
+	Reverse_Iterator Rbegin() { return Reverse_Iterator(iMdl, iMdl.GetLastChild(iHandle)); };
+	Reverse_Iterator Rend() { return Reverse_Iterator(iMdl, NULL); };
 	Iterator Find(TNodeType aNodeType) { return Iterator(iMdl, iMdl.GetFirstChild(iHandle, aNodeType)); };
 	Const_Iterator Find(TNodeType aNodeType) const { return Const_Iterator(iMdl, iMdl.GetFirstChild(iHandle, aNodeType)); };
 	Iterator FindText() { return Iterator(iMdl, iMdl.GetFirstTextChild(iHandle)); };
@@ -77,7 +110,7 @@ class ChromoNode
 	TInt AttrInt(TNodeAttr aAttr) const;
 	TBool AttrExists(TNodeAttr aAttr) const { return iMdl.AttrExists(iHandle, aAttr);};
 	TBool AttrBool(TNodeAttr aAttr) const;
-	const void* Handle() { return iHandle;};
+	void* Handle() { return iHandle;};
 	const void* Handle() const { return iHandle;};
 	ChromoMdl& Mdl() const { return iMdl;};
 	ChromoNode AddChild(TNodeType aType) { return ChromoNode(iMdl, iMdl.AddChild(iHandle, aType)); };
@@ -107,6 +140,7 @@ class ChromoNode
 	void MovePrevTo(Iterator& aDest) { iMdl.MovePrevTo(iHandle, aDest.iHandle);};
 	void MoveToEnd() { iMdl.MoveToEnd(iHandle);};
 	TInt GetLocalRank();
+	void GetRank(Rank& aRank) const;
 	// The number of direct childs
 	TInt GetLocalSize();
 	ChromoNode& GetNode(const GUri& aUri) const;

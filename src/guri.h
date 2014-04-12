@@ -12,7 +12,6 @@ enum TNodeType
 {
     ENt_Unknown = 0,
     ENt_Node = 1,
-    ENt_Log = 2,  	// Logging specification
     ENt_Move = 3, 	// Mutation - move node
     ENt_Rm = 4,   	// Mutation - removal
     ENt_Change = 5, 	// Change node attribute
@@ -106,6 +105,7 @@ class GUriBase
     public:
 	static const string KTypeAny;
 	static const string KTypeAnywhere;
+	static const string KOwner;
 	static const char KParentSep;
 	static const char KNodeSep;
 	static const char KBaseSep;

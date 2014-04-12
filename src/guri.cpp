@@ -13,6 +13,7 @@ map<string, TNodeAttr> KNodeAttrs;
 const string GUriBase::KTypeAny = "*";
 const string GUriBase::KTypeAnywhere = "**";
 const string KTypeUnknown = "";
+const string GUriBase::KOwner = "..";
 
 const string KSchemeSep = ":";
 const char GUriBase::KBaseSep = '#';
@@ -44,7 +45,6 @@ void GUriBase::Construct()
     if (KNodeTypes.size() == 0)
     {
 	KNodeTypes["node"] = ENt_Node;
-	KNodeTypes["log"] = ENt_Log;
 	KNodeTypes["move"] = ENt_Move;
 	KNodeTypes["rm"] = ENt_Rm;
 	KNodeTypes["change"] = ENt_Change;

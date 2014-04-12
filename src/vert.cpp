@@ -218,7 +218,7 @@ void Vert::DoOnCompChanged(Elem& aComp)
 	edge->Disconnect();
 	const string& pt1u = edge->Point1u();
 	if (!pt1u.empty()) {
-	    Elem* pt1 = GetNode(pt1u);
+	    Elem* pt1 = edge->Point1r();
 	    if (pt1 != NULL) {
 		MVert* pt1v = pt1->GetObj(pt1v);
 		if (pt1v != NULL) {
@@ -231,7 +231,7 @@ void Vert::DoOnCompChanged(Elem& aComp)
 	}
 	const string& pt2u = edge->Point2u();
 	if (!pt2u.empty()) {
-	    Elem* pt2 = GetNode(pt2u);
+	    Elem* pt2 = edge->Point2r();
 	    if (pt2 != NULL) {
 		MVert* pt2v = pt2->GetObj(pt2v);
 		if (pt2v != NULL) {

@@ -9,6 +9,6 @@
 <node id="test" parent="Vert">
     <node id="v1" parent="Vert"/>
     <node id="v2" parent="Vert"/>
-    <node parent="Edge"> <cont node="P1" val="v1"/> <cont node="P2" val="v2"/> </node>
+    <node parent="Edge"> <cont node="P1" id="../v1"/> <cont node="P2" id="../v2"/> </node>
 </node>
 
