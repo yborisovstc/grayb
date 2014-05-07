@@ -6,6 +6,13 @@
 
 class MLogRec;
 
+// Mutation to model relation type
+enum TMutModRel {
+    EMrel_Parent = 1, // Parent
+    EMrel_Obj = 2, // Object of mutation 
+    EMrel_Ref = 3 // Ref to model node, e.g. -id- value in -cont-
+};
+
 // Interface of chromo model
 class MChromoMdl
 {
@@ -56,6 +63,7 @@ class MChromo
 	virtual void Init(TNodeType aRootType) = 0;
 	virtual void Reset() = 0;
 	virtual void Save(const string& aFileName) const = 0;
+	virtual ChromoNode CreateNode(void* aHandle) = 0;
 };
 
 #endif

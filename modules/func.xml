@@ -212,7 +212,7 @@
 	</add>
 	<!-- Value of Working function argument -->
 	<node id="WFArg" parent="**/DataComps/DataSNInt"/>
-	<node parent="Edge"> <cont node="P1" val="WFArg/Capsule/out"/> <cont node="P2" val="Capsule/Out_WFarg/Int"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../WFArg/Capsule/out"/> <cont node="P2" val="../../Capsule/Out_WFarg/Int"/> </node>
     </node>
 
     <!-- Int  inputs to Int vector conversation -->
@@ -319,7 +319,7 @@
 	</add>
 	<!-- Value of Working function argument -->
 	<node id="WFArg" parent="**/DataComps/DataSUInt"/>
-	<node parent="Edge"> <cont node="P1" val="WFArg/Capsule/out"/> <cont node="P2" val="Capsule/Out_WFarg/Int"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../WFArg/Capsule/out"/> <cont node="P2" val="../../Capsule/Out_WFarg/Int"/> </node>
     </node>
 
     <!-- Function Inp1 GT Inp2  -->

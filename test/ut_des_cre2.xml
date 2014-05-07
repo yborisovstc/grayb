@@ -47,13 +47,13 @@
 	    </node>
 
 	    <node parent="Edge"> 
-		<cont node="P1" val="Trans/Inp"/> 
-		<cont node="P2" val="Capsule/Inp/Int/PinData"/> 
+		<cont node="P1" val="../../Trans/Inp"/> 
+		<cont node="P2" val="../../Capsule/Inp/Int/PinData"/> 
 	    </node>
 
 	    <node parent="Edge"> 
-		<cont node="P1" val="Trans/Out"/> 
-		<cont node="P2" val="Prepared/Capsule/Inp"/> 
+		<cont node="P1" val="../../Trans/Out"/> 
+		<cont node="P2" val="../../Prepared/Capsule/Inp"/> 
 	    </node>
 
 	</node>
@@ -65,18 +65,18 @@
 
 	<!-- Incrementor1 Loop -->
 	<node parent="Edge"> 
-	    <cont node="P1" val="Incr1/Capsule/Out"/> 
-	    <cont node="P2" val="Incr1/Capsule/Inp"/> 
+	    <cont node="P1" val="../../Incr1/Capsule/Out"/> 
+	    <cont node="P2" val="../../Incr1/Capsule/Inp"/> 
 	</node>
 
 	<!-- Incrementor2 Loop -->
 	<node parent="Edge"> 
-	    <cont node="P1" val="Incr2/Capsule/Out"/> 
-	    <cont node="P2" val="Incr2/Capsule/Inp"/> 
+	    <cont node="P1" val="../../Incr2/Capsule/Out"/> 
+	    <cont node="P2" val="../../Incr2/Capsule/Inp"/> 
 	</node>
 
 	<!-- DES output -->
-	<node parent="Edge"> <cont node="P1" val="Incr2/Capsule/Out"/> <cont node="P2" val="Capsule/Out/Int"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Incr2/Capsule/Out"/> <cont node="P2" val="../../Capsule/Out/Int"/> </node>
 
     </node> <!-- test -->
 

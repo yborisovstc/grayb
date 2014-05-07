@@ -176,7 +176,8 @@ void* ChromoMdlX::GetFirstTextChild(const void* aHandle)
 
 void* ChromoMdlX::Parent(const void* aHandle)
 {
-    return ((xmlNodePtr) aHandle)->parent;
+    xmlNodePtr parent = ((xmlNodePtr) aHandle)->parent;
+    return parent->type == XML_ELEMENT_NODE ? parent : NULL;
 }
 
 void *ChromoMdlX::Next(const void *aHandle, TNodeType aType)
@@ -503,3 +504,7 @@ void ChromoX::Save(const string& aFileName) const
 }
 
 
+ChromoNode ChromoX::CreateNode(void* aHandle)
+{
+    return ChromoNode(iMdl, aHandle);
+}

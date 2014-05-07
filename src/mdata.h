@@ -65,4 +65,25 @@ class MDataObserver
 	virtual void OnDataChanged() = 0;
 };
 
+class MDVar
+{
+    public:
+	static const char* Type() { return "MDVar";};
+};
+
+class MDVarGet
+{
+    public:
+	static const char* Type() { return "MDVarGet";};
+};
+
+class MDVarSet
+{
+    public:
+	static const char* Type() { return "MDVarSet";};
+};
+
+
+
+
 #endif

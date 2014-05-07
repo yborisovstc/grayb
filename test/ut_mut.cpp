@@ -22,6 +22,8 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_MutDepsRmRef);
     CPPUNIT_TEST(test_MutRmParent);
     CPPUNIT_TEST(test_MutRenameParent);
+    CPPUNIT_TEST(test_Compact1);
+    CPPUNIT_TEST(test_Compact2);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -35,6 +37,8 @@ private:
     void test_MutDepsRmRef();
     void test_MutRmParent();
     void test_MutRenameParent();
+    void test_Compact1();
+    void test_Compact2();
 private:
     Env* iEnv;
 };
@@ -130,10 +134,10 @@ void Ut_mut::test_MutSyst()
     madd.SetAttr(ENa_Parent, "Edge");
     ChromoNode cnt1 = madd.AddChild(ENt_Cont);
     cnt1.SetAttr(ENa_MutNode, "P1");
-    cnt1.SetAttr(ENa_Id, "../Syst1/cp");
+    cnt1.SetAttr(ENa_Ref, "../../Syst1/cp");
     ChromoNode cnt2 = madd.AddChild(ENt_Cont);
     cnt2.SetAttr(ENa_MutNode, "P2");
-    cnt2.SetAttr(ENa_Id, "../cp2");
+    cnt2.SetAttr(ENa_Ref, "../../cp2");
     root->Mutate();
     // Check the element added
     Elem* eadded = root->GetNode("edge1");
@@ -205,8 +209,10 @@ void Ut_mut::test_MutDepsRm()
     Elem* mc = e2->GetMajorChild(rmc);
     CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major child", mc == e3);
     // Get major dep
-    Elem::TDep mdep = e2->GetMajorDep();
-    CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major dep", mdep.first == e3 && mdep.second == -1);
+    //Elem::TDep mdep = e2->GetMajorDep();
+    Elem::TMDep mdep = e2->GetMajorDep();
+    //CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major dep", mdep.first == e3 && mdep.second == -1);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major dep", mdep.first.first == e3);
     // Try to remove elem2 from elem1 - unsafe mutation
     Elem* e1 = root->GetNode("elem1");
     ChromoNode mut = e1->Mutation().Root().AddChild(ENt_Rm);
@@ -238,9 +244,16 @@ void Ut_mut::test_MutDepsRm2()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     Elem* e2 = root->GetNode("elem1/elem2");
     CPPUNIT_ASSERT_MESSAGE("Fail to get elem2", e2 != 0);
+    // Checking rank calculation
+    Rank re;
+    e2->GetRank(re);
+    ChromoNode e2r = e2->Chromos().Root();
+    Rank rec;
+    e2r.GetRank(rec);
+    CPPUNIT_ASSERT_MESSAGE("Fail to calculate elem2 rank", re == rec);
     // Get major dep
-    Elem::TDep mdep = e2->GetMajorDep();
-    CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major dep", mdep.first == root && mdep.second == 1);
+    Elem::TMDep mdep = e2->GetMajorDep();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major dep", mdep.first.first == root);
     // Try to remove elem2 from elem1 - unsafe mutation
     Elem* e1 = root->GetNode("elem1");
     ChromoNode mut = e1->Mutation().Root().AddChild(ENt_Rm);
@@ -376,4 +389,70 @@ void Ut_mut::test_MutRenameParent()
     // Check that the elem6 contains mutation from deleted parent elem2
     Elem* e2_1 = root->GetNode("elem6/elem2_1");
     CPPUNIT_ASSERT_MESSAGE("elem6 containing deleted parent comp elem2_1 failed", e2_1 != NULL);
+}
+
+// Compactization of chromo
+void Ut_mut::test_Compact1()
+{
+    printf("\n === Test of compacting of chromo: renaming\n");
+
+    iEnv = new Env("Env", "ut_compact1.xml", "ut_compact1.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+     // Check creation first
+    Elem* e3 = root->GetNode("elem3");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem3", e3 != 0);
+    // Compact chromo
+    root->CompactChromo();
+    // Save compacted chromo and recreate the model
+    iEnv->Root()->Chromos().Save("ut_compact1_res.xml");
+    delete iEnv;
+
+    iEnv = new Env("Env", "ut_compact1_res.xml", "ut_compact1_res.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env for compacted system", iEnv != 0);
+    iEnv->ConstructSystem();
+     // Check if elem3 and elem4 are created ok with compacted chromo
+    root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root after compacting", root != 0);
+    e3 = root->GetNode("elem3");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem3", e3 != 0);
+    Elem* e4 = root->GetNode("elem4");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem4", e4 != 0);
+
+    delete iEnv;
+}
+
+// Compactization of chromo
+void Ut_mut::test_Compact2()
+{
+    printf("\n === Test of compacting of chromo: renaming\n");
+    iEnv = new Env("Env", "ut_compact2.xml", "ut_compact2.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Compact chromo
+    root->CompactChromo();
+    // Save compacted chromo and recreate the model
+    iEnv->Root()->Chromos().Save("ut_compact2_res.xml");
+    delete iEnv;
+
+    iEnv = new Env("Env", "ut_compact2_res.xml", "ut_compact2_res.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to re-create compacted system", iEnv != 0);
+    iEnv->ConstructSystem();
+     // Check if edge is set correctly
+    root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root after compacting", root != 0);
+    Elem* v1 = root->GetNode("(Vert:)v1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get v1", v1 != 0);
+    MVert* mv1 = v1->GetObj(mv1);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get mv1", mv1 != 0);
+    MVert* pair = *(mv1->Pairs().begin());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
+    Elem* v3 = root->GetNode("(Vert:)v3");
+    CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pair->EBase() == v3);
+
+    delete iEnv;
 }

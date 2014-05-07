@@ -35,23 +35,23 @@
 	<node id="ResData" parent="../DataComps/DataSInt"/>
 
 	<node parent="Edge"> 
-	    <cont node="P1" val="DataS_Int_1/Capsule/out"/> 
-	    <cont node="P2" val="Add/Capsule/inp"/> 
+	    <cont node="P1" val="../../DataS_Int_1/Capsule/out"/> 
+	    <cont node="P2" val="../../Add/Capsule/inp"/> 
 	</node>
 
 	<node parent="Edge"> 
-	    <cont node="P1" val="DataS_Int_2/Capsule/out"/> 
-	    <cont node="P2" val="Add/Capsule/inp"/> 
+	    <cont node="P1" val="../../DataS_Int_2/Capsule/out"/> 
+	    <cont node="P2" val="../../Add/Capsule/inp"/> 
 	</node>
 
 	<node parent="Edge"> 
-	    <cont node="P1" val="Add/Capsule/out"/> 
-	    <cont node="P2" val="Result/Capsule/inp"/> 
+	    <cont node="P1" val="../../Add/Capsule/out"/> 
+	    <cont node="P2" val="../../Result/Capsule/inp"/> 
 	</node>
 
 	<node parent="Edge"> 
-	    <cont node="P1" val="Result/Capsule/out"/> 
-	    <cont node="P2" val="ResData/Capsule/inp"/> 
+	    <cont node="P1" val="../../Result/Capsule/out"/> 
+	    <cont node="P2" val="../../ResData/Capsule/inp"/> 
 	</node>
 
     </node>

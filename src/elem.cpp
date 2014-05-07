@@ -513,7 +513,7 @@ void Elem::SetEType(const string& aPName, const string& aPEType)
    }
    */
 
-TBool Elem::AddNode(const ChromoNode& aSpec)
+TBool Elem::AddNode(const ChromoNode& aSpec, TBool aRunTime)
 {
     TBool res = ETrue;
     string snode = aSpec.Attr(ENa_MutNode);
@@ -521,25 +521,35 @@ TBool Elem::AddNode(const ChromoNode& aSpec)
     Elem* node = GetNode(unode);
     if (node != NULL) {
 	if (IsMutSafe(node)) {
+	    ChromoNode::Iterator itn = iChromo->Root().Begin();
+	    if (!aRunTime) {
+		ChromoNode chn = iChromo->Root().AddChild(aSpec);
+		node->AddMDep(this, chn, ENa_MutNode);
+		itn = chn.Begin();
+	    }
 	    for (ChromoNode::Const_Iterator mit = aSpec.Begin(); mit != aSpec.End() && res; mit++) {
 		const ChromoNode& mno = (*mit);
-		Elem* rnode = node->AddElem(mno);
+		Elem* rnode = node->AddElem(mno, aRunTime);
 		if (rnode == NULL) {
 		    Logger()->Write(MLogRec::EErr, this, "Adding node into [%s] - failure", snode.c_str());
 		}
 		else {
-		    TInt lr = iChromo->Root().GetLocalSize() - 1;
 		    // Adding dependency to object of change
-		    node->AddDep(this, lr);
-		    rnode->AddDep(this, lr + 1);
+		    if (!aRunTime) {
+			const ChromoNode& chno = (*itn);
+			rnode->AddMDep(this, chno, ENa_Id);
+		    }
 		    if (IsLogeventCreOn()) {
 			Logger()->Write(MLogRec::EInfo, this, "Added node [%s] into [%s]", mno.Name().c_str(), snode.c_str());
 		    }
 		}
+		if (!aRunTime) {
+		    itn++;
+		}
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Adding comp to node [%s] - unsafe, used in: [%s]", snode.c_str(), node->GetMajorDep().first->GetUri().c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Adding comp to node [%s] - unsafe, used in: [%s]", snode.c_str(), node->GetMajorDep().first.first->GetUri().c_str());
 	}
     }
     else {
@@ -590,6 +600,9 @@ Elem* Elem::GetNode(const GUri& aUri)
 	else {
 	    res = GetNode(aUri, it); 
 	}
+    }
+    else {
+	res = this;
     }
     return res;
 }
@@ -771,11 +784,11 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 	ChromoNode rno = (*rit);
 	TNodeType rnotype = rno.Type();
 	if (rnotype == ENt_Node) {
-	    Elem* node = AddElem(rno);
+	    Elem* node = AddElem(rno, aRunTime);
 	    if (node != NULL) {
 		if (!aRunTime) {
 		    // Attach comp chromo
-		    chrroot.AddChild(node->iChromo->Root(), EFalse);
+		   // chrroot.AddChild(node->iChromo->Root(), EFalse);
 		}
 	    }
 	    else {
@@ -783,24 +796,23 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 		Logger()->Write(MLogRec::EErr, this, "Adding node with parent [%s] failed", pname.c_str());
 	    }
 	}
+	else if (rnotype == ENt_Add) {
+	    AddNode(rno, aRunTime);
+	}
+	else if (rnotype == ENt_Change) {
+	    ChangeAttr(rno, aRunTime);
+	}
+	else if (rnotype == ENt_Cont) {
+	    DoMutChangeCont(rno, aRunTime);
+	}
+	else if (rnotype == ENt_Move) {
+	    MoveNode(rno, aRunTime);
+	}
 	else {
-	    if (rnotype == ENt_Add) {
-		AddNode(rno);
-	    }
-	    else if (rnotype == ENt_Cont) {
-		DoMutChangeCont(rno);
-	    }
-	    else if (rnotype == ENt_Rm) {
+	    if (rnotype == ENt_Rm) {
 		string snode = rno.Attr(ENa_MutNode);
 		GUri unode(snode);
 		RmNode(unode);
-	    }
-	    else if (rnotype == ENt_Change) {
-		ChangeAttr(rno);
-	    }
-	    else if (rnotype == ENt_Move) 
-	    {
-		MoveNode(rno);
 	    }
 	    else {
 		Logger()->WriteFormat("ERROR: Mutating node [%s] - unknown mutation type [%d]", Name().c_str(), rnotype);
@@ -821,7 +833,7 @@ void Elem::GetCont(string& aCont)
 {
 }
 
-void Elem::ChangeAttr(const ChromoNode& aSpec)
+void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime)
 {
     string snode = aSpec.Attr(ENa_MutNode);
     string mattrs = aSpec.Attr(ENa_MutAttr);
@@ -835,12 +847,15 @@ void Elem::ChangeAttr(const ChromoNode& aSpec)
 	    }
 	    else {
 		// Adding dependency to object of change
-		TInt lr = iChromo->Root().GetLocalSize() - 1;
-		node->AddDep(this, lr);
+		if (!aRunTime) {
+		    ChromoNode chn = iChromo->Root().AddChild(aSpec);
+		    //node->AddMDep(this, chn, ENa_MutNode);
+		    AddCMDep(chn, ENa_MutNode, node);
+		}
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Renaming elem [%s] - unsafe, used in: [%s]", snode.c_str(), node->GetMajorDep().first->GetUri().c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Renaming elem [%s] - unsafe, used in: [%s]", snode.c_str(), node->GetMajorDep().first.first->GetUri().c_str());
 	}
     }
     else {
@@ -866,13 +881,14 @@ TBool Elem::ChangeAttr(TNodeAttr aAttr, const string& aVal)
     return res;
 }
 
-TBool Elem::DoMutChangeCont(const ChromoNode& aSpec)
+TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 {
-    TBool res = EFalse;
+    TBool res = ETrue;
     string snode = aSpec.Attr(ENa_MutNode);
-    TBool refex = aSpec.AttrExists(ENa_Id);
-    string mval = aSpec.Attr(refex ? ENa_Id :ENa_MutVal);
+    TBool refex = aSpec.AttrExists(ENa_Ref);
+    string mval = aSpec.Attr(refex ? ENa_Ref :ENa_MutVal);
     Elem* node = NULL;
+    Elem* rnode = NULL;
     if (snode.length() == 0) {
 	node = this; 
     }
@@ -882,30 +898,37 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec)
     }
     if (node != NULL) {
 	if (refex) {
-	    Elem* rnode = GetNode(mval);
-	    mval = rnode->GetRUri(node);
-	    if (rnode != NULL) {
-		TInt lr = iChromo->Root().GetLocalSize() - 1;
-		// Adding dependency to object of change
-		rnode->AddDep(this, lr);
-		node->AddDep(this, lr);
+	    // For -ref- attr the value is the ref relative to mutated node context
+	    rnode = node->GetNode(mval);
+	    //mval = rnode->GetRUri(node);
+	    if (rnode == NULL) {
+		Logger()->Write(MLogRec::EErr, this, "Changing [%s] - cannot find ref", mval.c_str());
+		res = EFalse;
+	    }
+	}
+	if (res) {
+	    res = node->ChangeCont(mval, EFalse);
+	    if (res) {
+		if (!aRunTime) {
+		    ChromoNode chn = iChromo->Root().AddChild(aSpec);
+		    AddCMDep(chn, ENa_MutNode, node);
+		    if (refex) {
+			AddCMDep(chn, ENa_MutVal, rnode);
+		    }
+		}
 	    }
 	    else {
-		Logger()->Write(MLogRec::EErr, this, "Changing [%s] - cannot find ref", mval.c_str());
+		Logger()->Write(MLogRec::EErr, this, "Changing [%s] - failure", snode.c_str());
 	    }
 	}
-	res = node->ChangeCont(mval, EFalse);
-	if (!res) {
-	    Logger()->Write(MLogRec::EErr, this, "Changing [%s] - failure", snode.c_str());
+	else {
+	    Logger()->Write(MLogRec::EErr, this, "Changing [%s] - cannot find node", snode.c_str());
 	}
-    }
-    else {
-	Logger()->Write(MLogRec::EErr, this, "Changing [%s] - cannot find node", snode.c_str());
     }
     return res;
 }
 
-Elem* Elem::AddElem(const ChromoNode& aNode)
+Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 {
     string sparent = aNode.Attr(ENa_Parent);
     string sname = aNode.Name();
@@ -992,7 +1015,14 @@ Elem* Elem::AddElem(const ChromoNode& aNode)
 	    }
 	}
     }
-return elem;
+    if (elem != NULL) {
+	if (!aRunTime) {
+	    ChromoNode chn = iChromo->Root().AddChild(elem->iChromo->Root(), EFalse);
+	    AddCMDep(chn, ENa_Id, elem);
+	    AddCMDep(chn, ENa_Parent, parent);
+	}
+    }
+    return elem;
 }
 
 const set<string>& Elem::CompsTypes()
@@ -1500,15 +1530,13 @@ Elem* Elem::GetInhRoot() const
 TBool Elem::IsMutSafe(Elem* aRef)
 {
     TBool safemut = ETrue;
-    const TDep& dep = aRef->GetMajorDep();
-    if (dep.first != NULL) {
+    TMDep dep = aRef->GetMajorDep();
+    if (dep.first.first != NULL) {
 	Rank rank;
 	GetRank(rank);
 	Rank deprank;
-	dep.first->GetRank(deprank);
-	if (dep.second != -1) {
-	    deprank.push_back(dep.second);
-	}
+	ChromoNode depnode = iChromo->CreateNode(dep.first.second);
+	depnode.GetRank(deprank);
 	if (deprank > rank && !deprank.IsRankOf(rank)) {
 	    safemut = EFalse;
 	}
@@ -1522,21 +1550,7 @@ TBool Elem::RmNode(const GUri& aUri)
     Elem* node = GetNode(aUri);
     if (node != NULL) {
 	// Check dependent mutations
-	TBool safemut = ETrue;
-	const TDep& dep = node->GetMajorDep();
-	if (dep.first != NULL) {
-	    Rank rank;
-	    GetRank(rank);
-	    Rank deprank;
-	    dep.first->GetRank(deprank);
-	    if (dep.second != -1) {
-		deprank.push_back(dep.second);
-	    }
-	    if (deprank > rank && !deprank.IsRankOf(rank)) {
-		safemut = EFalse;
-	    }
-	}
-	if (safemut) {
+	if (IsMutSafe(node)) {
 	    res = ETrue;
 	    // If node has children then just mark it as removed but not remove actually
 	    if (node->HasInherDeps()) {
@@ -1550,7 +1564,7 @@ TBool Elem::RmNode(const GUri& aUri)
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Removing elem [%s] - unsafe, used in: [%s]", aUri.GetUri().c_str(), dep.first->GetUri().c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Removing elem [%s] - unsafe, used in: [%s]", aUri.GetUri().c_str(), node->GetMajorDep().first.first->GetUri().c_str());
 	}
     }
     else {
@@ -1559,7 +1573,7 @@ TBool Elem::RmNode(const GUri& aUri)
     return res;
 }
 
-TBool Elem::MoveNode(const ChromoNode& aSpec)
+TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime)
 {
     TBool res = EFalse;
     string srcs = aSpec.Attr(ENa_Id);
@@ -1573,16 +1587,13 @@ TBool Elem::MoveNode(const ChromoNode& aSpec)
 	    Elem* snode = GetNode(srcs);
 	    Elem* sowner = snode->GetMan();
 	    if (snode != NULL) {
-		if (sowner != NULL && sowner == dnode->GetMan()) {
-		    // Source and dest has one owner - shifting local node
-		    // Disabled because of contradicting to incremental mutation rules, ref doc_incr_syst_creation#sec_lim
-		    Logger()->Write(MLogRec::EErr, this, "Transposition of nodes is not enabled");
-		    /*
-		       res = owner->MoveComp(snode, dnode);
-		       if (!res) {
-		       Logger()->Write(MLogRec::EErr, this, "Moving element [%s] - failure", srcs.c_str());
-		       }
-		       */
+		if (sowner != NULL && dnode == sowner) {
+		    // Attempt of moving node to the current contect 
+		    Logger()->Write(MLogRec::EErr, this, "Moving node [%s] to it's current owner - disabled", snode->GetUri().c_str());
+		}
+		else if (dnode == snode) {
+		    // Attempt of moving node to itself
+		    Logger()->Write(MLogRec::EErr, this, "Moving node [%s] into itself - disabled", snode->GetUri().c_str());
 		}
 		else if (!((dnode == this || IsComp(dnode)) && (snode == this || IsComp(snode)))) {
 		    // Incremantal mutation approach rule - mut refs shall be comps
@@ -1608,9 +1619,6 @@ TBool Elem::MoveNode(const ChromoNode& aSpec)
 			    else {
 				delete snode;
 			    }
-			    // Adding dependency to object of change
-			    TInt lr = iChromo->Root().GetLocalSize() - 1;
-			    dnode->AddDep(this, lr);
 			}
 			else {
 			    Logger()->Write(MLogRec::EErr, this, "Moving node [%s] failed", snode->GetUri().c_str());
@@ -1618,7 +1626,7 @@ TBool Elem::MoveNode(const ChromoNode& aSpec)
 			}
 		    }
 		    else {
-			Logger()->Write(MLogRec::EErr, this, "Moving elem [%s] - unsafe, used in: [%s]", snode->GetUri().c_str(), snode->GetMajorDep().first->GetUri().c_str());
+			Logger()->Write(MLogRec::EErr, this, "Moving elem [%s] - unsafe, used in: [%s]", snode->GetUri().c_str(), snode->GetMajorDep().first.first->GetUri().c_str());
 		    }
 		}
 	    }
@@ -1629,17 +1637,24 @@ TBool Elem::MoveNode(const ChromoNode& aSpec)
 	else {
 	    // Remote node
 	    Chromo *spec = Provider()->CreateChromo();
-	    TBool res = spec->Set(srcs);
-	    if (res) {
+	    TBool res1 = spec->Set(srcs);
+	    if (res1) {
 		const ChromoNode& root = spec->Root();
+		Elem* nnode = NULL;
 		if (dnode != NULL) {
-		    dnode->AddElem(root);
+		    nnode= dnode->AddElem(root, ETrue);
 		}
 		else {
-		    AddElem(root);
+		    nnode = AddElem(root, ETrue);
 		}
 		delete spec;
+		res = nnode != NULL;
 	    }
+	}
+	if (!aRunTime && res) {
+	    // Adding dependency to object of change
+	    ChromoNode chn = iChromo->Root().AddChild(aSpec);
+	    AddCMDep(chn, ENa_MutNode, dnode);
 	}
     }
     else {
@@ -1737,27 +1752,6 @@ TBool Elem::OnChildRenamed(Elem* aChild, const string& aOldName)
     return res;
 }
 
-void Elem::AddDep(Elem* aNode, TInt aRank)
-{
-    TBool exists = EFalse;
-    for (TDeps::const_iterator it = iDeps.begin(); it != iDeps.end() && !exists; it++) {
-	exists = it->first == aNode;
-    }
-    if (!exists) {
-	iDeps.push_back(TDep(aNode, aRank));
-    }
-}
-
-void Elem::RemoveDep(Elem* aNode)
-{
-    for (TDeps::iterator it = iDeps.begin(); it != iDeps.end(); it++) {
-	if (it->first == aNode) {
-	    iDeps.erase(it);
-	    break;
-	}
-    }
-}
-
 Elem* Elem::GetMajorChild(Rank& rr)
 {
     Elem* res = NULL;
@@ -1801,72 +1795,49 @@ void Elem::GetMajorChild(Elem*& aElem, Rank& rr)
     }
 }
 
-/*
-Elem::TDep Elem::GetMajorDep()
+Elem::TMDep Elem::GetMajorDep()
 {
-    TDep res(NULL, -1);
-    Rank rr;
-    // Childs
-    res.first = GetMajorChild(rr);
-    // Other deps
-    TInt lrr = 0;
-    for (TDeps::const_iterator it = iDeps.begin(); it != iDeps.end(); it++) {
-	TDep dep = *it;
-	Rank rd;
-	dep.first->GetRank(rd);
-	if (rd > rr || rd == rr && dep.second > lrr) {
-	    rr = rd;
-	    lrr = dep.second;
-	    res = dep;
-	    // Depencence childs
-	    Elem* dc = dep.first->GetMajorChild(rr);
-	    if (dc != NULL) {
-		res.first = dc;
-		res.second = -1;
-	    }
-	}
-    }
-    return res;
-}
-*/
-
-Elem::TDep Elem::GetMajorDep()
-{
-    TDep res(NULL, -1);
-    Rank rr;
-    GetMajorDep(res, rr);
+    TMDep res(TMutRef(this, iChromo->Root().Handle()), ENa_Unknown);
+    GetMajorDep(res);
     return res;
 }
 
-void Elem::GetMajorDep(TDep& aDep, Rank& aRank)
+void Elem::GetMajorDep(TMDep& aDep)
 {
     // Ref to theses ds_mut_unappr_rt_ths1 for rules of searching deps
+    Rank rc;
+    ChromoNode mut = iChromo->CreateNode(aDep.first.second == NULL ? iChromo->Root().Handle() : aDep.first.second);
+    mut.GetRank(rc);
     // Childs
-    GetMajorChild(aDep.first, aRank);
+    Elem* mc = GetMajorChild(rc);
+    if (mc != NULL) {
+	aDep.first.first = mc;
+	aDep.first.second = mc->Chromos().Root().Handle();
+    }
     // Other deps
-    TInt lrr = 0;
-    for (TDeps::const_iterator it = iDeps.begin(); it != iDeps.end(); it++) {
-	TDep dep = *it;
+    for (TMDeps::const_iterator it = iMDeps.begin(); it != iMDeps.end(); it++) {
+	TMDep dep = *it;
 	Rank rd;
-	dep.first->GetRank(rd);
-	if (rd > aRank || rd == aRank && dep.second > lrr) {
-	    aRank = rd;
-	    lrr = dep.second;
+	ChromoNode dcn = iChromo->CreateNode(dep.first.second);
+	dcn.GetRank(rd);
+	if (rd > rc) {
+	    rc = rd;
 	    aDep = dep;
 	    // Dependence childs
-	    Elem* dc = dep.first->GetMajorChild(aRank);
+	    Elem* dc = dep.first.first->GetMajorChild(rc);
 	    if (dc != NULL) {
-		aDep.first = dc;
-		aDep.second = -1;
+		aDep.first.first = dc;
+		aDep.first.second = dc->Chromos().Root().Handle();
 	    }
 	}
     }
     // Components
     for (TNMReg::const_iterator it = iMComps.begin(); it != iMComps.end(); it++) {
 	Elem* comp = it->second;
-	comp->GetMajorDep(aDep, aRank);
+	comp->GetMajorDep(aDep);
     }
 }
+
 
 // Handles parent deleting, ref uc_029
 void Elem::OnParentDeleting(Elem* aParent)
@@ -1921,29 +1892,114 @@ TBool Elem::HasInherDeps() const
 
 void Elem::CompactChromo()
 {
-    // Going thru components
-    for (vector<Elem*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
-	Elem* comp = *it;
-	// Detach chomo if the comp is removed
-	if (comp->IsRemoved()) {
+    // Going thru mutations in chromo
+    ChromoNode croot = iChromo->Root();
+    ChromoNode::Iterator mit = croot.Begin();
+    while (mit != croot.End()) {
+	TBool mut_removed = EFalse;
+	ChromoNode gmut = (*mit);
+	Rank grank;
+	gmut.GetRank(grank);
+	TNodeType muttype = gmut.Type();
+	if (muttype == ENt_Change) {
+	    // Get node this mutation relates to
+	    TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
+	    if (iCMRelReg.count(key) > 0) {
+		Elem* node = iCMRelReg.at(key);
+		string new_val(gmut.Attr(ENa_MutVal));
+		// Get mutations that depends on this node, and have lower rank
+		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
+		    TMDep dep = *it;
+		    ChromoNode mut = iChromo->CreateNode(dep.first.second);
+		    Rank rank;
+		    mut.GetRank(rank);
+		    if (rank >= grank) break;
+		    // Correct mutation
+		    if (dep.second == ENa_Id) {
+			mut.SetAttr(dep.second, new_val);
+		    }
+		    else if (dep.second == ENa_Parent) {
+			mut.SetAttr(dep.second, node->GetUri(dep.first.first));
+		    }
+		}
+	    }
+	    else {
+		Logger()->Write(MLogRec::EErr, this, "Cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
+	    }
+	    // Remove mutation
+	    gmut.Rm();
+	    RmCMDep(gmut, ENa_MutNode);
+	    mut_removed = ETrue;
+	}
+	else if (muttype == ENt_Cont) {
+	    // Get node this mutation relates to
+	    TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
+	    if (iCMRelReg.count(key) > 0) {
+		Elem* node = iCMRelReg.at(key);
+		string new_val(gmut.Attr(ENa_Ref));
+		// Get mutations that depends on this node, and have lower rank
+		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
+		    TMDep dep = *it;
+		    ChromoNode mut = iChromo->CreateNode(dep.first.second);
+		    Rank rank;
+		    mut.GetRank(rank);
+		    if (rank >= grank) break;
+		    // Correct mutation
+		    if (mut.Type() == ENt_Cont && dep.second == ENa_MutNode) {
+			mut.SetAttr(ENa_Ref, new_val);
+		    }
+		}
+		// Remove mutation
+		gmut.Rm();
+		RmCMDep(gmut, ENa_MutNode);
+		mut_removed = ETrue;
+	    }
+	    else {
+		Logger()->Write(MLogRec::EErr, this, "Cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
+	    }
+	}
+
+	if (mut_removed) {
+	    // Start from the beginning to have valid iterator
+	    mit = croot.Begin();
+	}
+	else {
+	    mit++;
 	}
     }
 }
 
 
-void Elem::AddMDep(ChromoNode& aMut, TNodeAttr aAttr)
+void Elem::AddMDep(Elem* aNode, const ChromoNode& aMut, TNodeAttr aAttr)
 {
-    iMDeps.push_back(TMDep(aMut.Handle(), aAttr));
+    iMDeps.push_back(TMDep(TMutRef(aNode, (void*) aMut.Handle()), aAttr));
 }
 
-void Elem::RemoveMDep(const ChromoNode& aMut)
+void Elem::RemoveMDep(const TMDep& aDep)
 {
     for (TMDeps::iterator it = iMDeps.begin(); it != iMDeps.end(); it++) {
-	if (it->first == aMut.Handle()) {
+	if (*it == aDep) {
 	    iMDeps.erase(it);
 	    break;
 	}
     }
+}
+
+void Elem::AddCMDep(const ChromoNode& aMut, TNodeAttr aAttr, Elem* aNode)
+{
+    // Node to chromo
+    aNode->AddMDep(this, aMut, aAttr);
+    // Chromo to node
+    iCMRelReg.insert(TCMRel(TCMRelFrom((void*) aMut.Handle(), aAttr), aNode));
+}
+
+void Elem::RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr)
+{
+    TCMRelFrom key((void*) aMut.Handle(), aAttr);
+    __ASSERT(iCMRelReg.count(key) > 0);
+    Elem* node = iCMRelReg.at(key);
+    iCMRelReg.erase(key);
+    node->RemoveMDep(TMDep(TMutRef(this, (void*) aMut.Handle()), aAttr));
 }
 
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)

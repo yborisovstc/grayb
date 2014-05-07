@@ -186,3 +186,15 @@ TInt ChromoNode::GetLocalSize()
 ChromoNode& ChromoNode::GetNode(const GUri& aUri) const
 {
 }
+
+void ChromoNode::GetRank(Rank& aRank) const
+{
+    ChromoNode prnt = *Parent();
+    if (prnt.iHandle != NULL) {
+	TInt res = 0;
+	for (Iterator it = prnt.Begin(); it != prnt.End() && !(*it == *this); it++, res++);
+	aRank.insert(aRank.begin(), res);
+	prnt.GetRank(aRank);
+    }
+}
+

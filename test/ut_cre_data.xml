@@ -27,8 +27,8 @@
 	<node id="Incr" parent="../FuncComps/FuncIncInt"/>
 
 	<node parent="Edge"> 
-	    <cont node="P1" val="DataS_Int_1/Capsule/out"/> 
-	    <cont node="P2" val="Incr/Capsule/inp"/> 
+	    <cont node="P1" val="../../DataS_Int_1/Capsule/out"/> 
+	    <cont node="P2" val="../../Incr/Capsule/inp"/> 
 	</node>
 
     </node>

@@ -85,6 +85,7 @@ class ChromoX: public Chromo
 	virtual void Init(TNodeType aRootType);
 	virtual void Reset();
 	virtual void Save(const string& aFileName) const;
+	virtual ChromoNode CreateNode(void* aHandle);
     private:
 	ChromoMdlX iMdl;
 	ChromoNode iRootNode;

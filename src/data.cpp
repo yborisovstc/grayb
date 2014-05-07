@@ -112,7 +112,7 @@ TBool DataBase::Update()
     return EFalse;
 }
 
-bool DataBase::FromString(const string& aData) 
+TBool DataBase::FromString(const string& aData) 
 {
     return EFalse;
 }
@@ -313,6 +313,7 @@ void DNInt::UpdateIfi(const string& aName, const RqContext* aCtx)
 	InsertIfCache(aName, ToCacheRCtx(aCtx), this, res);
     }
 }
+
 void DNInt::Set(TInt aData)
 {
     if (mData != aData) {
@@ -321,3 +322,137 @@ void DNInt::Set(TInt aData)
     }
 }
 
+
+
+#if 0
+// Variant data
+string DataV::PEType()
+{
+    return DataBase::PEType() + GUri::KParentSep + Type();
+}
+
+DataV::DataV(const string& aName, Elem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(NULL)
+{
+    SetEType(Type(), DataBase::PEType());
+    SetParent(Type());
+}
+
+DataV::DataV(Elem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(NULL)
+{
+    SetEType(DataBase::PEType());
+    SetParent(DataBase::PEType());
+}
+
+void *DataV::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName, MDVar::Type()) == 0) {
+	res = (MDVar*) this;
+    }
+    else {
+	res = DataBase::DoGetObj(aName, aIncUpHier);
+    }
+    if (res == NULL && mData != NULL) {
+	res = mData->DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+DataV::~DataV()
+{
+    if (mData != NULL) {
+	delete mData;
+    }
+}
+
+TBool DataV::ChangeCont(const string& aVal, TBool aRtOnly)
+{
+    TBool res = ETrue;
+    if (aVal != mContent) {
+	mContent = aVal;
+	if (mData == NULL) {
+	    res = Init(mContent);
+	}
+	if (res)  {
+	    mData->FromString(mContent);
+	}
+	if (aRtOnly) {
+	    iMan->OnContentChanged(*this);
+	} else {
+	    iMan->OnCompChanged(*this);
+	}
+    }
+    return res;
+}
+
+void DataV::GetCont(string& aCont)
+{
+    aCont = mContent;
+}
+
+TBool DataV::Init(const string& aString)
+{
+    if ((mData = HInt::Create(this, aString)) != NULL);
+    return mData != NULL;
+}
+
+TBool DataV::FromString(const string& aData) 
+{
+    TBool res = EFalse;
+    res = mData->FromString(aData);
+    if (res) {
+	NotifyUpdate();
+    }
+    return res;
+}
+
+
+void *DataV::HInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MDInt::Type()) == 0) res = (MDInt*) this;
+    else if (strcmp(aName, MDIntGet::Type()) == 0) res = (MDIntGet*) this;
+    else if (strcmp(aName, MDIntSet::Type()) == 0)  res = (MDIntSet*) this;
+    return res;
+}
+
+DataV::HBase* DataV::HInt::Create(DataV* aHost, const string& aString)
+{
+    HBase* res = NULL;
+    if (aString.at(0) == 'I') {
+	res = new HInt(aHost);
+    }
+    return res;
+}
+
+TBool DataV::HInt::FromString(const string& aString)
+{
+    TInt data;
+    sscanf(aString.c_str(), "%d", &data);
+    Set(data);
+}
+
+void DataV::HInt::ToString(string& aString)
+{
+    stringstream ss;
+    ss << mData;
+    aString = ss.str();
+}
+
+void DataV::HInt::Set(TInt aData)
+{
+    if (mData != aData) {
+	mData = aData;
+	mHost.UpdateProp();
+    }
+}
+
+void DataV::HInt::SetValue(TInt aData)
+{
+    Set(aData);
+}
+
+#endif

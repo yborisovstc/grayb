@@ -21,15 +21,18 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	typedef string TNMKey;
 	typedef pair<TNMKey, Elem*> TNMVal;
 	typedef multimap<string, Elem*> TNMReg;
+	// Ref to mutation
+	typedef pair<Elem*, void*> TMutRef;
 	// Rank of node
 	typedef vector<TInt> TRank;
-	// Deps elem
-	typedef pair<Elem*, TInt> TDep;
-	// Deps 
-	typedef vector<TDep> TDeps;
-	// Elem of deps to mutation: chromo node handle, type of dep
-	typedef pair<void*, TNodeAttr> TMDep;
-	// Deps to Mutations
+	// Relation chromo to model
+	typedef pair<Elem*, TNodeAttr> TCMRelTo;
+	typedef pair<void*, TNodeAttr> TCMRelFrom;
+	typedef pair<TCMRelFrom, Elem*> TCMRel;
+	typedef map<TCMRelFrom, Elem*> TCMRelReg;
+	// Deps Mutations on RT model node
+	// Elem of deps mutation on RT node: chromo node handle, type of dep
+	typedef pair<TMutRef, TNodeAttr> TMDep;
 	typedef vector<TMDep> TMDeps;
 	
 
@@ -154,7 +157,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// aInitCont - the uri of initial context of element, this is requires to element "understand" that it is
 	// in new context now and corrected uris related to initial context
 	Elem* CreateHeir(const string& aName, Elem* aMan/*, const GUri& aInitCont*/);
-	const MChromo& Chromos() { return *iChromo;};
+	const MChromo& Chromos() const { return *iChromo;};
+	MChromo& Chromos() { return *iChromo;};
 	MChromo& Mutation() { return *iMut;};
 	// Gets the comp with given type and owning given element
 	Elem* GetCompOwning(const string& aParent, Elem* aElem);
@@ -205,11 +209,11 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual void GetCont(string& aCont); 
 	//virtual TBool ChangeCont(const string& aVal); 
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue); 
-	virtual TBool AddNode(const ChromoNode& aSpec);
+	virtual TBool AddNode(const ChromoNode& aSpec, TBool aRunTime);
 	TBool AppendChild(Elem* aChild);
 	void RemoveChild(Elem* aChild);
 	virtual TBool RmNode(const GUri& aUri);
-	virtual TBool MoveNode(const ChromoNode& aSpec);
+	virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime);
 	vector<Elem*>& Comps();
 	// From MChild
 	virtual void OnParentDeleting(Elem* aParent);
@@ -231,20 +235,23 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, void* aVal);
 	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg);
 	// Deps
-	void AddDep(Elem* aNode, TInt aRank);
-	void RemoveDep(Elem* aNode);
-	TDep GetMajorDep();
-	void GetMajorDep(TDep& aDep, Rank& aRank);
 	Elem* GetMajorChild(Rank& rr);
 	void GetMajorChild(Elem*& aElem, Rank& rr);
 	TBool IsMutSafe(Elem* aRef);
-	void AddMDep(ChromoNode& aMut, TNodeAttr aAttr);
-	void RemoveMDep(const ChromoNode& aMut);
+	TMDeps& GetMDeps() { return iMDeps;};
+	void AddMDep(Elem* aNode, const ChromoNode& aMut, TNodeAttr aAttr);
+	void RemoveMDep(const TMDep& aDep);
+	// Adding two directions chromo-model dependencies
+	void AddCMDep(const ChromoNode& aMut, TNodeAttr aAttr, Elem* aNode);
+	void RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr);
+	void RmCMDep(const ChromoNode& aMut);
+	TMDep GetMajorDep();
+	void GetMajorDep(TMDep& aDep);
 	// Chromo
 	ChromoNode GetChNode(const GUri& aUri) const;
 	void CompactChromo();
     protected:
-	Elem* AddElem(const ChromoNode& aSpec);
+	Elem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse);
 	static void Init();
 	inline MLogRec* Logger() const;
 	inline MProvider* Provider() const;
@@ -258,12 +265,12 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool UnregisterComp(Elem* aComp, const string& aName = string());
 	TBool UnregisterChild(Elem* aChild, const string& aName = string());
 	Elem* GetComp(const string& aParent, const string& aName);
-	TBool DoMutChangeCont(const ChromoNode& aSpec);
+	TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime);
 	TBool MergeMutation(const ChromoNode& aSpec);
 	TBool MergeMutMove(const ChromoNode& aSpec);
 	virtual void DoOnCompChanged(Elem& aComp);
 	TBool IsLogeventCreOn();
-	void ChangeAttr(const ChromoNode& aSpec);
+	void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime);
 	TBool HasChilds() const;
 	TBool HasInherDeps() const;
     protected:
@@ -297,10 +304,9 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// Parent
 	Elem* iParent;
 	// Dependent nodes, relations to keep model consistent on mutations, ref uc_028, ds_mut
-	TDeps iDeps;
-	// Dependencies on mutations
-	// TODO [YB] Not used, to remove
 	TMDeps iMDeps;
+	// Mutation to model node relation, required for chromo squeezing, ref ds_mut_sqeezing
+	TCMRelReg iCMRelReg;
 	// Sign of that node is removed
 	TBool isRemoved;
 };

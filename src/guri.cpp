@@ -60,6 +60,7 @@ void GUriBase::Construct()
     {
 	KNodeAttrsNames[ENa_Id] = "id";
 	KNodeAttrsNames[ENa_Parent] = "parent";
+	KNodeAttrsNames[ENa_Ref] = "ref";
 	KNodeAttrsNames[ENa_MutNode] = "node";
 	KNodeAttrsNames[ENa_MutAttr] = "attr";
 	KNodeAttrsNames[ENa_MutVal] = "val";

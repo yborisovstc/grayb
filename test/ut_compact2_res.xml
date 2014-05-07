@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<node id="test" parent="Vert">
+  <node id="v1" parent="Vert"/>
+  <node id="v2" parent="Vert"/>
+  <node id="v3" parent="Vert"/>
+  <node id="v4" parent="Vert"/>
+  <node id="Edge1" parent="Edge">
+    <cont node="P1" ref="../../v1"/>
+    <cont node="P2" ref="../../v3"/>
+  </node>
+</node>

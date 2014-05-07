@@ -34,12 +34,24 @@
     </node>
 
 
+    <!-- Data with separate input for setting and output for getting. Integer -->
     <node id="DataSInt" parent="DataS"> 
 	<cont node="D_1" val="Integer Data with separate input for setting and output for getting"/>
     	<add node="Agents"> <node id="MACompsObserver" parent="DInt"/> </add>
 	<cont node="Capsule/inp/Provided" val="MDIntSet"/>
 	<cont node="Capsule/out/Provided" val="MDIntGet"/>
     </node>
+
+    <!-- Data with separate input for setting and output for getting. Variant -->
+    <!--
+    <node id="DataSVar" parent="DataS"> 
+	<cont node="D_1" val="Variant Data with separate input for setting and output for getting"/>
+    	<add node="Agents"> <node id="MACompsObserver" parent="DataV"/> </add>
+	<cont node="Capsule/inp/Provided" val="MDVarSet"/>
+	<cont node="Capsule/out/Provided" val="MDVarGet"/>
+    </node>
+-->
+
 
     <node id="DataSIInt" parent="DataSInt"> 
 	<cont node="D_1" val="Initital data - Integer Data without input."/>

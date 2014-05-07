@@ -213,7 +213,7 @@
 		    <orderedlist>
 			<listitem> parent (mut "node") </listitem>
 			<listitem id="ds_mut_unappr_intro_dep_obj"> object of change (mut "add, rm, change, cont") </listitem>
-			<listitem id="ds_mut_unappr_intro_dep_par"> parameter (val in mut "change", "cont") </listitem>
+			<listitem id="ds_mut_unappr_intro_dep_ref"> reference (value "id" in mut "cont") </listitem>
 		    </orderedlist>
 		</simpara>
 		<simpara>So one way of preventing unappropriate mutation is to place it into the position with rank greater than the maximum rank of all
@@ -267,7 +267,7 @@
 		<simpara>We introduce the restriction of mutations that can simplify the validation of mutations</simpara>
 		<orderedlist>
 		    <listitem>Rank depth of mutations of dependency type "object" and "parameter" (ref <xref linkend="ds_mut_unappr_intro_dep_obj"/>, 
-			<xref linkend="ds_mut_unappr_intro_dep_par"/>) must be less or equal of rank depth of mutated node. 
+			<xref linkend="ds_mut_unappr_intro_dep_ref"/>) must be less or equal of rank depth of mutated node. 
 			In other words the object of mutation must be owned of node that contains the mutations. </listitem>
 		    <listitem>It is not allowed to remove a node if the node has childs. This restriction can be removed in the future. Currently it is 
 			not supporting of creating child when some parent in parents chain is missed. Potentially
@@ -329,6 +329,8 @@
 		    in original context, so doesn't cause any troubles. Then we can re-adopt the heir from source node to its parent.</simpara>
 	    </sect3>
 	</sect2>
+	<sect2><title>Moving of node</title>
+	</sect2>
 	<sect2 id="ds_mut_sqeezing"><title>Squeezing of mutations</title>
 	    <sect3><title>Intro</title>
 		<simpara>Squeezing of mutation seems at the first glance obvious and simple. Indeed, if there are two adjacent renamings the same node then why we cannot
@@ -353,10 +355,16 @@
 	    <sect3><title>Approaches: Direct merging.</title>
 		<simpara>Let's assume that we have all relations between the model and mutaions in chromo. There are relations of two directions: rt node to mutations and mutations to node. This 
 		    allows getting relations quickly from both parts.
-		    The relations includes the reference to muation, and the type: </simpara>
+		    The relations includes the reference to muation, and the type, ref <xref linkend="ds_mut_unappr_intro"/> </simpara>
+		<simpara>The algorithm of squeezing chromo of the given RT node would be like outlined below. For clarity aim let's consider the particular mutation, -rn-:</simpara>
+		<orderedlist>
+		    <listitem>Start from the second mutation (remember the first is -node- itself)</listitem>
+		    <listitem>Check if the mutation can be squeezed. For -rn NODE_X- the checking passes be default because there must be mutation -node- with lower rank.</listitem>
+		    <listitem>Go thru all mutations  depending on NODE_X and which rank lies between initial -node- and given -rn-: correct the reference to NODE_X according to -rn- paramenter.</listitem>
+		</orderedlist>
 	    </sect3>
-
 	</sect2>
+
     </sect1>
 
 </article>

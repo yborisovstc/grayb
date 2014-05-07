@@ -82,9 +82,11 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 	Edge* edge = eedge->GetObj(edge);	
 	__ASSERT(edge != NULL);
 	edge->Disconnect();
+	Elem* pt1 = NULL;
+	Elem* pt2 = NULL;
 	const string& pt1u = edge->Point1u();
 	if (!pt1u.empty()) {
-	    Elem* pt1 = aContext.GetNode(pt1u);
+	    pt1 = edge->Point1r();
 	    if (pt1 != NULL) {
 		MVert* pt1v = pt1->GetObj(pt1v);
 		if (pt1v != NULL) {
@@ -97,7 +99,7 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 	}
 	const string& pt2u = edge->Point2u();
 	if (!pt2u.empty()) {
-	    Elem* pt2 = aContext.GetNode(pt2u);
+	    pt2 = edge->Point2r();
 	    if (pt2 != NULL) {
 		MVert* pt2v = pt2->GetObj(pt2v);
 		if (pt2v != NULL) {
@@ -108,8 +110,6 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find", pt2u.c_str());
 	    }
 	}
-	Elem* pt1 = aContext.GetNode(pt1u);
-	Elem* pt2 = aContext.GetNode(pt2u);
 	Elem* host = iMan->GetMan();
 	if (pt1 != NULL && pt2 != NULL) {
 	    TBool ispt1ok = IsPtOk(aContext, pt1);

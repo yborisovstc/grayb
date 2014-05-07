@@ -40,21 +40,21 @@
 	    </node>
 
 	    <node parent="Edge"> 
-		<cont node="P1" val="(TrIncInt:)Trans/Inp"/> 
-		<cont node="P2" val="Capsule/Inp/(StInpSocket:)Int/PinData"/> 
+		<cont node="P1" val="../../(TrIncInt:)Trans/Inp"/> 
+		<cont node="P2" val="../../Capsule/Inp/(StInpSocket:)Int/PinData"/> 
 	    </node>
 
 	    <node parent="Edge"> 
-		<cont node="P1" val="Trans/Out"/> 
-		<cont node="P2" val="(DataSCInt:)Prepared/Capsule/Inp"/> 
+		<cont node="P1" val="../../Trans/Out"/> 
+		<cont node="P2" val="../../(DataSCInt:)Prepared/Capsule/Inp"/> 
 	    </node>
 
 	</node>
 
 	<!-- Loop -->
 	<node parent="Edge"> 
-	    <cont node="P1" val="State1/Capsule/Out"/> 
-	    <cont node="P2" val="State1/Capsule/Inp"/> 
+	    <cont node="P1" val="../../State1/Capsule/Out"/> 
+	    <cont node="P2" val="../../State1/Capsule/Inp"/> 
 	</node>
 
     </node>

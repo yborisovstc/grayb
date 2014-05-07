@@ -53,12 +53,12 @@
 
 <!-- Change content attributes:
      node - changed elem
-     val - new value OR id - new value - ref to node,
+     val - new value OR ref - new value - ref to node,
      -->
 <!ATTLIST cont
    node CDATA #IMPLIED
    val CDATA #IMPLIED
-   id CDATA #IMPLIED
+   ref CDATA #IMPLIED
 >
 
 <!-- Moving attributes:

@@ -65,9 +65,9 @@
 
 	<!-- TODO [YB] Paths in Edge are hadled differently from other elements. They are handled in system context-->
 	<!-- This can confuse developer when specifying system. -->
-	<node parent="Edge"> <cont node="P1" val="Data_MaxFeed/Capsule/Out"/> <cont node="P2" val="Capsule/Out/Int/MaxFeed"/> </node>
-	<node parent="Edge"> <cont node="P1" val="Data_MinMass/Capsule/Out"/> <cont node="P2" val="Capsule/Out/Int/MinMass"/> </node>
-	<node parent="Edge"> <cont node="P1" val="Data_MaxMass/Capsule/Out"/> <cont node="P2" val="Capsule/Out/Int/MaxMass"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Data_MaxFeed/Capsule/Out"/> <cont node="P2" val="../../Capsule/Out/Int/MaxFeed"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Data_MinMass/Capsule/Out"/> <cont node="P2" val="../../Capsule/Out/Int/MinMass"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Data_MaxMass/Capsule/Out"/> <cont node="P2" val="../../Capsule/Out/Int/MaxMass"/> </node>
     </node> <!-- System Constants -->
 
 
@@ -121,25 +121,25 @@
 	    <node id="Lim" parent="../../FuncComps/TFLimInt"/>
 	    <node id="Data_Const1" parent="../../DataComps/DataSCInt"> <cont node="Value" val="1"/> </node>
 
-	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_OthersCoord/Int/PinData"/> <cont node="P2" val="Conv/Capsule/inp"/> </node>
-	    <node parent="Edge"> <cont node="P1" val="Conv/Capsule/Out_WFarg"/> <cont node="P2" val="Comp/Capsule/Inp1"/> </node>
-	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_SelfCoord/Int/PinData"/> <cont node="P2" val="Comp/Capsule/Inp2"/> </node>
-	    <node parent="Edge"> <cont node="P1" val="Comp/Capsule/out"/> <cont node="P2" val="ToInt/Capsule/Inp"/> </node>
-	    <node parent="Edge"> <cont node="P1" val="ToInt/Capsule/out"/> <cont node="P2" val="Conv/Capsule/Inp_WFres"/> </node>
-	    <node parent="Edge"> <cont node="P1" val="Conv/Capsule/out"/> <cont node="P2" val="Sub/Capsule/InpN"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Capsule/Inp_OthersCoord/Int/PinData"/> <cont node="P2" val="../../Conv/Capsule/inp"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Conv/Capsule/Out_WFarg"/> <cont node="P2" val="../../Comp/Capsule/Inp1"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Capsule/Inp_SelfCoord/Int/PinData"/> <cont node="P2" val="../../Comp/Capsule/Inp2"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Comp/Capsule/out"/> <cont node="P2" val="../../ToInt/Capsule/Inp"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../ToInt/Capsule/out"/> <cont node="P2" val="../../Conv/Capsule/Inp_WFres"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Conv/Capsule/out"/> <cont node="P2" val="../../Sub/Capsule/InpN"/> </node>
 	    <!-- TODO [YB] !! It is not disable to connect to nodes outside the current system. To prohibite this -->
 	    <!-- This can cause errors that Data_MaxFeed can have some same edges connected -->
 	    <!-- 
 	    <node parent="Edge"> <cont node="P1" val="../../Data_MaxFeed/Capsule/Out"/> <cont node="P2" val="Sub/Capsule/InpP"/> </node>
 	    -->
-	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int/MaxFeed"/> <cont node="P2" val="Sub/Capsule/InpP"/> </node>
-	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp/Int/PinData"/> <cont node="P2" val="Sub2/Capsule/InpP"/> </node>
-	    <node parent="Edge"> <cont node="P1" val="Sub/Capsule/out"/> <cont node="P2" val="Sub2/Capsule/InpP"/> </node>
-	    <node parent="Edge"> <cont node="P1" val="Data_Const1/Capsule/Out"/> <cont node="P2" val="Sub2/Capsule/InpN"/> </node>
-	    <node parent="Edge"> <cont node="P1" val="Sub2/Capsule/out"/> <cont node="P2" val="Lim/Capsule/Inp"/> </node>
-	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int/MinMass"/> <cont node="P2" val="Lim/Capsule/Inp_LimL"/> </node>
-	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int/MaxMass"/> <cont node="P2" val="Lim/Capsule/Inp_LimU"/> </node>
-	    <node parent="Edge"> <cont node="P1" val="Lim/Capsule/out"/> <cont node="P2" val="Prepared/Capsule/Inp"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Capsule/Inp_SysPars/Int/MaxFeed"/> <cont node="P2" val="../../Sub/Capsule/InpP"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Capsule/Inp/Int/PinData"/> <cont node="P2" val="../../Sub2/Capsule/InpP"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Sub/Capsule/out"/> <cont node="P2" val="../../Sub2/Capsule/InpP"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Data_Const1/Capsule/Out"/> <cont node="P2" val="../../Sub2/Capsule/InpN"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Sub2/Capsule/out"/> <cont node="P2" val="../../Lim/Capsule/Inp"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Capsule/Inp_SysPars/Int/MinMass"/> <cont node="P2" val="../../Lim/Capsule/Inp_LimL"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Capsule/Inp_SysPars/Int/MaxMass"/> <cont node="P2" val="../../Lim/Capsule/Inp_LimU"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Lim/Capsule/out"/> <cont node="P2" val="../../Prepared/Capsule/Inp"/> </node>
 	    <!-- Transition end -->
 
 	</node> <!-- Mass -->
@@ -167,25 +167,25 @@
 	    <node id="Div" parent="../../FuncComps/TFDivInt"/>
 	    <node id="AddM1" parent="../../FuncComps/TFAddInt"/>
 
-	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int/MaxMass"/> <cont node="P2" val="Div/Capsule/Inp_DD"/> </node>
-	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp_Mass/Int/PinData"/> <cont node="P2" val="Div/Capsule/Inp_DR"/> </node>
-	    <node parent="Edge"> <cont node="P1" val="Capsule/Inp/Int/PinData"/> <cont node="P2" val="AddM1/Capsule/inp"/> </node>
-	    <node parent="Edge"> <cont node="P1" val="Div/Capsule/out"/> <cont node="P2" val="AddM1/Capsule/inp"/> </node>
-	    <node parent="Edge"> <cont node="P1" val="AddM1/Capsule/out"/> <cont node="P2" val="Prepared/Capsule/Inp"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Capsule/Inp_SysPars/Int/MaxMass"/> <cont node="P2" val="../../Div/Capsule/Inp_DD"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Capsule/Inp_Mass/Int/PinData"/> <cont node="P2" val="../../Div/Capsule/Inp_DR"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Capsule/Inp/Int/PinData"/> <cont node="P2" val="../../AddM1/Capsule/inp"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../Div/Capsule/out"/> <cont node="P2" val="../../AddM1/Capsule/inp"/> </node>
+	    <node parent="Edge"> <cont node="P1" val="../../AddM1/Capsule/out"/> <cont node="P2" val="../../Prepared/Capsule/Inp"/> </node>
 
 	</node> <!-- Coordinate -->
 
 	<!-- Internal connections -->
-	<node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int"/> <cont node="P2" val="Mass/Capsule/Inp_SysPars"/> </node>
-	<node parent="Edge"> <cont node="P1" val="Capsule/Inp_SysPars/Int"/> <cont node="P2" val="Coord/Capsule/Inp_SysPars"/> </node>
-	<node parent="Edge"> <cont node="P1" val="Coord/Capsule/Out"/> <cont node="P2" val="Mass/Capsule/Inp_SelfCoord"/> </node>
-	<node parent="Edge"> <cont node="P1" val="Mass/Capsule/Out"/> <cont node="P2" val="Mass/Capsule/Inp"/> </node>
-	<node parent="Edge"> <cont node="P1" val="Coord/Capsule/Out"/> <cont node="P2" val="Coord/Capsule/Inp"/> </node>
-	<node parent="Edge"> <cont node="P1" val="Mass/Capsule/Out"/> <cont node="P2" val="Coord/Capsule/Inp_Mass"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Capsule/Inp_SysPars/Int"/> <cont node="P2" val="../../Mass/Capsule/Inp_SysPars"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Capsule/Inp_SysPars/Int"/> <cont node="P2" val="../../Coord/Capsule/Inp_SysPars"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Coord/Capsule/Out"/> <cont node="P2" val="../../Mass/Capsule/Inp_SelfCoord"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Mass/Capsule/Out"/> <cont node="P2" val="../../Mass/Capsule/Inp"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Coord/Capsule/Out"/> <cont node="P2" val="../../Coord/Capsule/Inp"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Mass/Capsule/Out"/> <cont node="P2" val="../../Coord/Capsule/Inp_Mass"/> </node>
 
-	<node parent="Edge"> <cont node="P1" val="Mass/Capsule/Out"/> <cont node="P2" val="Capsule/Out_Mass/Int"/> </node>
-	<node parent="Edge"> <cont node="P1" val="Coord/Capsule/Out"/> <cont node="P2" val="Capsule/Out/Int"/> </node>
-	<node parent="Edge"> <cont node="P1" val="Capsule/Inp/Int"/> <cont node="P2" val="Mass/Capsule/Inp_OthersCoord"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Mass/Capsule/Out"/> <cont node="P2" val="../../Capsule/Out_Mass/Int"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Coord/Capsule/Out"/> <cont node="P2" val="../../Capsule/Out/Int"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Capsule/Inp/Int"/> <cont node="P2" val="../../Mass/Capsule/Inp_OthersCoord"/> </node>
 
     </node> <!-- Snail -->
 
@@ -234,11 +234,11 @@
 	    </add> -->
 	</node>
 
-	<node parent="Edge"> <cont node="P1" val="Snail_1/Capsule/Out_Mass"/> <cont node="P2" val="Capsule/Out/Int"/> </node>
-	<node parent="Edge"> <cont node="P1" val="Consts/Capsule/Out"/> <cont node="P2" val="Snail_1/Capsule/Inp_SysPars"/> </node>
-	<node parent="Edge"> <cont node="P1" val="Consts/Capsule/Out"/> <cont node="P2" val="Snail_2/Capsule/Inp_SysPars"/> </node>
-	<node parent="Edge"> <cont node="P1" val="Snail_1/Capsule/Out"/> <cont node="P2" val="Snail_2/Capsule/Inp"/> </node>
-	<node parent="Edge"> <cont node="P1" val="Snail_2/Capsule/Out"/> <cont node="P2" val="Snail_1/Capsule/Inp"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Snail_1/Capsule/Out_Mass"/> <cont node="P2" val="../../Capsule/Out/Int"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Consts/Capsule/Out"/> <cont node="P2" val="../../Snail_1/Capsule/Inp_SysPars"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Consts/Capsule/Out"/> <cont node="P2" val="../../Snail_2/Capsule/Inp_SysPars"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Snail_1/Capsule/Out"/> <cont node="P2" val="../../Snail_2/Capsule/Inp"/> </node>
+	<node parent="Edge"> <cont node="P1" val="../../Snail_2/Capsule/Out"/> <cont node="P2" val="../../Snail_1/Capsule/Inp"/> </node>
 
     </node> <!-- test -->
 
