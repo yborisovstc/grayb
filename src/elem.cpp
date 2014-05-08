@@ -1797,7 +1797,7 @@ void Elem::GetMajorChild(Elem*& aElem, Rank& rr)
 
 Elem::TMDep Elem::GetMajorDep()
 {
-    TMDep res(TMutRef(this, iChromo->Root().Handle()), ENa_Unknown);
+    TMDep res(TMutRef(iMan, iChromo->Root().Handle()), ENa_Id);
     GetMajorDep(res);
     return res;
 }
