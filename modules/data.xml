@@ -43,14 +43,12 @@
     </node>
 
     <!-- Data with separate input for setting and output for getting. Variant -->
-    <!--
     <node id="DataSVar" parent="DataS"> 
 	<cont node="D_1" val="Variant Data with separate input for setting and output for getting"/>
-    	<add node="Agents"> <node id="MACompsObserver" parent="DataV"/> </add>
+    	<add node="Agents"> <node id="MACompsObserver" parent="DVar"/> </add>
 	<cont node="Capsule/inp/Provided" val="MDVarSet"/>
 	<cont node="Capsule/out/Provided" val="MDVarGet"/>
     </node>
--->
 
 
     <node id="DataSIInt" parent="DataSInt"> 
@@ -80,6 +78,16 @@
 	<cont node="Capsule/inp/Required" val="MDIntGet"/>
 	<rm node="Capsule/out"/>
     </node>
+
+    <!-- Terminal data, input only, provided data observer, required gettng data -->
+    <node id="DataTVar" parent="DataS"> 
+	<cont node="D_1" val="Terminal data, input only. Monitoring input and update itself"/>
+    	<add node="Agents"> <node id="AData" parent="DVar"/> </add>
+	<cont node="Capsule/inp/Provided" val="MDataObserver"/>
+	<cont node="Capsule/inp/Required" val="MDVarGet"/>
+	<rm node="Capsule/out"/>
+    </node>
+
 
 
 

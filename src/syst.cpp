@@ -635,6 +635,19 @@ void *Syst::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
     return res;
 }
 
+void Syst::OnCompDeleting(Elem& aComp)
+{
+    Elem* eedge = GetCompOwning("Edge", &aComp);
+    if (eedge != NULL) {
+	// Reconnect the edge
+	Edge* edge = eedge->GetObj(edge);	
+	__ASSERT(edge != NULL);
+	edge->Disconnect();
+    }
+    Vert::OnCompDeleting(aComp);
+}
+
+
 void Syst::DoOnCompChanged(Elem& aComp)
 {
     Elem* eedge = GetCompOwning("Edge", &aComp);

@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for squeezing of chromo: removing node
+     -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Vert">
+    <node id="v1" parent="Vert"/>
+    <node id="v2" parent="Vert"/>
+    <node id="v3" parent="Vert"/>
+    <node id="Edge1" parent="Edge"> <cont node="P1" ref="../../v1"/> <cont node="P2" ref="../../v2"/> </node>
+    <rm node="v3"/>
+</node>
+

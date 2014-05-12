@@ -245,20 +245,20 @@ class AFConvInt: public AFuncInt
 
 // Function agent base without result caching and with multitype support
 // TODO [YB] !! Not for use. Doesn't really support dynamic configuration as was ailmed
-class AFuncm: public Elem, public MACompsObserver, public MDataObserver
+class AFuncm: public Elem, public MACompsObserver, public MDataObserver, public MDVarGet
 {
     public:
 	// Executive part of function 
 	class Exec
 	{
-	    friend class AFunc;
+	    friend class AFuncm;
 	    public:
-	    Exec(const string& aIName, AFuncm& aHost): iHost(aHost) { iHost.iExecs.insert(pair<string, void*>(aIName, this));};
-	    public:
-	    AFuncm& iHost;
+	    Exec(AFuncm& aHost): mHost(aHost) {};
+	    Exec(const string& aIName, AFuncm& aHost): mHost(aHost) { mHost.mExecs.insert(pair<string, Exec*>(aIName, this));};
+	    AFuncm& mHost;
 	};
     public:
-	static const char* Type() { return "AFunc";};
+	static const char* Type() { return "AFuncm";};
 	static string PEType();
 	AFuncm(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
@@ -270,7 +270,7 @@ class AFuncm: public Elem, public MACompsObserver, public MDataObserver
     protected:
 	void NotifyUpdate();
     protected:
-	map<string, void*> iExecs;
+	map<string, Exec*> mExecs;
 };
 
 
@@ -317,6 +317,31 @@ class AFBoolToInt: public AFunc, public MDIntGet
 	virtual TInt Value();
 };
 
+
+// Agent of function of variable type
+class AFunVar: public FuncBase, public MDVarGet
+{
+    public:
+	// Executive part of function 
+	class Func
+	{
+	    friend class AFunVar;
+	    public:
+	    Func(AFunVar& aHost): mHost(aHost) {};
+	    AFunVar& mHost;
+	};
+    public:
+	static const char* Type() { return "AFunVar";};
+	static string PEType();
+	AFunVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	AFunVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+    protected:
+	void NotifyUpdate();
+    protected:
+	Func* mFunc;
+};
 
 
 

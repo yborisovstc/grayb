@@ -24,6 +24,7 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_MutRenameParent);
     CPPUNIT_TEST(test_Compact1);
     CPPUNIT_TEST(test_Compact2);
+    CPPUNIT_TEST(test_Compact3);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -39,6 +40,7 @@ private:
     void test_MutRenameParent();
     void test_Compact1();
     void test_Compact2();
+    void test_Compact3();
 private:
     Env* iEnv;
 };
@@ -225,9 +227,9 @@ void Ut_mut::test_MutDepsRm()
     mut = root->Mutation().Root().AddChild(ENt_Rm);
     mut.SetAttr(ENa_MutNode, "elem1/elem2");
     root->Mutate();
-    // Check that the mutation is not refused, but e2 not deleted, just marked as removed
+    // Check that the mutation is not refused
     e2 = root->GetNode("elem1/elem2");
-    CPPUNIT_ASSERT_MESSAGE("Root mutation -rm- of elem2 is refused", e2 != NULL && e2->IsRemoved() );
+    CPPUNIT_ASSERT_MESSAGE("Root mutation -rm- of elem2 is refused", e2 == NULL);
 }
 
 // Preventing of mutation braking model consistency
@@ -453,6 +455,33 @@ void Ut_mut::test_Compact2()
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
     Elem* v3 = root->GetNode("(Vert:)v3");
     CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pair->EBase() == v3);
+
+    delete iEnv;
+}
+
+// Compactization of chromo: mut removing node
+void Ut_mut::test_Compact3()
+{
+    printf("\n === Test of compacting of chromo: removing\n");
+    iEnv = new Env("Env", "ut_compact3.xml", "ut_compact3.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Compact chromo
+    root->CompactChromo();
+    // Save compacted chromo and recreate the model
+    iEnv->Root()->Chromos().Save("ut_compact3_res.xml");
+    delete iEnv;
+
+    iEnv = new Env("Env", "ut_compact3_res.xml", "ut_compact3_res.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to re-create compacted system", iEnv != 0);
+    iEnv->ConstructSystem();
+     // Check if edge is set correctly
+    root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root after compacting", root != 0);
+    Elem* v3 = root->GetNode("(Vert:)v3");
+    CPPUNIT_ASSERT_MESSAGE("V3 is not removed", v3 == NULL);
 
     delete iEnv;
 }

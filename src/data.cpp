@@ -29,26 +29,34 @@ TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
     TBool res = EFalse;
     if (aComp.Name() == "Value" && aComp.EType() == "Prop") {
 	MProp* prop = aComp.GetObj(prop);
-	TBool lupd = IsLogeventUpdate();
-	GUri fullpath;
-	if (lupd) {
-	    Elem* host = iMan->GetMan();
-	    host->GetUri(fullpath);
-	}
 	if (prop == NULL) {
 	    Logger()->Write(MLogRec::EErr, this, "Missing MProp iface in property [%s]", aComp.Name().c_str());
 	}
 	else {
 	    string curr;
 	    ToString(curr);
-	    if (lupd) {
+	    if (IsLogeventUpdate()) {
 		Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", prop->Value().c_str(), curr.c_str());
 	    }
 	    FromString(prop->Value());
 	}
 	res = ETrue;
     }
+    else {
+	Elem* caps = aContext.GetNode("Capsule");
+	if (caps != NULL) {
+	    Elem* cp = caps->GetCompOwning("ConnPoint", &aComp);
+	    if (cp != NULL) {
+		res = HandleIoChanged(aContext, cp);
+	    }
+	}
+    }
     return res;
+}
+
+TBool DataBase::HandleIoChanged(Elem& aContext, Elem* aCp)
+{
+    return EFalse;
 }
 
 void DataBase::NotifyUpdate()
@@ -242,9 +250,6 @@ TBool DInt::Update()
 	    if (inp != NULL) {
 		TInt idata = inp->Value();
 		if (IsLogeventUpdate()) {
-		    Elem* host = iMan->GetMan();
-		    GUri fullpath;
-		    host->GetUri(fullpath);
 		    Logger()->Write(MLogRec::EInfo, this, "Updated [%d <- %d]", idata, mData);
 		}
 		Set(idata);
@@ -324,26 +329,25 @@ void DNInt::Set(TInt aData)
 
 
 
-#if 0
 // Variant data
-string DataV::PEType()
+string DVar::PEType()
 {
     return DataBase::PEType() + GUri::KParentSep + Type();
 }
 
-DataV::DataV(const string& aName, Elem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(NULL)
+DVar::DVar(const string& aName, Elem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(NULL)
 {
     SetEType(Type(), DataBase::PEType());
     SetParent(Type());
 }
 
-DataV::DataV(Elem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(NULL)
+DVar::DVar(Elem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(NULL)
 {
     SetEType(DataBase::PEType());
     SetParent(DataBase::PEType());
 }
 
-void *DataV::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *DVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -361,14 +365,14 @@ void *DataV::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx
     return res;
 }
 
-DataV::~DataV()
+DVar::~DVar()
 {
     if (mData != NULL) {
 	delete mData;
     }
 }
 
-TBool DataV::ChangeCont(const string& aVal, TBool aRtOnly)
+TBool DVar::ChangeCont(const string& aVal, TBool aRtOnly)
 {
     TBool res = ETrue;
     if (aVal != mContent) {
@@ -388,18 +392,18 @@ TBool DataV::ChangeCont(const string& aVal, TBool aRtOnly)
     return res;
 }
 
-void DataV::GetCont(string& aCont)
+void DVar::GetCont(string& aCont)
 {
     aCont = mContent;
 }
 
-TBool DataV::Init(const string& aString)
+TBool DVar::Init(const string& aString)
 {
     if ((mData = HInt::Create(this, aString)) != NULL);
     return mData != NULL;
 }
 
-TBool DataV::FromString(const string& aData) 
+TBool DVar::FromString(const string& aData) 
 {
     TBool res = EFalse;
     res = mData->FromString(aData);
@@ -409,8 +413,40 @@ TBool DataV::FromString(const string& aData)
     return res;
 }
 
+bool DVar::ToString(string& aData) 
+{
+}
 
-void *DataV::HInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+TBool DVar::HandleIoChanged(Elem& aContext, Elem* aCp)
+{
+    TBool res = EFalse;
+    if (aCp->Name() == "inp") {
+	// Check input change
+	mData->Set(aCp);
+    }
+    else if (aCp->Name() == "out") {
+	UpdateProp();
+	NotifyUpdate();
+    }
+    return res;
+}
+
+TBool DVar::Update()
+{
+    TBool res = EFalse;
+    string old_value;
+    mData->ToString(old_value);
+    res = mData->Update();
+    if (res && IsLogeventUpdate()) {
+	string new_value;
+	mData->ToString(new_value);
+	Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", new_value.c_str(), old_value.c_str());
+    }
+    return res;
+}
+
+// Int data
+void *DVar::HInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
     if (strcmp(aName, MDInt::Type()) == 0) res = (MDInt*) this;
@@ -419,7 +455,7 @@ void *DataV::HInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext
     return res;
 }
 
-DataV::HBase* DataV::HInt::Create(DataV* aHost, const string& aString)
+DVar::HBase* DVar::HInt::Create(DVar* aHost, const string& aString)
 {
     HBase* res = NULL;
     if (aString.at(0) == 'I') {
@@ -428,21 +464,26 @@ DataV::HBase* DataV::HInt::Create(DataV* aHost, const string& aString)
     return res;
 }
 
-TBool DataV::HInt::FromString(const string& aString)
+TBool DVar::HInt::FromString(const string& aString)
 {
     TInt data;
     sscanf(aString.c_str(), "%d", &data);
     Set(data);
 }
 
-void DataV::HInt::ToString(string& aString)
+void DVar::HInt::ToString(string& aString)
 {
     stringstream ss;
     ss << mData;
     aString = ss.str();
 }
 
-void DataV::HInt::Set(TInt aData)
+TInt DVar::HInt::Data() const
+{
+    return mData;
+}
+
+void DVar::HInt::Set(TInt aData)
 {
     if (mData != aData) {
 	mData = aData;
@@ -450,9 +491,39 @@ void DataV::HInt::Set(TInt aData)
     }
 }
 
-void DataV::HInt::SetValue(TInt aData)
+void DVar::HInt::Set(Elem* aInp)
+{
+    MDIntGet* dget = (MDIntGet*) aInp->GetSIfi(MDIntGet::Type());
+    if (dget != NULL) {
+	TInt val = dget->Value();
+	Set(val);
+    }
+}
+
+TInt DVar::HInt::Value()
+{
+    return mData;
+}
+
+void DVar::HInt::SetValue(TInt aData)
 {
     Set(aData);
 }
 
-#endif
+TBool DVar::HInt::Update()
+{
+    TBool res = EFalse;
+    Elem* einp = mHost.GetNode("../../Capsule/inp");
+    if (einp == NULL) {
+	einp = mHost.GetNode("../../Capsule/Inp");
+    }
+    if (einp != NULL) {
+	MDIntGet* inp = (MDIntGet*) einp->GetSIfi(MDIntGet::Type());
+	if (inp != NULL) {
+	    TInt idata = inp->Value();
+	    Set(idata);
+	    res = ETrue;
+	}
+    }
+    return res;
+}

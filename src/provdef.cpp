@@ -53,6 +53,9 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     else if (aType.compare(DNInt::Type()) == 0) {
 	res = new DNInt(aName, aMan, aEnv);
     }
+    else if (aType.compare(DVar::Type()) == 0) {
+	res = new DVar(aName, aMan, aEnv);
+    }
     else if (aType.compare(AIncInt::Type()) == 0) {
 	res = new AIncInt(aName, aMan, aEnv);
     }
@@ -199,6 +202,10 @@ Elem* ProvDef::GetNode(const string& aUri)
 	else if (aUri.compare(DNInt::Type()) == 0) {
 	    parent = GetNode("DInt");
 	    res = new DNInt(NULL, iEnv);
+	}
+	else if (aUri.compare(DVar::Type()) == 0) {
+	    parent = GetNode("DataBase");
+	    res = new DVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AFunInt::Type()) == 0) {
 	    parent = GetNode("FuncBase");

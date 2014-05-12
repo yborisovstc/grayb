@@ -970,8 +970,8 @@ void *AFuncm::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCt
 	res = Elem::DoGetObj(aName, aIncUpHier);
     }
     if (res == NULL) {
-	map<string, void*>::iterator ri = iExecs.find(aName);
-	if (ri != iExecs.end()) {
+	map<string, Exec*>::iterator ri = mExecs.find(aName);
+	if (ri != mExecs.end()) {
 	    res = ri->second;
 	}
     }
@@ -1037,8 +1037,8 @@ void *AFuncmAdd::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* 
 
 TInt AFuncmAdd::ExcInt::Value()
 {
-    Elem* einp = iHost.GetNode("../../Capsule/inp");
-    RqContext cont(&iHost);
+    Elem* einp = mHost.GetNode("../../Capsule/inp");
+    RqContext cont(&mHost);
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
     TInt val = 0;
     for (IfIter it = range.first; it != range.second; it++) {
@@ -1146,5 +1146,41 @@ TInt AFBoolToInt::Value()
     }
     return res;
 }
+
+
+// Agent of function of variable type
+
+string AFunVar::PEType()
+{
+    return FuncBase::PEType() + GUri::KParentSep + Type();
+}
+
+AFunVar::AFunVar(const string& aName, Elem* aMan, MEnv* aEnv): FuncBase(aName, aMan, aEnv), mFunc(NULL)
+{
+    SetEType(Type(), FuncBase::PEType());
+    SetParent(Type());
+}
+
+AFunVar::AFunVar(Elem* aMan, MEnv* aEnv): FuncBase(Type(), aMan, aEnv), mFunc(NULL)
+{
+    SetEType(FuncBase::PEType());
+    SetParent(FuncBase::PEType());
+}
+
+void *AFunVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName, MDVarGet::Type()) == 0) {
+	res = (MDVarGet*) this;
+    }
+    else {
+	res = FuncBase::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
 
 

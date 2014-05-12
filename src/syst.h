@@ -67,6 +67,7 @@ class Syst: public Vert
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MCompsObserver
+	virtual void OnCompDeleting(Elem& aComp);
 	virtual void DoOnCompChanged(Elem& aComp);
 };
 

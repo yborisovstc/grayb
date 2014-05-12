@@ -655,6 +655,7 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aA
 		for (; it != itend; it++) {
 		    Elem* node = *it;
 		    Elem* res1 = node->GetNode(aUri, uripos);
+		    //if (res1 != NULL && !res1->IsRemoved()) {
 		    if (res1 != NULL) {
 			if (res == NULL) {
 			    res = res1;
@@ -728,6 +729,7 @@ void Elem::Mutate(TBool aRunTimeOnly)
 }
 
 // TODO [YB] Is megre the valid idea at all ?
+// TODO [YB] Semms not used anymore, to remove
 TBool Elem::MergeMutation(const ChromoNode& aSpec)
 {
     TBool res = EFalse;
@@ -808,18 +810,11 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 	else if (rnotype == ENt_Move) {
 	    MoveNode(rno, aRunTime);
 	}
+	else if (rnotype == ENt_Rm) {
+	    RmNode(rno, aRunTime);
+	}
 	else {
-	    if (rnotype == ENt_Rm) {
-		string snode = rno.Attr(ENa_MutNode);
-		GUri unode(snode);
-		RmNode(unode);
-	    }
-	    else {
-		Logger()->WriteFormat("ERROR: Mutating node [%s] - unknown mutation type [%d]", Name().c_str(), rnotype);
-	    }
-	    if (!aRunTime) {
-		MergeMutation(rno);
-	    }
+	    Logger()->WriteFormat("ERROR: Mutating node [%s] - unknown mutation type [%d]", Name().c_str(), rnotype);
 	}
     }
 }
@@ -1175,7 +1170,8 @@ TBool Elem::AppendComp(Elem* aComp)
 TBool Elem::RegisterComp(Elem* aComp)
 {
     TBool res = ETrue;
-    if (GetComp(aComp->EType(), aComp->Name()) == NULL) {
+    Elem* node = GetComp(aComp->EType(), aComp->Name());
+    if (node == NULL) {
 	iMComps.insert(TNMVal(TNMKey(aComp->Name()), aComp));
 	iMComps.insert(TNMVal(TNMKey("*"), aComp));
     }
@@ -1544,31 +1540,46 @@ TBool Elem::IsMutSafe(Elem* aRef)
     return safemut;
 }
 
-TBool Elem::RmNode(const GUri& aUri)
+TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime)
 {
     TBool res = EFalse;
-    Elem* node = GetNode(aUri);
+    string snode = aSpec.Attr(ENa_MutNode);
+    Elem* node = GetNode(snode);
     if (node != NULL) {
 	// Check dependent mutations
 	if (IsMutSafe(node)) {
 	    res = ETrue;
+	    /*
 	    // If node has children then just mark it as removed but not remove actually
 	    if (node->HasInherDeps()) {
 		node->SetRemoved();
+		if (!aRunTime) {
+		    // Adding dependency to object of change
+		    ChromoNode chn = iChromo->Root().AddChild(aSpec);
+		    AddCMDep(chn, ENa_MutNode, node);
+		}
 	    }
 	    else {
 		delete node;
 	    }
+	    */
+	    // Just mark node as removed but not remove actually
+	    node->SetRemoved();
+	    if (!aRunTime) {
+		// Adding dependency to object of change
+		ChromoNode chn = iChromo->Root().AddChild(aSpec);
+		AddCMDep(chn, ENa_MutNode, node);
+	    }
 	    if (IsLogeventCreOn()) {
-		Logger()->Write(MLogRec::EInfo, this, "Removed elem [%s]", aUri.GetUri().c_str());
+		Logger()->Write(MLogRec::EInfo, this, "Removed elem [%s]", snode.c_str());
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Removing elem [%s] - unsafe, used in: [%s]", aUri.GetUri().c_str(), node->GetMajorDep().first.first->GetUri().c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Removing elem [%s] - unsafe, used in: [%s]", snode.c_str(), node->GetMajorDep().first.first->GetUri().c_str());
 	}
     }
     else {
-	Logger()->Write(MLogRec::EErr, this, "Removing elem [%s] - not found", aUri.GetUri().c_str());
+	Logger()->Write(MLogRec::EErr, this, "Removing elem [%s] - not found", snode.c_str());
     }
     return res;
 }
@@ -1872,6 +1883,26 @@ TBool Elem::IsRemoved() const
 
 void Elem::SetRemoved()
 {
+    // Remove node from native hier but keep it in inher hier
+    // Notify the man of deleting
+    if (iMan != NULL) {
+	iMan->OnCompDeleting(*this);
+    }
+    if (iObserver != NULL) {
+	iObserver->OnCompDeleting(*this);
+    }
+    // TODO [YB] What about comps, do we need to mark all them as removed or update IsRemoved() to analyze owners removal
+    /*
+    // Remove the comps, using iterator refresh because the map is updated on each comp deletion
+    vector<Elem*>::reverse_iterator it = iComps.rbegin();
+    while (it != iComps.rend()) {
+	delete *it;
+	it = iComps.rbegin();
+    }
+    iComps.clear();
+    iMComps.clear();
+    */
+    // Mark node as removed from hative hier
     isRemoved = ETrue;
 }
 
@@ -1924,7 +1955,7 @@ void Elem::CompactChromo()
 		}
 	    }
 	    else {
-		Logger()->Write(MLogRec::EErr, this, "Cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
+		Logger()->Write(MLogRec::EErr, this, "Chromo squeezing: cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
 	    }
 	    // Remove mutation
 	    gmut.Rm();
@@ -1955,7 +1986,40 @@ void Elem::CompactChromo()
 		mut_removed = ETrue;
 	    }
 	    else {
-		Logger()->Write(MLogRec::EErr, this, "Cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
+		Logger()->Write(MLogRec::EErr, this, "Chromo squeezing: cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
+	    }
+	}
+	else if (muttype == ENt_Rm) {
+	    // Get node this mutation relates to
+	    TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
+	    if (iCMRelReg.count(key) > 0) {
+		// Remove mutation of creation of deleted node
+		Elem* node = iCMRelReg.at(key);
+		TMDeps::iterator it = node->GetMDeps().begin();
+		TMDep dep = *it;
+		ChromoNode cmut = iChromo->CreateNode(dep.first.second);
+		cmut.Rm();
+		/*
+		// Get mutations that depends on this node, and have lower rank
+		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
+		    TMDep dep = *it;
+		    ChromoNode mut = iChromo->CreateNode(dep.first.second);
+		    Rank rank;
+		    mut.GetRank(rank);
+		    if (rank >= grank) break;
+		    // Correct mutation is not required, the corresponding -node- mut has been already deleted
+		}
+		*/
+		// Remove mutation
+		gmut.Rm();
+		RmCMDep(gmut, ENa_MutNode);
+		mut_removed = ETrue;
+	    }
+	    else {
+		// No relation found, so the node is removed - just remove mutation
+		gmut.Rm();
+		RmCMDep(gmut, ENa_MutNode);
+		mut_removed = ETrue;
 	    }
 	}
 

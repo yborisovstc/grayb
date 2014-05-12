@@ -14,6 +14,7 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable, public M
     protected:
 	virtual TBool FromString(const string& aData); 
 	virtual bool ToString(string& aData); 
+	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MACompsObserver
@@ -74,55 +75,56 @@ class DNInt: public DInt
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
 };
 
-#if 0
-// Variant data. Supports multiple data types. The actual data type is comfigured on init phase
-class DataV: public DataBase, public MDVar
+// Variant data. Supports multiple data types. The actual data type is configured on init phase
+class DVar: public DataBase, public MDVar, public MDVarGet, public MDVarSet
 {
     public:
 	// Data handler base
-	class HBase: public Base {
+	class HBase: public Base, public MUpdatable {
 	    public:
-		HBase(DataV* aHost): Base(string()), mHost(*aHost) {};
+		HBase(DVar* aHost): Base(string()), mHost(*aHost) {};
 		virtual TBool FromString(const string& aString) = 0;
 		virtual void ToString(string& aString) = 0;
-		DataV& mHost;
+		virtual void Set(Elem* aInp) = 0;
+		DVar& mHost;
 	};
 	class HInt: public HBase, public MDInt, public MDIntGet, public MDIntSet {
 	    public:
-		HInt(DataV* aHost): HBase(aHost) {};
-		static HBase* Create(DataV* aHost, const string& aString);
+		HInt(DVar* aHost): HBase(aHost), mData(0) {};
+		static HBase* Create(DVar* aHost, const string& aString);
 		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 		virtual TInt Data() const;
 		virtual void Set(TInt aData);
+		virtual void Set(Elem* aInp);
 		virtual TInt Value();
 		virtual void SetValue(TInt aData);
 		virtual TBool FromString(const string& aString);
 		virtual void ToString(string& aString);
+		virtual TBool Update();
 		TInt mData;
 	};
     public:
-	static const char* Type() { return "DataV";};
+	static const char* Type() { return "DVar";};
 	static string PEType();
-	DataV(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
-	DataV(Elem* aMan = NULL, MEnv* aEnv = NULL);
-	virtual ~DataV();
+	DVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	DVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	virtual ~DVar();
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MElem
 	virtual void GetCont(string& aCont); 
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue); 
-	// From MDataObserver
-	virtual void OnDataChanged();
 	// From MUpdatable
 	virtual TBool Update();
 	// From DataBase
 	virtual bool FromString(const string& aData); 
+	virtual bool ToString(string& aData); 
+	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
     protected:
 	TBool Init(const string& aString);
     private:
 	HBase* mData;
 	string mContent;
 };
-#endif
 
 #endif
