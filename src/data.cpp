@@ -359,8 +359,13 @@ void *DVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
     else {
 	res = DataBase::DoGetObj(aName, aIncUpHier);
     }
-    if (res == NULL && mData != NULL) {
-	res = mData->DoGetObj(aName, aIncUpHier);
+    if (res == NULL) {
+	if (mData == NULL) {
+	    Init(aName);
+	}
+	if (mData != NULL) {
+	    res = mData->DoGetObj(aName, aIncUpHier);
+	}
     }
     return res;
 }
@@ -399,6 +404,10 @@ void DVar::GetCont(string& aCont)
 
 TBool DVar::Init(const string& aString)
 {
+    if (mData != NULL) {
+	delete mData;
+	mData == NULL;
+    }
     if ((mData = HInt::Create(this, aString)) != NULL);
     return mData != NULL;
 }
@@ -420,9 +429,9 @@ bool DVar::ToString(string& aData)
 TBool DVar::HandleIoChanged(Elem& aContext, Elem* aCp)
 {
     TBool res = EFalse;
-    if (aCp->Name() == "inp") {
+    if (aCp->Name() == "inp" || aCp->Name() == "Inp") {
 	// Check input change
-	mData->Set(aCp);
+	res = mData->Set(aCp);
     }
     else if (aCp->Name() == "out") {
 	UpdateProp();
@@ -436,13 +445,22 @@ TBool DVar::Update()
     TBool res = EFalse;
     string old_value;
     mData->ToString(old_value);
-    res = mData->Update();
+    res = mData->Set(GetInp());
     if (res && IsLogeventUpdate()) {
 	string new_value;
 	mData->ToString(new_value);
 	Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", new_value.c_str(), old_value.c_str());
     }
     return res;
+}
+
+Elem* DVar::GetInp()
+{
+    Elem* einp = GetNode("../../Capsule/inp");
+    if (einp == NULL) {
+	einp = GetNode("../../Capsule/Inp");
+    }
+    return einp;
 }
 
 // Int data
@@ -491,13 +509,16 @@ void DVar::HInt::Set(TInt aData)
     }
 }
 
-void DVar::HInt::Set(Elem* aInp)
+TBool DVar::HInt::Set(Elem* aInp)
 {
+    TBool res = EFalse;
     MDIntGet* dget = (MDIntGet*) aInp->GetSIfi(MDIntGet::Type());
     if (dget != NULL) {
 	TInt val = dget->Value();
 	Set(val);
+	res = ETrue;
     }
+    return res;
 }
 
 TInt DVar::HInt::Value()
@@ -508,22 +529,4 @@ TInt DVar::HInt::Value()
 void DVar::HInt::SetValue(TInt aData)
 {
     Set(aData);
-}
-
-TBool DVar::HInt::Update()
-{
-    TBool res = EFalse;
-    Elem* einp = mHost.GetNode("../../Capsule/inp");
-    if (einp == NULL) {
-	einp = mHost.GetNode("../../Capsule/Inp");
-    }
-    if (einp != NULL) {
-	MDIntGet* inp = (MDIntGet*) einp->GetSIfi(MDIntGet::Type());
-	if (inp != NULL) {
-	    TInt idata = inp->Value();
-	    Set(idata);
-	    res = ETrue;
-	}
-    }
-    return res;
 }

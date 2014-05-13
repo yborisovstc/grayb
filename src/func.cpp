@@ -1179,8 +1179,101 @@ void *AFunVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aC
     else {
 	res = FuncBase::DoGetObj(aName, aIncUpHier);
     }
+    if (res == NULL) {
+	if (mFunc == NULL) {
+	    Init(aName);
+	    if (mFunc != NULL) {
+		res = mFunc->DoGetObj(aName, aIncUpHier);
+	    }
+	}
+	else {
+	    res = mFunc->DoGetObj(aName, aIncUpHier);
+	    if (res == NULL) {
+		Init(aName);
+		if (mFunc != NULL) {
+		    res = mFunc->DoGetObj(aName, aIncUpHier);
+		}
+	    }
+	}
+    }
     return res;
 }
 
+
+
+string AFAddVar::PEType()
+{
+    return FuncBase::PEType() + GUri::KParentSep + Type();
+}
+
+AFAddVar::AFAddVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), AFunVar::PEType());
+    SetParent(Type());
+}
+
+AFAddVar::AFAddVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+{
+    SetEType(AFunVar::PEType());
+    SetParent(AFunVar::PEType());
+}
+
+void *AFAddVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = AFunVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+Elem* AFAddVar::GetInp()
+{
+    return GetNode("../../Capsule/Inp");
+}
+
+void AFAddVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc == NULL;
+    }
+    if ((mFunc = FInt::Create(this, aIfaceName)) != NULL);
+}
+
+AFunVar::Func* AFAddVar::FInt::Create(AFAddVar* aHost, const string& aString)
+{
+    AFunVar::Func* res = NULL;
+    if (aString == MDIntGet::Type()) {
+	res = new FInt(*aHost);
+    }
+    return res;
+}
+
+void *AFAddVar::FInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MDIntGet::Type()) == 0) res = (MDIntGet*) this;
+    return res;
+}
+
+TInt AFAddVar::FInt::Value()
+{
+    Elem* einp = mHost.GetInp();
+    __ASSERT(einp != NULL);
+    RqContext cont(this);
+    TIfRange range = einp->GetIfi("MDIntGet", &cont);
+    TInt val = 0;
+    for (IfIter it = range.first; it != range.second; it++) {
+	MDIntGet* dget = (MDIntGet*) (*it);
+	if (dget != NULL) {
+	    val += dget->Value();
+	}
+    }
+    return val;
+}
 
 

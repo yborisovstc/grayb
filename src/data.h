@@ -80,12 +80,12 @@ class DVar: public DataBase, public MDVar, public MDVarGet, public MDVarSet
 {
     public:
 	// Data handler base
-	class HBase: public Base, public MUpdatable {
+	class HBase: public Base {
 	    public:
 		HBase(DVar* aHost): Base(string()), mHost(*aHost) {};
 		virtual TBool FromString(const string& aString) = 0;
 		virtual void ToString(string& aString) = 0;
-		virtual void Set(Elem* aInp) = 0;
+		virtual TBool Set(Elem* aInp) = 0;
 		DVar& mHost;
 	};
 	class HInt: public HBase, public MDInt, public MDIntGet, public MDIntSet {
@@ -95,12 +95,11 @@ class DVar: public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 		virtual TInt Data() const;
 		virtual void Set(TInt aData);
-		virtual void Set(Elem* aInp);
+		virtual TBool Set(Elem* aInp);
 		virtual TInt Value();
 		virtual void SetValue(TInt aData);
 		virtual TBool FromString(const string& aString);
 		virtual void ToString(string& aString);
-		virtual TBool Update();
 		TInt mData;
 	};
     public:
@@ -121,6 +120,7 @@ class DVar: public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	virtual bool ToString(string& aData); 
 	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
     protected:
+	Elem* GetInp();
 	TBool Init(const string& aString);
     private:
 	HBase* mData;

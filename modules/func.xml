@@ -90,6 +90,18 @@
        <cont node="Required" val="MDBoolGet"/>
    </node>
 
+    <!-- Input of Transition Func with Var arg/res -->
+    <node id="Inp_TFVar" parent=":Elem:SysComps/ConnPoint"> 
+	<cont node="Required" val="MDVarGet"/>
+    </node>
+
+    <!-- Output of Transition Func with Var arg/res -->
+    <node id="Out_TFVar" parent=":Elem:SysComps/ConnPoint"> 
+	<cont node="Provided" val="MDVarGet"/>
+    </node>
+
+
+
 
     <!-- Int function with simgle input  -->
     <node id="FuncIntSi" parent=":Elem:IncapsComps/Incaps"> 
@@ -260,6 +272,15 @@
     	</add>
     </node>
 
+    <!-- Var Transition function wo inputs  -->
+    <node id="TFuncVar" parent=":Elem:IncapsComps/Incaps"> 
+    	<add node="Capsule"> 
+	    <!-- Output -->
+	    <node id="out" parent="../../Out_TFVar"/> 
+    	</add>
+    </node>
+
+
 
 
     <!-- Function of integer addition wo caching -->
@@ -338,6 +359,16 @@
 	    <node id="Inp" parent="../../Inp_TFBool"/> 
     	</add>
     </node>
+
+    <!-- Variable type function of addition wo caching -->
+    <node id="TFAddVar" parent="TFuncVar"> 
+	<add node="Agents"> <node id="func_agt" parent="AFAddVar"/> </add>
+	<add node="Capsule"> 
+	    <!-- Input -->
+	    <node id="inp" parent="../../Inp_TFVar"/> 
+	</add>
+    </node>
+
 
 
 

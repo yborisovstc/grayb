@@ -211,6 +211,18 @@ Elem* ProvDef::GetNode(const string& aUri)
 	    parent = GetNode("FuncBase");
 	    res = new AFunInt(NULL, iEnv);
 	}
+	else if (aUri.compare(AFunVar::Type()) == 0) {
+	    parent = GetNode("FuncBase");
+	    res = new AFunVar(NULL, iEnv);
+	}
+	else if (aUri.compare(AFAddVar::Type()) == 0) {
+	    parent = GetNode("AFunVar");
+	    res = new AFAddVar(NULL, iEnv);
+	}
+	else if (aUri.compare(AFunVar::Type()) == 0) {
+	    parent = GetNode("FuncBase");
+	    res = new AFunVar(NULL, iEnv);
+	}
 	else if (aUri.compare(AIncInt::Type()) == 0) {
 	    parent = GetNode("AFunInt");
 	    res = new AIncInt(NULL, iEnv);

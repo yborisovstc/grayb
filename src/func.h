@@ -323,12 +323,10 @@ class AFunVar: public FuncBase, public MDVarGet
 {
     public:
 	// Executive part of function 
-	class Func
-	{
+	class Func: public Base {
 	    friend class AFunVar;
 	    public:
-	    Func(AFunVar& aHost): mHost(aHost) {};
-	    AFunVar& mHost;
+	    Func(): Base(string()) {};
 	};
     public:
 	static const char* Type() { return "AFunVar";};
@@ -338,11 +336,39 @@ class AFunVar: public FuncBase, public MDVarGet
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
     protected:
+	virtual void Init(const string& aIfaceName) {};
 	void NotifyUpdate();
     protected:
 	Func* mFunc;
 };
 
+class AFAddVar: public AFunVar
+{
+    public:
+	class FAddBase: public Func {
+	    public:
+	    FAddBase(AFAddVar& aHost): Func(), mHost(aHost) {};
+	    AFAddVar& mHost;
+	};
+	class FInt: public FAddBase, public MDIntGet {
+	    public:
+		static Func* Create(AFAddVar* aHost, const string& aString);
+		FInt(AFAddVar& aHost): FAddBase(aHost) {};
+		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+		virtual TInt Value();
+	};
+    public:
+	static const char* Type() { return "AFIncVar";};
+	static string PEType();
+	AFAddVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	AFAddVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+    protected:
+	virtual void Init(const string& aIfaceName);
+    protected:
+	Elem* GetInp();
+};
 
 
 #endif
