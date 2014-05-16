@@ -27,11 +27,26 @@ class MDInt
 //	virtual void Update() = 0;
 };
 
+class MDFloat
+{
+    public:
+	static const char* Type() { return "MDFloat";};
+	virtual float Data() const = 0;
+	virtual void Set(float aData) = 0;
+};
+
 class MDIntGet
 {
     public:
 	static const char* Type() { return "MDIntGet";};
 	virtual TInt Value() = 0;
+};
+
+class MDFloatGet
+{
+    public:
+	static const char* Type() { return "MDFloatGet";};
+	virtual float Value() = 0;
 };
 
 class MDBoolGet
@@ -46,6 +61,13 @@ class MDIntSet
     public:
 	static const char* Type() { return "MDIntSet";};
 	virtual void SetValue(TInt aData) = 0;
+};
+
+class MDFloatSet
+{
+    public:
+	static const char* Type() { return "MDFloatSet";};
+	virtual void SetValue(float aData) = 0;
 };
 
 // Vector Int getting iface
@@ -71,16 +93,19 @@ class MDVar
 	static const char* Type() { return "MDVar";};
 };
 
+class Elem;
 class MDVarGet
 {
     public:
 	static const char* Type() { return "MDVarGet";};
+	virtual Elem* VarGetBase() = 0;
 };
 
 class MDVarSet
 {
     public:
 	static const char* Type() { return "MDVarSet";};
+	virtual Elem* VarSetBase() = 0;
 };
 
 

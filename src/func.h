@@ -319,7 +319,7 @@ class AFBoolToInt: public AFunc, public MDIntGet
 
 
 // Agent of function of variable type
-class AFunVar: public FuncBase, public MDVarGet
+class AFunVar: public AFunc, public MDVarGet
 {
     public:
 	// Executive part of function 
@@ -335,9 +335,12 @@ class AFunVar: public FuncBase, public MDVarGet
 	AFunVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MDVarGet
+	virtual Elem* VarGetBase();
+	// From MACompsObserver
+	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
     protected:
 	virtual void Init(const string& aIfaceName) {};
-	void NotifyUpdate();
     protected:
 	Func* mFunc;
 };
@@ -357,8 +360,15 @@ class AFAddVar: public AFunVar
 		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 		virtual TInt Value();
 	};
+	class FFloat: public FAddBase, public MDFloatGet {
+	    public:
+		static Func* Create(AFAddVar* aHost, const string& aString);
+		FFloat(AFAddVar& aHost): FAddBase(aHost) {};
+		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+		virtual float Value();
+	};
     public:
-	static const char* Type() { return "AFIncVar";};
+	static const char* Type() { return "AFAddVar";};
 	static string PEType();
 	AFAddVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	AFAddVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
@@ -367,7 +377,7 @@ class AFAddVar: public AFunVar
     protected:
 	virtual void Init(const string& aIfaceName);
     protected:
-	Elem* GetInp();
+	TIfRange GetInp();
 };
 
 

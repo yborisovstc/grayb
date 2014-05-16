@@ -81,12 +81,28 @@
 
     <!-- Terminal data, input only, provided data observer, required gettng data -->
     <node id="DataTVar" parent="DataS"> 
-	<cont node="D_1" val="Terminal data, input only. Monitoring input and update itself"/>
+	<cont node="D_1" val="Terminal data, input only, variable type. Monitoring input and update itself"/>
     	<add node="Agents"> <node id="AData" parent="DVar"/> </add>
 	<cont node="Capsule/inp/Provided" val="MDataObserver"/>
 	<cont node="Capsule/inp/Required" val="MDVarGet"/>
-	<rm node="Capsule/out"/>
+	<cont node="Capsule/out/Provided" val="MDVarGet"/>
     </node>
+
+
+    <!-- Data with separate input for setting and output for getting -->
+    <!--
+    <node id="DataTVar" parent=":Elem:IncapsComps/Incaps"> 
+	<cont node="D_1" val="Terminal data, input only. Monitoring input and update itself"/>
+    	<add node="Agents"> <node id="AData" parent="DVar"/> </add>
+    	<add node="Capsule"> 
+	    <node id="inp" parent=":Elem:SysComps/ConnPoint">
+		<cont node="Provided" val="MDataObserver"/>
+		<cont node="Required" val="MDVarGet"/>
+	    </node> 
+    	</add>
+	<node id="Value" parent="Prop"/>
+    </node>
+    -->
 
 
 

@@ -50,11 +50,30 @@
        <cont node="Provided" val="MVIntGet"/>
    </node>
 
+   <!-- Input of Func with Var arg/res -->
+   <node id="Inp_FVar" parent=":Elem:SysComps/ConnPoint"> 
+       <cont node="Required" val="MDVarGet"/>
+       <cont node="Provided" val="MDataObserver"/>
+   </node>
+
+   <!-- Output of Func with Var result -->
+   <node id="Out_FVar" parent=":Elem:SysComps/ConnPoint"> 
+       <cont node="Required" val="MDataObserver"/>
+       <cont node="Provided" val="MDVarGet"/>
+   </node>
+
     <!-- Int function wo inputs  -->
     <node id="FuncInt" parent=":Elem:IncapsComps/Incaps"> 
     	<add node="Capsule"> 
 	    <!-- Output -->
 	    <node id="out" parent="../../Out_FInt"/> 
+    	</add>
+    </node>
+
+    <!-- Var function wo inputs  -->
+    <node id="FuncVar" parent=":Elem:IncapsComps/Incaps"> 
+    	<add node="Capsule"> 
+	    <node id="out" parent="../../Out_FVar"/> 
     	</add>
     </node>
 
@@ -175,6 +194,16 @@
     <node id="FAddInt" parent="FuncIntSi"> 
 	<add node="Agents"> <node id="func_agt" parent="AFAddInt"/> </add>
     </node>
+
+    <!-- Function of var addition wo caching -->
+    <node id="FAddVar" parent="FuncVar"> 
+	<add node="Agents"> <node id="func_agt" parent="AFAddVar"/> </add>
+	<add node="Capsule"> 
+	    <!-- Input positives -->
+	    <node id="Inp" parent="../../Inp_FVar"/> 
+	</add>
+    </node>
+
 
     <!-- Function of integer addition wo caching -->
     <node id="FSubInt" parent="FuncInt"> 
@@ -361,13 +390,14 @@
     </node>
 
     <!-- Variable type function of addition wo caching -->
+    <!--
     <node id="TFAddVar" parent="TFuncVar"> 
 	<add node="Agents"> <node id="func_agt" parent="AFAddVar"/> </add>
 	<add node="Capsule"> 
-	    <!-- Input -->
 	    <node id="inp" parent="../../Inp_TFVar"/> 
 	</add>
     </node>
+    -->
 
 
 

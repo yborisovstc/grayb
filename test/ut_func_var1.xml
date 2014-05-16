@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="Root" parent="Elem">
+  <node id="Modules" parent="Elem">
+    <move id="file:../modules/syst.xml#"/>
+    <move id="file:../modules/capsula.xml#"/>
+    <move id="file:../modules/data.xml#"/>
+    <move id="file:../modules/func.xml#"/>
+  </node>
+  <node id="Start" parent="Elem">
+    <node id="Incaps_root" parent="/(Elem:)Root/(Elem:)Modules/(Elem:)IncapsComps/(Syst:)Incaps">
+      <node id="Dt" parent="/Root/Modules/DataComps/DataTVar"/>
+      <cont node="Dt/Value" val="F 0"/>
+      <node id="Add" parent="/(Elem:)Root/(Elem:)Modules/(Elem:)FuncComps/(FuncVar:)FAddVar"/>
+      <node id="Inp_data1" parent="/Root/Modules/DataComps/DataSVar"/>
+      <cont node="Inp_data1/Value" val="I 4"/>
+      <node id="e1" parent="Edge"/>
+      <cont node="(Edge:)e1/(Prop:)P2" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(DataTVar:)Dt/(Elem:)Capsule/(ConnPoint:)inp"/>
+      <cont node="(Edge:)e1/(Prop:)P1" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(FAddVar:)Add/(Elem:)Capsule/(Out_FVar:)out"/>
+      <node id="e2" parent="Edge"/>
+      <cont node="e2/P2" ref="/Root/Start/Incaps_root/Add/Capsule/Inp"/>
+      <cont node="e2/P1" ref="/Root/Start/Incaps_root/Inp_data1/Capsule/out"/>
+    </node>
+  </node>
+</node>

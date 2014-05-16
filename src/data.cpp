@@ -87,6 +87,9 @@ void *DataBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* a
     else if (strcmp(aName, MDataObserver::Type()) == 0) {
 	res = (MDataObserver*) this;
     }
+    else if (strcmp(aName, MACompsObserver::Type()) == 0) {
+	res = (MACompsObserver*) this;
+    }
     else {
 	res = Elem::DoGetObj(aName, aIncUpHier);
     }
@@ -335,16 +338,17 @@ string DVar::PEType()
     return DataBase::PEType() + GUri::KParentSep + Type();
 }
 
-DVar::DVar(const string& aName, Elem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(NULL)
+#if 0
+DVar::DVar(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), mData(NULL)
 {
-    SetEType(Type(), DataBase::PEType());
+    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 
-DVar::DVar(Elem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(NULL)
+DVar::DVar(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), mData(NULL)
 {
-    SetEType(DataBase::PEType());
-    SetParent(DataBase::PEType());
+    SetEType(Elem::PEType());
+    SetParent(Elem::PEType());
 }
 
 void *DVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -356,8 +360,14 @@ void *DVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
     else if (strcmp(aName, MDVar::Type()) == 0) {
 	res = (MDVar*) this;
     }
+    else if (strcmp(aName, MUpdatable::Type()) == 0) {
+	res = (MUpdatable*) this;
+    }
+    else if (strcmp(aName, MDataObserver::Type()) == 0) {
+	res = (MDataObserver*) this;
+    }
     else {
-	res = DataBase::DoGetObj(aName, aIncUpHier);
+	res = Elem::DoGetObj(aName, aIncUpHier);
     }
     if (res == NULL) {
 	if (mData == NULL) {
@@ -377,29 +387,41 @@ DVar::~DVar()
     }
 }
 
+TBool DVar::HandleCompChanged(Elem& aContext, Elem& aComp)
+{
+    TBool res = EFalse;
+    Elem* caps = aContext.GetNode("Capsule");
+    if (caps != NULL) {
+	Elem* cp = caps->GetCompOwning("ConnPoint", &aComp);
+	if (cp != NULL) {
+	    res = HandleIoChanged(aContext, cp);
+	}
+    }
+    return res;
+}
+
 TBool DVar::ChangeCont(const string& aVal, TBool aRtOnly)
 {
     TBool res = ETrue;
-    if (aVal != mContent) {
-	mContent = aVal;
-	if (mData == NULL) {
-	    res = Init(mContent);
-	}
-	if (res)  {
-	    mData->FromString(mContent);
-	}
-	if (aRtOnly) {
-	    iMan->OnContentChanged(*this);
-	} else {
-	    iMan->OnCompChanged(*this);
-	}
+    if (mData == NULL) {
+	res = Init(aVal);
+    }
+    if (res)  {
+	mData->FromString(aVal);
+    }
+    if (aRtOnly) {
+	iMan->OnContentChanged(*this);
+    } else {
+	iMan->OnCompChanged(*this);
     }
     return res;
 }
 
 void DVar::GetCont(string& aCont)
 {
-    aCont = mContent;
+    if (mData != NULL) {
+	mData->ToString(aCont);
+    }
 }
 
 TBool DVar::Init(const string& aString)
@@ -434,10 +456,27 @@ TBool DVar::HandleIoChanged(Elem& aContext, Elem* aCp)
 	res = mData->Set(aCp);
     }
     else if (aCp->Name() == "out") {
-	UpdateProp();
 	NotifyUpdate();
     }
     return res;
+}
+
+void DVar::NotifyUpdate()
+{
+    Elem* eout = GetNode("../../Capsule/out");
+    // TODO [YB] Scheme of getting iface should be enough to get MDataObserver directly from eout. Seems the chunk below is redundant.
+    if (eout != NULL) {
+	MDataObserver* obsr = (MDataObserver*) eout->GetSIfi(MDataObserver::Type());
+	if (obsr != NULL) {
+	    obsr->OnDataChanged();
+	}
+    }
+}
+
+void DVar::OnDataChanged()
+{
+    // Update data
+    Update();
 }
 
 TBool DVar::Update()
@@ -462,6 +501,160 @@ Elem* DVar::GetInp()
     }
     return einp;
 }
+	
+TBool DVar::IsLogeventUpdate() 
+{
+    Elem* node = GetNode("../../Logspec/Update");
+    return node != NULL;
+}
+#endif
+
+DVar::DVar(const string& aName, Elem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(NULL)
+{
+    SetEType(Type(), DataBase::PEType());
+    SetParent(Type());
+}
+
+DVar::DVar(Elem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(NULL)
+{
+    SetEType(DataBase::PEType());
+    SetParent(DataBase::PEType());
+}
+
+void *DVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName, MDVar::Type()) == 0) {
+	res = (MDVar*) this;
+    }
+    else if (strcmp(aName, MDVarGet::Type()) == 0) {
+	res = (MDVarGet*) this;
+    }
+    else if (strcmp(aName, MDVarSet::Type()) == 0) {
+	res = (MDVarSet*) this;
+    }
+    else {
+	res = DataBase::DoGetObj(aName, aIncUpHier);
+    }
+    if (res == NULL) {
+	if (mData == NULL) {
+	    Init(aName);
+	}
+	if (mData != NULL) {
+	    res = mData->DoGetObj(aName, aIncUpHier);
+	}
+    }
+    return res;
+}
+
+Elem* DVar::VarGetBase() 
+{
+    return this;
+}
+
+Elem* DVar::VarSetBase() 
+{
+    return this;
+}
+
+DVar::~DVar()
+{
+    if (mData != NULL) {
+	delete mData;
+    }
+}
+
+TBool DVar::Init(const string& aString)
+{
+    if (mData != NULL) {
+	delete mData;
+	mData == NULL;
+    }
+    if ((mData = HInt::Create(this, aString)) != NULL);
+    else if ((mData = HFloat::Create(this, aString)) != NULL);
+    return mData != NULL;
+}
+
+TBool DVar::FromString(const string& aData) 
+{
+    TBool res = EFalse;
+    if (mData == NULL) {
+	res = Init(aData);
+    }
+    if (mData != NULL) {
+	res = mData->FromString(aData);
+    }
+    if (res) {
+	NotifyUpdate();
+    }
+    return res;
+}
+
+bool DVar::ToString(string& aData) 
+{
+    TBool res = EFalse;
+    if (mData == NULL) {
+	res = Init(aData);
+    }
+    if (mData != NULL) {
+	mData->ToString(aData);
+    }
+    return res;
+
+}
+
+TBool DVar::HandleIoChanged(Elem& aContext, Elem* aCp)
+{
+    TBool res = EFalse;
+    if (aCp->Name() == "inp" || aCp->Name() == "Inp") {
+	// Check input change
+	if (mData != NULL) {
+	    Update();
+	}
+    }
+    else if (aCp->Name() == "out") {
+	NotifyUpdate();
+    }
+    return res;
+}
+
+TBool DVar::Update()
+{
+    TBool res = EFalse;
+    string old_value;
+    mData->ToString(old_value);
+    Elem* inp = GetInp();
+    if (inp != NULL) {
+	MDVarGet* vget = (MDVarGet*) inp->GetSIfi(MDVarGet::Type());
+	if (vget != NULL) {
+	    Elem* eget = vget->VarGetBase();
+	    res = mData->Set(eget);
+	    if (res && IsLogeventUpdate()) {
+		string new_value;
+		mData->ToString(new_value);
+		Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", new_value.c_str(), old_value.c_str());
+	    }
+	}
+    }
+    return res;
+}
+
+Elem* DVar::GetInp()
+{
+    Elem* einp = GetNode("../../Capsule/inp");
+    if (einp == NULL) {
+	einp = GetNode("../../Capsule/Inp");
+    }
+    return einp;
+}
+
+TBool DVar::HandleCompChanged(Elem& aContext, Elem& aComp)
+{
+    DataBase::HandleCompChanged(aContext, aComp);
+}
 
 // Int data
 void *DVar::HInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -476,7 +669,7 @@ void *DVar::HInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext*
 DVar::HBase* DVar::HInt::Create(DVar* aHost, const string& aString)
 {
     HBase* res = NULL;
-    if (aString.at(0) == 'I') {
+    if (!aString.empty() && aString.at(0) == 'I') {
 	res = new HInt(aHost);
     }
     return res;
@@ -485,14 +678,15 @@ DVar::HBase* DVar::HInt::Create(DVar* aHost, const string& aString)
 TBool DVar::HInt::FromString(const string& aString)
 {
     TInt data;
-    sscanf(aString.c_str(), "%d", &data);
+    sscanf(aString.c_str(), "I %d", &data);
     Set(data);
+    return ETrue;
 }
 
 void DVar::HInt::ToString(string& aString)
 {
     stringstream ss;
-    ss << mData;
+    ss << "I " << mData;
     aString = ss.str();
 }
 
@@ -506,6 +700,7 @@ void DVar::HInt::Set(TInt aData)
     if (mData != aData) {
 	mData = aData;
 	mHost.UpdateProp();
+	mHost.NotifyUpdate();
     }
 }
 
@@ -527,6 +722,76 @@ TInt DVar::HInt::Value()
 }
 
 void DVar::HInt::SetValue(TInt aData)
+{
+    Set(aData);
+}
+
+// Float data
+void *DVar::HFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MDFloat::Type()) == 0) res = (MDFloat*) this;
+    else if (strcmp(aName, MDFloatGet::Type()) == 0) res = (MDFloatGet*) this;
+    else if (strcmp(aName, MDFloatSet::Type()) == 0)  res = (MDFloatSet*) this;
+    return res;
+}
+
+DVar::HBase* DVar::HFloat::Create(DVar* aHost, const string& aString)
+{
+    HBase* res = NULL;
+    if (!aString.empty() && aString.at(0) == 'F') {
+	res = new HFloat(aHost);
+    }
+    return res;
+}
+
+TBool DVar::HFloat::FromString(const string& aString)
+{
+    float data;
+    sscanf(aString.c_str(), "F %f", &data);
+    Set(data);
+    return ETrue;
+}
+
+void DVar::HFloat::ToString(string& aString)
+{
+    stringstream ss;
+    ss << "F " << mData;
+    aString = ss.str();
+}
+
+float DVar::HFloat::Data() const
+{
+    return mData;
+}
+
+void DVar::HFloat::Set(float aData)
+{
+    if (mData != aData) {
+	mData = aData;
+	mHost.UpdateProp();
+	mHost.NotifyUpdate();
+    }
+}
+
+TBool DVar::HFloat::Set(Elem* aInp)
+{
+    TBool res = EFalse;
+    MDFloatGet* dget = (MDFloatGet*) aInp->GetSIfi(MDFloatGet::Type());
+    if (dget != NULL) {
+	float val = dget->Value();
+	Set(val);
+	res = ETrue;
+    }
+    return res;
+}
+
+float DVar::HFloat::Value()
+{
+    return mData;
+}
+
+void DVar::HFloat::SetValue(float aData)
 {
     Set(aData);
 }
