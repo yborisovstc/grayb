@@ -16,6 +16,7 @@ class Rank: public vector<TInt>
 	TBool operator==(const Rank& aArg) const {return Compare(aArg) == 0;};
 	TBool operator<(const Rank& aArg) const {return Compare(aArg) == -1;};
 	TBool operator>(const Rank& aArg) const {return Compare(aArg) == 1;};
+	Rank& operator+=(const Rank& aArg);
 };
 
 
@@ -141,6 +142,7 @@ class ChromoNode
 	void MoveToEnd() { iMdl.MoveToEnd(iHandle);};
 	TInt GetLocalRank();
 	void GetRank(Rank& aRank) const;
+	void GetRank(Rank& aRank, const ChromoNode& aBase) const;
 	// The number of direct childs
 	TInt GetLocalSize();
 	ChromoNode& GetNode(const GUri& aUri) const;

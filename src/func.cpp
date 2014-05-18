@@ -1265,6 +1265,7 @@ void AFAddVar::Init(const string& aIfaceName)
     }
     if ((mFunc = FInt::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FFloat::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FVFloat::Create(this, aIfaceName)) != NULL);
 }
 
 // Int function
@@ -1339,3 +1340,48 @@ float AFAddVar::FFloat::Value()
 }
 
 
+// Float vector addition
+AFunVar::Func* AFAddVar::FVFloat::Create(AFAddVar* aHost, const string& aString)
+{
+    AFunVar::Func* res = NULL;
+    if (aString == MVFloatGet::Type()) {
+	res = new FVFloat(*aHost);
+    }
+    return res;
+}
+
+void *AFAddVar::FVFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MVFloatGet::Type()) == 0) res = (MVFloatGet*) this;
+    return res;
+}
+
+
+void AFAddVar::FVFloat::VFloatGet(VFloat& aData)
+{
+    TInt size = aData.size();
+    TIfRange range = mHost.GetInp();
+    float val = 0;
+    for (IfIter it = range.first; it != range.second; it++) {
+	MDVarGet* dget = (MDVarGet*) (*it);
+	Elem* dgetbase = dget->VarGetBase();
+	MVFloatGet* dfget = (MVFloatGet*) dgetbase->GetSIfi(MVFloatGet::Type());
+	if (dfget != NULL) {
+	    VFloat arg;
+	    dfget->VFloatGet(arg);
+	    if (arg.size() == size) {
+		for (TInt cnt = 0; cnt < size; cnt++) {
+		    if (it == range.first) {
+			aData.at(cnt) = 0.0;
+		    }
+		    aData.at(cnt) += arg.at(cnt);
+		}
+	    }
+	    else {
+		mHost.Logger()->Write(MLogRec::EErr, &mHost, "Incorrect size of argument [%s]", dgetbase->GetUri().c_str());
+	    }
+	}
+    }
+
+}

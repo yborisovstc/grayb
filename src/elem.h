@@ -197,6 +197,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual const Elem* GetMan() const;
 	Elem* GetParent();
 	void GetRank(Rank& aRank) const;
+	void GetRank(Rank& aRank, const ChromoNode& aMut) const;
 	TInt GetLocalRank() const;
 	const Elem* GetParent() const;
 	void SetParent(Elem* aParent);

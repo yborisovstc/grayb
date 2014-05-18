@@ -367,6 +367,13 @@ class AFAddVar: public AFunVar
 		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 		virtual float Value();
 	};
+	class FVFloat: public FAddBase, public MVFloatGet {
+	    public:
+		static Func* Create(AFAddVar* aHost, const string& aString);
+		FVFloat(AFAddVar& aHost): FAddBase(aHost) {};
+		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+		virtual void VFloatGet(VFloat& aData);
+	};
     public:
 	static const char* Type() { return "AFAddVar";};
 	static string PEType();

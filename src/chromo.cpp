@@ -43,6 +43,14 @@ TInt Rank::Compare(const Rank& aArg) const
     return res;
 }
 
+Rank& Rank::operator+=(const Rank& aArg)
+{
+    for (vector<TInt>::const_iterator it = aArg.begin(); it != aArg.end(); it++) {
+	push_back(*it);
+    }
+    return *this;
+}
+
 
 // Chromo
 
@@ -198,3 +206,13 @@ void ChromoNode::GetRank(Rank& aRank) const
     }
 }
 
+void ChromoNode::GetRank(Rank& aRank, const ChromoNode& aBase) const
+{
+    ChromoNode prnt = *Parent();
+    if (prnt.iHandle != NULL && iHandle != aBase.iHandle) {
+	TInt res = 0;
+	for (Iterator it = prnt.Begin(); it != prnt.End() && !(*it == *this); it++, res++);
+	aRank.insert(aRank.begin(), res);
+	prnt.GetRank(aRank, aBase);
+    }
+}

@@ -524,7 +524,8 @@ TBool Elem::AddNode(const ChromoNode& aSpec, TBool aRunTime)
 	    ChromoNode::Iterator itn = iChromo->Root().Begin();
 	    if (!aRunTime) {
 		ChromoNode chn = iChromo->Root().AddChild(aSpec);
-		node->AddMDep(this, chn, ENa_MutNode);
+		//node->AddMDep(this, chn, ENa_MutNode);
+		AddCMDep(chn, ENa_MutNode, node);
 		itn = chn.Begin();
 	    }
 	    for (ChromoNode::Const_Iterator mit = aSpec.Begin(); mit != aSpec.End() && res; mit++) {
@@ -537,7 +538,8 @@ TBool Elem::AddNode(const ChromoNode& aSpec, TBool aRunTime)
 		    // Adding dependency to object of change
 		    if (!aRunTime) {
 			const ChromoNode& chno = (*itn);
-			rnode->AddMDep(this, chno, ENa_Id);
+			//rnode->AddMDep(this, chno, ENa_Id);
+			AddCMDep(chno, ENa_Id, rnode);
 		    }
 		    if (IsLogeventCreOn()) {
 			Logger()->Write(MLogRec::EInfo, this, "Added node [%s] into [%s]", mno.Name().c_str(), snode.c_str());
@@ -1452,6 +1454,16 @@ void Elem::GetRank(Rank& aRank) const
     }
 }
 
+void Elem::GetRank(Rank& aRank, const ChromoNode& aMut) const
+{
+    // Get nodes rank
+    GetRank(aRank);
+    // Add mutations rank
+    Rank mrank;
+    aMut.GetRank(mrank, iChromo->Root());
+    aRank += mrank;
+}
+
 TInt Elem::GetLocalRank() const
 {
     TInt res = -1;
@@ -1532,7 +1544,8 @@ TBool Elem::IsMutSafe(Elem* aRef)
 	GetRank(rank);
 	Rank deprank;
 	ChromoNode depnode = iChromo->CreateNode(dep.first.second);
-	depnode.GetRank(deprank);
+	// Using combined calc of rank because of possibility that mut can be deattached
+	dep.first.first->GetRank(deprank, depnode);
 	if (deprank > rank && !deprank.IsRankOf(rank)) {
 	    safemut = EFalse;
 	}

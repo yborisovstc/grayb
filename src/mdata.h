@@ -108,6 +108,17 @@ class MDVarSet
 	virtual Elem* VarSetBase() = 0;
 };
 
+// Vector: Float
+typedef std::vector<float> VFloat;
+
+class MVFloatGet
+{
+    public:
+	static const char* Type() { return "MVFloatGet";};
+	virtual void VFloatGet(VFloat& aData) = 0;
+};
+
+
 
 
 
