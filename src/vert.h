@@ -18,6 +18,7 @@ class Vert: public Elem, public MVert
 	Vert(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	Vert(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~Vert();
+	virtual void SetRemoved();
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MVert
@@ -34,6 +35,7 @@ class Vert: public Elem, public MVert
 	// Iface cache
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
     protected:
+	void Disconnect();
 	void RemoveFromMap(MEdge* aEdge, const TNMKey& aKey);
     protected:
 	set<MVert*> iPairs;

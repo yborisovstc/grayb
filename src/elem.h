@@ -142,7 +142,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	Elem* GetNode(const GUri& aUri);
 	virtual ~Elem();
 	TBool IsRemoved() const;
-	void SetRemoved();
+	virtual void SetRemoved();
 	void SetEType(const string& aPName, const string& aPEType = string());
 	void SetParent(const string& aParent);
 	void SetMan(Elem* aMan);

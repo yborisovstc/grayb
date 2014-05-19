@@ -220,16 +220,18 @@ TBool Edge::Connect()
 
 void Edge::Disconnect(MVert* aPoint)
 {
-    if (iPoint1 != NULL) {
+    if ((aPoint == NULL || aPoint == iPoint1) && iPoint1 != NULL) {
 	iPoint1->Disconnect(this);
-    }
-    if (iPoint2 != NULL) {
-	iPoint2->Disconnect(this);
-    }
-    if (aPoint == NULL || aPoint == iPoint1) {
+	if (iPoint2 != NULL) {
+	    iPoint2->Disconnect(iPoint1);
+	}
 	iPoint1 = NULL;
     }
-    if (aPoint == NULL || aPoint == iPoint2) {
+    if ((aPoint == NULL || aPoint == iPoint2) && iPoint2 != NULL) {
+	iPoint2->Disconnect(this);
+	if (iPoint1 != NULL) {
+	    iPoint1->Disconnect(iPoint2);
+	}
 	iPoint2 = NULL;
     }
 }

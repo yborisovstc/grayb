@@ -111,19 +111,10 @@ Vert::~Vert()
     // not affecting edges chromo but only runtime data. This is aligned with common concept that disables internal mutations.
     // So edge still will be pointing to deleted vertex causing error.
     //
-    // Cache edges first because disconnecting will affect iMEdges
-    vector<MEdge*> edges;
-    for (TEdgesMap::iterator it = iMEdges.begin(); it != iMEdges.end(); it++) {
-	edges.push_back(it->second);
-    }
-    // Disconnect edges
-    for (vector<MEdge*>::iterator ite = edges.begin(); ite != edges.end(); ite++) {
-	MEdge* edge = *ite;
-	edge->Disconnect(this);
-    }
-    // TODO [YB] To add notif of edge about deleting
-    iMEdges.clear();
-    iPairs.clear();
+}
+
+void Vert::SetRemoved()
+{
 }
 
 TBool Vert::Connect(MVert* aPair)
@@ -172,14 +163,33 @@ void Vert::Disconnect(MVert* aPair)
     iMan->OnCompChanged(*this);
 }
 
+void Vert::Disconnect()
+{
+    // Cache edges first because disconnecting will affect iMEdges
+    vector<MEdge*> edges;
+    for (TEdgesMap::iterator it = iMEdges.begin(); it != iMEdges.end(); it++) {
+	edges.push_back(it->second);
+    }
+    // Disconnect edges
+    for (vector<MEdge*>::iterator ite = edges.begin(); ite != edges.end(); ite++) {
+	MEdge* edge = *ite;
+	edge->Disconnect(this);
+    }
+    // TODO [YB] To add notif of edge about deleting
+    iMEdges.clear();
+    iPairs.clear();
+}
+
 void Vert::Disconnect(MEdge* aEdge)
 {
     Edge* ee = aEdge->EBase()->GetObj(ee);
     TEdgesMap::iterator found = iMEdges.find(TNMKey(ee->Name()));
     if (found != iMEdges.end()) {
 	RemoveFromMap(aEdge, TNMKey(ee->Name()));
-	__ASSERT(aEdge->Pair(this) != NULL);
-	Disconnect(aEdge->Pair(this));
+	//__ASSERT(aEdge->Pair(this) != NULL);
+	if (aEdge->Pair(this) != NULL) {
+	    Disconnect(aEdge->Pair(this));
+	}
     }
 }
 
