@@ -89,24 +89,6 @@
     </node>
 
 
-    <!-- Data with separate input for setting and output for getting -->
-    <!--
-    <node id="DataTVar" parent=":Elem:IncapsComps/Incaps"> 
-	<cont node="D_1" val="Terminal data, input only. Monitoring input and update itself"/>
-    	<add node="Agents"> <node id="AData" parent="DVar"/> </add>
-    	<add node="Capsule"> 
-	    <node id="inp" parent=":Elem:SysComps/ConnPoint">
-		<cont node="Provided" val="MDataObserver"/>
-		<cont node="Required" val="MDVarGet"/>
-	    </node> 
-    	</add>
-	<node id="Value" parent="Prop"/>
-    </node>
-    -->
-
-
-
-
     <node id="DataInt" parent=":Elem:IncapsComps/Incaps"> 
 
     	<add node="Agents"> <node id="ADInt" parent="DInt"/> </add>
@@ -143,6 +125,17 @@
 	<cont node="Capsule/Out/Provided" val="MDIntGet"/>
 	<cont node="Capsule/Upd/Provided" val="MUpdatable"/>
     </node>
+
+    <!-- Data Var -->
+    <node id="DataSCVar" parent="DataSC"> 
+    	<add node="Agents"> 
+	    <node id="MACompsObserver" parent="DVar"/> 
+    	</add>
+	<cont node="Capsule/Inp/Required" val="MDVarGet"/>
+	<cont node="Capsule/Out/Provided" val="MDVarGet"/>
+	<cont node="Capsule/Upd/Provided" val="MUpdatable"/>
+    </node>
+
 
     <!-- END: Data with separate input, output, and dedicated input for initiating of setting data-->
 

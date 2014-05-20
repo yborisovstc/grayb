@@ -145,6 +145,26 @@
 	</node>
     </node>
 
+    <node id="StateVar" parent="State"> 
+	<node id="Confirmed" parent=":Elem:DataComps/DataSCVar"/>
+
+	<node id="Prepared" parent=":Elem:DataComps/DataSCVar"/>
+
+	<cont node="Capsule/Inp/Int/PinData/Provided" val="MDVarGet"/>
+	<cont node="Capsule/Out/Int/PinData/Required" val="MDVarGet"/>
+
+	<node parent="Edge"> 
+	    <cont node="P1" val="../../Confirmed/Capsule/Out"/> 
+	    <cont node="P2" val="../../Capsule/Out/Int/PinData"/> 
+	</node>
+
+	<node parent="Edge"> 
+	    <cont node="P1" val="../../Prepared/Capsule/Out"/> 
+	    <cont node="P2" val="../../Confirmed/Capsule/Inp"/> 
+	</node>
+    </node>
+
+
     <!-- DES base -->
     <node id="Des" parent=":Elem:IncapsComps/Incaps"> 
 
