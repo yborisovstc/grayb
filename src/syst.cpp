@@ -648,6 +648,9 @@ void Syst::OnCompDeleting(Elem& aComp)
 }
 
 
+// TODO [YB] To consider change of edge APIs. We need to be able to connect just one point of edge
+// i.e. to add Edge::Connect(MVert aVert) that connects only aVert and syncs to pair if it is already
+// connected to edge. This improvement was done for Vert. To do that for Syst and Incaps.
 void Syst::DoOnCompChanged(Elem& aComp)
 {
     Elem* eedge = GetCompOwning("Edge", &aComp);

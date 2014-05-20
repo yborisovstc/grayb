@@ -115,19 +115,20 @@ Vert::~Vert()
 
 void Vert::SetRemoved()
 {
+    Disconnect();
+    Elem::SetRemoved();
 }
 
 TBool Vert::Connect(MVert* aPair)
 {
     TBool res = EFalse;
-    if (aPair != NULL && iPairs.count(aPair) == 0) {
-	iPairs.insert(aPair);
-	// Invalidate ifaces cache
-	InvalidateIfCache();
-	__ASSERT(iMan != NULL);
-	iMan->OnCompChanged(*this);
-	res = ETrue;
-    }
+    __ASSERT(aPair != NULL && iPairs.count(aPair) == 0);
+    iPairs.insert(aPair);
+    // Invalidate ifaces cache
+    InvalidateIfCache();
+    __ASSERT(iMan != NULL);
+    iMan->OnCompChanged(*this);
+    res = ETrue;
     return res;
 }
 
@@ -136,7 +137,9 @@ TBool Vert::Connect(MEdge* aEdge)
     TBool res = ETrue;
     Edge* ee = aEdge->EBase()->GetObj(ee);
     __ASSERT(iMEdges.find(TNMKey(ee->Name())) == iMEdges.end());
-    res = Connect(aEdge->Pair(this));
+    if (aEdge->Pair(this) != NULL) {
+	res = Connect(aEdge->Pair(this));
+    }
     if (res) {
 	iMEdges.insert(pair<TNMKey, MEdge*>(TNMKey(ee->Name()), aEdge));
     }
@@ -222,50 +225,41 @@ void Vert::OnCompAdding(Elem& aComp)
     Elem::OnCompAdding(aComp);
 }
 
-// TODO [YB] To consider change of edge APIs. We need to be able to connect just one point of edge
-// i.e. to add Edge::Connect(MVert aVert) that connects only aVert and syncs to pair if it is already
-// connected to edge.
+
 void Vert::DoOnCompChanged(Elem& aComp)
 {
     Elem* eedge = GetCompOwning("Edge", &aComp);
     if (eedge != NULL) {
-	// Reconnect the edge
 	Edge* edge = eedge->GetObj(edge);	
-	__ASSERT(edge != NULL);
-	edge->Disconnect();
-	const string& pt1u = edge->Point1u();
-	if (!pt1u.empty()) {
-	    Elem* pt1 = edge->Point1r();
-	    if (pt1 != NULL) {
-		MVert* pt1v = pt1->GetObj(pt1v);
+	TBool res = EFalse;
+	if (&aComp == edge->Point1p()) {
+	    edge->Disconnect(edge->Point1());
+	    if (!edge->Point1u().empty()) {
+		MVert* pt1v = edge->Point1v();
 		if (pt1v != NULL) {
-		    edge->SetPoint1(pt1v);
+		    res = edge->ConnectP1(pt1v);
+		}
+		else {
+		    Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find or not vertex", edge->Point1u().c_str());
 		}
 	    }
-	    else {
-		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find", pt1u.c_str());
-	    }
 	}
-	const string& pt2u = edge->Point2u();
-	if (!pt2u.empty()) {
-	    Elem* pt2 = edge->Point2r();
-	    if (pt2 != NULL) {
-		MVert* pt2v = pt2->GetObj(pt2v);
-		if (pt2v != NULL) {
-		    edge->SetPoint2(pt2v);
-		}
+	else if (&aComp == edge->Point2p()) {
+	    edge->Disconnect(edge->Point2());
+	    MVert* pt2v = edge->Point2v();
+	    if (pt2v != NULL) {
+		res = edge->ConnectP2(pt2v);
 	    }
 	    else {
-		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find", pt2u.c_str());
+		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find or not vertex", edge->Point2u().c_str());
 	    }
 	}
-	if (edge->Point1() != NULL && edge->Point2() != NULL) {
-	    TBool res = edge->Connect();
+	if (edge->Point1r() != NULL && edge->Point2r() != NULL) {
 	    if (res) {
-		Logger()->Write(MLogRec::EInfo, this, "Connected [%s - %s]", pt1u.c_str(), pt2u.c_str());
+		Logger()->Write(MLogRec::EInfo, this, "Connected [%s - %s]", edge->Point1u().c_str(), edge->Point2u().c_str());
 	    }
 	    else {
-		Logger()->WriteFormat("ERR: Vert [%s] connected [%s - %s] failed", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+		Logger()->Write(MLogRec::EErr, this, "Connection [%s - %s] failed", edge->Point1u().c_str(), edge->Point2u().c_str());
 	    }
 	}
     }

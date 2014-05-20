@@ -203,7 +203,7 @@ void Ut_mut::test_MutRmRecr()
     Elem* root = iEnv->Root();
      // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* v1 = root->GetNode("test/v1");
+    Elem* v1 = root->GetNode("v1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get v1", v1 != 0);
     delete iEnv;
 }

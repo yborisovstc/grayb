@@ -218,21 +218,63 @@ TBool Edge::Connect()
     return res;
 }
 
+TBool Edge::ConnectP1(MVert* aPoint)
+{
+    TBool res = EFalse;
+    __ASSERT(iPoint1 == NULL);
+    res = aPoint->Connect(this);
+    if (res) {
+	iPoint1 = aPoint;
+	// Connect pair to the point
+	if (iPoint2 != NULL) {
+	    iPoint2->Connect(iPoint1);
+	}
+    }
+    return res;
+}
+
+TBool Edge::ConnectP2(MVert* aPoint)
+{
+    TBool res = EFalse;
+    __ASSERT(iPoint2 == NULL);
+    res = aPoint->Connect(this);
+    if (res) {
+	iPoint2 = aPoint;
+	// Connect pair to the point
+	if (iPoint1 != NULL) {
+	    iPoint1->Connect(iPoint2);
+	}
+    }
+    return res;
+}
+
 void Edge::Disconnect(MVert* aPoint)
 {
-    if ((aPoint == NULL || aPoint == iPoint1) && iPoint1 != NULL) {
-	iPoint1->Disconnect(this);
-	if (iPoint2 != NULL) {
-	    iPoint2->Disconnect(iPoint1);
+    if (aPoint != NULL) {
+	if (aPoint == iPoint1) {
+	    iPoint1->Disconnect(this);
+	    if (iPoint2 != NULL) {
+		iPoint2->Disconnect(iPoint1);
+	    }
+	    iPoint1 = NULL;
 	}
-	iPoint1 = NULL;
+	if (aPoint == iPoint2) {
+	    iPoint2->Disconnect(this);
+	    if (iPoint1 != NULL) {
+		iPoint1->Disconnect(iPoint2);
+	    }
+	    iPoint2 = NULL;
+	}
     }
-    if ((aPoint == NULL || aPoint == iPoint2) && iPoint2 != NULL) {
-	iPoint2->Disconnect(this);
-	if (iPoint1 != NULL) {
-	    iPoint1->Disconnect(iPoint2);
-	}
-	iPoint2 = NULL;
+}
+
+void Edge::Disconnect()
+{
+    if (iPoint1 != NULL) {
+	Disconnect(iPoint1);
+    }
+    if (iPoint2 != NULL) {
+	Disconnect(iPoint2);
     }
 }
 
@@ -261,22 +303,68 @@ const string& Edge::Point2u()
 
 Elem* Edge::Point1r()
 {
+    Elem* res = NULL;
     Elem* pte = GetNode("P1");
     __ASSERT(pte != NULL);
     MProp* pt = pte->GetObj(pt);
     __ASSERT(pt != NULL);
     const string& uri = pt->Value();
-    return pte->GetNode(uri);
+    if (!uri.empty()) {
+	res = pte->GetNode(uri);
+    }
+    return res;
 }
 
 Elem* Edge::Point2r()
 {
+    Elem* res = NULL;
     Elem* pte = GetNode("P2");
     __ASSERT(pte != NULL);
     MProp* pt = pte->GetObj(pt);
     __ASSERT(pt != NULL);
     const string& uri = pt->Value();
-    return pte->GetNode(uri);
+    if (!uri.empty()) {
+	res = pte->GetNode(uri);
+    }
+    return res;
+}
+
+MVert* Edge::Point1v()
+{
+    MVert* res = NULL;
+    Elem* pte = GetNode("P1");
+    const string& uri = Point1u();
+    if (!uri.empty()) {
+	Elem* pr = pte->GetNode(uri);
+	if (pr != NULL) {
+	    res = pr->GetObj(res);
+	}
+    }
+    return res;
+}
+
+MVert* Edge::Point2v()
+{
+    MVert* res = NULL;
+    Elem* pte = GetNode("P2");
+    const string& uri = Point2u();
+    if (!uri.empty()) {
+	Elem* pr = pte->GetNode(uri);
+	if (pr != NULL) {
+	    res = pr->GetObj(res);
+	}
+    }
+    return res;
+}
+
+Elem* Edge::Point1p()
+{
+    return GetNode("P1");
+}
+
+Elem* Edge::Point2p()
+{
+    return GetNode("P2");
 }
 
 Base* Edge::EBase()

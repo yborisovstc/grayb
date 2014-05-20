@@ -5,6 +5,9 @@
 #include "elem.h"
 
 // Edge base
+// TODO [YB] Added ConnectP1,2 to do partial connections of edge. So SetPoints
+// are not required anymore. Connection processing has been upgraded for Vert.
+// To rework connection processing for syst .... Remove Set* methods.
 class Edge: public Elem, public MEdge
 {
     public:
@@ -30,7 +33,6 @@ class Edge: public Elem, public MEdge
 	    TIter iPIter;
 	};
 
-
     public:
 	static const char* Type() { return "Edge";};
 	static string PEType();
@@ -40,8 +42,12 @@ class Edge: public Elem, public MEdge
     public:
 	const string& Point1u();
 	const string& Point2u();
+	Elem* Point1p();
+	Elem* Point2p();
 	Elem* Point1r();
 	Elem* Point2r();
+	MVert* Point1v();
+	MVert* Point2v();
 	void SetPoints(MVert* aPoint1, MVert* aPoint2);
 	void SetPoint1(MVert* aPoint);
 	void SetPoint2(MVert* aPoint);
@@ -51,7 +57,10 @@ class Edge: public Elem, public MEdge
 	virtual Base* EBase();
 	virtual const Base* EBase() const;
 	virtual TBool Connect();
-	virtual void Disconnect(MVert* aPoint = NULL);
+	virtual TBool ConnectP1(MVert* aPoint);
+	virtual TBool ConnectP2(MVert* aPoint);
+	virtual void Disconnect(MVert* aPoint);
+	virtual void Disconnect();
 	virtual MVert* Pair(const MVert* aPoint);
 	virtual MVert* Point1() const;
 	virtual MVert* Point2() const;
