@@ -17,6 +17,7 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Add);
     CPPUNIT_TEST(test_MutSyst);
     CPPUNIT_TEST(test_Move);
+    CPPUNIT_TEST(test_MutRmRecr);
     CPPUNIT_TEST(test_MutDepsRm);
     CPPUNIT_TEST(test_MutDepsRm2);
     CPPUNIT_TEST(test_MutDepsRmRef);
@@ -33,6 +34,7 @@ private:
     void test_Add();
     void test_MutSyst();
     void test_Move();
+    void test_MutRmRecr();
     void test_MutDepsRm();
     void test_MutDepsRm2();
     void test_MutDepsRmRef();
@@ -187,6 +189,22 @@ void Ut_mut::test_Move()
     Elem* emoved = root->GetNode("elem3/elem4/elem5");
     CPPUNIT_ASSERT_MESSAGE("Fail to move local node elem5", emoved != NULL);
  
+    delete iEnv;
+}
+
+// Test of removing node and recreation node with the same name
+void Ut_mut::test_MutRmRecr()
+{
+    printf("\n === Test of creating node with same name as removed one\n");
+
+    iEnv = new Env("Env", "ut_mut_rm_recr.xml", "ut_mut_rm_recr.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+     // Check creation first
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    Elem* v1 = root->GetNode("test/v1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get v1", v1 != 0);
     delete iEnv;
 }
 

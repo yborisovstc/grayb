@@ -110,7 +110,7 @@ Vert::~Vert()
     // Solution for UC_015: vertex "locally" (w/o involving upper vertex) disconnects from edges, 
     // not affecting edges chromo but only runtime data. This is aligned with common concept that disables internal mutations.
     // So edge still will be pointing to deleted vertex causing error.
-    //
+    Disconnect();
 }
 
 void Vert::SetRemoved()
@@ -155,12 +155,15 @@ set<MVert*>& Vert::Pairs()
 
 void Vert::Disconnect(MVert* aPair)
 {
-    __ASSERT(aPair != NULL && iPairs.count(aPair) > 0);
-    iPairs.erase(aPair);
-    // Invalidate ifaces cache
-    InvalidateIfCache();
-    __ASSERT(iMan != NULL);
-    iMan->OnCompChanged(*this);
+    // TODO [YB] To redisign Edge (ref comment in OnCompChanged and restore assert
+    // __ASSERT(aPair != NULL && iPairs.count(aPair) > 0);
+    if (aPair != NULL && iPairs.count(aPair) > 0) {
+	iPairs.erase(aPair);
+	// Invalidate ifaces cache
+	InvalidateIfCache();
+	__ASSERT(iMan != NULL);
+	iMan->OnCompChanged(*this);
+    }
 }
 
 void Vert::Disconnect()
@@ -184,6 +187,7 @@ void Vert::Disconnect(MEdge* aEdge)
 {
     Edge* ee = aEdge->EBase()->GetObj(ee);
     TEdgesMap::iterator found = iMEdges.find(TNMKey(ee->Name()));
+    //__ASSERT(found != iMEdges.end());
     if (found != iMEdges.end()) {
 	RemoveFromMap(aEdge, TNMKey(ee->Name()));
 	//__ASSERT(aEdge->Pair(this) != NULL);
@@ -218,6 +222,9 @@ void Vert::OnCompAdding(Elem& aComp)
     Elem::OnCompAdding(aComp);
 }
 
+// TODO [YB] To consider change of edge APIs. We need to be able to connect just one point of edge
+// i.e. to add Edge::Connect(MVert aVert) that connects only aVert and syncs to pair if it is already
+// connected to edge.
 void Vert::DoOnCompChanged(Elem& aComp)
 {
     Elem* eedge = GetCompOwning("Edge", &aComp);

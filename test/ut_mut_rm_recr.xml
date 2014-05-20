@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for removing node and then creating another one with the same name
+     -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Vert">
+    <node id="v1" parent="Vert"/>
+    <rm node="v1"/>
+    <node id="v1" parent="Vert"/>
+</node>
+
