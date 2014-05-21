@@ -73,6 +73,8 @@ TBool Incaps::IsPtOk(Elem& aContext, Elem* aPt) {
     return res;
 }
 
+
+#if 0
 TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
     TBool res = EFalse;
@@ -150,4 +152,74 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
     }
     return res;
 }
+#endif
 
+
+TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
+{
+    TBool res = EFalse;
+    Elem* eedge = aContext.GetCompOwning("Edge", &aComp);
+    if (eedge != NULL) {
+	Elem* host = iMan->GetMan();
+	Edge* edge = eedge->GetObj(edge);	
+	__ASSERT(edge != NULL);
+	if (&aComp == edge->Point1p() || &aComp == edge->Point2p()) {
+	    edge->Disconnect(&aComp);
+	    if (!edge->Pointu(&aComp).empty()) {
+		TBool isptok = IsPtOk(aContext, edge->Pointr(&aComp));
+		if (isptok) {
+		    if (edge->Pointv(&aComp) != NULL) {
+			if (edge->Point1() == NULL && edge->Point2() == NULL) {
+			    // Partial connection, compat checking isn't needed
+			    res = edge->Connect(&aComp);
+			    if (!res) {
+				Logger()->Write(MLogRec::EErr, host, "Connecting [%s] failed", edge->Pointu(&aComp).c_str());
+			    }
+			}
+			else {
+			    // Full connection, compat checking is needed
+			    Elem* pt1 = edge->Point1r();
+			    Elem* pt2 = edge->Point2r();
+			    if (pt1 != NULL && pt2 != NULL) {
+				string pt1u = edge->Point1u();
+				string pt2u = edge->Point2u();
+				MVert* pt1v = pt1->GetObj(pt1v);
+				MVert* pt2v = pt2->GetObj(pt2v);
+				if (pt1v != NULL && pt2v != NULL) {
+				    // Check roles conformance
+				    MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
+				    MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
+				    TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
+				    TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
+				    if (ispt1cptb && ispt2cptb) {
+					// Are compatible - connect
+					res = edge->Connect(&aComp);
+					if (res) {
+					    Logger()->Write(MLogRec::EInfo, host, "Connected [%s - %s]", pt1u.c_str(), pt2u.c_str());
+					}
+					else {
+					    Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] failed", pt1u.c_str(), pt2u.c_str());
+					}
+				    }
+				    else {
+					Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] - incompatible roles", pt1u.c_str(), pt2u.c_str());
+				    }
+				}
+				else {
+				    Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] - ends aren't vertexes", pt1u.c_str(), pt2u.c_str());
+				}
+			    }
+			}
+		    }
+		    else {
+			Logger()->Write(MLogRec::EErr, host, "Connecting [%s] - cannot find or not vertex", edge->Pointu(&aComp).c_str());
+		    }
+		}
+		else {
+		    Logger()->Write(MLogRec::EErr, host, "Connecting [%s] - not allowed cp", edge->Pointu(&aComp).c_str());
+		}
+	    }
+	}
+    }
+    return res;
+}

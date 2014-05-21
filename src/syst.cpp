@@ -651,6 +651,7 @@ void Syst::OnCompDeleting(Elem& aComp)
 // TODO [YB] To consider change of edge APIs. We need to be able to connect just one point of edge
 // i.e. to add Edge::Connect(MVert aVert) that connects only aVert and syncs to pair if it is already
 // connected to edge. This improvement was done for Vert. To do that for Syst and Incaps.
+#if 0
 void Syst::DoOnCompChanged(Elem& aComp)
 {
     Elem* eedge = GetCompOwning("Edge", &aComp);
@@ -712,6 +713,72 @@ void Syst::DoOnCompChanged(Elem& aComp)
 	    }
 	    else {
 		Logger()->WriteFormat("ERR: Syst [%s] connecting [%s - %s] - ends aren't vertexes", Name().c_str(), pt1u.c_str(), pt2u.c_str());
+	    }
+	}
+    }
+    else {
+	Vert::DoOnCompChanged(aComp);
+    }
+}
+#endif
+
+
+void Syst::DoOnCompChanged(Elem& aComp)
+{
+    Elem* eedge = GetCompOwning("Edge", &aComp);
+    if (eedge != NULL) {
+	Edge* edge = eedge->GetObj(edge);	
+	__ASSERT(edge != NULL);
+	if (&aComp == edge->Point1p() || &aComp == edge->Point2p()) {
+	    edge->Disconnect(&aComp);
+	    if (!edge->Pointu(&aComp).empty()) {
+		TBool res = EFalse;
+		if (edge->Pointv(&aComp) != NULL) {
+		    if (edge->Point1() == NULL && edge->Point2() == NULL) {
+			// Partial connection, compat checking isn't needed
+			res = edge->Connect(&aComp);
+			if (!res) {
+			    Logger()->Write(MLogRec::EErr, this, "Connecting [%s] failed", edge->Pointu(&aComp).c_str());
+			}
+		    }
+		    else {
+			// Full connection, compat checking is needed
+			Elem* pt1 = edge->Point1r();
+			Elem* pt2 = edge->Point2r();
+			if (pt1 != NULL && pt2 != NULL) {
+			    string pt1u = edge->Point1u();
+			    string pt2u = edge->Point2u();
+			    MVert* pt1v = pt1->GetObj(pt1v);
+			    MVert* pt2v = pt2->GetObj(pt2v);
+			    if (pt1v != NULL && pt2v != NULL) {
+				// Check roles conformance
+				MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
+				MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
+				TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
+				TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
+				if (ispt1cptb && ispt2cptb) {
+				    // Are compatible - connect
+				    res = edge->Connect(&aComp);
+				    if (res) {
+					Logger()->Write(MLogRec::EInfo, this, "Connected [%s - %s]", pt1u.c_str(), pt2u.c_str());
+				    }
+				    else {
+					Logger()->Write(MLogRec::EErr, this, "Connecting [%s - %s] failed", pt1u.c_str(), pt2u.c_str());
+				    }
+				}
+				else {
+				    Logger()->Write(MLogRec::EErr, this, "Connecting [%s - %s] - incompatible roles", pt1u.c_str(), pt2u.c_str());
+				}
+			    }
+			    else {
+				Logger()->Write(MLogRec::EErr, this, "Connecting [%s - %s] - ends aren't vertexes", pt1u.c_str(), pt2u.c_str());
+			    }
+			}
+		    }
+		}
+		else {
+		    Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find or not vertex", edge->Pointu(&aComp).c_str());
+		}
 	    }
 	}
     }

@@ -26,6 +26,8 @@
 
     <!-- Data with separate input for setting and output for getting. W/o notificaion -->
     <node id="DataSU" parent=":Elem:IncapsComps/Incaps"> 
+	<node id="D_1" parent="Description">
+	    <cont val="Data with separate input for setting and output for getting, w/o notification"/></node>
     	<add node="Capsule"> 
 	    <node id="inp" parent=":Elem:SysComps/ConnPoint"/> 
 	    <node id="out" parent=":Elem:SysComps/ConnPoint"/> 
@@ -68,6 +70,12 @@
     	<add node="Agents"> <node id="MACompsObserver" parent="DInt"/> </add>
 	<cont node="Capsule/inp/Provided" val="MDIntSet"/>
 	<cont node="Capsule/out/Provided" val="MDIntGet"/>
+    </node>
+
+    <node id="DataSUVar" parent="DataSU"> 
+    	<add node="Agents"> <node id="MACompsObserver" parent="DVar"/> </add>
+	<cont node="Capsule/inp/Provided" val="MDVarSet"/>
+	<cont node="Capsule/out/Provided" val="MDVarGet"/>
     </node>
 
     <!-- Terminal data, input only, provided data observer, required gettng data -->

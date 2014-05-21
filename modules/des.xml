@@ -95,6 +95,25 @@
 	<node id="Inp_Sub" parent="../TrIntInp"/> 
     </node>
 
+    <!-- Transition of variable data -->
+    <node id="TrVar" parent="Syst"> 
+	<node id="Inp" parent=":Elem:SysComps/ConnPoint"> 
+	    <cont node="Required" val="MDVarGet"/>
+	</node>
+	<node id="Out" parent=":Elem:SysComps/ConnPoint"> 
+	    <cont node="Provided" val="MDVarGet"/>
+	</node>
+    </node>
+
+    <!-- Transition of variable data : Addition -->
+    <node id="TrAddVar" parent="TrVar"> 
+	<add node="Agents"> 
+	    <node id="TrAgt" parent="AFAddVar"/> 
+	</add>
+	<node id="InpN" parent="../TrIntInp"/> 
+    </node>
+
+
 
     <!-- State base -->
     <node id="State" parent=":Elem:IncapsComps/Incaps"> 

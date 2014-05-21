@@ -21,7 +21,9 @@
       <cont node="(Edge:)e1/(Prop:)P1" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(FAddVar:)Add/(Elem:)Capsule/(Out_FVar:)out"/>
       <node id="e2" parent="Edge"/>
       <cont node="e2/P2" ref="/Root/Start/Incaps_root/Add/Capsule/Inp"/>
+      <!--
       <cont node="e2/P1" ref="/Root/Start/Incaps_root/Inp_data1/Capsule/out"/>
+      -->
     </node>
   </node>
 </node>

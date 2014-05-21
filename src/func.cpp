@@ -1218,6 +1218,7 @@ Elem* AFunVar::VarGetBase()
     return this;
 }
 
+const string FAddBase::mIdInp = "Inp";
 
 string AFAddVar::PEType()
 {
@@ -1248,48 +1249,39 @@ void *AFAddVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* a
     return res;
 }
 
-Elem::TIfRange AFAddVar::GetInp()
-{
-    Elem* res = NULL;
-    Elem* inp = GetNode("../../Capsule/Inp");
-    __ASSERT(inp != NULL);
-    RqContext cont(this);
-    return inp->GetIfi(MDVarGet::Type(), &cont);
-}
-
 void AFAddVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
 	delete mFunc;
 	mFunc == NULL;
     }
-    if ((mFunc = FInt::Create(this, aIfaceName)) != NULL);
-    else if ((mFunc = FFloat::Create(this, aIfaceName)) != NULL);
-    else if ((mFunc = FVFloat::Create(this, aIfaceName)) != NULL);
+    if ((mFunc = FAddInt::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddFloat::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddVFloat::Create(this, aIfaceName)) != NULL);
 }
 
 // Int function
-AFunVar::Func* AFAddVar::FInt::Create(AFAddVar* aHost, const string& aString)
+Func* FAddInt::Create(Host* aHost, const string& aString)
 {
-    AFunVar::Func* res = NULL;
+    Func* res = NULL;
     if (aString == MDIntGet::Type()) {
-	res = new FInt(*aHost);
+	res = new FAddInt(*aHost);
     }
     return res;
 }
 
-void *AFAddVar::FInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *FAddInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
     if (strcmp(aName, MDIntGet::Type()) == 0) res = (MDIntGet*) this;
     return res;
 }
 
-TInt AFAddVar::FInt::Value()
+TInt FAddInt::Value()
 {
-    TIfRange range = mHost.GetInp();
+    Elem::TIfRange range = mHost.GetInps(EInp);
     TInt val = 0;
-    for (IfIter it = range.first; it != range.second; it++) {
+    for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	Elem* dgetbase = dget->VarGetBase();
 	MDIntGet* diget = (MDIntGet*) dgetbase->GetSIfi(MDIntGet::Type());
@@ -1302,27 +1294,27 @@ TInt AFAddVar::FInt::Value()
 
 
 // Float function
-AFunVar::Func* AFAddVar::FFloat::Create(AFAddVar* aHost, const string& aString)
+Func* FAddFloat::Create(Host* aHost, const string& aString)
 {
-    AFunVar::Func* res = NULL;
+    Func* res = NULL;
     if (aString == MDFloatGet::Type()) {
-	res = new FFloat(*aHost);
+	res = new FAddFloat(*aHost);
     }
     return res;
 }
 
-void *AFAddVar::FFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *FAddFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
     if (strcmp(aName, MDFloatGet::Type()) == 0) res = (MDFloatGet*) this;
     return res;
 }
 
-float AFAddVar::FFloat::Value()
+float FAddFloat::Value()
 {
-    TIfRange range = mHost.GetInp();
+    Elem::TIfRange range = mHost.GetInps(EInp);
     float val = 0;
-    for (IfIter it = range.first; it != range.second; it++) {
+    for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	Elem* dgetbase = dget->VarGetBase();
 	MDFloatGet* dfget = (MDFloatGet*) dgetbase->GetSIfi(MDFloatGet::Type());
@@ -1341,29 +1333,28 @@ float AFAddVar::FFloat::Value()
 
 
 // Float vector addition
-AFunVar::Func* AFAddVar::FVFloat::Create(AFAddVar* aHost, const string& aString)
+Func* FAddVFloat::Create(Host* aHost, const string& aString)
 {
-    AFunVar::Func* res = NULL;
+    Func* res = NULL;
     if (aString == MVFloatGet::Type()) {
-	res = new FVFloat(*aHost);
+	res = new FAddVFloat(*aHost);
     }
     return res;
 }
 
-void *AFAddVar::FVFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *FAddVFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
     if (strcmp(aName, MVFloatGet::Type()) == 0) res = (MVFloatGet*) this;
     return res;
 }
 
-
-void AFAddVar::FVFloat::VFloatGet(VFloat& aData)
+void FAddVFloat::VFloatGet(VFloat& aData)
 {
     TInt size = aData.size();
-    TIfRange range = mHost.GetInp();
+    Elem::TIfRange range = mHost.GetInps(EInp);
     float val = 0;
-    for (IfIter it = range.first; it != range.second; it++) {
+    for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	Elem* dgetbase = dget->VarGetBase();
 	MVFloatGet* dfget = (MVFloatGet*) dgetbase->GetSIfi(MVFloatGet::Type());
@@ -1379,9 +1370,18 @@ void AFAddVar::FVFloat::VFloatGet(VFloat& aData)
 		}
 	    }
 	    else {
-		mHost.Logger()->Write(MLogRec::EErr, &mHost, "Incorrect size of argument [%s]", dgetbase->GetUri().c_str());
+		//mHost.Logger()->Write(MLogRec::EErr, &mHost, "Incorrect size of argument [%s]", dgetbase->GetUri().c_str());
 	    }
 	}
     }
+}
 
+Elem::TIfRange AFAddVar::GetInps(TInt aId)
+{
+    if (aId == FAddBase::EInp) {
+	Elem* inp = GetNode("../../Capsule/Inp");
+	__ASSERT(inp != NULL);
+	RqContext cont(this);
+	return inp->GetIfi(MDVarGet::Type(), &cont);
+    }
 }

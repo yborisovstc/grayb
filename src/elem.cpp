@@ -1904,17 +1904,13 @@ void Elem::SetRemoved()
     if (iObserver != NULL) {
 	iObserver->OnCompDeleting(*this);
     }
-    // TODO [YB] What about comps, do we need to mark all them as removed or update IsRemoved() to analyze owners removal
-    /*
-    // Remove the comps, using iterator refresh because the map is updated on each comp deletion
+    // Mark the comps as removed, using iterator refresh because the map is updated on each comp deletion
     vector<Elem*>::reverse_iterator it = iComps.rbegin();
     while (it != iComps.rend()) {
-	delete *it;
+	Elem* comp = *it;
+	comp->SetRemoved();
 	it = iComps.rbegin();
     }
-    iComps.clear();
-    iMComps.clear();
-    */
     // Mark node as removed from hative hier
     isRemoved = ETrue;
 }

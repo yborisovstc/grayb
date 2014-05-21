@@ -222,13 +222,16 @@ TBool Edge::ConnectP1(MVert* aPoint)
 {
     TBool res = EFalse;
     __ASSERT(iPoint1 == NULL);
+    iPoint1 = aPoint; // Set first to make Pair() working
     res = aPoint->Connect(this);
     if (res) {
-	iPoint1 = aPoint;
 	// Connect pair to the point
 	if (iPoint2 != NULL) {
 	    iPoint2->Connect(iPoint1);
 	}
+    }
+    else {
+	iPoint1 = NULL;
     }
     return res;
 }
@@ -237,13 +240,37 @@ TBool Edge::ConnectP2(MVert* aPoint)
 {
     TBool res = EFalse;
     __ASSERT(iPoint2 == NULL);
+    iPoint2 = aPoint; // Set first to make Pair() working
     res = aPoint->Connect(this);
     if (res) {
-	iPoint2 = aPoint;
 	// Connect pair to the point
 	if (iPoint1 != NULL) {
 	    iPoint1->Connect(iPoint2);
 	}
+    }
+    else {
+	iPoint2 = NULL;
+    }
+    return res;
+}
+
+TBool Edge::Connect(Elem* aCp)
+{
+    TBool res = EFalse;
+    if (aCp == Point1p()) {
+	MVert* pv = Point1v();
+	if (pv != NULL) {
+	    res = ConnectP1(pv);
+	}
+    }
+    else if (aCp == Point2p()) {
+	MVert* pv = Point2v();
+	if (pv != NULL) {
+	    res = ConnectP2(pv);
+	}
+    }
+    else {
+	__ASSERT(EFalse);
     }
     return res;
 }
@@ -278,6 +305,16 @@ void Edge::Disconnect()
     }
 }
 
+void Edge::Disconnect(Elem* aCp)
+{
+    if (aCp == Point1p()) {
+	Disconnect(iPoint1);
+    }
+    else if (aCp == Point2p()) {
+	Disconnect(iPoint2);
+    }
+}
+
 MVert* Edge::Pair(const MVert* aPoint)
 {
     return aPoint == iPoint1 ? iPoint2 : iPoint1;
@@ -297,6 +334,13 @@ const string& Edge::Point2u()
     Elem* pte = GetNode("P2");
     __ASSERT(pte != NULL);
     MProp* pt = pte->GetObj(pt);
+    __ASSERT(pt != NULL);
+    return pt->Value();
+}
+
+const string& Edge::Pointu(Elem* aCp)
+{
+    MProp* pt = aCp->GetObj(pt);
     __ASSERT(pt != NULL);
     return pt->Value();
 }
@@ -329,6 +373,18 @@ Elem* Edge::Point2r()
     return res;
 }
 
+Elem* Edge::Pointr(Elem* aCp)
+{
+    __ASSERT(aCp == Point1p() || aCp == Point2p());
+    Elem* res = NULL;
+    const string& uri = Pointu(aCp);
+    if (!uri.empty()) {
+	res = aCp->GetNode(uri);
+    }
+    return res;
+
+}
+
 MVert* Edge::Point1v()
 {
     MVert* res = NULL;
@@ -350,6 +406,20 @@ MVert* Edge::Point2v()
     const string& uri = Point2u();
     if (!uri.empty()) {
 	Elem* pr = pte->GetNode(uri);
+	if (pr != NULL) {
+	    res = pr->GetObj(res);
+	}
+    }
+    return res;
+}
+
+MVert* Edge::Pointv(Elem* aCp)
+{
+    __ASSERT(aCp == Point1p() || aCp == Point2p());
+    MVert* res = NULL;
+    const string& uri = Pointu(aCp);
+    if (!uri.empty()) {
+	Elem* pr = aCp->GetNode(uri);
 	if (pr != NULL) {
 	    res = pr->GetObj(res);
 	}

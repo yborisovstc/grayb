@@ -317,17 +317,21 @@ class AFBoolToInt: public AFunc, public MDIntGet
 	virtual TInt Value();
 };
 
+// Executive part of function 
+class Func: public Base {
+    public:
+	class Host {
+	    public: 
+		virtual Elem::TIfRange GetInps(TInt aId) = 0;
+	};
+    public:
+    Func(Host& aHost): Base(string()), mHost(aHost) {};
+    Host& mHost;
+};
 
 // Agent of function of variable type
 class AFunVar: public AFunc, public MDVarGet
 {
-    public:
-	// Executive part of function 
-	class Func: public Base {
-	    friend class AFunVar;
-	    public:
-	    Func(): Base(string()) {};
-	};
     public:
 	static const char* Type() { return "AFunVar";};
 	static string PEType();
@@ -345,35 +349,41 @@ class AFunVar: public AFunc, public MDVarGet
 	Func* mFunc;
 };
 
-class AFAddVar: public AFunVar
-{
+class FAddBase: public Func {
     public:
-	class FAddBase: public Func {
-	    public:
-	    FAddBase(AFAddVar& aHost): Func(), mHost(aHost) {};
-	    AFAddVar& mHost;
+	enum {
+	    EInp, EInpN
 	};
-	class FInt: public FAddBase, public MDIntGet {
-	    public:
-		static Func* Create(AFAddVar* aHost, const string& aString);
-		FInt(AFAddVar& aHost): FAddBase(aHost) {};
-		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-		virtual TInt Value();
-	};
-	class FFloat: public FAddBase, public MDFloatGet {
-	    public:
-		static Func* Create(AFAddVar* aHost, const string& aString);
-		FFloat(AFAddVar& aHost): FAddBase(aHost) {};
-		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-		virtual float Value();
-	};
-	class FVFloat: public FAddBase, public MVFloatGet {
-	    public:
-		static Func* Create(AFAddVar* aHost, const string& aString);
-		FVFloat(AFAddVar& aHost): FAddBase(aHost) {};
-		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-		virtual void VFloatGet(VFloat& aData);
-	};
+	FAddBase(Host& aHost): Func(aHost) {};
+	static const string mIdInp;
+};
+
+class FAddInt: public FAddBase, public MDIntGet {
+    public:
+	static Func* Create(Host* aHost, const string& aString);
+	FAddInt(Host& aHost): FAddBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual TInt Value();
+};
+
+class FAddFloat: public FAddBase, public MDFloatGet {
+    public:
+	static Func* Create(Host* aHost, const string& aString);
+	FAddFloat(Host& aHost): FAddBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual float Value();
+};
+
+class FAddVFloat: public FAddBase, public MVFloatGet {
+    public:
+	static Func* Create(Host* aHost, const string& aString);
+	FAddVFloat(Host& aHost): FAddBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual void VFloatGet(VFloat& aData);
+};
+
+class AFAddVar: public AFunVar, public Func::Host
+{
     public:
 	static const char* Type() { return "AFAddVar";};
 	static string PEType();
@@ -381,10 +391,10 @@ class AFAddVar: public AFunVar
 	AFAddVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From Func::Host
+	virtual Elem::TIfRange GetInps(TInt aId);
     protected:
 	virtual void Init(const string& aIfaceName);
-    protected:
-	TIfRange GetInp();
 };
 
 

@@ -42,12 +42,15 @@ class Edge: public Elem, public MEdge
     public:
 	const string& Point1u();
 	const string& Point2u();
+	const string& Pointu(Elem* aCp);
 	Elem* Point1p();
 	Elem* Point2p();
 	Elem* Point1r();
 	Elem* Point2r();
+	Elem* Pointr(Elem* aCp);
 	MVert* Point1v();
 	MVert* Point2v();
+	MVert* Pointv(Elem* aCp);
 	void SetPoints(MVert* aPoint1, MVert* aPoint2);
 	void SetPoint1(MVert* aPoint);
 	void SetPoint2(MVert* aPoint);
@@ -59,8 +62,10 @@ class Edge: public Elem, public MEdge
 	virtual TBool Connect();
 	virtual TBool ConnectP1(MVert* aPoint);
 	virtual TBool ConnectP2(MVert* aPoint);
+	virtual TBool Connect(Elem* aCp);
 	virtual void Disconnect(MVert* aPoint);
 	virtual void Disconnect();
+	virtual void Disconnect(Elem* aCp);
 	virtual MVert* Pair(const MVert* aPoint);
 	virtual MVert* Point1() const;
 	virtual MVert* Point2() const;
