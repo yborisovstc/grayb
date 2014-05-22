@@ -295,6 +295,125 @@ TInt ATrDivInt::Value()
     return res;
 }
 
+// Agent of transition of variable type
+string ATrVar::PEType()
+{
+    return ATrBase::PEType() + GUri::KParentSep + Type();
+}
+
+ATrVar::ATrVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrBase(aName, aMan, aEnv), mFunc(NULL)
+{
+    SetEType(Type(), ATrBase::PEType());
+    SetParent(Type());
+}
+
+ATrVar::ATrVar(Elem* aMan, MEnv* aEnv): ATrBase(Type(), aMan, aEnv), mFunc(NULL)
+{
+    SetEType(ATrBase::PEType());
+    SetParent(ATrBase::PEType());
+}
+
+void *ATrVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName, MDVarGet::Type()) == 0) {
+	res = (MDVarGet*) this;
+    }
+    else {
+	res = ATrBase::DoGetObj(aName, aIncUpHier);
+    }
+    if (res == NULL) {
+	if (mFunc == NULL) {
+	    Init(aName);
+	    if (mFunc != NULL) {
+		res = mFunc->DoGetObj(aName, aIncUpHier);
+	    }
+	}
+	else {
+	    res = mFunc->DoGetObj(aName, aIncUpHier);
+	    if (res == NULL) {
+		Init(aName);
+		if (mFunc != NULL) {
+		    res = mFunc->DoGetObj(aName, aIncUpHier);
+		}
+	    }
+	}
+    }
+    return res;
+}
+
+Elem* ATrVar::VarGetBase() 
+{
+    return this;
+}
+
+Elem::TIfRange ATrVar::GetInps(TInt aId)
+{
+    return TIfRange(IfIter(), IfIter());
+}
+
+void ATrVar::LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...)
+{
+    va_list list;
+    va_start(list,aFmt);
+    Logger()->Write(aCtg, this, aFmt, list);
+}
+
+// Agent function "Addition of Var data"
+string ATrAddVar::PEType()
+{
+    return ATrVar::PEType() + GUri::KParentSep + Type();
+}
+
+ATrAddVar::ATrAddVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), ATrVar::PEType());
+    SetParent(Type());
+}
+
+ATrAddVar::ATrAddVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
+{
+    SetEType(ATrVar::PEType());
+    SetParent(ATrVar::PEType());
+}
+
+void *ATrAddVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = ATrVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void ATrAddVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc == NULL;
+    }
+    if ((mFunc = FAddInt::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddFloat::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddVFloat::Create(this, aIfaceName)) != NULL);
+}
+
+Elem::TIfRange ATrAddVar::GetInps(TInt aId)
+{
+    if (aId == FAddBase::EInp) {
+	Elem* inp = GetNode("../../Inp");
+	__ASSERT(inp != NULL);
+	RqContext cont(this);
+	return inp->GetIfi(MDVarGet::Type(), &cont);
+    }
+}
+
+
 
 
 /* State base agent */

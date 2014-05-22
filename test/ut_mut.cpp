@@ -26,6 +26,7 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Compact1);
     CPPUNIT_TEST(test_Compact2);
     CPPUNIT_TEST(test_Compact3);
+    CPPUNIT_TEST(test_CompactRef1);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -43,6 +44,7 @@ private:
     void test_Compact1();
     void test_Compact2();
     void test_Compact3();
+    void test_CompactRef1();
 private:
     Env* iEnv;
 };
@@ -487,7 +489,7 @@ void Ut_mut::test_Compact3()
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Compact chromo
-    root->CompactChromo();
+    //root->CompactChromo();
     // Save compacted chromo and recreate the model
     iEnv->Root()->Chromos().Save("ut_compact3_res.xml");
     delete iEnv;
@@ -500,6 +502,37 @@ void Ut_mut::test_Compact3()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root after compacting", root != 0);
     Elem* v3 = root->GetNode("(Vert:)v3");
     CPPUNIT_ASSERT_MESSAGE("V3 is not removed", v3 == NULL);
+
+    delete iEnv;
+}
+
+// Compactization of chromo. Cont ref if ref rank is greater than that of init mut.
+void Ut_mut::test_CompactRef1()
+{
+    printf("\n === Test of compacting of chromo: ref if ref rank is greater than that of init mut\n");
+    iEnv = new Env("Env", "ut_compact_ref1.xml", "ut_compact_ref1.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Compact chromo
+    root->CompactChromo();
+    // Save compacted chromo and recreate the model
+    iEnv->Root()->Chromos().Save("ut_compact_ref1_res.xml_");
+    delete iEnv;
+
+    iEnv = new Env("Env", "ut_compact_ref1_res.xml_", "ut_compact_ref1_res.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to re-create compacted system", iEnv != 0);
+    iEnv->ConstructSystem();
+     // Check if mut is not squeezed
+    root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root after compacting", root != 0);
+    ChromoNode rnode = root->Chromos().Root();
+    ChromoNode::Reverse_Iterator it = rnode.Rbegin(); 
+    ChromoNode mut = *it;
+    TBool is_cont_ref = mut.Type() == ENt_Cont && mut.Attr(ENa_MutNode) == "Edge1/P2";
+    CPPUNIT_ASSERT_MESSAGE("Fail to keep cont ref mut unsqueezed", is_cont_ref);
+
 
     delete iEnv;
 }

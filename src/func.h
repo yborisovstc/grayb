@@ -323,6 +323,7 @@ class Func: public Base {
 	class Host {
 	    public: 
 		virtual Elem::TIfRange GetInps(TInt aId) = 0;
+		virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...) = 0;
 	};
     public:
     Func(Host& aHost): Base(string()), mHost(aHost) {};
@@ -330,7 +331,7 @@ class Func: public Base {
 };
 
 // Agent of function of variable type
-class AFunVar: public AFunc, public MDVarGet
+class AFunVar: public AFunc, public MDVarGet, public Func::Host
 {
     public:
 	static const char* Type() { return "AFunVar";};
@@ -343,6 +344,9 @@ class AFunVar: public AFunc, public MDVarGet
 	virtual Elem* VarGetBase();
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
+	// From Func::Host
+	virtual Elem::TIfRange GetInps(TInt aId);
+	virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...);
     protected:
 	virtual void Init(const string& aIfaceName) {};
     protected:
@@ -355,7 +359,6 @@ class FAddBase: public Func {
 	    EInp, EInpN
 	};
 	FAddBase(Host& aHost): Func(aHost) {};
-	static const string mIdInp;
 };
 
 class FAddInt: public FAddBase, public MDIntGet {
@@ -382,7 +385,7 @@ class FAddVFloat: public FAddBase, public MVFloatGet {
 	virtual void VFloatGet(VFloat& aData);
 };
 
-class AFAddVar: public AFunVar, public Func::Host
+class AFAddVar: public AFunVar
 {
     public:
 	static const char* Type() { return "AFAddVar";};

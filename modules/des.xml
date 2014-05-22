@@ -108,7 +108,7 @@
     <!-- Transition of variable data : Addition -->
     <node id="TrAddVar" parent="TrVar"> 
 	<add node="Agents"> 
-	    <node id="TrAgt" parent="AFAddVar"/> 
+	    <node id="TrAgt" parent="ATrAddVar"/> 
 	</add>
 	<node id="InpN" parent="../TrIntInp"/> 
     </node>

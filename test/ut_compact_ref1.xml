@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for squeezing of chromo: reference. 
+     New ref [v4] occurs after initial content mutation [P2 to v2], so it is not possible
+     to melt mut [P2 to v4] in [P2 to v2]. In result [P2 to v4] gets not squeezed
+     -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Vert">
+    <node id="v1" parent="Vert"/>
+    <node id="v2" parent="Vert"/>
+    <node id="Edge1" parent="Edge"/> 
+    <cont node="Edge1/P1" ref="../../v1"/> 
+    <cont node="Edge1/P2" ref="../../v2"/> 
+    <node id="v4" parent="Vert"/>
+    <cont node="Edge1/P2" ref="../../v4"/>
+</node>
+

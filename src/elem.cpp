@@ -910,7 +910,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 		    ChromoNode chn = iChromo->Root().AddChild(aSpec);
 		    AddCMDep(chn, ENa_MutNode, node);
 		    if (refex) {
-			AddCMDep(chn, ENa_MutVal, rnode);
+			AddCMDep(chn, ENa_Ref, rnode);
 		    }
 		}
 	    }
@@ -918,9 +918,9 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 		Logger()->Write(MLogRec::EErr, this, "Changing [%s] - failure", snode.c_str());
 	    }
 	}
-	else {
-	    Logger()->Write(MLogRec::EErr, this, "Changing [%s] - cannot find node", snode.c_str());
-	}
+    }
+    else {
+	Logger()->Write(MLogRec::EErr, this, "Changing [%s] - cannot find node", snode.c_str());
     }
     return res;
 }
@@ -1932,6 +1932,13 @@ TBool Elem::HasInherDeps() const
 
 void Elem::CompactChromo()
 {
+    // First compact the components
+    /*
+    for (vector<Elem*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
+	Elem* comp = *it;
+	comp->CompactChromo();
+    }
+    */
     // Going thru mutations in chromo
     ChromoNode croot = iChromo->Root();
     ChromoNode::Iterator mit = croot.Begin();
@@ -1941,7 +1948,19 @@ void Elem::CompactChromo()
 	Rank grank;
 	gmut.GetRank(grank);
 	TNodeType muttype = gmut.Type();
-	if (muttype == ENt_Change) {
+	if (muttype == ENt_Node) {
+	    // Get node this mutation relates to
+	    TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_Id);
+	    if (iCMRelReg.count(key) > 0) {
+		Elem* node = iCMRelReg.at(key);
+		// Compact the node
+		node->CompactChromo();
+	    }
+	    else {
+		Logger()->Write(MLogRec::EErr, this, "Chromo squeezing: cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
+	    }
+	}
+	else if (muttype == ENt_Change) {
 	    // Get node this mutation relates to
 	    TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
 	    if (iCMRelReg.count(key) > 0) {
@@ -1976,8 +1995,17 @@ void Elem::CompactChromo()
 	    TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
 	    if (iCMRelReg.count(key) > 0) {
 		Elem* node = iCMRelReg.at(key);
-		string new_val(gmut.Attr(ENa_Ref));
+		Elem* ref = NULL;
+		Rank refrank;
+		// Get dep on ref, rank of it
+		key = TCMRelFrom(gmut.Handle(), ENa_Ref);
+		if (iCMRelReg.count(key) > 0) {
+		    ref = iCMRelReg.at(key);
+		    ref->GetRank(refrank);
+		}
+		string new_val(gmut.Attr(gmut.AttrExists(ENa_Ref) ? ENa_Ref: ENa_MutVal));
 		// Get mutations that depends on this node, and have lower rank
+		TInt tobecorrected = 0, corrected = 0;
 		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
 		    TMDep dep = *it;
 		    ChromoNode mut = iChromo->CreateNode(dep.first.second);
@@ -1986,13 +2014,20 @@ void Elem::CompactChromo()
 		    if (rank >= grank) break;
 		    // Correct mutation
 		    if (mut.Type() == ENt_Cont && dep.second == ENa_MutNode) {
-			mut.SetAttr(ENa_Ref, new_val);
+			tobecorrected++;
+			if (rank > refrank) {
+			    mut.SetAttr(ENa_Ref, new_val);
+			    corrected++;
+			}
 		    }
 		}
 		// Remove mutation
-		gmut.Rm();
-		RmCMDep(gmut, ENa_MutNode);
-		mut_removed = ETrue;
+		// Only if the correction has been done. This is because the mutation can be initial content change
+		if (corrected == tobecorrected && corrected > 0) {
+		    gmut.Rm();
+		    RmCMDep(gmut, ENa_MutNode);
+		    mut_removed = ETrue;
+		}
 	    }
 	    else {
 		Logger()->Write(MLogRec::EErr, this, "Chromo squeezing: cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());

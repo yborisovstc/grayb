@@ -1152,19 +1152,19 @@ TInt AFBoolToInt::Value()
 
 string AFunVar::PEType()
 {
-    return FuncBase::PEType() + GUri::KParentSep + Type();
+    return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
 AFunVar::AFunVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv), mFunc(NULL)
 {
-    SetEType(Type(), FuncBase::PEType());
+    SetEType(Type(), AFunc::PEType());
     SetParent(Type());
 }
 
 AFunVar::AFunVar(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv), mFunc(NULL)
 {
-    SetEType(FuncBase::PEType());
-    SetParent(FuncBase::PEType());
+    SetEType(AFunc::PEType());
+    SetParent(AFunc::PEType());
 }
 
 void *AFunVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -1218,11 +1218,23 @@ Elem* AFunVar::VarGetBase()
     return this;
 }
 
-const string FAddBase::mIdInp = "Inp";
+Elem::TIfRange AFunVar::GetInps(TInt aId)
+{
+    return TIfRange(IfIter(), IfIter());
+}
+
+void AFunVar::LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...)
+{
+    va_list list;
+    va_start(list,aFmt);
+    Logger()->Write(aCtg, this, aFmt, list);
+}
+
+
 
 string AFAddVar::PEType()
 {
-    return FuncBase::PEType() + GUri::KParentSep + Type();
+    return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
 AFAddVar::AFAddVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
@@ -1258,6 +1270,16 @@ void AFAddVar::Init(const string& aIfaceName)
     if ((mFunc = FAddInt::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddFloat::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddVFloat::Create(this, aIfaceName)) != NULL);
+}
+
+Elem::TIfRange AFAddVar::GetInps(TInt aId)
+{
+    if (aId == FAddBase::EInp) {
+	Elem* inp = GetNode("../../Capsule/Inp");
+	__ASSERT(inp != NULL);
+	RqContext cont(this);
+	return inp->GetIfi(MDVarGet::Type(), &cont);
+    }
 }
 
 // Int function
@@ -1370,18 +1392,8 @@ void FAddVFloat::VFloatGet(VFloat& aData)
 		}
 	    }
 	    else {
-		//mHost.Logger()->Write(MLogRec::EErr, &mHost, "Incorrect size of argument [%s]", dgetbase->GetUri().c_str());
+		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]", dgetbase->GetUri().c_str());
 	    }
 	}
-    }
-}
-
-Elem::TIfRange AFAddVar::GetInps(TInt aId)
-{
-    if (aId == FAddBase::EInp) {
-	Elem* inp = GetNode("../../Capsule/Inp");
-	__ASSERT(inp != NULL);
-	RqContext cont(this);
-	return inp->GetIfi(MDVarGet::Type(), &cont);
     }
 }

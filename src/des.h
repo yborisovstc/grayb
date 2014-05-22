@@ -4,6 +4,7 @@
 #include "elem.h"
 #include "mdata.h"
 #include "mdes.h"
+#include "func.h"
 
 // Transition function agent base. 
 class ATrBase: public Elem
@@ -35,6 +36,7 @@ class ATrInt: public ATrBase, public MDIntGet
     protected:
 	TInt mData;
 };
+
 
 // Agent function "Increment of Int data"
 class ATrIncInt: public ATrInt
@@ -93,6 +95,43 @@ class ATrDivInt: public ATrInt
 };
 
 
+// Agent base of Var transition function
+class ATrVar: public ATrBase, public MDVarGet, public Func::Host
+{
+    public:
+	static const char* Type() { return "ATrVar";};
+	static string PEType();
+	ATrVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ATrVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MDVarGet
+	virtual Elem* VarGetBase();
+	// From Func::Host
+	virtual Elem::TIfRange GetInps(TInt aId);
+	virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...);
+    protected:
+	virtual void Init(const string& aIfaceName) {};
+    protected:
+	Func* mFunc;
+};
+
+
+// Agent function "Addition of Var data"
+class ATrAddVar: public ATrVar
+{
+    public:
+	static const char* Type() { return "ATrAddVar";};
+	static string PEType();
+	ATrAddVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ATrAddVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From Func::Host
+	virtual Elem::TIfRange GetInps(TInt aId);
+    protected:
+	virtual void Init(const string& aIfaceName);
+};
 // State base agent
 class StateAgent: public Elem, public MDesSyncable, public MDesObserver
 {
