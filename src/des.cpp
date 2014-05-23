@@ -345,6 +345,11 @@ void *ATrVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCt
     return res;
 }
 
+string ATrVar::VarGetIfid() const
+{
+    return mFunc != NULL ? mFunc->IfaceGetId() : string();
+}
+
 Elem* ATrVar::VarGetBase() 
 {
     return this;

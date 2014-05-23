@@ -379,6 +379,11 @@ void *DVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
     return res;
 }
 
+string DVar::VarGetIfid() const
+{
+    return mData != NULL ? mData->IfaceGetId() : string();
+}
+
 Elem* DVar::VarGetBase() 
 {
     return this;
@@ -405,6 +410,7 @@ TBool DVar::Init(const string& aString)
     if ((mData = HInt::Create(this, aString)) != NULL);
     else if ((mData = HFloat::Create(this, aString)) != NULL);
     else if ((mData = HVFloat::Create(this, aString)) != NULL);
+    else if ((mData = HBool::Create(this, aString)) != NULL);
     return mData != NULL;
 }
 
@@ -485,6 +491,67 @@ TBool DVar::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
     DataBase::HandleCompChanged(aContext, aComp);
 }
+
+// Bool data
+void *DVar::HBool::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MDBoolGet::Type()) == 0) res = (MDBoolGet*) this;
+    return res;
+}
+
+DVar::HBase* DVar::HBool::Create(DVar* aHost, const string& aString)
+{
+    HBase* res = NULL;
+    if (!aString.empty() && aString.at(0) == 'B') {
+	res = new HBool(aHost);
+    }
+    return res;
+}
+
+TBool DVar::HBool::FromString(const string& aString)
+{
+    TBool res = EFalse;
+    if (aString.at(0) == 'B') {
+	istringstream ss(aString.substr(2));
+	ss >> res;
+	Set(res);
+    }
+    return ETrue;
+}
+
+void DVar::HBool::ToString(string& aString)
+{
+    stringstream ss(aString);
+    ss << "B " << std::boolalpha << mData;
+}
+
+void DVar::HBool::Set(TBool aData)
+{
+    if (mData != aData) {
+	mData = aData;
+	mHost.UpdateProp();
+	mHost.NotifyUpdate();
+    }
+}
+
+TBool DVar::HBool::Set(Elem* aInp)
+{
+    TBool res = EFalse;
+    MDBoolGet* dget = (MDBoolGet*) aInp->GetSIfi(MDBoolGet::Type());
+    if (dget != NULL) {
+	TBool val = dget->Value();
+	Set(val);
+	res = ETrue;
+    }
+    return res;
+}
+
+TBool DVar::HBool::Value()
+{
+    return mData;
+}
+
 
 // Int data
 void *DVar::HInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)

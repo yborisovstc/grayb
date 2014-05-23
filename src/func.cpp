@@ -1213,6 +1213,11 @@ TBool AFunVar::HandleCompChanged(Elem& aContext, Elem& aComp)
 }
 
 
+string AFunVar::VarGetIfid() const
+{
+    return mFunc != NULL ? mFunc->IfaceGetId() : string();
+}
+
 Elem* AFunVar::VarGetBase() 
 {
     return this;
@@ -1397,3 +1402,113 @@ void FAddVFloat::VFloatGet(VFloat& aData)
 	}
     }
 }
+
+
+MDVarGet* Func::Host::GetInp(TInt aInpId)
+{
+    MDVarGet* res = NULL;
+    Elem::TIfRange inpr = GetInps(aInpId);
+    if (inpr.first != inpr.second) {
+	MDVarGet* res = (MDVarGet*) *inpr.first;
+    }
+    return res;
+}
+
+Func* FGtFloat::Create(Host* aHost, const string& aOutIid, const string& aInp1Iid, const string& aInp2Iid)
+{
+    Func* res = NULL;
+    if (aOutIid == MDBoolGet::Type() && (aInp1Iid == MDFloatGet::Type() || aInp1Iid == MDIntGet::Type()) 
+	  && (aInp2Iid == MDFloatGet::Type() || aInp2Iid == MDIntGet::Type())) {
+	res = new FGtFloat(*aHost);
+    }
+    return res;
+}
+
+void *FGtFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MDBoolGet::Type()) == 0) res = (MDBoolGet*) this;
+    return res;
+}
+
+TBool FGtFloat::Value()
+{
+    TBool res = 0;
+    float arg1 = GetArg(EInp1);
+    float arg2 = GetArg(EInp2);
+    res = arg1 > arg2;
+    return res;
+}
+
+float FGtFloat::GetArg(TInt aInpId)
+{
+    float res = 0.0;
+    MDVarGet* iv = mHost.GetInp(aInpId);
+    string ifi = iv->VarGetIfid();
+    if (!ifi.empty()) {
+	void* inp = iv->VarGetBase()->GetObj(ifi.c_str());
+	if (ifi == MDFloatGet::Type()) {
+	    res = ((MDFloatGet*) inp)->Value();
+	}
+	else if (ifi == MDIntGet::Type()) {
+	    res = (float) ((MDIntGet*) inp)->Value();
+	}
+    }
+    return res;
+}
+
+// Greater-than function, variable data
+string AFGtVar::PEType()
+{
+    return AFunVar::PEType() + GUri::KParentSep + Type();
+}
+
+AFGtVar::AFGtVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), AFunVar::PEType());
+    SetParent(Type());
+}
+
+AFGtVar::AFGtVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+{
+    SetEType(AFunVar::PEType());
+    SetParent(AFunVar::PEType());
+}
+
+void *AFGtVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = AFunVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void AFGtVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc == NULL;
+    }
+    MDVarGet* inp1 = GetInp(FTwoArgsBase::EInp1);
+    MDVarGet* inp2 = GetInp(FTwoArgsBase::EInp2);
+    if (inp1 != NULL && inp2 != NULL) {
+	string t1 = inp1->VarGetIfid();
+	string t2 = inp1->VarGetIfid();
+	if ((mFunc = FGtFloat::Create(this, aIfaceName, t1, t2)) != NULL);
+    }
+}
+
+Elem::TIfRange AFGtVar::GetInps(TInt aId)
+{
+    __ASSERT(aId == FTwoArgsBase::EInp1 || aId == FTwoArgsBase::EInp2);
+    Elem* inp = NULL;
+    inp = GetNode(aId == FTwoArgsBase::EInp1 ? "../../Capsule/Inp1" : "../../Capsule/Inp2");
+    __ASSERT(inp != NULL);
+    RqContext cont(this);
+    return inp->GetIfi(MDVarGet::Type(), &cont);
+}
+

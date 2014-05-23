@@ -88,13 +88,28 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		virtual TBool FromString(const string& aString) = 0;
 		virtual void ToString(string& aString) = 0;
 		virtual TBool Set(Elem* aInp) = 0;
+		virtual string IfaceGetId() const = 0;
 		DVar& mHost;
+	};
+	class HBool: public HBase, public MDBoolGet {
+	    public:
+		HBool(DVar* aHost): HBase(aHost), mData(0) {};
+		static HBase* Create(DVar* aHost, const string& aString);
+		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+		virtual string IfaceGetId() const { return MDBoolGet::Type();};
+		virtual void Set(TBool aData);
+		virtual TBool Set(Elem* aInp);
+		virtual TBool Value();
+		virtual TBool FromString(const string& aString);
+		virtual void ToString(string& aString);
+		TBool mData;
 	};
 	class HInt: public HBase, public MDInt, public MDIntGet, public MDIntSet {
 	    public:
 		HInt(DVar* aHost): HBase(aHost), mData(0) {};
 		static HBase* Create(DVar* aHost, const string& aString);
 		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+		virtual string IfaceGetId() const { return MDIntGet::Type();};
 		virtual TInt Data() const;
 		virtual void Set(TInt aData);
 		virtual TBool Set(Elem* aInp);
@@ -109,6 +124,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		HFloat(DVar* aHost): HBase(aHost), mData(0) {};
 		static HBase* Create(DVar* aHost, const string& aString);
 		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+		virtual string IfaceGetId() const { return MDFloatGet::Type();};
 		virtual float Data() const;
 		virtual void Set(float aData);
 		virtual TBool Set(Elem* aInp);
@@ -123,6 +139,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		HVFloat(DVar* aHost): HBase(aHost), mData(0) {};
 		static HBase* Create(DVar* aHost, const string& aString);
 		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+		virtual string IfaceGetId() const { return MVFloatGet::Type();};
 		// From MVFloatGet
 		virtual void VFloatGet(VFloat& aData);
 		// From HBase
@@ -149,6 +166,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	virtual bool ToString(string& aData); 
 	// From MDVarGet
 	virtual Elem* VarGetBase();
+	virtual string VarGetIfid() const;
 	// From MDVarSet
 	virtual Elem* VarSetBase();
     protected:

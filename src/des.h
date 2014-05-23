@@ -107,6 +107,7 @@ class ATrVar: public ATrBase, public MDVarGet, public Func::Host
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MDVarGet
 	virtual Elem* VarGetBase();
+	virtual string VarGetIfid() const;
 	// From Func::Host
 	virtual Elem::TIfRange GetInps(TInt aId);
 	virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...);

@@ -99,6 +99,8 @@ class MDVarGet
     public:
 	static const char* Type() { return "MDVarGet";};
 	virtual Elem* VarGetBase() = 0;
+	// Get iface id. Is used for type negotiation from root to leafs
+	virtual string VarGetIfid() const = 0;
 };
 
 class MDVarSet

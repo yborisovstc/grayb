@@ -381,6 +381,16 @@
     	</add>
     </node>
 
+    <!-- Function Inp1 GT Inp2  -->
+    <node id="FGTVar" parent="FuncVar"> 
+	<add node="Agents"> <node id="func_agt" parent="AFGtVar"/> </add>
+    	<add node="Capsule"> 
+	    <node id="Inp1" parent="../../Inp_FVar"/> 
+	    <node id="Inp2" parent="../../Inp_FVar"/> 
+    	</add>
+    </node>
+
+
     <!-- Function Bool to Int  -->
     <node id="TFBoolToInt" parent="TFuncInt"> 
 	<add node="Agents"> <node id="func_agt" parent="AFBoolToInt"/> </add>

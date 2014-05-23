@@ -20,6 +20,7 @@ class Ut_func : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_FuncSeq3);
     CPPUNIT_TEST(test_FuncSeq4);
     CPPUNIT_TEST(test_FuncVar1);
+    CPPUNIT_TEST(test_FuncVar2);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -30,6 +31,7 @@ private:
     void test_FuncSeq3();
     void test_FuncSeq4();
     void test_FuncVar1();
+    void test_FuncVar2();
 private:
     Env* iEnv;
 };
@@ -321,6 +323,49 @@ void Ut_func::test_FuncVar1()
     CPPUNIT_ASSERT_MESSAGE("Cannot get MDFloatGet from result data", resdata1f != NULL);
     float res1 = resdata1f->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect result data", res1 == 4.0);
+    
+    // Checking the type establishing
+    // Mutate the result data first
+    Elem* dinp = root->GetNode("Start/Incaps_root/Inp_data1");
+    ChromoNode nchange = dinp->Mutation().Root().AddChild(ENt_Cont);
+    nchange.SetAttr(ENa_MutNode, "Value");
+    nchange.SetAttr(ENa_MutVal, "I 80");
+    dinp->Mutate();
+
+    delete iEnv;
+}
+
+// This ut verifies two-directional negotiation of type
+void Ut_func::test_FuncVar2()
+{
+    printf("\n === Test of functions: Two-directional negotiation of type\n");
+
+    iEnv = new Env("Env", "ut_func_var2.xml", "ut_func_var2.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+
+    Elem* dir = root->GetNode("Start/Incaps_root");
+    ChromoNode mut1 = dir->Mutation().Root().AddChild(ENt_Cont);
+    mut1.SetAttr(ENa_MutNode, "e2/P1");
+    mut1.SetAttr(ENa_Ref, "/Root/Start/Incaps_root/Inp_data1/Capsule/out");
+    dir->Mutate();
+
+
+    // Check the output data
+    Elem* resdataprop1 = root->GetNode("/Root/Start/Incaps_root/Dt/Value");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
+    MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
+    const string& rdval1 = rdmprop1->Value();
+    //CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "B false");
+    Elem* resdata1 = root->GetNode("/Root/Start/Incaps_root/Dt/Capsule/out");
+    MDVarGet* resdata1g = (MDVarGet*) resdata1->GetSIfi(MDVarGet::Type());
+    CPPUNIT_ASSERT_MESSAGE("Cannot get MDVarGet from result data", resdata1g != NULL);
+    MDBoolGet* resdata1f = resdata1g->VarGetBase()->GetObj(resdata1f);
+    CPPUNIT_ASSERT_MESSAGE("Cannot get MDFloatGet from result data", resdata1f != NULL);
+    TBool res1 = resdata1f->Value();
+    CPPUNIT_ASSERT_MESSAGE("Incorrect result data", res1 == EFalse);
     
     // Checking the type establishing
     // Mutate the result data first

@@ -322,11 +322,13 @@ class Func: public Base {
     public:
 	class Host {
 	    public: 
+		MDVarGet* GetInp(TInt aInpId);
 		virtual Elem::TIfRange GetInps(TInt aId) = 0;
 		virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...) = 0;
 	};
     public:
     Func(Host& aHost): Base(string()), mHost(aHost) {};
+    virtual string IfaceGetId() const = 0;
     Host& mHost;
 };
 
@@ -342,6 +344,7 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MDVarGet
 	virtual Elem* VarGetBase();
+	virtual string VarGetIfid() const;
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
 	// From Func::Host
@@ -366,6 +369,7 @@ class FAddInt: public FAddBase, public MDIntGet {
 	static Func* Create(Host* aHost, const string& aString);
 	FAddInt(Host& aHost): FAddBase(aHost) {};
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MDIntGet::Type();};
 	virtual TInt Value();
 };
 
@@ -374,6 +378,7 @@ class FAddFloat: public FAddBase, public MDFloatGet {
 	static Func* Create(Host* aHost, const string& aString);
 	FAddFloat(Host& aHost): FAddBase(aHost) {};
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MDFloatGet::Type();};
 	virtual float Value();
 };
 
@@ -382,6 +387,7 @@ class FAddVFloat: public FAddBase, public MVFloatGet {
 	static Func* Create(Host* aHost, const string& aString);
 	FAddVFloat(Host& aHost): FAddBase(aHost) {};
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MVFloatGet::Type();};
 	virtual void VFloatGet(VFloat& aData);
 };
 
@@ -399,6 +405,43 @@ class AFAddVar: public AFunVar
     protected:
 	virtual void Init(const string& aIfaceName);
 };
+
+// Two args base function
+class FTwoArgsBase: public Func {
+    public:
+	enum {
+	    EInp1, EInp2
+	};
+	FTwoArgsBase(Host& aHost): Func(aHost) {};
+};
+
+// Greater-than function, variable data
+class FGtFloat: public FTwoArgsBase, public MDBoolGet {
+    public:
+	static Func* Create(Host* aHost, const string& aOutIid, const string& aInp1Iid, const string& aInp2Iid);
+	FGtFloat(Host& aHost): FTwoArgsBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MDBoolGet::Type();};
+	virtual TBool Value();
+    protected:
+	float GetArg(TInt aInpId);
+};
+
+class AFGtVar: public AFunVar
+{
+    public:
+	static const char* Type() { return "AFGtVar";};
+	static string PEType();
+	AFGtVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	AFGtVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From Func::Host
+	virtual Elem::TIfRange GetInps(TInt aId);
+    protected:
+	virtual void Init(const string& aIfaceName);
+};
+
 
 
 #endif
