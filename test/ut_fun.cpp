@@ -346,11 +346,13 @@ void Ut_func::test_FuncVar2()
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
+    /*
     Elem* dir = root->GetNode("Start/Incaps_root");
     ChromoNode mut1 = dir->Mutation().Root().AddChild(ENt_Cont);
     mut1.SetAttr(ENa_MutNode, "e2/P1");
     mut1.SetAttr(ENa_Ref, "/Root/Start/Incaps_root/Inp_data1/Capsule/out");
     dir->Mutate();
+    */
 
 
     // Check the output data
@@ -358,7 +360,7 @@ void Ut_func::test_FuncVar2()
     CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
     MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
     const string& rdval1 = rdmprop1->Value();
-    //CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "B false");
+    CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "B false");
     Elem* resdata1 = root->GetNode("/Root/Start/Incaps_root/Dt/Capsule/out");
     MDVarGet* resdata1g = (MDVarGet*) resdata1->GetSIfi(MDVarGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Cannot get MDVarGet from result data", resdata1g != NULL);

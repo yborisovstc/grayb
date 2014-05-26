@@ -93,7 +93,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	};
 	class HBool: public HBase, public MDBoolGet {
 	    public:
-		HBool(DVar* aHost): HBase(aHost), mData(0) {};
+		HBool(DVar* aHost): HBase(aHost), mData(EFalse) {};
 		static HBase* Create(DVar* aHost, const string& aString);
 		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 		virtual string IfaceGetId() const { return MDBoolGet::Type();};

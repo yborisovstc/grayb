@@ -173,13 +173,13 @@
 	<cont node="Capsule/Out/Int/PinData/Required" val="MDVarGet"/>
 
 	<node parent="Edge"> 
-	    <cont node="P1" val="../../Confirmed/Capsule/Out"/> 
-	    <cont node="P2" val="../../Capsule/Out/Int/PinData"/> 
+	    <cont node="P1" ref="../../Confirmed/Capsule/Out"/> 
+	    <cont node="P2" ref="../../Capsule/Out/Int/PinData"/> 
 	</node>
 
 	<node parent="Edge"> 
-	    <cont node="P1" val="../../Prepared/Capsule/Out"/> 
-	    <cont node="P2" val="../../Confirmed/Capsule/Inp"/> 
+	    <cont node="P1" ref="../../Prepared/Capsule/Out"/> 
+	    <cont node="P2" ref="../../Confirmed/Capsule/Inp"/> 
 	</node>
     </node>
 

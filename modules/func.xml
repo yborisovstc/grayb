@@ -390,6 +390,26 @@
     	</add>
     </node>
 
+    <!-- Function of getting component of containter  -->
+    <node id="FAtVar" parent="FuncVar"> 
+	<add node="Agents"> <node id="func_agt" parent="AFAtVar"/> </add>
+    	<add node="Capsule"> 
+	    <node id="Inp" parent="../../Inp_FVar"/> 
+	    <node id="Index" parent="../../Inp_FVar"/> 
+    	</add>
+    </node>
+
+    <!-- Function of swithching  -->
+    <node id="FSwitchVar" parent="FuncVar"> 
+	<add node="Agents"> <node id="func_agt" parent="AFSwitchVar"/> </add>
+    	<add node="Capsule"> 
+	    <node id="Inp1" parent="../../Inp_FVar"/> 
+	    <node id="Inp2" parent="../../Inp_FVar"/> 
+	    <node id="Sel" parent="../../Inp_FVar"/> 
+    	</add>
+    </node>
+
+
 
     <!-- Function Bool to Int  -->
     <node id="TFBoolToInt" parent="TFuncInt"> 

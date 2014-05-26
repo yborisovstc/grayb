@@ -411,6 +411,9 @@ TBool DVar::Init(const string& aString)
     else if ((mData = HFloat::Create(this, aString)) != NULL);
     else if ((mData = HVFloat::Create(this, aString)) != NULL);
     else if ((mData = HBool::Create(this, aString)) != NULL);
+    if (mData != NULL) {
+	mData->FromString(aString);
+    }
     return mData != NULL;
 }
 
@@ -422,6 +425,9 @@ TBool DVar::FromString(const string& aData)
     }
     if (mData != NULL) {
 	res = mData->FromString(aData);
+	if (!res) {
+	    Init(aData);
+	}
     }
     if (res) {
 	NotifyUpdate();
@@ -464,14 +470,17 @@ TBool DVar::Update()
     mData->ToString(old_value);
     Elem* inp = GetInp();
     if (inp != NULL) {
-	MDVarGet* vget = (MDVarGet*) inp->GetSIfi(MDVarGet::Type());
+	RqContext ctx(this);
+	MDVarGet* vget = (MDVarGet*) inp->GetSIfi(MDVarGet::Type(), &ctx);
 	if (vget != NULL) {
 	    Elem* eget = vget->VarGetBase();
-	    res = mData->Set(eget);
-	    if (res && IsLogeventUpdate()) {
-		string new_value;
-		mData->ToString(new_value);
-		Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", new_value.c_str(), old_value.c_str());
+	    if (eget != NULL) {
+		res = mData->Set(eget);
+		if (res && IsLogeventUpdate()) {
+		    string new_value;
+		    mData->ToString(new_value);
+		    Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", new_value.c_str(), old_value.c_str());
+		}
 	    }
 	}
     }
@@ -514,7 +523,7 @@ TBool DVar::HBool::FromString(const string& aString)
     TBool res = EFalse;
     if (aString.at(0) == 'B') {
 	istringstream ss(aString.substr(2));
-	ss >> res;
+	ss >> std::boolalpha >> res;
 	Set(res);
     }
     return ETrue;
@@ -522,8 +531,9 @@ TBool DVar::HBool::FromString(const string& aString)
 
 void DVar::HBool::ToString(string& aString)
 {
-    stringstream ss(aString);
+    stringstream ss;
     ss << "B " << std::boolalpha << mData;
+    aString = ss.str();
 }
 
 void DVar::HBool::Set(TBool aData)
@@ -538,7 +548,7 @@ void DVar::HBool::Set(TBool aData)
 TBool DVar::HBool::Set(Elem* aInp)
 {
     TBool res = EFalse;
-    MDBoolGet* dget = (MDBoolGet*) aInp->GetSIfi(MDBoolGet::Type());
+    MDBoolGet* dget = (MDBoolGet*) aInp->GetObj(dget);
     if (dget != NULL) {
 	TBool val = dget->Value();
 	Set(val);
@@ -574,10 +584,14 @@ DVar::HBase* DVar::HInt::Create(DVar* aHost, const string& aString)
 
 TBool DVar::HInt::FromString(const string& aString)
 {
+    TBool res = EFalse;
     TInt data;
-    sscanf(aString.c_str(), "I %d", &data);
-    Set(data);
-    return ETrue;
+    if (aString.at(0) == 'I' && aString.at(1) == ' ') {
+	sscanf(aString.c_str(), "I %d", &data);
+	Set(data);
+	res = ETrue;
+    }
+    return res;
 }
 
 void DVar::HInt::ToString(string& aString)
@@ -604,7 +618,7 @@ void DVar::HInt::Set(TInt aData)
 TBool DVar::HInt::Set(Elem* aInp)
 {
     TBool res = EFalse;
-    MDIntGet* dget = (MDIntGet*) aInp->GetSIfi(MDIntGet::Type());
+    MDIntGet* dget = (MDIntGet*) aInp->GetObj(dget);
     if (dget != NULL) {
 	TInt val = dget->Value();
 	Set(val);
@@ -644,10 +658,14 @@ DVar::HBase* DVar::HFloat::Create(DVar* aHost, const string& aString)
 
 TBool DVar::HFloat::FromString(const string& aString)
 {
+    TBool res = EFalse;
     float data;
-    sscanf(aString.c_str(), "F %f", &data);
-    Set(data);
-    return ETrue;
+    if (aString.at(0) == 'F' && aString.at(1) == ' ') {
+	sscanf(aString.c_str(), "F %f", &data);
+	Set(data);
+	res = ETrue;
+    }
+    return res;
 }
 
 void DVar::HFloat::ToString(string& aString)
@@ -674,7 +692,7 @@ void DVar::HFloat::Set(float aData)
 TBool DVar::HFloat::Set(Elem* aInp)
 {
     TBool res = EFalse;
-    MDFloatGet* dget = (MDFloatGet*) aInp->GetSIfi(MDFloatGet::Type());
+    MDFloatGet* dget = (MDFloatGet*) aInp->GetObj(dget);
     if (dget != NULL) {
 	float val = dget->Value();
 	Set(val);
@@ -765,7 +783,7 @@ void DVar::HVFloat::ToString(string& aString)
 TBool DVar::HVFloat::Set(Elem* aInp)
 {
     TBool res = EFalse;
-    MVFloatGet* dget = (MVFloatGet*) aInp->GetSIfi(MVFloatGet::Type());
+    MVFloatGet* dget = (MVFloatGet*) aInp->GetObj(dget);
     if (dget != NULL) {
 	dget->VFloatGet(mData);
 	mHost.UpdateProp();

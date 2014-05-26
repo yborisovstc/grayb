@@ -1311,7 +1311,7 @@ TInt FAddInt::Value()
     for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	Elem* dgetbase = dget->VarGetBase();
-	MDIntGet* diget = (MDIntGet*) dgetbase->GetSIfi(MDIntGet::Type());
+	MDIntGet* diget = (MDIntGet*) dgetbase->GetObj(diget);
 	if (diget != NULL) {
 	    val += diget->Value();
 	}
@@ -1344,7 +1344,7 @@ float FAddFloat::Value()
     for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	Elem* dgetbase = dget->VarGetBase();
-	MDFloatGet* dfget = (MDFloatGet*) dgetbase->GetSIfi(MDFloatGet::Type());
+	MDFloatGet* dfget = (MDFloatGet*) dgetbase->GetObj(dfget);
 	if (dfget != NULL) {
 	    val += dfget->Value();
 	}
@@ -1384,7 +1384,7 @@ void FAddVFloat::VFloatGet(VFloat& aData)
     for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	Elem* dgetbase = dget->VarGetBase();
-	MVFloatGet* dfget = (MVFloatGet*) dgetbase->GetSIfi(MVFloatGet::Type());
+	MVFloatGet* dfget = (MVFloatGet*) dgetbase->GetObj(dfget);
 	if (dfget != NULL) {
 	    VFloat arg;
 	    dfget->VFloatGet(arg);
@@ -1409,7 +1409,7 @@ MDVarGet* Func::Host::GetInp(TInt aInpId)
     MDVarGet* res = NULL;
     Elem::TIfRange inpr = GetInps(aInpId);
     if (inpr.first != inpr.second) {
-	MDVarGet* res = (MDVarGet*) *inpr.first;
+	res = (MDVarGet*) *inpr.first;
     }
     return res;
 }
@@ -1444,14 +1444,16 @@ float FGtFloat::GetArg(TInt aInpId)
 {
     float res = 0.0;
     MDVarGet* iv = mHost.GetInp(aInpId);
-    string ifi = iv->VarGetIfid();
-    if (!ifi.empty()) {
-	void* inp = iv->VarGetBase()->GetObj(ifi.c_str());
-	if (ifi == MDFloatGet::Type()) {
-	    res = ((MDFloatGet*) inp)->Value();
-	}
-	else if (ifi == MDIntGet::Type()) {
-	    res = (float) ((MDIntGet*) inp)->Value();
+    if (iv != NULL) {
+	string ifi = iv->VarGetIfid();
+	if (!ifi.empty()) {
+	    void* inp = iv->VarGetBase()->GetObj(ifi.c_str());
+	    if (ifi == MDFloatGet::Type()) {
+		res = ((MDFloatGet*) inp)->Value();
+	    }
+	    else if (ifi == MDIntGet::Type()) {
+		res = (float) ((MDIntGet*) inp)->Value();
+	    }
 	}
     }
     return res;
@@ -1493,22 +1495,269 @@ void AFGtVar::Init(const string& aIfaceName)
 	delete mFunc;
 	mFunc == NULL;
     }
-    MDVarGet* inp1 = GetInp(FTwoArgsBase::EInp1);
-    MDVarGet* inp2 = GetInp(FTwoArgsBase::EInp2);
+    MDVarGet* inp1 = GetInp(Func::EInp1);
+    MDVarGet* inp2 = GetInp(Func::EInp2);
     if (inp1 != NULL && inp2 != NULL) {
 	string t1 = inp1->VarGetIfid();
-	string t2 = inp1->VarGetIfid();
+	string t2 = inp2->VarGetIfid();
 	if ((mFunc = FGtFloat::Create(this, aIfaceName, t1, t2)) != NULL);
     }
 }
 
 Elem::TIfRange AFGtVar::GetInps(TInt aId)
 {
-    __ASSERT(aId == FTwoArgsBase::EInp1 || aId == FTwoArgsBase::EInp2);
+    __ASSERT(aId == Func::EInp1 || aId == Func::EInp2);
     Elem* inp = NULL;
-    inp = GetNode(aId == FTwoArgsBase::EInp1 ? "../../Capsule/Inp1" : "../../Capsule/Inp2");
+    inp = GetNode(aId == Func::EInp1 ? "../../Capsule/Inp1" : "../../Capsule/Inp2");
     __ASSERT(inp != NULL);
     RqContext cont(this);
     return inp->GetIfi(MDVarGet::Type(), &cont);
 }
 
+
+// Getting component of container
+string AFAtVar::PEType()
+{
+    return AFunVar::PEType() + GUri::KParentSep + Type();
+}
+
+AFAtVar::AFAtVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), AFunVar::PEType());
+    SetParent(Type());
+}
+
+AFAtVar::AFAtVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+{
+    SetEType(AFunVar::PEType());
+    SetParent(AFunVar::PEType());
+}
+
+void *AFAtVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = AFunVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void AFAtVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc == NULL;
+    }
+    MDVarGet* inp1 = GetInp(Func::EInp1);
+    MDVarGet* inp2 = GetInp(Func::EInp2);
+    if (inp1 != NULL && inp2 != NULL) {
+	string t1 = inp1->VarGetIfid();
+	if ((mFunc = FAtVFloat::Create(this, aIfaceName, t1)) != NULL);
+    }
+}
+
+Elem::TIfRange AFAtVar::GetInps(TInt aId)
+{
+    __ASSERT(aId == Func::EInp1 || aId == Func::EInp2);
+    Elem* inp = NULL;
+    inp = GetNode(aId == Func::EInp1 ? "../../Capsule/Inp" : "../../Capsule/Index");
+    __ASSERT(inp != NULL);
+    RqContext cont(this);
+    return inp->GetIfi(MDVarGet::Type(), &cont);
+}
+
+TInt FAtBase::GetInd()
+{
+    TInt res = 0;
+    MDVarGet* iv = mHost.GetInp(EInp2);
+    if (iv != NULL) {
+	MDIntGet* intget = iv->VarGetBase()->GetObj(intget);
+	if (intget != NULL) {
+	    res = intget->Value();
+	}
+    }
+    return res;
+}
+
+// Getting component of container: vector of floats
+Func* FAtVFloat::Create(Host* aHost, const string& aOutIid, const string& aInpIid)
+{
+    Func* res = NULL;
+    if (aOutIid == MDFloatGet::Type() && aInpIid == MVFloatGet::Type()) {
+	res = new FAtVFloat(*aHost);
+    }
+    return res;
+}
+
+void *FAtVFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MDFloatGet::Type()) == 0) res = (MDFloatGet*) this;
+    return res;
+}
+
+float FAtVFloat::Value()
+{
+    float res = 0;
+    MVFloatGet* arg = GetArg();
+    if (arg != NULL) {
+	TInt ind = GetInd();
+	VFloat data;
+	arg->VFloatGet(data);
+	res = data.at(ind);
+    }
+    return res;
+}
+
+MVFloatGet* FAtVFloat::GetArg()
+{
+    MVFloatGet* res = NULL;
+    MDVarGet* iv = mHost.GetInp(EInp1);
+    if (iv != NULL) {
+	string ifi = iv->VarGetIfid();
+	if (!ifi.empty()) {
+	    void* inp = iv->VarGetBase()->GetObj(ifi.c_str());
+	    if (ifi == MVFloatGet::Type()) {
+		res = (MVFloatGet*) inp;
+	    }
+	}
+    }
+    return res;
+}
+
+// Boolean case - if
+string AFSwitchVar::PEType()
+{
+    return AFunVar::PEType() + GUri::KParentSep + Type();
+}
+
+AFSwitchVar::AFSwitchVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), AFunVar::PEType());
+    SetParent(Type());
+}
+
+AFSwitchVar::AFSwitchVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+{
+    SetEType(AFunVar::PEType());
+    SetParent(AFunVar::PEType());
+}
+
+void *AFSwitchVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName, MDVarGet::Type()) == 0) {
+	if (mFunc == NULL) {
+	    Init(aName);
+	    if (mFunc != NULL) {
+		res = mFunc->DoGetObj(aName, aIncUpHier);
+	    }
+	}
+	else {
+	    res = mFunc->DoGetObj(aName, aIncUpHier);
+	    if (res == NULL) {
+		Init(aName);
+		if (mFunc != NULL) {
+		    res = mFunc->DoGetObj(aName, aIncUpHier);
+		}
+	    }
+	}
+    }
+    else {
+	res = AFunVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void AFSwitchVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc == NULL;
+    }
+    MDVarGet* inp_case = GetInp(Func::EInp1);
+    MDVarGet* inp2 = GetInp(Func::EInp2);
+    MDVarGet* inp3 = GetInp(Func::EInp3);
+    if (inp_case != NULL && inp2 != NULL && inp3 != NULL) {
+	string t_case = inp_case->VarGetIfid();
+	if ((mFunc = FSwitchBool::Create(this, aIfaceName, t_case)) != NULL);
+    }
+}
+
+// TODO [YB] It is simpler to use just mapping Func::EInp* to inputs uris
+Elem::TIfRange AFSwitchVar::GetInps(TInt aId)
+{
+    Elem* inp = NULL;
+    string inp_uri = "../../Capsule/Sel";
+    if (aId != Func::EInp1) {
+	stringstream ss;
+	ss <<  "../../Capsule/Inp" << (aId - Func::EInp1);
+	inp_uri = ss.str();
+    }
+    inp = GetNode(inp_uri);
+    __ASSERT(inp != NULL);
+    RqContext cont(this);
+    return inp->GetIfi(MDVarGet::Type(), &cont);
+}
+
+// Case - commutation of inputs
+Func* FSwitchBool::Create(Host* aHost, const string& aOutIid, const string& aInpIid)
+{
+    Func* res = NULL;
+    if (aOutIid == MDVarGet::Type() && aInpIid == MDBoolGet::Type()) {
+	res = new FSwitchBool(*aHost);
+    }
+    return res;
+}
+
+void *FSwitchBool::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    // There are two approach of commutation. The first one is to commutate MDVarGet ifase, i.e.
+    // that swithcer result is this iface of selected case. The second is that switcher 
+    // implements MDVarGet by itselt and does commutatation in this iface methods.
+    // The first approach requires iface cache refresh any time the swithcher ctrl is changed.
+    // This is not what the cache is intended to and makes overhead. So let's select approach#2 for now.
+    if (strcmp(aName, MDVarGet::Type()) == 0) res = (MDVarGet*) this;
+    // if (strcmp(aName, MDVarGet::Type()) == 0) res = GetCase();
+    return res;
+}
+
+TBool FSwitchBool::GetCtrl() const
+{
+    TBool res = false;
+    MDVarGet* iv = mHost.GetInp(EInp1);
+    if (iv != NULL) {
+	MDBoolGet* getif= iv->VarGetBase()->GetObj(getif);
+	if (getif != NULL) {
+	    res = getif->Value();
+	}
+    }
+    return res;
+}
+
+MDVarGet* FSwitchBool::GetCase() const
+{
+    MDVarGet* res = NULL;
+    TBool case_id = GetCtrl();
+    res = mHost.GetInp(case_id ? 2 : 1);
+    return res;
+}
+
+Elem* FSwitchBool::VarGetBase()
+{
+    MDVarGet* cs = GetCase();
+    return cs->VarGetBase();
+}
+
+string FSwitchBool::VarGetIfid() const
+{
+    MDVarGet* cs = GetCase();
+    return cs->VarGetIfid();
+}

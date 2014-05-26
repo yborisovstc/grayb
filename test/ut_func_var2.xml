@@ -22,10 +22,10 @@
       <node id="e2" parent="Edge"/>
       <cont node="e2/P2" ref="/Root/Start/Incaps_root/GT/Capsule/Inp1"/>
       <!--
-      <cont node="e2/P1" ref="/Root/Start/Incaps_root/Inp_data1/Capsule/out"/>
       -->
+      <cont node="e2/P1" ref="/Root/Start/Incaps_root/Inp_data1/Capsule/out"/>
       <node id="Inp_data2" parent="/Root/Modules/DataComps/DataTVar"/>
-      <cont node="Inp_data1/Value" val="F 5.0"/>
+      <cont node="Inp_data2/Value" val="F 5.0"/>
       <node id="e3" parent="Edge"/>
       <cont node="e3/P2" ref="/Root/Start/Incaps_root/GT/Capsule/Inp2"/>
       <cont node="e3/P1" ref="/Root/Start/Incaps_root/Inp_data2/Capsule/out"/>
