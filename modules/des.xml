@@ -48,6 +48,15 @@
 	</node>
     </node>
 
+    <!-- Input of standard variable State -->
+    <node id="StVarInp" parent=":Elem:SysComps/Extender"> 
+	<rm node="Int"/>
+	<node id="Int" parent="../StInpSocket"> 
+	    <cont node="PinData/Provided" val="MDVarGet"/>
+	</node>
+    </node>
+
+
     <!-- Input of int transition -->
     <node id="TrIntInp" parent=":Elem:SysComps/ConnPoint"> 
 	<cont node="Required" val="MDIntGet"/>
@@ -112,6 +121,25 @@
 	</add>
 	<node id="InpN" parent="../TrIntInp"/> 
     </node>
+
+    <!-- Transition of variable data : Switch -->
+    <node id="TrSwitchVar" parent="TrVar"> 
+	<add node="Agents"> 
+	    <node id="TrAgt" parent="ATrSwitchVar"/> 
+	</add>
+	<change node="Inp" attr="id" val="Sel"/>
+	<node id="Inp1" parent="../TrIntInp"/> 
+	<node id="Inp2" parent="../TrIntInp"/> 
+    </node>
+
+    <!-- Transition of variable data : Getting coord of vector -->
+    <node id="TrAtVar" parent="TrVar"> 
+	<add node="Agents"> 
+	    <node id="TrAgt" parent="ATrAtVar"/> 
+	</add>
+	<node id="Index" parent="../TrIntInp"/> 
+    </node>
+
 
 
 

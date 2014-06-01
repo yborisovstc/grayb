@@ -239,6 +239,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	Elem* GetMajorChild(Rank& rr);
 	void GetMajorChild(Elem*& aElem, Rank& rr);
 	TBool IsMutSafe(Elem* aRef);
+	TBool IsRefSafe(Elem* aRef);
 	TMDeps& GetMDeps() { return iMDeps;};
 	void AddMDep(Elem* aNode, const ChromoNode& aMut, TNodeAttr aAttr);
 	void RemoveMDep(const TMDep& aDep);
@@ -246,6 +247,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void AddCMDep(const ChromoNode& aMut, TNodeAttr aAttr, Elem* aNode);
 	void RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr);
 	void RmCMDep(const ChromoNode& aMut);
+	void GetDep(TMDep& aDep, TNodeAttr aAttr);
+	void GetDepRank(Rank& aRank, TNodeAttr aAttr);
 	TMDep GetMajorDep();
 	void GetMajorDep(TMDep& aDep);
 	// Chromo

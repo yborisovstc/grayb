@@ -68,8 +68,8 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     else if (aType.compare(AFAddVar::Type()) == 0) {
 	res = new AFAddVar(aName, aMan, aEnv);
     }
-    else if (aType.compare(AFGtVar::Type()) == 0) {
-	res = new AFGtVar(aName, aMan, aEnv);
+    else if (aType.compare(AFBcmpVar::Type()) == 0) {
+	res = new AFBcmpVar(aName, aMan, aEnv);
     }
     else if (aType.compare(AFAtVar::Type()) == 0) {
 	res = new AFAtVar(aName, aMan, aEnv);
@@ -121,6 +121,12 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     }
     else if (aType.compare(ATrAddVar::Type()) == 0) {
 	res = new ATrAddVar(aName, aMan, aEnv);
+    }
+    else if (aType.compare(ATrSwitchVar::Type()) == 0) {
+	res = new ATrSwitchVar(aName, aMan, aEnv);
+    }
+    else if (aType.compare(ATrAtVar::Type()) == 0) {
+	res = new ATrAtVar(aName, aMan, aEnv);
     }
     else if (aType.compare(ASocket::Type()) == 0) {
 	res = new ASocket(aName, aMan, aEnv);
@@ -238,9 +244,9 @@ Elem* ProvDef::GetNode(const string& aUri)
 	    parent = GetNode("AFunVar");
 	    res = new AFAddVar(NULL, iEnv);
 	}
-	else if (aUri.compare(AFGtVar::Type()) == 0) {
+	else if (aUri.compare(AFBcmpVar::Type()) == 0) {
 	    parent = GetNode("AFunVar");
-	    res = new AFGtVar(NULL, iEnv);
+	    res = new AFBcmpVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AFAtVar::Type()) == 0) {
 	    parent = GetNode("AFunVar");
@@ -321,6 +327,14 @@ Elem* ProvDef::GetNode(const string& aUri)
 	else if (aUri.compare(ATrAddVar::Type()) == 0) {
 	    parent = GetNode("ATrVar");
 	    res = new ATrAddVar(NULL, iEnv);
+	}
+	else if (aUri.compare(ATrSwitchVar::Type()) == 0) {
+	    parent = GetNode("ATrVar");
+	    res = new ATrSwitchVar(NULL, iEnv);
+	}
+	else if (aUri.compare(ATrAtVar::Type()) == 0) {
+	    parent = GetNode("ATrVar");
+	    res = new ATrAtVar(NULL, iEnv);
 	}
 	if (res != NULL) {
 	    if (parent != NULL) {

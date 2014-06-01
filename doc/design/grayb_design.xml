@@ -183,6 +183,16 @@
 		    Socket's pin requested for this iface, gets pair and redirect iface request to it. </simpara>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_ifcache_refr"><title>Refreshing cache on node change.</title>
+	    <sect3><title>Introduction</title>
+		<simpara>Ref to <ulink url="../requirements/index.html#uc_010"/> for use-case related.</simpara>
+		<simpara>Ifaces cache needs to be updated properly if some new ifaces got appeared or disappeared in result of mutations. Currently this functionality is not implemented properly.
+		The only cache invalidation is doing when vertex gets connected or disconnected.</simpara>
+	    <simpara>The initial idea is that the mutated node needs to know all its iface requestors and to notify all of them about nodes change that can affect iface providing. 
+		There are forward relations from requester to servece nodes (such nodes that provide the ifaces): each agent knows to what node of hier to redirect the request. But currently
+	    there is no back relations from service node to requesters. This is because unsuccessful request doesn't go to chache so the node doesn't know of the requester further.</simpara>
+	    </sect3>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_mut"><title>Mutations</title>
@@ -362,6 +372,27 @@
 		    <listitem>Check if the mutation can be squeezed. For -rn NODE_X- the checking passes be default because there must be mutation -node- with lower rank.</listitem>
 		    <listitem>Go thru all mutations  depending on NODE_X and which rank lies between initial -node- and given -rn-: correct the reference to NODE_X according to -rn- paramenter.</listitem>
 		</orderedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_drv_int"><title>How to derive from component of heirs</title>
+	    <sect3><title>Introduction</title>
+		<simpara>Currently the following mechanism is used for derivation. Node [N] that is adding component [(CP:)C]  gets components parent [CP], requests it to produce the child in its own context,
+		    relocate the created child to nodes hier, and then applies the mutations [CM] to the components. Note that the mutation applied to the component are being done in
+		    node [N] context. It causes the following problem: when some system [S] uses node [N] as parent for derivation new node [N~1] then [N~1] will have another component [C] 
+		    (it is also named [C] but it is not the same [C] as [N] has). This component [C] chromo [CM] is related to node [N] context. </simpara>
+		<simpara>Ref to diagram below.</simpara>
+		<figure id="fig_mut_drv_int1"><imageobject> <imagedata fileref="pics/pic_ds_mut_drv_from_comp.png"/> </imageobject></figure>
+		<simpara>So it happens that CM/C is not suited for derivation because its chromo is for another context. To generalize: the components that were came to child from parent in derivation process are
+		    not sutable for inheritance if the childs context differs from parents context. How to deal with this case?</simpara>
+		<simpara>There could be the following approaches suggested:</simpara>
+		<itemizedlist>
+		    <listitem>To detect if the components is suitable for inheritance, i.e. if some of its owners were moved from original context.</listitem>
+		    <listitem>To modify of creating of new node: to truly relocate the heir, not only change the owner. Ref <xref linkend="ds_drv_int_rel"/> for details</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3 id="ds_drv_int_rel"><title>Approaches: To modify of creating of new node</title>
+		<simpara>Currently to relocation of created heir to new hier is being done quite simple, ref. elem.cpp/Elem::CreateHeir()/Relocate heir to hier ... The only 
+		new owner is set for created heir, no any corrections in mutations referred to original context.</simpara>
 	    </sect3>
 	</sect2>
 

@@ -321,7 +321,7 @@ class AFBoolToInt: public AFunc, public MDIntGet
 class Func: public Base {
     public:
 	enum {
-	    EInp1 = 0, EInp2, EInp3, EInp4, EInp5, EInp6, EInp7
+	    EInp1 = 0, EInp2, EInp3, EInp4
 	};
     public:
 	class Host {
@@ -410,11 +410,11 @@ class AFAddVar: public AFunVar
 	virtual void Init(const string& aIfaceName);
 };
 
-// Greater-than function, variable data
-class FGtFloat: public Func, public MDBoolGet {
+// Boolean comparition, variable data
+class FBcmpFloat: public Func, public MDBoolGet {
     public:
 	static Func* Create(Host* aHost, const string& aOutIid, const string& aInp1Iid, const string& aInp2Iid);
-	FGtFloat(Host& aHost): Func(aHost) {};
+	FBcmpFloat(Host& aHost): Func(aHost) {};
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	virtual string IfaceGetId() const { return MDBoolGet::Type();};
 	virtual TBool Value();
@@ -422,19 +422,46 @@ class FGtFloat: public Func, public MDBoolGet {
 	float GetArg(TInt aInpId);
 };
 
-class AFGtVar: public AFunVar
+class AFBcmpVar: public AFunVar
 {
     public:
-	static const char* Type() { return "AFGtVar";};
+	static const char* Type() { return "AFBcmpVar";};
 	static string PEType();
-	AFGtVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
-	AFGtVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	AFBcmpVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	AFBcmpVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Func::Host
 	virtual Elem::TIfRange GetInps(TInt aId);
     protected:
 	virtual void Init(const string& aIfaceName);
+};
+
+// Comparition, variable data
+class AFCmpVar: public AFunVar
+{
+    public:
+	static const char* Type() { return "AFCmpVar";};
+	static string PEType();
+	AFCmpVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	AFCmpVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From Func::Host
+	virtual Elem::TIfRange GetInps(TInt aId);
+    protected:
+	virtual void Init(const string& aIfaceName);
+};
+
+class FCmpFloat: public Func, public MDIntGet {
+    public:
+	static Func* Create(Host* aHost, const string& aOutIid, const string& aInp1Iid, const string& aInp2Iid);
+	FCmpFloat(Host& aHost): Func(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MDIntGet::Type();};
+	virtual TInt Value();
+    protected:
+	float GetArg(TInt aInpId);
 };
 
 
@@ -491,52 +518,19 @@ class AFSwitchVar: public AFunVar
 	virtual void Init(const string& aIfaceName);
 };
 
-#if 0
-// Agent of function of variable type
-class AFSwitchVar: public AFunc, public MDVarGet, public Func::Host
+class FSwithcBase: public Func 
 {
     public:
-	class Func: public Base {
-	    public:
-		class Host {
-		    public: 
-			MDVarGet* GetInp(TInt aInpId);
-			virtual Elem::TIfRange GetInps(TInt aId) = 0;
-			virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...) = 0;
-		};
-	    public:
-		Func(Host& aHost): Base(string()), mHost(aHost) {};
-		virtual string IfaceGetId() const = 0;
-		Host& mHost;
-	};
-    public:
-	static const char* Type() { return "AFSwitchVar";};
-	static string PEType();
-	AFSwitchVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
-	AFSwitchVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
-	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	// From MDVarGet
-	virtual Elem* VarGetBase();
-	virtual string VarGetIfid() const;
-	// From MACompsObserver
-	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
-	// From Func::Host
-	virtual Elem::TIfRange GetInps(TInt aId);
-	virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...);
-    protected:
-	virtual void Init(const string& aIfaceName) {};
-    protected:
-	Func* mFunc;
+	enum { EInp_Sel = Func::EInp1, EInp_1 };
+	FSwithcBase(Host& aHost): Func(aHost) {};
 };
-#endif
 
 // 	Boolean case
-class FSwitchBool: public Func, public MDVarGet
+class FSwitchBool: public FSwithcBase, public MDVarGet
 {
     public:
 	static Func* Create(Func::Host* aHost, const string& aOutIid, const string& aInp1Id);
-	FSwitchBool(Func::Host& aHost): Func(aHost) {};
+	FSwitchBool(Func::Host& aHost): FSwithcBase(aHost) {};
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	virtual string IfaceGetId() const { return MDFloatGet::Type();};
 	MDVarGet* GetCase() const;

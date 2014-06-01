@@ -383,7 +383,7 @@
 
     <!-- Function Inp1 GT Inp2  -->
     <node id="FGTVar" parent="FuncVar"> 
-	<add node="Agents"> <node id="func_agt" parent="AFGtVar"/> </add>
+	<add node="Agents"> <node id="func_agt" parent="AFBcmpVar"/> </add>
     	<add node="Capsule"> 
 	    <node id="Inp1" parent="../../Inp_FVar"/> 
 	    <node id="Inp2" parent="../../Inp_FVar"/> 

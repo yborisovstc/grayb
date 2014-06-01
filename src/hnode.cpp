@@ -61,7 +61,7 @@ void MutElem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 	    res = AddNode(rno);
 	    if (!res) {
 		string pname = rno.Attr(ENa_Parent);
-		Logger()->WriteFormat("ERROR: Node [%s] - adding node of type [%s] failed", Name().c_str(), pname.c_str());
+		Logger()->Write(MLogRec::EErr, this, "Adding node of type [%s] failed"pname.c_str());
 	    }
 	}
 	else if (rnotype == ENt_Add) {

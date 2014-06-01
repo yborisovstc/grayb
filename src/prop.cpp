@@ -38,7 +38,8 @@ const string& Prop::Value() const
 TBool Prop::ChangeCont(const string& aVal, TBool aRtOnly)
 {
     TBool res = ETrue;
-    if (aVal != iValue) {
+    //if (aVal != iValue) {
+    if (true) {
 	iValue = aVal;
 	if (aRtOnly) {
 	    iMan->OnContentChanged(*this);

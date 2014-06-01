@@ -355,9 +355,24 @@ Elem* ATrVar::VarGetBase()
     return this;
 }
 
+
+string ATrVar::GetInpUri(TInt aId) 
+{
+    if (aId == Func::EInp1) return "Inp1";
+    else if (aId == Func::EInp2) return "Inp2";
+    else if (aId == Func::EInp3) return "Inp3";
+    else if (aId == Func::EInp4) return "Inp4";
+    else return string();
+}
+
 Elem::TIfRange ATrVar::GetInps(TInt aId)
 {
-    return TIfRange(IfIter(), IfIter());
+    if (aId == FAddBase::EInp) {
+	Elem* inp = GetNode("../../" + GetInpUri(aId));
+	__ASSERT(inp != NULL);
+	RqContext cont(this);
+	return inp->GetIfi(MDVarGet::Type(), &cont);
+    }
 }
 
 void ATrVar::LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...)
@@ -371,7 +386,7 @@ void ATrVar::LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...)
 string ATrAddVar::PEType()
 {
     return ATrVar::PEType() + GUri::KParentSep + Type();
-}
+} 
 
 ATrAddVar::ATrAddVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
@@ -408,17 +423,120 @@ void ATrAddVar::Init(const string& aIfaceName)
     else if ((mFunc = FAddVFloat::Create(this, aIfaceName)) != NULL);
 }
 
-Elem::TIfRange ATrAddVar::GetInps(TInt aId)
+string ATrAddVar::GetInpUri(TInt aId) 
 {
-    if (aId == FAddBase::EInp) {
-	Elem* inp = GetNode("../../Inp");
-	__ASSERT(inp != NULL);
-	RqContext cont(this);
-	return inp->GetIfi(MDVarGet::Type(), &cont);
-    }
+    if (aId == FAddBase::EInp) return "Inp";
+    else return string();
 }
 
 
+// Agent function "Switch controlled by var data"
+string ATrSwitchVar::PEType()
+{
+    return ATrVar::PEType() + GUri::KParentSep + Type();
+}
+
+ATrSwitchVar::ATrSwitchVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), ATrVar::PEType());
+    SetParent(Type());
+}
+
+ATrSwitchVar::ATrSwitchVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
+{
+    SetEType(ATrVar::PEType());
+    SetParent(ATrVar::PEType());
+}
+
+void *ATrSwitchVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = ATrVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void ATrSwitchVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc == NULL;
+    }
+    MDVarGet* inp_case = GetInp(FSwithcBase::EInp_Sel);
+    MDVarGet* inp2 = GetInp(FSwithcBase::EInp_1);
+    MDVarGet* inp3 = GetInp(FSwithcBase::EInp_1 + 1);
+    if (inp_case != NULL && inp2 != NULL && inp3 != NULL) {
+	string t_case = inp_case->VarGetIfid();
+	if ((mFunc = FSwitchBool::Create(this, aIfaceName, t_case)) != NULL);
+    }
+}
+
+string ATrSwitchVar::GetInpUri(TInt aId) 
+{
+    if (aId == FSwithcBase::EInp_Sel) return "Sel";
+    else if (aId > FSwithcBase::EInp_Sel) {
+	stringstream ss;
+	ss <<  "Inp" << (aId - FSwithcBase::EInp_Sel);
+	return ss.str();
+    }
+    else return string();
+}
+
+
+// Agent function "Get n-coord of Vector"
+string ATrAtVar::PEType()
+{
+    return ATrVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrAtVar::ATrAtVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), ATrVar::PEType());
+    SetParent(Type());
+} 
+
+ATrAtVar::ATrAtVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
+{ 
+    SetEType(ATrVar::PEType());
+    SetParent(ATrVar::PEType());
+}
+
+void *ATrAtVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+     }
+     else {
+	res = ATrVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+} 
+
+void ATrAtVar::Init(const string& aIfaceName)
+{ 
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc == NULL;
+     }
+    MDVarGet* inp_ind = GetInp(Func::EInp2);
+    MDVarGet* inp = GetInp(Func::EInp1);
+    string t_inp = inp->VarGetIfid();
+     if (inp_ind != NULL && inp != NULL) {
+	if ((mFunc = FAtVFloat::Create(this, aIfaceName, t_inp)) != NULL);
+    }
+}
+
+string ATrAtVar::GetInpUri(TInt aId) 
+{ 
+    if (aId == Func::EInp2) return "Index";
+    else if (aId == Func::EInp1) return "Inp";
+    else return string();
+}
 
 
 /* State base agent */

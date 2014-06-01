@@ -113,6 +113,7 @@ class ATrVar: public ATrBase, public MDVarGet, public Func::Host
 	virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...);
     protected:
 	virtual void Init(const string& aIfaceName) {};
+	virtual string GetInpUri(TInt aId);
     protected:
 	Func* mFunc;
 };
@@ -128,11 +129,41 @@ class ATrAddVar: public ATrVar
 	ATrAddVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	// From Func::Host
-	virtual Elem::TIfRange GetInps(TInt aId);
-    protected:
+	// From ATrVar
 	virtual void Init(const string& aIfaceName);
+	virtual string GetInpUri(TInt aId);
 };
+
+// Agent function "Switch controlled by var data"
+class ATrSwitchVar: public ATrVar
+{
+    public:
+	static const char* Type() { return "ATrSwitchVar";};
+	static string PEType();
+	ATrSwitchVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ATrSwitchVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName);
+	virtual string GetInpUri(TInt aId);
+};
+
+// Agent function "Switch controlled by var data"
+class ATrAtVar: public ATrVar
+{
+    public:
+	static const char* Type() { return "ATrAtVar";};
+	static string PEType();
+	ATrAtVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ATrAtVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName);
+	virtual string GetInpUri(TInt aId);
+};
+
 // State base agent
 class StateAgent: public Elem, public MDesSyncable, public MDesObserver
 {

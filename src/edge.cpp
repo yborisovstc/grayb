@@ -345,6 +345,30 @@ const string& Edge::Pointu(Elem* aCp)
     return pt->Value();
 }
 
+Elem* Edge::Point1rc()
+{
+    Elem* res = NULL;
+    if (iPoint1 != NULL) {
+	res = iPoint1->EBase()->GetObj(res);
+    }
+    else {
+	res = Point1r();
+    }
+    return res;
+}
+
+Elem* Edge::Point2rc()
+{
+    Elem* res = NULL;
+    if (iPoint2 != NULL) {
+	res = iPoint2->EBase()->GetObj(res);
+    }
+    else {
+	res = Point2r();
+    }
+    return res;
+}
+
 Elem* Edge::Point1r()
 {
     Elem* res = NULL;

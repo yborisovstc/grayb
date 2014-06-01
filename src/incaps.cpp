@@ -99,8 +99,8 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 			    }
 			    else {
 				// Full connection, compat checking is needed
-				Elem* pt1 = edge->Point1r();
-				Elem* pt2 = edge->Point2r();
+				Elem* pt1 = edge->Point1rc();
+				Elem* pt2 = edge->Point2rc();
 				if (pt1 != NULL && pt2 != NULL) {
 				    string pt1u = edge->Point1u();
 				    string pt2u = edge->Point2u();
@@ -116,7 +116,7 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 					    // Are compatible - connect
 					    res = edge->Connect(&aComp);
 					    if (res) {
-						Logger()->Write(MLogRec::EInfo, host, "Connected [%s - %s]", pt1u.c_str(), pt2u.c_str());
+						//Logger()->Write(MLogRec::EInfo, host, "Connected [%s - %s]", pt1u.c_str(), pt2u.c_str());
 					    }
 					    else {
 						Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] failed", pt1u.c_str(), pt2u.c_str());

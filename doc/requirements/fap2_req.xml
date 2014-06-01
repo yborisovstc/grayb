@@ -330,6 +330,14 @@
 		<itemizedlist>
 		</itemizedlist>
 	    </sect3>
+	    <sect3><title>Discussion</title> 
+		<simpara>Currently (git sha 82c1940cf4402d5ca89eaea7cd69ab9b7b74fc97 at 20140526) this mechanism is implemeted only partially: for vertex the cache is
+		    invalidated when vertexes connections got changed. But this invalidation is not propagated properly. This is outlined on the figure below. Let's assume the 
+		    iface requestor is node requesting to connpoint [CP1] and [CP1] cache contains some ifaces for this request.
+		    Then if [Ext1] and [Ext2] get connected via [E1] then the only [Ext1] and [Ext2] ifcaches will be invalidated,
+		    but not the cache of [CP1], so [CP1] will not provide ifaces from [Ext1].</simpara>
+		<figure id="fig_ifcache_inval"><imageobject> <imagedata fileref="pics/pic_req_ifcache_inval.png"/> </imageobject></figure>
+	    </sect3>
 	</sect2>
 
 	<sect2 id="uc_005"><title>UC_005 Sockets</title>
@@ -340,7 +348,7 @@
 	    <sect3><title>Details</title>
 		<itemizedlist>
 		    <listitem>Socket is element that contains other CPs, or sockets. So socket can be quite complex
-		    hierarhy of elements.</listitem>
+			hierarhy of elements.</listitem>
 		    <listitem>Sockets are to be compatible in order to be connected.</listitem>
 		</itemizedlist>
 	    </sect3>

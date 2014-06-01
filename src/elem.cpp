@@ -530,7 +530,8 @@ TBool Elem::AddNode(const ChromoNode& aSpec, TBool aRunTime)
 	    }
 	    for (ChromoNode::Const_Iterator mit = aSpec.Begin(); mit != aSpec.End() && res; mit++) {
 		const ChromoNode& mno = (*mit);
-		Elem* rnode = node->AddElem(mno, aRunTime);
+		//Elem* rnode = node->AddElem(mno, aRunTime);
+		Elem* rnode = node->AddElem(mno, ETrue);
 		if (rnode == NULL) {
 		    Logger()->Write(MLogRec::EErr, this, "Adding node into [%s] - failure", snode.c_str());
 		}
@@ -816,7 +817,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 	    RmNode(rno, aRunTime);
 	}
 	else {
-	    Logger()->WriteFormat("ERROR: Mutating node [%s] - unknown mutation type [%d]", Name().c_str(), rnotype);
+	    Logger()->Write(MLogRec::EErr, this, "Mutating - unknown mutation type [%d]", rnotype);
 	}
     }
 }
@@ -840,7 +841,7 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime)
 	if (IsMutSafe(node)) {
 	    TBool res = node->ChangeAttr(GUri::NodeAttr(mattrs), mval);
 	    if (!res) {
-		Logger()->WriteFormat("ERROR: Changing [%s] - failure", snode.c_str());
+		Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - failure", snode.c_str());
 	    }
 	    else {
 		// Adding dependency to object of change
@@ -856,7 +857,7 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime)
 	}
     }
     else {
-	Logger()->WriteFormat("ERROR: Changing [%s] - cannot find node", snode.c_str());
+	Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - cannot find node", snode.c_str());
     }
 }
 
@@ -894,29 +895,40 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 	node = GetNode(unode);
     }
     if (node != NULL) {
-	if (refex) {
-	    // For -ref- attr the value is the ref relative to mutated node context
-	    rnode = node->GetNode(mval);
-	    //mval = rnode->GetRUri(node);
-	    if (rnode == NULL) {
-		Logger()->Write(MLogRec::EErr, this, "Changing [%s] - cannot find ref", mval.c_str());
-		res = EFalse;
-	    }
-	}
-	if (res) {
-	    res = node->ChangeCont(mval, EFalse);
-	    if (res) {
-		if (!aRunTime) {
-		    ChromoNode chn = iChromo->Root().AddChild(aSpec);
-		    AddCMDep(chn, ENa_MutNode, node);
-		    if (refex) {
-			AddCMDep(chn, ENa_Ref, rnode);
+	if (IsMutSafe(node)) {
+	    if (refex) {
+		// For -ref- attr the value is the ref relative to mutated node context
+		rnode = node->GetNode(mval);
+		//mval = rnode->GetRUri(node);
+		if (rnode == NULL) {
+		    Logger()->Write(MLogRec::EErr, this, "Changing contnt of node [%s] to ref [%s] - cannot find ref", snode.c_str(), mval.c_str());
+		    res = EFalse;
+		}
+		else {
+		    if (!IsRefSafe(rnode)) {
+			Logger()->Write(MLogRec::EErr, this, "Changing content of node [%s] - unsafe: rank of ref [%s] is too big", snode.c_str(), mval.c_str());
+			res = EFalse;
 		    }
 		}
 	    }
-	    else {
-		Logger()->Write(MLogRec::EErr, this, "Changing [%s] - failure", snode.c_str());
+	    if (res) {
+		res = node->ChangeCont(mval, EFalse);
+		if (res) {
+		    if (!aRunTime) {
+			ChromoNode chn = iChromo->Root().AddChild(aSpec);
+			AddCMDep(chn, ENa_MutNode, node);
+			if (refex) {
+			    AddCMDep(chn, ENa_Ref, rnode);
+			}
+		    }
+		}
+		else {
+		    Logger()->Write(MLogRec::EErr, this, "Changing [%s] - failure", snode.c_str());
+		}
 	    }
+	}
+	else {
+	    Logger()->Write(MLogRec::EErr, this, "Changing content of [%s] - unsafe, used in: [%s]", snode.c_str(), node->GetMajorDep().first.first->GetUri().c_str());
 	}
     }
     else {
@@ -1048,6 +1060,7 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
     // Mutated with parent's own chromo - so panent's name is the type now. Set also the parent, but it will be updated further
     heir->SetEType(Name(), EType(EFalse));
     heir->SetParent(Name());
+    // Relocate heir to hier from which the request of creating heir came
     heir->SetMan(NULL);
     heir->SetMan(aMan);
     // Re-adopte the child
@@ -1535,6 +1548,19 @@ Elem* Elem::GetInhRoot() const
 
 }
 
+TBool Elem::IsRefSafe(Elem* aRef)
+{
+    TBool res = ETrue;
+    Rank rank;
+    GetRank(rank);
+    Rank deprank;
+    aRef->GetDepRank(deprank, ENa_Id);
+    if (deprank > rank && !deprank.IsRankOf(rank)) {
+	res = EFalse;
+    }
+    return res;
+}
+
 TBool Elem::IsMutSafe(Elem* aRef)
 {
     TBool safemut = ETrue;
@@ -1712,13 +1738,16 @@ TBool Elem::IsHeirOf(const string& aParent) const
 // that the comps chromo is attached but some its mgr is deattached
 TBool Elem::IsChromoAttached() const
 {
-    bool res = true;
+    bool res = ETrue;
     if (iMan != NULL) {
 	ChromoNode root = iChromo->Root();
 	ChromoNode::Iterator rparentit = root.Parent();
 	if (rparentit != root.End()) {
 	    ChromoNode rparent = *rparentit;
 	    res = (rparent.Type() == ENt_Node);
+	}
+	else {
+	    res = EFalse;
 	}
 	if (res) {
 	    res = iMan->IsChromoAttached();
@@ -1819,6 +1848,25 @@ void Elem::GetMajorChild(Elem*& aElem, Rank& rr)
     }
 }
 
+void Elem::GetDep(TMDep& aDep, TNodeAttr aAttr) 
+{
+    if (iMDeps.begin() != iMDeps.end()) {
+	for (TMDeps::const_iterator it = iMDeps.begin(); it != iMDeps.end(); it++) {
+	    TMDep dep = *it;
+	    if (dep.second == aAttr) {
+		aDep = dep;
+		break;
+	    }
+	}
+    }
+    else {
+	// No deps, the node is internal, move to owner
+	if (iMan != NULL) {
+	    iMan->GetDep(aDep, aAttr);
+	}
+    }
+}
+
 Elem::TMDep Elem::GetMajorDep()
 {
     TMDep res(TMutRef(iMan, iChromo->Root().Handle()), ENa_Id);
@@ -1862,6 +1910,17 @@ void Elem::GetMajorDep(TMDep& aDep)
     }
 }
 
+void Elem::GetDepRank(Rank& aRank, TNodeAttr aAttr) 
+{
+    TMDep dep;
+    GetDep(dep, aAttr);
+    Elem* depnode = dep.first.first;
+    if (depnode != NULL) {
+	ChromoNode depmut = iChromo->CreateNode(dep.first.second);
+	// Using combined calc of rank because of possibility that mut can be deattached
+	depnode->GetRank(aRank, depmut);
+    }
+}
 
 // Handles parent deleting, ref uc_029
 void Elem::OnParentDeleting(Elem* aParent)

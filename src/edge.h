@@ -47,6 +47,8 @@ class Edge: public Elem, public MEdge
 	Elem* Point2p();
 	Elem* Point1r();
 	Elem* Point2r();
+	Elem* Point1rc();
+	Elem* Point2rc();
 	Elem* Pointr(Elem* aCp);
 	MVert* Point1v();
 	MVert* Point2v();
