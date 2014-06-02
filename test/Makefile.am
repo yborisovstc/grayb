@@ -7,7 +7,8 @@ ut_grayb_lib_SOURCES = \
 		       ut_conn.cpp \
 		       ut_uri.cpp \
 		       ut_fun.cpp \
-		       ut_des.cpp 
+		       ut_icache.cpp \
+		       ut_des.cpp
 
 AM_CPPFLAGS = -D_PLAT_LINUX_ -g -O0
 #ut_grayb_lib_LDFLAGS=-L../src/ -lgrayb  -lcppunit

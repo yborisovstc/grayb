@@ -425,8 +425,19 @@ void Elem::RmIfCache(IfIter& aIt)
     iICache.erase(aIt.iCacheIter);
 }
 
-void Elem::InvalidateIfCache()
+void Elem::InvalidateIfCache(Base* aProv)
 {
+    // Invalidating the ifaces requestors
+    for (TICacheQFIter it = iICacheQF.begin(); it != iICacheQF.end(); it++) {
+	if (it->second.second == aProv || aProv == NULL) {
+	    const TICacheRCtx& ctx = it->first.second;
+	    if (!ctx.empty()) {
+		Base* reqb = ctx.at(0);
+		Elem* reqe = reqb->GetObj(reqe);
+		reqe->InvalidateIfCache(this);
+	    }
+	}
+    }
     iICache.clear();
     iICacheQF.clear();
 }
@@ -434,18 +445,21 @@ void Elem::InvalidateIfCache()
 void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, void* aVal)
 {
     TICacheKeyF keyf(aName, aReq);
-    pair<TICacheKey, void*> val(TICacheKey(keyf, aProv), aVal);
-    TICacheCIter res = iICache.insert(val);
+    TICacheKey key(keyf, aProv);
+    if (aVal != NULL) {
+	pair<TICacheKey, void*> val(key, aVal);
+	TICacheCIter res = iICache.insert(val);
+    }
     // Push to query map if not already exists
     bool exists = false;
     TICacheQFRange frange = iICacheQF.equal_range(keyf);  
     for (TICacheQFIter it = frange.first; it != frange.second && !exists; it++) {
-	if (it->second == res->first) {
+	if (it->second == key) {
 	    exists = ETrue;
 	}
     }
     if (!exists) {
-	pair<TICacheKeyF, TICacheKey> qr(keyf, res->first);
+	pair<TICacheKeyF, TICacheKey> qr(keyf, key);
 	iICacheQF.insert(qr);
     }
 }
@@ -460,9 +474,12 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
 void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
 {
     void* res = DoGetObj(aName.c_str(), aCtx);
+    InsertIfCache(aName, ToCacheRCtx(aCtx), this, res);
+    /*
     if (res != NULL) {
-	InsertIfCache(aName, ToCacheRCtx(aCtx), this, res);
+    InsertIfCache(aName, ToCacheRCtx(aCtx), this, res);
     }
+    */
 }
 
 /*

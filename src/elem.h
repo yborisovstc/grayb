@@ -232,7 +232,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// Ifaces cache
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
 	void RmIfCache(IfIter& aIt);
-	void InvalidateIfCache();
+	void InvalidateIfCache(Base* aProv = NULL);
 	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, void* aVal);
 	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg);
 	// Deps
