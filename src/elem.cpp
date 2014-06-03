@@ -34,17 +34,24 @@ Elem::IfIter::IfIter(Elem* aHost, const string& aIName, const TICacheRCtx& aReq,
 	iQFIter = iQFRange.first;
 	if (aToEnd) {
 	    TICacheQFIter tmp(iQFIter);
-	    while (++tmp != iQFRange.second) iQFIter = tmp;
+	    TICacheQFIter qfend(iQFIter);
+	    while (++tmp != iQFRange.second) qfend = tmp;
+	    iQFIter = qfend;
 	    iCacheRange = iHost->iICache.equal_range(iQFIter->second);
 	    iCacheIter = iCacheRange.second;
 	}
 	else {
-	    iCacheRange = iHost->iICache.equal_range(iQFIter->second);
-	    iCacheIter = iCacheRange.first;
+	    for (TICacheQFIter it = iQFRange.first; it != iQFRange.second; it++) {
+		iQFIter = it;
+		iCacheRange = iHost->iICache.equal_range(iQFIter->second);
+		iCacheIter = iCacheRange.first;
+		if (iCacheRange.first != iCacheRange.second) {
+		    break;
+		}
+	    }
 	}
     }
-
-};
+}
 
 Elem::IfIter::IfIter(const IfIter& aIt): iHost(aIt.iHost), iIName(aIt.iIName), iReq(aIt.iReq), iQFRange(aIt.iQFRange),
     iQFIter(aIt.iQFIter), iCacheRange(aIt.iCacheRange), iCacheIter(aIt.iCacheIter)
@@ -66,11 +73,22 @@ Elem::IfIter& Elem::IfIter::operator++()
     if (++iCacheIter != iCacheRange.second) {
     }
     else {
+	/*
 	TICacheQFIter tmp(iQFIter);
 	if (++tmp != iQFRange.second) {
 	    iQFIter++;
 	    iCacheRange = iHost->iICache.equal_range(iQFIter->second);
 	    iCacheIter = iCacheRange.first;
+	}
+	*/
+	TICacheQFIter it = iQFIter;
+	for (++it; it != iQFRange.second; it++) {
+	    iQFIter = it;
+	    iCacheRange = iHost->iICache.equal_range(iQFIter->second);
+	    iCacheIter = iCacheRange.first;
+	    if (iCacheRange.first != iCacheRange.second) {
+		break;
+	    }
 	}
     }
     return *this;
@@ -79,7 +97,7 @@ Elem::IfIter& Elem::IfIter::operator++()
 TBool Elem::IfIter::operator==(const IfIter& aIt)
 {
     TBool res = (iHost == aIt.iHost && iIName == aIt.iIName && iReq == aIt.iReq && iQFRange == aIt.iQFRange 
-	&& iQFIter == aIt.iQFIter && iCacheRange == aIt.iCacheRange && iCacheIter == aIt.iCacheIter);
+	    && iQFIter == aIt.iQFIter && iCacheRange == aIt.iCacheRange && iCacheIter == aIt.iCacheIter);
     return res;
 }
 
@@ -318,6 +336,8 @@ Elem::~Elem()
 	}
 	iChromo = NULL;
     }
+    // Unregigster ifaces providers
+    UnregAllIfRel();
 }
 
 string Elem::PName() const
@@ -420,6 +440,67 @@ void* Elem::GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert
     return res;
 }
 
+// TODO [YB] To consider redesign relation scheme iface requestor-provider
+// in canonical way, uring registers
+//
+void Elem::UnregIfReq(Elem* aReq)
+{
+    TICacheQFIter it = iICacheQF.begin();
+    while (it != iICacheQF.end()) {
+	const TICacheRCtx& ctx = it->first.second;
+	if (!ctx.empty()) {
+	    Base* reqb = ctx.at(0);
+	    Elem* reqe = reqb->GetObj(reqe);
+	    if (reqe == aReq) {
+		iICache.erase(it->second);
+		iICacheQF.erase(it);
+		it = iICacheQF.begin();
+		continue;
+	    }
+	}
+	it++;
+    }
+}
+
+void Elem::UnregIfProv(Elem* aProv)
+{
+    TICacheQFIter it = iICacheQF.begin();
+    while (it != iICacheQF.end()) {
+	Base* cnd = it->second.second;
+	Elem* cnde = cnd->GetObj(cnde);
+	if (it->second.second == aProv) {
+	    iICache.erase(it->second);
+	    iICacheQF.erase(it);
+	    it = iICacheQF.begin();
+	    continue;
+	}
+	it++;
+    }
+}
+
+void Elem::UnregAllIfRel()
+{
+    TICacheQFIter it = iICacheQF.begin();
+    while (it != iICacheQF.end()) {
+	// Unregister requestor
+	const TICacheRCtx& ctx = it->first.second;
+	if (!ctx.empty()) {
+	    Base* reqb = ctx.at(0);
+	    Elem* reqe = reqb->GetObj(reqe);
+	    reqe->UnregIfProv(this);
+	}
+	// Unregister provider
+	Base* prov = it->second.second;
+	Elem* prove = prov->GetObj(prove);
+	if (prove != this) {
+	    prove->UnregIfReq(this);
+	}
+	iICache.erase(it->second);
+	iICacheQF.erase(it);
+	it = iICacheQF.begin();
+    }
+}
+
 void Elem::RmIfCache(IfIter& aIt)
 {
     iICache.erase(aIt.iCacheIter);
@@ -429,6 +510,8 @@ void Elem::InvalidateIfCache(Base* aProv)
 {
     // Invalidating the ifaces requestors
     for (TICacheQFIter it = iICacheQF.begin(); it != iICacheQF.end(); it++) {
+	Base* cnd = it->second.second;
+	Elem* cnde = cnd->GetObj(cnde);
 	if (it->second.second == aProv || aProv == NULL) {
 	    const TICacheRCtx& ctx = it->first.second;
 	    if (!ctx.empty()) {
@@ -439,17 +522,12 @@ void Elem::InvalidateIfCache(Base* aProv)
 	}
     }
     iICache.clear();
-    iICacheQF.clear();
 }
 
-void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, void* aVal)
+void Elem::InsertIfQm(const string& aName, const TICacheRCtx& aReq, Base* aProv)
 {
     TICacheKeyF keyf(aName, aReq);
     TICacheKey key(keyf, aProv);
-    if (aVal != NULL) {
-	pair<TICacheKey, void*> val(key, aVal);
-	TICacheCIter res = iICache.insert(val);
-    }
     // Push to query map if not already exists
     bool exists = false;
     TICacheQFRange frange = iICacheQF.equal_range(keyf);  
@@ -464,22 +542,37 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
     }
 }
 
+void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, void* aVal)
+{
+    TICacheKeyF keyf(aName, aReq);
+    TICacheKey key(keyf, aProv);
+    if (aVal != NULL) {
+	pair<TICacheKey, void*> val(key, aVal);
+	TICacheCIter res = iICache.insert(val);
+    }
+    InsertIfQm(aName, aReq, aProv);
+}
+
 void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg)
 {
     for (IfIter it = aRg.first; it != aRg.second; it++) {
 	InsertIfCache(aName, aReq, aProv, *it);
+    }
+    // Register the request in the map even if result is empty
+    if (aRg.first == aRg.second) {
+	InsertIfQm(aName, aReq, aProv);
     }
 }
 
 void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
 {
     void* res = DoGetObj(aName.c_str(), aCtx);
-    InsertIfCache(aName, ToCacheRCtx(aCtx), this, res);
     /*
     if (res != NULL) {
-    InsertIfCache(aName, ToCacheRCtx(aCtx), this, res);
+	InsertIfCache(aName, ToCacheRCtx(aCtx), this, res);
     }
     */
+    InsertIfCache(aName, ToCacheRCtx(aCtx), this, res);
 }
 
 /*
