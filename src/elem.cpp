@@ -559,9 +559,11 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
 	InsertIfCache(aName, aReq, aProv, *it);
     }
     // Register the request in the map even if result is empty
+    /*
     if (aRg.first == aRg.second) {
 	InsertIfQm(aName, aReq, aProv);
     }
+    */
 }
 
 void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
@@ -575,13 +577,38 @@ void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
     InsertIfCache(aName, ToCacheRCtx(aCtx), this, res);
 }
 
-/*
-const string Elem::EType(TBool aShort) const
+void Elem::LogIfProvs()
 {
-    if (aShort) {
-	size_t pos = iEType.find_last_of(GUri::KParentSep);
-	   return iEType.substr(pos + 1);
+    Logger()->Write(MLogRec::EInfo, this, "Ifaces providers: START");
+    for (TICacheQFIter it = iICacheQF.begin(); it != iICacheQF.end(); it++) {
+	Base* provb = it->second.second;
+	Elem* prov = provb->GetObj(prov);
+	Logger()->Write(MLogRec::EInfo, prov, "[%x]", prov);
     }
+    Logger()->Write(MLogRec::EInfo, this, "Ifaces providers: END");
+}
+
+void Elem::LogIfReqs()
+{
+    Logger()->Write(MLogRec::EInfo, this, "Ifaces requesters: START");
+    for (TICacheQFIter it = iICacheQF.begin(); it != iICacheQF.end(); it++) {
+	const TICacheRCtx& ctx = it->first.second;
+	if (!ctx.empty()) {
+	    Base* reqb = ctx.at(0);
+	    Elem* reqe = reqb->GetObj(reqe);
+	    Logger()->Write(MLogRec::EInfo, reqe, "[%x]", reqe);
+	}
+    }
+    Logger()->Write(MLogRec::EInfo, this, "Ifaces providers: END");
+}
+
+/*
+   const string Elem::EType(TBool aShort) const
+   {
+   if (aShort) {
+   size_t pos = iEType.find_last_of(GUri::KParentSep);
+   return iEType.substr(pos + 1);
+   }
     else  {
 	return iEType;
     }

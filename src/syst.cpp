@@ -270,7 +270,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 	// Redirect to internal point or pair depending on the requiestor
 	Elem* intcp = GetNode("../../Int");
 	if (intcp != NULL && !ctx.IsInContext(intcp)) {
-	    rr = intcp->GetIfi(aName, aCtx);
+	    rr = intcp->GetIfi(aName, &ctx);
 	    host->InsertIfCache(aName, rctx, intcp, rr);
 	}
 	else {
@@ -280,7 +280,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 		for (set<MVert*>::const_iterator it = vhost->Pairs().begin(); it != vhost->Pairs().end(); it++) {
 		    Elem* ep = (*it)->EBase()->GetObj(ep);
 		    if (ep != NULL && !ctx.IsInContext(ep)) {
-			rr = ep->GetIfi(aName, aCtx);
+			rr = ep->GetIfi(aName, &ctx);
 			host->InsertIfCache(aName, rctx, ep, rr);
 		    }
 		}
@@ -293,7 +293,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 	Elem* hostmgr = host->GetMan();
 	Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
 	if (mgr != NULL && !ctx.IsInContext(mgr)) {
-	    rr = mgr->GetIfi(aName, aCtx);
+	    rr = mgr->GetIfi(aName, &ctx);
 	    host->InsertIfCache(aName, rctx, mgr, rr);
 	}
     }
@@ -434,7 +434,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		if (iMan != NULL && !ctx.IsInContext(iMan)) {
 		    Elem* mgr =  iMan->GetMan()->GetMan();
 		    if (mgr != NULL && !ctx.IsInContext(mgr)) {
-			rr = mgr->GetIfi(aName, aCtx);
+			rr = mgr->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, mgr, rr);
 			resok = ETrue;
 		    }
@@ -470,18 +470,21 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    }
 		    if (apair != NULL && ctxe != NULL) {
 			// Find associated pairs pin within the context
-			Elem* pereq = ctxe->GetObj(pereq);
-			GUri uri;
-			// Using only name as signature of socket pin. This is because even the compatible
-			// types can differ
-			//uri.AppendElem(pereq->EType(), pereq->Name());
-			uri.AppendElem("*", pereq->Name());
-			pcomp = host->GetNode(uri);
+			ASocket* psock = apair->GetObj(psock);
+			if (psock != NULL) {
+			    Elem* pereq = psock->GetPin(cct);
+			    if (pereq != NULL) {
+				GUri uri;
+				// Using only name as signature of socket pin. This is because even the compatible types can differ
+				uri.AppendElem("*", pereq->Name());
+				pcomp = host->GetNode(uri);
+			    }
+			}
 		    }
 		}
 		if (pcomp != NULL && !ctx.IsInContext(pcomp)) {
 		    // Found associated pairs pin within the context, so redirect to it's pair in current socket
-		    rr = pcomp->GetIfi(aName, aCtx);
+		    rr = pcomp->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, pcomp, rr);
 		}
 	    }
@@ -494,7 +497,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		for (set<MVert*>::iterator it = vman->Pairs().begin(); it != vman->Pairs().end() && res == NULL; it++) {
 		    Elem* pe = (*it)->EBase()->GetObj(pe);
 		    if (!ctx.IsInContext(pe)) {
-			rr = pe->GetIfi(aName, aCtx);
+			rr = pe->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, pe, rr);
 		    }
 		}
@@ -505,7 +508,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		Elem* hostmgr = host->GetMan();
 		Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
 		if (mgr != NULL && !ctx.IsInContext(mgr)) {
-		    rr = mgr->GetIfi(aName, aCtx);
+		    rr = mgr->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, mgr, rr);
 		}
 	    }
@@ -601,6 +604,20 @@ Elem* ASocket::GetExtd()
     return NULL;
 }
 
+Elem* ASocket::GetPin(const RqContext* aCtx)
+{
+    Elem* res = NULL;
+    Elem* host = iMan->GetMan();
+    for (vector<Elem*>::const_iterator it = host->Comps().begin(); it != host->Comps().end() && res == NULL; it++) {
+	Elem *comp = (*it);
+	if (comp->Name() != "Agents" && comp->Name() != "Logspec") {
+	    if (aCtx->IsInContext(comp)) {
+		res = comp;
+	    }
+	}
+    }
+    return res;
+}
 
 
 

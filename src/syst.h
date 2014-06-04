@@ -47,6 +47,8 @@ class ASocket: public Elem, public MCompatChecker
 	static string PEType();
 	ASocket(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ASocket(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// Get pin existing in context
+	Elem* GetPin(const RqContext* aCtx);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MCompatChecker
