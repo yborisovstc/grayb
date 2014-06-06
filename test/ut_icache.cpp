@@ -90,7 +90,7 @@ void Ut_icache::test_Inv1()
 	}
     }
 
-    CPPUNIT_ASSERT_MESSAGE("Wrong value of data iface", fget->Value() == 0.5);
+    CPPUNIT_ASSERT_MESSAGE("Wrong value of data iface", fget->Value() >= 0.6 && fget->Value() < 0.600001);
 
     delete iEnv;
 }

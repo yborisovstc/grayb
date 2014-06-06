@@ -232,13 +232,11 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// Ifaces cache
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
 	void RmIfCache(IfIter& aIt);
-	void UnregIfReq(Elem* aReq);
-	void UnregIfProv(Elem* aProv);
-	void InvalidateIfCache(Base* aProv = NULL);
+	void UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx);
+	void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, Elem* aProv, TBool aInv = EFalse);
+	void InvalidateIfCache();
 	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, void* aVal);
 	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg);
-	void LogIfProvs();
-	void LogIfReqs();
 	// Deps
 	Elem* GetMajorChild(Rank& rr);
 	void GetMajorChild(Elem*& aElem, Rank& rr);
@@ -282,7 +280,10 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool HasChilds() const;
 	TBool HasInherDeps() const;
 	void InsertIfQm(const string& aName, const TICacheRCtx& aReq, Base* aProv);
-	void UnregAllIfRel();
+	void UnregAllIfRel(TBool aInv = EFalse);
+	// ICache helpers, for debug only
+	Elem* GetIcCtxComp(const TICacheRCtx& aCtx, TInt aInd);
+	void LogIfReqs();
     protected:
 	// Element type - parent's chain
 	// TODO [YB] Is it needed now after implementing inheritance chain?

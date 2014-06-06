@@ -71,10 +71,6 @@ void Ut_conn::test_Sock()
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface for Cp3", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface for Cp3", doutpget->Value() == 20);
 
-    doutp = root->GetNode("/(Elem:)testroot/(Incaps:)test/(DSource:)Data/(Elem:)Capsule/(OutSocket:)Out/(Elem:)Agents/(ASocket:)Sock");
-    doutp->LogIfProvs();
-    Elem* prov2 = root->GetNode("/testroot/test/Data/Capsule/Out/Cp2");
-    prov2->LogIfReqs();
     delete iEnv;
 }
 

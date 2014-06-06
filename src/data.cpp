@@ -660,8 +660,9 @@ TBool DVar::HFloat::FromString(const string& aString)
 {
     TBool res = EFalse;
     float data;
-    if (aString.at(0) == 'F' && aString.at(1) == ' ') {
-	sscanf(aString.c_str(), "F %f", &data);
+    if (aString.at(0) == 'F') {
+	istringstream ss(aString.substr(2));
+	ss >> data;
 	Set(data);
 	res = ETrue;
     }

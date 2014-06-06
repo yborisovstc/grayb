@@ -306,6 +306,8 @@ Elem::~Elem()
     if (iParent != NULL) {
 	iParent->OnChildDeleting(this);
     }
+    // Unregigster ifaces providers
+    UnregAllIfRel();
     // Remove the comps, using iterator refresh because the map is updated on each comp deletion
     vector<Elem*>::reverse_iterator it = iComps.rbegin();
     while (it != iComps.rend()) {
@@ -336,8 +338,6 @@ Elem::~Elem()
 	}
 	iChromo = NULL;
     }
-    // Unregigster ifaces providers
-    UnregAllIfRel();
 }
 
 string Elem::PName() const
@@ -402,6 +402,10 @@ Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
     IfIter end(this, aName, req, ETrue);
     if (beg == end) {
 	// Invalid cache, update cache
+	// Register the request with local provider anycase to create relation. 
+	// This is required for correct invalidation.
+	TICacheRCtx req = ToCacheRCtx(aCtx);
+	InsertIfQm(aName, req, this);
 	UpdateIfi(aName, aCtx);
 	beg = IfIter(this, aName, req);
 	end = IfIter(this, aName, req, ETrue);
@@ -440,65 +444,93 @@ void* Elem::GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert
     return res;
 }
 
-// TODO [YB] To consider redesign relation scheme iface requestor-provider
-// in canonical way, uring registers
-//
-void Elem::UnregIfReq(Elem* aReq)
+void Elem::UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx)
 {
-    TICacheQFIter it = iICacheQF.begin();
-    while (it != iICacheQF.end()) {
-	const TICacheRCtx& ctx = it->first.second;
-	if (!ctx.empty()) {
-	    Base* reqb = ctx.at(0);
-	    Elem* reqe = reqb->GetObj(reqe);
-	    if (reqe == aReq) {
-		iICache.erase(it->second);
-		iICacheQF.erase(it);
-		it = iICacheQF.begin();
-		continue;
-	    }
-	}
-	it++;
-    }
-}
+    TICacheKeyF query(aIfName, aCtx);
+    TICacheQFRange rg = iICacheQF.equal_range(query);
+    __ASSERT (rg.first != rg.second);
 
-void Elem::UnregIfProv(Elem* aProv)
-{
-    TICacheQFIter it = iICacheQF.begin();
-    while (it != iICacheQF.end()) {
-	Base* cnd = it->second.second;
-	Elem* cnde = cnd->GetObj(cnde);
-	if (it->second.second == aProv) {
-	    iICache.erase(it->second);
-	    iICacheQF.erase(it);
-	    it = iICacheQF.begin();
-	    continue;
-	}
-	it++;
-    }
-}
-
-void Elem::UnregAllIfRel()
-{
-    TICacheQFIter it = iICacheQF.begin();
-    while (it != iICacheQF.end()) {
-	// Unregister requestor
-	const TICacheRCtx& ctx = it->first.second;
-	if (!ctx.empty()) {
-	    Base* reqb = ctx.at(0);
-	    Elem* reqe = reqb->GetObj(reqe);
-	    reqe->UnregIfProv(this);
-	}
-	// Unregister provider
+    for (TICacheQFIter it = rg.first; it != rg.second; it++) {
+	// Unregister itself on next provider
 	Base* prov = it->second.second;
 	Elem* prove = prov->GetObj(prove);
 	if (prove != this) {
-	    prove->UnregIfReq(this);
+	    const TICacheRCtx& ctx = it->first.second;
+	    TICacheRCtx rctx(ctx);
+	    rctx.insert(rctx.begin(), this);
+	    prove->UnregIfReq(it->first.first, rctx);
 	}
 	iICache.erase(it->second);
-	iICacheQF.erase(it);
-	it = iICacheQF.begin();
     }
+    iICacheQF.erase(rg.first, rg.second);
+}
+
+// TODO [YB] To consider redesign. Currently rough mechanism of invalidation is utilized.
+// For invalidation we unreg the requests not only from given provider but all of them with ctx
+// same as for provider related records. This simplifies the whole iface requesting (no need to check
+// invalidity on requesting phase, all records are gone) but requres to rerequest ifaces thru all
+// potential providers again after invalidatiio from only one particular provider.
+void Elem::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, Elem* aProv, TBool aInv)
+{
+    TICacheKeyF query(aIfName, aCtx);
+    TICacheQFRange rg = iICacheQF.equal_range(query);
+    // Unfortunatelly we cannot check the conditions of record here. This is because
+    // the track of providers is not stored in requests cache so it is possible
+    // that for single request here, i.e. resolved by one provider, this provider can 
+    // have more that one requests, i.e multiple providers. So it is possible that
+    // provider requests unreg request but it is already unreged
+
+    //for (TICacheQFIter it = rg.first; it != rg.second; it++) {
+    TICacheQFIter it = rg.first; 
+    while (it != rg.second) {
+	Base* cnd = it->second.second;
+	Elem* cnde = cnd->GetObj(cnde);
+	if (it->second.second == aProv || aInv) {
+	    // Unregister next requestor
+	    const TICacheRCtx& ctx = it->first.second;
+	    if (!ctx.empty()) {
+		TICacheRCtx rctx(ctx);
+		rctx.erase(rctx.begin());
+		Base* reqb = ctx.at(0);
+		Elem* reqe = reqb->GetObj(reqe);
+		reqe->UnregIfProv(it->first.first, rctx, this, aInv);
+	    }
+	    iICache.erase(it->second);
+	    iICacheQF.erase(it);
+	    if (!aInv) break;
+	    rg = iICacheQF.equal_range(query);
+	    it = rg.first; 
+	}
+	else {
+	    it++; 
+	}
+    }
+}
+
+void Elem::UnregAllIfRel(TBool aInv)
+{
+    TICacheQFIter it = iICacheQF.begin();
+    for (TICacheQFIter it = iICacheQF.begin(); it != iICacheQF.end(); it++) {
+	// Unregister itself on requestor
+	const TICacheRCtx& ctx = it->first.second;
+	if (!ctx.empty()) {
+	    TICacheRCtx rctx(ctx);
+	    rctx.erase(rctx.begin());
+	    Base* reqb = ctx.at(0);
+	    Elem* reqe = reqb->GetObj(reqe);
+	    reqe->UnregIfProv(it->first.first, rctx, this, aInv);
+	}
+	// Unregister itself on provider
+	Base* prov = it->second.second;
+	Elem* prove = prov->GetObj(prove);
+	if (prove != this) {
+	    TICacheRCtx rctx(ctx);
+	    rctx.insert(rctx.begin(), this);
+	    prove->UnregIfReq(it->first.first, rctx);
+	}
+    }
+    iICache.clear();
+    iICacheQF.clear();
 }
 
 void Elem::RmIfCache(IfIter& aIt)
@@ -506,22 +538,9 @@ void Elem::RmIfCache(IfIter& aIt)
     iICache.erase(aIt.iCacheIter);
 }
 
-void Elem::InvalidateIfCache(Base* aProv)
+void Elem::InvalidateIfCache()
 {
-    // Invalidating the ifaces requestors
-    for (TICacheQFIter it = iICacheQF.begin(); it != iICacheQF.end(); it++) {
-	Base* cnd = it->second.second;
-	Elem* cnde = cnd->GetObj(cnde);
-	if (it->second.second == aProv || aProv == NULL) {
-	    const TICacheRCtx& ctx = it->first.second;
-	    if (!ctx.empty()) {
-		Base* reqb = ctx.at(0);
-		Elem* reqe = reqb->GetObj(reqe);
-		reqe->InvalidateIfCache(this);
-	    }
-	}
-    }
-    iICache.clear();
+    UnregAllIfRel(ETrue);
 }
 
 void Elem::InsertIfQm(const string& aName, const TICacheRCtx& aReq, Base* aProv)
@@ -532,7 +551,7 @@ void Elem::InsertIfQm(const string& aName, const TICacheRCtx& aReq, Base* aProv)
     bool exists = false;
     TICacheQFRange frange = iICacheQF.equal_range(keyf);  
     for (TICacheQFIter it = frange.first; it != frange.second && !exists; it++) {
-	if (it->second == key) {
+	if (it->second.second == aProv) {
 	    exists = ETrue;
 	}
     }
@@ -559,47 +578,48 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
 	InsertIfCache(aName, aReq, aProv, *it);
     }
     // Register the request in the map even if result is empty
-    /*
     if (aRg.first == aRg.second) {
 	InsertIfQm(aName, aReq, aProv);
     }
-    */
+}
+
+Elem* Elem::GetIcCtxComp(const TICacheRCtx& aCtx, TInt aInd) 
+{
+    Elem* res = NULL;
+    if (aInd < aCtx.size()) {
+	Base* cc = aCtx.at(aInd);
+	res = cc->GetObj(res);
+    }
+    return res;
 }
 
 void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
 {
     void* res = DoGetObj(aName.c_str(), aCtx);
-    /*
     if (res != NULL) {
 	InsertIfCache(aName, ToCacheRCtx(aCtx), this, res);
     }
-    */
-    InsertIfCache(aName, ToCacheRCtx(aCtx), this, res);
-}
-
-void Elem::LogIfProvs()
-{
-    Logger()->Write(MLogRec::EInfo, this, "Ifaces providers: START");
-    for (TICacheQFIter it = iICacheQF.begin(); it != iICacheQF.end(); it++) {
-	Base* provb = it->second.second;
-	Elem* prov = provb->GetObj(prov);
-	Logger()->Write(MLogRec::EInfo, prov, "[%x]", prov);
-    }
-    Logger()->Write(MLogRec::EInfo, this, "Ifaces providers: END");
 }
 
 void Elem::LogIfReqs()
 {
-    Logger()->Write(MLogRec::EInfo, this, "Ifaces requesters: START");
+    Logger()->Write(MLogRec::EInfo, this, "Ifaces requests: START");
     for (TICacheQFIter it = iICacheQF.begin(); it != iICacheQF.end(); it++) {
 	const TICacheRCtx& ctx = it->first.second;
+	Base* provb = it->second.second;
+	Elem* prov = provb->GetObj(prov);
 	if (!ctx.empty()) {
 	    Base* reqb = ctx.at(0);
 	    Elem* reqe = reqb->GetObj(reqe);
-	    Logger()->Write(MLogRec::EInfo, reqe, "[%x]", reqe);
+	    Logger()->Write(MLogRec::EInfo, NULL, "If: [%s], [%x: %s] - [%x: %s]", it->first.first.c_str(),
+		    reqe, reqe->GetUri().c_str(), prov, prov->GetUri().c_str());
+	}
+	else {
+	    Logger()->Write(MLogRec::EInfo, NULL, "If: [%s], [none] - [%x: %s]", it->first.first.c_str(),
+		    prov, prov->GetUri().c_str());
 	}
     }
-    Logger()->Write(MLogRec::EInfo, this, "Ifaces providers: END");
+    Logger()->Write(MLogRec::EInfo, this, "Ifaces requests: END");
 }
 
 /*

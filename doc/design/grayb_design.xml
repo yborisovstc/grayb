@@ -186,11 +186,28 @@
 	<sect2 id="ds_ifcache_refr"><title>Refreshing cache on node change.</title>
 	    <sect3><title>Introduction</title>
 		<simpara>Ref to <ulink url="../requirements/index.html#uc_010"/> for use-case related.</simpara>
-		<simpara>Ifaces cache needs to be updated properly if some new ifaces got appeared or disappeared in result of mutations. Currently this functionality is not implemented properly.
-		The only cache invalidation is doing when vertex gets connected or disconnected.</simpara>
-	    <simpara>The initial idea is that the mutated node needs to know all its iface requestors and to notify all of them about nodes change that can affect iface providing. 
-		There are forward relations from requester to servece nodes (such nodes that provide the ifaces): each agent knows to what node of hier to redirect the request. But currently
-	    there is no back relations from service node to requesters. This is because unsuccessful request doesn't go to chache so the node doesn't know of the requester further.</simpara>
+		<simpara>Ifaces cache needs to be updated properly if some new ifaces got appeared or disappeared in result of mutations. 
+		    Currently this functionality is not implemented properly.
+		    The only cache invalidation is doing when vertex gets connected or disconnected.</simpara>
+		<simpara>The initial idea is that the mutated node needs to know all its iface requestors and to notify all of them 
+		    about nodes change that can affect iface providing. 
+		    There are forward relations from requester to servece nodes (such nodes that provide the ifaces): 
+		    each agent knows to what node of hier to redirect the request. But currently
+		    there is no back relations from service node to requesters. 
+		    This is because unsuccessful request doesn't go to chache so the node doesn't know of the requester further.</simpara>
+	    </sect3>
+	    <sect3><title>Proposed solution</title>
+		<itemizedlist>
+		    <listitem>To register requests anycase in order to keep all relations requestor-provider even if
+			provider couldn't resolve the request this time. This will allow to subsequently invalidate caches by the
+			chain from provider to all requestors. So the requestor will re-request iface.</listitem>
+		    <listitem>To implement mechanism of unregistering of requests. This is required to keep the relations
+			acutal, for instance if some node is deleted, all the corresponding requests needs to be unregistered.</listitem>
+		    <listitem>To invalidate the cache of the given node we need to unregister the requests from this node cache, propagating
+			this process in both directions: to requestor and to providers. The simplest mechanism seems to be unregister in some
+			node of this propagation chain not only requests corresponding to given provider but all the requests with that context.
+			In this case we simply unregister the whole request that depends on the initial invalidated provider.  </listitem>
+		</itemizedlist>
 	    </sect3>
 	</sect2>
     </sect1>
@@ -265,13 +282,13 @@
 		</orderedlist>
 		<simpara>So the algorithm of taking into account dependencies for mutation of type -rm- is as:</simpara>
 		<itemizedlist>
-		<listitem>Get the node being removed </listitem>
-		<listitem>From this node get the major dependent node - the dependent node with biggest rank. The depencend node is run-time node containing dependent mutation, 
-		    or child of this node (ref Theses) or child of node being removed.</listitem>
-		<listitem>Mutate the dependency instead of initial node.</listitem>
+		    <listitem>Get the node being removed </listitem>
+		    <listitem>From this node get the major dependent node - the dependent node with biggest rank. The depencend node is run-time node containing dependent mutation, 
+			or child of this node (ref Theses) or child of node being removed.</listitem>
+		    <listitem>Mutate the dependency instead of initial node.</listitem>
 		</itemizedlist>
 		<simpara>Below is shown the example of using dependencies</simpara>
-		    <figure id="fig_mut_uappr_intro_ex2"><imageobject> <imagedata fileref="pics/pic_mut_uc2.png"/> </imageobject></figure>
+		<figure id="fig_mut_uappr_intro_ex2"><imageobject> <imagedata fileref="pics/pic_mut_uc2.png"/> </imageobject></figure>
 	    </sect3>
 	    <sect3><title>Restrictions of mutations</title>
 		<simpara>We introduce the restriction of mutations that can simplify the validation of mutations</simpara>
@@ -281,7 +298,7 @@
 			In other words the object of mutation must be owned of node that contains the mutations. </listitem>
 		    <listitem>It is not allowed to remove a node if the node has childs. This restriction can be removed in the future. Currently it is 
 			not supporting of creating child when some parent in parents chain is missed. Potentially
-		    there is no fundamental problem with removing parent. But even in this case we need to take into account the childs as the deps.</listitem>
+			there is no fundamental problem with removing parent. But even in this case we need to take into account the childs as the deps.</listitem>
 		</orderedlist>
 	    </sect3>
 	</sect2>
@@ -289,7 +306,7 @@
 	    <sect3><title>Criticizm</title>
 		<simpara>Seems the current scheme of creation node is totally inconsistent with principles of incremental creation. The scheme
 		    is working but the problem is that it is based on run-time parents that is not always real case. More correct scheme would be that
-		basing on non-run-time parents, i.e. on chromos. This would be working for all the cases.</simpara>
+		    basing on non-run-time parents, i.e. on chromos. This would be working for all the cases.</simpara>
 	    </sect3>
 	    <sect3><title>Possible solutions</title>
 		<sect4><title>To check the parent - if run-time parent doesn't exist then get its chromo from system chromo.</title>
@@ -303,7 +320,7 @@
 			contains references only inside of N_A_1. The only parent reference can be to outside of local conext, but as was discussed parents relation is safe in root chromo.</simpara>
 		    <simpara>The weaknes of this solution is that it requires that parents chromo node can be found from the node being mutated with -node- mutation. So 
 			we need to have ChromoNode methods like GetNode, the analogue of such method in run-time Elem. But chromo has only one explicit relations net - native hierarchy of
-		   ownership. Chromo doesn't support hierarchy of inheritance. This makes the problem to use this approach because inheritance based URIs cannot be resolved in chromo. </simpara>
+			ownership. Chromo doesn't support hierarchy of inheritance. This makes the problem to use this approach because inheritance based URIs cannot be resolved in chromo. </simpara>
 		</sect4>
 		<sect4><title>To not actually remove run-time node but mark it as removed</title>
 		    <simpara>Node having this mark shall deny any mutations. The clients should ignore and hide "removed" nodes.</simpara>
@@ -311,7 +328,7 @@
 		    <itemizedlist>
 			<listitem> Seems just workaround. </listitem>
 			<listitem>Comp is not deleted actually, so it is kept in owner comps register. This can cause problem with multiple choice when resolving component. 
-			Currently the following mutation is quite popular, in Extender for instance: to remove default Int and to create custom Int. But in this case there will be two Ints.</listitem>
+			    Currently the following mutation is quite popular, in Extender for instance: to remove default Int and to create custom Int. But in this case there will be two Ints.</listitem>
 		    </itemizedlist>
 		</sect4>
 	    </sect3>
@@ -325,7 +342,7 @@
 	    <sect3><title>Analysis</title>
 		<simpara>Current implementation is just notify the owner of renaming, so owner makes the correction into components register. UC_031 is not considered currently.
 		    But it seems there is no fundamental limitation as for removing of parent, ref <xref linkend="ds_rm_prnt"/>. This is because the parent is accessible from child
-		node in runtime. The only problem is that currently the child refers to parent via chromo data on creation heir, ref Elem::CreateHeir.</simpara>
+		    node in runtime. The only problem is that currently the child refers to parent via chromo data on creation heir, ref Elem::CreateHeir.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_mv_local"><title>Local Moving of node.</title>
@@ -360,7 +377,7 @@
 		    rename node="some_node" val="some_node_renamed"
 		</programlisting>
 		<simpara>So there is no way to restore the -add- mutation from model. In other words the "outer" mutations aka "phenotype" are ambuguous, so we cannot say from what they 
-	       were applied. So no possibility to recreate them from the model.</simpara>
+		    were applied. So no possibility to recreate them from the model.</simpara>
 	    </sect3>
 	    <sect3><title>Approaches: Direct merging.</title>
 		<simpara>Let's assume that we have all relations between the model and mutaions in chromo. There are relations of two directions: rt node to mutations and mutations to node. This 
@@ -392,7 +409,7 @@
 	    </sect3>
 	    <sect3 id="ds_drv_int_rel"><title>Approaches: To modify of creating of new node</title>
 		<simpara>Currently to relocation of created heir to new hier is being done quite simple, ref. elem.cpp/Elem::CreateHeir()/Relocate heir to hier ... The only 
-		new owner is set for created heir, no any corrections in mutations referred to original context.</simpara>
+		    new owner is set for created heir, no any corrections in mutations referred to original context.</simpara>
 	    </sect3>
 	</sect2>
 

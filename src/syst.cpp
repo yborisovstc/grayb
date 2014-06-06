@@ -253,7 +253,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
     TIfRange rr;
     RqContext ctx(this, aCtx);
     Elem* host = iMan->GetMan();
-    TICacheRCtx rctx = ToCacheRCtx(aCtx->Ctx());
+    TICacheRCtx rctx = ToCacheRCtx(aCtx);
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
     }
@@ -271,7 +271,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 	Elem* intcp = GetNode("../../Int");
 	if (intcp != NULL && !ctx.IsInContext(intcp)) {
 	    rr = intcp->GetIfi(aName, &ctx);
-	    host->InsertIfCache(aName, rctx, intcp, rr);
+	    InsertIfCache(aName, rctx, intcp, rr);
 	}
 	else {
 	    Elem* host = iMan->GetMan();
@@ -281,7 +281,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    Elem* ep = (*it)->EBase()->GetObj(ep);
 		    if (ep != NULL && !ctx.IsInContext(ep)) {
 			rr = ep->GetIfi(aName, &ctx);
-			host->InsertIfCache(aName, rctx, ep, rr);
+			InsertIfCache(aName, rctx, ep, rr);
 		    }
 		}
 	    }
@@ -294,7 +294,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 	Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
 	if (mgr != NULL && !ctx.IsInContext(mgr)) {
 	    rr = mgr->GetIfi(aName, &ctx);
-	    host->InsertIfCache(aName, rctx, mgr, rr);
+	    InsertIfCache(aName, rctx, mgr, rr);
 	}
     }
 
