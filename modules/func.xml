@@ -381,9 +381,45 @@
     	</add>
     </node>
 
+    <!-- Function Inp1 LT Inp2  -->
+    <node id="FLTVar" parent="FuncVar"> 
+	<add node="Agents"> <node id="AF_Lt" parent="AFBcmpVar"/> </add>
+    	<add node="Capsule"> 
+	    <node id="Inp1" parent="../../Inp_FVar"/> 
+	    <node id="Inp2" parent="../../Inp_FVar"/> 
+    	</add>
+    </node>
+
+    <!-- Function Inp1 LE Inp2  -->
+    <node id="FLEVar" parent="FuncVar"> 
+	<add node="Agents"> <node id="AF_Le" parent="AFBcmpVar"/> </add>
+    	<add node="Capsule"> 
+	    <node id="Inp1" parent="../../Inp_FVar"/> 
+	    <node id="Inp2" parent="../../Inp_FVar"/> 
+    	</add>
+    </node>
+
+    <!-- Function Inp1 EQ Inp2  -->
+    <node id="FEQVar" parent="FuncVar"> 
+	<add node="Agents"> <node id="AF_Eq" parent="AFBcmpVar"/> </add>
+    	<add node="Capsule"> 
+	    <node id="Inp1" parent="../../Inp_FVar"/> 
+	    <node id="Inp2" parent="../../Inp_FVar"/> 
+    	</add>
+    </node>
+
     <!-- Function Inp1 GT Inp2  -->
     <node id="FGTVar" parent="FuncVar"> 
-	<add node="Agents"> <node id="func_agt" parent="AFBcmpVar"/> </add>
+	<add node="Agents"> <node id="AF_Gt" parent="AFBcmpVar"/> </add>
+    	<add node="Capsule"> 
+	    <node id="Inp1" parent="../../Inp_FVar"/> 
+	    <node id="Inp2" parent="../../Inp_FVar"/> 
+    	</add>
+    </node>
+
+    <!-- Function Inp1 GE Inp2  -->
+    <node id="FGEVar" parent="FuncVar"> 
+	<add node="Agents"> <node id="AF_Ge" parent="AFBcmpVar"/> </add>
     	<add node="Capsule"> 
 	    <node id="Inp1" parent="../../Inp_FVar"/> 
 	    <node id="Inp2" parent="../../Inp_FVar"/> 

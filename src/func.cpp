@@ -1414,12 +1414,12 @@ MDVarGet* Func::Host::GetInp(TInt aInpId)
     return res;
 }
 
-Func* FBcmpFloat::Create(Host* aHost, const string& aOutIid, const string& aInp1Iid, const string& aInp2Iid)
+Func* FBcmpFloat::Create(Host* aHost, const string& aOutIid, const string& aInp1Iid, const string& aInp2Iid, TFType aFType)
 {
     Func* res = NULL;
     if (aOutIid == MDBoolGet::Type() && (aInp1Iid == MDFloatGet::Type() || aInp1Iid == MDIntGet::Type()) 
 	  && (aInp2Iid == MDFloatGet::Type() || aInp2Iid == MDIntGet::Type())) {
-	res = new FBcmpFloat(*aHost);
+	res = new FBcmpFloat(*aHost, aFType);
     }
     return res;
 }
@@ -1436,7 +1436,16 @@ TBool FBcmpFloat::Value()
     TBool res = 0;
     float arg1 = GetArg(EInp1);
     float arg2 = GetArg(EInp2);
-    res = arg1 > arg2;
+    if (mFType == ELt) 
+	res = arg1 < arg2;
+    else if (mFType == ELe) 
+	res = arg1 <= arg2;
+    else if (mFType == EEq) 
+	res = arg1 == arg2;
+    else if (mFType == EGt) 
+	res = arg1 > arg2;
+    else if (mFType == EGe) 
+	res = arg1 >= arg2;
     return res;
 }
 
@@ -1495,25 +1504,39 @@ void AFBcmpVar::Init(const string& aIfaceName)
 	delete mFunc;
 	mFunc == NULL;
     }
-    MDVarGet* inp1 = GetInp(Func::EInp1);
-    MDVarGet* inp2 = GetInp(Func::EInp2);
+    MDVarGet* inp1 = GetInp(FBcmpBase::EInp_1);
+    MDVarGet* inp2 = GetInp(FBcmpBase::EInp_2);
     if (inp1 != NULL && inp2 != NULL) {
 	string t1 = inp1->VarGetIfid();
 	string t2 = inp2->VarGetIfid();
-	if ((mFunc = FBcmpFloat::Create(this, aIfaceName, t1, t2)) != NULL);
+	FBcmpBase::TFType ftype = GetFType();
+	if ((mFunc = FBcmpFloat::Create(this, aIfaceName, t1, t2, ftype)) != NULL);
     }
 }
 
 Elem::TIfRange AFBcmpVar::GetInps(TInt aId)
 {
-    __ASSERT(aId == Func::EInp1 || aId == Func::EInp2);
+    __ASSERT(aId == FBcmpBase::EInp_1 || aId == FBcmpBase::EInp_2);
     Elem* inp = NULL;
-    inp = GetNode(aId == Func::EInp1 ? "../../Capsule/Inp1" : "../../Capsule/Inp2");
+    inp = GetNode(aId == FBcmpBase::EInp_1 ? "../../Capsule/Inp1" : "../../Capsule/Inp2");
     __ASSERT(inp != NULL);
     RqContext cont(this);
     return inp->GetIfi(MDVarGet::Type(), &cont);
 }
 
+FBcmpBase::TFType AFBcmpVar::GetFType()
+{
+    FBcmpBase::TFType res = FBcmpBase::EEq;
+    if (Name() == "AF_Lt") res = FBcmpBase::ELt;
+    else if (Name() == "AF_Le") res = FBcmpBase::ELe;
+    else if (Name() == "AF_Eq") res = FBcmpBase::EEq;
+    else if (Name() == "AF_Gt") res = FBcmpBase::EGt;
+    else if (Name() == "AF_Ge") res = FBcmpBase::EGe;
+    else {
+	Logger()->Write(MLogRec::EErr, this, "Incorrect type of function [%s]", Name().c_str());
+    }
+    return res;
+}
 
 // Comparition, variable data
 string AFCmpVar::PEType()

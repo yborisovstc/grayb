@@ -410,11 +410,20 @@ class AFAddVar: public AFunVar
 	virtual void Init(const string& aIfaceName);
 };
 
-// Boolean comparition, variable data
-class FBcmpFloat: public Func, public MDBoolGet {
+class FBcmpBase: public Func {
     public:
-	static Func* Create(Host* aHost, const string& aOutIid, const string& aInp1Iid, const string& aInp2Iid);
-	FBcmpFloat(Host& aHost): Func(aHost) {};
+	enum { EInp_1 = EInp1, EInp_2, EInp_Ftype };
+	enum TFType {ELt, ELe, EEq, EGe, EGt};
+	FBcmpBase(Host& aHost, TFType aFType): Func(aHost), mFType(aFType) {};
+    protected:
+	TFType mFType;
+};
+
+// Boolean comparition, variable data
+class FBcmpFloat: public FBcmpBase, public MDBoolGet {
+    public:
+	static Func* Create(Host* aHost, const string& aOutIid, const string& aInp1Iid, const string& aInp2Iid, TFType aFType);
+	FBcmpFloat(Host& aHost, TFType aFType): FBcmpBase(aHost, aFType) {};
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	virtual string IfaceGetId() const { return MDBoolGet::Type();};
 	virtual TBool Value();
@@ -435,6 +444,7 @@ class AFBcmpVar: public AFunVar
 	virtual Elem::TIfRange GetInps(TInt aId);
     protected:
 	virtual void Init(const string& aIfaceName);
+	FBcmpBase::TFType GetFType();
 };
 
 // Comparition, variable data

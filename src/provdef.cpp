@@ -128,6 +128,9 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     else if (aType.compare(ATrAtVar::Type()) == 0) {
 	res = new ATrAtVar(aName, aMan, aEnv);
     }
+    else if (aType.compare(ATrBcmpVar::Type()) == 0) {
+	res = new ATrBcmpVar(aName, aMan, aEnv);
+    }
     else if (aType.compare(ASocket::Type()) == 0) {
 	res = new ASocket(aName, aMan, aEnv);
     }
@@ -335,6 +338,10 @@ Elem* ProvDef::GetNode(const string& aUri)
 	else if (aUri.compare(ATrAtVar::Type()) == 0) {
 	    parent = GetNode("ATrVar");
 	    res = new ATrAtVar(NULL, iEnv);
+	}
+	else if (aUri.compare(ATrBcmpVar::Type()) == 0) {
+	    parent = GetNode("ATrVar");
+	    res = new ATrBcmpVar(NULL, iEnv);
 	}
 	if (res != NULL) {
 	    if (parent != NULL) {

@@ -64,6 +64,13 @@ void DataBase::NotifyUpdate()
     Elem* eout = GetNode("../../Capsule/out");
     // TODO [YB] Scheme of getting iface should be enough to get MDataObserver directly from eout. Seems the chunk below is redundant.
     if (eout != NULL) {
+	RqContext ctx(this);
+	TIfRange rg = eout->GetIfi(MDataObserver::Type(), &ctx);
+	for (IfIter it = rg.first; it != rg.second; it++) {
+	    MDataObserver* obsr = (MDataObserver*) (*it);
+	    obsr->OnDataChanged();
+	}
+	/*
 	MVert* mvout = eout->GetObj(mvout);
 	MVert* mpair = *(mvout->Pairs().begin());
 	if (mpair != NULL) {
@@ -72,6 +79,7 @@ void DataBase::NotifyUpdate()
 		obsr->OnDataChanged();
 	    }
 	}
+	*/
     }
 }
 

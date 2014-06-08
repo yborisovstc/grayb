@@ -164,6 +164,23 @@ class ATrAtVar: public ATrVar
 	virtual string GetInpUri(TInt aId);
 };
 
+// Agent function "Boolean comparition of Var data"
+class ATrBcmpVar: public ATrVar
+{
+    public:
+	static const char* Type() { return "ATrBcmpVar";};
+	static string PEType();
+	ATrBcmpVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ATrBcmpVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName);
+	virtual string GetInpUri(TInt aId);
+    protected:
+	FBcmpBase::TFType GetFType();
+};
+
 // State base agent
 class StateAgent: public Elem, public MDesSyncable, public MDesObserver
 {

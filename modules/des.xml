@@ -140,7 +140,23 @@
 	<node id="Index" parent="../TrIntInp"/> 
     </node>
 
+    <!-- Transition of variable data : Boolean comparition -->
+    <node id="TrLTVar" parent="TrVar"> 
+	<add node="Agents"> 
+	    <node id="AF_Lt" parent="ATrBcmpVar"/> 
+	</add>
+	<change node="Inp" attr="id" val="Inp1"/>
+	<node id="Inp2" parent="../TrIntInp"/> 
+    </node>
 
+    <!-- Transition of variable data : Boolean comparition -->
+    <node id="TrLEVar" parent="TrVar"> 
+	<add node="Agents"> 
+	    <node id="AF_Le" parent="ATrBcmpVar"/> 
+	</add>
+	<change node="Inp" attr="id" val="Inp1"/>
+	<node id="Inp2" parent="../TrIntInp"/> 
+    </node>
 
 
     <!-- State base -->

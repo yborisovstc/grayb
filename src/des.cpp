@@ -538,6 +538,73 @@ string ATrAtVar::GetInpUri(TInt aId)
     else return string();
 }
 
+// Agent function "Boolean comparition of Var data"
+string ATrBcmpVar::PEType()
+{
+    return ATrVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrBcmpVar::ATrBcmpVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), ATrVar::PEType());
+    SetParent(Type());
+}
+
+ATrBcmpVar::ATrBcmpVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
+{
+    SetEType(ATrVar::PEType());
+    SetParent(ATrVar::PEType());
+}
+
+void *ATrBcmpVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = ATrVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void ATrBcmpVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc == NULL;
+    }
+    MDVarGet* inp1 = GetInp(FBcmpBase::EInp_1);
+    MDVarGet* inp2 = GetInp(FBcmpBase::EInp_2);
+    if (inp1 != NULL && inp2 != NULL) {
+	string t1 = inp1->VarGetIfid();
+	string t2 = inp2->VarGetIfid();
+	FBcmpBase::TFType ftype = GetFType();
+	if ((mFunc = FBcmpFloat::Create(this, aIfaceName, t1, t2, ftype)) != NULL);
+    }
+}
+
+string ATrBcmpVar::GetInpUri(TInt aId) 
+{
+    if (aId == FBcmpBase::EInp_1) return "Inp1";
+    else if (aId == FBcmpBase::EInp_2) return "Inp2";
+    else return string();
+}
+
+FBcmpBase::TFType ATrBcmpVar::GetFType()
+{
+    FBcmpBase::TFType res = FBcmpBase::EEq;
+    if (Name() == "AF_Lt") res = FBcmpBase::ELt;
+    else if (Name() == "AF_Le") res = FBcmpBase::ELe;
+    else if (Name() == "AF_Eq") res = FBcmpBase::EEq;
+    else if (Name() == "AF_Gt") res = FBcmpBase::EGt;
+    else if (Name() == "AF_Ge") res = FBcmpBase::EGe;
+    else {
+	Logger()->Write(MLogRec::EErr, this, "Incorrect type of function [%s]", Name().c_str());
+    }
+    return res;
+}
+
 
 /* State base agent */
 
