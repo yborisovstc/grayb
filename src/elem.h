@@ -152,7 +152,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void Mutate(TBool aRunTimeOnly = EFalse);
 	string PName() const;
 	const vector<Elem*>& Comps() const;
-	static TICacheRCtx ToCacheRCtx(const RqContext* aCtx);
+	static void ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct);
     public:
 	// aInitCont - the uri of initial context of element, this is requires to element "understand" that it is
 	// in new context now and corrected uris related to initial context
@@ -236,7 +236,9 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, Elem* aProv, TBool aInv = EFalse);
 	void InvalidateIfCache();
 	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, void* aVal);
+	void InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv, void* aVal);
 	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg);
+	void InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv, TIfRange aRg);
 	// Deps
 	Elem* GetMajorChild(Rank& rr);
 	void GetMajorChild(Elem*& aElem, Rank& rr);

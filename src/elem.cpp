@@ -14,7 +14,7 @@ string Elem::PEType()
     return string() + GUri::KParentSep + Elem::Type();
 }
 
-Elem::TICacheRCtx Elem::ToCacheRCtx(const RqContext* aCtx) 
+void Elem::ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct) 
 {
     TICacheRCtx res;
     const RqContext* cct(aCtx);
@@ -23,7 +23,12 @@ Elem::TICacheRCtx Elem::ToCacheRCtx(const RqContext* aCtx)
 	res.push_back(rq);
 	cct = cct->Ctx();
     }
-    return res;
+    TInt size = res.size();
+    aCct.reserve(size);
+    for (TICacheRCtx::const_reverse_iterator it = res.rbegin(); it != res.rend(); it++) {
+	Base* rr = *it;
+	aCct.push_back(rr);
+    }
 }
 
 Elem::IfIter::IfIter(Elem* aHost, const string& aIName, const TICacheRCtx& aReq, TBool aToEnd): iHost(aHost), iIName(aIName), iReq(aReq) 
@@ -397,14 +402,14 @@ void *Elem::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
 {
     // Get from cache first
-    TICacheRCtx req = ToCacheRCtx(aCtx);
+    TICacheRCtx req;
+    ToCacheRCtx(aCtx, req);
     IfIter beg(this, aName, req);
     IfIter end(this, aName, req, ETrue);
     if (beg == end) {
 	// Invalid cache, update cache
 	// Register the request with local provider anycase to create relation. 
 	// This is required for correct invalidation.
-	TICacheRCtx req = ToCacheRCtx(aCtx);
 	InsertIfQm(aName, req, this);
 	UpdateIfi(aName, aCtx);
 	beg = IfIter(this, aName, req);
@@ -457,7 +462,7 @@ void Elem::UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx)
 	if (prove != this) {
 	    const TICacheRCtx& ctx = it->first.second;
 	    TICacheRCtx rctx(ctx);
-	    rctx.insert(rctx.begin(), this);
+	    rctx.push_back(this);
 	    prove->UnregIfReq(it->first.first, rctx);
 	}
 	iICache.erase(it->second);
@@ -490,8 +495,8 @@ void Elem::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, Elem* aPr
 	    const TICacheRCtx& ctx = it->first.second;
 	    if (!ctx.empty()) {
 		TICacheRCtx rctx(ctx);
-		rctx.erase(rctx.begin());
-		Base* reqb = ctx.at(0);
+		rctx.pop_back();
+		Base* reqb = ctx.back();
 		Elem* reqe = reqb->GetObj(reqe);
 		reqe->UnregIfProv(it->first.first, rctx, this, aInv);
 	    }
@@ -515,8 +520,8 @@ void Elem::UnregAllIfRel(TBool aInv)
 	const TICacheRCtx& ctx = it->first.second;
 	if (!ctx.empty()) {
 	    TICacheRCtx rctx(ctx);
-	    rctx.erase(rctx.begin());
-	    Base* reqb = ctx.at(0);
+	    rctx.pop_back();
+	    Base* reqb = ctx.back();
 	    Elem* reqe = reqb->GetObj(reqe);
 	    reqe->UnregIfProv(it->first.first, rctx, this, aInv);
 	}
@@ -525,7 +530,7 @@ void Elem::UnregAllIfRel(TBool aInv)
 	Elem* prove = prov->GetObj(prove);
 	if (prove != this) {
 	    TICacheRCtx rctx(ctx);
-	    rctx.insert(rctx.begin(), this);
+	    rctx.push_back(this);
 	    prove->UnregIfReq(it->first.first, rctx);
 	}
     }
@@ -572,6 +577,13 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
     InsertIfQm(aName, aReq, aProv);
 }
 
+void Elem::InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv, void* aVal)
+{
+    TICacheRCtx req;
+    ToCacheRCtx(aCtx, req);
+    InsertIfCache(aName, req, aProv, aVal);
+}
+
 void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg)
 {
     for (IfIter it = aRg.first; it != aRg.second; it++) {
@@ -581,6 +593,13 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
     if (aRg.first == aRg.second) {
 	InsertIfQm(aName, aReq, aProv);
     }
+}
+
+void Elem::InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv, TIfRange aRg)
+{
+    TICacheRCtx req;
+    ToCacheRCtx(aCtx, req);
+    InsertIfCache(aName, req, aProv, aRg);
 }
 
 Elem* Elem::GetIcCtxComp(const TICacheRCtx& aCtx, TInt aInd) 
@@ -597,7 +616,7 @@ void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
 {
     void* res = DoGetObj(aName.c_str(), aCtx);
     if (res != NULL) {
-	InsertIfCache(aName, ToCacheRCtx(aCtx), this, res);
+	InsertIfCache(aName, aCtx, this, res);
     }
 }
 
@@ -609,7 +628,7 @@ void Elem::LogIfReqs()
 	Base* provb = it->second.second;
 	Elem* prov = provb->GetObj(prov);
 	if (!ctx.empty()) {
-	    Base* reqb = ctx.at(0);
+	    Base* reqb = ctx.back();
 	    Elem* reqe = reqb->GetObj(reqe);
 	    Logger()->Write(MLogRec::EInfo, NULL, "If: [%s], [%x: %s] - [%x: %s]", it->first.first.c_str(),
 		    reqe, reqe->GetUri().c_str(), prov, prov->GetUri().c_str());

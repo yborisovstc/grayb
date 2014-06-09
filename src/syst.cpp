@@ -83,7 +83,8 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
     TIfRange rr;
     TBool resg = EFalse;
     RqContext ctx(this, aCtx);
-    TICacheRCtx rctx = ToCacheRCtx(aCtx);
+    TICacheRCtx rctx;
+    ToCacheRCtx(aCtx, rctx);
     Base* rqstr = aCtx != NULL ? aCtx->Requestor() : NULL;
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
@@ -253,7 +254,8 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
     TIfRange rr;
     RqContext ctx(this, aCtx);
     Elem* host = iMan->GetMan();
-    TICacheRCtx rctx = ToCacheRCtx(aCtx);
+    TICacheRCtx rctx;
+    ToCacheRCtx(aCtx, rctx);
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
     }
@@ -407,7 +409,8 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
     TIfRange rr;
     TBool resok = EFalse;
     RqContext ctx(this, aCtx);
-    TICacheRCtx rctx = ToCacheRCtx(aCtx);
+    TICacheRCtx rctx;
+    ToCacheRCtx(aCtx, rctx);
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
     }

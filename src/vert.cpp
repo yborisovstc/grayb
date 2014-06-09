@@ -77,7 +77,8 @@ void Vert::UpdateIfi(const string& aName, const RqContext* aCtx)
     void* res = NULL;
     TIfRange rr;
     RqContext ctx(this, aCtx);
-    TICacheRCtx rctx = ToCacheRCtx(aCtx);
+    TICacheRCtx rctx;
+    ToCacheRCtx(aCtx, rctx);
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
     }

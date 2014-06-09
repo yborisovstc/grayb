@@ -367,12 +367,16 @@ string ATrVar::GetInpUri(TInt aId)
 
 Elem::TIfRange ATrVar::GetInps(TInt aId)
 {
-    if (aId == FAddBase::EInp) {
-	Elem* inp = GetNode("../../" + GetInpUri(aId));
-	__ASSERT(inp != NULL);
+    TIfRange res;
+    Elem* inp = GetNode("../../" + GetInpUri(aId));
+    if (inp != NULL) {
 	RqContext cont(this);
-	return inp->GetIfi(MDVarGet::Type(), &cont);
+	res =  inp->GetIfi(MDVarGet::Type(), &cont);
     }
+    else {
+	Logger()->Write(MLogRec::EErr, this, "Cannot get input [%s]", GetInpUri(aId).c_str());
+    }
+    return res;
 }
 
 void ATrVar::LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...)
@@ -453,6 +457,24 @@ void *ATrSwitchVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContex
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
+    }
+    // Needs to redirect request for MDVarGet to func
+    else if (strcmp(aName, MDVarGet::Type()) == 0) {
+	if (mFunc == NULL) {
+	    Init(aName);
+	    if (mFunc != NULL) {
+		res = mFunc->DoGetObj(aName, aIncUpHier);
+	    }
+	}
+	else {
+	    res = mFunc->DoGetObj(aName, aIncUpHier);
+	    if (res == NULL) {
+		Init(aName);
+		if (mFunc != NULL) {
+		    res = mFunc->DoGetObj(aName, aIncUpHier);
+		}
+	    }
+	}
     }
     else {
 	res = ATrVar::DoGetObj(aName, aIncUpHier);
@@ -648,7 +670,6 @@ void StateAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
     void* res = NULL;
     TIfRange rr;
     RqContext ctx(this, aCtx);
-    TICacheRCtx rctx = ToCacheRCtx(aCtx);
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
     }
@@ -662,7 +683,7 @@ void StateAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 	res = Elem::DoGetObj(aName.c_str(), EFalse);
     }
     if (res != NULL) {
-	InsertIfCache(aName, rctx, this, res);
+	InsertIfCache(aName, aCtx, this, res);
     }
 }
 

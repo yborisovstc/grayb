@@ -62,6 +62,11 @@
 	<cont node="Required" val="MDIntGet"/>
     </node>
 
+    <!-- Input of int transition -->
+    <node id="TrVarInp" parent=":Elem:SysComps/ConnPoint"> 
+	<cont node="Required" val="MDVarGet"/>
+    </node>
+
     <!-- Transition of integer data -->
     <node id="TrInt" parent="Syst"> 
 	<node id="Inp" parent=":Elem:SysComps/ConnPoint"> 
@@ -128,8 +133,8 @@
 	    <node id="TrAgt" parent="ATrSwitchVar"/> 
 	</add>
 	<change node="Inp" attr="id" val="Sel"/>
-	<node id="Inp1" parent="../TrIntInp"/> 
-	<node id="Inp2" parent="../TrIntInp"/> 
+	<node id="Inp1" parent="../TrVarInp"/> 
+	<node id="Inp2" parent="../TrVarInp"/> 
     </node>
 
     <!-- Transition of variable data : Getting coord of vector -->
@@ -146,7 +151,7 @@
 	    <node id="AF_Lt" parent="ATrBcmpVar"/> 
 	</add>
 	<change node="Inp" attr="id" val="Inp1"/>
-	<node id="Inp2" parent="../TrIntInp"/> 
+	<node id="Inp2" parent="../TrVarInp"/> 
     </node>
 
     <!-- Transition of variable data : Boolean comparition -->
@@ -155,7 +160,7 @@
 	    <node id="AF_Le" parent="ATrBcmpVar"/> 
 	</add>
 	<change node="Inp" attr="id" val="Inp1"/>
-	<node id="Inp2" parent="../TrIntInp"/> 
+	<node id="Inp2" parent="../TrVarInp"/> 
     </node>
 
 
