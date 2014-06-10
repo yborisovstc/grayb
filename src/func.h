@@ -328,11 +328,13 @@ class Func: public Base {
 	    public: 
 		MDVarGet* GetInp(TInt aInpId);
 		virtual Elem::TIfRange GetInps(TInt aId) = 0;
+		virtual void OnFuncContentChanged() = 0;
 		virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...) = 0;
 	};
     public:
     Func(Host& aHost): Base(string()), mHost(aHost) {};
     virtual string IfaceGetId() const = 0;
+    virtual void GetResult(string& aResult) {};
     Host& mHost;
 };
 
@@ -353,6 +355,7 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
 	// From Func::Host
 	virtual Elem::TIfRange GetInps(TInt aId);
+	virtual void OnFuncContentChanged();
 	virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...);
     protected:
 	virtual void Init(const string& aIfaceName) {};
@@ -384,6 +387,8 @@ class FAddFloat: public FAddBase, public MDFloatGet {
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	virtual string IfaceGetId() const { return MDFloatGet::Type();};
 	virtual float Value();
+	virtual void GetResult(string& aResult);
+	float mRes;
 };
 
 class FAddVFloat: public FAddBase, public MVFloatGet {
@@ -415,8 +420,10 @@ class FBcmpBase: public Func {
 	enum { EInp_1 = EInp1, EInp_2, EInp_Ftype };
 	enum TFType {ELt, ELe, EEq, EGe, EGt};
 	FBcmpBase(Host& aHost, TFType aFType): Func(aHost), mFType(aFType) {};
+	virtual void GetResult(string& aResult);
     protected:
 	TFType mFType;
+	TBool mRes;
 };
 
 // Boolean comparition, variable data

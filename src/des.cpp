@@ -379,6 +379,18 @@ Elem::TIfRange ATrVar::GetInps(TInt aId)
     return res;
 }
 
+void ATrVar::OnFuncContentChanged()
+{
+    OnContentChanged(*this);
+}
+
+void ATrVar::GetCont(string& aCont)
+{
+    if (mFunc != NULL) {
+	mFunc->GetResult(aCont);
+    }
+}
+
 void ATrVar::LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...)
 {
     va_list list;
@@ -420,7 +432,7 @@ void ATrAddVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
 	delete mFunc;
-	mFunc == NULL;
+	mFunc = NULL;
     }
     if ((mFunc = FAddInt::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddFloat::Create(this, aIfaceName)) != NULL);
@@ -486,7 +498,7 @@ void ATrSwitchVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
 	delete mFunc;
-	mFunc == NULL;
+	mFunc = NULL;
     }
     MDVarGet* inp_case = GetInp(FSwithcBase::EInp_Sel);
     MDVarGet* inp2 = GetInp(FSwithcBase::EInp_1);
@@ -543,7 +555,7 @@ void ATrAtVar::Init(const string& aIfaceName)
 { 
     if (mFunc != NULL) {
 	delete mFunc;
-	mFunc == NULL;
+	mFunc = NULL;
      }
     MDVarGet* inp_ind = GetInp(Func::EInp2);
     MDVarGet* inp = GetInp(Func::EInp1);
@@ -590,11 +602,16 @@ void *ATrBcmpVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext*
     return res;
 }
 
+string ATrBcmpVar::VarGetIfid() const
+{
+    return MDBoolGet::Type();
+}
+
 void ATrBcmpVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
 	delete mFunc;
-	mFunc == NULL;
+	mFunc = NULL;
     }
     MDVarGet* inp1 = GetInp(FBcmpBase::EInp_1);
     MDVarGet* inp2 = GetInp(FBcmpBase::EInp_2);

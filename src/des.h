@@ -110,7 +110,10 @@ class ATrVar: public ATrBase, public MDVarGet, public Func::Host
 	virtual string VarGetIfid() const;
 	// From Func::Host
 	virtual Elem::TIfRange GetInps(TInt aId);
+	virtual void OnFuncContentChanged();
 	virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...);
+	// From Elem
+	virtual void GetCont(string& aCont); 
     protected:
 	virtual void Init(const string& aIfaceName) {};
 	virtual string GetInpUri(TInt aId);
@@ -174,6 +177,8 @@ class ATrBcmpVar: public ATrVar
 	ATrBcmpVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MDVarGet
+	virtual string VarGetIfid() const;
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
 	virtual string GetInpUri(TInt aId);

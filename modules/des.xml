@@ -117,6 +117,9 @@
 	<node id="Out" parent=":Elem:SysComps/ConnPoint"> 
 	    <cont node="Provided" val="MDVarGet"/>
 	</node>
+	<node id="ViewData" parent="Vert">
+	    <node id="Res" parent="Prop"/>
+	</node>
     </node>
 
     <!-- Transition of variable data : Addition -->
@@ -125,6 +128,7 @@
 	    <node id="TrAgt" parent="ATrAddVar"/> 
 	</add>
 	<node id="InpN" parent="../TrIntInp"/> 
+	<cont node="ViewData/Res" ref="../../Agents/TrAgt"/>
     </node>
 
     <!-- Transition of variable data : Switch -->
@@ -152,6 +156,7 @@
 	</add>
 	<change node="Inp" attr="id" val="Inp1"/>
 	<node id="Inp2" parent="../TrVarInp"/> 
+	<cont node="ViewData/Res" ref="../../Agents/AF_Lt"/>
     </node>
 
     <!-- Transition of variable data : Boolean comparition -->
@@ -161,6 +166,7 @@
 	</add>
 	<change node="Inp" attr="id" val="Inp1"/>
 	<node id="Inp2" parent="../TrVarInp"/> 
+	<cont node="ViewData/Res" ref="../../Agents/AF_Le"/>
     </node>
 
 

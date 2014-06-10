@@ -1218,6 +1218,11 @@ string AFunVar::VarGetIfid() const
     return mFunc != NULL ? mFunc->IfaceGetId() : string();
 }
 
+void AFunVar::OnFuncContentChanged()
+{
+    OnContentChanged(*this);
+}
+
 Elem* AFunVar::VarGetBase() 
 {
     return this;
@@ -1355,7 +1360,16 @@ float FAddFloat::Value()
 	    }
 	}
     }
+    mRes = val;
+    mHost.OnFuncContentChanged();
     return val;
+}
+
+void FAddFloat::GetResult(string& aResult)
+{
+    stringstream ss;
+    ss <<  "F " << mRes;
+    aResult = ss.str();
 }
 
 
@@ -1403,7 +1417,6 @@ void FAddVFloat::VFloatGet(VFloat& aData)
     }
 }
 
-
 MDVarGet* Func::Host::GetInp(TInt aInpId)
 {
     MDVarGet* res = NULL;
@@ -1412,6 +1425,14 @@ MDVarGet* Func::Host::GetInp(TInt aInpId)
 	res = (MDVarGet*) *inpr.first;
     }
     return res;
+}
+
+
+void FBcmpBase::GetResult(string& aResult)
+{
+    stringstream ss;
+    ss <<  "B " << std::boolalpha << mRes;
+    aResult = ss.str();
 }
 
 Func* FBcmpFloat::Create(Host* aHost, const string& aOutIid, const string& aInp1Iid, const string& aInp2Iid, TFType aFType)
@@ -1446,6 +1467,8 @@ TBool FBcmpFloat::Value()
 	res = arg1 > arg2;
     else if (mFType == EGe) 
 	res = arg1 >= arg2;
+    mRes = res;
+    mHost.OnFuncContentChanged();
     return res;
 }
 
