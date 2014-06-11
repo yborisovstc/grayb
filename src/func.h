@@ -429,13 +429,14 @@ class FBcmpBase: public Func {
 // Boolean comparition, variable data
 class FBcmpFloat: public FBcmpBase, public MDBoolGet {
     public:
-	static Func* Create(Host* aHost, const string& aOutIid, const string& aInp1Iid, const string& aInp2Iid, TFType aFType);
+	static Func* Create(Host* aHost, const string& aOutIid, MDVarGet* aInp1Var, MDVarGet* aInp2Var, TFType aFType);
 	FBcmpFloat(Host& aHost, TFType aFType): FBcmpBase(aHost, aFType) {};
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	virtual string IfaceGetId() const { return MDBoolGet::Type();};
 	virtual TBool Value();
     protected:
 	float GetArg(TInt aInpId);
+	static TBool IsInpComatible(MDVarGet* aInpVar);
 };
 
 class AFBcmpVar: public AFunVar

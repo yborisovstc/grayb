@@ -616,10 +616,8 @@ void ATrBcmpVar::Init(const string& aIfaceName)
     MDVarGet* inp1 = GetInp(FBcmpBase::EInp_1);
     MDVarGet* inp2 = GetInp(FBcmpBase::EInp_2);
     if (inp1 != NULL && inp2 != NULL) {
-	string t1 = inp1->VarGetIfid();
-	string t2 = inp2->VarGetIfid();
 	FBcmpBase::TFType ftype = GetFType();
-	if ((mFunc = FBcmpFloat::Create(this, aIfaceName, t1, t2, ftype)) != NULL);
+	if ((mFunc = FBcmpFloat::Create(this, aIfaceName, inp1, inp2, ftype)) != NULL);
     }
 }
 

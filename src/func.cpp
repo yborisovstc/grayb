@@ -1435,11 +1435,14 @@ void FBcmpBase::GetResult(string& aResult)
     aResult = ss.str();
 }
 
-Func* FBcmpFloat::Create(Host* aHost, const string& aOutIid, const string& aInp1Iid, const string& aInp2Iid, TFType aFType)
+Func* FBcmpFloat::Create(Host* aHost, const string& aOutIid, MDVarGet* aInp1Var, MDVarGet* aInp2Var, TFType aFType)
 {
     Func* res = NULL;
-    if (aOutIid == MDBoolGet::Type() && (aInp1Iid == MDFloatGet::Type() || aInp1Iid == MDIntGet::Type()) 
-	  && (aInp2Iid == MDFloatGet::Type() || aInp2Iid == MDIntGet::Type())) {
+    TBool inp1ok = IsInpComatible(aInp1Var);
+    TBool inp2ok = IsInpComatible(aInp2Var);
+    // Using two-side negotiation: first func requests type of inputs, if defined then tries to create corresponding
+    // func. If not then attemp funcs from upper types to lower and request inputs types.
+    if (aOutIid == MDBoolGet::Type() && inp1ok && inp2ok) {
 	res = new FBcmpFloat(*aHost, aFType);
     }
     return res;
@@ -1491,6 +1494,26 @@ float FBcmpFloat::GetArg(TInt aInpId)
     return res;
 }
 
+TBool FBcmpFloat::IsInpComatible(MDVarGet* aInpVar)
+{
+    TBool res = EFalse;
+    if (aInpVar != NULL) {
+	string ifi = aInpVar->VarGetIfid();
+	if (!ifi.empty()) {
+	    res = (ifi == MDFloatGet::Type() || ifi == MDIntGet::Type());
+	}
+	else {
+	    // No arg type is stated yet, to negotiate
+	    void* inp = aInpVar->VarGetBase()->GetObj(MDFloatGet::Type());
+	    if (inp == NULL) {
+		inp = aInpVar->VarGetBase()->GetObj(MDIntGet::Type());
+	    }
+	    res = inp != NULL;
+	}
+    }
+    return res;
+}
+
 // Greater-than function, variable data
 string AFBcmpVar::PEType()
 {
@@ -1530,10 +1553,8 @@ void AFBcmpVar::Init(const string& aIfaceName)
     MDVarGet* inp1 = GetInp(FBcmpBase::EInp_1);
     MDVarGet* inp2 = GetInp(FBcmpBase::EInp_2);
     if (inp1 != NULL && inp2 != NULL) {
-	string t1 = inp1->VarGetIfid();
-	string t2 = inp2->VarGetIfid();
 	FBcmpBase::TFType ftype = GetFType();
-	if ((mFunc = FBcmpFloat::Create(this, aIfaceName, t1, t2, ftype)) != NULL);
+	if ((mFunc = FBcmpFloat::Create(this, aIfaceName, inp1, inp2, ftype)) != NULL);
     }
 }
 

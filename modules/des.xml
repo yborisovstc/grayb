@@ -169,6 +169,39 @@
 	<cont node="ViewData/Res" ref="../../Agents/AF_Le"/>
     </node>
 
+    <!-- Transition of variable data : Boolean comparition -->
+    <node id="TrEQVar" parent="TrVar"> 
+	<add node="Agents"> 
+	    <node id="AF_Eq" parent="ATrBcmpVar"/> 
+	</add>
+	<change node="Inp" attr="id" val="Inp1"/>
+	<node id="Inp2" parent="../TrVarInp"/> 
+	<cont node="ViewData/Res" ref="../../Agents/AF_Eq"/>
+    </node>
+
+    <!-- Transition of variable data : Boolean comparition -->
+    <node id="TrGTVar" parent="TrVar"> 
+	<add node="Agents"> 
+	    <node id="AF_Gt" parent="ATrBcmpVar"/> 
+	</add>
+	<change node="Inp" attr="id" val="Inp1"/>
+	<node id="Inp2" parent="../TrVarInp"/> 
+	<cont node="ViewData/Res" ref="../../Agents/AF_Gt"/>
+    </node>
+
+    <!-- Transition of variable data : Boolean comparition -->
+    <node id="TrGEVar" parent="TrVar"> 
+	<add node="Agents"> 
+	    <node id="AF_Ge" parent="ATrBcmpVar"/> 
+	</add>
+	<change node="Inp" attr="id" val="Inp1"/>
+	<node id="Inp2" parent="../TrVarInp"/> 
+	<cont node="ViewData/Res" ref="../../Agents/AF_Ge"/>
+    </node>
+
+
+
+
 
     <!-- State base -->
     <node id="State" parent=":Elem:IncapsComps/Incaps"> 
