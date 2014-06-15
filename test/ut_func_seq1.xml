@@ -30,22 +30,22 @@
 
 	<node id="ResData" parent="../DataComps/DataSInt"/>
 
-	<node parent="Edge"> 
+	<node id="E1" parent="Edge"> 
 	    <cont node="P1" val="../../(DataSInt:)DataS_Int_1/Capsule/out"/> 
 	    <cont node="P2" val="../../(FuncIncInt:)Incr/Capsule/inp"/> 
 	</node>
 
-	<node parent="Edge"> 
+	<node id="E2" parent="Edge"> 
 	    <cont node="P1" val="../../(FuncIncInt:)Incr/Capsule/out"/> 
 	    <cont node="P2" val="../../(FuncIncInt:)Incr2/Capsule/inp"/> 
 	</node>
 
-	<node parent="Edge"> 
+	<node id="E3" parent="Edge"> 
 	    <cont node="P1" val="../../(FuncIncInt:)Incr2/Capsule/out"/> 
 	    <cont node="P2" val="../../Result/Capsule/inp"/> 
 	</node>
 
-	<node parent="Edge"> 
+	<node id="E4" parent="Edge"> 
 	    <cont node="P1" val="../../Result/Capsule/out"/> 
 	    <cont node="P2" val="../../(DataSInt:)ResData/Capsule/inp"/> 
 	</node>

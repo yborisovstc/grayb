@@ -1428,6 +1428,334 @@ MDVarGet* Func::Host::GetInp(TInt aInpId)
 }
 
 
+// Composing vector from components
+
+string AFCpsVectVar::PEType()
+{
+    return AFunVar::PEType() + GUri::KParentSep + Type();
+}
+
+AFCpsVectVar::AFCpsVectVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), AFunVar::PEType());
+    SetParent(Type());
+}
+
+AFCpsVectVar::AFCpsVectVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+{
+    SetEType(AFunVar::PEType());
+    SetParent(AFunVar::PEType());
+}
+
+void *AFCpsVectVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = AFunVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void AFCpsVectVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc == NULL;
+    }
+    if ((mFunc = FAddInt::Create(this, aIfaceName)) != NULL);
+}
+
+Elem::TIfRange AFCpsVectVar::GetInps(TInt aId)
+{
+    stringstream ss;
+    ss <<  "../../Capsule/Inp" << (aId - Func::EInp1);
+    string inp_uri = ss.str();
+    Elem* inp = GetNode(inp_uri);
+    RqContext cont(this);
+    return inp->GetIfi(MDVarGet::Type(), &cont);
+}
+
+const TInt FCpsVBase::KIndMax = 30;
+
+// Composing vector from components: float
+Func* FCpsVFloat::Create(Host* aHost, const string& aString)
+{
+    Func* res = NULL;
+    if (aString == MVFloatGet::Type()) {
+	res = new FCpsVFloat(*aHost);
+    }
+    return res;
+}
+
+void *FCpsVFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MVFloatGet::Type()) == 0) res = (MVFloatGet*) this;
+    return res;
+}
+
+void FCpsVFloat::VFloatGet(VFloat& aData)
+{
+    mData.clear();
+    for (TInt ind = Func::EInp1; ind != KIndMax; ind++) {
+	Elem::TIfRange inp = mHost.GetInps(ind);
+	if (inp.first == inp.second) {
+	    break;
+	}
+	float comp;
+	MDVarGet* dget = (MDVarGet*) *(inp.first);
+	Elem* dgetbase = dget->VarGetBase();
+	MDFloatGet* dfget = dgetbase->GetObj(dfget);
+	if (dfget != NULL) {
+	    comp = dfget->Value();
+	}
+	else {
+	    MDIntGet* diget = dgetbase->GetObj(diget);
+	    if (dget != NULL) {
+		comp = (float) diget->Value();
+	    }
+	    else {
+		// Unsupported type of input
+		break;
+	    }
+	}
+	mData.push_back(comp);
+    }
+    aData = mData;
+}
+
+void FCpsVFloat::GetResult(string& aResult)
+{
+    stringstream ss;
+    ss <<  "VF";
+    for (VFloat::const_iterator it = mData.begin(); it != mData.end(); it++) {
+	ss << " " << *it;
+    }
+    aResult = ss.str();
+}
+
+
+// Multiplication, variable type
+string AFMplVar::PEType()
+{
+    return AFunVar::PEType() + GUri::KParentSep + Type();
+}
+
+AFMplVar::AFMplVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), AFunVar::PEType());
+    SetParent(Type());
+}
+
+AFMplVar::AFMplVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+{
+    SetEType(AFunVar::PEType());
+    SetParent(AFunVar::PEType());
+}
+
+void *AFMplVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = AFunVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void AFMplVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc == NULL;
+    }
+    if ((mFunc = FMplFloat::Create(this, aIfaceName)) != NULL);
+}
+
+Elem::TIfRange AFMplVar::GetInps(TInt aId)
+{
+    if (aId == FAddBase::EInp) {
+	Elem* inp = GetNode("../../Capsule/Inp");
+	__ASSERT(inp != NULL);
+	RqContext cont(this);
+	return inp->GetIfi(MDVarGet::Type(), &cont);
+    }
+}
+
+// Multiplication, variable type - Float function
+Func* FMplFloat::Create(Host* aHost, const string& aString)
+{
+    Func* res = NULL;
+    if (aString == MDFloatGet::Type()) {
+	res = new FMplFloat(*aHost);
+    }
+    return res;
+}
+
+void *FMplFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MDFloatGet::Type()) == 0) res = (MDFloatGet*) this;
+    return res;
+}
+
+float FMplFloat::Value()
+{
+    Elem::TIfRange range = mHost.GetInps(EInp);
+    float val = 0;
+    for (Elem::IfIter it = range.first; it != range.second; it++) {
+	MDVarGet* dget = (MDVarGet*) (*it);
+	Elem* dgetbase = dget->VarGetBase();
+	MDFloatGet* dfget = (MDFloatGet*) dgetbase->GetObj(dfget);
+	if (dfget != NULL) {
+	    val *= dfget->Value();
+	}
+	else {
+	    MDIntGet* diget = (MDIntGet*) dgetbase->GetSIfi(MDIntGet::Type());
+	    if (diget != NULL) {
+		val *= (float) diget->Value();
+	    }
+	}
+    }
+    mRes = val;
+    mHost.OnFuncContentChanged();
+    return val;
+}
+
+void FMplFloat::GetResult(string& aResult)
+{
+    stringstream ss;
+    ss <<  "F " << mRes;
+    aResult = ss.str();
+}
+
+// Division, variable type
+string AFDivVar::PEType()
+{
+    return AFunVar::PEType() + GUri::KParentSep + Type();
+}
+
+AFDivVar::AFDivVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), AFunVar::PEType());
+    SetParent(Type());
+}
+
+AFDivVar::AFDivVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+{
+    SetEType(AFunVar::PEType());
+    SetParent(AFunVar::PEType());
+}
+
+void *AFDivVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = AFunVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void AFDivVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc == NULL;
+    }
+    if ((mFunc = FDivFloat::Create(this, aIfaceName)) != NULL);
+}
+
+Elem::TIfRange AFDivVar::GetInps(TInt aId)
+{
+    if (aId == FAddBase::EInp) {
+	Elem* inp = GetNode("../../Capsule/Inp");
+	__ASSERT(inp != NULL);
+	RqContext cont(this);
+	return inp->GetIfi(MDVarGet::Type(), &cont);
+    }
+}
+
+// Division, variable type - Float function
+Func* FDivFloat::Create(Host* aHost, const string& aString)
+{
+    Func* res = NULL;
+    if (aString == MDFloatGet::Type()) {
+	res = new FDivFloat(*aHost);
+    }
+    return res;
+}
+
+void *FDivFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MDFloatGet::Type()) == 0) res = (MDFloatGet*) this;
+    return res;
+}
+
+float FDivFloat::Value()
+{
+    Elem::TIfRange range = mHost.GetInps(EInp);
+    float val = 0;
+    for (Elem::IfIter it = range.first; it != range.second; it++) {
+	MDVarGet* dget = (MDVarGet*) (*it);
+	Elem* dgetbase = dget->VarGetBase();
+	MDFloatGet* dfget = (MDFloatGet*) dgetbase->GetObj(dfget);
+	if (dfget != NULL) {
+	    val *= dfget->Value();
+	}
+	else {
+	    MDIntGet* diget = (MDIntGet*) dgetbase->GetSIfi(MDIntGet::Type());
+	    if (diget != NULL) {
+		val *= (float) diget->Value();
+	    }
+	}
+    }
+    range = mHost.GetInps(EInp_Dvs);
+    for (Elem::IfIter it = range.first; it != range.second; it++) {
+	MDVarGet* dget = (MDVarGet*) (*it);
+	Elem* dgetbase = dget->VarGetBase();
+	MDFloatGet* dfget = (MDFloatGet*) dgetbase->GetObj(dfget);
+	float dvs = 0.0;
+	if (dfget != NULL) {
+	    dvs = dfget->Value();
+	}
+	else {
+	    MDIntGet* diget = (MDIntGet*) dgetbase->GetSIfi(MDIntGet::Type());
+	    if (diget != NULL) {
+		dvs = (float) diget->Value();
+	    }
+	}
+	if (dvs != 0.0) {
+	    val /= dvs;
+	}
+	else {
+	    mHost.LogWrite(MLogRec::EErr, "Null divisor [%s]", dgetbase->GetUri().c_str());
+	}
+    }
+
+    mRes = val;
+    mHost.OnFuncContentChanged();
+    return val;
+}
+
+void FDivFloat::GetResult(string& aResult)
+{
+    stringstream ss;
+    ss <<  "F " << mRes;
+    aResult = ss.str();
+}
+
+
+
+
 void FBcmpBase::GetResult(string& aResult)
 {
     stringstream ss;

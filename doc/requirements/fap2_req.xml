@@ -32,6 +32,8 @@
 		<revremark>Added <xref linkend="uc_029"/></revremark> </revision>
 	    <revision> <revnumber>0.07</revnumber> <date>07-Mar-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_031"/>, <xref linkend="uc_032"/>, <xref linkend="uc_033"/>, <xref linkend="uc_034"/>, <xref linkend="uc_035"/></revremark> </revision>
+	    <revision> <revnumber>0.08</revnumber> <date>15-Jun-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="uc_037"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -643,12 +645,18 @@
 		<xref linkend="uc_022"/>
 	    </sect3>
 	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem> <xref linkend="uc_037"/> </listitem>
+		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Discussion</title>
-		<simpara>Unappropriate renaming may be in case if REF_NODE has lower range (later mutation) that the owner of NODE. So if the renaming 
-		    mutation is applied to the owner of NODE the mutation itself will be higher range than REF_NODE, i.e. the error occurs when recreating the system, 
-		   because the mutation will be done first and then creation of REF_NODE. 
-		</simpara>
+		<itemizedlist>
+		    <listitem> Unappropriate renaming may be in case if REF_NODE has lower range (later mutation) that the owner of NODE. So if the renaming 
+			mutation is applied to the owner of NODE the mutation itself will be higher range than REF_NODE, i.e. the error occurs when recreating the system, 
+			because the mutation will be done first and then creation of REF_NODE.  </listitem>
+		    <listitem>20140615 The mechanism of avoiding unappropriate mutation is to track dependncies of the mutations and apply new mutation only after the dependency with
+			major rank</listitem>
+		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Clarification</title>
 	    </sect3>
@@ -994,6 +1002,73 @@
 	    </sect3>
 	    <sect3><title>Discussion</title> 
 		<simpara>Moving of node is not "pure" mutation but simply adding the "copy" of node A into node B</simpara>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_036"><title>UC_036 Vusual representation hints</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> CLIENT: some application using system and representing it to USER</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<simpara>CLIENT creates SYSTEM. USER request to modify visual representation of some part of SYSTEM (e.g. order of components, etc.). SYSTEM allows this change of representation,
+		keeps the data of representation in SYSTEM scecification, so when CLIENT creates SYSTEM from specification next time, USER will see the updated representation.</simpara>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title> 
+		<simpara>The representation data can be conisdered as hint that system provides for representation. Client can interpret this data specifically. </simpara>
+		<simpara>Should the data be agents itself and implemeted as part of system? It would be logically, because it would allow to support base system mechanisms like
+		mutations, rollback, etc.</simpara>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_037"><title>UC_037 Mutation: correct mutation dependency in case of phenotypic modification.</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> CLIENT: some application using system</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<simpara>There is some node -N-a-. Node -N- has some component -N_n- (not necessarily direct component). 
+		    There is some mutation -M_1- in node -N- that perform phenotypic modification in node -N_n-, 
+		    particularly add new node -N_a~1- from parent -N_a-.</simpara>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>CLIENT requests creating system from its spec. SYSTEM creates system, SYSTEM takes into account that there is dependency of node -N- mutation -M_1- on  
+		    node -N_a-. </listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem> <xref linkend="uc_028"/> </listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title> 
+		<simpara>Note: the dependency if from node -N- but not from created node -N_a~1-. This is because -N_a~1- is phenotype modification but real holder of mutation -M_1- is 
+		node -N-</simpara>
 	    </sect3>
 	    <sect3><title>Clarification</title>
 	    </sect3>

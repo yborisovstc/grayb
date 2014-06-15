@@ -314,6 +314,7 @@ Elem::~Elem()
     // Unregigster ifaces providers
     UnregAllIfRel();
     // Remove the comps, using iterator refresh because the map is updated on each comp deletion
+    // TODO [YB] Comp marked as remved via SetRemoved() will not be deleted - mem leak
     vector<Elem*>::reverse_iterator it = iComps.rbegin();
     while (it != iComps.rend()) {
 	delete *it;
@@ -707,7 +708,7 @@ TBool Elem::AddNode(const ChromoNode& aSpec, TBool aRunTime)
 	    for (ChromoNode::Const_Iterator mit = aSpec.Begin(); mit != aSpec.End() && res; mit++) {
 		const ChromoNode& mno = (*mit);
 		//Elem* rnode = node->AddElem(mno, aRunTime);
-		Elem* rnode = node->AddElem(mno, ETrue);
+		Elem* rnode = node->AddElem(mno, ETrue, this);
 		if (rnode == NULL) {
 		    Logger()->Write(MLogRec::EErr, this, "Adding node into [%s] - failure", snode.c_str());
 		}
@@ -1113,16 +1114,19 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
     return res;
 }
 
-Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
+Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, Elem* aMutHolder)
 {
     string sparent = aNode.Attr(ENa_Parent);
     string sname = aNode.Name();
+    __ASSERT(!sname.empty());
+    /*
     if (sname.length() == 0) {
 	char *name = (char*) malloc(100);
 	sprintf(name, "%d", rand());
 	sname = name;
 	free(name);
     }
+    */
     if (IsLogeventCreOn()) {
 	Logger()->Write(MLogRec::EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
     }
@@ -1206,6 +1210,13 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 	    AddCMDep(chn, ENa_Id, elem);
 	    AddCMDep(chn, ENa_Parent, parent);
 	}
+	/*
+	else if (aRunTime && aMutHolder != NULL) {
+	    // Phenotype modif - adding deps to real mut holder if specified, ref uc_037
+	    aMutHolder->AddCMDep(aNode, ENa_Id, elem);
+	    aMutHolder->AddCMDep(aNode, ENa_Parent, parent);
+	}
+	*/
     }
     return elem;
 }
@@ -1437,6 +1448,7 @@ TBool Elem::UnregisterComp(Elem* aComp, const string& aName)
     return res;
 }
 
+// TODO [YB] Changing comp position, not used anymore - to remove ?
 TBool Elem::MoveComp(Elem* aComp, Elem* aDest)
 {
     TBool res = EFalse;
@@ -2054,20 +2066,25 @@ void Elem::GetMajorDep(TMDep& aDep)
 {
     // Ref to theses ds_mut_unappr_rt_ths1 for rules of searching deps
     Rank rc;
-    ChromoNode mut = iChromo->CreateNode(aDep.first.second == NULL ? iChromo->Root().Handle() : aDep.first.second);
-    mut.GetRank(rc);
+    if (aDep.first.first == NULL || aDep.first.second == NULL) {
+	aDep = TMDep(TMutRef(this, iChromo->Root().Handle()), ENa_Id);
+    }
+    ChromoNode mut = iChromo->CreateNode(aDep.first.second);
+    aDep.first.first->GetRank(rc, mut);
     // Childs
+    /* No need anymore because child-parent relation is supporded by deps mechanism
     Elem* mc = GetMajorChild(rc);
     if (mc != NULL) {
 	aDep.first.first = mc;
 	aDep.first.second = mc->Chromos().Root().Handle();
     }
+    */
     // Other deps
     for (TMDeps::const_iterator it = iMDeps.begin(); it != iMDeps.end(); it++) {
 	TMDep dep = *it;
 	Rank rd;
 	ChromoNode dcn = iChromo->CreateNode(dep.first.second);
-	dcn.GetRank(rd);
+	dep.first.first->GetRank(rd, dcn);
 	if (rd > rc) {
 	    rc = rd;
 	    aDep = dep;

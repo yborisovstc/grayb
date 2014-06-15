@@ -68,6 +68,12 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     else if (aType.compare(AFAddVar::Type()) == 0) {
 	res = new AFAddVar(aName, aMan, aEnv);
     }
+    else if (aType.compare(AFMplVar::Type()) == 0) {
+	res = new AFMplVar(aName, aMan, aEnv);
+    }
+    else if (aType.compare(AFDivVar::Type()) == 0) {
+	res = new AFDivVar(aName, aMan, aEnv);
+    }
     else if (aType.compare(AFBcmpVar::Type()) == 0) {
 	res = new AFBcmpVar(aName, aMan, aEnv);
     }
@@ -121,6 +127,15 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     }
     else if (aType.compare(ATrAddVar::Type()) == 0) {
 	res = new ATrAddVar(aName, aMan, aEnv);
+    }
+    else if (aType.compare(ATrMplVar::Type()) == 0) {
+	res = new ATrMplVar(aName, aMan, aEnv);
+    }
+    else if (aType.compare(ATrDivVar::Type()) == 0) {
+	res = new ATrDivVar(aName, aMan, aEnv);
+    }
+    else if (aType.compare(ATrCpsVectVar::Type()) == 0) {
+	res = new ATrCpsVectVar(aName, aMan, aEnv);
     }
     else if (aType.compare(ATrSwitchVar::Type()) == 0) {
 	res = new ATrSwitchVar(aName, aMan, aEnv);
@@ -247,6 +262,14 @@ Elem* ProvDef::GetNode(const string& aUri)
 	    parent = GetNode("AFunVar");
 	    res = new AFAddVar(NULL, iEnv);
 	}
+	else if (aUri.compare(AFMplVar::Type()) == 0) {
+	    parent = GetNode("AFunVar");
+	    res = new AFMplVar(NULL, iEnv);
+	}
+	else if (aUri.compare(AFDivVar::Type()) == 0) {
+	    parent = GetNode("AFunVar");
+	    res = new AFDivVar(NULL, iEnv);
+	}
 	else if (aUri.compare(AFBcmpVar::Type()) == 0) {
 	    parent = GetNode("AFunVar");
 	    res = new AFBcmpVar(NULL, iEnv);
@@ -330,6 +353,18 @@ Elem* ProvDef::GetNode(const string& aUri)
 	else if (aUri.compare(ATrAddVar::Type()) == 0) {
 	    parent = GetNode("ATrVar");
 	    res = new ATrAddVar(NULL, iEnv);
+	}
+	else if (aUri.compare(ATrMplVar::Type()) == 0) {
+	    parent = GetNode("ATrVar");
+	    res = new ATrMplVar(NULL, iEnv);
+	}
+	else if (aUri.compare(ATrDivVar::Type()) == 0) {
+	    parent = GetNode("ATrVar");
+	    res = new ATrDivVar(NULL, iEnv);
+	}
+	else if (aUri.compare(ATrCpsVectVar::Type()) == 0) {
+	    parent = GetNode("ATrVar");
+	    res = new ATrCpsVectVar(NULL, iEnv);
 	}
 	else if (aUri.compare(ATrSwitchVar::Type()) == 0) {
 	    parent = GetNode("ATrVar");

@@ -22,7 +22,7 @@
      parent - parent name, if omitted then id specified the node to be added as is
      -->
 <!ATTLIST node 
-   id CDATA #IMPLIED
+   id CDATA #REQUIRED
    parent CDATA #REQUIRED
 >
 

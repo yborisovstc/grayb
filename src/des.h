@@ -137,6 +137,36 @@ class ATrAddVar: public ATrVar
 	virtual string GetInpUri(TInt aId);
 };
 
+// Agent function "Multiplication of Var data"
+class ATrMplVar: public ATrVar
+{
+    public:
+	static const char* Type() { return "ATrMplVar";};
+	static string PEType();
+	ATrMplVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ATrMplVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName);
+	virtual string GetInpUri(TInt aId);
+};
+
+// Agent function "Division of Var data"
+class ATrDivVar: public ATrVar
+{
+    public:
+	static const char* Type() { return "ATrDivVar";};
+	static string PEType();
+	ATrDivVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ATrDivVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName);
+	virtual string GetInpUri(TInt aId);
+};
+
 // Agent function "Switch controlled by var data"
 class ATrSwitchVar: public ATrVar
 {
@@ -160,6 +190,21 @@ class ATrAtVar: public ATrVar
 	static string PEType();
 	ATrAtVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrAtVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName);
+	virtual string GetInpUri(TInt aId);
+};
+
+// Agent function "Composing of vector, var data"
+class ATrCpsVectVar: public ATrVar
+{
+    public:
+	static const char* Type() { return "ATrCpsVectVar";};
+	static string PEType();
+	ATrCpsVectVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ATrCpsVectVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From ATrVar

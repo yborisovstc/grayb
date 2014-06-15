@@ -412,7 +412,74 @@
 		    new owner is set for created heir, no any corrections in mutations referred to original context.</simpara>
 	    </sect3>
 	</sect2>
+    </sect1>
 
+    <sect1 id="ds_visrepr"><title>Visual representation</title>
+	<sect2><title>Introduction</title>
+	    <simpara>Visual representation here is not visualization of model like falling ball pictures for the ball model.
+	    The representation is of how to show the structure of model for the user, so it can be described as structure visual representation.</simpara>
+	    <itemizedlist>
+		<listitem>Ref <ulink url="../requirements/index.html#uc_036"/> for use-case</listitem>
+	    </itemizedlist>
+	</sect2>
+	<sect2 id="ds_visrepr_emb"><title>Approaches: embedded into agent base</title>
+	    <simpara>This approach is to extend agent base to support visial representation hint. This can be done by adding specific attribute to agent specification.</simpara>
+	    <simpara>Pros:</simpara>
+	    <itemizedlist>
+		<listitem>Doesn't increase the complexity of the system. Any agent will keep it's representation data.</listitem>
+		<listitem>Base mechanism of mutation will be used for modification, so rollback will be supported simply.</listitem>
+	    </itemizedlist>
+	    <simpara>Cons:</simpara>
+	    <itemizedlist>
+		<listitem>The value of the dedicated attribute can be quite long, so the mutations can become ineffective. </listitem>
+	    </itemizedlist>
+	</sect2>
+	<sect2 id="ds_visrepr_dea"><title>Approaches: using dedicated agent for the representation</title>
+	    <simpara>The dedicated agent is created to keep the parameters of visual representation. This approach doesn't differ much from 
+		<xref linkend="ds_visrepr_emb"/>, the only change is that instead of having the support of representation in base agent (i.e. 
+	    in each agent), we add specific representation agent into nodes that requires custom visualization.</simpara>
+	</sect2>
+	<sect2 id="ds_visrepr_mdl"><title>Approaches: representation to be described by means of model itself</title>
+	    <sect3><title>Intro</title>
+		<simpara>When we talking of representation we mean some relations between part of system. For instance the visual order of
+		    system components actually the ordered relation of these components set. So the question is why these relations are not part of the
+		    model? We can also refer to visualization of the model, when we create specific model for visual part, e.g. specific widged for 
+		    ball moving area. We can do thame thing for structure visual representation.</simpara>
+		<simpara>There can be objections here that these specific relations are valuable for some clients that use visual representation but for some not.
+		    These relations doesn't affect "functional", behavioural aspects of system at all. But the same question is actual for the other approaches
+		    also: all the information kept by specific attribute of agent base in <xref linkend="ds_visrepr_emb"/> or in dedicated agent for
+		    <xref linkend="ds_visrepr_dea"/> is not needed for system behavior.</simpara>
+	    </sect3>
+	    <sect3><title>How to mix agents for general behaviour and representation</title>
+		<simpara>So the proposal here can be to have mechanism of "switching off" those part of the model that we are not interested in at the
+		    moment. For instance if we just running the system and looking just at some local part of the model (e.g. visualization part) so
+		    we don't need the part related to structure visual representation. This separation can be implemented by having one base element for 
+		    all representation agents, plus env option to not create those, plus support of creation masking on agent base level.</simpara>
+		<simpara>How to avoid dependencies beween general and representational agents? The idea is to keep all representational agents
+		together, e.g in one agent. This would allow to simplify the structure of the whole system.</simpara>
+	    </sect3>
+	    <sect3><title>Representational agents</title>
+		<simpara>The following agents could be used for visual representation:</simpara>
+		<itemizedlist>
+		    <listitem>Low-level ordering relationship. It could be used to order components within a node.</listitem>
+		    <listitem>Reference. This can be used for compact representation for displaying the data of node. 
+			This is already used, but not reference, just uri of data node.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Ordered relationalship agent. How to implement.</title>
+		<simpara>Currently there is already scheme of how to create ordered relationalship. For this the general approach is used:
+		    "relation is neutral, the relation specific goes thru system role". So there is agent "Edge" for neutral relation, specific
+		    agent "Vert" for object of relation, and 
+		    system agent that supports roles can be used for 
+		    ordering relationship: system should have roles "lower" and "bigger". This approach allows effective requesting for 
+		    relation: client can as any system for "all nodes bigger than you". System just gives to client the request 
+		    for iface set of "bigger".</simpara>
+		<simpara>The disadvantage of this approach is that only system can be used but not lower layer agents, like vertex.</simpara>
+		<simpara>One of the alternative approach is to use specific relation agent, not neutral. In this case simple vertex agent
+		    can be the object of specific relation.
+		</simpara>
+	    </sect3>
+	</sect2>
     </sect1>
 
 </article>

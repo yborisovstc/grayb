@@ -234,7 +234,8 @@ void Ut_mut::test_MutDepsRm()
     //Elem::TDep mdep = e2->GetMajorDep();
     Elem::TMDep mdep = e2->GetMajorDep();
     //CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major dep", mdep.first == e3 && mdep.second == -1);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major dep", mdep.first.first == e3);
+    TBool e2dep_ok = mdep.first.first == root && mdep.first.second == e3->Chromos().Root().Handle() && mdep.second == ENa_Parent;
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major dep", e2dep_ok);
     // Try to remove elem2 from elem1 - unsafe mutation
     Elem* e1 = root->GetNode("elem1");
     ChromoNode mut = e1->Mutation().Root().AddChild(ENt_Rm);

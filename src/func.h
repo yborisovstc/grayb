@@ -415,6 +415,79 @@ class AFAddVar: public AFunVar
 	virtual void Init(const string& aIfaceName);
 };
 
+// Multiplication, variable type
+
+class FMplBase: public Func {
+    public:
+	enum {
+	    EInp = Func::EInp1
+	};
+	FMplBase(Host& aHost): Func(aHost) {};
+};
+
+class FMplFloat: public FMplBase, public MDFloatGet {
+    public:
+	static Func* Create(Host* aHost, const string& aString);
+	FMplFloat(Host& aHost): FMplBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MDFloatGet::Type();};
+	virtual float Value();
+	virtual void GetResult(string& aResult);
+	float mRes;
+};
+
+class AFMplVar: public AFunVar
+{
+    public:
+	static const char* Type() { return "AFMplVar";};
+	static string PEType();
+	AFMplVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	AFMplVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From Func::Host
+	virtual Elem::TIfRange GetInps(TInt aId);
+    protected:
+	virtual void Init(const string& aIfaceName);
+};
+
+// Division, variable type
+
+class FDivBase: public Func {
+    public:
+	enum {
+	    EInp = Func::EInp1, EInp_Dvs
+	};
+	FDivBase(Host& aHost): Func(aHost) {};
+};
+
+class FDivFloat: public FDivBase, public MDFloatGet {
+    public:
+	static Func* Create(Host* aHost, const string& aString);
+	FDivFloat(Host& aHost): FDivBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MDFloatGet::Type();};
+	virtual float Value();
+	virtual void GetResult(string& aResult);
+	float mRes;
+};
+
+class AFDivVar: public AFunVar
+{
+    public:
+	static const char* Type() { return "AFDivVar";};
+	static string PEType();
+	AFDivVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	AFDivVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From Func::Host
+	virtual Elem::TIfRange GetInps(TInt aId);
+    protected:
+	virtual void Init(const string& aIfaceName);
+};
+
+
 class FBcmpBase: public Func {
     public:
 	enum { EInp_1 = EInp1, EInp_2, EInp_Ftype };
@@ -519,6 +592,45 @@ class FAtVFloat: public FAtBase, public MDFloatGet {
 	MVFloatGet* GetArg();
 };
 
+// Composing vector from components
+
+class AFCpsVectVar: public AFunVar
+{
+    public:
+	static const char* Type() { return "AFCpsVectVar";};
+	static string PEType();
+	AFCpsVectVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	AFCpsVectVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	TInt GetInd(TInt aInpId);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From Func::Host
+	virtual Elem::TIfRange GetInps(TInt aId);
+    protected:
+	virtual void Init(const string& aIfaceName);
+};
+
+class FCpsVBase: public Func 
+{
+    public:
+	FCpsVBase(Host& aHost): Func(aHost) {};
+	const static TInt KIndMax;
+};
+
+// Composing vector from components: float
+class FCpsVFloat: public FCpsVBase, public MVFloatGet {
+    public:
+	static Func* Create(Host* aHost, const string& aOutIid);
+	FCpsVFloat(Host& aHost): FCpsVBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MVFloatGet::Type();};
+	virtual void VFloatGet(VFloat& aData);
+	virtual void GetResult(string& aResult);
+    protected:
+	MVFloatGet* GetArg();
+    protected:
+	VFloat mData;
+};
 
 // Case - commutation of inputs
 class AFSwitchVar: public AFunVar

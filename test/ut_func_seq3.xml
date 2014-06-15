@@ -49,7 +49,7 @@
 	    <cont node="P2" val="../../Result/Capsule/inp"/> 
 	</node>
 
-	<node parent="Edge"> 
+	<node id="E4" parent="Edge"> 
 	    <cont node="P1" val="../../Result/Capsule/out"/> 
 	    <cont node="P2" val="../../ResData/Capsule/inp"/> 
 	</node>

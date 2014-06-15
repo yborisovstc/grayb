@@ -127,7 +127,35 @@
 	<add node="Agents"> 
 	    <node id="TrAgt" parent="ATrAddVar"/> 
 	</add>
-	<node id="InpN" parent="../TrIntInp"/> 
+	<node id="InpN" parent="../TrVarInp"/> 
+	<cont node="ViewData/Res" ref="../../Agents/TrAgt"/>
+    </node>
+
+    <!-- Transition of variable data : Multiplication -->
+    <node id="TrMplVar" parent="TrVar"> 
+	<add node="Agents"> 
+	    <node id="TrAgt" parent="ATrMplVar"/> 
+	</add>
+	<cont node="ViewData/Res" ref="../../Agents/TrAgt"/>
+    </node>
+
+    <!-- Transition of variable data : Division -->
+    <node id="TrDivVar" parent="TrVar"> 
+	<add node="Agents"> 
+	    <node id="TrAgt" parent="ATrDivVar"/> 
+	</add>
+	<node id="Inp_Dvs" parent="../TrVarInp"/> 
+	<cont node="ViewData/Res" ref="../../Agents/TrAgt"/>
+    </node>
+
+    <!-- Transition of variable data : Composing vector -->
+    <node id="TrCpsVectVar" parent="TrVar"> 
+	<add node="Agents"> 
+	    <node id="TrAgt" parent="ATrCpsVectVar"/> 
+	</add>
+	<change node="Inp" attr="id" val="Inp0"/>
+	<node id="Inp1" parent="../TrVarInp"/> 
+	<node id="Inp2" parent="../TrVarInp"/> 
 	<cont node="ViewData/Res" ref="../../Agents/TrAgt"/>
     </node>
 
@@ -241,12 +269,12 @@
 	<cont node="Capsule/Inp/Int/PinData/Provided" val="MDIntGet"/>
 	<cont node="Capsule/Out/Int/PinData/Required" val="MDIntGet"/>
 
-	<node parent="Edge"> 
+	<node id="E_Conf_Out" parent="Edge"> 
 	    <cont node="P1" val="../../Confirmed/Capsule/Out"/> 
 	    <cont node="P2" val="../../Capsule/Out/Int/PinData"/> 
 	</node>
 
-	<node parent="Edge"> 
+	<node id="E_PrepToConf" parent="Edge"> 
 	    <cont node="P1" val="../../Prepared/Capsule/Out"/> 
 	    <cont node="P2" val="../../Confirmed/Capsule/Inp"/> 
 	</node>
@@ -260,12 +288,12 @@
 	<cont node="Capsule/Inp/Int/PinData/Provided" val="MDVarGet"/>
 	<cont node="Capsule/Out/Int/PinData/Required" val="MDVarGet"/>
 
-	<node parent="Edge"> 
+	<node id="E_Conf_Out" parent="Edge"> 
 	    <cont node="P1" ref="../../Confirmed/Capsule/Out"/> 
 	    <cont node="P2" ref="../../Capsule/Out/Int/PinData"/> 
 	</node>
 
-	<node parent="Edge"> 
+	<node id="E_PrepToConf" parent="Edge"> 
 	    <cont node="P1" ref="../../Prepared/Capsule/Out"/> 
 	    <cont node="P2" ref="../../Confirmed/Capsule/Inp"/> 
 	</node>

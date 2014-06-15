@@ -253,7 +253,7 @@
 	</add>
 	<!-- Value of Working function argument -->
 	<node id="WFArg" parent="**/DataComps/DataSNInt"/>
-	<node parent="Edge"> <cont node="P1" val="../../WFArg/Capsule/out"/> <cont node="P2" val="../../Capsule/Out_WFarg/Int"/> </node>
+	<node id="E1" parent="Edge"> <cont node="P1" val="../../WFArg/Capsule/out"/> <cont node="P2" val="../../Capsule/Out_WFarg/Int"/> </node>
     </node>
 
     <!-- Int  inputs to Int vector conversation -->
@@ -369,7 +369,7 @@
 	</add>
 	<!-- Value of Working function argument -->
 	<node id="WFArg" parent="**/DataComps/DataSUInt"/>
-	<node parent="Edge"> <cont node="P1" val="../../WFArg/Capsule/out"/> <cont node="P2" val="../../Capsule/Out_WFarg/Int"/> </node>
+	<node id="E1" parent="Edge"> <cont node="P1" val="../../WFArg/Capsule/out"/> <cont node="P2" val="../../Capsule/Out_WFarg/Int"/> </node>
     </node>
 
     <!-- Function Inp1 GT Inp2  -->
@@ -455,20 +455,22 @@
     	</add>
     </node>
 
-    <!-- Variable type function of addition wo caching -->
-    <!--
-    <node id="TFAddVar" parent="TFuncVar"> 
-	<add node="Agents"> <node id="func_agt" parent="AFAddVar"/> </add>
+    <!-- Function of var multiplication wo caching -->
+    <node id="FMplVar" parent="FuncVar"> 
+	<add node="Agents"> <node id="func_agt" parent="AFMplVar"/> </add>
 	<add node="Capsule"> 
-	    <node id="inp" parent="../../Inp_TFVar"/> 
+	    <node id="Inp" parent="../../Inp_FVar"/> 
 	</add>
     </node>
-    -->
 
-
-
-
-
+    <!-- Function of var dividing wo caching -->
+    <node id="FDivVar" parent="FuncVar"> 
+	<add node="Agents"> <node id="func_agt" parent="AFDivVar"/> </add>
+	<add node="Capsule"> 
+	    <node id="Inp" parent="../../Inp_FVar"/> 
+	    <node id="Inp_Dvs" parent="../../Inp_FVar"/> 
+	</add>
+    </node>
 
 </node>
 

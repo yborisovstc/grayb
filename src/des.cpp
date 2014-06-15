@@ -446,6 +446,98 @@ string ATrAddVar::GetInpUri(TInt aId)
 }
 
 
+// Agent function "Multiplication of Var data"
+string ATrMplVar::PEType()
+{
+    return ATrVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrMplVar::ATrMplVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), ATrVar::PEType());
+    SetParent(Type());
+}
+
+ATrMplVar::ATrMplVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
+{
+    SetEType(ATrVar::PEType());
+    SetParent(ATrVar::PEType());
+}
+
+void *ATrMplVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = ATrVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void ATrMplVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc = NULL;
+    }
+    if ((mFunc = FMplFloat::Create(this, aIfaceName)) != NULL);
+}
+
+string ATrMplVar::GetInpUri(TInt aId) 
+{
+    if (aId == FMplBase::EInp) return "Inp";
+    else return string();
+}
+
+// Agent function "Division of Var data"
+string ATrDivVar::PEType()
+{
+    return ATrVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrDivVar::ATrDivVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), ATrVar::PEType());
+    SetParent(Type());
+}
+
+ATrDivVar::ATrDivVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
+{
+    SetEType(ATrVar::PEType());
+    SetParent(ATrVar::PEType());
+}
+
+void *ATrDivVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = ATrVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void ATrDivVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc = NULL;
+    }
+    if ((mFunc = FDivFloat::Create(this, aIfaceName)) != NULL);
+}
+
+string ATrDivVar::GetInpUri(TInt aId) 
+{
+    if (aId == FDivBase::EInp) return "Inp";
+    else if (aId == FDivBase::EInp_Dvs) return "Inp_Dvs";
+    else return string();
+}
+
+
 // Agent function "Switch controlled by var data"
 string ATrSwitchVar::PEType()
 {
@@ -571,6 +663,54 @@ string ATrAtVar::GetInpUri(TInt aId)
     else if (aId == Func::EInp1) return "Inp";
     else return string();
 }
+
+
+// Agent function "Composing of vector, var data"
+string ATrCpsVectVar::PEType()
+{
+    return ATrVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrCpsVectVar::ATrCpsVectVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), ATrVar::PEType());
+    SetParent(Type());
+}
+
+ATrCpsVectVar::ATrCpsVectVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
+{
+    SetEType(ATrVar::PEType());
+    SetParent(ATrVar::PEType());
+}
+
+void *ATrCpsVectVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = ATrVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void ATrCpsVectVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc = NULL;
+    }
+    if ((mFunc = FCpsVFloat::Create(this, aIfaceName)) != NULL);
+}
+
+string ATrCpsVectVar::GetInpUri(TInt aId) 
+{
+    stringstream ss;
+    ss <<  "Inp" << (aId - Func::EInp1);
+    return ss.str();
+}
+
 
 // Agent function "Boolean comparition of Var data"
 string ATrBcmpVar::PEType()
