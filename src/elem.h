@@ -259,7 +259,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	ChromoNode GetChNode(const GUri& aUri) const;
 	void CompactChromo();
     protected:
-	Elem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, Elem* aMutHolder = NULL);
+	Elem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse);
 	static void Init();
 	inline MLogRec* Logger() const;
 	inline MProvider* Provider() const;

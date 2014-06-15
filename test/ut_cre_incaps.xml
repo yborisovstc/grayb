@@ -18,19 +18,15 @@
 	    <node id="cp_int" parent="../../sysmod/ConnPoint"> 
 		<cont node="Provided" val="Role3"/> <cont node="Required" val="Role4"/>
 	    </node>
-	    <add node="Capsule">
-		<node id="ep" parent="../../../sysmod/Extender"> 
-		    <cont node="Int/Provided" val="Role4"/> <cont node="Int/Required" val="Role3"/>
-		</node>
-	    </add>
+	    <node node="Capsule" id="ep" parent="../../sysmod/Extender"> 
+		<cont node="Int/Provided" val="Role4"/> <cont node="Int/Required" val="Role3"/>
+	    </node>
 	</node>
 
 	<node id="Ics2" parent="../incapsmod/Incaps">
-	    <add node="Capsule">
-		<node id="ep" parent="../../../sysmod/Extender"> 
-		    <cont node="Int/Provided" val="Role3"/> <cont node="Int/Required" val="Role4"/>
-		</node>
-	    </add>
+	    <node node="Capsule" id="ep" parent="../../sysmod/Extender"> 
+		<cont node="Int/Provided" val="Role3"/> <cont node="Int/Required" val="Role4"/>
+	    </node>
 	</node>
 
 	<!-- Trying to connect extention points from capsules - right way to connect -->

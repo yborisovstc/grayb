@@ -29,21 +29,13 @@
 	</node>
 
 	<node id="Int" parent="../ConnPoint"></node>
-	<add node="(Elem:)Agents"> 
-	    <node id="MAExteder" parent="ExtenderAgent"> 
-	    </node>
-	</add>
+	<node node="(Elem:)Agents" id="MAExteder" parent="ExtenderAgent"/> 
     </node>
 
     <!-- Socket -->
     <node id="Socket" parent="Vert"> 
-	<add node="(Elem:)Agents"> 
-	    <node id="Sock" parent="ASocket"> 
-	    </node>
-	</add>
+	<node node="(Elem:)Agents" id="Sock" parent="ASocket"/> 
     </node>
-
-
 
 </node>
 

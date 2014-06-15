@@ -18,12 +18,14 @@
 <!ELEMENT node (node*, add*, rm*, change*, cont*, move*)* >
 
 <!-- Inherited Object  attributes:
+  node - mutated node - DES URI
      id - instance name,
      parent - parent name, if omitted then id specified the node to be added as is
      -->
 <!ATTLIST node 
-   id CDATA #REQUIRED
-   parent CDATA #REQUIRED
+    node CDATA #IMPLIED
+    id CDATA #REQUIRED
+    parent CDATA #REQUIRED
 >
 
 <!-- Adding node attributes:

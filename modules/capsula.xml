@@ -9,15 +9,11 @@
 <node id="IncapsComps" parent="Elem">
 
     <node id="Incaps" parent="Syst"> 
-    	<add node="Agents"> 
-	    <node id="MACompsObserver" parent="IncapsAgent"> 
-	    </node>
-    	</add>
+	<node node="Agents" id="MACompsObserver" parent="IncapsAgent"/> 
 	<!-- Element that acts as place for all extenders of the system.
 	 IncapsSystem allows the connection outside only for those EPs that are in capsula
 	 -->
-    	<node id="Capsule" parent="Elem"> 
-    	</node>
+	<node id="Capsule" parent="Elem"/> 
     </node>
 
 </node>

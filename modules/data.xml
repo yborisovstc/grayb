@@ -15,12 +15,10 @@
     <node id="DataS" parent=":Elem:IncapsComps/Incaps"> 
 	<node id="D_1" parent="Description">
 	    <cont val="Base of Data with separate input for setting and output for getting"/></node>
-    	<add node="Capsule"> 
-	    <node id="inp" parent=":Elem:SysComps/ConnPoint"/> 
-	    <node id="out" parent=":Elem:SysComps/ConnPoint"> 
-		<cont node="Required" val="MDataObserver"/>
-	    </node>
-    	</add>
+	<node node="Capsule" id="inp" parent=":Elem:SysComps/ConnPoint"/> 
+	<node node="Capsule" id="out" parent=":Elem:SysComps/ConnPoint"> 
+	    <cont node="Required" val="MDataObserver"/>
+	</node>
 	<node id="Value" parent="Prop"/>
     </node>
 
@@ -28,10 +26,8 @@
     <node id="DataSU" parent=":Elem:IncapsComps/Incaps"> 
 	<node id="D_1" parent="Description">
 	    <cont val="Data with separate input for setting and output for getting, w/o notification"/></node>
-    	<add node="Capsule"> 
-	    <node id="inp" parent=":Elem:SysComps/ConnPoint"/> 
-	    <node id="out" parent=":Elem:SysComps/ConnPoint"/> 
-    	</add>
+	<node node="Capsule" id="inp" parent=":Elem:SysComps/ConnPoint"/> 
+	<node node="Capsule" id="out" parent=":Elem:SysComps/ConnPoint"/> 
 	<node id="Value" parent="Prop"/>
     </node>
 
@@ -39,7 +35,7 @@
     <!-- Data with separate input for setting and output for getting. Integer -->
     <node id="DataSInt" parent="DataS"> 
 	<cont node="D_1" val="Integer Data with separate input for setting and output for getting"/>
-    	<add node="Agents"> <node id="MACompsObserver" parent="DInt"/> </add>
+    	<node node="Agents" id="MACompsObserver" parent="DInt"/>
 	<cont node="Capsule/inp/Provided" val="MDIntSet"/>
 	<cont node="Capsule/out/Provided" val="MDIntGet"/>
     </node>
@@ -47,7 +43,7 @@
     <!-- Data with separate input for setting and output for getting. Variant -->
     <node id="DataSVar" parent="DataS"> 
 	<cont node="D_1" val="Variant Data with separate input for setting and output for getting"/>
-    	<add node="Agents"> <node id="MACompsObserver" parent="DVar"/> </add>
+	<node node="Agents" id="MACompsObserver" parent="DVar"/>
 	<cont node="Capsule/inp/Provided" val="MDVarSet"/>
 	<cont node="Capsule/out/Provided" val="MDVarGet"/>
     </node>
@@ -61,19 +57,19 @@
 
     <!-- Observer iface is declared for purpose of compatibility but isn't supported -->
     <node id="DataSNInt" parent="DataS"> 
-    	<add node="Agents"> <node id="AData" parent="DNInt"/> </add>
+    	<node node="Agents" id="AData" parent="DNInt"/>
 	<cont node="Capsule/inp/Provided" val="MDIntSet"/>
 	<cont node="Capsule/out/Provided" val="MDIntGet"/>
     </node>
 
     <node id="DataSUInt" parent="DataSU"> 
-    	<add node="Agents"> <node id="MACompsObserver" parent="DInt"/> </add>
+    	<node node="Agents" id="MACompsObserver" parent="DInt"/>
 	<cont node="Capsule/inp/Provided" val="MDIntSet"/>
 	<cont node="Capsule/out/Provided" val="MDIntGet"/>
     </node>
 
     <node id="DataSUVar" parent="DataSU"> 
-    	<add node="Agents"> <node id="MACompsObserver" parent="DVar"/> </add>
+    	<node node="Agents" id="MACompsObserver" parent="DVar"/>
 	<cont node="Capsule/inp/Provided" val="MDVarSet"/>
 	<cont node="Capsule/out/Provided" val="MDVarGet"/>
     </node>
@@ -81,7 +77,7 @@
     <!-- Terminal data, input only, provided data observer, required gettng data -->
     <node id="DataTInt" parent="DataS"> 
 	<cont node="D_1" val="Terminal data, input only. Monitoring input and update itself"/>
-    	<add node="Agents"> <node id="ADInt" parent="DInt"/> </add>
+    	<node node="Agents" id="ADInt" parent="DInt"/>
 	<cont node="Capsule/inp/Provided" val="MDataObserver"/>
 	<cont node="Capsule/inp/Required" val="MDIntGet"/>
 	<rm node="Capsule/out"/>
@@ -90,7 +86,7 @@
     <!-- Terminal data, input only, provided data observer, required gettng data -->
     <node id="DataTVar" parent="DataS"> 
 	<cont node="D_1" val="Terminal data, input only, variable type. Monitoring input and update itself"/>
-    	<add node="Agents"> <node id="AData" parent="DVar"/> </add>
+    	<node node="Agents" id="AData" parent="DVar"/>
 	<cont node="Capsule/inp/Provided" val="MDataObserver"/>
 	<cont node="Capsule/inp/Required" val="MDVarGet"/>
 	<cont node="Capsule/out/Provided" val="MDVarGet"/>
@@ -98,14 +94,10 @@
 
 
     <node id="DataInt" parent=":Elem:IncapsComps/Incaps"> 
-
-    	<add node="Agents"> <node id="ADInt" parent="DInt"/> </add>
-
-    	<add node="Capsule"> 
-	    <node id="out" parent=":Elem:SysComps/ConnPoint"> 
-		<cont node="Provided" val="MDInt"/>
-	    </node>
-    	</add>
+    	<node node="Agents" id="ADInt" parent="DInt"/>
+	<node node="Capsule" id="out" parent=":Elem:SysComps/ConnPoint"> 
+	    <cont node="Provided" val="MDInt"/>
+	</node>
     </node>
 
     <!-- START: Data with separate input, output, and dedicated input for initiating of setting data-->
@@ -116,19 +108,15 @@
 
     <!-- Data base -->
     <node id="DataSC" parent=":Elem:IncapsComps/Incaps"> 
-    	<add node="Capsule"> 
-	    <node id="Inp" parent=":Elem:SysComps/ConnPoint"/> 
-	    <node id="Out" parent=":Elem:SysComps/ConnPoint"/> 
-	    <node id="Upd" parent=":Elem:SysComps/ConnPoint"/> 
-    	</add>
+	<node node="Capsule" id="Inp" parent=":Elem:SysComps/ConnPoint"/> 
+	<node node="Capsule" id="Out" parent=":Elem:SysComps/ConnPoint"/> 
+	<node node="Capsule" id="Upd" parent=":Elem:SysComps/ConnPoint"/> 
 	<node id="Value" parent="Prop"/>
     </node>
 
     <!-- Data Int -->
     <node id="DataSCInt" parent="DataSC"> 
-    	<add node="Agents"> 
-	    <node id="MACompsObserver" parent="DInt"/> 
-    	</add>
+	<node node="Agents" id="MACompsObserver" parent="DInt"/> 
 	<cont node="Capsule/Inp/Required" val="MDIntGet"/>
 	<cont node="Capsule/Out/Provided" val="MDIntGet"/>
 	<cont node="Capsule/Upd/Provided" val="MUpdatable"/>
@@ -136,9 +124,7 @@
 
     <!-- Data Var -->
     <node id="DataSCVar" parent="DataSC"> 
-    	<add node="Agents"> 
-	    <node id="MACompsObserver" parent="DVar"/> 
-    	</add>
+	<node node="Agents" id="MACompsObserver" parent="DVar"/> 
 	<cont node="Capsule/Inp/Required" val="MDVarGet"/>
 	<cont node="Capsule/Out/Provided" val="MDVarGet"/>
 	<cont node="Capsule/Upd/Provided" val="MUpdatable"/>

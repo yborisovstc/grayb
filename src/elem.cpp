@@ -708,7 +708,7 @@ TBool Elem::AddNode(const ChromoNode& aSpec, TBool aRunTime)
 	    for (ChromoNode::Const_Iterator mit = aSpec.Begin(); mit != aSpec.End() && res; mit++) {
 		const ChromoNode& mno = (*mit);
 		//Elem* rnode = node->AddElem(mno, aRunTime);
-		Elem* rnode = node->AddElem(mno, ETrue, this);
+		Elem* rnode = node->AddElem(mno, ETrue);
 		if (rnode == NULL) {
 		    Logger()->Write(MLogRec::EErr, this, "Adding node into [%s] - failure", snode.c_str());
 		}
@@ -979,6 +979,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 	    }
 	}
 	else if (rnotype == ENt_Add) {
+	    __ASSERT(false);
 	    AddNode(rno, aRunTime);
 	}
 	else if (rnotype == ENt_Change) {
@@ -1114,8 +1115,9 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
     return res;
 }
 
-Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, Elem* aMutHolder)
+Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 {
+    string snode = aNode.Attr(ENa_MutNode);
     string sparent = aNode.Attr(ENa_Parent);
     string sname = aNode.Name();
     __ASSERT(!sname.empty());
@@ -1131,92 +1133,91 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, Elem* aMutHolder)
 	Logger()->Write(MLogRec::EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
     }
     Elem* elem = NULL;
-    // Obtain parent first
-    Elem *parent = NULL;
-    // Check if the parent is specified
-    if (!sparent.empty()) {
-	// Check the parent scheme
-	GUri prnturi(sparent);
-	TBool ext_parent = ETrue;
-	if (prnturi.Scheme().empty()) {
-	    // Local parent
-	    parent = GetNode(prnturi);
-	    /*
-	       if (parent == NULL) {
-	    // No parents found, request provider for native one
-	    parent = Provider()->GetNode(sparent);
-	    }
-	    */
-	    ext_parent = EFalse;
-	}
-	else {
-	    // TODO [YB] To add seaching the module - it will allow to specify just file of spec wo full uri
-	    Chromo *spec = Provider()->CreateChromo();
-	    TBool res = spec->Set(sparent);
-	    if (res) {
-		const ChromoNode& root = spec->Root();
-		parent = AddElem(root);
-		delete spec;
-	    }
-	}
-	if (parent == NULL) {
-	    // No parents found, create from embedded parent
-	    parent = Provider()->GetNode(sparent);
-	    elem = Provider()->CreateNode(sparent, sname, this, iEnv);
-	    if (parent != NULL) {
-		//parent->AppendChild(elem);
-	    }
-	    else  {
-		Logger()->Write(MLogRec::EErr, this, "Creating [%s] - parent [%s] not found", sname.c_str(), sparent.c_str());
-	    }
-	}
-	else {
-	    // Create heir from the parent
-	    elem = parent->CreateHeir(sname, this);
-	    // TODO [YB] Seems to be just temporal solution. To consider using context instead.
-	    // Make heir based on the parent: re-parent the heir (currently it's of grandparent's parent) and clean the chromo
-	    //elem->SetEType(sparent); // The type is set when creating heir
-	    ChromoNode hroot = elem->Chromos().Root();
-	    hroot.SetAttr(ENa_Parent, sparent);
-	    // Remove external parent from system
-	    // [YB] DON'T remove parent, otherwise the inheritance chain will be broken
-	    if (ext_parent) {
-		// delete parent;
-	    }
-	}
-	if (elem == NULL) {
-	    Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] - failed", sname.c_str());
-	}
-	else {
-	    TBool res = AppendComp(elem);
-	    if (!res) {
-		Logger()->Write(MLogRec::EErr, this, "Adding node [%s:%s] failed", elem->EType().c_str(), elem->Name().c_str());
-		delete elem;
-		elem = NULL;
+    Elem* node = snode.empty() ? this: GetNode(snode); 
+    if (node != NULL) {
+	// Obtain parent first
+	Elem *parent = NULL;
+	// Check if the parent is specified
+	if (!sparent.empty()) {
+	    // Check the parent scheme
+	    GUri prnturi(sparent);
+	    TBool ext_parent = ETrue;
+	    if (prnturi.Scheme().empty()) {
+		// Local parent
+		parent = GetNode(prnturi);
+		/*
+		   if (parent == NULL) {
+		// No parents found, request provider for native one
+		parent = Provider()->GetNode(sparent);
+		}
+		*/
+		ext_parent = EFalse;
 	    }
 	    else {
-		// Mutate object 
-		elem->SetMutation(aNode);
-		elem->Mutate();
-		if (IsLogeventCreOn()) {
-		    Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
+		// TODO [YB] To add seaching the module - it will allow to specify just file of spec wo full uri
+		Chromo *spec = Provider()->CreateChromo();
+		TBool res = spec->Set(sparent);
+		if (res) {
+		    const ChromoNode& root = spec->Root();
+		    parent = AddElem(root);
+		    delete spec;
+		}
+	    }
+	    if (parent == NULL) {
+		// No parents found, create from embedded parent
+		parent = Provider()->GetNode(sparent);
+		elem = Provider()->CreateNode(sparent, sname, node, iEnv);
+		if (parent != NULL) {
+		    //parent->AppendChild(elem);
+		}
+		else  {
+		    Logger()->Write(MLogRec::EErr, this, "Creating [%s] - parent [%s] not found", sname.c_str(), sparent.c_str());
+		}
+	    }
+	    else {
+		// Create heir from the parent
+		elem = parent->CreateHeir(sname, node);
+		// TODO [YB] Seems to be just temporal solution. To consider using context instead.
+		// Make heir based on the parent: re-parent the heir (currently it's of grandparent's parent) and clean the chromo
+		//elem->SetEType(sparent); // The type is set when creating heir
+		ChromoNode hroot = elem->Chromos().Root();
+		hroot.SetAttr(ENa_Parent, sparent);
+		// Remove external parent from system
+		// [YB] DON'T remove parent, otherwise the inheritance chain will be broken
+		if (ext_parent) {
+		    // delete parent;
+		}
+	    }
+	    if (elem == NULL) {
+		Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] - failed", sname.c_str());
+	    }
+	    else {
+		TBool res = node->AppendComp(elem);
+		if (!res) {
+		    Logger()->Write(MLogRec::EErr, this, "Adding node [%s:%s] failed", elem->EType().c_str(), elem->Name().c_str());
+		    delete elem;
+		    elem = NULL;
+		}
+		else {
+		    // Mutate object 
+		    elem->SetMutation(aNode);
+		    elem->Mutate();
+		    if (IsLogeventCreOn()) {
+			Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
+		    }
 		}
 	    }
 	}
+	if (elem != NULL) {
+	    if (!aRunTime) {
+		ChromoNode chn = iChromo->Root().AddChild(elem->iChromo->Root(), EFalse);
+		AddCMDep(chn, ENa_Id, elem);
+		AddCMDep(chn, ENa_Parent, parent);
+	    }
+	}
     }
-    if (elem != NULL) {
-	if (!aRunTime) {
-	    ChromoNode chn = iChromo->Root().AddChild(elem->iChromo->Root(), EFalse);
-	    AddCMDep(chn, ENa_Id, elem);
-	    AddCMDep(chn, ENa_Parent, parent);
-	}
-	/*
-	else if (aRunTime && aMutHolder != NULL) {
-	    // Phenotype modif - adding deps to real mut holder if specified, ref uc_037
-	    aMutHolder->AddCMDep(aNode, ENa_Id, elem);
-	    aMutHolder->AddCMDep(aNode, ENa_Parent, parent);
-	}
-	*/
+    else  {
+	Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] - cannot find node", snode.c_str());
     }
     return elem;
 }

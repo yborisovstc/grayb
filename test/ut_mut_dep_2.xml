@@ -12,8 +12,6 @@ removing elem2 - breakege -->
 	<node id="elem2" parent="Elem"/>
     </node>
     <!-- Dependency of type "object of change" -->
-    <add node="elem1/elem2">
-	<node id="elem4" parent="Elem"/>
-    </add>
+    <node node="elem1/elem2" id="elem4" parent="Elem"/>
 </node>
 
