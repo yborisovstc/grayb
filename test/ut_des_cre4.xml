@@ -51,9 +51,7 @@
 
     <!-- System Constants -->
     <node id="SysConsts" parent="IncapsComps/Incaps">
-	<add node="Capsule">
-	    <node id="Out" parent="../../SysConstOut"/> 
-	</add>
+	<node node="Capsule" id="Out" parent="../SysConstOut"/> 
 
 	<!-- TODO [YB] To use simpler system for constants, DataSCInt is excessibe -->
 	<!-- Maximum of feed available -->
@@ -74,17 +72,14 @@
     <!-- Snail -->
     <node id="Snail" parent="DesComps/Des">
 
-	<add node="Capsule">
-	    <!-- Input: Coords of others -->
-	    <node id="Inp" parent="../../DesComps/StIntInp"/> 
-	    <!-- System parameters -->
-	    <node id="Inp_SysPars" parent="../../SysConstInp"/> 
-	    <!-- Output: default - Coord -->
-	    <node id="Out" parent="../../DesComps/StIntOut"/> 
-	    <!-- Mass -->
-	    <node id="Out_Mass" parent="../../DesComps/StIntOut"/> 
-	</add>
-
+	<!-- Input: Coords of others -->
+	<node node="Capsule" id="Inp" parent="../DesComps/StIntInp"/> 
+	<!-- System parameters -->
+	<node node="Capsule" id="Inp_SysPars" parent="../SysConstInp"/> 
+	<!-- Output: default - Coord -->
+	<node node="Capsule" id="Out" parent="../DesComps/StIntOut"/> 
+	<!-- Mass -->
+	<node node="Capsule" id="Out_Mass" parent="../DesComps/StIntOut"/> 
 
 	<!-- State Mass -->
 	<node id="Mass" parent="../DesComps/StateInt">
@@ -95,22 +90,18 @@
 		</node>
 	    </node>
 
-	    <add node="Confirmed">
-		<node id="Logspec" parent="Elem">
-		    <node id="Update" parent="../../../../DataComps/DataLogevent">
-		    </node>
+	    <node node="Confirmed" id="Logspec" parent="Elem">
+		<node id="Update" parent="../../../../DataComps/DataLogevent">
 		</node>
-	    </add>
+	    </node>
 
 	    <!-- Input: default - self -->
-	    <add node="Capsule">
-		<!-- Input: self coord -->
-		<node id="Inp_SelfCoord" parent="../../../DesComps/StIntInp"/> 
-		<!-- Input: others coord -->
-		<node id="Inp_OthersCoord" parent="../../../DesComps/StIntInp"/> 
-		<!-- System parameters -->
-		<node id="Inp_SysPars" parent="../../../SysConstInp"/> 
-	    </add>
+	    <!-- Input: self coord -->
+	    <node node="Capsule" id="Inp_SelfCoord" parent="../../DesComps/StIntInp"/> 
+	    <!-- Input: others coord -->
+	    <node node="Capsule" id="Inp_OthersCoord" parent="../../DesComps/StIntInp"/> 
+	    <!-- System parameters -->
+	    <node node="Capsule" id="Inp_SysPars" parent="../../SysConstInp"/> 
 
 	    <!-- Transition -->
 	    <node id="Conv" parent="../../FuncComps/TFConvInt"/>
@@ -150,19 +141,15 @@
 
 	    <node id="Logspec" parent="Elem"> <node id="Creation" parent="Elem"/> </node>
 
-	    <add node="Confirmed">
-		<node id="Logspec" parent="Elem">
-		    <node id="Update" parent="../../../../DataComps/DataLogevent"/>
-		</node>
-	    </add>
+	    <node node="Confirmed" id="Logspec" parent="Elem">
+		<node id="Update" parent="../../../../DataComps/DataLogevent"/>
+	    </node>
 
-	    <add node="Capsule">
-		<!-- Std input - self -->
-		<!-- Mass -->
-		<node id="Inp_Mass" parent="../../../DesComps/StIntInp"/> 
-		<!-- System parameters -->
-		<node id="Inp_SysPars" parent="../../../SysConstInp"/> 
-	    </add>
+	    <!-- Std input - self -->
+	    <!-- Mass -->
+	    <node node="Capsule" id="Inp_Mass" parent="../../DesComps/StIntInp"/> 
+	    <!-- System parameters -->
+	    <node node="Capsule" id="Inp_SysPars" parent="../../SysConstInp"/> 
 
 	    <node id="Div" parent="../../FuncComps/TFDivInt"/>
 	    <node id="AddM1" parent="../../FuncComps/TFAddInt"/>
@@ -194,10 +181,8 @@
 
 	<node id="Logspec" parent="Elem"> <node id="Creation" parent="Elem"/> </node>
 
-	<add node="Capsule">
-	    <!-- Output: Mass -->
-	    <node id="Out" parent="../../DesComps/StIntOut"/> 
-	</add>
+	<!-- Output: Mass -->
+	<node node="Capsule" id="Out" parent="../DesComps/StIntOut"/> 
 
 	<!-- Constants -->
 	<node id="Consts" parent="../SysConsts">

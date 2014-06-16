@@ -22,10 +22,8 @@
 
     <node id="TestDes" parent="DesComps/Des">
 
-	<add node="Capsule">
-	    <!-- Output: Mass -->
-	    <node id="Out" parent="../../DesComps/StIntOut"/> 
-	</add>
+	<!-- Output: Mass -->
+	<node node="Capsule" id="Out" parent="../DesComps/StIntOut"/> 
 
 	<!-- Incrementor 1 -->
 	<node id="Incr1" parent="../DesComps/StateInt">
@@ -36,12 +34,10 @@
 		</node>
 	    </node>
 
-	    <add node="Confirmed">
-		<node id="Logspec" parent="Elem">
-		    <node id="Update" parent="../../../../DataComps/DataLogevent">
-		    </node>
+	    <node node="Confirmed" id="Logspec" parent="Elem">
+		<node id="Update" parent="../../../../DataComps/DataLogevent">
 		</node>
-	    </add>
+	    </node>
 
 	    <node id="Trans" parent="../../DesComps/TrIncInt">
 	    </node>

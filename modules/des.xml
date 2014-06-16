@@ -79,33 +79,23 @@
 
     <!-- Transition of integer data : Increment -->
     <node id="TrIncInt" parent="TrInt"> 
-	<add node="Agents"> 
-	    <node id="TrAgt" parent="ATrIncInt"> 
-	    </node>
-	</add>
+	<node node="Agents" id="TrAgt" parent="ATrIncInt"/> 
     </node>
 
     <!-- Transition of integer data : Multiplication -->
     <node id="TrMplInt" parent="TrInt"> 
-	<add node="Agents"> 
-	    <node id="TrAgt" parent="ATrMplInt"> 
-	    </node>
-	</add>
+	<node node="Agents" id="TrAgt" parent="ATrMplInt"/> 
     </node>
 
     <!-- Transition of integer data : Division -->
     <node id="TrDivInt" parent="TrInt"> 
-	<add node="Agents"> 
-	    <node id="TrAgt" parent="ATrDivInt"/> 
-	</add>
+	<node node="Agents" id="TrAgt" parent="ATrDivInt"/> 
 	<node id="Inp_DR" parent="../TrIntInp"/> 
     </node>
 
     <!-- Transition of integer data : Subtraction -->
     <node id="TrSubInt" parent="TrInt"> 
-	<add node="Agents"> 
-	    <node id="TrAgt" parent="ATrSubInt"/> 
-	</add>
+	<node node="Agents" id="TrAgt" parent="ATrSubInt"/> 
 	<node id="Inp_Sub" parent="../TrIntInp"/> 
     </node>
 
@@ -124,35 +114,27 @@
 
     <!-- Transition of variable data : Addition -->
     <node id="TrAddVar" parent="TrVar"> 
-	<add node="Agents"> 
-	    <node id="TrAgt" parent="ATrAddVar"/> 
-	</add>
+	<node node="Agents" id="TrAgt" parent="ATrAddVar"/> 
 	<node id="InpN" parent="../TrVarInp"/> 
 	<cont node="ViewData/Res" ref="../../Agents/TrAgt"/>
     </node>
 
     <!-- Transition of variable data : Multiplication -->
     <node id="TrMplVar" parent="TrVar"> 
-	<add node="Agents"> 
-	    <node id="TrAgt" parent="ATrMplVar"/> 
-	</add>
+	<node node="Agents" id="TrAgt" parent="ATrMplVar"/> 
 	<cont node="ViewData/Res" ref="../../Agents/TrAgt"/>
     </node>
 
     <!-- Transition of variable data : Division -->
     <node id="TrDivVar" parent="TrVar"> 
-	<add node="Agents"> 
-	    <node id="TrAgt" parent="ATrDivVar"/> 
-	</add>
+	<node node="Agents" id="TrAgt" parent="ATrDivVar"/> 
 	<node id="Inp_Dvs" parent="../TrVarInp"/> 
 	<cont node="ViewData/Res" ref="../../Agents/TrAgt"/>
     </node>
 
     <!-- Transition of variable data : Composing vector -->
     <node id="TrCpsVectVar" parent="TrVar"> 
-	<add node="Agents"> 
-	    <node id="TrAgt" parent="ATrCpsVectVar"/> 
-	</add>
+	<node node="Agents" id="TrAgt" parent="ATrCpsVectVar"/> 
 	<change node="Inp" attr="id" val="Inp0"/>
 	<node id="Inp1" parent="../TrVarInp"/> 
 	<node id="Inp2" parent="../TrVarInp"/> 
@@ -161,9 +143,7 @@
 
     <!-- Transition of variable data : Switch -->
     <node id="TrSwitchVar" parent="TrVar"> 
-	<add node="Agents"> 
-	    <node id="TrAgt" parent="ATrSwitchVar"/> 
-	</add>
+	<node node="Agents" id="TrAgt" parent="ATrSwitchVar"/> 
 	<change node="Inp" attr="id" val="Sel"/>
 	<node id="Inp1" parent="../TrVarInp"/> 
 	<node id="Inp2" parent="../TrVarInp"/> 
@@ -171,17 +151,13 @@
 
     <!-- Transition of variable data : Getting coord of vector -->
     <node id="TrAtVar" parent="TrVar"> 
-	<add node="Agents"> 
-	    <node id="TrAgt" parent="ATrAtVar"/> 
-	</add>
+	<node node="Agents" id="TrAgt" parent="ATrAtVar"/> 
 	<node id="Index" parent="../TrIntInp"/> 
     </node>
 
     <!-- Transition of variable data : Boolean comparition -->
     <node id="TrLTVar" parent="TrVar"> 
-	<add node="Agents"> 
-	    <node id="AF_Lt" parent="ATrBcmpVar"/> 
-	</add>
+	<node node="Agents" id="AF_Lt" parent="ATrBcmpVar"/> 
 	<change node="Inp" attr="id" val="Inp1"/>
 	<node id="Inp2" parent="../TrVarInp"/> 
 	<cont node="ViewData/Res" ref="../../Agents/AF_Lt"/>
@@ -189,9 +165,7 @@
 
     <!-- Transition of variable data : Boolean comparition -->
     <node id="TrLEVar" parent="TrVar"> 
-	<add node="Agents"> 
-	    <node id="AF_Le" parent="ATrBcmpVar"/> 
-	</add>
+	<node node="Agents" id="AF_Le" parent="ATrBcmpVar"/> 
 	<change node="Inp" attr="id" val="Inp1"/>
 	<node id="Inp2" parent="../TrVarInp"/> 
 	<cont node="ViewData/Res" ref="../../Agents/AF_Le"/>
@@ -199,9 +173,7 @@
 
     <!-- Transition of variable data : Boolean comparition -->
     <node id="TrEQVar" parent="TrVar"> 
-	<add node="Agents"> 
-	    <node id="AF_Eq" parent="ATrBcmpVar"/> 
-	</add>
+	<node node="Agents" id="AF_Eq" parent="ATrBcmpVar"/> 
 	<change node="Inp" attr="id" val="Inp1"/>
 	<node id="Inp2" parent="../TrVarInp"/> 
 	<cont node="ViewData/Res" ref="../../Agents/AF_Eq"/>
@@ -209,9 +181,7 @@
 
     <!-- Transition of variable data : Boolean comparition -->
     <node id="TrGTVar" parent="TrVar"> 
-	<add node="Agents"> 
-	    <node id="AF_Gt" parent="ATrBcmpVar"/> 
-	</add>
+	<node node="Agents" id="AF_Gt" parent="ATrBcmpVar"/> 
 	<change node="Inp" attr="id" val="Inp1"/>
 	<node id="Inp2" parent="../TrVarInp"/> 
 	<cont node="ViewData/Res" ref="../../Agents/AF_Gt"/>
@@ -219,9 +189,7 @@
 
     <!-- Transition of variable data : Boolean comparition -->
     <node id="TrGEVar" parent="TrVar"> 
-	<add node="Agents"> 
-	    <node id="AF_Ge" parent="ATrBcmpVar"/> 
-	</add>
+	<node node="Agents" id="AF_Ge" parent="ATrBcmpVar"/> 
 	<change node="Inp" attr="id" val="Inp1"/>
 	<node id="Inp2" parent="../TrVarInp"/> 
 	<cont node="ViewData/Res" ref="../../Agents/AF_Ge"/>
@@ -234,37 +202,28 @@
     <!-- State base -->
     <node id="State" parent=":Elem:IncapsComps/Incaps"> 
 
-	<add node="Agents"> 
-	    <node id="StateAgt" parent="StateAgent"> 
-	    </node>
-	</add>
+	<node node="Agents" id="StateAgt" parent="StateAgent"/> 
 
-	<add node="Capsule">
-	    <!-- TODO [YB] Do we need dedicated CP or component has to notify it's mgr? -->
-	    <node id="Sync" parent=":Elem:SysComps/ConnPoint"> 
-		<cont node="Provided" val="MDesSyncable"/>
-	    </node>
-	    <!-- Input -->
-	    <node id="Inp" parent=":Elem:SysComps/Extender"> 
-		<rm node="Int"/>
-		<node id="Int" parent="../../../StInpSocket"> 
-		</node>
-	    </node>
-	    <!-- Output -->
-	    <node id="Out" parent=":Elem:SysComps/Extender"> 
-		<rm node="Int"/>
-		<node id="Int" parent="../../../StOutSocket"> 
-		</node>
-	    </node>
-	</add>
+	<!-- TODO [YB] Do we need dedicated CP or component has to notify it's mgr? -->
+	<node node="Capsule" id="Sync" parent=":Elem:SysComps/ConnPoint"> 
+	    <cont node="Provided" val="MDesSyncable"/>
+	</node>
+	<!-- Input -->
+	<node node="Capsule" id="Inp" parent=":Elem:SysComps/Extender"> 
+	    <rm node="Int"/>
+	    <node id="Int" parent="../../../StInpSocket"/> 
+	</node>
+	<!-- Output -->
+	<node node="Capsule" id="Out" parent=":Elem:SysComps/Extender"> 
+	    <rm node="Int"/>
+	    <node id="Int" parent="../../../StOutSocket"/> 
+	</node>
     </node>
 
     <node id="StateInt" parent="State"> 
-	<node id="Confirmed" parent=":Elem:DataComps/DataSCInt">
-	</node>
 
-	<node id="Prepared" parent=":Elem:DataComps/DataSCInt">
-	</node>
+	<node id="Confirmed" parent=":Elem:DataComps/DataSCInt"/>
+	<node id="Prepared" parent=":Elem:DataComps/DataSCInt"/>
 
 	<cont node="Capsule/Inp/Int/PinData/Provided" val="MDIntGet"/>
 	<cont node="Capsule/Out/Int/PinData/Required" val="MDIntGet"/>
@@ -281,8 +240,8 @@
     </node>
 
     <node id="StateVar" parent="State"> 
-	<node id="Confirmed" parent=":Elem:DataComps/DataSCVar"/>
 
+	<node id="Confirmed" parent=":Elem:DataComps/DataSCVar"/>
 	<node id="Prepared" parent=":Elem:DataComps/DataSCVar"/>
 
 	<cont node="Capsule/Inp/Int/PinData/Provided" val="MDVarGet"/>
@@ -292,7 +251,6 @@
 	    <cont node="P1" ref="../../Confirmed/Capsule/Out"/> 
 	    <cont node="P2" ref="../../Capsule/Out/Int/PinData"/> 
 	</node>
-
 	<node id="E_PrepToConf" parent="Edge"> 
 	    <cont node="P1" ref="../../Prepared/Capsule/Out"/> 
 	    <cont node="P2" ref="../../Confirmed/Capsule/Inp"/> 
@@ -302,32 +260,19 @@
 
     <!-- DES base -->
     <node id="Des" parent=":Elem:IncapsComps/Incaps"> 
-
-	<add node="Agents"> 
-	    <node id="DesAgt" parent="ADes"> 
-	    </node>
-	</add>
-
-	<add node="Capsule">
-	    <node id="Sync" parent=":Elem:SysComps/ConnPoint"> 
-		<cont node="Provided" val="MDesSyncable"/>
-	    </node>
-	</add>
+	<node node="Agents" id="DesAgt" parent="ADes"/> 
+	<node node="Capsule" id="Sync" parent=":Elem:SysComps/ConnPoint"> 
+	    <cont node="Provided" val="MDesSyncable"/>
+	</node>
     </node>
 
     <!-- DES ticks source -->
     <node id="DesTicker" parent=":Elem:IncapsComps/Incaps"> 
-	<add node="Capsule">
-	    <node id="Out" parent=":Elem:SysComps/ConnPoint"> 
-		<cont node="Required" val="MDesSyncable"/>
-	    </node>
-	</add>
-	<add node="Agents"> 
-	    <node id="DesSyncAgent" parent="ADesSync"> 
-	    </node>
-	</add>
+	<node node="Capsule" id="Out" parent=":Elem:SysComps/ConnPoint"> 
+	    <cont node="Required" val="MDesSyncable"/>
+	</node>
+	<node node="Agents" id="DesSyncAgent" parent="ADesSync"/> 
     </node>
-
 
 </node>
 

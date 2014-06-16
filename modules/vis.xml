@@ -33,9 +33,7 @@
 
     <!-- Top level window -->
     <node id="Window" parent="Syst"> 
-	<add node="Agents"> 
-	    <node id="WinAgent" parent="AWindow"/> 
-	</add>
+	<node node="Agents" id="WinAgent" parent="AWindow"/> 
 	<!-- Parent's representative -->
 	<node id="Parent" parent=":Elem:SysComps/ConnPoint"> 
 	    <cont node="Required" val="MVisChild"/>
@@ -60,9 +58,7 @@
 
     <!-- Container doing fixed layout -->
     <node id="Fixed" parent="Syst"> 
-	<add node="Agents"> 
-	    <node id="WinAgent" parent="AVisFixed"/> 
-	</add>
+	<node node="Agents" id="WinAgent" parent="AVisFixed"/> 
 	<!-- Child's representaitve -->
 	<node id="Child" parent=":Elem:SysComps/ConnPoint"> 
 	    <cont node="Required" val="MVisContainer"/>
@@ -77,9 +73,7 @@
 
     <!-- Drawing area -->
     <node id="Drawing" parent="Widget"> 
-	<add node="Agents"> 
-	    <node id="WinAgent" parent="AVisDrawing"/> 
-	</add>
+	<node node="Agents" id="WinAgent" parent="AVisDrawing"/> 
     </node>
 
 

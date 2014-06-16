@@ -29,12 +29,10 @@
 		</node>
 	    </node>
 
-	    <add node="(DataSCInt:)Confirmed">
-		<node id="Logspec" parent="Elem">
-		    <node id="Update" parent="../../../../DataComps/DataLogevent">
-		    </node>
+	    <node node="(DataSCInt:)Confirmed" id="Logspec" parent="Elem">
+		<node id="Update" parent="../../../DataComps/DataLogevent">
 		</node>
-	    </add>
+	    </node>
 
 	    <node id="Trans" parent="../../DesComps/(TrInt:)TrIncInt">
 	    </node>

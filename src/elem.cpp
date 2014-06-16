@@ -1210,7 +1210,15 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 	}
 	if (elem != NULL) {
 	    if (!aRunTime) {
-		ChromoNode chn = iChromo->Root().AddChild(elem->iChromo->Root(), EFalse);
+		ChromoNode chn = iChromo->Root();
+		if (node == this) {
+		    // True mutation
+		    chn = iChromo->Root().AddChild(elem->iChromo->Root(), EFalse);
+		}
+		else {
+		    // Fenothypic modification
+		    chn = iChromo->Root().AddChild(aNode);
+		}
 		AddCMDep(chn, ENa_Id, elem);
 		AddCMDep(chn, ENa_Parent, parent);
 	    }

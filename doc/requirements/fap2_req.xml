@@ -33,7 +33,7 @@
 	    <revision> <revnumber>0.07</revnumber> <date>07-Mar-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_031"/>, <xref linkend="uc_032"/>, <xref linkend="uc_033"/>, <xref linkend="uc_034"/>, <xref linkend="uc_035"/></revremark> </revision>
 	    <revision> <revnumber>0.08</revnumber> <date>15-Jun-2014</date> <authorinitials>Yuri Borisov</authorinitials>
-		<revremark>Added <xref linkend="uc_037"/></revremark> </revision>
+		<revremark>Added <xref linkend="uc_037"/>, <xref linkend="uc_038"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -1069,6 +1069,44 @@
 	    <sect3><title>Discussion</title> 
 		<simpara>Note: the dependency if from node -N- but not from created node -N_a~1-. This is because -N_a~1- is phenotype modification but real holder of mutation -M_1- is 
 		node -N-</simpara>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_038"><title>UC_038 Mutation: correct mutation dependency for nodes inherited from parent.</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> CLIENT: some application using system</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<simpara>There is some node [NO] owning node [N~1] inherited (mutation [MI] from parent [N]. 
+		    Node [N] has some component [N_n] (not necessarily direct component). 
+		    There is some mutation [M_1] in node [NO] that perform phenotypic modification in node [N_n]. </simpara>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>CLIENT requests SYSTEM for some mutation [M_1] of node [N0] in order to make phenotypic modification
+			of node [N_n] (that is component of [N~1]. 
+			SYSTEM perform mutaion, taking into account that there is dependency of node [N_n] from at least mutaions
+			[MI] created [N~1]. So the mutaion [M_1] rank will be greater than [MI].</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem> <xref linkend="uc_028"/> </listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title> 
+		<simpara>Currently for the nodes inherited from parent the dependencies are not filled out at all.
+		This needs to be added.</simpara>
 	    </sect3>
 	    <sect3><title>Clarification</title>
 	    </sect3>

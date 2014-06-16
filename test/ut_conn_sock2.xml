@@ -42,9 +42,7 @@
 
     <!-- Data Source -->
     <node id="DSource" parent="IncapsComps/Incaps">
-	<add node="Capsule">
-	    <node id="Out" parent="../../OutSocket"/> 
-	</add>
+	<node node="Capsule" id="Out" parent="../OutSocket"/> 
 
 	<node id="Data_1" parent="../DataComps/DataSCInt"> <cont node="Value" val="3"/> </node>
 	<node id="Data_2" parent="../DataComps/DataSCInt"> <cont node="Value" val="1"/> </node>
