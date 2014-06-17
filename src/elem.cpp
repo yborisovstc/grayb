@@ -2066,7 +2066,9 @@ void Elem::GetDep(TMDep& aDep, TNodeAttr aAttr)
 
 Elem::TMDep Elem::GetMajorDep()
 {
-    TMDep res(TMutRef(iMan, iChromo->Root().Handle()), ENa_Id);
+    // Starting from dep Id considering also deattached nodes, ref uc_038
+    TMDep res(TMutRef(NULL, NULL), ENa_Unknown);
+    GetDep(res, ENa_Id);
     GetMajorDep(res);
     return res;
 }
@@ -2075,7 +2077,11 @@ void Elem::GetMajorDep(TMDep& aDep)
 {
     // Ref to theses ds_mut_unappr_rt_ths1 for rules of searching deps
     Rank rc;
-    if (aDep.first.first == NULL || aDep.first.second == NULL) {
+    if (aDep.first.first == NULL || aDep.first.second == NULL || aDep.second == ENa_Unknown) {
+	// Starting from dep Id considering also deattached nodes, ref uc_038
+	GetDep(aDep, ENa_Id);
+    }
+    if (aDep.first.first == NULL || aDep.first.second == NULL || aDep.second == ENa_Unknown) {
 	aDep = TMDep(TMutRef(this, iChromo->Root().Handle()), ENa_Id);
     }
     ChromoNode mut = iChromo->CreateNode(aDep.first.second);
@@ -2114,7 +2120,7 @@ void Elem::GetMajorDep(TMDep& aDep)
 
 void Elem::GetDepRank(Rank& aRank, TNodeAttr aAttr) 
 {
-    TMDep dep;
+    TMDep dep(TMutRef(NULL, NULL), ENa_Unknown);
     GetDep(dep, aAttr);
     Elem* depnode = dep.first.first;
     if (depnode != NULL) {
