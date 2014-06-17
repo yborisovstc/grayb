@@ -651,8 +651,8 @@ void ATrAtVar::Init(const string& aIfaceName)
      }
     MDVarGet* inp_ind = GetInp(Func::EInp2);
     MDVarGet* inp = GetInp(Func::EInp1);
-    string t_inp = inp->VarGetIfid();
-     if (inp_ind != NULL && inp != NULL) {
+    if (inp_ind != NULL && inp != NULL) {
+	 string t_inp = inp->VarGetIfid();
 	if ((mFunc = FAtVFloat::Create(this, aIfaceName, t_inp)) != NULL);
     }
 }

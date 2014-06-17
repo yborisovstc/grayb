@@ -1645,7 +1645,7 @@ Elem* Elem::GetCommonOwner(Elem* aElem)
     Elem* owner = this;
     while (owner != NULL && res == NULL) 
     {
-	if (owner->IsComp(aElem)) {
+	if (owner->IsComp(aElem) || owner == aElem) {
 	    res = owner;
 	}
 	owner = owner->GetMan();
