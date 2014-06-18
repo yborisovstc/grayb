@@ -1653,23 +1653,32 @@ Elem* Elem::GetCommonOwner(Elem* aElem)
     return res;
 }
 
-void Elem::GetRank(Rank& aRank) const
+void Elem::GetRank(Rank& aRank, const Elem* aBase) const
 {
-    if (iMan != NULL) {
+    if (iMan != (aBase == NULL ? NULL : aBase->GetMan())) {
 	TInt res = 0;
 	for (vector<Elem*>::const_iterator it = iMan->Comps().begin(); it != iMan->Comps().end() && *it != this; it++, res++);
 	//aRank.push_back(res);
 	aRank.insert(aRank.begin(), res);
-	iMan->GetRank(aRank);
+	iMan->GetRank(aRank, aBase);
     }
 }
 
-void Elem::GetRank(Rank& aRank, const ChromoNode& aMut) const
+void Elem::GetRank(Rank& aRank, const ChromoNode& aMut)
 {
+    /*
     // Get nodes rank
     GetRank(aRank);
     // Add mutations rank
     Rank mrank;
+    aMut.GetRank(mrank, iChromo->Root());
+    aRank += mrank;
+    */
+    Elem* att = GetAttachingMgr();
+    att->Chromos().Root().GetRank(aRank);
+    Rank mrank;
+    GetRank(mrank, att);
+    aRank += mrank;
     aMut.GetRank(mrank, iChromo->Root());
     aRank += mrank;
 }
