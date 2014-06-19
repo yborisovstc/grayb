@@ -1084,6 +1084,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 		}
 		else {
 		    if (!IsRefSafe(rnode)) {
+			IsRefSafe(rnode);
 			Logger()->Write(MLogRec::EErr, this, "Changing content of node [%s] - unsafe: rank of ref [%s] is too big", snode.c_str(), mval.c_str());
 			res = EFalse;
 		    }
@@ -1121,14 +1122,6 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
     string sparent = aNode.Attr(ENa_Parent);
     string sname = aNode.Name();
     __ASSERT(!sname.empty());
-    /*
-    if (sname.length() == 0) {
-	char *name = (char*) malloc(100);
-	sprintf(name, "%d", rand());
-	sname = name;
-	free(name);
-    }
-    */
     if (IsLogeventCreOn()) {
 	Logger()->Write(MLogRec::EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
     }
@@ -1199,6 +1192,19 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 		    elem = NULL;
 		}
 		else {
+		    if (!aRunTime) {
+			ChromoNode chn = iChromo->Root();
+			if (node == this) {
+			    // True mutation
+			    chn = iChromo->Root().AddChild(elem->iChromo->Root(), EFalse);
+			}
+			else {
+			    // Fenothypic modification
+			    chn = iChromo->Root().AddChild(aNode);
+			}
+			AddCMDep(chn, ENa_Id, elem);
+			AddCMDep(chn, ENa_Parent, parent);
+		    }
 		    // Mutate object 
 		    elem->SetMutation(aNode);
 		    elem->Mutate();
@@ -1206,21 +1212,6 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 			Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
 		    }
 		}
-	    }
-	}
-	if (elem != NULL) {
-	    if (!aRunTime) {
-		ChromoNode chn = iChromo->Root();
-		if (node == this) {
-		    // True mutation
-		    chn = iChromo->Root().AddChild(elem->iChromo->Root(), EFalse);
-		}
-		else {
-		    // Fenothypic modification
-		    chn = iChromo->Root().AddChild(aNode);
-		}
-		AddCMDep(chn, ENa_Id, elem);
-		AddCMDep(chn, ENa_Parent, parent);
 	    }
 	}
     }
@@ -1664,23 +1655,19 @@ void Elem::GetRank(Rank& aRank, const Elem* aBase) const
     }
 }
 
+// TODO [YB] After the change in AddElem to attach chromo before mutating the case of deattached non-trivial 
+// chromo is not possible. This simplifies calculating rank: actually rank is calculated as chromo node rank
+// Run-time rank doesn't make sense now. Probably the node in dep record is also not neede.
+// So to consider: 1. removing run-time rank calculation, 2. removing node from dep record
 void Elem::GetRank(Rank& aRank, const ChromoNode& aMut)
 {
-    /*
-    // Get nodes rank
-    GetRank(aRank);
-    // Add mutations rank
-    Rank mrank;
-    aMut.GetRank(mrank, iChromo->Root());
-    aRank += mrank;
-    */
     Elem* att = GetAttachingMgr();
-    att->Chromos().Root().GetRank(aRank);
-    Rank mrank;
-    GetRank(mrank, att);
-    aRank += mrank;
-    aMut.GetRank(mrank, iChromo->Root());
-    aRank += mrank;
+    if (att == this) {
+	aMut.GetRank(aRank);
+    }
+    else {
+	att->Chromos().Root().GetRank(aRank);
+    }
 }
 
 TInt Elem::GetLocalRank() const
@@ -1758,7 +1745,7 @@ TBool Elem::IsRefSafe(Elem* aRef)
 {
     TBool res = ETrue;
     Rank rank;
-    GetRank(rank);
+    GetRank(rank, iChromo->Root());
     Rank deprank;
     aRef->GetDepRank(deprank, ENa_Id);
     if (deprank > rank && !deprank.IsRankOf(rank)) {
@@ -1773,7 +1760,7 @@ TBool Elem::IsMutSafe(Elem* aRef)
     TMDep dep = aRef->GetMajorDep();
     if (dep.first.first != NULL) {
 	Rank rank;
-	GetRank(rank);
+	GetRank(rank, iChromo->Root());
 	Rank deprank;
 	ChromoNode depnode = iChromo->CreateNode(dep.first.second);
 	// Using combined calc of rank because of possibility that mut can be deattached
@@ -2016,11 +2003,12 @@ Elem* Elem::GetMajorChild(Rank& rr)
     Elem* res = NULL;
     // Child theyself
     for (TNMReg::iterator it = iChilds.begin(); it != iChilds.end(); it++) {
+	Elem* child = it->second;
 	Rank rd;
-	it->second->GetRank(rd);
+	child->GetRank(rd, child->Chromos().Root());
 	if (rd > rr) {
 	    rr = rd;
-	    res = it->second;
+	    res = child;
 	}
     }
     // Childs of childs
@@ -2038,11 +2026,12 @@ void Elem::GetMajorChild(Elem*& aElem, Rank& rr)
 {
     // Child theyself
     for (TNMReg::iterator it = iChilds.begin(); it != iChilds.end(); it++) {
+	Elem* child = it->second;
 	Rank rd;
-	it->second->GetRank(rd);
+	child->GetRank(rd, child->Chromos().Root());
 	if (rd > rr) {
 	    rr = rd;
-	    aElem = it->second;
+	    aElem = child;
 	}
     }
     // Childs of childs

@@ -326,11 +326,11 @@ void Ut_func::test_FuncVar1()
     
     // Checking the type establishing
     // Mutate the result data first
-    Elem* dinp = root->GetNode("Start/Incaps_root/Inp_data1");
-    ChromoNode nchange = dinp->Mutation().Root().AddChild(ENt_Cont);
-    nchange.SetAttr(ENa_MutNode, "Value");
+    Elem* diroot = root->GetNode("Start/Incaps_root");
+    ChromoNode nchange = diroot->Mutation().Root().AddChild(ENt_Cont);
+    nchange.SetAttr(ENa_MutNode, "Inp_data1/Value");
     nchange.SetAttr(ENa_MutVal, "I 80");
-    dinp->Mutate();
+    diroot->Mutate();
 
     delete iEnv;
 }
