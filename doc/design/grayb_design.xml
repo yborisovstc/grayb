@@ -482,4 +482,30 @@
 	</sect2>
     </sect1>
 
+    <sect1 id="sec_refl_idir"><title>Reflecting of direction of information</title>
+	<sect2><title>Intro</title>
+	    <simpara>Ref <ulink url="../requirements/index.html#uc_040"/> for the use-case.</simpara>
+	</sect2>
+	<sect2 id="sec_refl_idir_whatdiris"><title>What CP direction is?</title>
+	    <simpara>For the first glance CP direcition is the only hint of how to represent system to clear show information handling stages. But actually
+		not only this. The direction also create the limitations of connections. For connecting systems: output to input, input to output.
+		For connecting system boundary to internal nodes: boundary input to internal input, internal output to boundary output.  </simpara>
+	    <simpara>So CP direction is the paremeter of CP that needs to be used to check CP compatibility.</simpara>
+	</sect2>
+	<sect2><title>Approaches</title>
+	    <orderedlist>
+		<listitem>To introduce fake customized agents for CPs.
+		    <simpara>Here we are saying: "Any CP can be used for getting info or passing it out. Even CP itself doesn't know of that and is not customizing to 
+		    to it specifically, we "marking" them so the system using it can indicate this CP specialization.</simpara>
+		</listitem>
+		<listitem>To customize systems boundary: to introduce specific parts "Input" and "Output" in capsule.
+		    <simpara>The idea is that system is responsible for moving data thru, so the system can customize its structure to indicate the CPs 
+			specialization.  </simpara>
+		</listitem>
+		<listitem>To consider <xref linkend="sec_refl_idir_whatdiris"/>:  To have all CPs base implementing MCompatChecker (by the way why not rename 
+		    this iface to something like "MConn"?). To add to this iface method GetDir().</listitem>
+	    </orderedlist>
+	</sect2>
+    </sect1>
+
 </article>

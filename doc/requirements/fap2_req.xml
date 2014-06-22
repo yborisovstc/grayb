@@ -30,10 +30,12 @@
 		<revremark>Added <xref linkend="uc_028"/></revremark> </revision>
 	    <revision> <revnumber>0.07</revnumber> <date>21-Feb-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_029"/></revremark> </revision>
-	    <revision> <revnumber>0.07</revnumber> <date>07-Mar-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+	    <revision> <revnumber>0.08</revnumber> <date>07-Mar-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_031"/>, <xref linkend="uc_032"/>, <xref linkend="uc_033"/>, <xref linkend="uc_034"/>, <xref linkend="uc_035"/></revremark> </revision>
-	    <revision> <revnumber>0.08</revnumber> <date>15-Jun-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+	    <revision> <revnumber>0.09</revnumber> <date>15-Jun-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_037"/>, <xref linkend="uc_038"/></revremark> </revision>
+	    <revision> <revnumber>0.10</revnumber> <date>21-Jun-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="uc_039"/>, <xref linkend="uc_040"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -1111,7 +1113,66 @@
 	    <sect3><title>Clarification</title>
 	    </sect3>
 	</sect2>
-	
+
+	<sect2 id="uc_039"><title>UC_039 Customizing detail representation</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of STUDIO</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER creates some model using STUDIO. USER opens some component of model in detail representation. USER requests studio to customize the representation.
+		    STUDIO allows customizing, and stores the customization data in model, so the next time of opening model the same customization will be applied</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title> 
+		<simpara>Note: the dependency if from node -N- but not from created node -N_a~1-. This is because -N_a~1- is phenotype modification but real holder of mutation -M_1- is 
+		node -N-</simpara>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+		<sect4><title>What king of customization is supported</title>
+		    <itemizedlist>
+			<listitem>Order of components in a node</listitem>
+		    </itemizedlist>
+		</sect4>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_040"><title>UC_040 Customizing of connection points, information stream</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of SYSTEM</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER creates some model using SYSTEM. USER requests that connecion points used in model be customized in order to reflect information stream, for instance
+			inputs, outputs, reqular. SYSTEM allows to customize connection points, so any client visualizing the structure of the model can show the direction of 
+			informations transformation.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> </sect3>
+	    <sect3><title>Extended by</title> <itemizedlist> </itemizedlist> </sect3>
+	    <sect3><title>Discussion</title> </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
     </sect1>
 
 </article>
