@@ -19,7 +19,22 @@ class ConnPointBase: public Vert, public MCompatChecker
 	// From MCompatChecker
 	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse);
 	virtual Elem* GetExtd();
+	virtual TDir GetDir() const;
 //	virtual Elem* GetAssoc(RqContext* aCtx);
+};
+
+// Input ConnPoint base
+class ConnPointBaseInp: public ConnPointBase
+{
+    public:
+	static const char* Type() { return "ConnPointBaseInp";};
+	static string PEType();
+	ConnPointBaseInp(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ConnPointBaseInp(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MCompatChecker
+	virtual TDir GetDir() const;
 };
 
 // Extention agent. Redirects request for iface to internal CP of extention.
@@ -35,6 +50,7 @@ class ExtenderAgent: public Elem, public MCompatChecker
 	// From MCompatChecker
 	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse);
 	virtual Elem* GetExtd();
+	virtual TDir GetDir() const;
 	// From Elem
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
 };
@@ -54,6 +70,7 @@ class ASocket: public Elem, public MCompatChecker
 	// From MCompatChecker
 	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse);
 	virtual Elem* GetExtd();
+	virtual TDir GetDir() const;
 	// From Elem
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
 };

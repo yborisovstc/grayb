@@ -41,6 +41,9 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     else if (aType.compare(ConnPointBase::Type()) == 0) {
 	res = new ConnPointBase(aName, aMan, aEnv);
     }
+    else if (aType.compare(ConnPointBaseInp::Type()) == 0) {
+	res = new ConnPointBaseInp(aName, aMan, aEnv);
+    }
     else if (aType.compare(Syst::Type()) == 0) {
 	res = new Syst(aName, aMan, aEnv);
     }
@@ -233,6 +236,10 @@ Elem* ProvDef::GetNode(const string& aUri)
 	else if (aUri.compare(ConnPointBase::Type()) == 0) {
 	    parent = GetNode("Vert");
 	    res = new ConnPointBase(NULL, iEnv);
+	}
+	else if (aUri.compare(ConnPointBaseInp::Type()) == 0) {
+	    parent = GetNode("ConnPointBase");
+	    res = new ConnPointBaseInp(NULL, iEnv);
 	}
 	else if (aUri.compare(Description::Type()) == 0) {
 	    parent = GetNode("Prop");

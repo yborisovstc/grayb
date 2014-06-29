@@ -186,6 +186,47 @@ Elem* ConnPointBase::GetExtd()
     return NULL;
 }
 
+MCompatChecker::TDir ConnPointBase::GetDir() const
+{
+    return ERegular;
+}
+
+string ConnPointBaseInp::PEType()
+{
+    return Vert::PEType() + GUri::KParentSep + Type();
+}
+
+ConnPointBaseInp::ConnPointBaseInp(const string& aName, Elem* aMan, MEnv* aEnv): ConnPointBase(aName, aMan, aEnv)
+{
+    SetEType(Type(), ConnPointBase::PEType());
+    SetParent(Type());
+}
+
+ConnPointBaseInp::ConnPointBaseInp(Elem* aMan, MEnv* aEnv): ConnPointBase(Type(), aMan, aEnv)
+{
+    SetEType(ConnPointBase::PEType());
+    SetParent(ConnPointBase::PEType());
+}
+
+void *ConnPointBaseInp::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    RqContext ctx(this, aCtx);
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = ConnPointBase::DoGetObj(aName, EFalse, aCtx);
+    }
+    return res;
+}
+
+MCompatChecker::TDir ConnPointBaseInp::GetDir() const
+{
+    return EInp;
+}
+
+
 
 string ExtenderAgent::PEType()
 {
@@ -316,6 +357,11 @@ TBool ExtenderAgent::IsCompatible(Elem* aPair, TBool aExt)
 Elem* ExtenderAgent::GetExtd()
 {
     return GetNode("../../Int");
+}
+
+MCompatChecker::TDir ExtenderAgent::GetDir() const
+{
+    return ERegular;
 }
 
 
@@ -620,6 +666,11 @@ Elem* ASocket::GetPin(const RqContext* aCtx)
 	}
     }
     return res;
+}
+
+MCompatChecker::TDir ASocket::GetDir() const
+{
+    return ERegular;
 }
 
 
