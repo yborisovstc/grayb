@@ -191,6 +191,9 @@ MCompatChecker::TDir ConnPointBase::GetDir() const
     return ERegular;
 }
 
+
+
+// Input ConnPoint base
 string ConnPointBaseInp::PEType()
 {
     return Vert::PEType() + GUri::KParentSep + Type();
@@ -225,6 +228,44 @@ MCompatChecker::TDir ConnPointBaseInp::GetDir() const
 {
     return EInp;
 }
+
+
+// Output ConnPoint base
+string ConnPointBaseOut::PEType()
+{
+    return Vert::PEType() + GUri::KParentSep + Type();
+}
+
+ConnPointBaseOut::ConnPointBaseOut(const string& aName, Elem* aMan, MEnv* aEnv): ConnPointBase(aName, aMan, aEnv)
+{
+    SetEType(Type(), ConnPointBase::PEType());
+    SetParent(Type());
+}
+
+ConnPointBaseOut::ConnPointBaseOut(Elem* aMan, MEnv* aEnv): ConnPointBase(Type(), aMan, aEnv)
+{
+    SetEType(ConnPointBase::PEType());
+    SetParent(ConnPointBase::PEType());
+}
+
+void *ConnPointBaseOut::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    RqContext ctx(this, aCtx);
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = ConnPointBase::DoGetObj(aName, EFalse, aCtx);
+    }
+    return res;
+}
+
+MCompatChecker::TDir ConnPointBaseOut::GetDir() const
+{
+    return EOut;
+}
+
 
 
 
@@ -365,6 +406,44 @@ MCompatChecker::TDir ExtenderAgent::GetDir() const
 }
 
 
+// Input Extender Agent
+string ExtenderAgentInp::PEType()
+{
+    return Vert::PEType() + GUri::KParentSep + Type();
+}
+
+ExtenderAgentInp::ExtenderAgentInp(const string& aName, Elem* aMan, MEnv* aEnv): ExtenderAgent(aName, aMan, aEnv)
+{
+    SetEType(Type(), ExtenderAgent::PEType());
+    SetParent(Type());
+}
+
+ExtenderAgentInp::ExtenderAgentInp(Elem* aMan, MEnv* aEnv): ExtenderAgent(Type(), aMan, aEnv)
+{
+    SetEType(ExtenderAgent::PEType());
+    SetParent(ExtenderAgent::PEType());
+}
+
+void *ExtenderAgentInp::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    RqContext ctx(this, aCtx);
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = ExtenderAgent::DoGetObj(aName, EFalse, aCtx);
+    }
+    return res;
+}
+
+MCompatChecker::TDir ExtenderAgentInp::GetDir() const
+{
+    return EInp;
+}
+
+
+// Socket agent: redirects iface requests to pins
 string ASocket::PEType()
 {
     return Elem::PEType() + GUri::KParentSep + Type();

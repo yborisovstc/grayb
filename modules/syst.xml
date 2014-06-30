@@ -16,12 +16,15 @@
     </node>
 
     <node id="ConnPointInp" parent="ConnPointBaseInp">
-	<!-- Just mutate by adding the provider iface 
-	<node id="Prov" parent="Elem"></node>
-	-->
 	<node id="Provided" parent="Prop"></node>
 	<node id="Required" parent="Prop"></node>
     </node>
+
+    <node id="ConnPointOut" parent="ConnPointBaseOut">
+	<node id="Provided" parent="Prop"></node>
+	<node id="Required" parent="Prop"></node>
+    </node>
+
 
 
     <!-- Element that acts as feedthrough for capsula of system - it extend
@@ -40,6 +43,18 @@
 	<node id="Int" parent="../ConnPoint"></node>
 	<node node="(Elem:)Agents" id="MAExteder" parent="ExtenderAgent"/> 
     </node>
+
+    <node id="ExtenderInp" parent="Vert"> 
+
+	<node id="Logspec" parent="Elem">
+	    <node id="Creation" parent="Elem">
+	    </node>
+	</node>
+
+	<node id="Int" parent="../ConnPoint"></node>
+	<node node="(Elem:)Agents" id="MAExteder" parent="ExtenderAgentInp"/> 
+    </node>
+
 
     <!-- Socket -->
     <node id="Socket" parent="Vert"> 

@@ -15,7 +15,7 @@
     <node id="DataS" parent=":Elem:IncapsComps/Incaps"> 
 	<node id="D_1" parent="Description">
 	    <cont val="Base of Data with separate input for setting and output for getting"/></node>
-	<node node="Capsule" id="inp" parent=":Elem:SysComps/ConnPoint"/> 
+	<node node="Capsule" id="inp" parent=":Elem:SysComps/ConnPointInp"/> 
 	<node node="Capsule" id="out" parent=":Elem:SysComps/ConnPoint"> 
 	    <cont node="Required" val="MDataObserver"/>
 	</node>

@@ -44,6 +44,9 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     else if (aType.compare(ConnPointBaseInp::Type()) == 0) {
 	res = new ConnPointBaseInp(aName, aMan, aEnv);
     }
+    else if (aType.compare(ConnPointBaseOut::Type()) == 0) {
+	res = new ConnPointBaseOut(aName, aMan, aEnv);
+    }
     else if (aType.compare(Syst::Type()) == 0) {
 	res = new Syst(aName, aMan, aEnv);
     }
@@ -112,6 +115,9 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     }
     else if (aType.compare(ExtenderAgent::Type()) == 0) {
 	res = new ExtenderAgent(aName, aMan, aEnv);
+    }
+    else if (aType.compare(ExtenderAgentInp::Type()) == 0) {
+	res = new ExtenderAgentInp(aName, aMan, aEnv);
     }
     else if (aType.compare(StateAgent::Type()) == 0) {
 	res = new StateAgent(aName, aMan, aEnv);
@@ -193,6 +199,10 @@ Elem* ProvDef::GetNode(const string& aUri)
 	    parent = GetNode("Elem");
 	    res = new ExtenderAgent(NULL, iEnv);
 	}
+	else if (aUri.compare(ExtenderAgentInp::Type()) == 0) {
+	    parent = GetNode("ExtenderAgent");
+	    res = new ExtenderAgentInp(NULL, iEnv);
+	}
 	else if (aUri.compare(ASocket::Type()) == 0) {
 	    parent = GetNode("Elem");
 	    res = new ASocket(NULL, iEnv);
@@ -240,6 +250,10 @@ Elem* ProvDef::GetNode(const string& aUri)
 	else if (aUri.compare(ConnPointBaseInp::Type()) == 0) {
 	    parent = GetNode("ConnPointBase");
 	    res = new ConnPointBaseInp(NULL, iEnv);
+	}
+	else if (aUri.compare(ConnPointBaseOut::Type()) == 0) {
+	    parent = GetNode("ConnPointBase");
+	    res = new ConnPointBaseOut(NULL, iEnv);
 	}
 	else if (aUri.compare(Description::Type()) == 0) {
 	    parent = GetNode("Prop");

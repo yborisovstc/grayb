@@ -209,7 +209,7 @@
 	    <cont node="Provided" val="MDesSyncable"/>
 	</node>
 	<!-- Input -->
-	<node node="Capsule" id="Inp" parent=":Elem:SysComps/Extender"> 
+	<node node="Capsule" id="Inp" parent=":Elem:SysComps/ExtenderInp"> 
 	    <rm node="Int"/>
 	    <node id="Int" parent="../../../StInpSocket"/> 
 	</node>

@@ -37,6 +37,20 @@ class ConnPointBaseInp: public ConnPointBase
 	virtual TDir GetDir() const;
 };
 
+// Output ConnPoint base
+class ConnPointBaseOut: public ConnPointBase
+{
+    public:
+	static const char* Type() { return "ConnPointBaseOut";};
+	static string PEType();
+	ConnPointBaseOut(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ConnPointBaseOut(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MCompatChecker
+	virtual TDir GetDir() const;
+};
+
 // Extention agent. Redirects request for iface to internal CP of extention.
 class ExtenderAgent: public Elem, public MCompatChecker
 {
@@ -53,6 +67,18 @@ class ExtenderAgent: public Elem, public MCompatChecker
 	virtual TDir GetDir() const;
 	// From Elem
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
+};
+
+// Input Extender agent base
+class ExtenderAgentInp: public ExtenderAgent
+{
+    public:
+	static const char* Type() { return "ExtenderAgentInp";};
+	static string PEType();
+	ExtenderAgentInp(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ExtenderAgentInp(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual TDir GetDir() const;
 };
 
 // Socket agent: redirects iface requests to pins
