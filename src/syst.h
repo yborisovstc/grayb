@@ -69,7 +69,7 @@ class ExtenderAgent: public Elem, public MCompatChecker
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
 };
 
-// Input Extender agent base
+// Input Extender agent
 class ExtenderAgentInp: public ExtenderAgent
 {
     public:
@@ -80,6 +80,19 @@ class ExtenderAgentInp: public ExtenderAgent
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	virtual TDir GetDir() const;
 };
+
+// Output Extender agent
+class ExtenderAgentOut: public ExtenderAgent
+{
+    public:
+	static const char* Type() { return "ExtenderAgentOut";};
+	static string PEType();
+	ExtenderAgentOut(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ExtenderAgentOut(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual TDir GetDir() const;
+};
+
 
 // Socket agent: redirects iface requests to pins
 class ASocket: public Elem, public MCompatChecker
@@ -99,6 +112,30 @@ class ASocket: public Elem, public MCompatChecker
 	virtual TDir GetDir() const;
 	// From Elem
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
+};
+
+// Input Socket agent
+class ASocketInp: public ASocket
+{
+    public:
+	static const char* Type() { return "ASocketInp";};
+	static string PEType();
+	ASocketInp(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ASocketInp(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual TDir GetDir() const;
+};
+
+// Output Socket agent
+class ASocketOut: public ASocket
+{
+    public:
+	static const char* Type() { return "ASocketOut";};
+	static string PEType();
+	ASocketOut(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ASocketOut(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual TDir GetDir() const;
 };
 
 // System: relates to others via proxies - ConnPoints, that specialized relation with roles

@@ -443,6 +443,44 @@ MCompatChecker::TDir ExtenderAgentInp::GetDir() const
 }
 
 
+// Output Extender Agent
+string ExtenderAgentOut::PEType()
+{
+    return Vert::PEType() + GUri::KParentSep + Type();
+}
+
+ExtenderAgentOut::ExtenderAgentOut(const string& aName, Elem* aMan, MEnv* aEnv): ExtenderAgent(aName, aMan, aEnv)
+{
+    SetEType(Type(), ExtenderAgent::PEType());
+    SetParent(Type());
+}
+
+ExtenderAgentOut::ExtenderAgentOut(Elem* aMan, MEnv* aEnv): ExtenderAgent(Type(), aMan, aEnv)
+{
+    SetEType(ExtenderAgent::PEType());
+    SetParent(ExtenderAgent::PEType());
+}
+
+void *ExtenderAgentOut::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    RqContext ctx(this, aCtx);
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = ExtenderAgent::DoGetObj(aName, EFalse, aCtx);
+    }
+    return res;
+}
+
+MCompatChecker::TDir ExtenderAgentOut::GetDir() const
+{
+    return EOut;
+}
+
+
+
 // Socket agent: redirects iface requests to pins
 string ASocket::PEType()
 {
@@ -750,6 +788,80 @@ Elem* ASocket::GetPin(const RqContext* aCtx)
 MCompatChecker::TDir ASocket::GetDir() const
 {
     return ERegular;
+}
+
+
+// Input Socket Agent
+string ASocketInp::PEType()
+{
+    return ASocket::PEType() + GUri::KParentSep + Type();
+}
+
+ASocketInp::ASocketInp(const string& aName, Elem* aMan, MEnv* aEnv): ASocket(aName, aMan, aEnv)
+{
+    SetEType(Type(), ASocket::PEType());
+    SetParent(Type());
+}
+
+ASocketInp::ASocketInp(Elem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
+{
+    SetEType(ASocket::PEType());
+    SetParent(ASocket::PEType());
+}
+
+void *ASocketInp::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    RqContext ctx(this, aCtx);
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = ASocket::DoGetObj(aName, EFalse, aCtx);
+    }
+    return res;
+}
+
+MCompatChecker::TDir ASocketInp::GetDir() const
+{
+    return EInp;
+}
+
+
+// Output Socket Agent
+string ASocketOut::PEType()
+{
+    return ASocket::PEType() + GUri::KParentSep + Type();
+}
+
+ASocketOut::ASocketOut(const string& aName, Elem* aMan, MEnv* aEnv): ASocket(aName, aMan, aEnv)
+{
+    SetEType(Type(), ASocket::PEType());
+    SetParent(Type());
+}
+
+ASocketOut::ASocketOut(Elem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
+{
+    SetEType(ASocket::PEType());
+    SetParent(ASocket::PEType());
+}
+
+void *ASocketOut::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    RqContext ctx(this, aCtx);
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = ASocket::DoGetObj(aName, EFalse, aCtx);
+    }
+    return res;
+}
+
+MCompatChecker::TDir ASocketOut::GetDir() const
+{
+    return EOut;
 }
 
 

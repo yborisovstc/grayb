@@ -45,7 +45,7 @@ TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
     else {
 	Elem* caps = aContext.GetNode("Capsule");
 	if (caps != NULL) {
-	    Elem* cp = caps->GetCompOwning("ConnPoint", &aComp);
+	    Elem* cp = caps->GetCompOwning("ConnPointInp", &aComp);
 	    if (cp != NULL) {
 		res = HandleIoChanged(aContext, cp);
 	    }
@@ -268,16 +268,6 @@ TBool DInt::Update()
 	    }
 	}
     }
-    // Attempt to use the iface getting rule basing on vert pairs was denied
-    /*
-       Elem* einp = GetNode("../../Elem:Capsule/ConnPoint:Inp");
-       if (einp != NULL) {
-       MDIntGet* inp = einp->GetObj(inp);
-       if (inp != NULL) {
-       mData = inp->Value();
-       }
-       }
-       */
     return res;
 }
 

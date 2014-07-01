@@ -17,7 +17,7 @@
       <node id="Inp_data1" parent="/Root/Modules/DataComps/DataSVar"/>
       <cont node="Inp_data1/Value" val="I 4"/>
       <node id="e1" parent="Edge"/>
-      <cont node="(Edge:)e1/(Prop:)P2" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(DataTVar:)Dt/(Elem:)Capsule/(ConnPoint:)inp"/>
+      <cont node="(Edge:)e1/(Prop:)P2" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(DataTVar:)Dt/(Elem:)Capsule/inp"/>
       <cont node="(Edge:)e1/(Prop:)P1" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(FAddVar:)Add/(Elem:)Capsule/(Out_FVar:)out"/>
       <node id="e2" parent="Edge"/>
       <cont node="e2/P2" ref="/Root/Start/Incaps_root/Add/Capsule/Inp"/>

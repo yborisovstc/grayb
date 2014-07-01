@@ -55,10 +55,26 @@
 	<node node="(Elem:)Agents" id="MAExteder" parent="ExtenderAgentInp"/> 
     </node>
 
+    <node id="ExtenderOut" parent="Vert"> 
+	<node id="Int" parent="../ConnPoint"></node>
+	<node node="(Elem:)Agents" id="MAExteder" parent="ExtenderAgentOut"/> 
+    </node>
+
+
 
     <!-- Socket -->
     <node id="Socket" parent="Vert"> 
 	<node node="(Elem:)Agents" id="Sock" parent="ASocket"/> 
+    </node>
+
+    <!-- Input Socket -->
+    <node id="SocketInp" parent="Vert"> 
+	<node node="(Elem:)Agents" id="Sock" parent="ASocketInp"/> 
+    </node>
+
+    <!-- Output Socket -->
+    <node id="SocketOut" parent="Vert"> 
+	<node node="(Elem:)Agents" id="Sock" parent="ASocketOut"/> 
     </node>
 
 </node>

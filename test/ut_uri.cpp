@@ -60,7 +60,7 @@ void Ut_uri::test_UriBase()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* doutp = root->GetNode("(Incaps:)test/(DataSInt:)DataS_Int_1/(Elem:)Capsule/(ConnPoint:)out");
+    Elem* doutp = root->GetNode("(Incaps:)test/(DataSInt:)DataS_Int_1/(Elem:)Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
     MDIntGet* doutpget = doutp->GetObj(doutpget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
@@ -117,7 +117,7 @@ void Ut_uri::test_UriBase()
 
     // Checking URI with asterisk in URI elem
    // Elem* resdata1 = root->GetNode("Incaps:test/DataSInt:ResData/Elem:Capsule/ConnPoint:out");
-    Elem* resdata1 = root->GetNode("(Incaps:)test/(DataSInt:)ResData/(*:)*/(ConnPoint:)out");
+    Elem* resdata1 = root->GetNode("(Incaps:)test/(DataSInt:)ResData/(*:)*/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out (asterisk URI)", resdata1 != 0);
     // Checking URI with "anywhere" pattern from root
     Elem* node0 = root->GetNode("/testroot/test/Incr2");
@@ -140,12 +140,13 @@ void Ut_uri::test_UriBase()
     GUri rduri;
     resdata1->GetUri(rduri, root);
     string rduriss = rduri.GetUri();
-    CPPUNIT_ASSERT_MESSAGE("Fail to get URI from hier", rduriss == "(Incaps:)test/(DataSInt:)ResData/(Elem:)Capsule/(ConnPoint:)out");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get URI from hier", rduriss == "(Incaps:)test/(DataSInt:)ResData/(Elem:)Capsule/(ConnPointOut:)out");
     // Checking getting absolute uri
     GUri rduria;
     resdata1->GetUri(rduria);
     string rduriass= rduria.GetUri();
-    CPPUNIT_ASSERT_MESSAGE("Fail to get absolute URI", rduriass == "/(Elem:)testroot/(Incaps:)test/(DataSInt:)ResData/(Elem:)Capsule/(ConnPoint:)out");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get absolute URI", 
+	    rduriass == "/(Elem:)testroot/(Incaps:)test/(DataSInt:)ResData/(Elem:)Capsule/(ConnPointOut:)out");
     // Checking of getting node by absolute uri
     Elem* nodeau = resdata1->GetNode(rduriass);
     CPPUNIT_ASSERT_MESSAGE("Fail to get node by absolute URI", nodeau == resdata1);

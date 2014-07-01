@@ -45,7 +45,9 @@ TBool FuncBase::HandleCompChanged(Elem& aContext, Elem& aComp)
     TBool res = EFalse;
     Elem* caps = aContext.GetNode("Capsule");
     if (caps != NULL) {
-	Elem* cp = caps->GetCompOwning("ConnPoint", &aComp);
+	// TODO [YB] To optimize by using proper utility
+	Elem* cp = caps->GetCompOwning("ConnPointInp", &aComp);
+	cp = cp != NULL ? cp : caps->GetCompOwning("ConnPointOut", &aComp);
 	if (cp != NULL) {
 	    res = HandleIoChanged(aContext, cp);
 	}
@@ -468,7 +470,7 @@ TBool AFunc::HandleCompChanged(Elem& aContext, Elem& aComp)
     TBool res = ETrue;
     Elem* caps = aContext.GetNode("Capsule");
     if (caps != NULL) {
-	Elem* cp = caps->GetCompOwning("ConnPoint", &aComp);
+	Elem* cp = caps->GetCompOwning("ConnPointInp", &aComp);
 	if (cp != NULL) {
 	    NotifyUpdate();
 	}
@@ -983,7 +985,7 @@ TBool AFuncm::HandleCompChanged(Elem& aContext, Elem& aComp)
     TBool res = ETrue;
     Elem* caps = aContext.GetNode("Capsule");
     if (caps != NULL) {
-	Elem* cp = caps->GetCompOwning("ConnPoint", &aComp);
+	Elem* cp = caps->GetCompOwning("ConnPointInp", &aComp);
 	if (cp != NULL) {
 	    NotifyUpdate();
 	}

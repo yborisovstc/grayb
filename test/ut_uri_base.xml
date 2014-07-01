@@ -34,23 +34,23 @@
 	<node id="ResData" parent="../DataComps/(DataS:)DataSInt"/>
 
 	<node id="E1" parent="Edge"> 
-	    <cont node="(Prop:)P1" val="../../(DataSInt:)DataS_Int_1/(Elem:)Capsule/(ConnPoint:)out"/> 
-	    <cont node="(Prop:)P2" val="../../(FuncIncInt:)Incr/(Elem:)Capsule/(ConnPoint:)inp"/> 
+	    <cont node="(Prop:)P1" val="../../(DataSInt:)DataS_Int_1/(Elem:)Capsule/out"/> 
+	    <cont node="(Prop:)P2" val="../../(FuncIncInt:)Incr/(Elem:)Capsule/inp"/> 
 	</node>
 
 	<node id="E2" parent="Edge"> 
-	    <cont node="(Prop:)P1" val="../../(FuncIncInt:)Incr/(Elem:)Capsule/(ConnPoint:)out"/> 
-	    <cont node="(Prop:)P2" val="../../(FuncIncInt:)Incr2/(Elem:)Capsule/(ConnPoint:)inp"/> 
+	    <cont node="(Prop:)P1" val="../../(FuncIncInt:)Incr/(Elem:)Capsule/out"/> 
+	    <cont node="(Prop:)P2" val="../../(FuncIncInt:)Incr2/(Elem:)Capsule/inp"/> 
 	</node>
 
 	<node id="E3" parent="Edge"> 
-	    <cont node="(Prop:)P1" val="../../(FuncIncInt:)Incr2/(Elem:)Capsule/(ConnPoint:)out"/> 
-	    <cont node="(Prop:)P2" val="../../(FuncIntRes:)Result/(Elem:)Capsule/(ConnPoint:)inp"/> 
+	    <cont node="(Prop:)P1" val="../../(FuncIncInt:)Incr2/(Elem:)Capsule/out"/> 
+	    <cont node="(Prop:)P2" val="../../(FuncIntRes:)Result/(Elem:)Capsule/inp"/> 
 	</node>
 
 	<node id="E4" parent="Edge"> 
-	    <cont node="(Prop:)P1" val="../../(FuncIntRes:)Result/(Elem:)Capsule/(ConnPoint:)out"/> 
-	    <cont node="(Prop:)P2" val="../../(DataSInt:)ResData/(Elem:)Capsule/(ConnPoint:)inp"/> 
+	    <cont node="(Prop:)P1" val="../../(FuncIntRes:)Result/(Elem:)Capsule/out"/> 
+	    <cont node="(Prop:)P2" val="../../(DataSInt:)ResData/(Elem:)Capsule/inp"/> 
 	</node>
 
     </node>
