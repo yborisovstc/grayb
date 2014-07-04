@@ -399,17 +399,17 @@ DVar::~DVar()
     }
 }
 
-TBool DVar::Init(const string& aString)
+TBool DVar::Init(const string& aString, Elem* aInp)
 {
     if (mData != NULL) {
 	delete mData;
 	mData == NULL;
     }
-    if ((mData = HInt::Create(this, aString)) != NULL);
-    else if ((mData = HFloat::Create(this, aString)) != NULL);
-    else if ((mData = HVFloat::Create(this, aString)) != NULL);
-    else if ((mData = HBool::Create(this, aString)) != NULL);
-    if (mData != NULL) {
+    if ((mData = HInt::Create(this, aString, aInp)) != NULL);
+    else if ((mData = HFloat::Create(this, aString, aInp)) != NULL);
+    else if ((mData = HVFloat::Create(this, aString, aInp)) != NULL);
+    else if ((mData = HBool::Create(this, aString, aInp)) != NULL);
+    if (mData != NULL && !aString.empty()) {
 	mData->FromString(aString);
     }
     return mData != NULL;
@@ -465,7 +465,7 @@ TBool DVar::Update()
 {
     TBool res = EFalse;
     string old_value;
-    mData->ToString(old_value);
+    ToString(old_value);
     Elem* inp = GetInp();
     if (inp != NULL) {
 	RqContext ctx(this);
@@ -473,11 +473,16 @@ TBool DVar::Update()
 	if (vget != NULL) {
 	    Elem* eget = vget->VarGetBase();
 	    if (eget != NULL) {
-		res = mData->Set(eget);
-		if (res && IsLogeventUpdate()) {
-		    string new_value;
-		    mData->ToString(new_value);
-		    Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", new_value.c_str(), old_value.c_str());
+		if (mData == NULL) {
+		    Init(string(), eget);
+		}
+		if (mData != NULL) {
+		    res = mData->Set(eget);
+		    if (res && IsLogeventUpdate()) {
+			string new_value;
+			ToString(new_value);
+			Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", new_value.c_str(), old_value.c_str());
+		    }
 		}
 	    }
 	}
@@ -507,11 +512,17 @@ void *DVar::HBool::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext
     return res;
 }
 
-DVar::HBase* DVar::HBool::Create(DVar* aHost, const string& aString)
+DVar::HBase* DVar::HBool::Create(DVar* aHost, const string& aString, Elem* aInp)
 {
     HBase* res = NULL;
     if (!aString.empty() && aString.at(0) == 'B') {
 	res = new HBool(aHost);
+    }
+    if (res == NULL && aInp != NULL) {
+	MDBoolGet* dget = (MDBoolGet*) aInp->GetObj(dget);
+	if (dget != NULL) {
+	    res = new HBool(aHost);
+	}
     }
     return res;
 }
@@ -571,11 +582,17 @@ void *DVar::HInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext*
     return res;
 }
 
-DVar::HBase* DVar::HInt::Create(DVar* aHost, const string& aString)
+DVar::HBase* DVar::HInt::Create(DVar* aHost, const string& aString, Elem* aInp)
 {
     HBase* res = NULL;
     if (!aString.empty() && aString.at(0) == 'I') {
 	res = new HInt(aHost);
+    }
+    if (res == NULL && aInp != NULL) {
+	MDIntGet* dget = (MDIntGet*) aInp->GetObj(dget);
+	if (dget != NULL) {
+	    res = new HInt(aHost);
+	}
     }
     return res;
 }
@@ -645,11 +662,17 @@ void *DVar::HFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContex
     return res;
 }
 
-DVar::HBase* DVar::HFloat::Create(DVar* aHost, const string& aString)
+DVar::HBase* DVar::HFloat::Create(DVar* aHost, const string& aString, Elem* aInp)
 {
     HBase* res = NULL;
     if (!aString.empty() && aString.at(0) == 'F') {
 	res = new HFloat(aHost);
+    }
+    if (res == NULL && aInp != NULL) {
+	MDFloatGet* dget = (MDFloatGet*) aInp->GetObj(dget);
+	if (dget != NULL) {
+	    res = new HFloat(aHost);
+	}
     }
     return res;
 }
@@ -721,11 +744,17 @@ void *DVar::HVFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqConte
     return res;
 }
 
-DVar::HBase* DVar::HVFloat::Create(DVar* aHost, const string& aString)
+DVar::HBase* DVar::HVFloat::Create(DVar* aHost, const string& aString, Elem* aInp)
 {
     HBase* res = NULL;
     if (!aString.empty() && aString.at(0) == 'V' && aString.at(1) == 'F') {
 	res = new HVFloat(aHost);
+    }
+    if (res == NULL && aInp != NULL) {
+	MVFloatGet* dget = (MVFloatGet*) aInp->GetObj(dget);
+	if (dget != NULL) {
+	    res = new HVFloat(aHost);
+	}
     }
     return res;
 }
@@ -796,4 +825,5 @@ void DVar::HVFloat::VFloatGet(VFloat& aData)
 {
     aData = mData;
 }
+
 

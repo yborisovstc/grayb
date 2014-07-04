@@ -19,6 +19,16 @@ class MUpdatable
 	virtual TBool Update() = 0;
 };
 
+// Confirmable data. For instance the double buffered data where the first part
+// of data (intermediate result) can become final via confirmation
+class MConfirmable
+{
+    public:
+	static const char* Type() { return "MConfirmable";};
+	virtual TBool Confirm() = 0;
+};
+
+
 class MDInt
 {
     public:

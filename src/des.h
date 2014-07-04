@@ -231,6 +231,7 @@ class ATrBcmpVar: public ATrVar
 	FBcmpBase::TFType GetFType();
 };
 
+
 // State base agent
 class StateAgent: public Elem, public MDesSyncable, public MDesObserver
 {

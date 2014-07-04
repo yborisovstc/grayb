@@ -94,7 +94,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	class HBool: public HBase, public MDBoolGet {
 	    public:
 		HBool(DVar* aHost): HBase(aHost), mData(EFalse) {};
-		static HBase* Create(DVar* aHost, const string& aString);
+		static HBase* Create(DVar* aHost, const string& aString, Elem* aInp = NULL);
 		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 		virtual string IfaceGetId() const { return MDBoolGet::Type();};
 		virtual void Set(TBool aData);
@@ -107,7 +107,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	class HInt: public HBase, public MDInt, public MDIntGet, public MDIntSet {
 	    public:
 		HInt(DVar* aHost): HBase(aHost), mData(0) {};
-		static HBase* Create(DVar* aHost, const string& aString);
+		static HBase* Create(DVar* aHost, const string& aString, Elem* aInp = NULL);
 		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 		virtual string IfaceGetId() const { return MDIntGet::Type();};
 		virtual TInt Data() const;
@@ -122,7 +122,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	class HFloat: public HBase, public MDFloat, public MDFloatGet, public MDFloatSet {
 	    public:
 		HFloat(DVar* aHost): HBase(aHost), mData(0) {};
-		static HBase* Create(DVar* aHost, const string& aString);
+		static HBase* Create(DVar* aHost, const string& aString, Elem* aInp = NULL);
 		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 		virtual string IfaceGetId() const { return MDFloatGet::Type();};
 		virtual float Data() const;
@@ -137,7 +137,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	class HVFloat: public HBase, public MVFloatGet {
 	    public:
 		HVFloat(DVar* aHost): HBase(aHost), mData(0) {};
-		static HBase* Create(DVar* aHost, const string& aString);
+		static HBase* Create(DVar* aHost, const string& aString, Elem* aInp = NULL);
 		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 		virtual string IfaceGetId() const { return MVFloatGet::Type();};
 		// From MVFloatGet
@@ -171,9 +171,30 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	virtual Elem* VarSetBase();
     protected:
 	Elem* GetInp();
-	TBool Init(const string& aString);
-    private:
+	TBool Init(const string& aString, Elem* aInp = NULL);
+    protected:
 	HBase* mData;
 };
+
+/*
+// TODO [YB] It is to implement state date in more effective manner. Not sure it is required
+// Confirmable data, double buffered
+class ConfDVar: public DataBase, public MDVar, public MDVarGet, public MDVarSet, public MConfirmable
+{
+    public:
+	static const char* Type() { return "ConfDVar";};
+	static string PEType();
+	ConfDVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ConfDVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	virtual ~ConfDVar();
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MConfirmable
+	virtual TBool Confirm();
+    protected:
+	HBase* mDataPrep;
+	HBase* mDataConf;
+};
+*/
 
 #endif

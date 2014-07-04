@@ -859,7 +859,8 @@ void StateAgent::ResetActive()
 
 void StateAgent::Update()
 {
-    Elem* eprepu = GetNode("../../Prepared/Capsule/Upd");
+    TBool cdata = GetNode("../../Data") != NULL;
+    Elem* eprepu = GetNode(cdata ? "../../Data/Prepared/Capsule/Upd" : "../../Prepared/Capsule/Upd");
     if (eprepu != NULL) {
 	MUpdatable* upd = eprepu->GetObj(upd);
 	if (upd != NULL) {
@@ -873,7 +874,8 @@ void StateAgent::Update()
 
 void StateAgent::Confirm()
 {
-    Elem* econfu = GetNode("../../Confirmed/Capsule/Upd");
+    TBool cdata = GetNode("../../Data") != NULL;
+    Elem* econfu = GetNode(cdata ? "../../Data/Confirmed/Capsule/Upd" : "../../Confirmed/Capsule/Upd");
     if (econfu != NULL) {
 	MUpdatable* upd = econfu->GetObj(upd);
 	if (upd != NULL) {
