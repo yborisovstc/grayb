@@ -357,11 +357,17 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	virtual Elem::TIfRange GetInps(TInt aId);
 	virtual void OnFuncContentChanged();
 	virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...);
+	// From Elem
+	virtual void GetCont(string& aCont); 
+    protected:
     protected:
 	virtual void Init(const string& aIfaceName) {};
+	virtual string GetInpUri(TInt aId);
     protected:
 	Func* mFunc;
 };
+
+// Addintion, variable 
 
 class FAddBase: public Func {
     public:
@@ -391,13 +397,35 @@ class FAddFloat: public FAddBase, public MDFloatGet {
 	float mRes;
 };
 
-class FAddVFloat: public FAddBase, public MVFloatGet {
+template <class T> class FAddData: public FAddBase, public MDataGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aString);
-	FAddVFloat(Host& aHost): FAddBase(aHost) {};
+	FAddData(Host& aHost): FAddBase(aHost) {};
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	virtual string IfaceGetId() const { return MVFloatGet::Type();};
-	virtual void VFloatGet(VFloat& aData);
+	virtual string IfaceGetId() const { return MDataGet<T>::Type();};
+	virtual void DataGet(T& aData);
+	virtual void GetResult(string& aResult);
+	T mRes;
+};
+
+template <class T> class FAddVect: public FAddBase, public MVectGet<T> {
+    public:
+	static Func* Create(Host* aHost, const string& aString);
+	FAddVect(Host& aHost): FAddBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MVectGet<T>::Type();};
+	virtual void VectGet(Vect<T>& aData);
+	virtual void GetResult(string& aResult);
+	Vect<T> mRes;
+};
+
+template <class T> class FAddMtrd: public FAddBase, public MMtrdGet<T> {
+    public:
+	static Func* Create(Host* aHost, const string& aString);
+	FAddMtrd(Host& aHost): FAddBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MMtrdGet<T>::Type();};
+	virtual void MtrdGet(Mtrd<T>& aData);
 };
 
 class AFAddVar: public AFunVar
@@ -410,7 +438,7 @@ class AFAddVar: public AFunVar
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Func::Host
-	virtual Elem::TIfRange GetInps(TInt aId);
+	virtual string GetInpUri(TInt aId);
     protected:
 	virtual void Init(const string& aIfaceName);
 };
@@ -450,6 +478,114 @@ class AFMplVar: public AFunVar
     protected:
 	virtual void Init(const string& aIfaceName);
 };
+
+// Non commutative Multiplication, variable type
+
+class FMplncBase: public Func {
+    public:
+	enum {
+	    EInp1 = Func::EInp1, 
+	    EInp2 = Func::EInp2, 
+	};
+	FMplncBase(Host& aHost): Func(aHost) {};
+};
+
+// Multiplication, diag matrix * vector
+template <class T> class FMplMtrdVect: public FMplncBase, public MVectGet<T> {
+    public:
+	static Func* Create(Host* aHost, const string& aIfaceName);
+	FMplMtrdVect(Host& aHost): FMplncBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MDFloatGet::Type();};
+	virtual void VectGet(Vect<T>& aData);
+	virtual void GetResult(string& aResult);
+	Vect<T> mRes;
+};
+
+
+class AFMplncVar: public AFunVar
+{
+    public:
+	static const char* Type() { return "AFMplncVar";};
+	static string PEType();
+	AFMplncVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	AFMplncVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From Func::Host
+	virtual Elem::TIfRange GetInps(TInt aId);
+    protected:
+	virtual void Init(const string& aIfaceName);
+};
+
+// Inversion for multiplication operation, variable
+
+class FMplinvBase: public Func {
+    public:
+	enum { EInp = Func::EInp1, };
+	FMplinvBase(Host& aHost): Func(aHost) {};
+};
+
+
+template <class T> class FMplinvMtrd: public FMplinvBase, public MMtrdGet<T> {
+    public:
+	static Func* Create(Host* aHost, const string& aOutIfaceName);
+	FMplinvMtrd(Host& aHost): FMplinvBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MMtrdGet<T>::Type();};
+	virtual void MtrdGet(Mtrd<T>& aData);
+	virtual void GetResult(string& aResult);
+	Mtrd<T> mRes;
+};
+
+class AFMplinvVar: public AFunVar
+{
+    public:
+	static const char* Type() { return "AFMplinvVar";};
+	static string PEType();
+	AFMplinvVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	AFMplinvVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From Func::Host
+	virtual string GetInpUri(TInt aId);
+    protected:
+	virtual void Init(const string& aIfaceName);
+};
+
+
+// Composing of diag matrix, variable
+
+// Composing of diag matrix, from vector
+template <class T> class FCpsMtrdVect: public Func, public MMtrdGet<T> {
+    public:
+	static Func* Create(Host* aHost, const string& aString, MDVarGet* aInp1Var);
+	FCpsMtrdVect(Host& aHost): Func(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MMtrdGet<T>::Type();};
+	virtual void MtrdGet(Mtrd<T>& aData);
+	virtual void GetResult(string& aResult);
+    protected:
+	static TBool IsInpComatible(MDVarGet* aInpVar);
+	Mtrd<T> mRes;
+};
+
+class AFCpsMtrdVar: public AFunVar
+{
+    public:
+	static const char* Type() { return "AFCpsMtrdVar";};
+	static string PEType();
+	AFCpsMtrdVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	AFCpsMtrdVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From Func::Host
+	virtual string GetInpUri(TInt aId);
+    protected:
+	virtual void Init(const string& aIfaceName);
+};
+
+
 
 // Division, variable type
 
@@ -580,16 +716,16 @@ class FAtBase: public Func
 	TInt GetInd();
 };
 
-// 	Getting component of container: vector of floats
-class FAtVFloat: public FAtBase, public MDFloatGet {
+// 	Getting component of container: vector 
+template <class T> class FAtVect: public FAtBase, public MDataGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aOutIid, const string& aInp1Id);
-	FAtVFloat(Host& aHost): FAtBase(aHost) {};
+	FAtVect(Host& aHost): FAtBase(aHost) {};
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	virtual string IfaceGetId() const { return MDFloatGet::Type();};
-	virtual float Value();
+	virtual string IfaceGetId() const { return MDataGet<T>::Type();};
+	virtual void DataGet(T& aData);
     protected:
-	MVFloatGet* GetArg();
+	MVectGet<T>* GetArg();
 };
 
 // Composing vector from components
@@ -618,18 +754,18 @@ class FCpsVBase: public Func
 };
 
 // Composing vector from components: float
-class FCpsVFloat: public FCpsVBase, public MVFloatGet {
+template <class T> class FCpsVect: public FCpsVBase, public MVectGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aOutIid);
-	FCpsVFloat(Host& aHost): FCpsVBase(aHost) {};
+	FCpsVect(Host& aHost): FCpsVBase(aHost) {};
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	virtual string IfaceGetId() const { return MVFloatGet::Type();};
-	virtual void VFloatGet(VFloat& aData);
+	virtual string IfaceGetId() const { return MVectGet<T>::Type();};
+	virtual void VectGet(Vect<T>& aData);
 	virtual void GetResult(string& aResult);
     protected:
-	MVFloatGet* GetArg();
+	MVectGet<T>* GetArg();
     protected:
-	VFloat mData;
+	Vect<T> mData;
 };
 
 // Case - commutation of inputs

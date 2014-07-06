@@ -70,6 +70,9 @@
     <!-- Var function wo inputs  -->
     <node id="FuncVar" parent=":Elem:IncapsComps/Incaps"> 
 	<node node="Capsule" id="out" parent="../Out_FVar"/> 
+	<node id="ViewData" parent="Vert">
+	    <node id="Res" parent="Prop"/>
+	</node>
     </node>
 
     <!-- Input of Transition Func with Int arg/res -->
@@ -92,7 +95,15 @@
 	<cont node="Int/Required" val="MDIntGet"/>
     </node>
 
+    <!-- Input of Transition Func with variable arg/res -->
+    <node id="Inp_TFVar" parent=":Elem:SysComps/ConnPointInp"> 
+	<cont node="Required" val="MDVarGet"/>
+    </node>
 
+    <!-- Output of Transition Func with variable arg/res -->
+    <node id="Out_TFVar" parent=":Elem:SysComps/ConnPointOut"> 
+	<cont node="Provided" val="MDVarGet"/>
+    </node>
 
     <!-- Output of Bool Transition Func -->
     <node id="Out_TFBool" parent=":Elem:SysComps/ConnPointOut"> 
@@ -103,16 +114,6 @@
     <node id="Inp_TFBool" parent=":Elem:SysComps/ConnPointInp"> 
        <cont node="Required" val="MDBoolGet"/>
    </node>
-
-    <!-- Input of Transition Func with Var arg/res -->
-    <node id="Inp_TFVar" parent=":Elem:SysComps/ConnPointInp"> 
-	<cont node="Required" val="MDVarGet"/>
-    </node>
-
-    <!-- Output of Transition Func with Var arg/res -->
-    <node id="Out_TFVar" parent=":Elem:SysComps/ConnPointOut"> 
-	<cont node="Provided" val="MDVarGet"/>
-    </node>
 
 
 
@@ -258,7 +259,10 @@
 
     <!-- Var Transition function wo inputs  -->
     <node id="TFuncVar" parent=":Elem:IncapsComps/Incaps"> 
-	<node node="Capsule" id="out" parent="../Out_TFVar"/> 
+	<node node="Capsule" id="Out" parent="../Out_TFVar"/> 
+	<node id="ViewData" parent="Vert">
+	    <node id="Res" parent="Prop"/>
+	</node>
     </node>
 
 
@@ -319,6 +323,39 @@
 	<node node="Capsule" id="Inp1" parent="../Inp_TFInt"/> 
 	<node node="Capsule" id="Inp2" parent="../Inp_TFInt"/> 
     </node>
+
+    <!-- Transition Function of variable adding -->
+    <node id="TFAddVar" parent="TFuncVar"> 
+	<node node="Agents" id="func_agt" parent="AFAddVar"/>
+	<!-- Input positives -->
+	<node node="Capsule" id="Inp" parent="../Inp_TFVar"/> 
+	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
+    </node>
+
+    <!-- Transition Function of variable mutltiplication, non commutative -->
+    <node id="TFMplncVar" parent="TFuncVar"> 
+	<node node="Agents" id="func_agt" parent="AFMplncVar"/>
+	<node node="Capsule" id="Inp1" parent="../Inp_TFVar"/> 
+	<node node="Capsule" id="Inp2" parent="../Inp_TFVar"/> 
+	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
+    </node>
+
+    <!-- Transition Function of variable mutltiplicationi inversion -->
+    <node id="TFMplinvVar" parent="TFuncVar"> 
+	<node node="Agents" id="func_agt" parent="AFMplinvVar"/>
+	<node node="Capsule" id="Inp" parent="../Inp_TFVar"/> 
+	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
+    </node>
+
+    <!-- Transition Function of variable creation of diag matrix -->
+    <node id="TFCpsMtrdVar" parent="TFuncVar"> 
+	<node node="Agents" id="func_agt" parent="AFCpsMtrdVar"/>
+	<node node="Capsule" id="Inp" parent="../Inp_TFVar"/> 
+	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
+    </node>
+
+
+
 
     <!-- Function Inp1 LT Inp2  -->
     <node id="FLTVar" parent="FuncVar"> 
@@ -382,6 +419,27 @@
     <node id="FMplVar" parent="FuncVar"> 
 	<node node="Agents" id="func_agt" parent="AFMplVar"/>
 	<node node="Capsule" id="Inp" parent="../Inp_FVar"/> 
+    </node>
+
+    <!-- Function of var non commutative multiplication wo caching -->
+    <node id="FMplncVar" parent="FuncVar"> 
+	<node node="Agents" id="func_agt" parent="AFMplncVar"/>
+	<node node="Capsule" id="Inp1" parent="../Inp_FVar"/> 
+	<node node="Capsule" id="Inp2" parent="../Inp_FVar"/> 
+    </node>
+
+    <!-- Function of variable mutltiplicationi inversion -->
+    <node id="FMplinvVar" parent="FuncVar"> 
+	<node node="Agents" id="func_agt" parent="AFMplinvVar"/>
+	<node node="Capsule" id="Inp" parent="../Inp_FVar"/> 
+	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
+    </node>
+
+    <!-- Function of variable creation of diag matrix -->
+    <node id="FCpsMtrdVar" parent="FuncVar"> 
+	<node node="Agents" id="func_agt" parent="AFCpsMtrdVar"/>
+	<node node="Capsule" id="Inp" parent="../Inp_FVar"/> 
+	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
     </node>
 
     <!-- Function of var dividing wo caching -->

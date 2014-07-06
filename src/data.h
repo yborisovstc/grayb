@@ -134,19 +134,49 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		virtual void ToString(string& aString);
 		float mData;
 	};
-	class HVFloat: public HBase, public MVFloatGet {
+	template <class T> class HData: public HBase, public MDataGet<T> {
 	    public:
-		HVFloat(DVar* aHost): HBase(aHost), mData(0) {};
+		HData(DVar* aHost);
 		static HBase* Create(DVar* aHost, const string& aString, Elem* aInp = NULL);
 		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-		virtual string IfaceGetId() const { return MVFloatGet::Type();};
-		// From MVFloatGet
-		virtual void VFloatGet(VFloat& aData);
+		virtual string IfaceGetId() const { return MVectGet<T>::Type();};
+		// From MDataGet
+		virtual void DataGet(T& aData);
 		// From HBase
 		virtual TBool FromString(const string& aString);
 		virtual void ToString(string& aString);
 		virtual TBool Set(Elem* aInp);
-		VFloat mData;
+		T mData;
+		static string mId;
+	};
+	template <class T> class HVect: public HBase, public MVectGet<T> {
+	    public:
+		HVect(DVar* aHost);
+		static HBase* Create(DVar* aHost, const string& aString, Elem* aInp = NULL);
+		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+		virtual string IfaceGetId() const { return MVectGet<T>::Type();};
+		// From MVFloatGet
+		virtual void VectGet(Vect<T>& aData);
+		// From HBase
+		virtual TBool FromString(const string& aString);
+		virtual void ToString(string& aString);
+		virtual TBool Set(Elem* aInp);
+		Vect<T> mData;
+		static string mId;
+	};
+	template <class T> class HMtrd: public HBase, public MMtrdGet<T> {
+	    public:
+		HMtrd(DVar* aHost);
+		static HBase* Create(DVar* aHost, const string& aString, Elem* aInp = NULL);
+		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+		virtual string IfaceGetId() const { return MMtrdGet<T>::Type();};
+		// From MMtrdGet
+		virtual void MtrdGet(Mtrd<T>& aData);
+		// From HBase
+		virtual TBool FromString(const string& aString);
+		virtual void ToString(string& aString);
+		virtual TBool Set(Elem* aInp);
+		Mtrd<T> mData;
 		static string mId;
 	};
     public:

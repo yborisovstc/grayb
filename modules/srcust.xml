@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+
+<!-- Base elements for model structure representaion customization
+     -->
+
+<!DOCTYPE node SYSTEM "/usr/share/grayb/conf/objspec.dtd"> 
+
+<node id="SrcustComps" parent="Elem">
+
+    <!-- Base of all SR customizatin nodes. Used as a marker of SRCM nodes -->
+    <node id="RcmBase" parent="Elem"/>
+
+    <!-- Relation update for components order -->
+    <node id="RcmRel" parent="RcmBase">
+	<node id="Prev" parent="Prop"/>
+	<node id="Next" parent="Prop"/>
+    </node>
+
+</node>
+

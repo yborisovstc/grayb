@@ -1232,7 +1232,16 @@ Elem* AFunVar::VarGetBase()
 
 Elem::TIfRange AFunVar::GetInps(TInt aId)
 {
-    return TIfRange(IfIter(), IfIter());
+    TIfRange res;
+    Elem* inp = GetNode("../../Capsule/" + GetInpUri(aId));
+    if (inp != NULL) {
+	RqContext cont(this);
+	res =  inp->GetIfi(MDVarGet::Type(), &cont);
+    }
+    else {
+	Logger()->Write(MLogRec::EErr, this, "Cannot get input [%s]", GetInpUri(aId).c_str());
+    }
+    return res;
 }
 
 void AFunVar::LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...)
@@ -1242,8 +1251,24 @@ void AFunVar::LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...)
     Logger()->Write(aCtg, this, aFmt, list);
 }
 
+string AFunVar::GetInpUri(TInt aId) 
+{
+    if (aId == Func::EInp1) return "Inp1";
+    else if (aId == Func::EInp2) return "Inp2";
+    else if (aId == Func::EInp3) return "Inp3";
+    else if (aId == Func::EInp4) return "Inp4";
+    else return string();
+}
+
+void AFunVar::GetCont(string& aCont)
+{
+    if (mFunc != NULL) {
+	mFunc->GetResult(aCont);
+    }
+}
 
 
+// Addintion, variable 
 string AFAddVar::PEType()
 {
     return AFunVar::PEType() + GUri::KParentSep + Type();
@@ -1281,17 +1306,15 @@ void AFAddVar::Init(const string& aIfaceName)
     }
     if ((mFunc = FAddInt::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddFloat::Create(this, aIfaceName)) != NULL);
-    else if ((mFunc = FAddVFloat::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddData<float>::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddVect<float>::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddMtrd<float>::Create(this, aIfaceName)) != NULL);
 }
 
-Elem::TIfRange AFAddVar::GetInps(TInt aId)
+string AFAddVar::GetInpUri(TInt aId) 
 {
-    if (aId == FAddBase::EInp) {
-	Elem* inp = GetNode("../../Capsule/Inp");
-	__ASSERT(inp != NULL);
-	RqContext cont(this);
-	return inp->GetIfi(MDVarGet::Type(), &cont);
-    }
+    if (aId == FAddBase::EInp) return "Inp";
+    else return string();
 }
 
 // Int function
@@ -1374,36 +1397,146 @@ void FAddFloat::GetResult(string& aResult)
     aResult = ss.str();
 }
 
-
-// Float vector addition
-Func* FAddVFloat::Create(Host* aHost, const string& aString)
+// Scalar data addition
+template<class T> Func* FAddData<T>::Create(Host* aHost, const string& aString)
 {
     Func* res = NULL;
-    if (aString == MVFloatGet::Type()) {
-	res = new FAddVFloat(*aHost);
+    if (aString == MDataGet<T>::Type()) {
+	res = new FAddData<T>(*aHost);
     }
     return res;
 }
 
-void *FAddVFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+template<class T> void *FAddData<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
-    if (strcmp(aName, MVFloatGet::Type()) == 0) res = (MVFloatGet*) this;
+    if (strcmp(aName, MDataGet<T>::Type()) == 0) res = (MDataGet<T>*) this;
     return res;
 }
 
-void FAddVFloat::VFloatGet(VFloat& aData)
+template<class T>  void FAddData<T>::DataGet(T& aData)
 {
-    TInt size = aData.size();
     Elem::TIfRange range = mHost.GetInps(EInp);
-    float val = 0;
+    T val = 0;
     for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	Elem* dgetbase = dget->VarGetBase();
-	MVFloatGet* dfget = (MVFloatGet*) dgetbase->GetObj(dfget);
+	MDataGet<T>* dfget = (MDataGet<T>*) dgetbase->GetObj(dfget);
 	if (dfget != NULL) {
-	    VFloat arg;
-	    dfget->VFloatGet(arg);
+	    T arg;
+	    dfget->DataGet(arg);
+	    val += arg;
+	}
+    }
+    mRes = val;
+    mHost.OnFuncContentChanged();
+    aData = val;
+}
+
+template<class T> void FAddData<T>::GetResult(string& aResult)
+{
+    stringstream ss;
+    ss <<  MDataGet<T>::TypeSig() << " " << mRes;
+    aResult = ss.str();
+}
+
+
+// Vector addition
+template<class T> Func* FAddVect<T>::Create(Host* aHost, const string& aString)
+{
+    Func* res = NULL;
+    if (aString == MVectGet<T>::Type()) {
+	res = new FAddVect<T>(*aHost);
+    }
+    return res;
+}
+
+template<class T> void *FAddVect<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MVectGet<T>::Type()) == 0) res = (MVectGet<T>*) this;
+    return res;
+}
+
+template<class T> void FAddVect<T>::VectGet(Vect<T>& aData)
+{
+    TInt size = aData.size();
+    Elem::TIfRange range = mHost.GetInps(EInp);
+    for (Elem::IfIter it = range.first; it != range.second; it++) {
+	MDVarGet* dget = (MDVarGet*) (*it);
+	Elem* dgetbase = dget->VarGetBase();
+	MVectGet<T>* dfget = (MVectGet<T>*) dgetbase->GetObj(dfget);
+	if (dfget != NULL) {
+	    Vect<T> arg;
+	    arg.resize(size);
+	    dfget->VectGet(arg);
+	    if (arg.size() == size) {
+		for (TInt cnt = 0; cnt < size; cnt++) {
+		    if (it == range.first) {
+			aData.at(cnt) = 0.0;
+		    }
+		    aData.at(cnt) += arg.at(cnt);
+		}
+		mRes = aData;
+		mHost.OnFuncContentChanged();
+	    }
+	    else {
+		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]", dgetbase->GetUri().c_str());
+	    }
+	}
+    }
+}
+
+template<class T> void FAddVect<T>::GetResult(string& aResult)
+{
+    stringstream ss;
+    ss <<  MVectGet<T>::TypeSig();
+    for (typename Vect<T>::const_iterator it = mRes.begin(); it != mRes.end(); it++) {
+	ss << " " << *it;
+    }
+    aResult = ss.str();
+}
+
+MDVarGet* Func::Host::GetInp(TInt aInpId)
+{
+    MDVarGet* res = NULL;
+    Elem::TIfRange inpr = GetInps(aInpId);
+    if (inpr.first != inpr.second) {
+	res = (MDVarGet*) *inpr.first;
+    }
+    return res;
+}
+
+
+// Diagonal matrix addition
+template<class T> Func* FAddMtrd<T>::Create(Host* aHost, const string& aString)
+{
+    Func* res = NULL;
+    if (aString == MMtrdGet<T>::Type()) {
+	res = new FAddMtrd<T>(*aHost);
+    }
+    return res;
+}
+
+template<class T> void *FAddMtrd<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MMtrdGet<T>::Type()) == 0) res = (MMtrdGet<T>*) this;
+    return res;
+}
+
+template<class T> void FAddMtrd<T>::MtrdGet(Mtrd<T>& aData)
+{
+    TInt size = aData.size();
+    Elem::TIfRange range = mHost.GetInps(EInp);
+    T val = 0;
+    for (Elem::IfIter it = range.first; it != range.second; it++) {
+	MDVarGet* dget = (MDVarGet*) (*it);
+	Elem* dgetbase = dget->VarGetBase();
+	MMtrdGet<T>* dfget = (MMtrdGet<T>*) dgetbase->GetObj(dfget);
+	if (dfget != NULL) {
+	    Mtrd<T> arg;
+	    dfget->MtrdGet(arg);
 	    if (arg.size() == size) {
 		for (TInt cnt = 0; cnt < size; cnt++) {
 		    if (it == range.first) {
@@ -1417,16 +1550,6 @@ void FAddVFloat::VFloatGet(VFloat& aData)
 	    }
 	}
     }
-}
-
-MDVarGet* Func::Host::GetInp(TInt aInpId)
-{
-    MDVarGet* res = NULL;
-    Elem::TIfRange inpr = GetInps(aInpId);
-    if (inpr.first != inpr.second) {
-	res = (MDVarGet*) *inpr.first;
-    }
-    return res;
 }
 
 
@@ -1467,7 +1590,7 @@ void AFCpsVectVar::Init(const string& aIfaceName)
 	delete mFunc;
 	mFunc == NULL;
     }
-    if ((mFunc = FAddInt::Create(this, aIfaceName)) != NULL);
+    if ((mFunc = FCpsVect<float>::Create(this, aIfaceName)) != NULL);
 }
 
 Elem::TIfRange AFCpsVectVar::GetInps(TInt aId)
@@ -1483,23 +1606,23 @@ Elem::TIfRange AFCpsVectVar::GetInps(TInt aId)
 const TInt FCpsVBase::KIndMax = 30;
 
 // Composing vector from components: float
-Func* FCpsVFloat::Create(Host* aHost, const string& aString)
+template<class T> Func* FCpsVect<T>::Create(Host* aHost, const string& aString)
 {
     Func* res = NULL;
-    if (aString == MVFloatGet::Type()) {
-	res = new FCpsVFloat(*aHost);
+    if (aString == MVectGet<T>::Type()) {
+	res = new FCpsVect<T>(*aHost);
     }
     return res;
 }
 
-void *FCpsVFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+template<class T> void *FCpsVect<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
-    if (strcmp(aName, MVFloatGet::Type()) == 0) res = (MVFloatGet*) this;
+    if (strcmp(aName, MVectGet<T>::Type()) == 0) res = (MVectGet<T>*) this;
     return res;
 }
 
-void FCpsVFloat::VFloatGet(VFloat& aData)
+template<class T> void FCpsVect<T>::VectGet(Vect<T>& aData)
 {
     mData.clear();
     for (TInt ind = Func::EInp1; ind != KIndMax; ind++) {
@@ -1529,11 +1652,11 @@ void FCpsVFloat::VFloatGet(VFloat& aData)
     aData = mData;
 }
 
-void FCpsVFloat::GetResult(string& aResult)
+template<class T> void FCpsVect<T>::GetResult(string& aResult)
 {
     stringstream ss;
-    ss <<  "VF";
-    for (VFloat::const_iterator it = mData.begin(); it != mData.end(); it++) {
+    ss <<  MVectGet<T>::TypeSig();
+    for (typename Vect<T>::const_iterator it = mData.begin(); it != mData.end(); it++) {
 	ss << " " << *it;
     }
     aResult = ss.str();
@@ -1636,7 +1759,342 @@ void FMplFloat::GetResult(string& aResult)
     aResult = ss.str();
 }
 
-// Division, variable type
+// Non commutative Multiplication, variable type
+string AFMplncVar::PEType()
+{
+    return AFunVar::PEType() + GUri::KParentSep + Type();
+}
+
+AFMplncVar::AFMplncVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), AFunVar::PEType());
+    SetParent(Type());
+}
+
+AFMplncVar::AFMplncVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+{
+    SetEType(AFunVar::PEType());
+    SetParent(AFunVar::PEType());
+}
+
+void *AFMplncVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = AFunVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void AFMplncVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc == NULL;
+    }
+    if ((mFunc = FMplMtrdVect<float>::Create(this, aIfaceName)) != NULL);
+}
+
+Elem::TIfRange AFMplncVar::GetInps(TInt aId)
+{
+    Elem::TIfRange res;
+    string uri;
+    if (aId == FMplncBase::EInp1) {
+	uri = "../../Capsule/Inp1";
+    }
+    else if (aId == FMplncBase::EInp2) { 
+	uri = "../../Capsule/Inp2";
+    }
+    if (!uri.empty()) {
+	Elem* inp = GetNode(uri);
+	__ASSERT(inp != NULL);
+	RqContext cont(this);
+	res = inp->GetIfi(MDVarGet::Type(), &cont);
+    }
+    return res;
+}
+
+// Multiplication, diag matrix * vector
+template<class T> Func* FMplMtrdVect<T>::Create(Host* aHost, const string& aString)
+{
+    Func* res = NULL;
+    if (aString == MVectGet<T>::Type()) {
+	res = new FMplMtrdVect<T>(*aHost);
+    }
+    return res;
+}
+
+template<class T> void *FMplMtrdVect<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MVectGet<T>::Type()) == 0) res = (MVectGet<T>*) this;
+    return res;
+}
+
+template<class T> void FMplMtrdVect<T>::VectGet(Vect<T>& aData)
+{
+    TInt size = aData.size();
+    Elem::TIfRange range1 = mHost.GetInps(EInp1);
+    Elem::TIfRange range2 = mHost.GetInps(EInp2);
+    if (range1.first != range1.second && range2.first != range2.second) {
+	MDVarGet* dget = (MDVarGet*) (*range1.first);
+	Elem* dgetbase = dget->VarGetBase();
+	MMtrdGet<T>* dfget1 = (MMtrdGet<T>*) dgetbase->GetObj(dfget1);
+	dget = (MDVarGet*) (*range2.first);
+	dgetbase = dget->VarGetBase();
+	MVectGet<T>* dfget2 = (MVectGet<T>*) dgetbase->GetObj(dfget2);
+	if (dfget1 != NULL && dfget2 != NULL) {
+	    Vect<T> vect;
+	    vect.resize(size);
+	    dfget2->VectGet(vect);
+	    Mtrd<T> mtr;
+	    mtr.resize(size);
+	    dfget1->MtrdGet(mtr);
+	    int vsize = vect.size();
+	    if (mtr.size() == size) {
+		for (TInt cnt = 0; cnt < size; cnt++) {
+		    T vdata = vect.at(cnt);
+		    T mdata = mtr.at(cnt);
+		    aData.at(cnt) = vdata * mdata;
+		}
+		mRes = aData;
+		mHost.OnFuncContentChanged();
+	    }
+	    else {
+		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]", dgetbase->GetUri().c_str());
+	    }
+	}
+    }
+}
+
+template<class T> void FMplMtrdVect<T>::GetResult(string& aResult)
+{
+    stringstream ss;
+    ss <<  MVectGet<T>::TypeSig();
+    for (typename Vect<T>::const_iterator it = mRes.begin(); it != mRes.end(); it++) {
+	ss << " " << *it;
+    }
+    aResult = ss.str();
+}
+
+// Inversion for multiplication operation, variable
+string AFMplinvVar::PEType()
+{
+    return AFunVar::PEType() + GUri::KParentSep + Type();
+}
+
+AFMplinvVar::AFMplinvVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), AFunVar::PEType());
+    SetParent(Type());
+}
+
+AFMplinvVar::AFMplinvVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+{
+    SetEType(AFunVar::PEType());
+    SetParent(AFunVar::PEType());
+}
+
+void *AFMplinvVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = AFunVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void AFMplinvVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc == NULL;
+    }
+    if ((mFunc = FMplinvMtrd<float>::Create(this, aIfaceName)) != NULL);
+}
+
+
+string AFMplinvVar::GetInpUri(TInt aId) 
+{
+    if (aId == FMplinvBase::EInp) return "Inp"; else return string();
+}
+
+// Inversion for multiplication operation: diagonal matrix
+template<class T> Func* FMplinvMtrd<T>::Create(Host* aHost, const string& aOutIid)
+{
+    Func* res = NULL;
+    if (aOutIid == MMtrdGet<T>::Type()) {
+	res = new FMplinvMtrd<T>(*aHost);
+    }
+    return res;
+}
+
+template<class T> void *FMplinvMtrd<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MMtrdGet<T>::Type()) == 0) res = (MMtrdGet<T>*) this;
+    return res;
+}
+
+template<class T> void FMplinvMtrd<T>::MtrdGet(Mtrd<T>& aData)
+{
+    TInt size = aData.size();
+    Elem::TIfRange range = mHost.GetInps(EInp);
+    if (range.first != range.second) {
+	MDVarGet* dget = (MDVarGet*) (*range.first);
+	Elem* dgetbase = dget->VarGetBase();
+	MMtrdGet<T>* dfget = (MMtrdGet<T>*) dgetbase->GetObj(dfget);
+	if (dfget != NULL) {
+	    Mtrd<T> arg;
+	    arg.resize(size);
+	    dfget->MtrdGet(arg);
+	    if (arg.size() == size) {
+		for (TInt cnt = 0; cnt < size; cnt++) {
+		    aData.at(cnt) = 1 / arg.at(cnt);
+		}
+		mRes = aData;
+		mHost.OnFuncContentChanged();
+	    }
+	    else {
+		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]", dgetbase->GetUri().c_str());
+	    }
+	}
+    }
+}
+
+template<class T> void FMplinvMtrd<T>::GetResult(string& aResult)
+{
+    stringstream ss;
+    ss <<  MMtrdGet<T>::TypeSig();
+    for (typename Mtrd<T>::const_iterator it = mRes.begin(); it != mRes.end(); it++) {
+	ss << " " << *it;
+    }
+    aResult = ss.str();
+}
+
+
+// Composing of diag matrix, variable
+string AFCpsMtrdVar::PEType()
+{
+    return AFunVar::PEType() + GUri::KParentSep + Type();
+}
+
+AFCpsMtrdVar::AFCpsMtrdVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), AFunVar::PEType());
+    SetParent(Type());
+}
+
+AFCpsMtrdVar::AFCpsMtrdVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+{
+    SetEType(AFunVar::PEType());
+    SetParent(AFunVar::PEType());
+}
+
+void *AFCpsMtrdVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    }
+    else {
+	res = AFunVar::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+void AFCpsMtrdVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc == NULL;
+    }
+    MDVarGet* inp1 = GetInp(Func::EInp1);
+    if ((mFunc = FCpsMtrdVect<float>::Create(this, aIfaceName, inp1)) != NULL);
+}
+
+string AFCpsMtrdVar::GetInpUri(TInt aId) 
+{
+    if (aId == Func::EInp1) return "Inp"; else return string();
+}
+
+// Composing of diag matrix, from vector
+template<class T> Func* FCpsMtrdVect<T>::Create(Host* aHost, const string& aString, MDVarGet* aInp1Var)
+{
+    Func* res = NULL;
+    TBool inp1ok = IsInpComatible(aInp1Var);
+    if (aString == MMtrdGet<T>::Type() && inp1ok) {
+	res = new FCpsMtrdVect<T>(*aHost);
+    }
+    return res;
+}
+
+template<class T> void *FCpsMtrdVect<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MMtrdGet<T>::Type()) == 0) res = (MMtrdGet<T>*) this;
+    return res;
+}
+
+template<class T> void FCpsMtrdVect<T>::MtrdGet(Mtrd<T>& aData)
+{
+    TInt size = aData.size();
+    Elem::TIfRange range = mHost.GetInps(EInp1);
+    if (range.first != range.second) {
+	MDVarGet* dget = (MDVarGet*) (*range.first);
+	Elem* dgetbase = dget->VarGetBase();
+	MVectGet<T>* dfget = (MVectGet<T>*) dgetbase->GetObj(dfget);
+	if (dfget != NULL) {
+	    Vect<T> arg;
+	    arg.resize(size);
+	    dfget->VectGet(arg);
+	    if (arg.size() == size) {
+		for (TInt cnt = 0; cnt < size; cnt++) {
+		    aData.at(cnt) = arg.at(cnt);
+		}
+		mRes = aData;
+		mHost.OnFuncContentChanged();
+	    }
+	    else {
+		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]", dgetbase->GetUri().c_str());
+	    }
+	}
+    }
+}
+
+template<class T> void FCpsMtrdVect<T>::GetResult(string& aResult)
+{
+    stringstream ss;
+    ss <<  MMtrdGet<T>::TypeSig();
+    for (typename Mtrd<T>::const_iterator it = mRes.begin(); it != mRes.end(); it++) {
+	ss << " " << *it;
+    }
+    aResult = ss.str();
+}
+
+template<class T> TBool FCpsMtrdVect<T>::IsInpComatible(MDVarGet* aInpVar)
+{
+    TBool res = EFalse;
+    if (aInpVar != NULL) {
+	string ifi = aInpVar->VarGetIfid();
+	if (!ifi.empty()) {
+	    res = (ifi == MVectGet<T>::Type());
+	}
+	else {
+	    // No arg type is stated yet, to negotiate
+	}
+    }
+    return res;
+}
+
+
+// Division, variable
 string AFDivVar::PEType()
 {
     return AFunVar::PEType() + GUri::KParentSep + Type();
@@ -2056,7 +2514,7 @@ void AFAtVar::Init(const string& aIfaceName)
     MDVarGet* inp2 = GetInp(Func::EInp2);
     if (inp1 != NULL && inp2 != NULL) {
 	string t1 = inp1->VarGetIfid();
-	if ((mFunc = FAtVFloat::Create(this, aIfaceName, t1)) != NULL);
+	if ((mFunc = FAtVect<float>::Create(this, aIfaceName, t1)) != NULL);
     }
 }
 
@@ -2084,45 +2542,43 @@ TInt FAtBase::GetInd()
 }
 
 // Getting component of container: vector of floats
-Func* FAtVFloat::Create(Host* aHost, const string& aOutIid, const string& aInpIid)
+template <class T> Func* FAtVect<T>::Create(Host* aHost, const string& aOutIid, const string& aInpIid)
 {
     Func* res = NULL;
-    if (aOutIid == MDFloatGet::Type() && aInpIid == MVFloatGet::Type()) {
-	res = new FAtVFloat(*aHost);
+    if (aOutIid == MDataGet<T>::Type() && aInpIid == MVectGet<T>::Type()) {
+	res = new FAtVect<T>(*aHost);
     }
     return res;
 }
 
-void *FAtVFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+template <class T> void *FAtVect<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
-    if (strcmp(aName, MDFloatGet::Type()) == 0) res = (MDFloatGet*) this;
+    if (strcmp(aName, MDataGet<T>::Type()) == 0) res = (MDataGet<T>*) this;
     return res;
 }
 
-float FAtVFloat::Value()
+template <class T> void FAtVect<T>::DataGet(T& aData)
 {
-    float res = 0;
-    MVFloatGet* arg = GetArg();
+    MVectGet<T>* arg = GetArg();
     if (arg != NULL) {
 	TInt ind = GetInd();
-	VFloat data;
-	arg->VFloatGet(data);
-	res = data.at(ind);
+	Vect<T> data;
+	arg->VectGet(data);
+	aData = data.at(ind);
     }
-    return res;
 }
 
-MVFloatGet* FAtVFloat::GetArg()
+template <class T> MVectGet<T>* FAtVect<T>::GetArg()
 {
-    MVFloatGet* res = NULL;
+    MVectGet<T>* res = NULL;
     MDVarGet* iv = mHost.GetInp(EInp1);
     if (iv != NULL) {
 	string ifi = iv->VarGetIfid();
 	if (!ifi.empty()) {
 	    void* inp = iv->VarGetBase()->GetObj(ifi.c_str());
-	    if (ifi == MVFloatGet::Type()) {
-		res = (MVFloatGet*) inp;
+	    if (ifi == MVectGet<T>::Type()) {
+		res = (MVectGet<T>*) inp;
 	    }
 	}
     }

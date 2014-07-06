@@ -121,18 +121,40 @@ class MDVarSet
 	virtual Elem* VarSetBase() = 0;
 };
 
-// Vector: Float
-typedef std::vector<float> VFloat;
-
-class MVFloatGet
+// Scalar data
+template <class T> class MDataGet
 {
     public:
-	static const char* Type() { return "MVFloatGet";};
-	virtual void VFloatGet(VFloat& aData) = 0;
+	static const char* Type();
+	static const char* TypeSig();
+	virtual void DataGet(T& aData) = 0;
 };
 
 
+// Vector
+//typedef std::vector<float> VFloat;
+template<class T> struct Vect: public std::vector<T> { };
+//typedef std::vector<class T> Vect;
+//template<class T> struct Vect { typedef std::vector<T> Type; };
 
+template <class T> class MVectGet
+{
+    public:
+	static const char* Type();
+	static const char* TypeSig();
+	virtual void VectGet(Vect<T>& aData) = 0;
+};
+
+// Daigonal matrix
+template<class T> struct Mtrd: public vector<T> { };
+
+template <class T> class MMtrdGet
+{
+    public:
+	static const char* Type();
+	static const char* TypeSig();
+	virtual void MtrdGet(Mtrd<T>& aData) = 0;
+};
 
 
 #endif

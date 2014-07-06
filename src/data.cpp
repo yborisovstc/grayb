@@ -407,7 +407,8 @@ TBool DVar::Init(const string& aString, Elem* aInp)
     }
     if ((mData = HInt::Create(this, aString, aInp)) != NULL);
     else if ((mData = HFloat::Create(this, aString, aInp)) != NULL);
-    else if ((mData = HVFloat::Create(this, aString, aInp)) != NULL);
+    else if ((mData = HVect<float>::Create(this, aString, aInp)) != NULL);
+    else if ((mData = HMtrd<float>::Create(this, aString, aInp)) != NULL);
     else if ((mData = HBool::Create(this, aString, aInp)) != NULL);
     if (mData != NULL && !aString.empty()) {
 	mData->FromString(aString);
@@ -733,33 +734,226 @@ void DVar::HFloat::SetValue(float aData)
     Set(aData);
 }
 
-// Float vector
+// Scalar data
+template<> const char* MDataGet<float>::Type() { return "MDataGet_float";};
 
-string DVar::HVFloat::mId = "VF";
+template<> const char* MDataGet<float>::TypeSig() { return  "DF";};
 
-void *DVar::HVFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+template<> string DVar::HData<float>::mId = "DF";
+
+template<class T> void *DVar::HData<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
-    if (strcmp(aName, MVFloatGet::Type()) == 0) res = (MVFloatGet*) this;
+    if (strcmp(aName, MDataGet<T>::Type()) == 0) res = (MDataGet<T>*) this;
     return res;
 }
 
-DVar::HBase* DVar::HVFloat::Create(DVar* aHost, const string& aString, Elem* aInp)
+template<class T> DVar::HBase* DVar::HData<T>::Create(DVar* aHost, const string& aString, Elem* aInp)
 {
     HBase* res = NULL;
-    if (!aString.empty() && aString.at(0) == 'V' && aString.at(1) == 'F') {
-	res = new HVFloat(aHost);
+    if (!aString.empty()) {
+	int sig_e = aString.find_first_of(' ');
+	string sig = aString.substr(0, sig_e);
+	if (sig == mId) {
+	    res = new HData<T>(aHost);
+	}
     }
     if (res == NULL && aInp != NULL) {
-	MVFloatGet* dget = (MVFloatGet*) aInp->GetObj(dget);
+	MVectGet<T>* dget = (MVectGet<T>*) aInp->GetObj(dget);
 	if (dget != NULL) {
-	    res = new HVFloat(aHost);
+	    res = new HData<T>(aHost);
 	}
     }
     return res;
 }
 
-TBool DVar::HVFloat::FromString(const string& aString)
+template<class T> TBool DVar::HData<T>::FromString(const string& aString)
+{
+    TBool res = ETrue;
+    T data;
+    int res1 = 0;
+    string ss;
+    int beg = 0, end = 0;
+    end = aString.find(' ');
+    ss = aString.substr(beg, end);
+    if (ss == mId) {
+	beg = end + 1;
+	end = aString.find(' ', beg);
+	ss = aString.substr(beg, end - beg);
+	if (!ss.empty()) {
+	    ss >> data;
+	    Set(data);
+	    res = ETrue;
+	}
+    }
+    return res;
+}
+
+template<class T> void DVar::HData<T>::ToString(string& aString)
+{
+    stringstream ss;
+    ss << mId << " " << mData;
+    aString = ss.str();
+}
+
+template<class T> TBool DVar::HData<T>::Set(Elem* aInp)
+{
+    TBool res = EFalse;
+    MDataGet<T>* dget = (MDataGet<T>*) aInp->GetObj(dget);
+    if (dget != NULL) {
+	T val;
+	dget->DataGet(val);
+	Set(val);
+	res = ETrue;
+    }
+    return res;
+}
+
+// Vector
+
+template<> const char* MVectGet<float>::TypeSig() { return  "VF";};
+
+template<> const char* MVectGet<float>::Type() { return "MVectGet_float";};
+
+template<> string DVar::HVect<float>::mId = "VF";
+
+template<class T> DVar::HVect<T>::HVect(DVar* aHost): HBase(aHost) 
+{
+};
+
+template<class T> void *DVar::HVect<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MVectGet<T>::Type()) == 0) res = (MVectGet<T>*) this;
+    return res;
+}
+
+template<class T> DVar::HBase* DVar::HVect<T>::Create(DVar* aHost, const string& aString, Elem* aInp)
+{
+    HBase* res = NULL;
+    if (!aString.empty()) {
+	int sig_e = aString.find_first_of(' ');
+	string sig = aString.substr(0, sig_e);
+	if (sig == mId) {
+	    res = new HVect<T>(aHost);
+	}
+    }
+    if (res == NULL && aInp != NULL) {
+	MVectGet<T>* dget = (MVectGet<T>*) aInp->GetObj(dget);
+	if (dget != NULL) {
+	    res = new HVect<T>(aHost);
+	}
+    }
+    return res;
+}
+
+template<class T> TBool DVar::HVect<T>::FromString(const string& aString)
+{
+    TBool res = ETrue;
+    int res1 = 0;
+    string ss;
+    int beg = 0, end = 0;
+    end = aString.find(' ');
+    ss = aString.substr(beg, end);
+    if (ss == mId) {
+	mData.clear();
+	TBool fin = EFalse;
+	do {
+	    T data;
+	    beg = end + 1;
+	    end = aString.find(' ', beg);
+	    ss = aString.substr(beg, end - beg);
+	    if (!ss.empty()) {
+		istringstream sstr(ss);
+		sstr >> data;
+		ios_base::iostate state = sstr.rdstate();
+		if (!sstr.fail()) {
+		    mData.push_back(data);
+		}
+		else {
+		    res = EFalse;
+		}
+	    }
+	    if (end == string::npos) {
+		fin = ETrue;
+	    }
+	} while (!fin);
+    }
+    else {
+	res = EFalse;
+    }
+    return res;
+}
+
+template<class T> void DVar::HVect<T>::ToString(string& aString)
+{
+    stringstream ss;
+    ss << mId;
+    for (typename Vect<T>::iterator it = mData.begin(); it != mData.end(); it++) {
+	T data = *it;
+	ss << " " << data;
+    }
+    aString = ss.str();
+}
+
+template<class T> TBool DVar::HVect<T>::Set(Elem* aInp)
+{
+    TBool res = EFalse;
+    MVectGet<T>* dget = (MVectGet<T>*) aInp->GetObj(dget);
+    if (dget != NULL) {
+	dget->VectGet(mData);
+	mHost.UpdateProp();
+	mHost.NotifyUpdate();
+	res = ETrue;
+    }
+    return res;
+}
+
+template<class T> void DVar::HVect<T>::VectGet(Vect<T>& aData)
+{
+    aData = mData;
+}
+
+
+// Diagonal matrix
+
+template<> const char* MMtrdGet<float>::Type() { return "MMtrdGet_float";};
+
+template<> const char* MMtrdGet<float>::TypeSig() { return  "MDF";};
+
+template<> string DVar::HMtrd<float>::mId = "MDF";
+
+template<class T> void *DVar::HMtrd<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MMtrdGet<T>::Type()) == 0) res = (MMtrdGet<T>*) this;
+    return res;
+}
+
+template<class T> DVar::HBase* DVar::HMtrd<T>::Create(DVar* aHost, const string& aString, Elem* aInp)
+{
+    HBase* res = NULL;
+    if (!aString.empty()) {
+	int sig_e = aString.find_first_of(' ');
+	string sig = aString.substr(0, sig_e);
+	if (sig == mId) {
+	    res = new HMtrd<T>(aHost);
+	}
+    }
+    if (res == NULL && aInp != NULL) {
+	MMtrdGet<T>* dget = (MMtrdGet<T>*) aInp->GetObj(dget);
+	if (dget != NULL) {
+	    res = new HMtrd<T>(aHost);
+	}
+    }
+    return res;
+}
+
+template<class T> DVar::HMtrd<T>::HMtrd(DVar* aHost): HBase(aHost)
+{
+}
+
+template<class T> TBool DVar::HMtrd<T>::FromString(const string& aString)
 {
     TBool res = ETrue;
     int res1 = 0;
@@ -797,23 +991,23 @@ TBool DVar::HVFloat::FromString(const string& aString)
     return res;
 }
 
-void DVar::HVFloat::ToString(string& aString)
+template<class T> void DVar::HMtrd<T>::ToString(string& aString)
 {
     stringstream ss;
-    ss << "VF";
-    for (VFloat::iterator it = mData.begin(); it != mData.end(); it++) {
-	float data = *it;
+    ss << mId;
+    for (typename Mtrd<T>::iterator it = mData.begin(); it != mData.end(); it++) {
+	T data = *it;
 	ss << " " << data;
     }
     aString = ss.str();
 }
 
-TBool DVar::HVFloat::Set(Elem* aInp)
+template<class T> TBool DVar::HMtrd<T>::Set(Elem* aInp)
 {
     TBool res = EFalse;
-    MVFloatGet* dget = (MVFloatGet*) aInp->GetObj(dget);
+    MMtrdGet<T>* dget = (MMtrdGet<T>*) aInp->GetObj(dget);
     if (dget != NULL) {
-	dget->VFloatGet(mData);
+	dget->MtrdGet(mData);
 	mHost.UpdateProp();
 	mHost.NotifyUpdate();
 	res = ETrue;
@@ -821,7 +1015,7 @@ TBool DVar::HVFloat::Set(Elem* aInp)
     return res;
 }
 
-void DVar::HVFloat::VFloatGet(VFloat& aData)
+template<class T> void DVar::HMtrd<T>::MtrdGet(Mtrd<T>& aData)
 {
     aData = mData;
 }

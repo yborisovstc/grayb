@@ -436,7 +436,9 @@ void ATrAddVar::Init(const string& aIfaceName)
     }
     if ((mFunc = FAddInt::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddFloat::Create(this, aIfaceName)) != NULL);
-    else if ((mFunc = FAddVFloat::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddData<float>::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddVect<float>::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddMtrd<float>::Create(this, aIfaceName)) != NULL);
 }
 
 string ATrAddVar::GetInpUri(TInt aId) 
@@ -653,7 +655,7 @@ void ATrAtVar::Init(const string& aIfaceName)
     MDVarGet* inp = GetInp(Func::EInp1);
     if (inp_ind != NULL && inp != NULL) {
 	 string t_inp = inp->VarGetIfid();
-	if ((mFunc = FAtVFloat::Create(this, aIfaceName, t_inp)) != NULL);
+	if ((mFunc = FAtVect<float>::Create(this, aIfaceName, t_inp)) != NULL);
     }
 }
 
@@ -701,7 +703,7 @@ void ATrCpsVectVar::Init(const string& aIfaceName)
 	delete mFunc;
 	mFunc = NULL;
     }
-    if ((mFunc = FCpsVFloat::Create(this, aIfaceName)) != NULL);
+    if ((mFunc = FCpsVect<float>::Create(this, aIfaceName)) != NULL);
 }
 
 string ATrCpsVectVar::GetInpUri(TInt aId) 

@@ -56,6 +56,15 @@
 	</node>
     </node>
 
+    <!-- Output of standard variable State -->
+    <node id="StVarOut" parent=":Elem:SysComps/ExtenderOut"> 
+	<rm node="Int"/>
+	<node id="Int" parent="../StOutSocket"> 
+	    <cont node="PinData/Required" val="MDVarGet"/>
+	</node>
+    </node>
+
+
 
     <!-- Input of int transition -->
     <node id="TrIntInp" parent=":Elem:SysComps/ConnPointInp"> 
