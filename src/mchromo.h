@@ -55,6 +55,14 @@ class ChromoNode;
 class MChromo
 {
     public:
+	// Dependencies levels
+	enum TDepsLevel {
+	    EDl_Critical = 0x01,
+	    EDl_Affecting = 0x02,
+	    EDl_Harmless = 0x04,
+	    EDl_Any = EDl_Critical | EDl_Affecting | EDl_Harmless
+	};
+    public:
 	virtual ChromoNode& Root() = 0;
 	virtual const ChromoNode& Root() const= 0;
 	virtual void Set(const char *aFileName) = 0;

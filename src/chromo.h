@@ -4,6 +4,8 @@
 #include "base.h"
 #include "guri.h"
 #include "mchromo.h"
+#include <set>
+
 
 // Rank
 class Rank: public vector<TInt>
@@ -154,10 +156,20 @@ class ChromoNode
 class Chromo: public MChromo
 {
     public:
+	// Critical dependencies
+	typedef pair<TNodeType, TNodeAttr> TDep;
+	typedef pair<TDep, TDepsLevel> TDepsElm;
+	typedef map<TDep, TDepsLevel> TDeps;
+    public:
+	Chromo();
 	virtual ~Chromo() {};
     public:
 	static void GetPath(const string& aUri, string& aPath);
 	static void GetFrag(const string& aUri, string& aFrag);
+	static TBool IsDepOfLevel(TNodeType aMut, TNodeAttr aDep, TDepsLevel aLevel);
+    protected:
+	static TDeps mDeps;
+	static TBool mInitiated;
 };
 
 #endif

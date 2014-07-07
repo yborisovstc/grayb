@@ -980,7 +980,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 	}
 	else if (rnotype == ENt_Add) {
 	    __ASSERT(false);
-	    AddNode(rno, aRunTime);
+	    //AddNode(rno, aRunTime);
 	}
 	else if (rnotype == ENt_Change) {
 	    ChangeAttr(rno, aRunTime);
@@ -1031,7 +1031,8 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime)
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Renaming elem [%s] - unsafe, used in: [%s]", snode.c_str(), node->GetMajorDep().first.first->GetUri().c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Renaming elem [%s] - unsafe, used in: [%s]", 
+		    snode.c_str(), node->GetMajorDep().first.first->GetUri().c_str());
 	}
     }
     else {
@@ -1107,7 +1108,8 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Changing content of [%s] - unsafe, used in: [%s]", snode.c_str(), node->GetMajorDep().first.first->GetUri().c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Changing content of [%s] - unsafe, used in: [%s]", snode.c_str(), 
+		    node->GetMajorDep().first.first->GetUri().c_str());
 	}
     }
     else {
@@ -1216,7 +1218,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 	}
     }
     else  {
-	Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] - cannot find node", snode.c_str());
+	Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] in node [%s] - cannot find node", sname.c_str(), snode.c_str());
     }
     return elem;
 }
@@ -1807,7 +1809,8 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime)
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Removing elem [%s] - unsafe, used in: [%s]", snode.c_str(), node->GetMajorDep().first.first->GetUri().c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Removing elem [%s] - unsafe, used in: [%s]", snode.c_str(), 
+		    node->GetMajorDep().first.first->GetUri().c_str());
 	}
     }
     else {
@@ -1869,7 +1872,8 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime)
 			}
 		    }
 		    else {
-			Logger()->Write(MLogRec::EErr, this, "Moving elem [%s] - unsafe, used in: [%s]", snode->GetUri().c_str(), snode->GetMajorDep().first.first->GetUri().c_str());
+			Logger()->Write(MLogRec::EErr, this, "Moving elem [%s] - unsafe, used in: [%s]", 
+				snode->GetUri().c_str(), snode->GetMajorDep().first.first->GetUri().c_str());
 		    }
 		}
 	    }
@@ -2113,6 +2117,54 @@ void Elem::GetMajorDep(TMDep& aDep)
     for (TNMReg::const_iterator it = iMComps.begin(); it != iMComps.end(); it++) {
 	Elem* comp = it->second;
 	comp->GetMajorDep(aDep);
+    }
+}
+
+Elem::TMDep Elem::GetMajorDep(TNodeType aMut, MChromo::TDepsLevel aLevel)
+{
+    // Starting from dep Id considering also deattached nodes, ref uc_038
+    TMDep res(TMutRef(NULL, NULL), ENa_Unknown);
+    GetDep(res, ENa_Id);
+    GetMajorDep(res, aMut, aLevel);
+    return res;
+}
+
+void Elem::GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDepsLevel aLevel)
+{
+    // Ref to theses ds_mut_unappr_rt_ths1 for rules of searching deps
+    Rank rc;
+    if (aDep.first.first == NULL || aDep.first.second == NULL || aDep.second == ENa_Unknown) {
+	// Starting from dep Id considering also deattached nodes, ref uc_038
+	GetDep(aDep, ENa_Id);
+    }
+    if (aDep.first.first == NULL || aDep.first.second == NULL || aDep.second == ENa_Unknown) {
+	aDep = TMDep(TMutRef(this, iChromo->Root().Handle()), ENa_Id);
+    }
+    ChromoNode mut = iChromo->CreateNode(aDep.first.second);
+    aDep.first.first->GetRank(rc, mut);
+    // Registered deps
+    for (TMDeps::const_iterator it = iMDeps.begin(); it != iMDeps.end(); it++) {
+	TMDep dep = *it;
+	if (Chromo::IsDepOfLevel(aMut, dep.second, aLevel)) {
+	    Rank rd;
+	    ChromoNode dcn = iChromo->CreateNode(dep.first.second);
+	    dep.first.first->GetRank(rd, dcn);
+	    if (rd > rc) {
+		rc = rd;
+		aDep = dep;
+		// Dependence childs
+		Elem* dc = dep.first.first->GetMajorChild(rc);
+		if (dc != NULL) {
+		    aDep.first.first = dc;
+		    aDep.first.second = dc->Chromos().Root().Handle();
+		}
+	    }
+	}
+    }
+    // Components
+    for (TNMReg::const_iterator it = iMComps.begin(); it != iMComps.end(); it++) {
+	Elem* comp = it->second;
+	comp->GetMajorDep(aDep, aMut, aLevel);
     }
 }
 

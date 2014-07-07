@@ -255,6 +255,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void GetDepRank(Rank& aRank, TNodeAttr aAttr);
 	TMDep GetMajorDep();
 	void GetMajorDep(TMDep& aDep);
+	TMDep GetMajorDep(TNodeType aMut, MChromo::TDepsLevel aLevel);
+	void GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDepsLevel aLevel);
 	// Chromo
 	ChromoNode GetChNode(const GUri& aUri) const;
 	void CompactChromo();

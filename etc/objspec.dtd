@@ -1,7 +1,4 @@
 
-<!-- Mutation - addition -->
-<!ELEMENT add (node*)>
-
 <!-- Mutation - change content -->
 <!ELEMENT cont EMPTY>
 
@@ -15,7 +12,7 @@
 <!ELEMENT change EMPTY >
 
 <!-- Element of base hier -->
-<!ELEMENT node (node*, add*, rm*, change*, cont*, move*)* >
+<!ELEMENT node (node*, rm*, change*, cont*, move*)* >
 
 <!-- Inherited Object  attributes:
   node - mutated node - DES URI
@@ -26,13 +23,6 @@
     node CDATA #IMPLIED
     id CDATA #REQUIRED
     parent CDATA #REQUIRED
->
-
-<!-- Adding node attributes:
-  node - mutated node - DES URI
-  -->
-<!ATTLIST add 
-    node CDATA #IMPLIED
 >
 
 <!-- Removing node attributes:

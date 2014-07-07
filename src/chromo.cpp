@@ -54,6 +54,28 @@ Rank& Rank::operator+=(const Rank& aArg)
 
 // Chromo
 
+TBool Chromo::mInitiated = EFalse;
+Chromo::TDeps Chromo::mDeps;
+
+Chromo::Chromo()
+{
+    if (!mInitiated) {
+	mDeps[TDep(ENt_Node, ENa_Id)] = EDl_Critical;
+	mDeps[TDep(ENt_Node, ENa_Parent)] = EDl_Affecting;
+	mInitiated = ETrue;
+    }
+}
+
+TBool Chromo::IsDepOfLevel(TNodeType aMut, TNodeAttr aDep, TDepsLevel aLevel) 
+{ 
+    TDep dep(aMut, aDep);
+    TDepsLevel lev = EDl_Harmless;
+    if (mDeps.count(dep) > 0) {
+	lev = mDeps.at(dep);
+    }
+    return (lev | aLevel) > 0;
+};
+
 void Chromo::GetPath(const string& aUri, string& aPath)
 {
     size_t scheme_end = aUri.find_first_of(':');
