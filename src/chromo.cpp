@@ -73,7 +73,7 @@ TBool Chromo::IsDepOfLevel(TNodeType aMut, TNodeAttr aDep, TDepsLevel aLevel)
     if (mDeps.count(dep) > 0) {
 	lev = mDeps.at(dep);
     }
-    return (lev | aLevel) > 0;
+    return (lev & aLevel) > 0;
 };
 
 void Chromo::GetPath(const string& aUri, string& aPath)
