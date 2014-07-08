@@ -4,7 +4,7 @@
 #include "base.h"
 #include "guri.h"
 #include "mchromo.h"
-#include <set>
+#include <map>
 
 
 // Rank
@@ -156,8 +156,12 @@ class ChromoNode
 class Chromo: public MChromo
 {
     public:
-	// Critical dependencies
-	typedef pair<TNodeType, TNodeAttr> TDep;
+	// Dependencies
+	struct TDep {TNodeType type; TNodeAttr dep; TDPath path; 
+	    TDep(TNodeType t, TNodeAttr d, TDPath p): type(t), dep(d), path(p) {}
+	    bool operator< (const TDep& r) const { 
+		return type < r.type || type == r.type && dep < r.dep || type == r.type && dep == r.dep && path < r.path;} 
+	}; 
 	typedef pair<TDep, TDepsLevel> TDepsElm;
 	typedef map<TDep, TDepsLevel> TDeps;
     public:
@@ -166,7 +170,7 @@ class Chromo: public MChromo
     public:
 	static void GetPath(const string& aUri, string& aPath);
 	static void GetFrag(const string& aUri, string& aFrag);
-	static TBool IsDepOfLevel(TNodeType aMut, TNodeAttr aDep, TDepsLevel aLevel);
+	static TBool IsDepOfLevel(const TDep& aDep, TDepsLevel aLevel);
     protected:
 	static TDeps mDeps;
 	static TBool mInitiated;

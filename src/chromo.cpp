@@ -60,18 +60,36 @@ Chromo::TDeps Chromo::mDeps;
 Chromo::Chromo()
 {
     if (!mInitiated) {
-	mDeps[TDep(ENt_Node, ENa_Id)] = EDl_Critical;
-	mDeps[TDep(ENt_Node, ENa_Parent)] = EDl_Affecting;
+	mDeps.insert(TDepsElm(TDep(ENt_Node, ENa_Id, EDp_Direct), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Node, ENa_Parent, EDp_Direct), EDl_Affecting));
+
+	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_Id, EDp_Direct), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_Id, EDp_Comps), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_Parent, EDp_Direct), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_Parent, EDp_Comps), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_Ref, EDp_Direct), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_Ref, EDp_Comps), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_MutNode, EDp_Direct), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_MutNode, EDp_Comps), EDl_Critical));
+
+	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_Id, EDp_Direct), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_Id, EDp_Comps), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_Parent, EDp_Direct), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_Parent, EDp_Comps), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_Ref, EDp_Direct), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_Ref, EDp_Comps), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_MutNode, EDp_Direct), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_MutNode, EDp_Comps), EDl_Critical));
+
 	mInitiated = ETrue;
     }
 }
 
-TBool Chromo::IsDepOfLevel(TNodeType aMut, TNodeAttr aDep, TDepsLevel aLevel) 
+TBool Chromo::IsDepOfLevel(const TDep& aDep, TDepsLevel aLevel)
 { 
-    TDep dep(aMut, aDep);
     TDepsLevel lev = EDl_Harmless;
-    if (mDeps.count(dep) > 0) {
-	lev = mDeps.at(dep);
+    if (mDeps.count(aDep) > 0) {
+	lev = mDeps.at(aDep);
     }
     return (lev & aLevel) > 0;
 };

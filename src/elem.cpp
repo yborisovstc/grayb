@@ -978,6 +978,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 		Logger()->Write(MLogRec::EErr, this, "Adding node with parent [%s] failed", pname.c_str());
 	    }
 	}
+	// TODO [YB] ENt_Add isn't used anymore, to remove
 	else if (rnotype == ENt_Add) {
 	    __ASSERT(false);
 	    //AddNode(rno, aRunTime);
@@ -1016,23 +1017,29 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime)
     string mval = aSpec.Attr(ENa_MutVal);
     Elem* node = GetNode(snode);
     if (node != NULL) {
-	if (IsMutSafe(node)) {
-	    TBool res = node->ChangeAttr(GUri::NodeAttr(mattrs), mval);
-	    if (!res) {
-		Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - failure", snode.c_str());
+	if (IsComp(node)) 
+	{
+	    if (IsMutSafe(node)) {
+		TBool res = node->ChangeAttr(GUri::NodeAttr(mattrs), mval);
+		if (!res) {
+		    Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - failure", snode.c_str());
+		}
+		else {
+		    // Adding dependency to object of change
+		    if (!aRunTime) {
+			ChromoNode chn = iChromo->Root().AddChild(aSpec);
+			//node->AddMDep(this, chn, ENa_MutNode);
+			AddCMDep(chn, ENa_MutNode, node);
+		    }
+		}
 	    }
 	    else {
-		// Adding dependency to object of change
-		if (!aRunTime) {
-		    ChromoNode chn = iChromo->Root().AddChild(aSpec);
-		    //node->AddMDep(this, chn, ENa_MutNode);
-		    AddCMDep(chn, ENa_MutNode, node);
-		}
+		Logger()->Write(MLogRec::EErr, this, "Renaming elem [%s] - unsafe, used in: [%s]", 
+			snode.c_str(), node->GetMajorDep().first.first->GetUri().c_str());
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Renaming elem [%s] - unsafe, used in: [%s]", 
-		    snode.c_str(), node->GetMajorDep().first.first->GetUri().c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - node is not my component, rejected", snode.c_str());
 	}
     }
     else {
@@ -2125,11 +2132,11 @@ Elem::TMDep Elem::GetMajorDep(TNodeType aMut, MChromo::TDepsLevel aLevel)
     // Starting from dep Id considering also deattached nodes, ref uc_038
     TMDep res(TMutRef(NULL, NULL), ENa_Unknown);
     GetDep(res, ENa_Id);
-    GetMajorDep(res, aMut, aLevel);
+    GetMajorDep(res, aMut, MChromo::EDp_Direct, aLevel);
     return res;
 }
 
-void Elem::GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDepsLevel aLevel)
+void Elem::GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDPath aDpath, MChromo::TDepsLevel aLevel)
 {
     // Ref to theses ds_mut_unappr_rt_ths1 for rules of searching deps
     Rank rc;
@@ -2145,7 +2152,7 @@ void Elem::GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDepsLevel aLevel)
     // Registered deps
     for (TMDeps::const_iterator it = iMDeps.begin(); it != iMDeps.end(); it++) {
 	TMDep dep = *it;
-	if (Chromo::IsDepOfLevel(aMut, dep.second, aLevel)) {
+	if (Chromo::IsDepOfLevel(Chromo::TDep(aMut, dep.second, aDpath), aLevel)) {
 	    Rank rd;
 	    ChromoNode dcn = iChromo->CreateNode(dep.first.second);
 	    dep.first.first->GetRank(rd, dcn);
@@ -2164,7 +2171,7 @@ void Elem::GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDepsLevel aLevel)
     // Components
     for (TNMReg::const_iterator it = iMComps.begin(); it != iMComps.end(); it++) {
 	Elem* comp = it->second;
-	comp->GetMajorDep(aDep, aMut, aLevel);
+	comp->GetMajorDep(aDep, aMut, MChromo::EDp_Comps, aLevel);
     }
 }
 
