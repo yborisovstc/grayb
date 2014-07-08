@@ -7,7 +7,7 @@
 #include "func.h"
 
 // Transition function agent base. 
-class ATrBase: public Elem
+class ATrBase: public Elem, public MACompsObserver
 {
     public:
 	static const char* Type() { return "ATrBase";};
@@ -16,6 +16,8 @@ class ATrBase: public Elem
 	ATrBase(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MACompsObserver
+	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
 };
 
 // Agent base of Int transition function

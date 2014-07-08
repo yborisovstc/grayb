@@ -29,11 +29,22 @@ void *ATrBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aC
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
+    else if (strcmp(aName, MACompsObserver::Type()) == 0) {
+	res = (MACompsObserver*) this;
+    }
     else {
 	res = Elem::DoGetObj(aName, aIncUpHier);
     }
     return res;
 }
+
+TBool ATrBase::HandleCompChanged(Elem& aContext, Elem& aComp)
+{
+    TBool res = EFalse;
+    return res;
+}
+
+
 
 // Agent base of Int function
 
