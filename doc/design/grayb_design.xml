@@ -270,12 +270,15 @@
 			<simpara>
 			Prove for owner:  if there is owner No and it's comp Nc and mut Mc of Nc, then for instance mut of removing
 			No should go after Mc.
-			Prove for parent: if there is parent Np and it's child Nc, and there is mut Mc of Nc containgin URI including parent,
+			Prove for parent: There is parent Np and it's child Nc, and there is mut Mc of Nc containgin URI including parent,
 			then for instance mut Mp of renaming Np should go after Mc otherwise Mc will be broken.
 			</simpara>
+			<simpara>There are different "nature" of these deps. Some of them are created because of referencing via
+			    URI, and that uri "trace" include the node. If the trace is going thru inheritance tree that deps parents via
+			    childs created as mentioned above.</simpara>
 		    </listitem>
 		    <listitem id="ds_mut_unappr_rt_ths2"> If node Na depends on mut Mb then all children and components of Na also depend on Mb. 
-			<simpara> Proving case: mut Mp changing parent or owner changes URI ref to it, so changes ref to childs
+			<simpara> Proving case for parent: mut Mp changing parent or owner changes URI ref to it, so changes ref to childs
 			    and comps. So any mut of childs and comps should go after Mp, i.e with bigger rank. Example: node No contains it's
 			    copnonent Nc. There is mut Mo of No of renaming No. So any mut of Nc that ident Nc via URI including Nc name should
 			    go after Mo.

@@ -247,6 +247,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TMDeps& GetMDeps() { return iMDeps;};
 	void AddMDep(Elem* aNode, const ChromoNode& aMut, TNodeAttr aAttr);
 	void RemoveMDep(const TMDep& aDep);
+	static void GetDepRank(const TMDep& aDep, Rank& aRank);
 	// Adding two directions chromo-model dependencies
 	void AddCMDep(const ChromoNode& aMut, TNodeAttr aAttr, Elem* aNode);
 	void RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr);

@@ -20,6 +20,7 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_MutRmRecr);
     CPPUNIT_TEST(test_MutDepsRm);
     CPPUNIT_TEST(test_MutDepsRm2);
+    CPPUNIT_TEST(test_MutDepsChilds1);
     CPPUNIT_TEST(test_MutDepsRmRef);
     CPPUNIT_TEST(test_MutRmParent);
     CPPUNIT_TEST(test_MutRenameParent);
@@ -38,6 +39,7 @@ private:
     void test_MutRmRecr();
     void test_MutDepsRm();
     void test_MutDepsRm2();
+    void test_MutDepsChilds1();
     void test_MutDepsRmRef();
     void test_MutRmParent();
     void test_MutRenameParent();
@@ -293,6 +295,33 @@ void Ut_mut::test_MutDepsRm2()
     e2 = root->GetNode("elem1/elem2");
     CPPUNIT_ASSERT_MESSAGE("Root mutation -rm- of elem2 is refused", e2 == NULL);
 }
+
+// Mutation consistency
+// Dependency - via childs
+void Ut_mut::test_MutDepsChilds1()
+{
+    printf("\n === Test of mutation consistency, deps via childs \n");
+
+    iEnv = new Env("Env", "ut_mut_dep_3.xml", "ut_mut_dep_3.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+     // Check creation first
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    Elem* e2 = root->GetNode("elem1/elem2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem2", e2 != 0);
+    // Applying harmful mutation
+    Elem* e1 = root->GetNode("elem1");
+    ChromoNode mut = e1->Mutation().Root().AddChild(ENt_Change);
+    mut.SetAttr(ENa_MutNode, "elem2");
+    mut.SetAttr(ENa_MutAttr, "id");
+    mut.SetAttr(ENa_MutVal, "elem2_renamed");
+    e1->Mutate();
+    // Check that the mutation is refused
+    string e2_name = e2->Name();
+    CPPUNIT_ASSERT_MESSAGE("Harmful mutation hasn't been refused", e2_name == "elem2");
+}
+
 
 // Preventing of mutation braking model consistency
 // Mutation - rm, dependency - ref to node

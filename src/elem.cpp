@@ -1210,6 +1210,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 			else {
 			    // Fenothypic modification
 			    chn = iChromo->Root().AddChild(aNode);
+			    AddCMDep(chn, ENa_MutNode, node);
 			}
 			AddCMDep(chn, ENa_Id, elem);
 			AddCMDep(chn, ENa_Parent, parent);
@@ -2082,6 +2083,12 @@ Elem::TMDep Elem::GetMajorDep()
     return res;
 }
 
+void Elem::GetDepRank(const TMDep& aDep, Rank& aRank)
+{
+    ChromoNode mut = aDep.first.first->Chromos().CreateNode(aDep.first.second);
+    aDep.first.first->GetRank(aRank, mut);
+}
+
 void Elem::GetMajorDep(TMDep& aDep)
 {
     // Ref to theses ds_mut_unappr_rt_ths1 for rules of searching deps
@@ -2095,23 +2102,15 @@ void Elem::GetMajorDep(TMDep& aDep)
     }
     ChromoNode mut = iChromo->CreateNode(aDep.first.second);
     aDep.first.first->GetRank(rc, mut);
-    // Childs
-    /* No need anymore because child-parent relation is supporded by deps mechanism
-    Elem* mc = GetMajorChild(rc);
-    if (mc != NULL) {
-	aDep.first.first = mc;
-	aDep.first.second = mc->Chromos().Root().Handle();
-    }
-    */
-    // Other deps
+    // Direct deps
     for (TMDeps::const_iterator it = iMDeps.begin(); it != iMDeps.end(); it++) {
 	TMDep dep = *it;
 	Rank rd;
-	ChromoNode dcn = iChromo->CreateNode(dep.first.second);
-	dep.first.first->GetRank(rd, dcn);
+	GetDepRank(dep, rd);
 	if (rd > rc) {
 	    rc = rd;
 	    aDep = dep;
+	    // TODO [YB] Do we need it ?
 	    // Dependence childs
 	    Elem* dc = dep.first.first->GetMajorChild(rc);
 	    if (dc != NULL) {
@@ -2119,6 +2118,11 @@ void Elem::GetMajorDep(TMDep& aDep)
 		aDep.first.second = dc->Chromos().Root().Handle();
 	    }
 	}
+    }
+    // Childs
+    for (TNMReg::const_iterator it = iChilds.begin(); it != iChilds.end(); it++) {
+	Elem* child = it->second;
+	child->GetMajorDep(aDep);
     }
     // Components
     for (TNMReg::const_iterator it = iMComps.begin(); it != iMComps.end(); it++) {
@@ -2167,6 +2171,11 @@ void Elem::GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDPath aDpath, MChr
 		}
 	    }
 	}
+    }
+    // Childs
+    for (TNMReg::const_iterator it = iChilds.begin(); it != iChilds.end(); it++) {
+	Elem* child = it->second;
+	child->GetMajorDep(aDep, aMut, MChromo::EDp_Direct, aLevel);
     }
     // Components
     for (TNMReg::const_iterator it = iMComps.begin(); it != iMComps.end(); it++) {
