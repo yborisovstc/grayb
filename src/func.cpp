@@ -429,6 +429,7 @@ void ACountCritInt::OnDataChanged()
 
 
 // Function agent base without result caching
+const string AFunc::KDiagErr = "ERROR";
 
 string AFunc::PEType()
 {
@@ -1309,6 +1310,7 @@ void AFAddVar::Init(const string& aIfaceName)
     else if ((mFunc = FAddData<float>::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddVect<float>::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddMtrd<float>::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddMtr<float>::Create(this, aIfaceName)) != NULL);
 }
 
 string AFAddVar::GetInpUri(TInt aId) 
@@ -1552,6 +1554,83 @@ template<class T> void FAddMtrd<T>::MtrdGet(Mtrd<T>& aData)
     }
 }
 
+// Matrix addition
+template<class T> Func* FAddMtr<T>::Create(Host* aHost, const string& aString)
+{
+    Func* res = NULL;
+    if (aString == MMtrGet<T>::Type()) {
+	res = new FAddMtr<T>(*aHost);
+    }
+    return res;
+}
+
+template<class T> void *FAddMtr<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MMtrGet<T>::Type()) == 0) res = (MMtrGet<T>*) this;
+    return res;
+}
+
+template<class T> TBool FAddMtr<T>::MtrGet(Mtr<T>& aData)
+{
+    TBool res = ETrue;
+    Elem::TIfRange range = mHost.GetInps(EInp);
+    T val = 0;
+    for (Elem::IfIter it = range.first; it != range.second; it++) {
+	MDVarGet* dget = (MDVarGet*) (*it);
+	Elem* dgetbase = dget->VarGetBase();
+	MMtrGet<T>* dfget = (MMtrGet<T>*) dgetbase->GetObj(dfget);
+	if (dfget != NULL) {
+	    Mtr<T> arg;
+	    res = dfget->MtrGet(arg);
+	    if (res) {
+		if (arg.mDim == aData.mDim) {
+		    for (TInt cntr = 0; cntr < aData.mDim.first; cntr++) {
+			for (TInt cntc = 0; cntc < aData.mDim.second; cntc++) {
+			    TInt cnt = aData.mDim.second*cntr + cntc;
+			    if (it == range.first) {
+				aData.mData.at(cnt) = 0.0;
+			    }
+			    aData.mData.at(cnt) += arg.mData.at(cnt);
+			}
+		    }
+		}
+		else {
+		    mHost.LogWrite(MLogRec::EErr, "Incorrect dimensions of argument [%s]", dgetbase->GetUri().c_str());
+		    res = EFalse;
+		    break;
+		}
+	    }
+	    else {
+		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]", dgetbase->GetUri().c_str());
+		res = EFalse;
+		break;
+	    }
+	}
+	else {
+	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
+	    res = EFalse;
+	    break;
+	}
+    }
+    aData.ToString(mRes);
+    mHost.OnFuncContentChanged();
+    mErr = !res;
+    return res;
+}
+
+
+template<class T> void FAddMtr<T>::GetResult(string& aResult)
+{
+    if (mErr) {
+	stringstream ss;
+	ss <<  "<" << AFunc::KDiagErr << ">";
+	aResult = ss.str();
+    }
+    else {
+	aResult = mRes;
+    }
+}
 
 // Composing vector from components
 
@@ -1796,6 +1875,7 @@ void AFMplncVar::Init(const string& aIfaceName)
 	mFunc == NULL;
     }
     if ((mFunc = FMplMtrdVect<float>::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FMplMtr<float>::Create(this, aIfaceName)) != NULL);
 }
 
 Elem::TIfRange AFMplncVar::GetInps(TInt aId)
@@ -1976,6 +2056,84 @@ template<class T> void FMplinvMtrd<T>::GetResult(string& aResult)
 	ss << " " << *it;
     }
     aResult = ss.str();
+}
+
+// Matrix mutltiplication
+template<class T> Func* FMplMtr<T>::Create(Host* aHost, const string& aString)
+{
+    Func* res = NULL;
+    if (aString == MMtrGet<T>::Type()) {
+	res = new FMplMtr<T>(*aHost);
+    }
+    return res;
+}
+
+template<class T> void *FMplMtr<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MMtrGet<T>::Type()) == 0) res = (MMtrGet<T>*) this;
+    return res;
+}
+
+template<class T> TBool FMplMtr<T>::MtrGet(Mtr<T>& aData)
+{
+    TBool res = ETrue;
+    Elem::TIfRange range = mHost.GetInps(EInp1);
+    T val = 0;
+    for (Elem::IfIter it = range.first; it != range.second; it++) {
+	MDVarGet* dget = (MDVarGet*) (*it);
+	Elem* dgetbase = dget->VarGetBase();
+	MMtrGet<T>* dfget = (MMtrGet<T>*) dgetbase->GetObj(dfget);
+	if (dfget != NULL) {
+	    Mtr<T> arg;
+	    res = dfget->MtrGet(arg);
+	    if (res) {
+		if (arg.mDim == aData.mDim) {
+		    for (TInt cntr = 0; cntr < aData.mDim.first; cntr++) {
+			for (TInt cntc = 0; cntc < aData.mDim.second; cntc++) {
+			    TInt cnt = aData.mDim.second*cntr + cntc;
+			    if (it == range.first) {
+				aData.mData.at(cnt) = 0.0;
+			    }
+			    aData.mData.at(cnt) += arg.mData.at(cnt);
+			}
+		    }
+		}
+		else {
+		    mHost.LogWrite(MLogRec::EErr, "Incorrect dimensions of argument [%s]", dgetbase->GetUri().c_str());
+		    res = EFalse;
+		    break;
+		}
+	    }
+	    else {
+		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]", dgetbase->GetUri().c_str());
+		res = EFalse;
+		break;
+	    }
+	}
+	else {
+	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
+	    res = EFalse;
+	    break;
+	}
+    }
+    aData.ToString(mRes);
+    mHost.OnFuncContentChanged();
+    mErr = !res;
+    return res;
+}
+
+
+template<class T> void FMplMtr<T>::GetResult(string& aResult)
+{
+    if (mErr) {
+	stringstream ss;
+	ss <<  "<" << AFunc::KDiagErr << ">";
+	aResult = ss.str();
+    }
+    else {
+	aResult = mRes;
+    }
 }
 
 

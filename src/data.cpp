@@ -401,19 +401,21 @@ DVar::~DVar()
 
 TBool DVar::Init(const string& aString, Elem* aInp)
 {
+    TBool res = EFalse;
     if (mData != NULL) {
 	delete mData;
 	mData == NULL;
     }
     if ((mData = HInt::Create(this, aString, aInp)) != NULL);
     else if ((mData = HFloat::Create(this, aString, aInp)) != NULL);
+    else if ((mData = HMtr<float>::Create(this, aString, aInp)) != NULL);
     else if ((mData = HVect<float>::Create(this, aString, aInp)) != NULL);
     else if ((mData = HMtrd<float>::Create(this, aString, aInp)) != NULL);
     else if ((mData = HBool::Create(this, aString, aInp)) != NULL);
     if (mData != NULL && !aString.empty()) {
-	mData->FromString(aString);
+	res = mData->FromString(aString);
     }
-    return mData != NULL;
+    return res;
 }
 
 TBool DVar::FromString(const string& aData) 
@@ -425,7 +427,7 @@ TBool DVar::FromString(const string& aData)
     if (mData != NULL) {
 	res = mData->FromString(aData);
 	if (!res) {
-	    Init(aData);
+	    res = Init(aData);
 	}
     }
     if (res) {
@@ -1020,4 +1022,214 @@ template<class T> void DVar::HMtrd<T>::MtrdGet(Mtrd<T>& aData)
     aData = mData;
 }
 
+
+// Matrix
+
+template<> const char* MMtrGet<float>::Type() { return "MMtrGet_float";};
+
+template<> const char* MMtrGet<float>::TypeSig() { return  "MF";};
+
+template<class T> void *DVar::HMtr<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MMtrGet<T>::Type()) == 0) res = (MMtrGet<T>*) this;
+    return res;
+}
+
+template<class T> DVar::HBase* DVar::HMtr<T>::Create(DVar* aHost, const string& aString, Elem* aInp)
+{
+    HBase* res = NULL;
+    if (!aString.empty()) {
+	MtrBase::TMtrType mtype;
+	MtrBase::TMtrDim mdim;
+	string sig;
+	ParseSigPars(aString, sig, mtype, mdim);
+	if (sig == MMtrGet<T>::TypeSig() && mtype != MtrBase::EMt_Unknown) {
+	    res = new HMtr<T>(aHost, mtype, mdim);
+	}
+    }
+    if (res == NULL && aInp != NULL) {
+	MMtrGet<T>* dget = (MMtrGet<T>*) aInp->GetObj(dget);
+	if (dget != NULL) {
+	    Mtr<T> data;
+	    dget->MtrGet(data);
+	    if (data.mType != MtrBase::EMt_Unknown && data.mDim.first != 0 && data.mDim.second != 0) {
+		res = new HMtr<T>(aHost, data.mType, data.mDim);
+	    }
+	}
+    }
+    return res;
+}
+
+template<class T> DVar::HMtr<T>::HMtr(DVar* aHost, const string& aCont): HBase(aHost) 
+{
+    string sig;
+    ParseSigPars(aCont, sig, mData.mType, mData.mDim);
+    int size = mData.mDim.first*mData.mDim.second;
+    mData.mData.reserve(size);
+}
+
+template<class T> DVar::HMtr<T>::HMtr(DVar* aHost, const MtrBase::TMtrType& aType, const MtrBase::TMtrDim& aDim): HBase(aHost)
+{
+    mData.mType = aType;
+    mData.mDim = aDim;
+    int size = mData.mDim.first*mData.mDim.second;
+    mData.mData.reserve(size);
+}
+
+template<class T> int DVar::HMtr<T>::ParseSigPars(const string& aCont, string& aSig, MtrBase::TMtrType& aType, MtrBase::TMtrDim& aDim)
+{
+    size_t res = string::npos;
+    if (!aCont.empty()) {
+	int beg = 0;
+	int sigp_e = aCont.find_first_of(' ');
+	res = sigp_e;
+	string sigp = aCont.substr(beg, sigp_e);
+	int sig_e = sigp.find_first_of(',');
+	aSig = sigp.substr(0, sig_e);
+	if (!aSig.empty()) {
+	    beg = sig_e + 1;
+	    int par_e = sigp.find_first_of(',', beg);
+	    string par = sigp.substr(beg, par_e - beg);
+	    if (par.length() == 1) {
+		char ts = par.at(0);
+		switch (ts) {
+		    case 'R': aType = MtrBase::EMt_Regular; break;
+		    case 'V': aType = MtrBase::EMt_Vector; break;
+		    case 'S': aType = MtrBase::EMt_String; break;
+		    case 'D': aType = MtrBase::EMt_Diagonal; break;
+		    case 'U': aType = MtrBase::EMt_Utriang; break;
+		    case 'B': aType = MtrBase::EMt_Btriang; break;
+		}
+		beg = par_e + 1;
+		par_e = sigp.find_first_of(',', beg);
+		par = sigp.substr(beg, par_e - beg);
+		if (!par.empty()) {
+		    int dp1 = 0, dp2 = 0;
+		    istringstream sstr(par);
+		    sstr >> dp1;
+		    beg = par_e + 1;
+		    par = sigp.substr(beg);
+		    if (dp1 != 0) {
+			istringstream sstr(par);
+			sstr >> dp2;
+			aDim.first = dp1; aDim.second = dp2; 
+			if (dp2 == 0) {
+			    aDim.second = dp1;
+			    if (aType == MtrBase::EMt_Vector) {
+				aDim.first = dp1; aDim.second = 1;
+			    }
+			    else if (aType == MtrBase::EMt_String) {
+				aDim.first = 1; aDim.second = dp1;
+			    }
+			}
+			else if (aType == MtrBase::EMt_Vector || aType == MtrBase::EMt_String || aType == MtrBase::EMt_Diagonal) {
+			    aDim.first = 0; aDim.second = 0; aType = MtrBase::EMt_Unknown;
+			}
+		    }
+		}
+	    }
+	}
+    }
+    return res;
+}
+
+template<class T> TBool DVar::HMtr<T>::FromString(const string& aString)
+{
+    TBool res = ETrue;
+    int res1 = 0;
+    string ss;
+    int beg = 0, end = 0;
+    MtrBase::TMtrType mtype;
+    MtrBase::TMtrDim mdim;
+    string sig;
+    end = ParseSigPars(aString, sig, mtype, mdim);
+    if (sig == MMtrGet<T>::TypeSig() && mtype != MtrBase::EMt_Unknown) {
+	mData.mType = mtype;
+	mData.mDim = mdim;
+	mData.mData.clear();
+	TBool fin = EFalse;
+	int cnt = 0;
+	do {
+	    T data;
+	    beg = end + 1;
+	    end = aString.find(' ', beg);
+	    ss = aString.substr(beg, end - beg);
+	    if (!ss.empty()) {
+		istringstream sstr(ss);
+		sstr >> data;
+		ios_base::iostate state = sstr.rdstate();
+		if (!sstr.fail()) {
+		    mData.mData.push_back(data);
+		}
+		else {
+		    res = EFalse;
+		}
+		cnt++;
+	    }
+	    if (end == string::npos) {
+		fin = ETrue;
+	    }
+	} while (!fin);
+	if (cnt != mData.mDim.first*mData.mDim.second) {
+	    res = EFalse;
+	}
+    }
+    else {
+	res = EFalse;
+    }
+    return res;
+}
+
+template<class T> void DVar::HMtr<T>::ToString(string& aString)
+{
+    mData.ToString(aString);
+}
+
+template<class T> TBool DVar::HMtr<T>::Set(Elem* aInp)
+{
+    TBool res = EFalse;
+    MMtrGet<T>* dget = (MMtrGet<T>*) aInp->GetObj(dget);
+    if (dget != NULL) {
+	res = dget->MtrGet(mData);
+	if (res) {
+	    mHost.UpdateProp();
+	    mHost.NotifyUpdate();
+	    res = ETrue;
+	}
+    }
+    return res;
+}
+
+template<class T> TBool DVar::HMtr<T>::MtrGet(Mtr<T>& aData)
+{
+    aData = mData;
+    return ETrue;
+}
+
+template<class T> void Mtr<T>::ToString(string& aString) const
+{
+    stringstream ss;
+    ss << MMtrGet<T>::TypeSig();
+    if (mType != MtrBase::EMt_Unknown) {
+	char mt = 'R';
+	switch (mType) {
+	    case MtrBase::EMt_Diagonal: mt = 'D'; break;
+	    case MtrBase::EMt_Vector: mt = 'V'; break;
+	    case MtrBase::EMt_String: mt = 'S'; break;
+	    case MtrBase::EMt_Utriang: mt = 'U'; break;
+	    case MtrBase::EMt_Btriang: mt = 'B'; break;
+	}
+	ss << ',' << mt << ',' << mDim.first;
+	if (mDim.second != 0) {
+	    ss << ',' << mDim.second;
+	}
+	for (typename vector<T>::const_iterator it = mData.begin(); it != mData.end(); it++) {
+	    T data = *it;
+	    ss << " " << data;
+	}
+    }
+    aString = ss.str();
+
+}
 

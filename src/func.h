@@ -126,6 +126,8 @@ class AFunc: public Elem, public MACompsObserver, public MDataObserver
 	void NotifyUpdate();
 	TBool IsLogeventUpdate();
 	inline Elem* Host();
+    public:
+	static const string KDiagErr;
 };
 
 inline Elem* AFunc::Host() { return iMan->GetMan();};
@@ -428,6 +430,18 @@ template <class T> class FAddMtrd: public FAddBase, public MMtrdGet<T> {
 	virtual void MtrdGet(Mtrd<T>& aData);
 };
 
+template <class T> class FAddMtr: public FAddBase, public MMtrGet<T> {
+    public:
+	static Func* Create(Host* aHost, const string& aString);
+	FAddMtr(Host& aHost): FAddBase(aHost), mErr(EFalse) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MMtrGet<T>::Type();};
+	virtual TBool MtrGet(Mtr<T>& aData);
+	virtual void GetResult(string& aResult);
+	string mRes;
+	TBool mErr;
+};
+
 class AFAddVar: public AFunVar
 {
     public:
@@ -500,6 +514,19 @@ template <class T> class FMplMtrdVect: public FMplncBase, public MVectGet<T> {
 	virtual void VectGet(Vect<T>& aData);
 	virtual void GetResult(string& aResult);
 	Vect<T> mRes;
+};
+
+// Multiplication, matrix
+template <class T> class FMplMtr: public FMplncBase, public MMtrGet<T> {
+    public:
+	static Func* Create(Host* aHost, const string& aIfaceName);
+	FMplMtr(Host& aHost): FMplncBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MDFloatGet::Type();};
+	virtual TBool MtrGet(Mtr<T>& aData);
+	virtual void GetResult(string& aResult);
+	string mRes;
+	TBool mErr;
 };
 
 

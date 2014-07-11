@@ -179,6 +179,25 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		Mtrd<T> mData;
 		static string mId;
 	};
+	// Matrix
+	template <class T> class HMtr: public HBase, public MMtrGet<T> {
+	    public:
+		HMtr(DVar* aHost, const string& aCont);
+		HMtr(DVar* aHost, const MtrBase::TMtrType& aType, const MtrBase::TMtrDim& aDim);
+		static HBase* Create(DVar* aHost, const string& aString, Elem* aInp = NULL);
+		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+		virtual string IfaceGetId() const { return MMtrdGet<T>::Type();};
+		// From MMtrdGet
+		virtual TBool MtrGet(Mtr<T>& aData);
+		// From HBase
+		virtual TBool FromString(const string& aString);
+		virtual void ToString(string& aString);
+		virtual TBool Set(Elem* aInp);
+	    protected:
+		static int ParseSigPars(const string& aCont, string& aSig, MtrBase::TMtrType& aType, MtrBase::TMtrDim& aDim);
+	    protected:
+		Mtr<T> mData;
+	};
     public:
 	static const char* Type() { return "DVar";};
 	static string PEType();
