@@ -433,13 +433,12 @@ template <class T> class FAddMtrd: public FAddBase, public MMtrdGet<T> {
 template <class T> class FAddMtr: public FAddBase, public MMtrGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aString);
-	FAddMtr(Host& aHost): FAddBase(aHost), mErr(EFalse) {};
+	FAddMtr(Host& aHost): FAddBase(aHost) {};
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	virtual string IfaceGetId() const { return MMtrGet<T>::Type();};
-	virtual TBool MtrGet(Mtr<T>& aData);
+	virtual void MtrGet(Mtr<T>& aData);
 	virtual void GetResult(string& aResult);
-	string mRes;
-	TBool mErr;
+	Mtr<T> mRes;
 };
 
 class AFAddVar: public AFunVar
@@ -523,10 +522,9 @@ template <class T> class FMplMtr: public FMplncBase, public MMtrGet<T> {
 	FMplMtr(Host& aHost): FMplncBase(aHost) {};
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	virtual string IfaceGetId() const { return MDFloatGet::Type();};
-	virtual TBool MtrGet(Mtr<T>& aData);
+	virtual void MtrGet(Mtr<T>& aData);
 	virtual void GetResult(string& aResult);
-	string mRes;
-	TBool mErr;
+	Mtr<T> mRes;
 };
 
 
@@ -565,6 +563,19 @@ template <class T> class FMplinvMtrd: public FMplinvBase, public MMtrdGet<T> {
 	Mtrd<T> mRes;
 };
 
+
+template <class T> class FMplinvMtr: public FMplinvBase, public MMtrGet<T> {
+    public:
+	static Func* Create(Host* aHost, const string& aString);
+	FMplinvMtr(Host& aHost): FMplinvBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MMtrGet<T>::Type();};
+	virtual void MtrGet(Mtr<T>& aData);
+	virtual void GetResult(string& aResult);
+	Mtr<T> mRes;
+};
+
+
 class AFMplinvVar: public AFunVar
 {
     public:
@@ -584,17 +595,16 @@ class AFMplinvVar: public AFunVar
 // Composing of diag matrix, variable
 
 // Composing of diag matrix, from vector
-template <class T> class FCpsMtrdVect: public Func, public MMtrdGet<T> {
+template <class T> class FCpsMtrdVect: public Func, public MMtrGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aString, MDVarGet* aInp1Var);
 	FCpsMtrdVect(Host& aHost): Func(aHost) {};
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	virtual string IfaceGetId() const { return MMtrdGet<T>::Type();};
-	virtual void MtrdGet(Mtrd<T>& aData);
+	virtual string IfaceGetId() const { return MMtrGet<T>::Type();};
+	virtual void MtrGet(Mtr<T>& aData);
 	virtual void GetResult(string& aResult);
     protected:
-	static TBool IsInpComatible(MDVarGet* aInpVar);
-	Mtrd<T> mRes;
+	Mtr<T> mRes;
 };
 
 class AFCpsMtrdVar: public AFunVar

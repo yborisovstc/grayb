@@ -409,8 +409,8 @@ TBool DVar::Init(const string& aString, Elem* aInp)
     if ((mData = HInt::Create(this, aString, aInp)) != NULL);
     else if ((mData = HFloat::Create(this, aString, aInp)) != NULL);
     else if ((mData = HMtr<float>::Create(this, aString, aInp)) != NULL);
-    else if ((mData = HVect<float>::Create(this, aString, aInp)) != NULL);
-    else if ((mData = HMtrd<float>::Create(this, aString, aInp)) != NULL);
+    //else if ((mData = HVect<float>::Create(this, aString, aInp)) != NULL);
+    //else if ((mData = HMtrd<float>::Create(this, aString, aInp)) != NULL);
     else if ((mData = HBool::Create(this, aString, aInp)) != NULL);
     if (mData != NULL && !aString.empty()) {
 	res = mData->FromString(aString);
@@ -426,7 +426,7 @@ TBool DVar::FromString(const string& aData)
     }
     if (mData != NULL) {
 	res = mData->FromString(aData);
-	if (!res) {
+	if (!mData->IsValid()) {
 	    res = Init(aData);
 	}
     }
@@ -481,10 +481,14 @@ TBool DVar::Update()
 		}
 		if (mData != NULL) {
 		    res = mData->Set(eget);
-		    if (res && IsLogeventUpdate()) {
-			string new_value;
-			ToString(new_value);
-			Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", new_value.c_str(), old_value.c_str());
+		    if (res) {
+			UpdateProp();
+			NotifyUpdate();
+			if (IsLogeventUpdate()) {
+			    string new_value;
+			    ToString(new_value);
+			    Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", new_value.c_str(), old_value.c_str());
+			}
 		    }
 		}
 	    }
@@ -819,7 +823,7 @@ template<> const char* MVectGet<float>::Type() { return "MVectGet_float";};
 
 template<> string DVar::HVect<float>::mId = "VF";
 
-template<class T> DVar::HVect<T>::HVect(DVar* aHost): HBase(aHost) 
+template<class T> DVar::HVect<T>::HVect(DVar* aHost): HBase(aHost), mValid(EFalse)
 {
 };
 
@@ -1027,7 +1031,7 @@ template<class T> void DVar::HMtrd<T>::MtrdGet(Mtrd<T>& aData)
 
 template<> const char* MMtrGet<float>::Type() { return "MMtrGet_float";};
 
-template<> const char* MMtrGet<float>::TypeSig() { return  "MF";};
+template<> const char* MMtrGet<float>::TypeSig() { return  Mtr<float>::TypeSig();};
 
 template<class T> void *DVar::HMtr<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
@@ -1043,7 +1047,7 @@ template<class T> DVar::HBase* DVar::HMtr<T>::Create(DVar* aHost, const string& 
 	MtrBase::TMtrType mtype;
 	MtrBase::TMtrDim mdim;
 	string sig;
-	ParseSigPars(aString, sig, mtype, mdim);
+	MtrBase::ParseSigPars(aString, sig, mtype, mdim);
 	if (sig == MMtrGet<T>::TypeSig() && mtype != MtrBase::EMt_Unknown) {
 	    res = new HMtr<T>(aHost, mtype, mdim);
 	}
@@ -1064,7 +1068,7 @@ template<class T> DVar::HBase* DVar::HMtr<T>::Create(DVar* aHost, const string& 
 template<class T> DVar::HMtr<T>::HMtr(DVar* aHost, const string& aCont): HBase(aHost) 
 {
     string sig;
-    ParseSigPars(aCont, sig, mData.mType, mData.mDim);
+    MtrBase::ParseSigPars(aCont, sig, mData.mType, mData.mDim);
     int size = mData.mDim.first*mData.mDim.second;
     mData.mData.reserve(size);
 }
@@ -1077,90 +1081,35 @@ template<class T> DVar::HMtr<T>::HMtr(DVar* aHost, const MtrBase::TMtrType& aTyp
     mData.mData.reserve(size);
 }
 
-template<class T> int DVar::HMtr<T>::ParseSigPars(const string& aCont, string& aSig, MtrBase::TMtrType& aType, MtrBase::TMtrDim& aDim)
-{
-    size_t res = string::npos;
-    if (!aCont.empty()) {
-	int beg = 0;
-	int sigp_e = aCont.find_first_of(' ');
-	res = sigp_e;
-	string sigp = aCont.substr(beg, sigp_e);
-	int sig_e = sigp.find_first_of(',');
-	aSig = sigp.substr(0, sig_e);
-	if (!aSig.empty()) {
-	    beg = sig_e + 1;
-	    int par_e = sigp.find_first_of(',', beg);
-	    string par = sigp.substr(beg, par_e - beg);
-	    if (par.length() == 1) {
-		char ts = par.at(0);
-		switch (ts) {
-		    case 'R': aType = MtrBase::EMt_Regular; break;
-		    case 'V': aType = MtrBase::EMt_Vector; break;
-		    case 'S': aType = MtrBase::EMt_String; break;
-		    case 'D': aType = MtrBase::EMt_Diagonal; break;
-		    case 'U': aType = MtrBase::EMt_Utriang; break;
-		    case 'B': aType = MtrBase::EMt_Btriang; break;
-		}
-		beg = par_e + 1;
-		par_e = sigp.find_first_of(',', beg);
-		par = sigp.substr(beg, par_e - beg);
-		if (!par.empty()) {
-		    int dp1 = 0, dp2 = 0;
-		    istringstream sstr(par);
-		    sstr >> dp1;
-		    beg = par_e + 1;
-		    par = sigp.substr(beg);
-		    if (dp1 != 0) {
-			istringstream sstr(par);
-			sstr >> dp2;
-			aDim.first = dp1; aDim.second = dp2; 
-			if (dp2 == 0) {
-			    aDim.second = dp1;
-			    if (aType == MtrBase::EMt_Vector) {
-				aDim.first = dp1; aDim.second = 1;
-			    }
-			    else if (aType == MtrBase::EMt_String) {
-				aDim.first = 1; aDim.second = dp1;
-			    }
-			}
-			else if (aType == MtrBase::EMt_Vector || aType == MtrBase::EMt_String || aType == MtrBase::EMt_Diagonal) {
-			    aDim.first = 0; aDim.second = 0; aType = MtrBase::EMt_Unknown;
-			}
-		    }
-		}
-	    }
-	}
-    }
-    return res;
-}
-
 template<class T> TBool DVar::HMtr<T>::FromString(const string& aString)
 {
     TBool res = ETrue;
+    TBool changed = EFalse;
+    Mtr<T> data;
     int res1 = 0;
     string ss;
     int beg = 0, end = 0;
     MtrBase::TMtrType mtype;
     MtrBase::TMtrDim mdim;
     string sig;
-    end = ParseSigPars(aString, sig, mtype, mdim);
+    end = MtrBase::ParseSigPars(aString, sig, mtype, mdim);
     if (sig == MMtrGet<T>::TypeSig() && mtype != MtrBase::EMt_Unknown) {
-	mData.mType = mtype;
-	mData.mDim = mdim;
-	mData.mData.clear();
+	data.mType = mtype;
+	data.mDim = mdim;
+	data.mData.clear();
 	TBool fin = EFalse;
 	int cnt = 0;
 	do {
-	    T data;
+	    T sdata;
 	    beg = end + 1;
 	    end = aString.find(' ', beg);
 	    ss = aString.substr(beg, end - beg);
 	    if (!ss.empty()) {
 		istringstream sstr(ss);
-		sstr >> data;
+		sstr >> sdata;
 		ios_base::iostate state = sstr.rdstate();
 		if (!sstr.fail()) {
-		    mData.mData.push_back(data);
+		    data.mData.push_back(sdata);
 		}
 		else {
 		    res = EFalse;
@@ -1171,14 +1120,23 @@ template<class T> TBool DVar::HMtr<T>::FromString(const string& aString)
 		fin = ETrue;
 	    }
 	} while (!fin);
-	if (cnt != mData.mDim.first*mData.mDim.second) {
+	int ecnt = data.mDim.first*data.mDim.second;
+	if (mtype == MtrBase::EMt_Diagonal) {
+	    ecnt = data.mDim.first;
+	} 
+	if (cnt != ecnt) {
 	    res = EFalse;
 	}
     }
     else {
 	res = EFalse;
     }
-    return res;
+    data.mValid = res;
+    if (mData != data) {
+	mData = data;
+	changed = ETrue;
+    }
+    return changed;
 }
 
 template<class T> void DVar::HMtr<T>::ToString(string& aString)
@@ -1191,45 +1149,20 @@ template<class T> TBool DVar::HMtr<T>::Set(Elem* aInp)
     TBool res = EFalse;
     MMtrGet<T>* dget = (MMtrGet<T>*) aInp->GetObj(dget);
     if (dget != NULL) {
-	res = dget->MtrGet(mData);
-	if (res) {
-	    mHost.UpdateProp();
-	    mHost.NotifyUpdate();
+	Mtr<T> data = mData;
+	dget->MtrGet(data);
+	if (mData != data) {
+	    mData = data;
+	    //mHost.UpdateProp();
+	    //mHost.NotifyUpdate();
 	    res = ETrue;
 	}
     }
     return res;
 }
 
-template<class T> TBool DVar::HMtr<T>::MtrGet(Mtr<T>& aData)
+template<class T> void DVar::HMtr<T>::MtrGet(Mtr<T>& aData)
 {
     aData = mData;
-    return ETrue;
-}
-
-template<class T> void Mtr<T>::ToString(string& aString) const
-{
-    stringstream ss;
-    ss << MMtrGet<T>::TypeSig();
-    if (mType != MtrBase::EMt_Unknown) {
-	char mt = 'R';
-	switch (mType) {
-	    case MtrBase::EMt_Diagonal: mt = 'D'; break;
-	    case MtrBase::EMt_Vector: mt = 'V'; break;
-	    case MtrBase::EMt_String: mt = 'S'; break;
-	    case MtrBase::EMt_Utriang: mt = 'U'; break;
-	    case MtrBase::EMt_Btriang: mt = 'B'; break;
-	}
-	ss << ',' << mt << ',' << mDim.first;
-	if (mDim.second != 0) {
-	    ss << ',' << mDim.second;
-	}
-	for (typename vector<T>::const_iterator it = mData.begin(); it != mData.end(); it++) {
-	    T data = *it;
-	    ss << " " << data;
-	}
-    }
-    aString = ss.str();
-
 }
 

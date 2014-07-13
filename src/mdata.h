@@ -5,6 +5,7 @@
 #include <set>
 #include <vector>
 #include <string>
+#include "rdata.h"
 
 using namespace std;
 
@@ -156,41 +157,12 @@ template <class T> class MMtrdGet
 	virtual void MtrdGet(Mtrd<T>& aData) = 0;
 };
 
-// Matrix
-struct MtrBase 
-{ 
-    public: 
-	// Type of matrix
-	enum TMtrType {
-	    EMt_Unknown,
-	    EMt_Regular,
-	    EMt_Diagonal,
-	    EMt_Utriang, // Upper-triangular
-	    EMt_Btriang, // Bottom-triangular
-	    EMt_Vector, // Column vector
-	    EMt_String, // Line vector
-	};
-	// Dimension
-	typedef pair<int, int> TMtrDim;
-    public:
-	TMtrType mType;
-	TMtrDim mDim;
-};
-
-template<class T> struct Mtr: public MtrBase
-{ 
-    public:
-	vector<T> mData;
-	void ToString(string& aString) const;
-};
-
-
 template <class T> class MMtrGet
 {
     public:
 	static const char* Type();
 	static const char* TypeSig();
-	virtual TBool MtrGet(Mtr<T>& aData) = 0;
+	virtual void MtrGet(Mtr<T>& aData) = 0;
 };
 
 

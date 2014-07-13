@@ -52,6 +52,8 @@ libgrayb_la_SOURCES = \
 		       func.cpp \
 		       des.h \
 		       des.cpp \
+		       rdata.h \
+		       rdata.cpp \
 		       mmuta.h \
 		       mconn.h \
 		       graph.cpp \
@@ -84,6 +86,7 @@ include_HEADERS = \
 		  prop.h \
 		  vert.h \
 		  edge.h \
+		  rdata.h \
 		  incaps.h \
 		  graph.h 
 

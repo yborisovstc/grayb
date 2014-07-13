@@ -72,6 +72,14 @@ Chromo::Chromo()
 	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_MutNode, EDp_Direct), EDl_Critical));
 	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_MutNode, EDp_Comps), EDl_Critical));
 
+	mDeps.insert(TDepsElm(TDep(ENt_Cont, ENa_Id, EDp_Direct), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Cont, ENa_Id, EDp_Comps), EDl_Affecting));
+	mDeps.insert(TDepsElm(TDep(ENt_Cont, ENa_Parent, EDp_Direct), EDl_Affecting));
+	mDeps.insert(TDepsElm(TDep(ENt_Cont, ENa_Ref, EDp_Direct), EDl_Affecting));
+	mDeps.insert(TDepsElm(TDep(ENt_Cont, ENa_Ref, EDp_Comps), EDl_Affecting));
+	mDeps.insert(TDepsElm(TDep(ENt_Cont, ENa_MutNode, EDp_Direct), EDl_Critical));
+	mDeps.insert(TDepsElm(TDep(ENt_Cont, ENa_MutNode, EDp_Comps), EDl_Affecting));
+
 	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_Id, EDp_Direct), EDl_Critical));
 	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_Id, EDp_Comps), EDl_Critical));
 	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_Parent, EDp_Direct), EDl_Critical));

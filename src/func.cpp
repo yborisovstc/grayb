@@ -1571,7 +1571,7 @@ template<class T> void *FAddMtr<T>::DoGetObj(const char *aName, TBool aIncUpHier
     return res;
 }
 
-template<class T> TBool FAddMtr<T>::MtrGet(Mtr<T>& aData)
+template<class T> void FAddMtr<T>::MtrGet(Mtr<T>& aData)
 {
     TBool res = ETrue;
     Elem::TIfRange range = mHost.GetInps(EInp);
@@ -1581,9 +1581,9 @@ template<class T> TBool FAddMtr<T>::MtrGet(Mtr<T>& aData)
 	Elem* dgetbase = dget->VarGetBase();
 	MMtrGet<T>* dfget = (MMtrGet<T>*) dgetbase->GetObj(dfget);
 	if (dfget != NULL) {
-	    Mtr<T> arg;
-	    res = dfget->MtrGet(arg);
-	    if (res) {
+	    Mtr<T> arg = aData;
+	    dfget->MtrGet(arg);
+	    if (arg.mValid) {
 		if (arg.mDim == aData.mDim) {
 		    for (TInt cntr = 0; cntr < aData.mDim.first; cntr++) {
 			for (TInt cntc = 0; cntc < aData.mDim.second; cntc++) {
@@ -1613,23 +1613,17 @@ template<class T> TBool FAddMtr<T>::MtrGet(Mtr<T>& aData)
 	    break;
 	}
     }
-    aData.ToString(mRes);
-    mHost.OnFuncContentChanged();
-    mErr = !res;
-    return res;
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
 }
 
 
 template<class T> void FAddMtr<T>::GetResult(string& aResult)
 {
-    if (mErr) {
-	stringstream ss;
-	ss <<  "<" << AFunc::KDiagErr << ">";
-	aResult = ss.str();
-    }
-    else {
-	aResult = mRes;
-    }
+    mRes.ToString(aResult);
 }
 
 // Composing vector from components
@@ -1960,6 +1954,106 @@ template<class T> void FMplMtrdVect<T>::GetResult(string& aResult)
     aResult = ss.str();
 }
 
+// Matrix mutltiplication
+template<class T> Func* FMplMtr<T>::Create(Host* aHost, const string& aString)
+{
+    Func* res = NULL;
+    if (aString == MMtrGet<T>::Type()) {
+	res = new FMplMtr<T>(*aHost);
+    }
+    return res;
+}
+
+template<class T> void *FMplMtr<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MMtrGet<T>::Type()) == 0) res = (MMtrGet<T>*) this;
+    return res;
+}
+
+template<class T> void FMplMtr<T>::MtrGet(Mtr<T>& aData)
+{
+    TBool res = ETrue;
+    Elem::TIfRange range1 = mHost.GetInps(EInp1);
+    Elem::TIfRange range2 = mHost.GetInps(EInp2);
+    if (range1.first != range1.second && range2.first != range2.second) {
+	MDVarGet* dget = (MDVarGet*) (*range1.first);
+	Elem* dgetbase = dget->VarGetBase();
+	MMtrGet<T>* dfget1 = (MMtrGet<T>*) dgetbase->GetObj(dfget1);
+	dget = (MDVarGet*) (*range2.first);
+	dgetbase = dget->VarGetBase();
+	MMtrGet<T>* dfget2 = (MMtrGet<T>*) dgetbase->GetObj(dfget2);
+	if (dfget1 != NULL && dfget2 != NULL) {
+	    Mtr<T> arg1;
+	    arg1.mDim.first = aData.mDim.first;
+	    Mtr<T> arg2;
+	    arg2.mDim.second = aData.mDim.second;
+	    dfget1->MtrGet(arg1);
+	    dfget2->MtrGet(arg2);
+	    if (arg1.mValid && arg2.mValid) {
+		if (arg1.mDim.second == arg2.mDim.first && arg1.mDim.first == aData.mDim.first && arg2.mDim.second == aData.mDim.second) {
+		    MtrBase::TMtrType restype = MtrBase::EMt_Regular;
+		    if (arg1.mType == MtrBase::EMt_Diagonal) {
+			restype = arg2.mType;
+		    }
+		    else if (arg2.mType == MtrBase::EMt_Diagonal) {
+			restype = arg1.mType;
+		    }
+		    aData.mType = restype;
+		    if (restype == MtrBase::EMt_Regular) {
+			for (TInt cntr = 0; cntr < aData.mDim.first; cntr++) {
+			    for (TInt cntc = 0; cntc < aData.mDim.second; cntc++) {
+				TInt cnt = aData.mDim.second*cntr + cntc;
+				T data = T();
+				if (arg1.mType == MtrBase::EMt_Diagonal &&  arg2.mType == MtrBase::EMt_Diagonal) {
+				    data += arg1.GetElem(cntr, cntr) * arg2.GetElem(cntc, cntc);
+				}
+				else if (arg1.mType == MtrBase::EMt_Diagonal) {
+				    data += arg1.GetElem(cntr, cntr) * arg2.GetElem(cntr, cntc);
+				}
+				else if (arg2.mType == MtrBase::EMt_Diagonal) {
+				    data += arg1.GetElem(cntr, cntc) * arg2.GetElem(cntc, cntc);
+				}
+				else {
+				    for (TInt cntm = 0; cntm < arg1.mDim.second; cntm++) {
+					TInt ind1 = arg1.mDim.second*cntr + cntm;
+					TInt ind2 = arg2.mDim.second*cntm + cntc;
+					data += arg1.mData.at(ind1) * arg2.mData.at(ind2);
+				    }
+				}
+				aData.mData.at(cnt) = data;
+			    }
+			}
+		    }
+		}
+		else {
+		    mHost.LogWrite(MLogRec::EErr, "Incorrect dimensions of argument [%s]", dgetbase->GetUri().c_str());
+		    res = EFalse;
+		}
+	    }
+	    else {
+		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]", dgetbase->GetUri().c_str());
+		res = EFalse;
+	    }
+	}
+	else {
+	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
+	    res = EFalse;
+	}
+    }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
+}
+
+template<class T> void FMplMtr<T>::GetResult(string& aResult)
+{
+    mRes.ToString(aResult);
+}
+
+
 // Inversion for multiplication operation, variable
 string AFMplinvVar::PEType()
 {
@@ -1996,7 +2090,8 @@ void AFMplinvVar::Init(const string& aIfaceName)
 	delete mFunc;
 	mFunc == NULL;
     }
-    if ((mFunc = FMplinvMtrd<float>::Create(this, aIfaceName)) != NULL);
+    //if ((mFunc = FMplinvMtrd<float>::Create(this, aIfaceName)) != NULL);
+    if ((mFunc = FMplinvMtr<float>::Create(this, aIfaceName)) != NULL);
 }
 
 
@@ -2058,83 +2153,75 @@ template<class T> void FMplinvMtrd<T>::GetResult(string& aResult)
     aResult = ss.str();
 }
 
-// Matrix mutltiplication
-template<class T> Func* FMplMtr<T>::Create(Host* aHost, const string& aString)
+
+// Inversion for multiplication operation:  matrix
+
+template<class T> Func* FMplinvMtr<T>::Create(Host* aHost, const string& aString)
 {
     Func* res = NULL;
     if (aString == MMtrGet<T>::Type()) {
-	res = new FMplMtr<T>(*aHost);
+	res = new FMplinvMtr<T>(*aHost);
     }
     return res;
 }
 
-template<class T> void *FMplMtr<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+template<class T> void *FMplinvMtr<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
     if (strcmp(aName, MMtrGet<T>::Type()) == 0) res = (MMtrGet<T>*) this;
     return res;
 }
 
-template<class T> TBool FMplMtr<T>::MtrGet(Mtr<T>& aData)
+template<class T> void FMplinvMtr<T>::MtrGet(Mtr<T>& aData)
 {
     TBool res = ETrue;
-    Elem::TIfRange range = mHost.GetInps(EInp1);
-    T val = 0;
-    for (Elem::IfIter it = range.first; it != range.second; it++) {
-	MDVarGet* dget = (MDVarGet*) (*it);
+    Elem::TIfRange range = mHost.GetInps(EInp);
+    if (range.first != range.second) {
+	MDVarGet* dget = (MDVarGet*) (*range.first);
 	Elem* dgetbase = dget->VarGetBase();
 	MMtrGet<T>* dfget = (MMtrGet<T>*) dgetbase->GetObj(dfget);
 	if (dfget != NULL) {
-	    Mtr<T> arg;
-	    res = dfget->MtrGet(arg);
-	    if (res) {
-		if (arg.mDim == aData.mDim) {
-		    for (TInt cntr = 0; cntr < aData.mDim.first; cntr++) {
-			for (TInt cntc = 0; cntc < aData.mDim.second; cntc++) {
-			    TInt cnt = aData.mDim.second*cntr + cntc;
-			    if (it == range.first) {
-				aData.mData.at(cnt) = 0.0;
-			    }
-			    aData.mData.at(cnt) += arg.mData.at(cnt);
+	    Mtr<T> arg = aData;
+	    dfget->MtrGet(arg);
+	    if (arg.mValid) {
+		if ((aData.mDim.first == 0 || arg.mDim.first == aData.mDim.first) && (aData.mDim.second == 0 || arg.mDim.second == aData.mDim.second)) {
+		    if (arg.mType == MtrBase::EMt_Diagonal) {
+			// Only diag mtr is supported for now
+			aData = arg;
+			for (TInt cntr = 0; cntr < aData.mDim.first; cntr++) {
+			    T sdata = arg.mData.at(cntr);
+			    aData.mData.at(cntr) = 1 / sdata;
 			}
 		    }
 		}
 		else {
 		    mHost.LogWrite(MLogRec::EErr, "Incorrect dimensions of argument [%s]", dgetbase->GetUri().c_str());
 		    res = EFalse;
-		    break;
 		}
 	    }
 	    else {
 		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]", dgetbase->GetUri().c_str());
 		res = EFalse;
-		break;
 	    }
 	}
 	else {
 	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
 	    res = EFalse;
-	    break;
 	}
     }
-    aData.ToString(mRes);
-    mHost.OnFuncContentChanged();
-    mErr = !res;
-    return res;
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
 }
 
 
-template<class T> void FMplMtr<T>::GetResult(string& aResult)
+template<class T> void FMplinvMtr<T>::GetResult(string& aResult)
 {
-    if (mErr) {
-	stringstream ss;
-	ss <<  "<" << AFunc::KDiagErr << ">";
-	aResult = ss.str();
-    }
-    else {
-	aResult = mRes;
-    }
+    mRes.ToString(aResult);
 }
+
 
 
 // Composing of diag matrix, variable
@@ -2186,8 +2273,7 @@ string AFCpsMtrdVar::GetInpUri(TInt aId)
 template<class T> Func* FCpsMtrdVect<T>::Create(Host* aHost, const string& aString, MDVarGet* aInp1Var)
 {
     Func* res = NULL;
-    TBool inp1ok = IsInpComatible(aInp1Var);
-    if (aString == MMtrdGet<T>::Type() && inp1ok) {
+    if (aString == MMtrGet<T>::Type()) {
 	res = new FCpsMtrdVect<T>(*aHost);
     }
     return res;
@@ -2196,59 +2282,51 @@ template<class T> Func* FCpsMtrdVect<T>::Create(Host* aHost, const string& aStri
 template<class T> void *FCpsMtrdVect<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
-    if (strcmp(aName, MMtrdGet<T>::Type()) == 0) res = (MMtrdGet<T>*) this;
+    if (strcmp(aName, MMtrGet<T>::Type()) == 0) res = (MMtrGet<T>*) this;
     return res;
 }
 
-template<class T> void FCpsMtrdVect<T>::MtrdGet(Mtrd<T>& aData)
+template<class T> void FCpsMtrdVect<T>::MtrGet(Mtr<T>& aData)
 {
-    TInt size = aData.size();
+    TBool res = ETrue;
     Elem::TIfRange range = mHost.GetInps(EInp1);
     if (range.first != range.second) {
 	MDVarGet* dget = (MDVarGet*) (*range.first);
 	Elem* dgetbase = dget->VarGetBase();
-	MVectGet<T>* dfget = (MVectGet<T>*) dgetbase->GetObj(dfget);
+	MMtrGet<T>* dfget = (MMtrGet<T>*) dgetbase->GetObj(dfget);
 	if (dfget != NULL) {
-	    Vect<T> arg;
-	    arg.resize(size);
-	    dfget->VectGet(arg);
-	    if (arg.size() == size) {
-		for (TInt cnt = 0; cnt < size; cnt++) {
-		    aData.at(cnt) = arg.at(cnt);
+	    Mtr<T> arg;
+	    arg.mDim = MtrBase::TMtrDim(aData.mDim.first, 1);
+	    dfget->MtrGet(arg);
+	    if (arg.mValid) {
+		aData.mType = MtrBase::EMt_Diagonal;
+		aData.mDim.first = arg.mDim.first;
+		aData.mDim.second = arg.mDim.first;
+		aData.mData.resize(arg.mDim.first);
+		for (TInt cnt = 0; cnt < arg.mDim.first; cnt++) {
+		    aData.mData.at(cnt) = arg.mData.at(cnt);
 		}
-		mRes = aData;
-		mHost.OnFuncContentChanged();
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]", dgetbase->GetUri().c_str());
+		mHost.LogWrite(MLogRec::EErr, "Invalid argument [%s]", dgetbase->GetUri().c_str());
+		res = EFalse;
 	    }
 	}
+	else {
+	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
+	    res = EFalse;
+	}
+    }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
     }
 }
 
 template<class T> void FCpsMtrdVect<T>::GetResult(string& aResult)
 {
-    stringstream ss;
-    ss <<  MMtrdGet<T>::TypeSig();
-    for (typename Mtrd<T>::const_iterator it = mRes.begin(); it != mRes.end(); it++) {
-	ss << " " << *it;
-    }
-    aResult = ss.str();
-}
-
-template<class T> TBool FCpsMtrdVect<T>::IsInpComatible(MDVarGet* aInpVar)
-{
-    TBool res = EFalse;
-    if (aInpVar != NULL) {
-	string ifi = aInpVar->VarGetIfid();
-	if (!ifi.empty()) {
-	    res = (ifi == MVectGet<T>::Type());
-	}
-	else {
-	    // No arg type is stated yet, to negotiate
-	}
-    }
-    return res;
+    mRes.ToString(aResult);
 }
 
 

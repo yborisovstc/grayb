@@ -89,6 +89,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		virtual void ToString(string& aString) = 0;
 		virtual TBool Set(Elem* aInp) = 0;
 		virtual string IfaceGetId() const = 0;
+		virtual TBool IsValid() const { return ETrue;};
 		DVar& mHost;
 	};
 	class HBool: public HBase, public MDBoolGet {
@@ -161,8 +162,10 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		virtual TBool FromString(const string& aString);
 		virtual void ToString(string& aString);
 		virtual TBool Set(Elem* aInp);
+		virtual TBool IsValid() const { return mValid;};
 		Vect<T> mData;
 		static string mId;
+		TBool mValid;
 	};
 	template <class T> class HMtrd: public HBase, public MMtrdGet<T> {
 	    public:
@@ -188,13 +191,12 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 		virtual string IfaceGetId() const { return MMtrdGet<T>::Type();};
 		// From MMtrdGet
-		virtual TBool MtrGet(Mtr<T>& aData);
+		virtual void MtrGet(Mtr<T>& aData);
 		// From HBase
 		virtual TBool FromString(const string& aString);
 		virtual void ToString(string& aString);
 		virtual TBool Set(Elem* aInp);
-	    protected:
-		static int ParseSigPars(const string& aCont, string& aSig, MtrBase::TMtrType& aType, MtrBase::TMtrDim& aDim);
+		virtual TBool IsValid() const { return mData.mValid;};
 	    protected:
 		Mtr<T> mData;
 	};

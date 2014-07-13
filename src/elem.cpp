@@ -2089,8 +2089,9 @@ void Elem::GetDepRank(const TMDep& aDep, Rank& aRank)
     aDep.first.first->GetRank(aRank, mut);
 }
 
-void Elem::GetMajorDep(TMDep& aDep)
+void Elem::GetMajorDep(TMDep& aDep, TBool aUp, TBool aDown)
 {
+    //Logger()->Write(MLogRec::EInfo, this, "Gmd");
     // Ref to theses ds_mut_unappr_rt_ths1 for rules of searching deps
     Rank rc;
     if (aDep.first.first == NULL || aDep.first.second == NULL || aDep.second == ENa_Unknown) {
@@ -2111,23 +2112,31 @@ void Elem::GetMajorDep(TMDep& aDep)
 	    rc = rd;
 	    aDep = dep;
 	    // TODO [YB] Do we need it ?
+	    /*
 	    // Dependence childs
 	    Elem* dc = dep.first.first->GetMajorChild(rc);
 	    if (dc != NULL) {
 		aDep.first.first = dc;
 		aDep.first.second = dc->Chromos().Root().Handle();
 	    }
+	    */
 	}
     }
-    // Childs
-    for (TNMReg::const_iterator it = iChilds.begin(); it != iChilds.end(); it++) {
-	Elem* child = it->second;
-	child->GetMajorDep(aDep);
+    // Owner, ref ds_mut_unappr_rt_ths2
+    if (iMan != NULL && aUp) {
+	iMan->GetMajorDep(aDep, ETrue, EFalse);
     }
-    // Components
-    for (TNMReg::const_iterator it = iMComps.begin(); it != iMComps.end(); it++) {
-	Elem* comp = it->second;
-	comp->GetMajorDep(aDep);
+    if (aDown) {
+	// Childs
+	for (TNMReg::const_iterator it = iChilds.begin(); it != iChilds.end(); it++) {
+	    Elem* child = it->second;
+	    child->GetMajorDep(aDep, EFalse, ETrue);
+	}
+	// Components
+	for (vector<Elem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
+	    Elem* comp = *it;
+	    comp->GetMajorDep(aDep, EFalse, ETrue);
+	}
     }
 }
 
@@ -2140,7 +2149,7 @@ Elem::TMDep Elem::GetMajorDep(TNodeType aMut, MChromo::TDepsLevel aLevel)
     return res;
 }
 
-void Elem::GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDPath aDpath, MChromo::TDepsLevel aLevel)
+void Elem::GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDPath aDpath, MChromo::TDepsLevel aLevel, TBool aUp, TBool aDown)
 {
     // Ref to theses ds_mut_unappr_rt_ths1 for rules of searching deps
     Rank rc;
@@ -2163,24 +2172,32 @@ void Elem::GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDPath aDpath, MChr
 	    if (rd > rc) {
 		rc = rd;
 		aDep = dep;
+		/*
 		// Dependence childs
 		Elem* dc = dep.first.first->GetMajorChild(rc);
 		if (dc != NULL) {
 		    aDep.first.first = dc;
 		    aDep.first.second = dc->Chromos().Root().Handle();
 		}
+		*/
 	    }
 	}
     }
-    // Childs
-    for (TNMReg::const_iterator it = iChilds.begin(); it != iChilds.end(); it++) {
-	Elem* child = it->second;
-	child->GetMajorDep(aDep, aMut, MChromo::EDp_Direct, aLevel);
+    // Owner, ref ds_mut_unappr_rt_ths2
+    if (iMan != NULL && aUp) {
+	iMan->GetMajorDep(aDep, aMut, MChromo::EDp_Direct, aLevel, ETrue, EFalse);
     }
-    // Components
-    for (TNMReg::const_iterator it = iMComps.begin(); it != iMComps.end(); it++) {
-	Elem* comp = it->second;
-	comp->GetMajorDep(aDep, aMut, MChromo::EDp_Comps, aLevel);
+    if (aDown) {
+	// Childs
+	for (TNMReg::const_iterator it = iChilds.begin(); it != iChilds.end(); it++) {
+	    Elem* child = it->second;
+	    child->GetMajorDep(aDep, aMut, MChromo::EDp_Direct, aLevel, EFalse, ETrue);
+	}
+	// Components
+	for (vector<Elem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
+	    Elem* comp = *it;
+	    comp->GetMajorDep(aDep, aMut, MChromo::EDp_Comps, aLevel, EFalse, ETrue);
+	}
     }
 }
 
@@ -2199,6 +2216,7 @@ void Elem::GetDepRank(Rank& aRank, TNodeAttr aAttr)
 // Handles parent deleting, ref uc_029
 void Elem::OnParentDeleting(Elem* aParent)
 {
+    iParent = NULL;
     /* TODO [YB] this solution contradicts to principles of incrementing creations
      * to redesign
     // Only local parent deletion is handled for now

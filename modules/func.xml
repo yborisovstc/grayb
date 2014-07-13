@@ -427,6 +427,7 @@
 	<node node="Agents" id="func_agt" parent="AFMplncVar"/>
 	<node node="Capsule" id="Inp1" parent="../Inp_FVar"/> 
 	<node node="Capsule" id="Inp2" parent="../Inp_FVar"/> 
+	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
     </node>
 
     <!-- Function of variable mutltiplicationi inversion -->
