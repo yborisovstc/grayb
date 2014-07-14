@@ -200,6 +200,25 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	    protected:
 		Mtr<T> mData;
 	};
+
+	// Generic data
+	template <class T> class HDt: public HBase, public MDtGet<T> {
+	    public:
+		HDt(DVar* aHost, const string& aCont);
+		HDt(DVar* aHost, const T& aData);
+		static HBase* Create(DVar* aHost, const string& aString, Elem* aInp = NULL);
+		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+		virtual string IfaceGetId() const { return MDtGet<T>::Type();};
+		// From MMtrdGet
+		virtual void DtGet(T& aData);
+		// From HBase
+		virtual TBool FromString(const string& aString);
+		virtual void ToString(string& aString);
+		virtual TBool Set(Elem* aInp);
+		virtual TBool IsValid() const { return mData.mValid;};
+	    protected:
+		T mData;
+	};
     public:
 	static const char* Type() { return "DVar";};
 	static string PEType();

@@ -409,6 +409,7 @@ TBool DVar::Init(const string& aString, Elem* aInp)
     if ((mData = HInt::Create(this, aString, aInp)) != NULL);
     else if ((mData = HFloat::Create(this, aString, aInp)) != NULL);
     else if ((mData = HMtr<float>::Create(this, aString, aInp)) != NULL);
+    else if ((mData = HDt<Sdata <float> >::Create(this, aString, aInp)) != NULL);
     //else if ((mData = HVect<float>::Create(this, aString, aInp)) != NULL);
     //else if ((mData = HMtrd<float>::Create(this, aString, aInp)) != NULL);
     else if ((mData = HBool::Create(this, aString, aInp)) != NULL);
@@ -743,7 +744,7 @@ void DVar::HFloat::SetValue(float aData)
 // Scalar data
 template<> const char* MDataGet<float>::Type() { return "MDataGet_float";};
 
-template<> const char* MDataGet<float>::TypeSig() { return  "DF";};
+template<> const char* MDataGet<float>::TypeSig() { return "DF";};
 
 template<> string DVar::HData<float>::mId = "DF";
 
@@ -1093,6 +1094,72 @@ template<class T> TBool DVar::HMtr<T>::Set(Elem* aInp)
 }
 
 template<class T> void DVar::HMtr<T>::MtrGet(Mtr<T>& aData)
+{
+    aData = mData;
+}
+
+// Generic data
+
+template<class T> const char* MDtGet<T>::Type() { return (string("MDtGet_") + T::TypeSig()).c_str();};
+
+template<class T> void *DVar::HDt<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
+    return res;
+}
+
+template<class T> DVar::HBase* DVar::HDt<T>::Create(DVar* aHost, const string& aString, Elem* aInp)
+{
+    HBase* res = NULL;
+    if (!aString.empty() && T::IsSrepFit(aString)) {
+	res = new HDt<T>(aHost, aString);
+    }
+    if (res == NULL && aInp != NULL) {
+	MDtGet<T>* dget = (MDtGet<T>*) aInp->GetObj(dget);
+	if (dget != NULL) {
+	    T data;
+	    dget->DtGet(data);
+	    if (T::IsDataFit(data)) {
+		res = new HDt<T>(aHost, data);
+	    }
+	}
+    }
+    return res;
+}
+
+template<class T> DVar::HDt<T>::HDt(DVar* aHost, const string& aCont): HBase(aHost) 
+{
+    mData.FromString(aCont);
+}
+
+template<class T> DVar::HDt<T>::HDt(DVar* aHost, const T& aData): HBase(aHost), mData(aData)
+{
+}
+
+template<class T> TBool DVar::HDt<T>::FromString(const string& aString)
+{
+    return mData.FromString(aString);
+}
+
+template<class T> void DVar::HDt<T>::ToString(string& aString)
+{
+    mData.ToString(aString);
+}
+
+template<class T> TBool DVar::HDt<T>::Set(Elem* aInp)
+{
+    TBool res = EFalse;
+    MDtGet<T>* dget = (MDtGet<T>*) aInp->GetObj(dget);
+    if (dget != NULL) {
+	T data = mData;
+	dget->DtGet(data);
+	res = mData.Set(data);
+    }
+    return res;
+}
+
+template<class T> void DVar::HDt<T>::DtGet(T& aData)
 {
     aData = mData;
 }

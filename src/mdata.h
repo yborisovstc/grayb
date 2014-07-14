@@ -122,7 +122,7 @@ class MDVarSet
 	virtual Elem* VarSetBase() = 0;
 };
 
-// Scalar data
+// Simple scalar data
 template <class T> class MDataGet
 {
     public:
@@ -130,6 +130,15 @@ template <class T> class MDataGet
 	static const char* TypeSig();
 	virtual void DataGet(T& aData) = 0;
 };
+
+// Generic data
+template <class T> class MDtGet
+{
+    public:
+	static const char* Type();
+	virtual void DtGet(T& aData) = 0;
+};
+
 
 
 // TODO [YB] Obsolete, replaced ty MMtrGet, to remove
@@ -167,6 +176,7 @@ template <class T> class MMtrGet
 	static const char* TypeSig();
 	virtual void MtrGet(Mtr<T>& aData) = 0;
 };
+
 
 
 
