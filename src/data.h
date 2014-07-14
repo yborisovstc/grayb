@@ -186,7 +186,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	template <class T> class HMtr: public HBase, public MMtrGet<T> {
 	    public:
 		HMtr(DVar* aHost, const string& aCont);
-		HMtr(DVar* aHost, const MtrBase::TMtrType& aType, const MtrBase::TMtrDim& aDim);
+		HMtr(DVar* aHost, const Mtr<T>& aData);
 		static HBase* Create(DVar* aHost, const string& aString, Elem* aInp = NULL);
 		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 		virtual string IfaceGetId() const { return MMtrdGet<T>::Type();};

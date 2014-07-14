@@ -4,9 +4,11 @@
 #include "rdata.h"
 
 
-// Matrix
+// Matrix, base
 
 template<> const char* Mtr<float>::TypeSig() { return  "MF";};
+
+MtrBase::~MtrBase() {};
 
 int MtrBase::Ind(int r, int c) const
 {
@@ -15,37 +17,6 @@ int MtrBase::Ind(int r, int c) const
     else if (mType == EMt_Diagonal) res = (r == c) ? r : -1;
     return res;
 }
-
-void MtrBase::ToString(string& aString, const string& aTypeSig) const
-{
-    stringstream ss;
-    ss << aTypeSig;
-    char mt = 'R';
-    switch (mType) {
-	case MtrBase::EMt_Unknown: mt = '?'; break;
-	case MtrBase::EMt_Diagonal: mt = 'D'; break;
-	case MtrBase::EMt_Utriang: mt = 'U'; break;
-	case MtrBase::EMt_Btriang: mt = 'B'; break;
-    }
-    enum {ENone, EVect, EStr} opt = ENone;
-    if (mDim.first == 1) { mt = 'S'; opt = EStr;}
-    else if (mDim.second == 1) { mt = 'V'; opt = EVect;};
-    ss << ',' << mt;
-    if (mType == MtrBase::EMt_Diagonal || opt == EVect) {
-	ss << ',' << mDim.first;
-    }
-    else if (opt == EStr) {
-	ss << ',' << mDim.second;
-    }
-    else {
-	ss << ',' << mDim.first << ',' << mDim.second;
-    }
-    if (!mValid) {
-	ss << " <ERROR>";
-    }
-    aString = ss.str();
-}
-
 
 int MtrBase::ParseSigPars(const string& aCont, string& aSig, MtrBase::TMtrType& aType, MtrBase::TMtrDim& aDim)
 {
@@ -106,4 +77,153 @@ int MtrBase::ParseSigPars(const string& aCont, string& aSig, MtrBase::TMtrType& 
 	}
     }
     return res;
+}
+
+int MtrBase::IntSize() const
+{
+    int res = mDim.first * mDim.second;
+    if (mType == EMt_Diagonal) {
+	res = mDim.first;
+    } 
+    return res;
+}
+
+TBool MtrBase::IsSrepFit(const string& aString, const string& aTypeSig)
+{
+    TMtrType mtype;
+    TMtrDim mdim;
+    string sig;
+    ParseSigPars(aString, sig, mtype, mdim);
+    return  sig == aTypeSig &&  mtype != EMt_Unknown && mdim.first != 0 && mdim.second != 0;
+}
+
+TBool MtrBase::IsDataFit(const MtrBase& aData, const string& aTypeSig)
+{
+    return  aData.mValid && aData.GetTypeSig() == aTypeSig &&  aData.mType != EMt_Unknown && aData.mDim.first != 0 && aData.mDim.second != 0;
+}
+
+/*
+void MtrBase::ToString(string& aString, const string& aTypeSig) const
+{
+    stringstream ss;
+    ss << aTypeSig;
+    char mt = 'R';
+    switch (mType) {
+	case MtrBase::EMt_Unknown: mt = '?'; break;
+	case MtrBase::EMt_Diagonal: mt = 'D'; break;
+	case MtrBase::EMt_Utriang: mt = 'U'; break;
+	case MtrBase::EMt_Btriang: mt = 'B'; break;
+    }
+    enum {ENone, EVect, EStr} opt = ENone;
+    if (mDim.first == 1) { mt = 'S'; opt = EStr;}
+    else if (mDim.second == 1) { mt = 'V'; opt = EVect;};
+    ss << ',' << mt;
+    if (mType == MtrBase::EMt_Diagonal || opt == EVect) {
+	ss << ',' << mDim.first;
+    }
+    else if (opt == EStr) {
+	ss << ',' << mDim.second;
+    }
+    else {
+	ss << ',' << mDim.first << ',' << mDim.second;
+    }
+    if (!mValid) {
+	ss << " <ERROR>";
+    }
+    aString = ss.str();
+}
+*/
+
+void MtrBase::ToString(string& aString) const
+{
+    stringstream ss;
+    ss << GetTypeSig();
+    char mt = 'R';
+    switch (mType) {
+	case MtrBase::EMt_Unknown: mt = '?'; break;
+	case MtrBase::EMt_Diagonal: mt = 'D'; break;
+	case MtrBase::EMt_Utriang: mt = 'U'; break;
+	case MtrBase::EMt_Btriang: mt = 'B'; break;
+    }
+    enum {ENone, EVect, EStr} opt = ENone;
+    if (mDim.first == 1) { mt = 'S'; opt = EStr;}
+    else if (mDim.second == 1) { mt = 'V'; opt = EVect;};
+    ss << ',' << mt;
+    if (mType == MtrBase::EMt_Diagonal || opt == EVect) {
+	ss << ',' << mDim.first;
+    }
+    else if (opt == EStr) {
+	ss << ',' << mDim.second;
+    }
+    else {
+	ss << ',' << mDim.first << ',' << mDim.second;
+    }
+    if (!mValid) {
+	ss << " <ERROR>";
+    }
+    else {
+	for (TInt cnt = 0; cnt < IntSize(); cnt++) {
+	    ss << " ";
+	    ElemToString(cnt, ss);
+	}
+    }
+    aString = ss.str();
+}
+
+/*
+TBool MtrBase::FromString(const string& aString, const string& aTypeSig, int& aPos)
+{
+    TBool res = ETrue;
+    TBool changed = EFalse;
+    string ss;
+    int beg = 0, end = 0;
+    TMtrType mtype;
+    TMtrDim mdim;
+    string sig;
+    aPos = ParseSigPars(aString, sig, mtype, mdim);
+    if (sig == aTypeSig && mtype != EMt_Unknown) {
+	if (mType != mtype) { mType = mtype; changed = ETrue; }
+	if (mDim != mdim) { mDim = mdim; changed = ETrue; }
+    }
+    else {
+	res = EFalse;
+    }
+    if (mValid != res) { mValid = res; changed = ETrue; }
+    return changed;
+}
+*/
+
+TBool MtrBase::FromString(const string& aString)
+{
+    TBool res = ETrue;
+    TBool changed = EFalse;
+    string ss;
+    TMtrType mtype;
+    TMtrDim mdim;
+    string sig;
+    int beg = 0, end = 0;
+    end = ParseSigPars(aString, sig, mtype, mdim);
+    if (sig == GetTypeSig() && mtype != EMt_Unknown) {
+	if (mType != mtype) { mType = mtype; changed = ETrue; }
+	if (mDim != mdim) { mDim = mdim; changed = ETrue; }
+	string ss;
+	int cnt = 0;
+	do {
+	    beg = end + 1;
+	    end = aString.find(' ', beg);
+	    ss = aString.substr(beg, end - beg);
+	    if (!ss.empty()) {
+		istringstream sstr(ss);
+		changed |= ElemFromString(cnt++, sstr, res);
+	    }
+	} while (end != string::npos && res && cnt < IntSize());
+	if (cnt != IntSize() || end != string::npos) {
+	    res = EFalse;
+	}
+    }
+    else {
+	res = EFalse;
+    }
+    if (mValid != res) { mValid = res; changed = ETrue; }
+    return changed;
 }

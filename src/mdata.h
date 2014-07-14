@@ -132,6 +132,7 @@ template <class T> class MDataGet
 };
 
 
+// TODO [YB] Obsolete, replaced ty MMtrGet, to remove
 // Vector
 //typedef std::vector<float> VFloat;
 template<class T> struct Vect: public std::vector<T> { };
@@ -146,6 +147,7 @@ template <class T> class MVectGet
 	virtual void VectGet(Vect<T>& aData) = 0;
 };
 
+// TODO [YB] Obsolete, replaced ty MMtrGet, to remove
 // Daigonal matrix
 template<class T> struct Mtrd: public vector<T> { };
 
@@ -157,6 +159,7 @@ template <class T> class MMtrdGet
 	virtual void MtrdGet(Mtrd<T>& aData) = 0;
 };
 
+// Matrix
 template <class T> class MMtrGet
 {
     public:
