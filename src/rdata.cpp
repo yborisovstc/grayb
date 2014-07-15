@@ -281,19 +281,23 @@ MtrBase& MtrBase::Mpl(const MtrBase& a, const MtrBase& b)
 	    else if (b.mType == EMt_Diagonal) {
 		mType = a.mType;
 	    }
-	    for (TInt r = 0; r < mDim.first; r++) {
-		for (TInt c = 0; c < mDim.second; c++) {
-		    if (a.mType == EMt_Diagonal &&  b.mType == EMt_Diagonal) {
-			MplElems(r, c, a, r, r, b, c, c);
-		    }
-		    else if (a.mType == EMt_Diagonal) {
-			MplElems(r, c, a, r, r, b, r, c);
-		    }
-		    else if (b.mType == EMt_Diagonal) {
-			MplElems(r, c, a, r, c, b, c, c);
-		    }
-		    else {
-			MplRtoC(r, c, a, b);
+	    if (mType == EMt_Diagonal) {
+		for (TInt r = 0; r < mDim.first; r++) {
+		    MplElems(r, r, a, r, r, b, r, r);
+		}
+	    }
+	    else {
+		for (TInt r = 0; r < mDim.first; r++) {
+		    for (TInt c = 0; c < mDim.second; c++) {
+			if (a.mType == EMt_Diagonal) {
+			    MplElems(r, c, a, r, r, b, r, c);
+			}
+			else if (b.mType == EMt_Diagonal) {
+			    MplElems(r, c, a, r, c, b, c, c);
+			}
+			else {
+			    MplRtoC(r, c, a, b);
+			}
 		    }
 		}
 	    }
@@ -306,3 +310,18 @@ MtrBase& MtrBase::Mpl(const MtrBase& a, const MtrBase& b)
 	mValid = EFalse;
     }
 }
+
+
+MtrBase& MtrBase::Invm(const MtrBase& a)
+{
+    if (mType == EMt_Diagonal) {
+	// Only diag mtr is supported for now
+	for (TInt r = 0; r < mDim.first; r++) {
+	    InvmElem(r, r, a, r, r);
+	}
+    }
+    else {
+	mValid = ETrue;
+    }
+}
+

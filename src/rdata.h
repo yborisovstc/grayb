@@ -107,11 +107,13 @@ class MtrBase: public DtBase
 	int IntSize() const;
 	MtrBase& operator+=(const MtrBase& b);
 	MtrBase& Mpl(const MtrBase& a, const MtrBase& b);
+	MtrBase& Invm(const MtrBase& a);
 	virtual void ElemToString(TInt aInd, stringstream& aStream) const { aStream << "?";};
 	virtual TBool ElemFromString(TInt aInd, istringstream& aStream, TBool& aRes) {};
 	virtual void AddElem(const MtrBase& aB, TInt aRI, TInt aCI) {};
 	virtual void MplElems(TInt r, TInt c, const MtrBase& a, TInt ar, TInt ac, const MtrBase& b, TInt br, TInt bc) {};
 	virtual void MplRtoC(TInt r, TInt c, const MtrBase& a, const MtrBase& b) {};
+	virtual void InvmElem(TInt r, TInt c, const MtrBase& a, TInt ar, TInt ac) {};
     public:
 	TMtrType mType;
 	TMtrDim mDim;
@@ -136,6 +138,7 @@ template<class T> class Mtr: public MtrBase
 	virtual void AddElem(const MtrBase& b, TInt r, TInt c);
 	virtual void MplElems(TInt r, TInt c, const MtrBase& a, TInt ar, TInt ac, const MtrBase& b, TInt br, TInt bc);
 	virtual void MplRtoC(TInt r, TInt c, const MtrBase& a, const MtrBase& b);
+	virtual void InvmElem(TInt r, TInt c, const MtrBase& a, TInt ar, TInt ac) { T e = ((Mtr<T>&) a).GetElem(ar, ac); Elem(r, c) = 1/e;};
     public:
 	vector<T> mData;
 };

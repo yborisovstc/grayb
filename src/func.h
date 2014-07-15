@@ -587,7 +587,6 @@ template <class T> class FMplinvMtrd: public FMplinvBase, public MMtrdGet<T> {
 	Mtrd<T> mRes;
 };
 
-
 template <class T> class FMplinvMtr: public FMplinvBase, public MMtrGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aString);
@@ -598,6 +597,19 @@ template <class T> class FMplinvMtr: public FMplinvBase, public MMtrGet<T> {
 	virtual void GetResult(string& aResult);
 	Mtr<T> mRes;
 };
+
+// Inversion, generic data
+template <class T> class FMplinvDt: public FMplinvBase, public MDtGet<T> {
+    public:
+	static Func* Create(Host* aHost, const string& aString);
+	FMplinvDt(Host& aHost): FMplinvBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MDtGet<T>::Type();};
+	virtual void DtGet(T& aData);
+	virtual void GetResult(string& aResult);
+	T mRes;
+};
+
 
 
 class AFMplinvVar: public AFunVar
@@ -618,6 +630,7 @@ class AFMplinvVar: public AFunVar
 
 // Composing of diag matrix, variable
 
+/*
 // Composing of diag matrix, from vector
 template <class T> class FCpsMtrdVect: public Func, public MMtrGet<T> {
     public:
@@ -626,6 +639,20 @@ template <class T> class FCpsMtrdVect: public Func, public MMtrGet<T> {
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	virtual string IfaceGetId() const { return MMtrGet<T>::Type();};
 	virtual void MtrGet(Mtr<T>& aData);
+	virtual void GetResult(string& aResult);
+    protected:
+	Mtr<T> mRes;
+};
+*/
+
+// Composing of diag matrix, from vector
+template <class T> class FCpsMtrdVect: public Func, public MDtGet<Mtr<T> > {
+    public:
+	static Func* Create(Host* aHost, const string& aString, MDVarGet* aInp1Var);
+	FCpsMtrdVect(Host& aHost): Func(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MDtGet<Mtr<T> >::Type();};
+	virtual void DtGet(Mtr<T>& aData);
 	virtual void GetResult(string& aResult);
     protected:
 	Mtr<T> mRes;

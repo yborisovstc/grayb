@@ -2144,12 +2144,14 @@ template<class T> void FMplncDt<T>::DtGet(T& aData)
 	dgetbase = dget->VarGetBase();
 	MDtGet<T>* dfget2 = (MDtGet<T>*) dgetbase->GetObj(dfget2);
 	if (dfget1 != NULL && dfget2 != NULL) {
+	    aData.mValid = ETrue;
 	    T arg1;
 	    T arg2;
 	    dfget1->DtGet(arg1);
 	    dfget2->DtGet(arg2);
 	    if (arg1.mValid && arg2.mValid) {
 		aData.Mpl(arg1, arg2);
+		res = aData.mValid;
 	    }
 	    else {
 		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]", dgetbase->GetUri().c_str());
@@ -2212,7 +2214,8 @@ void AFMplinvVar::Init(const string& aIfaceName)
 	mFunc == NULL;
     }
     //if ((mFunc = FMplinvMtrd<float>::Create(this, aIfaceName)) != NULL);
-    if ((mFunc = FMplinvMtr<float>::Create(this, aIfaceName)) != NULL);
+    //if ((mFunc = FMplinvMtr<float>::Create(this, aIfaceName)) != NULL);
+    if ((mFunc = FMplinvDt<Mtr<float> >::Create(this, aIfaceName)) != NULL);
 }
 
 
@@ -2343,6 +2346,62 @@ template<class T> void FMplinvMtr<T>::GetResult(string& aResult)
     mRes.ToString(aResult);
 }
 
+// Inversion for multiplication operation:  generic data
+
+template<class T> Func* FMplinvDt<T>::Create(Host* aHost, const string& aString)
+{
+    Func* res = NULL;
+    if (aString == MDtGet<T>::Type()) {
+	res = new FMplinvDt<T>(*aHost);
+    }
+    return res;
+}
+
+template<class T> void *FMplinvDt<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
+    return res;
+}
+
+template<class T> void FMplinvDt<T>::DtGet(T& aData)
+{
+    TBool res = ETrue;
+    Elem::TIfRange range = mHost.GetInps(EInp);
+    if (range.first != range.second) {
+	MDVarGet* dget = (MDVarGet*) (*range.first);
+	Elem* dgetbase = dget->VarGetBase();
+	MDtGet<T>* dfget = (MDtGet<T>*) dgetbase->GetObj(dfget);
+	if (dfget != NULL) {
+	    aData.mValid = ETrue;
+	    T arg = aData;
+	    dfget->DtGet(arg);
+	    if (arg.mValid) {
+		aData.Invm(arg);
+		res = aData.mValid;
+	    }
+	    else {
+		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]", dgetbase->GetUri().c_str());
+		res = EFalse;
+	    }
+	}
+	else {
+	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
+	    res = EFalse;
+	}
+    }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
+}
+
+template<class T> void FMplinvDt<T>::GetResult(string& aResult)
+{
+    mRes.ToString(aResult);
+}
+
 
 
 // Composing of diag matrix, variable
@@ -2390,6 +2449,7 @@ string AFCpsMtrdVar::GetInpUri(TInt aId)
     if (aId == Func::EInp1) return "Inp"; else return string();
 }
 
+/*
 // Composing of diag matrix, from vector
 template<class T> Func* FCpsMtrdVect<T>::Create(Host* aHost, const string& aString, MDVarGet* aInp1Var)
 {
@@ -2426,6 +2486,68 @@ template<class T> void FCpsMtrdVect<T>::MtrGet(Mtr<T>& aData)
 		aData.mData.resize(arg.mDim.first);
 		for (TInt cnt = 0; cnt < arg.mDim.first; cnt++) {
 		    aData.mData.at(cnt) = arg.mData.at(cnt);
+		}
+	    }
+	    else {
+		mHost.LogWrite(MLogRec::EErr, "Invalid argument [%s]", dgetbase->GetUri().c_str());
+		res = EFalse;
+	    }
+	}
+	else {
+	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
+	    res = EFalse;
+	}
+    }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
+}
+
+template<class T> void FCpsMtrdVect<T>::GetResult(string& aResult)
+{
+    mRes.ToString(aResult);
+}
+*/
+
+
+// Composing of diag matrix, from vector
+template<class T> Func* FCpsMtrdVect<T>::Create(Host* aHost, const string& aString, MDVarGet* aInp1Var)
+{
+    Func* res = NULL;
+    if (aString == MDtGet<Mtr<T> >::Type()) {
+	res = new FCpsMtrdVect<T>(*aHost);
+    }
+    return res;
+}
+
+template<class T> void *FCpsMtrdVect<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MDtGet<Mtr<T> >::Type()) == 0) res = (MDtGet<Mtr<T> >*) this;
+    return res;
+}
+
+template<class T> void FCpsMtrdVect<T>::DtGet(Mtr<T>& aData)
+{
+    TBool res = ETrue;
+    Elem::TIfRange range = mHost.GetInps(EInp1);
+    if (range.first != range.second) {
+	MDVarGet* dget = (MDVarGet*) (*range.first);
+	Elem* dgetbase = dget->VarGetBase();
+	MDtGet<Mtr<T> >* dfget = (MDtGet<Mtr<T> >*) dgetbase->GetObj(dfget);
+	if (dfget != NULL) {
+	    Mtr<T> arg;
+	    arg.mDim = MtrBase::TMtrDim(aData.mDim.first, 1);
+	    dfget->DtGet(arg);
+	    if (arg.mValid) {
+		aData.mType = MtrBase::EMt_Diagonal;
+		aData.mDim.first = arg.mDim.first;
+		aData.mDim.second = arg.mDim.first;
+		aData.mData.resize(arg.mDim.first);
+		for (TInt r = 0; r < arg.mDim.first; r++) {
+		    aData.Elem(r,r) = arg.GetElem(r, 1);
 		}
 	    }
 	    else {
