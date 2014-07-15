@@ -408,8 +408,9 @@ TBool DVar::Init(const string& aString, Elem* aInp)
     }
     if ((mData = HInt::Create(this, aString, aInp)) != NULL);
     else if ((mData = HFloat::Create(this, aString, aInp)) != NULL);
-    else if ((mData = HMtr<float>::Create(this, aString, aInp)) != NULL);
+   // else if ((mData = HMtr<float>::Create(this, aString, aInp)) != NULL);
     else if ((mData = HDt<Sdata <float> >::Create(this, aString, aInp)) != NULL);
+    else if ((mData = HDt<Mtr <float> >::Create(this, aString, aInp)) != NULL);
     //else if ((mData = HVect<float>::Create(this, aString, aInp)) != NULL);
     //else if ((mData = HMtrd<float>::Create(this, aString, aInp)) != NULL);
     else if ((mData = HBool::Create(this, aString, aInp)) != NULL);
@@ -427,8 +428,10 @@ TBool DVar::FromString(const string& aData)
     }
     if (mData != NULL) {
 	res = mData->FromString(aData);
-	if (!mData->IsValid()) {
-	    res = Init(aData);
+	if (!mData->IsValid() && !mData->IsSigOK()) {
+	    // Signature get's not fit, reinit
+	    Init(aData);
+	    res = ETrue;
 	}
     }
     if (res) {
@@ -1154,7 +1157,10 @@ template<class T> TBool DVar::HDt<T>::Set(Elem* aInp)
     if (dget != NULL) {
 	T data = mData;
 	dget->DtGet(data);
-	res = mData.Set(data);
+	if (mData != data) {
+	    mData = data;
+	    res = ETrue;
+	}
     }
     return res;
 }

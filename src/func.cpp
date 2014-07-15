@@ -1310,7 +1310,9 @@ void AFAddVar::Init(const string& aIfaceName)
     else if ((mFunc = FAddData<float>::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddVect<float>::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddMtrd<float>::Create(this, aIfaceName)) != NULL);
-    else if ((mFunc = FAddMtr<float>::Create(this, aIfaceName)) != NULL);
+    //else if ((mFunc = FAddMtr<float>::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddDt<Sdata<float> >::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddDt<Mtr<float> >::Create(this, aIfaceName)) != NULL);
 }
 
 string AFAddVar::GetInpUri(TInt aId) 
@@ -1620,8 +1622,66 @@ template<class T> void FAddMtr<T>::MtrGet(Mtr<T>& aData)
     }
 }
 
-
 template<class T> void FAddMtr<T>::GetResult(string& aResult)
+{
+    mRes.ToString(aResult);
+}
+
+
+// Generic data addition
+template<class T> Func* FAddDt<T>::Create(Host* aHost, const string& aString)
+{
+    Func* res = NULL;
+    if (aString == MDtGet<T>::Type()) {
+	res = new FAddDt<T>(*aHost);
+    }
+    return res;
+}
+
+template<class T> void *FAddDt<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
+    return res;
+}
+
+template<class T> void FAddDt<T>::DtGet(T& aData)
+{
+    TBool res = ETrue;
+    Elem::TIfRange range = mHost.GetInps(EInp);
+    for (Elem::IfIter it = range.first; it != range.second; it++) {
+	MDVarGet* dget = (MDVarGet*) (*it);
+	Elem* dgetbase = dget->VarGetBase();
+	MDtGet<T>* dfget = (MDtGet<T>*) dgetbase->GetObj(dfget);
+	if (dfget != NULL) {
+	    T arg = aData;
+	    dfget->DtGet(arg);
+	    if (arg.mValid) {
+		if (it == range.first) {
+		    aData = arg;
+		}
+		else {
+		    aData += arg;
+		}
+	    }
+	    else {
+		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]", dgetbase->GetUri().c_str());
+		res = EFalse; break;
+	    }
+	}
+	else {
+	    mHost.LogWrite(MLogRec::EErr, "Incompatible argument [%s]", dgetbase->GetUri().c_str());
+	    res = EFalse; break;
+	}
+    }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
+}
+
+template<class T> void FAddDt<T>::GetResult(string& aResult)
 {
     mRes.ToString(aResult);
 }
@@ -1869,7 +1929,8 @@ void AFMplncVar::Init(const string& aIfaceName)
 	mFunc == NULL;
     }
     if ((mFunc = FMplMtrdVect<float>::Create(this, aIfaceName)) != NULL);
-    else if ((mFunc = FMplMtr<float>::Create(this, aIfaceName)) != NULL);
+    //else if ((mFunc = FMplMtr<float>::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FMplncDt<Mtr<float> >::Create(this, aIfaceName)) != NULL);
 }
 
 Elem::TIfRange AFMplncVar::GetInps(TInt aId)
@@ -2052,6 +2113,66 @@ template<class T> void FMplMtr<T>::GetResult(string& aResult)
 {
     mRes.ToString(aResult);
 }
+
+// Mutltiplication non-commutative, generic data
+template<class T> Func* FMplncDt<T>::Create(Host* aHost, const string& aString)
+{
+    Func* res = NULL;
+    if (aString == MDtGet<T>::Type()) {
+	res = new FMplncDt<T>(*aHost);
+    }
+    return res;
+}
+
+template<class T> void *FMplncDt<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
+    return res;
+}
+
+template<class T> void FMplncDt<T>::DtGet(T& aData)
+{
+    TBool res = ETrue;
+    Elem::TIfRange range1 = mHost.GetInps(EInp1);
+    Elem::TIfRange range2 = mHost.GetInps(EInp2);
+    if (range1.first != range1.second && range2.first != range2.second) {
+	MDVarGet* dget = (MDVarGet*) (*range1.first);
+	Elem* dgetbase = dget->VarGetBase();
+	MDtGet<T>* dfget1 = (MDtGet<T>*) dgetbase->GetObj(dfget1);
+	dget = (MDVarGet*) (*range2.first);
+	dgetbase = dget->VarGetBase();
+	MDtGet<T>* dfget2 = (MDtGet<T>*) dgetbase->GetObj(dfget2);
+	if (dfget1 != NULL && dfget2 != NULL) {
+	    T arg1;
+	    T arg2;
+	    dfget1->DtGet(arg1);
+	    dfget2->DtGet(arg2);
+	    if (arg1.mValid && arg2.mValid) {
+		aData.Mpl(arg1, arg2);
+	    }
+	    else {
+		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]", dgetbase->GetUri().c_str());
+		res = EFalse;
+	    }
+	}
+	else {
+	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
+	    res = EFalse;
+	}
+    }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
+}
+
+template<class T> void FMplncDt<T>::GetResult(string& aResult)
+{
+    mRes.ToString(aResult);
+}
+
 
 
 // Inversion for multiplication operation, variable

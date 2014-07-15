@@ -90,6 +90,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		virtual TBool Set(Elem* aInp) = 0;
 		virtual string IfaceGetId() const = 0;
 		virtual TBool IsValid() const { return ETrue;};
+		virtual TBool IsSigOK() const { return EFalse;};
 		DVar& mHost;
 	};
 	class HBool: public HBase, public MDBoolGet {
@@ -216,6 +217,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		virtual void ToString(string& aString);
 		virtual TBool Set(Elem* aInp);
 		virtual TBool IsValid() const { return mData.mValid;};
+		virtual TBool IsSigOK() const { return mData.mSigTypeOK;};
 	    protected:
 		T mData;
 	};

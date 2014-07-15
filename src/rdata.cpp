@@ -42,7 +42,15 @@ TBool DtBase::IsDataFit(const DtBase& aData, const string& aTypeSig)
 
 void DtBase::ToString(string& aString) const
 {
-    aString = GetTypeSig();
+    stringstream ss;
+    ss << GetTypeSig() << " ";
+    if (!mValid) {
+	ss << "<ERR>";
+    }
+    else {
+	DataToString(ss);
+    }
+    aString = ss.str();
 }
 
 TBool DtBase::FromString(const string& aString)
@@ -52,16 +60,24 @@ TBool DtBase::FromString(const string& aString)
     string sig;
     int end = ParseSigPars(aString, sig);
     if (sig == GetTypeSig()) {
-	int beg = end + 1;
-	end = aString.find(' ', beg);
-	string ss = aString.substr(beg, end - beg);
+	mSigTypeOK = ETrue;
+	string ss;
+	if (end != string::npos) {
+	    int beg = end + 1;
+	    end = aString.find(' ', beg);
+	    ss = aString.substr(beg, end - beg);
+	}
 	if (!ss.empty()) {
 	    istringstream sstr(ss);
 	    changed |= DataFromString(sstr, res);
 	}
+	else {
+	    res = EFalse;
+	}
     }
     else {
 	res = EFalse;
+	mSigTypeOK = EFalse;
     }
     if (mValid != res) { mValid = res; changed = ETrue; }
     return changed;
@@ -233,4 +249,60 @@ TBool MtrBase::FromString(const string& aString)
     }
     if (mValid != res) { mValid = res; changed = ETrue; }
     return changed;
+}
+
+MtrBase& MtrBase::operator+=(const MtrBase& b)
+{
+    TBool res = ETrue;
+    if (mDim == b.mDim) {
+	for (TInt cntr = 0; cntr < mDim.first; cntr++) {
+	    for (TInt cntc = 0; cntc < mDim.second; cntc++) {
+		TInt cnt = mDim.second*cntr + cntc;
+		AddElem(b, cntr, cntc);
+	    }
+	}
+    }
+    else {
+	res = EFalse;
+    }
+    if (mValid != res) { mValid = res; }
+    return *this;
+}
+
+
+MtrBase& MtrBase::Mpl(const MtrBase& a, const MtrBase& b) 
+{
+    if (a.mValid && b.mValid) {
+	if (a.mDim.second == b.mDim.first && a.mDim.first == mDim.first && b.mDim.second == mDim.second) {
+	    mType = EMt_Regular;
+	    if (a.mType == EMt_Diagonal) {
+		mType = b.mType;
+	    }
+	    else if (b.mType == EMt_Diagonal) {
+		mType = a.mType;
+	    }
+	    for (TInt r = 0; r < mDim.first; r++) {
+		for (TInt c = 0; c < mDim.second; c++) {
+		    if (a.mType == EMt_Diagonal &&  b.mType == EMt_Diagonal) {
+			MplElems(r, c, a, r, r, b, c, c);
+		    }
+		    else if (a.mType == EMt_Diagonal) {
+			MplElems(r, c, a, r, r, b, r, c);
+		    }
+		    else if (b.mType == EMt_Diagonal) {
+			MplElems(r, c, a, r, c, b, c, c);
+		    }
+		    else {
+			MplRtoC(r, c, a, b);
+		    }
+		}
+	    }
+	}
+	else {
+	    mValid = EFalse;
+	}
+    }
+    else {
+	mValid = EFalse;
+    }
 }

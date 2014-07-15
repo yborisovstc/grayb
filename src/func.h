@@ -441,6 +441,18 @@ template <class T> class FAddMtr: public FAddBase, public MMtrGet<T> {
 	Mtr<T> mRes;
 };
 
+// Addintion, generic data
+template <class T> class FAddDt: public FAddBase, public MDtGet<T> {
+    public:
+	static Func* Create(Host* aHost, const string& aString);
+	FAddDt(Host& aHost): FAddBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MDtGet<T>::Type();};
+	virtual void DtGet(T& aData);
+	virtual void GetResult(string& aResult);
+	T mRes;
+};
+
 class AFAddVar: public AFunVar
 {
     public:
@@ -525,6 +537,18 @@ template <class T> class FMplMtr: public FMplncBase, public MMtrGet<T> {
 	virtual void MtrGet(Mtr<T>& aData);
 	virtual void GetResult(string& aResult);
 	Mtr<T> mRes;
+};
+
+// Multiplication, generic data
+template <class T> class FMplncDt: public FMplncBase, public MDtGet<T> {
+    public:
+	static Func* Create(Host* aHost, const string& aIfaceName);
+	FMplncDt(Host& aHost): FMplncBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MDtGet<T>::Type();};
+	virtual void DtGet(T& aData);
+	virtual void GetResult(string& aResult);
+	T mRes;
 };
 
 
