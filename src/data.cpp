@@ -387,6 +387,18 @@ Elem* DVar::VarGetBase()
     return this;
 }
 
+void *DVar::DoGetDObj(const char *aName)
+{
+    void* res = NULL;
+    if (mData == NULL) {
+	Init(aName);
+    }
+    if (mData != NULL) {
+	res = mData->DoGetObj(aName, EFalse);
+    }
+    return res;
+}
+
 Elem* DVar::VarSetBase() 
 {
     return this;
@@ -479,21 +491,18 @@ TBool DVar::Update()
 	RqContext ctx(this);
 	MDVarGet* vget = (MDVarGet*) inp->GetSIfi(MDVarGet::Type(), &ctx);
 	if (vget != NULL) {
-	    Elem* eget = vget->VarGetBase();
-	    if (eget != NULL) {
-		if (mData == NULL) {
-		    Init(string(), vget);
-		}
-		if (mData != NULL) {
-		    res = mData->Set(eget);
-		    if (res) {
-			UpdateProp();
-			NotifyUpdate();
-			if (IsLogeventUpdate()) {
-			    string new_value;
-			    ToString(new_value);
-			    Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", new_value.c_str(), old_value.c_str());
-			}
+	    if (mData == NULL) {
+		Init(string(), vget);
+	    }
+	    if (mData != NULL) {
+		res = mData->Set(vget);
+		if (res) {
+		    UpdateProp();
+		    NotifyUpdate();
+		    if (IsLogeventUpdate()) {
+			string new_value;
+			ToString(new_value);
+			Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", new_value.c_str(), old_value.c_str());
 		    }
 		}
 	    }
@@ -531,7 +540,7 @@ DVar::HBase* DVar::HBool::Create(DVar* aHost, const string& aString, MDVarGet* a
 	res = new HBool(aHost);
     }
     if (res == NULL && aInp != NULL) {
-	MDBoolGet* dget = (MDBoolGet*) aInp->VarGetBase()->GetObj(dget);
+	MDBoolGet* dget = aInp->GetDObj(dget);
 	if (dget != NULL) {
 	    res = new HBool(aHost);
 	}
@@ -566,10 +575,10 @@ void DVar::HBool::Set(TBool aData)
     }
 }
 
-TBool DVar::HBool::Set(Elem* aInp)
+TBool DVar::HBool::Set(MDVarGet* aInp)
 {
     TBool res = EFalse;
-    MDBoolGet* dget = (MDBoolGet*) aInp->GetObj(dget);
+    MDBoolGet* dget = aInp->GetDObj(dget);
     if (dget != NULL) {
 	TBool val = dget->Value();
 	Set(val);
@@ -601,7 +610,7 @@ DVar::HBase* DVar::HInt::Create(DVar* aHost, const string& aString, MDVarGet* aI
 	res = new HInt(aHost);
     }
     if (res == NULL && aInp != NULL) {
-	MDIntGet* dget = (MDIntGet*) aInp->VarGetBase()->GetObj(dget);
+	MDIntGet* dget = aInp->GetDObj(dget);
 	if (dget != NULL) {
 	    res = new HInt(aHost);
 	}
@@ -642,10 +651,10 @@ void DVar::HInt::Set(TInt aData)
     }
 }
 
-TBool DVar::HInt::Set(Elem* aInp)
+TBool DVar::HInt::Set(MDVarGet* aInp)
 {
     TBool res = EFalse;
-    MDIntGet* dget = (MDIntGet*) aInp->GetObj(dget);
+    MDIntGet* dget = aInp->GetDObj(dget);
     if (dget != NULL) {
 	TInt val = dget->Value();
 	Set(val);
@@ -681,7 +690,7 @@ DVar::HBase* DVar::HFloat::Create(DVar* aHost, const string& aString, MDVarGet* 
 	res = new HFloat(aHost);
     }
     if (res == NULL && aInp != NULL) {
-	MDFloatGet* dget = (MDFloatGet*) aInp->VarGetBase()->GetObj(dget);
+	MDFloatGet* dget = aInp->GetDObj(dget);
 	if (dget != NULL) {
 	    res = new HFloat(aHost);
 	}
@@ -723,10 +732,10 @@ void DVar::HFloat::Set(float aData)
     }
 }
 
-TBool DVar::HFloat::Set(Elem* aInp)
+TBool DVar::HFloat::Set(MDVarGet* aInp)
 {
     TBool res = EFalse;
-    MDFloatGet* dget = (MDFloatGet*) aInp->GetObj(dget);
+    MDFloatGet* dget = aInp->GetDObj(dget);
     if (dget != NULL) {
 	float val = dget->Value();
 	Set(val);
@@ -770,7 +779,7 @@ template<class T> DVar::HBase* DVar::HData<T>::Create(DVar* aHost, const string&
 	}
     }
     if (res == NULL && aInp != NULL) {
-	MVectGet<T>* dget = (MVectGet<T>*) aInp->VarGetBase()->GetObj(dget);
+	MVectGet<T>* dget = aInp->GetDObj(dget);
 	if (dget != NULL) {
 	    res = new HData<T>(aHost);
 	}
@@ -807,10 +816,10 @@ template<class T> void DVar::HData<T>::ToString(string& aString)
     aString = ss.str();
 }
 
-template<class T> TBool DVar::HData<T>::Set(Elem* aInp)
+template<class T> TBool DVar::HData<T>::Set(MDVarGet* aInp)
 {
     TBool res = EFalse;
-    MDataGet<T>* dget = (MDataGet<T>*) aInp->GetObj(dget);
+    MDataGet<T>* dget = aInp->GetDObj(dget);
     if (dget != NULL) {
 	T val;
 	dget->DataGet(val);
@@ -850,7 +859,7 @@ template<class T> DVar::HBase* DVar::HVect<T>::Create(DVar* aHost, const string&
 	}
     }
     if (res == NULL && aInp != NULL) {
-	MVectGet<T>* dget = (MVectGet<T>*) aInp->VarGetBase()->GetObj(dget);
+	MVectGet<T>* dget = aInp->GetDObj(dget);
 	if (dget != NULL) {
 	    res = new HVect<T>(aHost);
 	}
@@ -907,10 +916,10 @@ template<class T> void DVar::HVect<T>::ToString(string& aString)
     aString = ss.str();
 }
 
-template<class T> TBool DVar::HVect<T>::Set(Elem* aInp)
+template<class T> TBool DVar::HVect<T>::Set(MDVarGet* aInp)
 {
     TBool res = EFalse;
-    MVectGet<T>* dget = (MVectGet<T>*) aInp->GetObj(dget);
+    MVectGet<T>* dget = aInp->GetDObj(dget);
     if (dget != NULL) {
 	dget->VectGet(mData);
 	mHost.UpdateProp();
@@ -952,7 +961,7 @@ template<class T> DVar::HBase* DVar::HMtrd<T>::Create(DVar* aHost, const string&
 	}
     }
     if (res == NULL && aInp != NULL) {
-	MMtrdGet<T>* dget = (MMtrdGet<T>*) aInp->VarGetBase()->GetObj(dget);
+	MMtrdGet<T>* dget = aInp->GetDObj(dget);
 	if (dget != NULL) {
 	    res = new HMtrd<T>(aHost);
 	}
@@ -1013,10 +1022,10 @@ template<class T> void DVar::HMtrd<T>::ToString(string& aString)
     aString = ss.str();
 }
 
-template<class T> TBool DVar::HMtrd<T>::Set(Elem* aInp)
+template<class T> TBool DVar::HMtrd<T>::Set(MDVarGet* aInp)
 {
     TBool res = EFalse;
-    MMtrdGet<T>* dget = (MMtrdGet<T>*) aInp->GetObj(dget);
+    MMtrdGet<T>* dget = aInp->GetDObj(dget);
     if (dget != NULL) {
 	dget->MtrdGet(mData);
 	mHost.UpdateProp();
@@ -1052,7 +1061,7 @@ template<class T> DVar::HBase* DVar::HMtr<T>::Create(DVar* aHost, const string& 
 	res = new HMtr<T>(aHost, aString);
     }
     if (res == NULL && aInp != NULL) {
-	MMtrGet<T>* dget = (MMtrGet<T>*) aInp->VarGetBase()->GetObj(dget);
+	MMtrGet<T>* dget = aInp->GetDObj(dget);
 	if (dget != NULL) {
 	    Mtr<T> data;
 	    dget->MtrGet(data);
@@ -1083,10 +1092,10 @@ template<class T> void DVar::HMtr<T>::ToString(string& aString)
     mData.ToString(aString);
 }
 
-template<class T> TBool DVar::HMtr<T>::Set(Elem* aInp)
+template<class T> TBool DVar::HMtr<T>::Set(MDVarGet* aInp)
 {
     TBool res = EFalse;
-    MMtrGet<T>* dget = (MMtrGet<T>*) aInp->GetObj(dget);
+    MMtrGet<T>* dget = aInp->GetDObj(dget);
     if (dget != NULL) {
 	Mtr<T> data = mData;
 	dget->MtrGet(data);
@@ -1121,7 +1130,7 @@ template<class T> DVar::HBase* DVar::HDt<T>::Create(DVar* aHost, const string& a
 	res = new HDt<T>(aHost, aString);
     }
     if (res == NULL && aInp != NULL) {
-	MDtGet<T>* dget = (MDtGet<T>*) aInp->VarGetBase()->GetObj(dget);
+	MDtGet<T>* dget = aInp->GetDObj(dget);
 	if (dget != NULL) {
 	    T data;
 	    dget->DtGet(data);
@@ -1152,10 +1161,10 @@ template<class T> void DVar::HDt<T>::ToString(string& aString)
     mData.ToString(aString);
 }
 
-template<class T> TBool DVar::HDt<T>::Set(Elem* aInp)
+template<class T> TBool DVar::HDt<T>::Set(MDVarGet* aInp)
 {
     TBool res = EFalse;
-    MDtGet<T>* dget = (MDtGet<T>*) aInp->GetObj(dget);
+    MDtGet<T>* dget = aInp->GetDObj(dget);
     if (dget != NULL) {
 	T data = mData;
 	dget->DtGet(data);

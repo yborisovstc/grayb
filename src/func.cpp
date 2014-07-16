@@ -1215,7 +1215,6 @@ TBool AFunVar::HandleCompChanged(Elem& aContext, Elem& aComp)
     return res;
 }
 
-
 string AFunVar::VarGetIfid() const
 {
     return mFunc != NULL ? mFunc->IfaceGetId() : string();
@@ -1229,6 +1228,27 @@ void AFunVar::OnFuncContentChanged()
 Elem* AFunVar::VarGetBase() 
 {
     return this;
+}
+
+void *AFunVar::DoGetDObj(const char *aName)
+{
+    void* res = NULL;
+    if (mFunc == NULL) {
+	Init(aName);
+	if (mFunc != NULL) {
+	    res = mFunc->DoGetObj(aName, EFalse);
+	}
+    }
+    else {
+	res = mFunc->DoGetObj(aName, EFalse);
+	if (res == NULL) {
+	    Init(aName);
+	    if (mFunc != NULL) {
+		res = mFunc->DoGetObj(aName, EFalse);
+	    }
+	}
+    }
+    return res;
 }
 
 Elem::TIfRange AFunVar::GetInps(TInt aId)
@@ -1344,8 +1364,7 @@ TInt FAddInt::Value()
     TInt val = 0;
     for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
-	Elem* dgetbase = dget->VarGetBase();
-	MDIntGet* diget = (MDIntGet*) dgetbase->GetObj(diget);
+	MDIntGet* diget = (MDIntGet*) dget->VarGetBase()->GetObj(diget);
 	if (diget != NULL) {
 	    val += diget->Value();
 	}
@@ -1377,13 +1396,12 @@ float FAddFloat::Value()
     float val = 0;
     for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
-	Elem* dgetbase = dget->VarGetBase();
-	MDFloatGet* dfget = (MDFloatGet*) dgetbase->GetObj(dfget);
+	MDFloatGet* dfget = (MDFloatGet*) dget->VarGetBase()->GetObj(dfget);
 	if (dfget != NULL) {
 	    val += dfget->Value();
 	}
 	else {
-	    MDIntGet* diget = (MDIntGet*) dgetbase->GetSIfi(MDIntGet::Type());
+	    MDIntGet* diget = (MDIntGet*) dget->VarGetBase()->GetSIfi(MDIntGet::Type());
 	    if (diget != NULL) {
 		val += (float) diget->Value();
 	    }
@@ -1424,8 +1442,7 @@ template<class T>  void FAddData<T>::DataGet(T& aData)
     T val = 0;
     for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
-	Elem* dgetbase = dget->VarGetBase();
-	MDataGet<T>* dfget = (MDataGet<T>*) dgetbase->GetObj(dfget);
+	MDataGet<T>* dfget = (MDataGet<T>*) dget->VarGetBase()->GetObj(dfget);
 	if (dfget != NULL) {
 	    T arg;
 	    dfget->DataGet(arg);
@@ -1468,8 +1485,7 @@ template<class T> void FAddVect<T>::VectGet(Vect<T>& aData)
     Elem::TIfRange range = mHost.GetInps(EInp);
     for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
-	Elem* dgetbase = dget->VarGetBase();
-	MVectGet<T>* dfget = (MVectGet<T>*) dgetbase->GetObj(dfget);
+	MVectGet<T>* dfget = (MVectGet<T>*) dget->VarGetBase()->GetObj(dfget);
 	if (dfget != NULL) {
 	    Vect<T> arg;
 	    arg.resize(size);
@@ -1485,7 +1501,7 @@ template<class T> void FAddVect<T>::VectGet(Vect<T>& aData)
 		mHost.OnFuncContentChanged();
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]", dgetbase->GetUri().c_str());
+		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]", dget->VarGetBase()->GetUri().c_str());
 	    }
 	}
     }
@@ -1536,8 +1552,7 @@ template<class T> void FAddMtrd<T>::MtrdGet(Mtrd<T>& aData)
     T val = 0;
     for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
-	Elem* dgetbase = dget->VarGetBase();
-	MMtrdGet<T>* dfget = (MMtrdGet<T>*) dgetbase->GetObj(dfget);
+	MMtrdGet<T>* dfget = (MMtrdGet<T>*) dget->VarGetBase()->GetObj(dfget);
 	if (dfget != NULL) {
 	    Mtrd<T> arg;
 	    dfget->MtrdGet(arg);
@@ -1550,7 +1565,7 @@ template<class T> void FAddMtrd<T>::MtrdGet(Mtrd<T>& aData)
 		}
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]", dgetbase->GetUri().c_str());
+		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]", dget->VarGetBase()->GetUri().c_str());
 	    }
 	}
     }
@@ -1580,8 +1595,7 @@ template<class T> void FAddMtr<T>::MtrGet(Mtr<T>& aData)
     T val = 0;
     for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
-	Elem* dgetbase = dget->VarGetBase();
-	MMtrGet<T>* dfget = (MMtrGet<T>*) dgetbase->GetObj(dfget);
+	MMtrGet<T>* dfget = (MMtrGet<T>*) dget->VarGetBase()->GetObj(dfget);
 	if (dfget != NULL) {
 	    Mtr<T> arg = aData;
 	    dfget->MtrGet(arg);
@@ -1598,19 +1612,19 @@ template<class T> void FAddMtr<T>::MtrGet(Mtr<T>& aData)
 		    }
 		}
 		else {
-		    mHost.LogWrite(MLogRec::EErr, "Incorrect dimensions of argument [%s]", dgetbase->GetUri().c_str());
+		    mHost.LogWrite(MLogRec::EErr, "Incorrect dimensions of argument [%s]", dget->VarGetBase()->GetUri().c_str());
 		    res = EFalse;
 		    break;
 		}
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]", dgetbase->GetUri().c_str());
+		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 		res = EFalse;
 		break;
 	    }
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
+	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 	    res = EFalse;
 	    break;
 	}
@@ -1651,8 +1665,7 @@ template<class T> void FAddDt<T>::DtGet(T& aData)
     Elem::TIfRange range = mHost.GetInps(EInp);
     for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
-	Elem* dgetbase = dget->VarGetBase();
-	MDtGet<T>* dfget = (MDtGet<T>*) dgetbase->GetObj(dfget);
+	MDtGet<T>* dfget = (MDtGet<T>*) dget->VarGetBase()->GetObj(dfget);
 	if (dfget != NULL) {
 	    T arg = aData;
 	    dfget->DtGet(arg);
@@ -1665,12 +1678,12 @@ template<class T> void FAddDt<T>::DtGet(T& aData)
 		}
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]", dgetbase->GetUri().c_str());
+		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 		res = EFalse; break;
 	    }
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Incompatible argument [%s]", dgetbase->GetUri().c_str());
+	    mHost.LogWrite(MLogRec::EErr, "Incompatible argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 	    res = EFalse; break;
 	}
     }
@@ -1765,13 +1778,12 @@ template<class T> void FCpsVect<T>::VectGet(Vect<T>& aData)
 	}
 	float comp;
 	MDVarGet* dget = (MDVarGet*) *(inp.first);
-	Elem* dgetbase = dget->VarGetBase();
-	MDFloatGet* dfget = dgetbase->GetObj(dfget);
+	MDFloatGet* dfget = dget->VarGetBase()->GetObj(dfget);
 	if (dfget != NULL) {
 	    comp = dfget->Value();
 	}
 	else {
-	    MDIntGet* diget = dgetbase->GetObj(diget);
+	    MDIntGet* diget = dget->VarGetBase()->GetObj(diget);
 	    if (dget != NULL) {
 		comp = (float) diget->Value();
 	    }
@@ -1868,13 +1880,12 @@ float FMplFloat::Value()
     float val = 0;
     for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
-	Elem* dgetbase = dget->VarGetBase();
-	MDFloatGet* dfget = (MDFloatGet*) dgetbase->GetObj(dfget);
+	MDFloatGet* dfget = (MDFloatGet*) dget->VarGetBase()->GetObj(dfget);
 	if (dfget != NULL) {
 	    val *= dfget->Value();
 	}
 	else {
-	    MDIntGet* diget = (MDIntGet*) dgetbase->GetSIfi(MDIntGet::Type());
+	    MDIntGet* diget = (MDIntGet*)  dget->VarGetBase()->GetSIfi(MDIntGet::Type());
 	    if (diget != NULL) {
 		val *= (float) diget->Value();
 	    }
@@ -1976,11 +1987,9 @@ template<class T> void FMplMtrdVect<T>::VectGet(Vect<T>& aData)
     Elem::TIfRange range2 = mHost.GetInps(EInp2);
     if (range1.first != range1.second && range2.first != range2.second) {
 	MDVarGet* dget = (MDVarGet*) (*range1.first);
-	Elem* dgetbase = dget->VarGetBase();
-	MMtrdGet<T>* dfget1 = (MMtrdGet<T>*) dgetbase->GetObj(dfget1);
+	MMtrdGet<T>* dfget1 = (MMtrdGet<T>*) dget->VarGetBase()->GetObj(dfget1);
 	dget = (MDVarGet*) (*range2.first);
-	dgetbase = dget->VarGetBase();
-	MVectGet<T>* dfget2 = (MVectGet<T>*) dgetbase->GetObj(dfget2);
+	MVectGet<T>* dfget2 = (MVectGet<T>*) dget->VarGetBase()->GetObj(dfget2);
 	if (dfget1 != NULL && dfget2 != NULL) {
 	    Vect<T> vect;
 	    vect.resize(size);
@@ -1999,7 +2008,7 @@ template<class T> void FMplMtrdVect<T>::VectGet(Vect<T>& aData)
 		mHost.OnFuncContentChanged();
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]", dgetbase->GetUri().c_str());
+		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 	    }
 	}
     }
@@ -2039,11 +2048,9 @@ template<class T> void FMplMtr<T>::MtrGet(Mtr<T>& aData)
     Elem::TIfRange range2 = mHost.GetInps(EInp2);
     if (range1.first != range1.second && range2.first != range2.second) {
 	MDVarGet* dget = (MDVarGet*) (*range1.first);
-	Elem* dgetbase = dget->VarGetBase();
-	MMtrGet<T>* dfget1 = (MMtrGet<T>*) dgetbase->GetObj(dfget1);
+	MMtrGet<T>* dfget1 = (MMtrGet<T>*) dget->VarGetBase()->GetObj(dfget1);
 	dget = (MDVarGet*) (*range2.first);
-	dgetbase = dget->VarGetBase();
-	MMtrGet<T>* dfget2 = (MMtrGet<T>*) dgetbase->GetObj(dfget2);
+	MMtrGet<T>* dfget2 = (MMtrGet<T>*) dget->VarGetBase()->GetObj(dfget2);
 	if (dfget1 != NULL && dfget2 != NULL) {
 	    Mtr<T> arg1;
 	    arg1.mDim.first = aData.mDim.first;
@@ -2088,17 +2095,17 @@ template<class T> void FMplMtr<T>::MtrGet(Mtr<T>& aData)
 		    }
 		}
 		else {
-		    mHost.LogWrite(MLogRec::EErr, "Incorrect dimensions of argument [%s]", dgetbase->GetUri().c_str());
+		    mHost.LogWrite(MLogRec::EErr, "Incorrect dimensions of argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 		    res = EFalse;
 		}
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]", dgetbase->GetUri().c_str());
+		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 		res = EFalse;
 	    }
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
+	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 	    res = EFalse;
 	}
     }
@@ -2138,11 +2145,9 @@ template<class T> void FMplncDt<T>::DtGet(T& aData)
     Elem::TIfRange range2 = mHost.GetInps(EInp2);
     if (range1.first != range1.second && range2.first != range2.second) {
 	MDVarGet* dget = (MDVarGet*) (*range1.first);
-	Elem* dgetbase = dget->VarGetBase();
-	MDtGet<T>* dfget1 = (MDtGet<T>*) dgetbase->GetObj(dfget1);
+	MDtGet<T>* dfget1 = (MDtGet<T>*) dget->VarGetBase()->GetObj(dfget1);
 	dget = (MDVarGet*) (*range2.first);
-	dgetbase = dget->VarGetBase();
-	MDtGet<T>* dfget2 = (MDtGet<T>*) dgetbase->GetObj(dfget2);
+	MDtGet<T>* dfget2 = (MDtGet<T>*) dget->VarGetBase()->GetObj(dfget2);
 	if (dfget1 != NULL && dfget2 != NULL) {
 	    aData.mValid = ETrue;
 	    T arg1;
@@ -2154,12 +2159,12 @@ template<class T> void FMplncDt<T>::DtGet(T& aData)
 		res = aData.mValid;
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]", dgetbase->GetUri().c_str());
+		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 		res = EFalse;
 	    }
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
+	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 	    res = EFalse;
 	}
     }
@@ -2247,8 +2252,7 @@ template<class T> void FMplinvMtrd<T>::MtrdGet(Mtrd<T>& aData)
     Elem::TIfRange range = mHost.GetInps(EInp);
     if (range.first != range.second) {
 	MDVarGet* dget = (MDVarGet*) (*range.first);
-	Elem* dgetbase = dget->VarGetBase();
-	MMtrdGet<T>* dfget = (MMtrdGet<T>*) dgetbase->GetObj(dfget);
+	MMtrdGet<T>* dfget = (MMtrdGet<T>*) dget->VarGetBase()->GetObj(dfget);
 	if (dfget != NULL) {
 	    Mtrd<T> arg;
 	    arg.resize(size);
@@ -2261,7 +2265,7 @@ template<class T> void FMplinvMtrd<T>::MtrdGet(Mtrd<T>& aData)
 		mHost.OnFuncContentChanged();
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]", dgetbase->GetUri().c_str());
+		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 	    }
 	}
     }
@@ -2301,8 +2305,7 @@ template<class T> void FMplinvMtr<T>::MtrGet(Mtr<T>& aData)
     Elem::TIfRange range = mHost.GetInps(EInp);
     if (range.first != range.second) {
 	MDVarGet* dget = (MDVarGet*) (*range.first);
-	Elem* dgetbase = dget->VarGetBase();
-	MMtrGet<T>* dfget = (MMtrGet<T>*) dgetbase->GetObj(dfget);
+	MMtrGet<T>* dfget = (MMtrGet<T>*) dget->VarGetBase()->GetObj(dfget);
 	if (dfget != NULL) {
 	    Mtr<T> arg = aData;
 	    dfget->MtrGet(arg);
@@ -2318,17 +2321,17 @@ template<class T> void FMplinvMtr<T>::MtrGet(Mtr<T>& aData)
 		    }
 		}
 		else {
-		    mHost.LogWrite(MLogRec::EErr, "Incorrect dimensions of argument [%s]", dgetbase->GetUri().c_str());
+		    mHost.LogWrite(MLogRec::EErr, "Incorrect dimensions of argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 		    res = EFalse;
 		}
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]", dgetbase->GetUri().c_str());
+		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 		res = EFalse;
 	    }
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
+	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 	    res = EFalse;
 	}
     }
@@ -2368,8 +2371,7 @@ template<class T> void FMplinvDt<T>::DtGet(T& aData)
     Elem::TIfRange range = mHost.GetInps(EInp);
     if (range.first != range.second) {
 	MDVarGet* dget = (MDVarGet*) (*range.first);
-	Elem* dgetbase = dget->VarGetBase();
-	MDtGet<T>* dfget = (MDtGet<T>*) dgetbase->GetObj(dfget);
+	MDtGet<T>* dfget = dget->GetDObj(dfget);
 	if (dfget != NULL) {
 	    aData.mValid = ETrue;
 	    T arg = aData;
@@ -2379,12 +2381,12 @@ template<class T> void FMplinvDt<T>::DtGet(T& aData)
 		res = aData.mValid;
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]", dgetbase->GetUri().c_str());
+		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
 		res = EFalse;
 	    }
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
+	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]",  mHost.GetInpUri(EInp).c_str());
 	    res = EFalse;
 	}
     }
@@ -2467,8 +2469,7 @@ template<class T, class TA> void FCastDt<T, TA>::DtGet(T& aData)
 {
     TBool res = ETrue;
     MDVarGet* dget = mHost.GetInp(EInp1);
-    Elem* dgetbase = dget->VarGetBase();
-    MDtGet<TA>* dfget = (MDtGet<TA>*) dgetbase->GetObj(dfget);
+    MDtGet<TA>* dfget = (MDtGet<TA>*) dget->VarGetBase()->GetObj(dfget);
     if (dfget != NULL) {
 	TA arg;
 	dfget->DtGet(arg);
@@ -2478,12 +2479,12 @@ template<class T, class TA> void FCastDt<T, TA>::DtGet(T& aData)
 	    res = aData.mValid;
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]", dgetbase->GetUri().c_str());
+	    mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 	    res = EFalse;
 	}
     }
     else {
-	mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
+	mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 	res = EFalse;
     }
     aData.mValid = res;
@@ -2568,8 +2569,7 @@ template<class T> void FCpsMtrdVect<T>::DtGet(Mtr<T>& aData)
     Elem::TIfRange range = mHost.GetInps(EInp1);
     if (range.first != range.second) {
 	MDVarGet* dget = (MDVarGet*) (*range.first);
-	Elem* dgetbase = dget->VarGetBase();
-	MDtGet<Mtr<T> >* dfget = (MDtGet<Mtr<T> >*) dgetbase->GetObj(dfget);
+	MDtGet<Mtr<T> >* dfget = (MDtGet<Mtr<T> >*) dget->VarGetBase()->GetObj(dfget);
 	if (dfget != NULL) {
 	    Mtr<T> arg;
 	    arg.mDim = MtrBase::TMtrDim(aData.mDim.first, 1);
@@ -2584,12 +2584,12 @@ template<class T> void FCpsMtrdVect<T>::DtGet(Mtr<T>& aData)
 		}
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Invalid argument [%s]", dgetbase->GetUri().c_str());
+		mHost.LogWrite(MLogRec::EErr, "Invalid argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 		res = EFalse;
 	    }
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
+	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]",  dget->VarGetBase()->GetUri().c_str());
 	    res = EFalse;
 	}
     }
@@ -2678,13 +2678,12 @@ float FDivFloat::Value()
     float val = 0;
     for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
-	Elem* dgetbase = dget->VarGetBase();
-	MDFloatGet* dfget = (MDFloatGet*) dgetbase->GetObj(dfget);
+	MDFloatGet* dfget = (MDFloatGet*) dget->VarGetBase()->GetObj(dfget);
 	if (dfget != NULL) {
 	    val *= dfget->Value();
 	}
 	else {
-	    MDIntGet* diget = (MDIntGet*) dgetbase->GetSIfi(MDIntGet::Type());
+	    MDIntGet* diget = (MDIntGet*)  dget->VarGetBase()->GetSIfi(MDIntGet::Type());
 	    if (diget != NULL) {
 		val *= (float) diget->Value();
 	    }
@@ -2693,14 +2692,13 @@ float FDivFloat::Value()
     range = mHost.GetInps(EInp_Dvs);
     for (Elem::IfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
-	Elem* dgetbase = dget->VarGetBase();
-	MDFloatGet* dfget = (MDFloatGet*) dgetbase->GetObj(dfget);
+	MDFloatGet* dfget = (MDFloatGet*) dget->VarGetBase()->GetObj(dfget);
 	float dvs = 0.0;
 	if (dfget != NULL) {
 	    dvs = dfget->Value();
 	}
 	else {
-	    MDIntGet* diget = (MDIntGet*) dgetbase->GetSIfi(MDIntGet::Type());
+	    MDIntGet* diget = (MDIntGet*)  dget->VarGetBase()->GetSIfi(MDIntGet::Type());
 	    if (diget != NULL) {
 		dvs = (float) diget->Value();
 	    }
@@ -2709,7 +2707,7 @@ float FDivFloat::Value()
 	    val /= dvs;
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Null divisor [%s]", dgetbase->GetUri().c_str());
+	    mHost.LogWrite(MLogRec::EErr, "Null divisor [%s]",  dget->VarGetBase()->GetUri().c_str());
 	}
     }
 
@@ -3229,4 +3227,10 @@ string FSwitchBool::VarGetIfid() const
 {
     MDVarGet* cs = GetCase();
     return cs->VarGetIfid();
+}
+
+void *FSwitchBool::DoGetDObj(const char *aName)
+{
+    MDVarGet* cs = GetCase();
+    return cs != NULL ? cs->DoGetDObj(aName) : NULL;
 }

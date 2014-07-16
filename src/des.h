@@ -110,6 +110,7 @@ class ATrVar: public ATrBase, public MDVarGet, public Func::Host
 	// From MDVarGet
 	virtual Elem* VarGetBase();
 	virtual string VarGetIfid() const;
+	virtual void *DoGetDObj(const char *aName);
 	// From Func::Host
 	virtual Elem::TIfRange GetInps(TInt aId);
 	virtual void OnFuncContentChanged();

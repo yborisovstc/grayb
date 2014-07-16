@@ -332,6 +332,7 @@ class Func: public Base {
 		virtual Elem::TIfRange GetInps(TInt aId) = 0;
 		virtual void OnFuncContentChanged() = 0;
 		virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...) = 0;
+		virtual string GetInpUri(TInt aId) = 0;
 	};
     public:
     Func(Host& aHost): Base(string()), mHost(aHost) {};
@@ -353,6 +354,7 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	// From MDVarGet
 	virtual Elem* VarGetBase();
 	virtual string VarGetIfid() const;
+	virtual void *DoGetDObj(const char *aName);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
 	// From Func::Host
@@ -904,6 +906,7 @@ class FSwitchBool: public FSwithcBase, public MDVarGet
 	// From MDVarGet
 	virtual Elem* VarGetBase();
 	virtual string VarGetIfid() const;
+	virtual void *DoGetDObj(const char *aName);
     private:
 	TBool GetCtrl() const;
 };

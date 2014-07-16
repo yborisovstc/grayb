@@ -366,6 +366,26 @@ Elem* ATrVar::VarGetBase()
     return this;
 }
 
+void *ATrVar::DoGetDObj(const char *aName)
+{
+    void* res = NULL;
+    if (mFunc == NULL) {
+	Init(aName);
+	if (mFunc != NULL) {
+	    res = mFunc->DoGetObj(aName, EFalse);
+	}
+    }
+    else {
+	res = mFunc->DoGetObj(aName, EFalse);
+	if (res == NULL) {
+	    Init(aName);
+	    if (mFunc != NULL) {
+		res = mFunc->DoGetObj(aName, EFalse);
+	    }
+	}
+    }
+    return res;
+}
 
 string ATrVar::GetInpUri(TInt aId) 
 {

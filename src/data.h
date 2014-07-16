@@ -87,7 +87,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		HBase(DVar* aHost): Base(string()), mHost(*aHost) {};
 		virtual TBool FromString(const string& aString) = 0;
 		virtual void ToString(string& aString) = 0;
-		virtual TBool Set(Elem* aInp) = 0;
+		virtual TBool Set(MDVarGet* aInp) = 0;
 		virtual string IfaceGetId() const = 0;
 		virtual TBool IsValid() const { return ETrue;};
 		virtual TBool IsSigOK() const { return EFalse;};
@@ -100,7 +100,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 		virtual string IfaceGetId() const { return MDBoolGet::Type();};
 		virtual void Set(TBool aData);
-		virtual TBool Set(Elem* aInp);
+		virtual TBool Set(MDVarGet* aInp);
 		virtual TBool Value();
 		virtual TBool FromString(const string& aString);
 		virtual void ToString(string& aString);
@@ -114,7 +114,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		virtual string IfaceGetId() const { return MDIntGet::Type();};
 		virtual TInt Data() const;
 		virtual void Set(TInt aData);
-		virtual TBool Set(Elem* aInp);
+		virtual TBool Set(MDVarGet* aInp);
 		virtual TInt Value();
 		virtual void SetValue(TInt aData);
 		virtual TBool FromString(const string& aString);
@@ -129,7 +129,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		virtual string IfaceGetId() const { return MDFloatGet::Type();};
 		virtual float Data() const;
 		virtual void Set(float aData);
-		virtual TBool Set(Elem* aInp);
+		virtual TBool Set(MDVarGet* aInp);
 		virtual float Value();
 		virtual void SetValue(float aData);
 		virtual TBool FromString(const string& aString);
@@ -147,7 +147,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		// From HBase
 		virtual TBool FromString(const string& aString);
 		virtual void ToString(string& aString);
-		virtual TBool Set(Elem* aInp);
+		virtual TBool Set(MDVarGet* aInp);
 		T mData;
 		static string mId;
 	};
@@ -162,7 +162,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		// From HBase
 		virtual TBool FromString(const string& aString);
 		virtual void ToString(string& aString);
-		virtual TBool Set(Elem* aInp);
+		virtual TBool Set(MDVarGet* aInp);
 		virtual TBool IsValid() const { return mValid;};
 		Vect<T> mData;
 		static string mId;
@@ -179,7 +179,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		// From HBase
 		virtual TBool FromString(const string& aString);
 		virtual void ToString(string& aString);
-		virtual TBool Set(Elem* aInp);
+		virtual TBool Set(MDVarGet* aInp);
 		Mtrd<T> mData;
 		static string mId;
 	};
@@ -196,7 +196,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		// From HBase
 		virtual TBool FromString(const string& aString);
 		virtual void ToString(string& aString);
-		virtual TBool Set(Elem* aInp);
+		virtual TBool Set(MDVarGet* aInp);
 		virtual TBool IsValid() const { return mData.mValid;};
 	    protected:
 		Mtr<T> mData;
@@ -215,7 +215,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		// From HBase
 		virtual TBool FromString(const string& aString);
 		virtual void ToString(string& aString);
-		virtual TBool Set(Elem* aInp);
+		virtual TBool Set(MDVarGet* aInp);
 		virtual TBool IsValid() const { return mData.mValid;};
 		virtual TBool IsSigOK() const { return mData.mSigTypeOK;};
 	    protected:
@@ -239,6 +239,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	// From MDVarGet
 	virtual Elem* VarGetBase();
 	virtual string VarGetIfid() const;
+	virtual void *DoGetDObj(const char *aName);
 	// From MDVarSet
 	virtual Elem* VarSetBase();
     protected:
