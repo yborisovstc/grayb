@@ -80,6 +80,9 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     else if (aType.compare(AFMplinvVar::Type()) == 0) {
 	res = new AFMplinvVar(aName, aMan, aEnv);
     }
+    else if (aType.compare(AFCastVar::Type()) == 0) {
+	res = new AFCastVar(aName, aMan, aEnv);
+    }
     else if (aType.compare(AFCpsMtrdVar::Type()) == 0) {
 	res = new AFCpsMtrdVar(aName, aMan, aEnv);
     }
@@ -324,6 +327,10 @@ Elem* ProvDef::GetNode(const string& aUri)
 	else if (aUri.compare(AFMplinvVar::Type()) == 0) {
 	    parent = GetNode("AFunVar");
 	    res = new AFMplinvVar(NULL, iEnv);
+	}
+	else if (aUri.compare(AFCastVar::Type()) == 0) {
+	    parent = GetNode("AFunVar");
+	    res = new AFCastVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AFCpsMtrdVar::Type()) == 0) {
 	    parent = GetNode("AFunVar");

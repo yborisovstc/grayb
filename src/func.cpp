@@ -2218,11 +2218,11 @@ void AFMplinvVar::Init(const string& aIfaceName)
     if ((mFunc = FMplinvDt<Mtr<float> >::Create(this, aIfaceName)) != NULL);
 }
 
-
 string AFMplinvVar::GetInpUri(TInt aId) 
 {
     if (aId == FMplinvBase::EInp) return "Inp"; else return string();
 }
+
 
 // Inversion for multiplication operation: diagonal matrix
 template<class T> Func* FMplinvMtrd<T>::Create(Host* aHost, const string& aOutIid)
@@ -2279,7 +2279,6 @@ template<class T> void FMplinvMtrd<T>::GetResult(string& aResult)
 
 
 // Inversion for multiplication operation:  matrix
-
 template<class T> Func* FMplinvMtr<T>::Create(Host* aHost, const string& aString)
 {
     Func* res = NULL;
@@ -2340,14 +2339,13 @@ template<class T> void FMplinvMtr<T>::MtrGet(Mtr<T>& aData)
     }
 }
 
-
 template<class T> void FMplinvMtr<T>::GetResult(string& aResult)
 {
     mRes.ToString(aResult);
 }
 
-// Inversion for multiplication operation:  generic data
 
+// Inversion for multiplication operation:  generic data
 template<class T> Func* FMplinvDt<T>::Create(Host* aHost, const string& aString)
 {
     Func* res = NULL;
@@ -2403,6 +2401,103 @@ template<class T> void FMplinvDt<T>::GetResult(string& aResult)
 }
 
 
+// Casting, variable
+string AFCastVar::PEType()
+{
+    return AFunVar::PEType() + GUri::KParentSep + Type();
+}
+
+AFCastVar::AFCastVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+{
+    SetEType(Type(), AFunVar::PEType());
+    SetParent(Type());
+}
+
+AFCastVar::AFCastVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+{
+    SetEType(AFunVar::PEType());
+    SetParent(AFunVar::PEType());
+}
+
+void *AFCastVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) { res = this; }
+    else { res = AFunVar::DoGetObj(aName, aIncUpHier); }
+    return res;
+}
+
+void AFCastVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc == NULL;
+    }
+    MDVarGet* inp = GetInp(Func::EInp1);
+    if (inp != NULL) {
+	string ifi = inp->VarGetIfid();
+	if ((mFunc = FCastDt<Mtr<int> , Mtr<float> >::Create(this, aIfaceName, ifi)) != NULL);
+    }
+}
+
+string AFCastVar::GetInpUri(TInt aId) 
+{
+    if (aId == Func::EInp1) return "Inp"; else return string();
+}
+
+
+// Casting, variable:  generic data
+template<class T, class TA> Func* FCastDt<T, TA>::Create(Host* aHost, const string& aString, const string& aArtTypeId)
+{
+    Func* res = NULL;
+    if (aString == MDtGet<T>::Type() && aArtTypeId == MDtGet<TA>::Type()) {
+	res = new FCastDt<T, TA>(*aHost);
+    }
+    return res;
+}
+
+template<class T, class TA> void *FCastDt<T, TA>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
+    return res;
+}
+
+template<class T, class TA> void FCastDt<T, TA>::DtGet(T& aData)
+{
+    TBool res = ETrue;
+    MDVarGet* dget = mHost.GetInp(EInp1);
+    Elem* dgetbase = dget->VarGetBase();
+    MDtGet<TA>* dfget = (MDtGet<TA>*) dgetbase->GetObj(dfget);
+    if (dfget != NULL) {
+	TA arg;
+	dfget->DtGet(arg);
+	if (arg.mValid) {
+	    aData.mValid = ETrue;
+	    aData.CastDown(arg);
+	    res = aData.mValid;
+	}
+	else {
+	    mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]", dgetbase->GetUri().c_str());
+	    res = EFalse;
+	}
+    }
+    else {
+	mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
+	res = EFalse;
+    }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
+}
+
+template<class T, class TA> void FCastDt<T, TA>::GetResult(string& aResult)
+{
+    mRes.ToString(aResult);
+}
+
 
 // Composing of diag matrix, variable
 string AFCpsMtrdVar::PEType()
@@ -2449,68 +2544,6 @@ string AFCpsMtrdVar::GetInpUri(TInt aId)
     if (aId == Func::EInp1) return "Inp"; else return string();
 }
 
-/*
-// Composing of diag matrix, from vector
-template<class T> Func* FCpsMtrdVect<T>::Create(Host* aHost, const string& aString, MDVarGet* aInp1Var)
-{
-    Func* res = NULL;
-    if (aString == MMtrGet<T>::Type()) {
-	res = new FCpsMtrdVect<T>(*aHost);
-    }
-    return res;
-}
-
-template<class T> void *FCpsMtrdVect<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
-{
-    void* res = NULL;
-    if (strcmp(aName, MMtrGet<T>::Type()) == 0) res = (MMtrGet<T>*) this;
-    return res;
-}
-
-template<class T> void FCpsMtrdVect<T>::MtrGet(Mtr<T>& aData)
-{
-    TBool res = ETrue;
-    Elem::TIfRange range = mHost.GetInps(EInp1);
-    if (range.first != range.second) {
-	MDVarGet* dget = (MDVarGet*) (*range.first);
-	Elem* dgetbase = dget->VarGetBase();
-	MMtrGet<T>* dfget = (MMtrGet<T>*) dgetbase->GetObj(dfget);
-	if (dfget != NULL) {
-	    Mtr<T> arg;
-	    arg.mDim = MtrBase::TMtrDim(aData.mDim.first, 1);
-	    dfget->MtrGet(arg);
-	    if (arg.mValid) {
-		aData.mType = MtrBase::EMt_Diagonal;
-		aData.mDim.first = arg.mDim.first;
-		aData.mDim.second = arg.mDim.first;
-		aData.mData.resize(arg.mDim.first);
-		for (TInt cnt = 0; cnt < arg.mDim.first; cnt++) {
-		    aData.mData.at(cnt) = arg.mData.at(cnt);
-		}
-	    }
-	    else {
-		mHost.LogWrite(MLogRec::EErr, "Invalid argument [%s]", dgetbase->GetUri().c_str());
-		res = EFalse;
-	    }
-	}
-	else {
-	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]", dgetbase->GetUri().c_str());
-	    res = EFalse;
-	}
-    }
-    aData.mValid = res;
-    if (mRes != aData) {
-	mRes = aData;
-	mHost.OnFuncContentChanged();
-    }
-}
-
-template<class T> void FCpsMtrdVect<T>::GetResult(string& aResult)
-{
-    mRes.ToString(aResult);
-}
-*/
-
 
 // Composing of diag matrix, from vector
 template<class T> Func* FCpsMtrdVect<T>::Create(Host* aHost, const string& aString, MDVarGet* aInp1Var)
@@ -2541,13 +2574,13 @@ template<class T> void FCpsMtrdVect<T>::DtGet(Mtr<T>& aData)
 	    Mtr<T> arg;
 	    arg.mDim = MtrBase::TMtrDim(aData.mDim.first, 1);
 	    dfget->DtGet(arg);
-	    if (arg.mValid) {
+	    if (arg.mValid && arg.mDim.second == 1) {
 		aData.mType = MtrBase::EMt_Diagonal;
 		aData.mDim.first = arg.mDim.first;
 		aData.mDim.second = arg.mDim.first;
-		aData.mData.resize(arg.mDim.first);
+		aData.mData.resize(arg.IntSize());
 		for (TInt r = 0; r < arg.mDim.first; r++) {
-		    aData.Elem(r,r) = arg.GetElem(r, 1);
+		    aData.Elem(r,r) = arg.GetElem(r, 0);
 		}
 	    }
 	    else {

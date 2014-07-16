@@ -85,6 +85,7 @@ TBool DtBase::FromString(const string& aString)
 
 // Matrix, base
 
+template<> const char* Mtr<int>::TypeSig() { return  "MI";};
 template<> const char* Mtr<float>::TypeSig() { return  "MF";};
 
 
@@ -314,14 +315,22 @@ MtrBase& MtrBase::Mpl(const MtrBase& a, const MtrBase& b)
 
 MtrBase& MtrBase::Invm(const MtrBase& a)
 {
-    if (mType == EMt_Diagonal) {
+    if (a.mType == EMt_Diagonal) {
 	// Only diag mtr is supported for now
-	for (TInt r = 0; r < mDim.first; r++) {
-	    InvmElem(r, r, a, r, r);
+	if ((mDim.first == 0 || mDim.first == a.mDim.first) && (mDim.second == 0 || mDim.second == a.mDim.second)) {
+	    mDim = a.mDim;
+	    mType = EMt_Diagonal;
+	    SetIntSize(IntSize());
+	    for (TInt r = 0; r < mDim.first; r++) {
+		InvmElem(r, r, a, r, r);
+	    }
+	}
+	else {
+	    mValid = EFalse;
 	}
     }
     else {
-	mValid = ETrue;
+	mValid = EFalse;
     }
 }
 

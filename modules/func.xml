@@ -355,6 +355,14 @@
 	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
     </node>
 
+    <!-- Transition Function of variable casting -->
+    <node id="TFCastVar" parent="TFuncVar"> 
+	<node node="Agents" id="func_agt" parent="AFCastVar"/>
+	<node node="Capsule" id="Inp" parent="../Inp_TFVar"/> 
+	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
+    </node>
+
+
 
 
 
@@ -436,6 +444,14 @@
 	<node node="Capsule" id="Inp" parent="../Inp_FVar"/> 
 	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
     </node>
+
+    <!-- Function of variable casting -->
+    <node id="FCastVar" parent="FuncVar"> 
+	<node node="Agents" id="func_agt" parent="AFCastVar"/>
+	<node node="Capsule" id="Inp" parent="../Inp_FVar"/> 
+	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
+    </node>
+
 
     <!-- Function of variable creation of diag matrix -->
     <node id="FCpsMtrdVar" parent="FuncVar"> 

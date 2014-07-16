@@ -135,10 +135,12 @@ template <class T> class MDataGet
 template <class T> class MDtGet
 {
     public:
-	static const char* Type();
+	static const string mType;
+	static const char* Type() { return mType.c_str();};
 	virtual void DtGet(T& aData) = 0;
 };
 
+template<class T> const string MDtGet<T>::mType = string("MDtGet_") + T::TypeSig();
 
 
 // TODO [YB] Obsolete, replaced ty MMtrGet, to remove

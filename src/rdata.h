@@ -82,6 +82,8 @@ template<class T> TBool Sdata<T>::DataFromString(istringstream& aStream, TBool& 
 
 
 // Matrix
+// Operations required the result to provide the hints: type or dim required values.
+// If there is no hint for particular par, the par can be redifined by the operaton
 class MtrBase: public DtBase
 { 
     public: 
@@ -114,6 +116,7 @@ class MtrBase: public DtBase
 	virtual void MplElems(TInt r, TInt c, const MtrBase& a, TInt ar, TInt ac, const MtrBase& b, TInt br, TInt bc) {};
 	virtual void MplRtoC(TInt r, TInt c, const MtrBase& a, const MtrBase& b) {};
 	virtual void InvmElem(TInt r, TInt c, const MtrBase& a, TInt ar, TInt ac) {};
+	virtual void SetIntSize(TInt aSize) {};
     public:
 	TMtrType mType;
 	TMtrDim mDim;
@@ -132,6 +135,7 @@ template<class T> class Mtr: public MtrBase
 	TBool operator==(const Mtr<T>& b) { 
 	    return this->mValid == b.mValid && this->mType == b.mType && this->mDim == b.mDim && this->mData == b.mData;};
 	TBool operator!=(const Mtr<T>& b) {return !this->operator==(b);};
+	template <class TA> void CastDown(const Mtr<TA>& a);
 	virtual string GetTypeSig() const { return TypeSig();};
 	virtual void ElemToString(TInt aInd, stringstream& aStream) const { aStream << mData.at(aInd);};
 	virtual TBool ElemFromString(TInt aInd, istringstream& aStream, TBool& aRes);
@@ -139,8 +143,19 @@ template<class T> class Mtr: public MtrBase
 	virtual void MplElems(TInt r, TInt c, const MtrBase& a, TInt ar, TInt ac, const MtrBase& b, TInt br, TInt bc);
 	virtual void MplRtoC(TInt r, TInt c, const MtrBase& a, const MtrBase& b);
 	virtual void InvmElem(TInt r, TInt c, const MtrBase& a, TInt ar, TInt ac) { T e = ((Mtr<T>&) a).GetElem(ar, ac); Elem(r, c) = 1/e;};
+	virtual void SetIntSize(TInt aSize) { if (mData.size() != aSize) mData.resize(aSize);};
     public:
 	vector<T> mData;
+};
+
+template <class T> template<class TA>  void Mtr<T>::CastDown(const Mtr<TA>& a) 
+{
+    if (mType == a.mType && mDim == a.mDim && mData.size() == a.mData.size()) {
+	for (TInt m = 0; m < mData.size(); m++) {
+	    mData.at(m) = (T) a.mData.at(m);
+	}
+    }
+    else mValid = EFalse;
 };
 
 template<class T> void Mtr<T>::MplRtoC(TInt r, TInt c, const MtrBase& a, const MtrBase& b)

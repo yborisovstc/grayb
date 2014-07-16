@@ -362,7 +362,6 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	// From Elem
 	virtual void GetCont(string& aCont); 
     protected:
-    protected:
 	virtual void Init(const string& aIfaceName) {};
 	virtual string GetInpUri(TInt aId);
     protected:
@@ -610,8 +609,6 @@ template <class T> class FMplinvDt: public FMplinvBase, public MDtGet<T> {
 	T mRes;
 };
 
-
-
 class AFMplinvVar: public AFunVar
 {
     public:
@@ -627,23 +624,39 @@ class AFMplinvVar: public AFunVar
 	virtual void Init(const string& aIfaceName);
 };
 
+// Casting, variable
+
+class AFCastVar: public AFunVar
+{
+    public:
+	static const char* Type() { return "AFCastVar";};
+	static string PEType();
+	AFCastVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	AFCastVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From Func::Host
+	virtual string GetInpUri(TInt aId);
+    protected:
+	virtual void Init(const string& aIfaceName);
+};
+
+// Casting, generic data
+template <class T, class TA> class FCastDt: public Func, public MDtGet<T> {
+    public:
+	static Func* Create(Host* aHost, const string& aTypeId, const string& aArtTypeId);
+	FCastDt(Host& aHost): Func(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MDtGet<T>::Type();};
+	virtual void DtGet(T& aData);
+	virtual void GetResult(string& aResult);
+	T mRes;
+};
+
+
 
 // Composing of diag matrix, variable
 
-/*
-// Composing of diag matrix, from vector
-template <class T> class FCpsMtrdVect: public Func, public MMtrGet<T> {
-    public:
-	static Func* Create(Host* aHost, const string& aString, MDVarGet* aInp1Var);
-	FCpsMtrdVect(Host& aHost): Func(aHost) {};
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	virtual string IfaceGetId() const { return MMtrGet<T>::Type();};
-	virtual void MtrGet(Mtr<T>& aData);
-	virtual void GetResult(string& aResult);
-    protected:
-	Mtr<T> mRes;
-};
-*/
 
 // Composing of diag matrix, from vector
 template <class T> class FCpsMtrdVect: public Func, public MDtGet<Mtr<T> > {
