@@ -352,7 +352,6 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MDVarGet
-	virtual Elem* VarGetBase();
 	virtual string VarGetIfid() const;
 	virtual void *DoGetDObj(const char *aName);
 	// From MACompsObserver
@@ -820,6 +819,7 @@ class FAtBase: public Func
 };
 
 // 	Getting component of container: vector 
+/*
 template <class T> class FAtVect: public FAtBase, public MDataGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aOutIid, const string& aInp1Id);
@@ -829,6 +829,20 @@ template <class T> class FAtVect: public FAtBase, public MDataGet<T> {
 	virtual void DataGet(T& aData);
     protected:
 	MVectGet<T>* GetArg();
+};
+*/
+
+// 	Getting component of container: matrix-vector 
+template <class T> class FAtMVect: public FAtBase, public MDtGet<Sdata<T> > {
+    public:
+	static Func* Create(Host* aHost, const string& aOutIid, const string& aInp1Id);
+	FAtMVect(Host& aHost): FAtBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MDtGet<Sdata<T> >::Type();};
+	virtual void DtGet(Sdata<T>& aData);
+	virtual void GetResult(string& aResult) {mRes.ToString(aResult);};
+    protected:
+	Sdata<T> mRes;
 };
 
 // Composing vector from components
@@ -904,7 +918,6 @@ class FSwitchBool: public FSwithcBase, public MDVarGet
 	virtual string IfaceGetId() const { return MDFloatGet::Type();};
 	MDVarGet* GetCase() const;
 	// From MDVarGet
-	virtual Elem* VarGetBase();
 	virtual string VarGetIfid() const;
 	virtual void *DoGetDObj(const char *aName);
     private:

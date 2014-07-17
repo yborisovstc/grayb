@@ -19,6 +19,13 @@
        <cont node="Int/Required" val="MDataObserver"/>
    </node>
 
+   <!-- Extended Input of Func with var arg/res -->
+   <node id="Inp_FEVar" parent=":Elem:SysComps/ExtenderInp"> 
+       <cont node="Int/Provided" val="MDVarGet"/>
+       <cont node="Int/Required" val="MDataObserver"/>
+   </node>
+
+
    <!-- Output of Func with Int arg/res -->
    <node id="Out_FInt" parent=":Elem:SysComps/ConnPointOut"> 
        <cont node="Required" val="MDataObserver"/>
@@ -29,6 +36,12 @@
    <node id="Out_FEInt" parent=":Elem:SysComps/Extender"> 
        <cont node="Int/Provided" val="MDataObserver"/>
        <cont node="Int/Required" val="MDIntGet"/>
+   </node>
+
+   <!-- Extended Output of Func with Var arg/res -->
+   <node id="Out_FEVar" parent=":Elem:SysComps/ExtenderOut"> 
+       <cont node="Int/Provided" val="MDataObserver"/>
+       <cont node="Int/Required" val="MDVarGet"/>
    </node>
 
 
@@ -75,6 +88,15 @@
 	</node>
     </node>
 
+    <!-- Composed/Reduced Var function wo inputs  -->
+    <node id="FuncVarC" parent=":Elem:IncapsComps/Incaps"> 
+	<node node="Capsule" id="Out" parent="../Out_FEVar"/> 
+	<node id="ViewData" parent="Vert">
+	    <node id="Res" parent="Prop"/>
+	</node>
+    </node>
+
+
     <!-- Input of Transition Func with Int arg/res -->
     <node id="Inp_TFInt" parent=":Elem:SysComps/ConnPointInp"> 
 	<cont node="Required" val="MDIntGet"/>
@@ -118,7 +140,7 @@
 
 
 
-    <!-- Int function with simgle input  -->
+    <!-- Int function with single input  -->
     <node id="FuncIntSi" parent=":Elem:IncapsComps/Incaps"> 
 
 	<node node="Capsule" id="inp" parent=":Elem:SysComps/ConnPointInp"> 
@@ -406,6 +428,18 @@
 	<node node="Agents" id="func_agt" parent="AFAtVar"/>
 	<node node="Capsule" id="Inp" parent="../Inp_FVar"/> 
 	<node node="Capsule" id="Index" parent="../Inp_FVar"/> 
+	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
+    </node>
+
+    <!-- Function of getting component of containter, reduced by index  -->
+    <node id="FAtVarI" parent="FuncVarC"> 
+	<node id="At" parent="../FAtVar"/>
+	<node id="Index" parent=":Elem:DataComps/DataTVar"/>
+	<node node="Capsule" id="Inp" parent="../Inp_FEVar"/> 
+	<node id="E1" parent="Edge"> <cont node="P1" ref="../../Capsule/Inp/Int"/> <cont node="P2" ref="../../At/Capsule/Inp"/> </node>
+	<node id="E2" parent="Edge"> <cont node="P1" ref="../../At/Capsule/out"/> <cont node="P2" ref="../../Capsule/Out/Int"/> </node>
+	<node id="E3" parent="Edge"> <cont node="P1" ref="../../Index/Capsule/out"/> <cont node="P2" ref="../../At/Capsule/Index"/> </node>
+	<cont node="ViewData/Res" ref="../../At/Agents/func_agt"/>
     </node>
 
     <!-- Function of swithching  -->

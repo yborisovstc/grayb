@@ -319,7 +319,7 @@ void Ut_func::test_FuncVar1()
     Elem* resdata1 = root->GetNode("/Root/Start/Incaps_root/Dt/Capsule/out");
     MDVarGet* resdata1g = (MDVarGet*) resdata1->GetSIfi(MDVarGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Cannot get MDVarGet from result data", resdata1g != NULL);
-    MDFloatGet* resdata1f = resdata1g->VarGetBase()->GetObj(resdata1f);
+    MDFloatGet* resdata1f = resdata1g->GetDObj(resdata1f);
     CPPUNIT_ASSERT_MESSAGE("Cannot get MDFloatGet from result data", resdata1f != NULL);
     float res1 = resdata1f->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect result data", res1 == 4.0);
@@ -364,7 +364,7 @@ void Ut_func::test_FuncVar2()
     Elem* resdata1 = root->GetNode("/Root/Start/Incaps_root/Dt/Capsule/out");
     MDVarGet* resdata1g = (MDVarGet*) resdata1->GetSIfi(MDVarGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Cannot get MDVarGet from result data", resdata1g != NULL);
-    MDBoolGet* resdata1f = resdata1g->VarGetBase()->GetObj(resdata1f);
+    MDBoolGet* resdata1f = resdata1g->GetDObj(resdata1f);
     CPPUNIT_ASSERT_MESSAGE("Cannot get MDFloatGet from result data", resdata1f != NULL);
     TBool res1 = resdata1f->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect result data", res1 == EFalse);

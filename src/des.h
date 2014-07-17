@@ -108,7 +108,6 @@ class ATrVar: public ATrBase, public MDVarGet, public Func::Host
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MDVarGet
-	virtual Elem* VarGetBase();
 	virtual string VarGetIfid() const;
 	virtual void *DoGetDObj(const char *aName);
 	// From Func::Host

@@ -46,6 +46,9 @@ TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 	Elem* caps = aContext.GetNode("Capsule");
 	if (caps != NULL) {
 	    Elem* cp = caps->GetCompOwning("ConnPointInp", &aComp);
+	    if (cp == NULL) {
+		cp = caps->GetCompOwning("ConnPointOut", &aComp);
+	    }
 	    if (cp != NULL) {
 		res = HandleIoChanged(aContext, cp);
 	    }
@@ -366,6 +369,7 @@ void *DVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
     else {
 	res = DataBase::DoGetObj(aName, aIncUpHier);
     }
+    /* TODO [YB] Avoid init internal data via obj resolver, do we need to keep access at least?
     if (res == NULL) {
 	if (mData == NULL) {
 	    Init(aName);
@@ -374,17 +378,13 @@ void *DVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 	    res = mData->DoGetObj(aName, aIncUpHier);
 	}
     }
+    */
     return res;
 }
 
 string DVar::VarGetIfid() const
 {
     return mData != NULL ? mData->IfaceGetId() : string();
-}
-
-Elem* DVar::VarGetBase() 
-{
-    return this;
 }
 
 void *DVar::DoGetDObj(const char *aName)
@@ -421,6 +421,7 @@ TBool DVar::Init(const string& aString, MDVarGet* aInpv)
     if ((mData = HInt::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HFloat::Create(this, aString, aInpv)) != NULL);
    // else if ((mData = HMtr<float>::Create(this, aString, aInp)) != NULL);
+    else if ((mData = HDt<Sdata <int> >::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<Sdata <float> >::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<Mtr <int> >::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<Mtr <float> >::Create(this, aString, aInpv)) != NULL);

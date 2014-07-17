@@ -110,7 +110,6 @@ class MDVarGet
 {
     public:
 	static const char* Type() { return "MDVarGet";};
-	virtual Elem* VarGetBase() = 0;
 	template <class T> T* GetDObj(T* aInst) { return aInst = static_cast<T*>(DoGetDObj(aInst->Type()));};
 	void* GetDObj(const char *aType) { return DoGetDObj(aType); };
 	virtual void *DoGetDObj(const char *aName) { return NULL;};

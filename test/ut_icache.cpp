@@ -54,7 +54,7 @@ void Ut_icache::test_Inv1()
     CPPUNIT_ASSERT_MESSAGE("Fail to get state out", doutp != 0);
     MDVarGet* doutpget = (MDVarGet*) doutp->GetSIfi(MDVarGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
-    MDFloatGet* fget = doutpget->VarGetBase()->GetObj(fget);
+    MDFloatGet* fget = doutpget->GetDObj(fget);
     CPPUNIT_ASSERT_MESSAGE("Wrong value of data iface", fget->Value() == 0);
     // Sync the state
     Elem* esync = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Sync");

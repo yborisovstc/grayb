@@ -361,11 +361,6 @@ string ATrVar::VarGetIfid() const
     return mFunc != NULL ? mFunc->IfaceGetId() : string();
 }
 
-Elem* ATrVar::VarGetBase() 
-{
-    return this;
-}
-
 void *ATrVar::DoGetDObj(const char *aName)
 {
     void* res = NULL;
@@ -686,7 +681,8 @@ void ATrAtVar::Init(const string& aIfaceName)
     MDVarGet* inp = GetInp(Func::EInp1);
     if (inp_ind != NULL && inp != NULL) {
 	 string t_inp = inp->VarGetIfid();
-	if ((mFunc = FAtVect<float>::Create(this, aIfaceName, t_inp)) != NULL);
+	//if ((mFunc = FAtVect<float>::Create(this, aIfaceName, t_inp)) != NULL);
+	if ((mFunc = FAtMVect<float>::Create(this, aIfaceName, t_inp)) != NULL);
     }
 }
 
