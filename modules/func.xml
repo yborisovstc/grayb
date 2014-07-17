@@ -442,6 +442,10 @@
 	<cont node="ViewData/Res" ref="../../At/Agents/func_agt"/>
     </node>
 
+    <node id="FAtVar_0" parent="FAtVarI"> <cont node="Index/Value" val="SI 0"/> </node>
+
+    <node id="FAtVar_1" parent="FAtVarI"> <cont node="Index/Value" val="SI 1"/> </node>
+
     <!-- Function of swithching  -->
     <node id="FSwitchVar" parent="FuncVar"> 
 	<node node="Agents" id="func_agt" parent="AFSwitchVar"/>

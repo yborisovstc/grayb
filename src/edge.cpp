@@ -226,9 +226,11 @@ TBool Edge::ConnectP1(MVert* aPoint)
     res = aPoint->Connect(this);
     if (res) {
 	// Connect pair to the point
+	/*
 	if (iPoint2 != NULL) {
 	    iPoint2->Connect(iPoint1);
 	}
+	*/
     }
     else {
 	iPoint1 = NULL;
@@ -243,10 +245,12 @@ TBool Edge::ConnectP2(MVert* aPoint)
     iPoint2 = aPoint; // Set first to make Pair() working
     res = aPoint->Connect(this);
     if (res) {
+	/*
 	// Connect pair to the point
 	if (iPoint1 != NULL) {
 	    iPoint1->Connect(iPoint2);
 	}
+	*/
     }
     else {
 	iPoint2 = NULL;
