@@ -1733,26 +1733,15 @@ void AFCpsVectVar::Init(const string& aIfaceName)
 	delete mFunc;
 	mFunc == NULL;
     }
-    if ((mFunc = FCpsVect<float>::Create(this, aIfaceName)) != NULL);
+    if ((mFunc = FCpsVect<int>::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FCpsVect<float>::Create(this, aIfaceName)) != NULL);
 }
-
-Elem::TIfRange AFCpsVectVar::GetInps(TInt aId)
-{
-    stringstream ss;
-    ss <<  "../../Capsule/Inp" << (aId - Func::EInp1);
-    string inp_uri = ss.str();
-    Elem* inp = GetNode(inp_uri);
-    RqContext cont(this);
-    return inp->GetIfi(MDVarGet::Type(), &cont);
-}
-
-const TInt FCpsVBase::KIndMax = 30;
 
 // Composing vector from components: float
 template<class T> Func* FCpsVect<T>::Create(Host* aHost, const string& aString)
 {
     Func* res = NULL;
-    if (aString == MVectGet<T>::Type()) {
+    if (aString == MDtGet<Mtr<T> >::Type()) {
 	res = new FCpsVect<T>(*aHost);
     }
     return res;
@@ -1761,47 +1750,49 @@ template<class T> Func* FCpsVect<T>::Create(Host* aHost, const string& aString)
 template<class T> void *FCpsVect<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
-    if (strcmp(aName, MVectGet<T>::Type()) == 0) res = (MVectGet<T>*) this;
+    if (strcmp(aName, MDtGet<Mtr<T> >::Type()) == 0) res = (MDtGet<Mtr<T> >*) this;
     return res;
 }
 
-template<class T> void FCpsVect<T>::VectGet(Vect<T>& aData)
+template<class T> void FCpsVect<T>::DtGet(Mtr<T>& aData)
 {
-    mData.clear();
-    for (TInt ind = Func::EInp1; ind != KIndMax; ind++) {
-	Elem::TIfRange inp = mHost.GetInps(ind);
-	if (inp.first == inp.second) {
-	    break;
-	}
-	float comp;
-	MDVarGet* dget = (MDVarGet*) *(inp.first);
-	MDFloatGet* dfget = dget->GetDObj(dfget);
-	if (dfget != NULL) {
-	    comp = dfget->Value();
-	}
-	else {
-	    MDIntGet* diget = dget->GetDObj(diget);
-	    if (dget != NULL) {
-		comp = (float) diget->Value();
+    TBool res = ETrue;
+    if (aData.mDim.second == 1) {
+	for (TInt cnt = 0; cnt < aData.mDim.first && res; cnt++) {
+	    MDVarGet* vinp = mHost.GetInp(EInp1 + cnt);
+	    if (vinp != NULL) {
+		MDtGet<Sdata<T> >* inp = vinp->GetDObj(inp);
+		if (inp != NULL) {
+		    Sdata<T> arg;
+		    inp->DtGet(arg);
+		    if (arg.mValid) {
+			aData.Elem(cnt, 0) = arg.mData;
+		    }
+		    else {
+			mHost.LogWrite(MLogRec::EErr, "Invalid argument");
+			res = EFalse;
+		    }
+		}
+		else {
+		    mHost.LogWrite(MLogRec::EErr, "Incorrect input type");
+		    res = EFalse;
+		}
 	    }
 	    else {
-		// Unsupported type of input
-		break;
+		mHost.LogWrite(MLogRec::EErr, "Inputs number is less that the length of result");
+		res = EFalse;
 	    }
 	}
-	mData.push_back(comp);
     }
-    aData = mData;
-}
-
-template<class T> void FCpsVect<T>::GetResult(string& aResult)
-{
-    stringstream ss;
-    ss <<  MVectGet<T>::TypeSig();
-    for (typename Vect<T>::const_iterator it = mData.begin(); it != mData.end(); it++) {
-	ss << " " << *it;
+    else {
+	mHost.LogWrite(MLogRec::EErr, "Only vector result is supported");
+	res = EFalse;
     }
-    aResult = ss.str();
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
 }
 
 
@@ -2595,11 +2586,6 @@ template<class T> void FCpsMtrdVect<T>::DtGet(Mtr<T>& aData)
 	mRes = aData;
 	mHost.OnFuncContentChanged();
     }
-}
-
-template<class T> void FCpsMtrdVect<T>::GetResult(string& aResult)
-{
-    mRes.ToString(aResult);
 }
 
 

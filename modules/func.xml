@@ -127,6 +127,17 @@
 	<cont node="Provided" val="MDVarGet"/>
     </node>
 
+    <!-- Extended Input of Transition Func with Var arg/res -->
+    <node id="Inp_TFEVar" parent=":Elem:SysComps/ExtenderInp"> 
+	<cont node="Int/Provided" val="MDVarGet"/>
+    </node>
+
+    <!-- Extended Output of Transition Func with Var arg/res -->
+    <node id="Out_TFEVar" parent=":Elem:SysComps/ExtenderOut"> 
+	<cont node="Int/Required" val="MDVarGet"/>
+    </node>
+
+
     <!-- Output of Bool Transition Func -->
     <node id="Out_TFBool" parent=":Elem:SysComps/ConnPointOut"> 
 	<cont node="Provided" val="MDBoolGet"/>
@@ -137,6 +148,13 @@
        <cont node="Required" val="MDBoolGet"/>
    </node>
 
+    <!-- Composed/Reduced Var transition function wo inputs  -->
+    <node id="TFuncVarC" parent=":Elem:IncapsComps/Incaps"> 
+	<node node="Capsule" id="Out" parent="../Out_TFEVar"/> 
+	<node id="ViewData" parent="Vert">
+	    <node id="Res" parent="Prop"/>
+	</node>
+    </node>
 
 
 
@@ -377,12 +395,42 @@
 	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
     </node>
 
+    <!-- Transition Function of composing of vector from comps, variable -->
+    <node id="TFCpsVectVar" parent="TFuncVar"> 
+	<node node="Agents" id="func_agt" parent="AFCpsVectVar"/>
+	<node node="Capsule" id="Inp1" parent="../Inp_TFVar"/> 
+	<node node="Capsule" id="Inp2" parent="../Inp_TFVar"/> 
+	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
+    </node>
+
+
     <!-- Transition Function of variable casting -->
     <node id="TFCastVar" parent="TFuncVar"> 
 	<node node="Agents" id="func_agt" parent="AFCastVar"/>
 	<node node="Capsule" id="Inp" parent="../Inp_TFVar"/> 
 	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
     </node>
+
+    <!-- Transition Function of getting component of containter  -->
+    <node id="TFAtVar" parent="TFuncVar"> 
+	<node node="Agents" id="func_agt" parent="AFAtVar"/>
+	<node node="Capsule" id="Inp" parent="../Inp_TFVar"/> 
+	<node node="Capsule" id="Index" parent="../Inp_TFVar"/> 
+	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
+    </node>
+
+
+    <!-- Transition Function of getting component of containter, reduced by index  -->
+    <node id="TFAtVarI" parent="TFuncVarC"> 
+	<node id="At" parent="../TFAtVar"/>
+	<node id="Index" parent=":Elem:DataComps/DataSCVar"/>
+	<node node="Capsule" id="Inp" parent="../Inp_TFEVar"/> 
+	<node id="E1" parent="Edge"> <cont node="P1" ref="../../Capsule/Inp/Int"/> <cont node="P2" ref="../../At/Capsule/Inp"/> </node>
+	<node id="E2" parent="Edge"> <cont node="P1" ref="../../At/Capsule/Out"/> <cont node="P2" ref="../../Capsule/Out/Int"/> </node>
+	<node id="E3" parent="Edge"> <cont node="P1" ref="../../Index/Capsule/Out"/> <cont node="P2" ref="../../At/Capsule/Index"/> </node>
+	<cont node="ViewData/Res" ref="../../At/Agents/func_agt"/>
+    </node>
+
 
 
 
@@ -495,6 +543,14 @@
     <node id="FCpsMtrdVar" parent="FuncVar"> 
 	<node node="Agents" id="func_agt" parent="AFCpsMtrdVar"/>
 	<node node="Capsule" id="Inp" parent="../Inp_FVar"/> 
+	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
+    </node>
+
+    <!-- Function of composing of vector from comps, variable -->
+    <node id="FCpsVectVar" parent="FuncVar"> 
+	<node node="Agents" id="func_agt" parent="AFCpsVectVar"/>
+	<node node="Capsule" id="Inp1" parent="../Inp_FVar"/> 
+	<node node="Capsule" id="Inp2" parent="../Inp_FVar"/> 
 	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
     </node>
 

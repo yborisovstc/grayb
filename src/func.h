@@ -667,7 +667,7 @@ template <class T> class FCpsMtrdVect: public Func, public MDtGet<Mtr<T> > {
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	virtual string IfaceGetId() const { return MDtGet<Mtr<T> >::Type();};
 	virtual void DtGet(Mtr<T>& aData);
-	virtual void GetResult(string& aResult);
+	virtual void GetResult(string& aResult) {mRes.ToString(aResult);};
     protected:
 	Mtr<T> mRes;
 };
@@ -855,34 +855,22 @@ class AFCpsVectVar: public AFunVar
 	AFCpsVectVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	AFCpsVectVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	TInt GetInd(TInt aInpId);
-	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	// From Func::Host
-	virtual Elem::TIfRange GetInps(TInt aId);
     protected:
 	virtual void Init(const string& aIfaceName);
 };
 
-class FCpsVBase: public Func 
-{
-    public:
-	FCpsVBase(Host& aHost): Func(aHost) {};
-	const static TInt KIndMax;
-};
-
 // Composing vector from components: float
-template <class T> class FCpsVect: public FCpsVBase, public MVectGet<T> {
+template <class T> class FCpsVect: public Func, public MDtGet<Mtr<T> > {
     public:
 	static Func* Create(Host* aHost, const string& aOutIid);
-	FCpsVect(Host& aHost): FCpsVBase(aHost) {};
+	FCpsVect(Host& aHost): Func(aHost) {};
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	virtual string IfaceGetId() const { return MVectGet<T>::Type();};
-	virtual void VectGet(Vect<T>& aData);
-	virtual void GetResult(string& aResult);
+	virtual string IfaceGetId() const { return MDtGet<Mtr<T> >::Type();};
+	virtual void DtGet(Mtr<T>& aData);
+	virtual void GetResult(string& aResult) {mRes.ToString(aResult);};
     protected:
-	MVectGet<T>* GetArg();
-    protected:
-	Vect<T> mData;
+	Mtr<T> mRes;
 };
 
 // Case - commutation of inputs
