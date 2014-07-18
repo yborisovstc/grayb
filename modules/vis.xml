@@ -106,7 +106,7 @@
 	    <node id="E1" parent="Edge"> <cont node="P1" ref="../../Capsule/Inp/Int/PinData"/> <cont node="P2" ref="../../At/Capsule/Inp"/> </node>
 	    <node id="E2" parent="Edge"> <cont node="P1" ref="../../At/Capsule/Out"/> <cont node="P2" ref="../../Data/Capsule/Inp"/> </node>
 	</node>
-	<node id="CompToVect" parent=":Elem:DesComps/StateVarC">
+	<node id="PWHtoV" parent=":Elem:DesComps/StateVarC">
 	    <node node="Capsule" id="Inp2" parent=":Elem:DesComps/StVarInp"/> 
 	    <cont node="Data/Prepared/Value" val="MI,V,2 0 0"/>
 	    <cont node="Data/Confirmed/Value" val="MI,V,2 0 0"/>
@@ -142,7 +142,6 @@
 	<node id="EH1" parent="Edge"> <cont node="P1" ref="../../Capsule/Inp_WH/Int"/> <cont node="P2" ref="../../WHtoH/Capsule/Inp"/> </node>
 	<node id="EH2" parent="Edge"> <cont node="P1" ref="../../WHtoH/Capsule/Out"/> <cont node="P2" ref="../../Drw/Inp_H"/> </node>
 	<!-- Convertor of widget outputs Parent W and H to vector -->
-	<node id="PWHtoV" parent="CompToVect"/>
 	<node id="EP1" parent="Edge"> <cont node="P1" ref="../../Drw/Prov_PW"/> <cont node="P2" ref="../../PWHtoV/Capsule/Inp"/> </node>
 	<node id="EP2" parent="Edge"> <cont node="P1" ref="../../Drw/Prov_PH"/> <cont node="P2" ref="../../PWHtoV/Capsule/Inp2"/> </node>
 	<node id="EP3" parent="Edge"> <cont node="P1" ref="../../PWHtoV/Capsule/Out"/> <cont node="P2" ref="../../Capsule/Prov_PWH/Int"/> </node>

@@ -1329,6 +1329,7 @@ void AFAddVar::Init(const string& aIfaceName)
     else if ((mFunc = FAddMtrd<float>::Create(this, aIfaceName)) != NULL);
     //else if ((mFunc = FAddMtr<float>::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddDt<Sdata<float> >::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddDt<Mtr<int> >::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddDt<Mtr<float> >::Create(this, aIfaceName)) != NULL);
 }
 
@@ -3011,6 +3012,7 @@ void AFAtVar::Init(const string& aIfaceName)
 	string t1 = inp1->VarGetIfid();
 	//if ((mFunc = FAtVect<float>::Create(this, aIfaceName, t1)) != NULL);
 	if ((mFunc = FAtMVect<float>::Create(this, aIfaceName, t1)) != NULL);
+	else if ((mFunc = FAtMVect<int>::Create(this, aIfaceName, t1)) != NULL);
     }
 }
 
