@@ -408,6 +408,7 @@
     <node id="TFCastVar" parent="TFuncVar"> 
 	<node node="Agents" id="func_agt" parent="AFCastVar"/>
 	<node node="Capsule" id="Inp" parent="../Inp_TFVar"/> 
+	<node id="InpType" parent="Prop"/>
 	<cont node="ViewData/Res" ref="../../Agents/func_agt"/>
     </node>
 

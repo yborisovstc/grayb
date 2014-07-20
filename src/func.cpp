@@ -1283,6 +1283,9 @@ void AFunVar::GetCont(string& aCont)
     if (mFunc != NULL) {
 	mFunc->GetResult(aCont);
     }
+    else {
+	aCont = "Init ERR";
+    }
 }
 
 
@@ -1931,6 +1934,7 @@ void AFMplncVar::Init(const string& aIfaceName)
     if ((mFunc = FMplMtrdVect<float>::Create(this, aIfaceName)) != NULL);
     //else if ((mFunc = FMplMtr<float>::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FMplncDt<Mtr<float> >::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FMplncDt<Mtr<int> >::Create(this, aIfaceName)) != NULL);
 }
 
 Elem::TIfRange AFMplncVar::GetInps(TInt aId)
@@ -2424,10 +2428,22 @@ void AFCastVar::Init(const string& aIfaceName)
 	delete mFunc;
 	mFunc == NULL;
     }
-    MDVarGet* inp = GetInp(Func::EInp1);
-    if (inp != NULL) {
-	string ifi = inp->VarGetIfid();
+    // Checking if input type is defined explicitly
+    string ifi;
+    Elem* inptd = GetNode("../../InpType");
+    if (inptd != NULL) {
+	inptd->GetCont(ifi);
+    }
+    // If not, trying to get type from input
+    if (ifi.empty()) {
+	MDVarGet* inp = GetInp(Func::EInp1);
+	if (inp != NULL) {
+	    ifi = inp->VarGetIfid();
+	}
+    }
+    if (!ifi.empty()) {
 	if ((mFunc = FCastDt<Mtr<int> , Mtr<float> >::Create(this, aIfaceName, ifi)) != NULL);
+	else if ((mFunc = FCastDt<Mtr<float> , Mtr<int> >::Create(this, aIfaceName, ifi)) != NULL);
     }
 }
 

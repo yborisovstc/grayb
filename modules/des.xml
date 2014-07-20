@@ -121,12 +121,14 @@
 	</node>
     </node>
 
-    <!-- Transition of variable data : Addition -->
+    
+    <!-- Transition of variable data : Addition 
     <node id="TrAddVar" parent="TrVar"> 
 	<node node="Agents" id="TrAgt" parent="ATrAddVar"/> 
 	<node id="InpN" parent="../TrVarInp"/> 
 	<cont node="ViewData/Res" ref="../../Agents/TrAgt"/>
     </node>
+	 -->
 
     <!-- Transition of variable data : Multiplication -->
     <node id="TrMplVar" parent="TrVar"> 

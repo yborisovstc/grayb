@@ -150,6 +150,10 @@ template<class T> class Mtr: public MtrBase
 
 template <class T> template<class TA>  void Mtr<T>::CastDown(const Mtr<TA>& a) 
 {
+    if (mType == EMt_Unknown) { mType = a.mType; }
+    if (mDim.first == 0) mDim.first = a.mDim.first;
+    if (mDim.second == 0) mDim.second = a.mDim.second;
+    SetIntSize(IntSize());
     if (mType == a.mType && mDim == a.mDim && mData.size() == a.mData.size()) {
 	for (TInt m = 0; m < mData.size(); m++) {
 	    mData.at(m) = (T) a.mData.at(m);

@@ -274,6 +274,22 @@ MtrBase& MtrBase::operator+=(const MtrBase& b)
 MtrBase& MtrBase::Mpl(const MtrBase& a, const MtrBase& b) 
 {
     if (a.mValid && b.mValid) {
+	if (mType == EMt_Unknown) 
+	{ 
+	    if (a.mType == EMt_Diagonal && b.mType == EMt_Diagonal) {
+		mType = EMt_Diagonal; 
+	    }
+	    else {
+		mType = EMt_Regular;
+	    }
+	}
+	if (mDim.first == 0) {
+	    mDim.first = a.mDim.first;
+	}
+	if (mDim.second == 0) {
+	    mDim.second = b.mDim.second;
+	}
+	SetIntSize(IntSize());
 	if (a.mDim.second == b.mDim.first && a.mDim.first == mDim.first && b.mDim.second == mDim.second) {
 	    mType = EMt_Regular;
 	    if (a.mType == EMt_Diagonal) {
@@ -301,6 +317,7 @@ MtrBase& MtrBase::Mpl(const MtrBase& a, const MtrBase& b)
 			}
 		    }
 		}
+		mValid = ETrue;
 	    }
 	}
 	else {
