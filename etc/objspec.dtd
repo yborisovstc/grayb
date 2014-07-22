@@ -23,6 +23,7 @@
     node CDATA #IMPLIED
     id CDATA #REQUIRED
     parent CDATA #REQUIRED
+    ord CDATA #IMPLIED
 >
 
 <!-- Removing node attributes:
@@ -30,6 +31,7 @@
   -->
 <!ATTLIST rm 
     node CDATA #IMPLIED
+    ord CDATA #IMPLIED
 >
 
 <!-- Change  attributes:
@@ -41,6 +43,7 @@
    node CDATA #REQUIRED
    attr CDATA #REQUIRED
    val CDATA #REQUIRED
+    ord CDATA #IMPLIED
 >
 
 <!-- Change content attributes:
@@ -51,6 +54,7 @@
    node CDATA #IMPLIED
    val CDATA #IMPLIED
    ref CDATA #IMPLIED
+    ord CDATA #IMPLIED
 >
 
 <!-- Moving attributes:
@@ -60,5 +64,6 @@
 <!ATTLIST move
    id CDATA #REQUIRED
    node CDATA #IMPLIED
+    ord CDATA #IMPLIED
 >
 

@@ -11,6 +11,24 @@
 const string KLogFileName = "faplog.txt";
 const char* KRootName = "Root";
 
+ChromoMgr::ChromoMgr(const string& aName): Base(aName)
+{
+}
+
+ChromoMgr::~ChromoMgr()
+{
+}
+
+void *ChromoMgr::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx) 
+{
+    return (strcmp(aName, Type()) == 0) ? this : NULL;
+}
+
+TInt ChromoMgr::GetOrder(const MChromo& aChromo) const
+{
+}
+
+
 Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileName): Base(aName), iRoot(NULL), iLogger(NULL)
 {
     iLogger = new GLogRec("Logger", aLogFileName.empty() ? KLogFileName : aLogFileName);
@@ -18,6 +36,7 @@ Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileNam
     iProvider->LoadPlugins();
     iSystSpec = aSpecFile;
     srand(time(NULL));
+    iChMgr = new ChromoMgr("ChromoMgr");
 }
 
 Env::~Env()
@@ -51,6 +70,11 @@ void Env::ConstructSystem()
 	    Logger()->WriteFormat("Env: cannot create elem [%s] of type [%s]", root.Name().c_str(), sparent.c_str());
 	}
     }
+}
+
+MChromoMgr* Env::ChMgr()
+{
+    return iChMgr;
 }
 
 MProvider *Env::Provider() const

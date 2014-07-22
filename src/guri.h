@@ -25,6 +25,7 @@ enum TNodeAttr
     ENa_Id = 1,
     ENa_Parent = 2,
     ENa_Ref = 3,
+    ENa_Order = 4,
     ENa_MutNode = 10,
     ENa_MutAttr = 11,
     ENa_MutVal = 12,
