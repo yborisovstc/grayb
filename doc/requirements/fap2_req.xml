@@ -36,6 +36,8 @@
 		<revremark>Added <xref linkend="uc_037"/>, <xref linkend="uc_038"/></revremark> </revision>
 	    <revision> <revnumber>0.10</revnumber> <date>21-Jun-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_039"/>, <xref linkend="uc_040"/></revremark> </revision>
+	    <revision> <revnumber>0.11</revnumber> <date>23-Jul-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="uc_041"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -1163,6 +1165,31 @@
 		    <listitem>USER creates some model using SYSTEM. USER requests that connecion points used in model be customized in order to reflect information stream, for instance
 			inputs, outputs, reqular. SYSTEM allows to customize connection points, so any client visualizing the structure of the model can show the direction of 
 			informations transformation.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> </sect3>
+	    <sect3><title>Extended by</title> <itemizedlist> </itemizedlist> </sect3>
+	    <sect3><title>Discussion</title> </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
+	<sect2 id="uc_041"><title>UC_041 Undo and redo of mutations</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of SYSTEM</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER creates some model using SYSTEM</listitem>
+		    <listitem>USER makes some mutations in order to modify the model</listitem>
+		    <listitem>USER realized that some of mutation made are erroneus</listitem>
+		    <listitem>USER request SYSTEM to undo some last mutations, SYSTEM perfores mutations undo.</listitem>
 		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>

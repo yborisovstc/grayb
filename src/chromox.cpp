@@ -174,6 +174,19 @@ void* ChromoMdlX::GetFirstTextChild(const void* aHandle)
     return res;
 }
 
+void* ChromoMdlX::Root(const void* aHandle)
+{
+    void *res = NULL;
+    xmlNodePtr parent = (xmlNodePtr) Parent(aHandle);
+    if (parent == NULL) {
+	res = (void*) aHandle;
+    }
+    else {
+	res = Root(parent);
+    }
+    return res;
+}
+
 void* ChromoMdlX::Parent(const void* aHandle)
 {
     xmlNodePtr parent = ((xmlNodePtr) aHandle)->parent;
@@ -503,8 +516,8 @@ void ChromoX::Save(const string& aFileName) const
     iMdl.Save(aFileName);
 }
 
-
 ChromoNode ChromoX::CreateNode(void* aHandle)
 {
     return ChromoNode(iMdl, aHandle);
 }
+

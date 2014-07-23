@@ -87,9 +87,9 @@ class ChromoNode
 
     public:
 	ChromoNode(ChromoMdl& aMdl, void* aHandle): iMdl(aMdl), iHandle(aHandle) {};
-	ChromoNode(const ChromoNode& aNode): iMdl(aNode.iMdl), iHandle(aNode.iHandle) {};
-	ChromoNode& operator=(const ChromoNode& aNode) { iMdl = aNode.iMdl; iHandle = aNode.iHandle; return *this; };
-	TBool operator==(const ChromoNode& aNode) { return &iMdl == &(aNode.iMdl) && iHandle == aNode.iHandle;};
+	ChromoNode(const ChromoNode& aNode);
+	ChromoNode& operator=(const ChromoNode& aNode);
+	TBool operator==(const ChromoNode& aNode);
 	Iterator Begin() { return Iterator(iMdl, iMdl.GetFirstChild(iHandle)); };
 	Const_Iterator Begin() const { return Const_Iterator(iMdl, iMdl.GetFirstChild(iHandle)); };
 	Iterator End() { return Iterator(iMdl, NULL); };
@@ -108,6 +108,7 @@ class ChromoNode
 	const string Name() const { return Attr(ENa_Id);};
 	const string Attr(TNodeAttr aAttr);
 	const string Attr(TNodeAttr aAttr) const;
+	const void GetAttr(TNodeAttr aAttr, TInt& aVal) const;
 	const string Content() { return iMdl.GetContent(iHandle);};
 	void  SetContent(const string& aContent) { return iMdl.SetContent(iHandle, aContent);};
 	TInt AttrInt(TNodeAttr aAttr) const;
@@ -116,9 +117,8 @@ class ChromoNode
 	void* Handle() { return iHandle;};
 	const void* Handle() const { return iHandle;};
 	ChromoMdl& Mdl() const { return iMdl;};
-	ChromoNode AddChild(TNodeType aType) { return ChromoNode(iMdl, iMdl.AddChild(iHandle, aType)); };
-	ChromoNode AddChild(const ChromoNode& aNode, TBool aCopy = ETrue) { return 
-	    ChromoNode(iMdl, iMdl.AddChild(iHandle, aNode.Handle(), aCopy)); };
+	ChromoNode AddChild(TNodeType aType);
+	ChromoNode AddChild(const ChromoNode& aNode, TBool aCopy = ETrue);
 	ChromoNode AddChildDef(const ChromoNode& aNode, TBool aCopy = ETrue) { return 
 	    ChromoNode(iMdl, iMdl.AddChildDef(iHandle, aNode.Handle(), aCopy)); };
 	ChromoNode AddNext(const ChromoNode& aPrev, const ChromoNode& aNode, TBool aCopy = ETrue) { return 
@@ -129,10 +129,12 @@ class ChromoNode
 	// Be careful while removing node got from iterator. Iterator is not cleaned thus it returns wrong node on ++
 	void RmChild(const ChromoNode& aChild, TBool aDeattachOnly = EFalse) { iMdl.RmChild(iHandle, aChild.iHandle, aDeattachOnly); };
 	void Rm() { iMdl.Rm(iHandle); };
+	void SetAttr(TNodeAttr aType, TInt aVal);
 	void SetAttr(TNodeAttr aType, const string& aVal) { iMdl.SetAttr(iHandle, aType, aVal.c_str()); };
 	void SetAttr(TNodeAttr aType, TNodeType aVal) { iMdl.SetAttr(iHandle, aType, aVal); };
 	void SetAttr(TNodeAttr aType, TNodeAttr aVal) { iMdl.SetAttr(iHandle, aType, aVal); };
 	ChromoNode::Iterator Parent();
+	ChromoNode::Iterator Root();
 	ChromoNode::Const_Iterator Parent() const;
 	ChromoNode::Iterator Find(TNodeType aType, const string& aName);
 	ChromoNode::Const_Iterator Find(TNodeType aType, const string& aName) const;
@@ -145,6 +147,8 @@ class ChromoNode
 	TInt GetLocalRank();
 	void GetRank(Rank& aRank) const;
 	void GetRank(Rank& aRank, const ChromoNode& aBase) const;
+	TInt GetOrder(TBool aTree = EFalse) const;
+	void SetOrder(TInt aOrder, TBool aTree = EFalse);
 	// The number of direct childs
 	TInt GetLocalSize();
 	ChromoNode& GetNode(const GUri& aUri) const;

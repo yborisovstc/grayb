@@ -16,6 +16,7 @@ class ChromoMdlX: public ChromoMdl
     public:
 	virtual TNodeType GetType(const string& aId);
 	virtual TNodeType GetType(const void* aHandle);
+	virtual void* Root(const void* aHandle);
 	virtual void* Parent(const void* aHandle);
 	virtual void* Next(const void* aHandle, TNodeType aType = ENt_Unknown);
 	virtual void* NextText(const void* aHandle);
