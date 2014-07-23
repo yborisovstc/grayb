@@ -327,9 +327,12 @@ ChromoNode ChromoNode::AddChild(const ChromoNode& aNode, TBool aCopy)
     TInt rorder = root.GetOrder(ETrue);
     TInt order = aNode.GetOrder();
     if (order == 0) {
-	((ChromoNode&) aNode).SetOrder(++rorder);
+	order = rorder + 1;
+	((ChromoNode&) aNode).SetOrder(order);
     }
-    root.SetOrder(rorder, ETrue);
+    if (order > rorder) {
+	root.SetOrder(order, ETrue);
+    }
     return ChromoNode(iMdl, iMdl.AddChild(iHandle, aNode.Handle(), aCopy)); 
 }
 
