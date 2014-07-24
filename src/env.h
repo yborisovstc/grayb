@@ -8,22 +8,32 @@ class GProvider;
 class GFactory;
 class Elem;
 class GLogRec;
+class Env;
+class Chromo;
 
 class ChromoMgr: public Base, public MChromoMgr
 {
+    friend class Env;
     public:
 	static const char* Type() { return "ChromoMgr";};
-	ChromoMgr(const string& aName);
+	ChromoMgr(const string& aName, Env& aHost);
 	virtual ~ChromoMgr();
     public:
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// Form MChromoMgr
-	virtual TInt GetOrder(const MChromo& aChromo) const;
+	virtual int GetSpecMaxOrder() const;
+	virtual int GetMaxOrder() const;
+	virtual TInt GetLim() const { return mLim;};
+	virtual void SetLim(TInt aLim) { mLim = aLim;};
+    protected:
+	TInt mLim;
+	Env& mHost;
 };
 
 class Env: public Base, public MEnv
 {
+    friend class ChromoMgr;
 public:
 	static const char* Type() { return "GEnv";};
 	Env(const string& aName, const string& aSpecFile, const string& aLogFileName = string());
@@ -45,6 +55,7 @@ private:
 	GFactory *iProvider;
 	ChromoMgr* iChMgr;
 	string iSystSpec;
+	Chromo* iSpecChromo;
 };
 
 

@@ -190,7 +190,7 @@ void* ChromoMdlX::Root(const void* aHandle)
 void* ChromoMdlX::Parent(const void* aHandle)
 {
     xmlNodePtr parent = ((xmlNodePtr) aHandle)->parent;
-    return parent->type == XML_ELEMENT_NODE ? parent : NULL;
+    return (parent != NULL && parent->type == XML_ELEMENT_NODE) ? parent : NULL;
 }
 
 void *ChromoMdlX::Next(const void *aHandle, TNodeType aType)

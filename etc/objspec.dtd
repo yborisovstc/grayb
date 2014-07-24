@@ -24,6 +24,7 @@
     id CDATA #REQUIRED
     parent CDATA #REQUIRED
     ord CDATA #IMPLIED
+    tord CDATA #IMPLIED
 >
 
 <!-- Removing node attributes:

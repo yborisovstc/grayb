@@ -196,6 +196,12 @@ ChromoNode::Iterator ChromoNode::Root()
     return  (root == NULL) ?  End() : Iterator(ChromoNode(iMdl, root));
 }
 
+ChromoNode::Const_Iterator ChromoNode::Root() const 
+{
+    void* root = iMdl.Root(iHandle);
+    return  (root == NULL) ?  End() : Const_Iterator(ChromoNode(iMdl, root));
+}
+
 ChromoNode::Const_Iterator ChromoNode::Parent() const
 {
     void* parent = iMdl.Parent(iHandle);

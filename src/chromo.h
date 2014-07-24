@@ -136,6 +136,7 @@ class ChromoNode
 	ChromoNode::Iterator Parent();
 	ChromoNode::Iterator Root();
 	ChromoNode::Const_Iterator Parent() const;
+	ChromoNode::Const_Iterator Root() const;
 	ChromoNode::Iterator Find(TNodeType aType, const string& aName);
 	ChromoNode::Const_Iterator Find(TNodeType aType, const string& aName) const;
 	ChromoNode::Iterator Find(TNodeType aType, const string& aName, TNodeAttr aAttr, const string& aAttrVal);

@@ -959,11 +959,15 @@ TBool Elem::MergeMutMove(const ChromoNode& aSpec)
 void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 {
     const ChromoNode& mroot = aMutSpec;
-    ChromoNode& chrroot = iChromo->Root();
+    ChromoNode sroot = *(mroot.Root());
+    TInt tord = sroot.GetOrder(ETrue);
+    TInt lim = iEnv->ChMgr()->GetLim();
     for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End(); rit++)
     {
 	TBool res = EFalse;
 	ChromoNode rno = (*rit);
+	TInt order = rno.GetOrder();
+	if (tord > 0 && order > tord - lim) continue;
 	TNodeType rnotype = rno.Type();
 	if (rnotype == ENt_Node) {
 	    Elem* node = AddElem(rno, aRunTime);

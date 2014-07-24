@@ -11,7 +11,7 @@
 const string KLogFileName = "faplog.txt";
 const char* KRootName = "Root";
 
-ChromoMgr::ChromoMgr(const string& aName): Base(aName)
+ChromoMgr::ChromoMgr(const string& aName, Env& aHost): Base(aName), mHost(aHost), mLim(0)
 {
 }
 
@@ -24,19 +24,35 @@ void *ChromoMgr::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* 
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
 
-TInt ChromoMgr::GetOrder(const MChromo& aChromo) const
+int ChromoMgr::GetMaxOrder() const
 {
+    TInt res = 0;
+    Elem* eroot = mHost.Root();
+    if (eroot != NULL) {
+	ChromoNode& chrroot = eroot->Chromos().Root();
+	ChromoNode sroot = *(chrroot.Root());
+	res = sroot.GetOrder(ETrue);
+    }
+    return res;
 }
 
+int ChromoMgr::GetSpecMaxOrder() const
+{
+    TInt res = 0;
+    ChromoNode& sroot = mHost.iSpecChromo->Root();
+    res = sroot.GetOrder(ETrue);
+    return res;
+}
 
-Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileName): Base(aName), iRoot(NULL), iLogger(NULL)
+Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileName): Base(aName), iRoot(NULL), iLogger(NULL),
+    iSpecChromo(NULL)
 {
     iLogger = new GLogRec("Logger", aLogFileName.empty() ? KLogFileName : aLogFileName);
     iProvider = new GFactory("Factory", this);
     iProvider->LoadPlugins();
     iSystSpec = aSpecFile;
     srand(time(NULL));
-    iChMgr = new ChromoMgr("ChromoMgr");
+    iChMgr = new ChromoMgr("ChromoMgr", *this);
 }
 
 Env::~Env()
@@ -51,6 +67,7 @@ void Env::ConstructSystem()
     // Create root system
     // TODO [YB] Potentially the root also can be inherited form parent
     Chromo *spec = iProvider->CreateChromo();
+    iSpecChromo = spec;
     if (iSystSpec.empty()) {
 	iRoot = new Elem(KRootName, NULL, this);
     }

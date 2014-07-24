@@ -1,8 +1,6 @@
 #ifndef __GRAYB_MENV_H
 #define __GRAYB_MENV_H
-
-class MProvider;
-class MLogRec;
+class MProvider; class MLogRec;
 class Elem;
 class MChromo;
 
@@ -10,7 +8,10 @@ class MChromo;
 class MChromoMgr
 {
     public:
-	virtual int GetOrder(const MChromo& aChromo) const = 0;
+	virtual int GetSpecMaxOrder() const = 0;
+	virtual int GetMaxOrder() const = 0;
+	virtual int GetLim() const = 0;
+	virtual void SetLim(int aLim) = 0;
 };
 
 // Executive environment interface
