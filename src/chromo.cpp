@@ -293,35 +293,6 @@ void ChromoNode::GetRank(Rank& aRank, const ChromoNode& aBase) const
     }
 }
 
-TInt ChromoNode::GetOrder(TBool aTree) const 
-{ 
-    TInt res = 0;
-    TNodeAttr attr = aTree ? ENa_TOrder : ENa_Order;
-    if (AttrExists(attr))
-	GetAttr(attr, res);
-    return res;
-}
-
-void ChromoNode::SetAttr(TNodeAttr aType, TInt aVal)
-{
-    stringstream sval;
-    sval << aVal;
-    SetAttr(aType, sval.str());
-}
-
-const void ChromoNode::GetAttr(TNodeAttr aAttr, TInt& aVal) const
-{
-    string ss(iMdl.GetAttr(iHandle, aAttr)); 
-    istringstream sstr(ss);
-    sstr >> aVal;
-}
-
-void ChromoNode::SetOrder(TInt aOrder, TBool aTree) 
-{
-    TNodeAttr attr = aTree ? ENa_TOrder : ENa_Order;
-    SetAttr(attr, aOrder);
-}
-
 ChromoNode ChromoNode::AddChild(TNodeType aType) 
 { 
     return ChromoNode(iMdl, iMdl.AddChild(iHandle, aType)); 
@@ -329,16 +300,6 @@ ChromoNode ChromoNode::AddChild(TNodeType aType)
 
 ChromoNode ChromoNode::AddChild(const ChromoNode& aNode, TBool aCopy) 
 { 
-    ChromoNode root = *Root();
-    TInt rorder = root.GetOrder(ETrue);
-    TInt order = aNode.GetOrder();
-    if (order == 0) {
-	order = rorder + 1;
-	((ChromoNode&) aNode).SetOrder(order);
-    }
-    if (order > rorder) {
-	root.SetOrder(order, ETrue);
-    }
     return ChromoNode(iMdl, iMdl.AddChild(iHandle, aNode.Handle(), aCopy)); 
 }
 

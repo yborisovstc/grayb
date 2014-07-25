@@ -232,7 +232,7 @@ void *ChromoMdlX::Prev(const void *aHandle, TNodeType aType)
     return res;
 }
 
-char *ChromoMdlX::GetAttr(const void* aHandle, TNodeAttr aAttr)
+char *ChromoMdlX::GetAttr(const void* aHandle, TNodeAttr aAttr) const
 {
     __ASSERT(aHandle != NULL);
     xmlNodePtr node = (xmlNodePtr) aHandle;
@@ -240,7 +240,21 @@ char *ChromoMdlX::GetAttr(const void* aHandle, TNodeAttr aAttr)
     return (char *) attr;
 }
 
-TBool ChromoMdlX::AttrExists(const void* aHandle, TNodeAttr aAttr)
+void ChromoMdlX::GetAttr(const void* aHandle, TNodeAttr aAttr, TInt& aVal) const
+{
+    string ss(GetAttr(aHandle, aAttr)); 
+    istringstream sstr(ss);
+    sstr >> aVal;
+}
+
+void ChromoMdlX::SetAttr(void* aHandle, TNodeAttr aAttr, TInt aVal)
+{
+    stringstream sval;
+    sval << aVal;
+    SetAttr(aHandle, aAttr, sval.str().c_str());
+}
+
+TBool ChromoMdlX::AttrExists(const void* aHandle, TNodeAttr aAttr) const
 {
     __ASSERT(aHandle != NULL);
     TBool res = EFalse;
@@ -287,6 +301,16 @@ void* ChromoMdlX::AddChild(void* aParent, TNodeType aNode)
 
 void* ChromoMdlX::AddChild(void* aParent, const void* aHandle, TBool aCopy)
 {
+    void* root = Root(aParent);
+    TInt rorder = GetOrder(root, ETrue);
+    TInt order = GetOrder((void*) aHandle);
+    if (order == 0) {
+	order = rorder + 1;
+	SetOrder((void*) aHandle, order);
+    }
+    if (order > rorder) {
+	SetOrder(root, order, ETrue);
+    }
     xmlNodePtr node = aCopy ? xmlCopyNode((xmlNodePtr) aHandle, 1) : (xmlNodePtr) aHandle;
     return xmlAddChild((xmlNodePtr) aParent, node);
 }
@@ -339,16 +363,6 @@ void ChromoMdlX::SetAttr(void* aNode, TNodeAttr aType, const char* aVal)
     else {
 	xmlNewProp((xmlNodePtr) aNode, (const xmlChar*) name.c_str(), (const xmlChar*) aVal);
     }
-}
-
-void ChromoMdlX::SetAttr(void* aNode, TNodeAttr aType, TNodeType aVal)
-{
-    SetAttr(aNode, aType, GUri::NodeTypeName(aVal).c_str());
-}
-
-void ChromoMdlX::SetAttr(void* aNode, TNodeAttr aType, TNodeAttr aVal)
-{
-    SetAttr(aNode, aType, GUri::NodeAttrName(aVal).c_str());
 }
 
 void ChromoMdlX::RmChild(void* aParent, void* aChild, TBool aDeattachOnly)
@@ -457,6 +471,22 @@ void ChromoMdlX::MoveToEnd(void* aHandle)
 	xmlAddSibling(dest, src);
     }
 }
+
+TInt ChromoMdlX::GetOrder(void* aHandle, TBool aTree) const
+{
+    TInt res = 0;
+    TNodeAttr attr = aTree ? ENa_TOrder : ENa_Order;
+    if (AttrExists(aHandle, attr))
+	GetAttr(aHandle, attr, res);
+    return res;
+}
+
+void ChromoMdlX::SetOrder(void* aHandle, TInt aOrder, TBool aTree)
+{
+    TNodeAttr attr = aTree ? ENa_TOrder : ENa_Order;
+    SetAttr(aHandle, attr, aOrder);
+}
+
 
 
 ChromoX::ChromoX(): iRootNode(iMdl, NULL)

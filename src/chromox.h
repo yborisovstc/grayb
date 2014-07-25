@@ -24,10 +24,11 @@ class ChromoMdlX: public ChromoMdl
 	virtual void* GetFirstChild(const void* aHandle, TNodeType aType = ENt_Unknown);
 	virtual void* GetLastChild(const void* aHandle, TNodeType aType = ENt_Unknown);
 	virtual void* GetFirstTextChild(const void* aHandle);
-	virtual char *GetAttr(const void* aHandle, TNodeAttr aAttr);
+	virtual char *GetAttr(const void* aHandle, TNodeAttr aAttr) const;
+	virtual void  GetAttr(const void* aHandle, TNodeAttr aAttr, TInt& aVal) const;
 	virtual char* GetContent(const void* aHandle);
 	virtual void  SetContent(const void* aHandle, const string& aContent);
-	virtual TBool AttrExists(const void* aHandle, TNodeAttr aAttr);
+	virtual TBool AttrExists(const void* aHandle, TNodeAttr aAttr) const;
 	virtual void* AddChild(void* aParent, TNodeType aNode);
 	virtual void* AddChild(void* aParent, const void* aHandle, TBool aCopy = ETrue);
 	virtual void* AddChildDef(void* aParent, const void* aHandle, TBool aCopy = ETrue);
@@ -40,11 +41,12 @@ class ChromoMdlX: public ChromoMdl
 	virtual void MovePrevTo(void* aHandle, void* aDest);
 	virtual void MoveToEnd(void* aHandle);
 	virtual void SetAttr(void* aNode, TNodeAttr aType, const char* aVal);
-	virtual void SetAttr(void* aNode, TNodeAttr aType, TNodeType aVal);
-	virtual void SetAttr(void* aNode, TNodeAttr aType, TNodeAttr aVal);
+	virtual void SetAttr(void* aHandle, TNodeAttr aAttr, TInt aVal);
 	virtual void Dump(void* aNode, MLogRec* aLogRec);
 	virtual void Save(const string& aFileName) const;
 	virtual void* Find(const void* aHandle, const string& aUri);
+	virtual TInt GetOrder(void* aHandle, TBool aTree = EFalse) const;
+	virtual void SetOrder(void* aHandle, TInt aOrder, TBool aTree = EFalse);
     public:
 	int GetAttrInt(void *aHandle, const char *aName);
 	void* Set(const char* aFileName);

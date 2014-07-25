@@ -108,7 +108,7 @@ class ChromoNode
 	const string Name() const { return Attr(ENa_Id);};
 	const string Attr(TNodeAttr aAttr);
 	const string Attr(TNodeAttr aAttr) const;
-	const void GetAttr(TNodeAttr aAttr, TInt& aVal) const;
+	void GetAttr(TNodeAttr aAttr, TInt& aVal) const { iMdl.GetAttr(iHandle, aAttr, aVal);};
 	const string Content() { return iMdl.GetContent(iHandle);};
 	void  SetContent(const string& aContent) { return iMdl.SetContent(iHandle, aContent);};
 	TInt AttrInt(TNodeAttr aAttr) const;
@@ -129,10 +129,8 @@ class ChromoNode
 	// Be careful while removing node got from iterator. Iterator is not cleaned thus it returns wrong node on ++
 	void RmChild(const ChromoNode& aChild, TBool aDeattachOnly = EFalse) { iMdl.RmChild(iHandle, aChild.iHandle, aDeattachOnly); };
 	void Rm() { iMdl.Rm(iHandle); };
-	void SetAttr(TNodeAttr aType, TInt aVal);
 	void SetAttr(TNodeAttr aType, const string& aVal) { iMdl.SetAttr(iHandle, aType, aVal.c_str()); };
-	void SetAttr(TNodeAttr aType, TNodeType aVal) { iMdl.SetAttr(iHandle, aType, aVal); };
-	void SetAttr(TNodeAttr aType, TNodeAttr aVal) { iMdl.SetAttr(iHandle, aType, aVal); };
+	void SetAttr(TNodeAttr aType, TInt aVal) { iMdl.SetAttr(iHandle, aType, aVal);};
 	ChromoNode::Iterator Parent();
 	ChromoNode::Iterator Root();
 	ChromoNode::Const_Iterator Parent() const;
@@ -148,8 +146,8 @@ class ChromoNode
 	TInt GetLocalRank();
 	void GetRank(Rank& aRank) const;
 	void GetRank(Rank& aRank, const ChromoNode& aBase) const;
-	TInt GetOrder(TBool aTree = EFalse) const;
-	void SetOrder(TInt aOrder, TBool aTree = EFalse);
+	TInt GetOrder(TBool aTree = EFalse) const { iMdl.GetOrder(iHandle, aTree);};
+	void SetOrder(TInt aOrder, TBool aTree = EFalse) { iMdl.SetOrder(iHandle, aOrder, aTree);};
 	// The number of direct childs
 	TInt GetLocalSize();
 	ChromoNode& GetNode(const GUri& aUri) const;
