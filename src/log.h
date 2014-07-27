@@ -18,12 +18,15 @@ class GLogRec: public Base, public MLogRec
 	virtual void WriteFormat(const char* aFmt,...);
 	virtual void Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...);
 	virtual void Flush();
+	virtual TBool AddLogObserver(MLogObserver* aObs);
+	virtual void RemoveLogObserver(MLogObserver* aObs);
     protected:
 	void WriteRecord(const char* aText);
     protected:
 	FILE* iLogFile;
 	string iLogFileName;
 	TBool iLogFileValid;
+	MLogObserver* iObs;
 };
 
 #endif

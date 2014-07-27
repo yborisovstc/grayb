@@ -23,6 +23,9 @@ GLogRec::GLogRec(const string& aName, const string& aLogFileName): Base(aName), 
 
 GLogRec::~GLogRec()
 {
+    if (iObs != NULL) {
+	iObs->OnLogRecDeleting(this);
+    }
     if (iLogFileValid) 
 	fclose(iLogFile);
 }
@@ -70,11 +73,30 @@ void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...)
     strcat(buf, buf1);
     TInt len = strlen(buf);
     WriteRecord(buf);
+    if (iObs != NULL) {
+	iObs->OnLogAdded(aCtg, aNode, buf1);
+    }
 }
 
 void GLogRec::Flush()
 {
     if (iLogFile)
 	fflush(iLogFile);
+}
+
+TBool GLogRec::AddLogObserver(MLogObserver* aObs)
+{
+    TBool res = EFalse;
+    if (aObs != NULL && iObs == NULL) {
+	iObs = aObs;
+	res = ETrue;
+    }
+    return res;
+}
+
+void GLogRec::RemoveLogObserver(MLogObserver* aObs)
+{
+    __ASSERT(aObs == iObs);
+    iObs = NULL;
 }
 
