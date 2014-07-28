@@ -7,7 +7,8 @@ const TInt KLogRecBufSize = 400;
 const char* CtgText[MLogRec::ECtg_Max] = {"ERR", "WARN", "INFO", "DBG"};
 const char* KColSep = "; ";
 
-GLogRec::GLogRec(const string& aName, const string& aLogFileName): Base(aName), iLogFileName(aLogFileName), iLogFileValid(EFalse)
+GLogRec::GLogRec(const string& aName, const string& aLogFileName): Base(aName), iLogFileName(aLogFileName), iLogFileValid(EFalse),
+    iObs(NULL)
 {
     remove(iLogFileName.c_str()); 
     iLogFile = fopen(iLogFileName.c_str(), "w+");
