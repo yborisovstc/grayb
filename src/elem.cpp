@@ -1572,11 +1572,20 @@ void Elem::OnCompChanged(Elem& aComp)
 TBool Elem::OnCompRenamed(Elem& aComp, const string& aOldName)
 {
     TBool res = EFalse;
-    // Unregister the comp with its old name
-    res = UnregisterComp(&aComp, aOldName);
-    if (res) {
-	// Register the comp againg with its current name
-	res = RegisterComp(&aComp);
+    if (aComp.iMan == this) {
+	// Unregister the comp with its old name
+	res = UnregisterComp(&aComp, aOldName);
+	if (res) {
+	    // Register the comp againg with its current name
+	    res = RegisterComp(&aComp);
+	}
+    }
+    // Propagate the notification
+    if (iMan != NULL) {
+	iMan->OnCompRenamed(aComp, aOldName);
+    }
+    if (iObserver != NULL) {
+	iObserver->OnCompRenamed(aComp, aOldName);
     }
     return res;
 }

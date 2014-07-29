@@ -18,6 +18,7 @@ class MCompsObserver
 	virtual void OnCompChanged(Elem& aComp) = 0;
 	// For run-time only. Use OnCompChanged when the content is changed via mutation
 	virtual void OnContentChanged(Elem& aComp) = 0;
+	virtual TBool OnCompRenamed(Elem& aComp, const string& aOldName) = 0;
 };
 
 class MChildsObserver
