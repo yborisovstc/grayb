@@ -38,6 +38,8 @@
 		<revremark>Added <xref linkend="uc_039"/>, <xref linkend="uc_040"/></revremark> </revision>
 	    <revision> <revnumber>0.11</revnumber> <date>23-Jul-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_041"/></revremark> </revision>
+	    <revision> <revnumber>0.12</revnumber> <date>30-Jul-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="uc_042"/>, <xref linkend="uc_043"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -422,6 +424,7 @@
 		    <listitem><xref linkend="uc_014"/></listitem>
 		    <listitem><xref linkend="uc_022"/></listitem>
 		    <listitem><xref linkend="uc_018"/></listitem>
+		    <listitem><xref linkend="uc_042"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>
@@ -1200,6 +1203,83 @@
 	    <sect3><title>Discussion</title> </sect3>
 	    <sect3><title>Clarification</title> </sect3>
 	</sect2>
+
+	<sect2 id="uc_042"><title>UC_042 Chromosome updating via incremental mutations preferrably</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of SYSTEM</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<itemizedlist>
+		    <listitem>There is spec (chromo) of system to be created and run</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER creates system from given chromo</listitem>
+		    <listitem>USER makes some changes in order to modify the system</listitem>
+		    <listitem>SYSTEM perfoms the changes preferrably via incremental mutations to chromo. Only
+		    rear cases shoud be to do direct changing of chromo.</listitem>
+		    <listitem>SYSTEM also allows USER to do operation of compacting (squeezing) chromo</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_013"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title> <itemizedlist> </itemizedlist> </sect3>
+	    <sect3><title>Discussion</title> 
+		<orderedlist>
+		    <listitem>This is just the limitation that user must not edit chromo but only increment it. No 
+			gene engineering here.</listitem>
+		    <listitem>Let's consider the case: chromo contains creation node from remote parent, and this parent has
+			been renamed. How to repair the system consistency via incremental mutation ? The only way seems to
+		    create new node. The problem is that this node can include big hierarchy.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
+	<sect2 id="uc_043"><title>UC_043 Chromosome keeping unchanged after applying</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of SYSTEM</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<itemizedlist>
+		    <listitem>There is spec (chromo) of system to be created and run</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER creates system from given chromo</listitem>
+		    <listitem>SYSTEM perfoms creating the system by applying given chromo</listitem>
+		    <listitem>SYSTEM keeps given chromo as created system chromo after applying. Even erroneous mutations
+		    in given chromo go to the system chromo</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_013"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title> <itemizedlist> </itemizedlist> </sect3>
+	    <sect3><title>Discussion</title> 
+		<orderedlist>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title> </sect3>
     </sect1>
 
 </article>

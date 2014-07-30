@@ -960,7 +960,8 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 {
     const ChromoNode& mroot = aMutSpec;
     ChromoNode sroot = *(mroot.Root());
-    TInt tord = sroot.GetOrder(ETrue);
+    //TInt tord = sroot.GetOrder(ETrue);
+    TInt tord = iEnv->ChMgr()->GetSpecMaxOrder();
     TInt lim = iEnv->ChMgr()->GetLim();
     for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End(); rit++)
     {
@@ -1020,6 +1021,7 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime)
     string mattrs = aSpec.Attr(ENa_MutAttr);
     string mval = aSpec.Attr(ENa_MutVal);
     Elem* node = GetNode(snode);
+    TBool mutadded = EFalse;
     if (node != NULL) {
 	if (IsComp(node)) 
 	{
@@ -1032,7 +1034,7 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime)
 		    // Adding dependency to object of change
 		    if (!aRunTime) {
 			ChromoNode chn = iChromo->Root().AddChild(aSpec);
-			//node->AddMDep(this, chn, ENa_MutNode);
+			mutadded = ETrue;
 			AddCMDep(chn, ENa_MutNode, node);
 		    }
 		}
@@ -1048,6 +1050,10 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime)
     }
     else {
 	Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - cannot find node", snode.c_str());
+    }
+    // Append mutation to chromo anytype, ref uc_043
+    if (!aRunTime && !mutadded) {
+	iChromo->Root().AddChild(aSpec);
     }
 }
 
@@ -1077,6 +1083,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
     string mval = aSpec.Attr(refex ? ENa_Ref :ENa_MutVal);
     Elem* node = NULL;
     Elem* rnode = NULL;
+    TBool mutadded = EFalse;
     if (snode.length() == 0) {
 	node = this; 
     }
@@ -1107,6 +1114,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 		if (res) {
 		    if (!aRunTime) {
 			ChromoNode chn = iChromo->Root().AddChild(aSpec);
+			mutadded = ETrue;
 			AddCMDep(chn, ENa_MutNode, node);
 			if (refex) {
 			    AddCMDep(chn, ENa_Ref, rnode);
@@ -1126,6 +1134,10 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
     else {
 	Logger()->Write(MLogRec::EErr, this, "Changing [%s] - cannot find node", snode.c_str());
     }
+    // Append mutation to chromo anytype, ref uc_043
+    if (!aRunTime && !mutadded) {
+	iChromo->Root().AddChild(aSpec);
+    }
     return res;
 }
 
@@ -1134,6 +1146,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
     string snode = aNode.Attr(ENa_MutNode);
     string sparent = aNode.Attr(ENa_Parent);
     string sname = aNode.Name();
+    TBool mutadded = EFalse;
     __ASSERT(!sname.empty());
     if (IsLogeventCreOn()) {
 	Logger()->Write(MLogRec::EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
@@ -1218,6 +1231,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 			}
 			AddCMDep(chn, ENa_Id, elem);
 			AddCMDep(chn, ENa_Parent, parent);
+			mutadded = ETrue;
 		    }
 		    // Mutate object 
 		    elem->SetMutation(aNode);
@@ -1231,6 +1245,9 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
     }
     else  {
 	Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] in node [%s] - cannot find node", sname.c_str(), snode.c_str());
+    }
+    if (!aRunTime && !mutadded) {
+	iChromo->Root().AddChild(aNode);
     }
     return elem;
 }
@@ -1800,6 +1817,7 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime)
     TBool res = EFalse;
     string snode = aSpec.Attr(ENa_MutNode);
     Elem* node = GetNode(snode);
+    TBool mutadded = EFalse;
     if (node != NULL) {
 	// Check dependent mutations
 	if (IsMutSafe(node)) {
@@ -1824,6 +1842,7 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime)
 		// Adding dependency to object of change
 		ChromoNode chn = iChromo->Root().AddChild(aSpec);
 		AddCMDep(chn, ENa_MutNode, node);
+		mutadded = ETrue;
 	    }
 	    if (IsLogeventCreOn()) {
 		Logger()->Write(MLogRec::EInfo, this, "Removed elem [%s]", snode.c_str());
@@ -1837,6 +1856,10 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime)
     else {
 	Logger()->Write(MLogRec::EErr, this, "Removing elem [%s] - not found", snode.c_str());
     }
+    // Append mutation to chromo anytype, ref uc_043
+    if (!aRunTime && !mutadded) {
+	iChromo->Root().AddChild(aSpec);
+    }
     return res;
 }
 
@@ -1847,6 +1870,7 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime)
     TBool dest_spec = aSpec.AttrExists(ENa_MutNode);
     string dests = dest_spec ? aSpec.Attr(ENa_MutNode): string();
     Elem* dnode = dest_spec ? GetNode(dests) : this;
+    TBool mutadded = EFalse;
     if (dnode != NULL) {
 	GUri srcsuri(srcs);
 	if (srcsuri.Scheme().empty()) {
@@ -1923,10 +1947,15 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime)
 	    // Adding dependency to object of change
 	    ChromoNode chn = iChromo->Root().AddChild(aSpec);
 	    AddCMDep(chn, ENa_MutNode, dnode);
+	    mutadded = ETrue;
 	}
     }
     else {
 	Logger()->Write(MLogRec::EErr, this, "Moving to node [%s] - not found", dests.c_str());
+    }
+    // Append mutation to chromo anytype, ref uc_043
+    if (!aRunTime && !mutadded) {
+	iChromo->Root().AddChild(aSpec);
     }
     return res;
 }

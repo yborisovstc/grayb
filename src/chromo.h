@@ -86,6 +86,7 @@ class ChromoNode
 
 
     public:
+	ChromoNode(): iMdl(*(ChromoMdl*) NULL), iHandle(NULL) {};
 	ChromoNode(ChromoMdl& aMdl, void* aHandle): iMdl(aMdl), iHandle(aHandle) {};
 	ChromoNode(const ChromoNode& aNode);
 	ChromoNode& operator=(const ChromoNode& aNode);
