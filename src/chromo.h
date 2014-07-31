@@ -91,6 +91,7 @@ class ChromoNode
 	ChromoNode(const ChromoNode& aNode);
 	ChromoNode& operator=(const ChromoNode& aNode);
 	TBool operator==(const ChromoNode& aNode);
+	TBool operator!=(const ChromoNode& aNode) { return !this->operator==(aNode);};
 	Iterator Begin() { return Iterator(iMdl, iMdl.GetFirstChild(iHandle)); };
 	Const_Iterator Begin() const { return Const_Iterator(iMdl, iMdl.GetFirstChild(iHandle)); };
 	Iterator End() { return Iterator(iMdl, NULL); };
@@ -150,8 +151,10 @@ class ChromoNode
 	TInt GetOrder(TBool aTree = EFalse) const { iMdl.GetOrder(iHandle, aTree);};
 	void SetOrder(TInt aOrder, TBool aTree = EFalse) { iMdl.SetOrder(iHandle, aOrder, aTree);};
 	// The number of direct childs
+	TInt Count() { return GetLocalSize();};
 	TInt GetLocalSize();
 	ChromoNode& GetNode(const GUri& aUri) const;
+	ChromoNode At(TInt aInd);
     private :
 	ChromoMdl& iMdl;
 	void* iHandle;

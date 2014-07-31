@@ -2233,7 +2233,7 @@ void Elem::GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDPath aDpath, MChr
 	// Childs
 	for (TNMReg::const_iterator it = iChilds.begin(); it != iChilds.end(); it++) {
 	    Elem* child = it->second;
-	    child->GetMajorDep(aDep, aMut, MChromo::EDp_Direct, aLevel, EFalse, ETrue);
+	    child->GetMajorDep(aDep, aMut, MChromo::EDp_Child, aLevel, EFalse, ETrue);
 	}
 	// Components
 	for (vector<Elem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {

@@ -63,6 +63,7 @@ Chromo::Chromo()
     if (!mInitiated) {
 	mDeps.insert(TDepsElm(TDep(ENt_Node, ENa_Id, EDp_Direct), EDl_Critical));
 	mDeps.insert(TDepsElm(TDep(ENt_Node, ENa_Parent, EDp_Direct), EDl_Affecting));
+	mDeps.insert(TDepsElm(TDep(ENt_Node, ENa_Id, EDp_Child), EDl_Affecting));
 
 	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_Id, EDp_Direct), EDl_Critical));
 	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_Id, EDp_Comps), EDl_Critical));
@@ -264,6 +265,17 @@ TInt ChromoNode::GetLocalSize()
 {
     TInt res = 0;
     for (Iterator it = Begin(); it != End(); it++, res++);
+    return res;
+}
+
+ChromoNode ChromoNode::At(TInt aInd)
+{
+    ChromoNode res = *End();
+    Iterator it = Begin();
+    for (TInt ind = 0; it != End() || ind != aInd; it++, ind++);
+    if (it != End()) {
+	res = *it;
+    }
     return res;
 }
 

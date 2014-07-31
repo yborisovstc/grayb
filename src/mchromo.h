@@ -68,7 +68,7 @@ class MChromo
 	    EDl_Any = EDl_Critical | EDl_Affecting | EDl_Harmless
 	};
 	// Dependencies path
-	enum TDPath { EDp_Direct = 0, EDp_Comps = 1};
+	enum TDPath { EDp_Direct = 0, EDp_Comps = 1, EDp_Child = 2};
     public:
 	virtual ChromoNode& Root() = 0;
 	virtual const ChromoNode& Root() const= 0;

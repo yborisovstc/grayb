@@ -1246,7 +1246,7 @@
 	    <sect3><title>Clarification</title> </sect3>
 	</sect2>
 
-	<sect2 id="uc_043"><title>UC_043 Chromosome keeping unchanged after applying</title>
+	<sect2 id="uc_043"><title>UC_043 Chromosome applied as is</title>
 	    <sect3><title>Actors</title>
 		<itemizedlist>
 		    <listitem> USER: client of SYSTEM</listitem>
@@ -1262,7 +1262,7 @@
 		<itemizedlist>
 		    <listitem>USER creates system from given chromo</listitem>
 		    <listitem>SYSTEM perfoms creating the system by applying given chromo</listitem>
-		    <listitem>SYSTEM keeps given chromo as created system chromo after applying. Even erroneous mutations
+		    <listitem>SYSTEM keeps given chromo in created system chromo after applying. Even erroneous mutations
 		    in given chromo go to the system chromo</listitem>
 		</itemizedlist>
 	    </sect3>
@@ -1277,9 +1277,13 @@
 	    <sect3><title>Extended by</title> <itemizedlist> </itemizedlist> </sect3>
 	    <sect3><title>Discussion</title> 
 		<orderedlist>
+		    <listitem>The reason of this case is that when we use studio and recreate the system (after undo/redo or 
+			run-stop) then we will see the different results in the log if we don't apply chromo as is but 
+			filter out some mutations. Currently erroneous mutations are not go to systems chromo.</listitem>
 		</orderedlist>
 	    </sect3>
 	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
     </sect1>
 
 </article>
