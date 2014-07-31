@@ -268,11 +268,18 @@ TInt ChromoNode::GetLocalSize()
     return res;
 }
 
-ChromoNode ChromoNode::At(TInt aInd)
+TInt ChromoNode::Count() const
+{
+    TInt res = 0;
+    for (Const_Iterator it = Begin(); it != End(); it++, res++);
+    return res;
+}
+
+ChromoNode ChromoNode::At(TInt aInd) const
 {
     ChromoNode res = *End();
-    Iterator it = Begin();
-    for (TInt ind = 0; it != End() || ind != aInd; it++, ind++);
+    Const_Iterator it = Begin();
+    for (TInt ind = 0; it != End() && ind != aInd; it++, ind++);
     if (it != End()) {
 	res = *it;
     }

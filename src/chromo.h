@@ -152,9 +152,10 @@ class ChromoNode
 	void SetOrder(TInt aOrder, TBool aTree = EFalse) { iMdl.SetOrder(iHandle, aOrder, aTree);};
 	// The number of direct childs
 	TInt Count() { return GetLocalSize();};
+	TInt Count() const;
 	TInt GetLocalSize();
 	ChromoNode& GetNode(const GUri& aUri) const;
-	ChromoNode At(TInt aInd);
+	ChromoNode At(TInt aInd) const;
     private :
 	ChromoMdl& iMdl;
 	void* iHandle;
