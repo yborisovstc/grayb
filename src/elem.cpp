@@ -963,12 +963,16 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
     //TInt tord = sroot.GetOrder(ETrue);
     TInt tord = iEnv->ChMgr()->GetSpecMaxOrder();
     TInt lim = iEnv->ChMgr()->GetLim();
+    TBool isattached = IsChromoAttached();
     for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End(); rit++)
     {
 	TBool res = EFalse;
 	ChromoNode rno = (*rit);
 	TInt order = rno.GetOrder();
-	if (tord > 0 && order > tord - lim) continue;
+	// Avoiding mutations above limit. Taking into account only attached chromos.
+	if (isattached && tord > 0 && order > tord - lim) {
+	    continue;
+	}
 	TNodeType rnotype = rno.Type();
 	if (rnotype == ENt_Node) {
 	    Elem* node = AddElem(rno, aRunTime);
