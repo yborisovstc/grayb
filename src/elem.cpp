@@ -1469,7 +1469,7 @@ TBool Elem::UnregisterComp(Elem* aComp, const string& aName)
 	    found = ETrue;
 	}
     }
-    __ASSERT(found);
+    //__ASSERT(found); /* To avoid panic when deleting comp that hasn't been registered yet */
     found = EFalse;
     range = iMComps.equal_range(TNMKey("*"));
     for (TNMReg::iterator it = range.first; it != range.second && !found; it++) {
@@ -1478,7 +1478,7 @@ TBool Elem::UnregisterComp(Elem* aComp, const string& aName)
 	    found = ETrue;
 	}
     }
-    __ASSERT(found);
+    //__ASSERT(found);
     res = ETrue;
     return res;
 }
