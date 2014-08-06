@@ -172,6 +172,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// Checks if elements chromo is attached. Ref UC_019 for details
 	TBool IsChromoAttached() const;
 	Elem* GetAttachingMgr();
+	// Checks if the node is originated vis phenotypical modification
+	TBool IsPhenoModif() const;
 	// Debug helpers
 	Elem* GetNodeS(const char* aUri);
 	TBool IsName(const char* aName);
@@ -252,7 +254,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void AddCMDep(const ChromoNode& aMut, TNodeAttr aAttr, Elem* aNode);
 	void RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr);
 	void RmCMDep(const ChromoNode& aMut);
-	void GetDep(TMDep& aDep, TNodeAttr aAttr);
+	void GetDep(TMDep& aDep, TNodeAttr aAttr, TBool aLocalOnly = EFalse) const;
 	void GetDepRank(Rank& aRank, TNodeAttr aAttr);
 	TMDep GetMajorDep();
 	void GetMajorDep(TMDep& aDep, TBool aUp = EFalse, TBool aDown = ETrue);

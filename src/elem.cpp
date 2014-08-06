@@ -2022,6 +2022,18 @@ Elem* Elem::GetAttachingMgr()
     return res;
 }
 
+TBool Elem::IsPhenoModif() const
+{
+    TBool res = !IsChromoAttached();
+    if (res) {
+	TMDep dep;
+	GetDep(dep, ENa_Id, ETrue);
+	Elem* depnode = dep.first.first;
+	res = depnode != NULL && depnode->IsChromoAttached();
+    }
+    return res;
+}
+
 Elem* Elem::GetParent()
 {
     return iParent;
@@ -2101,7 +2113,7 @@ void Elem::GetMajorChild(Elem*& aElem, Rank& rr)
     }
 }
 
-void Elem::GetDep(TMDep& aDep, TNodeAttr aAttr) 
+void Elem::GetDep(TMDep& aDep, TNodeAttr aAttr, TBool aLocalOnly) const 
 {
     if (iMDeps.begin() != iMDeps.end()) {
 	for (TMDeps::const_iterator it = iMDeps.begin(); it != iMDeps.end(); it++) {
@@ -2114,7 +2126,7 @@ void Elem::GetDep(TMDep& aDep, TNodeAttr aAttr)
     }
     else {
 	// No deps, the node is internal, move to owner
-	if (iMan != NULL) {
+	if (!aLocalOnly && iMan != NULL) {
 	    iMan->GetDep(aDep, aAttr);
 	}
     }

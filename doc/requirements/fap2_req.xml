@@ -40,6 +40,8 @@
 		<revremark>Added <xref linkend="uc_041"/></revremark> </revision>
 	    <revision> <revnumber>0.12</revnumber> <date>30-Jul-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_042"/>, <xref linkend="uc_043"/></revremark> </revision>
+	    <revision> <revnumber>0.13</revnumber> <date>06-Aug-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="uc_044"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -425,6 +427,7 @@
 		    <listitem><xref linkend="uc_022"/></listitem>
 		    <listitem><xref linkend="uc_018"/></listitem>
 		    <listitem><xref linkend="uc_042"/></listitem>
+		    <listitem><xref linkend="uc_044"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>
@@ -1280,6 +1283,47 @@
 		    <listitem>The reason of this case is that when we use studio and recreate the system (after undo/redo or 
 			run-stop) then we will see the different results in the log if we don't apply chromo as is but 
 			filter out some mutations. Currently erroneous mutations are not go to systems chromo.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
+	<sect2 id="uc_044"><title>UC_044 Restriction when mutation applying: disable indirect phenotypic modification</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of SYSTEM</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<itemizedlist>
+		    <listitem>There is spec (chromo) of system to be created and run.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER request the restriction mode of mutations applying: to disable indirect phenotypic
+			modification. This means that only the mutation are considered correct in which the object specified
+		    (ENa_MutNode) is the node containing the mut or this node unattached internal nodes.</listitem>
+		    <listitem>USER request SYSTEM for creating system from given chromo.</listitem>
+		    <listitem>SYSTEM perfoms creating the system by applying given chromo. SYSTEM checks the restriction
+			mode when applying muts from the chromo. If the mut doesn't meat restriction, SYSTEM consider 
+			mut as incorrect, doesn't apply it and indicates the error for the mut.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_013"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title> <itemizedlist> </itemizedlist> </sect3>
+	    <sect3><title>Discussion</title> 
+		<orderedlist>
+		    <listitem>The restrictions allows redicing of dependencies in the whole system chromo. </listitem>
+		    <listitem>Probably SYSTEM should indicate the muts not met the restriction as warnings.</listitem>
 		</orderedlist>
 	    </sect3>
 	    <sect3><title>Clarification</title> </sect3>
