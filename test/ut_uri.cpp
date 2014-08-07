@@ -60,6 +60,14 @@ void Ut_uri::test_UriBase()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+
+    // Try to get node via incorrect  uri
+    Elem* enode = root->GetNode("/Elem");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get node via incorrect  uri", enode == NULL);
+
+    enode = root->GetNode(":Elem");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get inher root", enode != NULL);
+
     Elem* doutp = root->GetNode("(Incaps:)test/(DataSInt:)DataS_Int_1/(Elem:)Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
     MDIntGet* doutpget = doutp->GetObj(doutpget);
@@ -73,10 +81,6 @@ void Ut_uri::test_UriBase()
     CPPUNIT_ASSERT_MESSAGE("Fail to get fun inp", efuninp != NULL);
     MVert* mpairt = efuninp->GetObj(mpairt);
     CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
-
-    // Try to get node via incorrect  uri
-    Elem* enode = root->GetNode("/Elem");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get node via incorrect  uri", enode == NULL);
 
     Elem* foutp = root->GetNode("test/Incr2/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);

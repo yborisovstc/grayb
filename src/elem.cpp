@@ -769,8 +769,11 @@ Elem* Elem::GetNode(const GUri& aUri)
 		it++;
 		GUri::TElem elem = *it;
 		anywhere = elem.second.second == GUri::KTypeAnywhere; 
+		if (!anywhere && root->Name() != elem.second.second) {
+		    root = NULL;
+		}
 	    }
-	    if (++it != aUri.Elems().end()) {
+	    if (root != NULL && ++it != aUri.Elems().end()) {
 		res = root->GetNode(aUri, it, anywhere);
 	    }
 	    else {
