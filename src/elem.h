@@ -252,8 +252,9 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	static void GetDepRank(const TMDep& aDep, Rank& aRank);
 	// Adding two directions chromo-model dependencies
 	void AddCMDep(const ChromoNode& aMut, TNodeAttr aAttr, Elem* aNode);
-	void RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr);
+	TBool RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr);
 	void RmCMDep(const ChromoNode& aMut);
+	Elem* GetCMDep(const ChromoNode& aMut, TNodeAttr aAttr) const;
 	void GetDep(TMDep& aDep, TNodeAttr aAttr, TBool aLocalOnly = EFalse) const;
 	void GetDepRank(Rank& aRank, TNodeAttr aAttr);
 	TMDep GetMajorDep();
@@ -263,6 +264,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// Chromo
 	ChromoNode GetChNode(const GUri& aUri) const;
 	void CompactChromo();
+	void CompactChromo(const ChromoNode& aNode);
     protected:
 	Elem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse);
 	static void Init();

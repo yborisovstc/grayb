@@ -74,6 +74,10 @@ void Ut_uri::test_UriBase()
     MVert* mpairt = efuninp->GetObj(mpairt);
     CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
 
+    // Try to get node via incorrect  uri
+    Elem* enode = root->GetNode("/Elem");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get node via incorrect  uri", enode == NULL);
+
     Elem* foutp = root->GetNode("test/Incr2/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
     MDIntGet* foutpget = foutp->GetObj(foutpget);
