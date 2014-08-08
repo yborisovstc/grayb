@@ -28,6 +28,8 @@
 		<revremark>Added <xref linkend="ds_base_03"/></revremark> </revision>
 	    <revision> <revnumber>0.06</revnumber> <date>10-Feb-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="ds_mut"/></revremark> </revision>
+	    <revision> <revnumber>0.07</revnumber> <date>08-Aug-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="ds_nat_agent_hier"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -511,7 +513,7 @@
 	</sect2>
     </sect1>
 
-    <sect1 id="sec_refl_idir"><title>Reflecting of direction of information</title>
+    <sect1 id="ds_refl_idir"><title>Reflecting of direction of information</title>
 	<sect2><title>Intro</title>
 	    <simpara>Ref <ulink url="../requirements/index.html#uc_040"/> for the use-case.</simpara>
 	</sect2>
@@ -534,6 +536,49 @@
 		<listitem>To consider <xref linkend="sec_refl_idir_whatdiris"/>:  To have all CPs base implementing MCompatChecker (by the way why not rename 
 		    this iface to something like "MConn"?). To add to this iface method GetDir().</listitem>
 	    </orderedlist>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_nat_agent_hier"><title>How to embed native agents into agents hierarchy</title>
+	<sect2><title>Intro</title>
+	    <simpara>All the agents are to have their place in agents hierarhy, so can be pointed to via
+		hierarchy coordinate (uri). Currently there are two hierarchies defined: structural, induced by relation
+		"component-container" and inheritance hierarchy, induced by relation "parent-child". Both heirarchies are 
+		supported by capability of base agent "Elem" to establish relations of both types. Each hierarchy has 
+		initial point - root. So there are structural root, agent that doesn't have container to be related to, and
+		inheritance root - element that doesn't have parent.</simpara>
+	    <simpara>It is obvious that inheritance root is the base agent - Elem. As for structural hierarchy, currently any 
+		derived agent can be root. The problem here is that native agents, those that are delivered by environment, are
+		not embedded into structural hierarchy, but has no structural root, so logically are considered as structural
+		roots theirself. So we got multiple structural root that makes troubles when referencing to the agents via 
+		structural coordinates.
+	    </simpara>
+	    <simpara>We need to take into account specifics of native agents as parent. Normally we specify ref to parent assuming
+		the parent exists and can be reached via ref in the proper hierarchy. But for native agent it is not true. It is 
+		possible that the agent doesn't exist yet, in this case it will be created by the environment. Currently we even
+		use specific form of uri, w/o hier relation symbol when referencing to native agent. Also there is dedicated
+		mechanism of gettng the native agent unregarding from hierarchies - from environment native agents cache.</simpara>
+	</sect2>
+	<sect2><title>Approach: To allow mutlitpe structural roots</title>
+	    <simpara>This is what currently exists. To support this we need to update Elem method of gettng structural node.
+		But this is not simple. This is because algorithm of gettng node is based on single root. In other words root is
+		entry point for getting node.</simpara>
+	</sect2>
+	<sect2><title>Approach: To have specific node for native agents in structural hierarchy.</title>
+	    <simpara>There is the problem with this approach: to create root we already should have base agent available.
+		But according to the approach this agent should be part of root. This causes logical contradiction.</simpara>
+	</sect2>
+	<sect2><title>Approach: To have base agents as both structural and inheritance hierarchies.</title>
+	    <simpara>This options does't seem to have some contradictions. The only problem is that we need to have
+		additional node. Morover this node needs to be deattached. Also we need to support ref to this node on
+		environment level to be able of adding newly created native agents (ref Elem::AddElem) to this node.
+	    </simpara>
+	</sect2>
+	<sect2><title>Approach: don't have native agents in structural hierarchy</title>
+	    <simpara>This is mainly how it works now. We are saying that native agents are not in structural hierarchy but
+		can be obtained via inherirance hierarchy uri or simple native agents uri. It should work, we just need to
+		ensure clear distinction of native agents ref (uri). Currently native agents uri form doesn't distinct from
+		form of default structural uri (for it also no relation symbol is used in uri, ref GUri::Parse)</simpara>
 	</sect2>
     </sect1>
 
