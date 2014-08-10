@@ -8,7 +8,7 @@
 
 <node id="test" parent="Vert">
     <node id="v1" parent="Vert"/>
-    <rm node="v1"/>
+    <rm node="./v1"/>
     <node id="v1" parent="Vert"/>
 </node>
 

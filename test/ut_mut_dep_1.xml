@@ -12,6 +12,6 @@ removing elem2 - breakege -->
 	<node id="elem2" parent="Elem"/>
     </node>
     <!-- Dependency of type "child" -->
-    <node id="elem3" parent="elem1/elem2"/>
+    <node id="elem3" parent="./elem1/elem2"/>
 </node>
 

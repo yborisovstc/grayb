@@ -43,7 +43,7 @@ void *FuncBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* a
 TBool FuncBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
     TBool res = EFalse;
-    Elem* caps = aContext.GetNode("Capsule");
+    Elem* caps = aContext.GetNode("./Capsule");
     if (caps != NULL) {
 	// TODO [YB] To optimize by using proper utility
 	Elem* cp = caps->GetCompOwning("ConnPointInp", &aComp);
@@ -61,7 +61,7 @@ void FuncBase::OnDataChanged()
 
 void FuncBase::NotifyUpdate()
 {
-    Elem* eout = GetNode("../../Capsule/out");
+    Elem* eout = GetNode("./../../Capsule/out");
     if (eout != NULL) {
 	MVert* mvout = eout->GetObj(mvout);
 	MVert* mpair = *(mvout->Pairs().begin());
@@ -136,7 +136,7 @@ TInt AFunInt::Value()
 MDIntGet* AFunInt::GetInp(const string& aInpName)
 {
     MDIntGet* res = NULL;
-    Elem* einp = GetNode("../../Capsule/" + aInpName);
+    Elem* einp = GetNode("./../../Capsule/" + aInpName);
     if (einp != NULL) {
 	Vert* vert = einp->GetObj(vert);
 	MVert* pair = *(vert->Pairs().begin());
@@ -271,7 +271,7 @@ TBool AFunIntRes::HandleIoChanged(Elem& aContext, Elem* aCp)
 
 void AFunIntRes::UpdateOutp()
 {
-    Elem* out = GetNode("../../Capsule/out");
+    Elem* out = GetNode("./../../Capsule/out");
     if (out != NULL) {
 	Vert* vert = out->GetObj(vert);
 	MVert* pair = *(vert->Pairs().begin());
@@ -288,7 +288,7 @@ void AFunIntRes::UpdateOutp()
 void AFunIntRes::OnDataChanged()
 {
 //    MDIntGet* mget = GetInp("inp");
-    Elem* einp = GetNode("../../Capsule/inp");
+    Elem* einp = GetNode("./../../Capsule/inp");
     __ASSERT(einp != NULL);
     RqContext cont(this);
     MDIntGet* mget = (MDIntGet*) einp->GetSIfi("MDIntGet", &cont);
@@ -353,7 +353,7 @@ TBool AAddInt::HandleIoChanged(Elem& aContext, Elem* aCp)
 
 void AAddInt::OnDataChanged()
 {
-    Elem* einp = GetNode("../../Capsule/inp");
+    Elem* einp = GetNode("./../../Capsule/inp");
     RqContext cont(this);
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
     TInt val = 0;
@@ -414,7 +414,7 @@ TBool ACountCritInt::HandleIoChanged(Elem& aContext, Elem* aCp)
 
 void ACountCritInt::OnDataChanged()
 {
-    Elem* einp = GetNode("../../Capsule/inp");
+    Elem* einp = GetNode("./../../Capsule/inp");
     RqContext cont(this);
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
     TInt val = 0;
@@ -469,7 +469,7 @@ void *AFunc::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx
 TBool AFunc::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
     TBool res = ETrue;
-    Elem* caps = aContext.GetNode("Capsule");
+    Elem* caps = aContext.GetNode("./Capsule");
     if (caps != NULL) {
 	Elem* cp = caps->GetCompOwning("ConnPointInp", &aComp);
 	if (cp != NULL) {
@@ -481,7 +481,7 @@ TBool AFunc::HandleCompChanged(Elem& aContext, Elem& aComp)
 
 void AFunc::NotifyUpdate()
 {
-    Elem* eout = GetNode("../../Capsule/out");
+    Elem* eout = GetNode("./../../Capsule/out");
     __ASSERT(eout != NULL);
     MVert* mvout = eout->GetObj(mvout);
     MVert* mpair = *(mvout->Pairs().begin());
@@ -500,7 +500,7 @@ void AFunc::OnDataChanged()
 
 TBool AFunc::IsLogeventUpdate()
 {
-    Elem* node = GetNode("../../Logspec/Update");
+    Elem* node = GetNode("./../../Logspec/Update");
     return node != NULL;
 }
 
@@ -598,7 +598,7 @@ void *AFAddInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* a
 
 TInt AFAddInt::Value()
 {
-    Elem* einp = GetNode("../../Capsule/inp");
+    Elem* einp = GetNode("./../../Capsule/inp");
     RqContext cont(this);
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
     TInt val = 0;
@@ -648,7 +648,7 @@ TInt AFSubInt::GetValue()
     RqContext cont(this);
     TInt val = 0;
     // Positives
-    Elem* einp = GetNode("../../Capsule/InpP");
+    Elem* einp = GetNode("./../../Capsule/InpP");
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
     for (IfIter it = range.first; it != range.second; it++) {
 	MDIntGet* dget = (MDIntGet*) (*it);
@@ -657,7 +657,7 @@ TInt AFSubInt::GetValue()
 	}
     }
     // Negatives
-    einp = GetNode("../../Capsule/InpN");
+    einp = GetNode("./../../Capsule/InpN");
     range = einp->GetIfi("MDIntGet", &cont);
     for (IfIter it = range.first; it != range.second; it++) {
 	MDIntGet* dget = (MDIntGet*) (*it);
@@ -707,9 +707,9 @@ void *AFLimInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* a
 TInt AFLimInt::Value()
 {
     TInt val = 0;
-    MDIntGet* minp = (MDIntGet*) GetSIfi("../../Capsule/Inp", "MDIntGet");
-    MDIntGet* mlimu = (MDIntGet*) GetSIfi("../../Capsule/Inp_LimU", "MDIntGet");
-    MDIntGet* mliml = (MDIntGet*) GetSIfi("../../Capsule/Inp_LimL", "MDIntGet");
+    MDIntGet* minp = (MDIntGet*) GetSIfi("./../../Capsule/Inp", "MDIntGet");
+    MDIntGet* mlimu = (MDIntGet*) GetSIfi("./../../Capsule/Inp_LimU", "MDIntGet");
+    MDIntGet* mliml = (MDIntGet*) GetSIfi("./../../Capsule/Inp_LimL", "MDIntGet");
     if (minp != NULL && mlimu != NULL && mliml != NULL) {
 	TInt inp = minp->Value();
 	TInt limu = mlimu->Value();
@@ -769,8 +769,8 @@ void *AFDivInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* a
 TInt AFDivInt::Value()
 {
     TInt val = 0;
-    MDIntGet* mdvd = (MDIntGet*) GetSIfi("../../Capsule/Inp_DD", "MDIntGet");
-    MDIntGet* mdvr = (MDIntGet*) GetSIfi("../../Capsule/Inp_DR", "MDIntGet");
+    MDIntGet* mdvd = (MDIntGet*) GetSIfi("./../../Capsule/Inp_DD", "MDIntGet");
+    MDIntGet* mdvr = (MDIntGet*) GetSIfi("./../../Capsule/Inp_DR", "MDIntGet");
     if (mdvd != NULL && mdvr != NULL) {
 	TInt dvd = mdvd->Value();
 	TInt dvr = mdvr->Value();
@@ -828,7 +828,7 @@ void *AFIntToVect::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext
 vector<TInt> AFIntToVect::Value()
 {
     vector<TInt> res;
-    Elem* einp = GetNode("../../Capsule/inp");
+    Elem* einp = GetNode("./../../Capsule/inp");
     __ASSERT(einp != NULL);
     RqContext cont(this);
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
@@ -872,7 +872,7 @@ void *AFConvInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* 
     }
     else if (strcmp(aName, MDIntGet::Type()) == 0) {
 	// If iface requested from working function input - redirect to Sample iface holder
-	Elem* wfinp = GetNode("../../Capsule/Out_WFarg");
+	Elem* wfinp = GetNode("./../../Capsule/Out_WFarg");
 	if (aCtx->IsInContext(wfinp)) {
 	    res = (MDIntGet*) &iSampleHolder;
 	}
@@ -909,11 +909,11 @@ void AFConvInt::UpdateIfi(const string& aName, const RqContext* aCtx)
 TInt AFConvInt::GetValue()
 {
     TInt val = 0;
-    Elem* einp = GetNode("../../Capsule/inp");
+    Elem* einp = GetNode("./../../Capsule/inp");
     __ASSERT(einp != NULL);
-    Elem* einpwf = GetNode("../../Capsule/Inp_WFres");
+    Elem* einpwf = GetNode("./../../Capsule/Inp_WFres");
     __ASSERT(einpwf != NULL);
-    Elem* eargwf = GetNode("../../WFArg/Capsule/inp");
+    Elem* eargwf = GetNode("./../../WFArg/Capsule/inp");
     __ASSERT(eargwf != NULL);
     RqContext cont(this);
     MDIntSet* wfarg = (MDIntSet*) eargwf->GetSIfi(MDIntSet::Type(), &cont);
@@ -984,7 +984,7 @@ void *AFuncm::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCt
 TBool AFuncm::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
     TBool res = ETrue;
-    Elem* caps = aContext.GetNode("Capsule");
+    Elem* caps = aContext.GetNode("./Capsule");
     if (caps != NULL) {
 	Elem* cp = caps->GetCompOwning("ConnPointInp", &aComp);
 	if (cp != NULL) {
@@ -996,7 +996,7 @@ TBool AFuncm::HandleCompChanged(Elem& aContext, Elem& aComp)
 
 void AFuncm::NotifyUpdate()
 {
-    Elem* eout = GetNode("../../Capsule/out");
+    Elem* eout = GetNode("./../../Capsule/out");
     if (eout != NULL) {
 	MVert* mvout = eout->GetObj(mvout);
 	MVert* mpair = *(mvout->Pairs().begin());
@@ -1040,7 +1040,7 @@ void *AFuncmAdd::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* 
 
 TInt AFuncmAdd::ExcInt::Value()
 {
-    Elem* einp = mHost.GetNode("../../Capsule/inp");
+    Elem* einp = mHost.GetNode("./../../Capsule/inp");
     RqContext cont(&mHost);
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
     TInt val = 0;
@@ -1089,8 +1089,8 @@ void *AFGTInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aC
 
 TBool AFGTInt::Value()
 {
-    Elem* einp1 = GetNode("../../Capsule/Inp1");
-    Elem* einp2 = GetNode("../../Capsule/Inp2");
+    Elem* einp1 = GetNode("./../../Capsule/Inp1");
+    Elem* einp2 = GetNode("./../../Capsule/Inp2");
     __ASSERT(einp1 != NULL && einp2 != NULL);
     RqContext cont(this);
     MDIntGet* minp1 = (MDIntGet*) einp1->GetSIfi("MDIntGet", &cont);
@@ -1139,7 +1139,7 @@ void *AFBoolToInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext
 
 TInt AFBoolToInt::Value()
 {
-    Elem* einp = GetNode("../../Capsule/Inp");
+    Elem* einp = GetNode("./../../Capsule/Inp");
     __ASSERT(einp != NULL);
     RqContext cont(this);
     MDBoolGet* minp = (MDBoolGet*) einp->GetSIfi("MDBoolGet", &cont);
@@ -1207,7 +1207,7 @@ void *AFunVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aC
 TBool AFunVar::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
     TBool res = ETrue;
-    Elem* caps = aContext.GetNode("Capsule");
+    Elem* caps = aContext.GetNode("./Capsule");
     if (caps != NULL) {
 	Elem* cp = caps->GetCompOwning("Inp_FVar", &aComp);
 	if (cp != NULL) {
@@ -1251,7 +1251,7 @@ void *AFunVar::DoGetDObj(const char *aName)
 Elem::TIfRange AFunVar::GetInps(TInt aId)
 {
     TIfRange res;
-    Elem* inp = GetNode("../../Capsule/" + GetInpUri(aId));
+    Elem* inp = GetNode("./../../Capsule/" + GetInpUri(aId));
     if (inp != NULL) {
 	RqContext cont(this);
 	res =  inp->GetIfi(MDVarGet::Type(), &cont);
@@ -1842,7 +1842,7 @@ void AFMplVar::Init(const string& aIfaceName)
 Elem::TIfRange AFMplVar::GetInps(TInt aId)
 {
     if (aId == FAddBase::EInp) {
-	Elem* inp = GetNode("../../Capsule/Inp");
+	Elem* inp = GetNode("./../../Capsule/Inp");
 	__ASSERT(inp != NULL);
 	RqContext cont(this);
 	return inp->GetIfi(MDVarGet::Type(), &cont);
@@ -1942,10 +1942,10 @@ Elem::TIfRange AFMplncVar::GetInps(TInt aId)
     Elem::TIfRange res;
     string uri;
     if (aId == FMplncBase::EInp1) {
-	uri = "../../Capsule/Inp1";
+	uri = "./../../Capsule/Inp1";
     }
     else if (aId == FMplncBase::EInp2) { 
-	uri = "../../Capsule/Inp2";
+	uri = "./../../Capsule/Inp2";
     }
     if (!uri.empty()) {
 	Elem* inp = GetNode(uri);
@@ -2430,7 +2430,7 @@ void AFCastVar::Init(const string& aIfaceName)
     }
     // Checking if input type is defined explicitly
     string ifi;
-    Elem* inptd = GetNode("../../InpType");
+    Elem* inptd = GetNode("./../../InpType");
     if (inptd != NULL) {
 	inptd->GetCont(ifi);
     }
@@ -2648,7 +2648,7 @@ void AFDivVar::Init(const string& aIfaceName)
 Elem::TIfRange AFDivVar::GetInps(TInt aId)
 {
     if (aId == FAddBase::EInp) {
-	Elem* inp = GetNode("../../Capsule/Inp");
+	Elem* inp = GetNode("./../../Capsule/Inp");
 	__ASSERT(inp != NULL);
 	RqContext cont(this);
 	return inp->GetIfi(MDVarGet::Type(), &cont);
@@ -2862,7 +2862,7 @@ Elem::TIfRange AFBcmpVar::GetInps(TInt aId)
 {
     __ASSERT(aId == FBcmpBase::EInp_1 || aId == FBcmpBase::EInp_2);
     Elem* inp = NULL;
-    inp = GetNode(aId == FBcmpBase::EInp_1 ? "../../Capsule/Inp1" : "../../Capsule/Inp2");
+    inp = GetNode(aId == FBcmpBase::EInp_1 ? "./../../Capsule/Inp1" : "./../../Capsule/Inp2");
     __ASSERT(inp != NULL);
     RqContext cont(this);
     return inp->GetIfi(MDVarGet::Type(), &cont);
@@ -2931,7 +2931,7 @@ Elem::TIfRange AFCmpVar::GetInps(TInt aId)
 {
     __ASSERT(aId == Func::EInp1 || aId == Func::EInp2);
     Elem* inp = NULL;
-    inp = GetNode(aId == Func::EInp1 ? "../../Capsule/Inp1" : "../../Capsule/Inp2");
+    inp = GetNode(aId == Func::EInp1 ? "./../../Capsule/Inp1" : "./../../Capsule/Inp2");
     __ASSERT(inp != NULL);
     RqContext cont(this);
     return inp->GetIfi(MDVarGet::Type(), &cont);
@@ -3036,7 +3036,7 @@ Elem::TIfRange AFAtVar::GetInps(TInt aId)
 {
     __ASSERT(aId == Func::EInp1 || aId == Func::EInp2);
     Elem* inp = NULL;
-    inp = GetNode(aId == Func::EInp1 ? "../../Capsule/Inp" : "../../Capsule/Index");
+    inp = GetNode(aId == Func::EInp1 ? "./../../Capsule/Inp" : "./../../Capsule/Index");
     __ASSERT(inp != NULL);
     RqContext cont(this);
     return inp->GetIfi(MDVarGet::Type(), &cont);
@@ -3229,10 +3229,10 @@ void AFSwitchVar::Init(const string& aIfaceName)
 Elem::TIfRange AFSwitchVar::GetInps(TInt aId)
 {
     Elem* inp = NULL;
-    string inp_uri = "../../Capsule/Sel";
+    string inp_uri = "./../../Capsule/Sel";
     if (aId != Func::EInp1) {
 	stringstream ss;
-	ss <<  "../../Capsule/Inp" << (aId - Func::EInp1);
+	ss <<  "./../../Capsule/Inp" << (aId - Func::EInp1);
 	inp_uri = ss.str();
     }
     inp = GetNode(inp_uri);

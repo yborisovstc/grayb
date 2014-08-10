@@ -1,6 +1,7 @@
 #include "base.h"
 #include "guri.h"
 
+
 // URI
 // Uri conforms to RFC 3986 
 // Query syntax: (attr_name '=' attr_value) *( ('&' | '|')  (attr_name '=' attr_value))  
@@ -13,11 +14,12 @@ map<string, TNodeAttr> KNodeAttrs;
 const string GUriBase::KTypeAny = "*";
 const string GUriBase::KTypeAnywhere = "**";
 const string KTypeUnknown = "";
-const string GUriBase::KOwner = "..";
+const string GUriBase::KUpperLevel = "..";
 
 const string KSchemeSep = ":";
 const char GUriBase::KBaseSep = '#';
 const char GUriBase::KParentSep = ':';
+const char GUriBase::KSepNone = ' ';
 const char GUriBase::KNodeSep = '/';
 const char KGroupStart = '(';
 const char KGroupEnd = ')';
@@ -34,7 +36,7 @@ GUriBase::GUriBase(const string& aUri): iUri(aUri), iErr(EFalse)
     Construct();
 }
 
-GUriBase::GUriBase(): iUri()
+GUriBase::GUriBase(): iUri(), iErr(EFalse)
 {
     Construct();
 }
@@ -248,52 +250,60 @@ void GUri::Parse()
     // Check the relation symbol, if omitted that assume it's hier
     if (!hier.empty()) {
 	size_t pos = 0;
-	char rtype = KNodeSep;
+	char rtype = KSepNone;
 	char rs = hier.at(pos);
-	char rs1 = hier.at(pos + 1);
 	TBool curunit = EFalse;
-	if (rs == KCurUnit && rs1 != KCurUnit) {
-	    curunit = ETrue;
-	    pos += 1;
-	}
-	rs = hier.at(pos);
-	size_t rs_pos = KRelTypesMarks.find_first_of(rs, 0);
-	if (rs_pos != string::npos) {
-	    rtype = rs;
-	    pos += 1;
-	}
-	else if (!curunit) {
+	if (rs == KCurUnit) {
 	    curunit = ETrue;
 	}
-	if (!curunit) {
-	    // Root
-	    AppendElem("", "", rtype);
+	if (hier.size() > 1) {
+	    char rs1 = hier.at(pos + 1);
+	    if (rs == KCurUnit && rs1 != KCurUnit) {
+		curunit = ETrue;
+		pos += 1;
+	    }
+	    rs = hier.at(pos);
+	    size_t rs_pos = KRelTypesMarks.find_first_of(rs, 0);
+	    if (rs_pos != string::npos) {
+		rtype = rs;
+		pos += 1;
+	    }
+	    else if (!curunit) {
+		curunit = ETrue;
+	    }
+	    if (!curunit) {
+		// Root
+		AppendElem("", "", rtype);
+	    }
+	    do {
+		// Selecting next unit
+		string ext;
+		size_t ext_end = FindGroup(hier, pos);
+		size_t name_beg = 0;
+		if (ext_end != string::npos) {
+		    if (ext_end >= hier.size()) {
+			err = ETrue;
+		    }
+		    else {
+			ext = hier.substr(pos + 1, ext_end - pos - 1);
+			pos = ext_end + 1;
+		    }
+		}
+		if (!err) {
+		    size_t name_end = hier.find_first_of(KRelTypesMarks, pos);
+		    string name = hier.substr(pos, name_end - pos);
+		    if (name == KUpperLevel && rtype == KSepNone) {
+			err = ETrue; break;
+		    }
+		    AppendElem(ext, name, rtype);
+		    pos = name_end;
+		    if (pos != string::npos) {
+			rtype = hier.at(pos);
+			pos += 1;
+		    }
+		}
+	    } while (!err && pos != string::npos && pos < hier.size());
 	}
-	do {
-	    // Selecting next unit
-	    string ext;
-	    size_t ext_end = FindGroup(hier, pos);
-	    size_t name_beg = 0;
-	    if (ext_end != string::npos) {
-		if (ext_end >= hier.size()) {
-		    err = ETrue;
-		}
-		else {
-		    ext = hier.substr(pos + 1, ext_end - pos - 1);
-		    pos = ext_end + 1;
-		}
-	    }
-	    if (!err) {
-		size_t name_end = hier.find_first_of(KRelTypesMarks, pos);
-		string name = hier.substr(pos, name_end - pos);
-		AppendElem(ext, name, rtype);
-		pos = name_end;
-		if (pos != string::npos) {
-		    rtype = hier.at(pos);
-		    pos += 1;
-		}
-	    }
-	} while (!err && pos != string::npos && pos < hier.size());
 	if (!iErr && err) {
 	    iErr = err;
 	}
@@ -306,6 +316,11 @@ string GUri::DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort) const
     // Hier
     for (vector<GUri::TElem>::const_iterator it = aStart; it != iElems.end(); it++) {
 	GUri::TElem elem = *it;
+	if (it == aStart && (!elem.first.empty() || !elem.second.second.empty()) && elem.second.first != KSepNone) {
+	    // Current node
+	    res.append(1, KCurUnit);
+	    res.append(1, elem.second.first);
+	}
 	if (!aShort) {
 	    if (!elem.first.empty() && elem.first != KTypeAny) {
 		res.append(1, KGroupStart);
@@ -347,107 +362,4 @@ GUri& GUri::operator+=(const GUri& aUri)
     return *this;
 }
 
-/*
-   void GUri::ToString(string& aRes)
-   {
-   if (!iScheme.empty()) {
-   aRes.append(iScheme + KSchemeSep);
-   }
-   if (!iBase.empty()) {
-   aRes.append(iBase + KBaseSep);
-   }
-   for (vector<GUri::TElem>::const_iterator it = iElems.begin(); it != iElems.end(); it++) {
-   if (!it->second.empty()) {
-   aRes.append(it->first + KParentSep + it->second);
-   }
-   if (it + 1 != iElems.end()) {
-   aRes.append(KElemSep);
-   }
-   }
-   }
-   */
-
-
-#if 0
-
-IUri::IUri(const string& aUri): GUriBase(aUri)
-{
-    Parse();
-}
-
-IUri::IUri(): GUriBase()
-{
-}
-
-
-void IUri::Parse()
-{
-    TBool fin = EFalse;
-    size_t elem_beg = 0;
-    size_t elem_end = string::npos;
-    string frag = iUri;
-    string seps;
-    seps.append(1, KNodeSep);
-    seps.append(1, KParentSep);
-    while (!fin) {
-	size_t name_sep_pos = frag.find_last_of(seps);
-	if (name_sep_pos == string::npos) {
-	    // No name sep, just simple name, setup elem and finish
-	    string loc = "";
-	    string name = frag;
-	    iElems.push_back(TElem(loc, name));
-	    iElems.push_back(TElem(loc, KTypeAny));
-	    fin = ETrue;
-	}
-	else if (frag.at(name_sep_pos) == KNodeSep) {
-	    // No inheritance chain, fill out uri elemaent and finish
-	    string loc = frag.substr(elem_beg, name_sep_pos);
-	    string name = frag.substr(name_sep_pos + 1, elem_end);
-	    iElems.push_back(TElem(loc, name));
-	    fin = ETrue;
-	}
-	else if (frag.at(name_sep_pos) == KParentSep) {
-	    // inheritance chain presenting, parse it
-	    if (name_sep_pos == 0) {
-		// Empty inheritance, empty loc - add elem 
-		string loc = "";
-		string name = frag;
-		iElems.push_back(TElem(loc, name));
-		fin = ETrue;
-	    }
-	    else if (frag.at(name_sep_pos - 1) == KNodeSep) {
-		// Empty inheritance but some loc - add elem
-		string loc = frag.substr(elem_beg, name_sep_pos - 1);
-		string name = frag;
-		iElems.push_back(TElem(loc, name));
-		fin = ETrue;
-	    }
-	    else if (frag.at(name_sep_pos - 1) == KGroupEnd) {
-		// Grouping in inheritance chain
-		frag = SelectGroup(frag, name_sep_pos - 1);
-	    }
-	}
-    }
-}
-
-string IUri::DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort) const
-{
-    string res;
-    // Hier
-    for (vector<GUri::TElem>::const_iterator it = aStart; it != iElems.end(); it++) {
-	GUri::TElem elem = *it;
-	if (!aShort) {
-	    if (!elem.first.empty() && elem.first != KTypeAny) {
-		res.append(elem.first + KNodeSep);
-	    }
-	}
-	res.append(elem.second);
-	if (it + 1 != iElems.end()) {
-	    res.append(1, KParentSep);
-	}
-    }
-    return res;
-}
-
-#endif
 

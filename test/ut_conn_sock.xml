@@ -15,50 +15,50 @@
     <move id="file:../modules/data.xml#DataComps" />
 
     <!-- Input socket -->
-    <node id="InpSocket" parent="SysComps/Socket">
-	<node id="Cp1" parent="../SysComps/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
-	<node id="Cp2" parent="../SysComps/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
-	<node id="Cp3" parent="../SysComps/ConnPoint"> <cont node="Provided" val="MDIntGet"/> </node>
+    <node id="InpSocket" parent="./SysComps/Socket">
+	<node id="Cp1" parent="./../SysComps/ConnPoint"> <cont node="./Provided" val="MDIntGet"/> </node>
+	<node id="Cp2" parent="./../SysComps/ConnPoint"> <cont node="./Provided" val="MDIntGet"/> </node>
+	<node id="Cp3" parent="./../SysComps/ConnPoint"> <cont node="./Provided" val="MDIntGet"/> </node>
     </node>
 
     <!-- Test Input -->
-    <node id="TInp" parent="SysComps/Extender"> 
-	<rm node="Int"/>
-	<node id="Int" parent="../InpSocket"/> 
+    <node id="TInp" parent="./SysComps/Extender"> 
+	<rm node="./Int"/>
+	<node id="Int" parent="./../InpSocket"/> 
     </node>
 
     <!-- Test Output socket -->
-    <node id="OutSocket" parent="SysComps/Socket">
-	<node id="Cp1" parent="../SysComps/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
-	<node id="Cp2" parent="../SysComps/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
-	<node id="Cp3" parent="../SysComps/ConnPoint"> <cont node="Required" val="MDIntGet"/> </node>
+    <node id="OutSocket" parent="./SysComps/Socket">
+	<node id="Cp1" parent="./../SysComps/ConnPoint"> <cont node="./Required" val="MDIntGet"/> </node>
+	<node id="Cp2" parent="./../SysComps/ConnPoint"> <cont node="./Required" val="MDIntGet"/> </node>
+	<node id="Cp3" parent="./../SysComps/ConnPoint"> <cont node="./Required" val="MDIntGet"/> </node>
     </node>
 
     <!-- Test Output -->
-    <node id="TOut" parent="SysComps/Extender"> 
-	<rm node="Int"/>
-	<node id="Int" parent="../OutSocket"/> 
+    <node id="TOut" parent="./SysComps/Extender"> 
+	<rm node="./Int"/>
+	<node id="Int" parent="./../OutSocket"/> 
     </node>
 
     <!-- Data Source -->
-    <node id="DSource" parent="IncapsComps/Incaps">
-	<node node="Capsule" id="Out" parent="../OutSocket"/> 
+    <node id="DSource" parent="./IncapsComps/Incaps">
+	<node node="./Capsule" id="Out" parent="./../OutSocket"/> 
 
-	<node id="Data_1" parent="../DataComps/DataSCInt"> <cont node="Value" val="3"/> </node>
-	<node id="Data_2" parent="../DataComps/DataSCInt"> <cont node="Value" val="1"/> </node>
-	<node id="Data_3" parent="../DataComps/DataSCInt"> <cont node="Value" val="20"/> </node>
+	<node id="Data_1" parent="./../DataComps/DataSCInt"> <cont node="./Value" val="3"/> </node>
+	<node id="Data_2" parent="./../DataComps/DataSCInt"> <cont node="./Value" val="1"/> </node>
+	<node id="Data_3" parent="./../DataComps/DataSCInt"> <cont node="./Value" val="20"/> </node>
 
-	<node id="E1" parent="Edge"> <cont node="P1" val="../../Data_1/Capsule/Out"/> <cont node="P2" val="../../Capsule/Out/Cp1"/> </node>
-	<node id="E2" parent="Edge"> <cont node="P1" val="../../Data_2/Capsule/Out"/> <cont node="P2" val="../../Capsule/Out/Cp2"/> </node>
-	<node id="E3" parent="Edge"> <cont node="P1" val="../../Data_3/Capsule/Out"/> <cont node="P2" val="../../Capsule/Out/Cp3"/> </node>
+	<node id="E1" parent="Edge"> <cont node="./P1" val="./../../Data_1/Capsule/Out"/> <cont node="./P2" val="./../../Capsule/Out/Cp1"/> </node>
+	<node id="E2" parent="Edge"> <cont node="./P1" val="./../../Data_2/Capsule/Out"/> <cont node="./P2" val="./../../Capsule/Out/Cp2"/> </node>
+	<node id="E3" parent="Edge"> <cont node="./P1" val="./../../Data_3/Capsule/Out"/> <cont node="./P2" val="./../../Capsule/Out/Cp3"/> </node>
     </node> <!-- Data source -->
 
-    <node id="test" parent="IncapsComps/Incaps">
+    <node id="test" parent="./IncapsComps/Incaps">
 
-	<node id="L1" parent="../InpSocket"/>
-	<node id="Data" parent="../DSource"/>
+	<node id="L1" parent="./../InpSocket"/>
+	<node id="Data" parent="./../DSource"/>
 
-	<node id="E4" parent="Edge"> <cont node="P1" val="../../L1"/> <cont node="P2" val="../../Data/Capsule/Out"/> </node>
+	<node id="E4" parent="Edge"> <cont node="./P1" val="./../../L1"/> <cont node="./P2" val="./../../Data/Capsule/Out"/> </node>
 
     </node>
 

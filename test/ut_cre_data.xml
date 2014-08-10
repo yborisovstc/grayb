@@ -16,19 +16,19 @@
     <!-- Module containing components of func -->
     <move id="file:../modules/func.xml#FuncComps" />
 
-    <node id="test" parent="IncapsComps/Incaps">
+    <node id="test" parent="./IncapsComps/Incaps">
 
-	<node id="DataS_Int_1" parent="../DataComps/DataSInt">
-	    <cont node="Value" val="34"/> 
+	<node id="DataS_Int_1" parent="./../DataComps/DataSInt">
+	    <cont node="./Value" val="34"/> 
 	</node>
 
-	<node id="Data_Int_1" parent="../DataComps/DataInt"/>
+	<node id="Data_Int_1" parent="./../DataComps/DataInt"/>
 
-	<node id="Incr" parent="../FuncComps/FuncIncInt"/>
+	<node id="Incr" parent="./../FuncComps/FuncIncInt"/>
 
 	<node id="E1" parent="Edge"> 
-	    <cont node="P1" val="../../DataS_Int_1/Capsule/out"/> 
-	    <cont node="P2" val="../../Incr/Capsule/inp"/> 
+	    <cont node="./P1" val="./../../DataS_Int_1/Capsule/out"/> 
+	    <cont node="./P2" val="./../../Incr/Capsule/inp"/> 
 	</node>
 
     </node>

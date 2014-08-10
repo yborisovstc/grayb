@@ -43,7 +43,7 @@ TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 	res = ETrue;
     }
     else {
-	Elem* caps = aContext.GetNode("Capsule");
+	Elem* caps = aContext.GetNode("./Capsule");
 	if (caps != NULL) {
 	    Elem* cp = caps->GetCompOwning("ConnPointInp", &aComp);
 	    if (cp == NULL) {
@@ -64,7 +64,7 @@ TBool DataBase::HandleIoChanged(Elem& aContext, Elem* aCp)
 
 void DataBase::NotifyUpdate()
 {
-    Elem* eout = GetNode("../../Capsule/out");
+    Elem* eout = GetNode("./../../Capsule/out");
     // TODO [YB] Scheme of getting iface should be enough to get MDataObserver directly from eout. Seems the chunk below is redundant.
     if (eout != NULL) {
 	RqContext ctx(this);
@@ -109,7 +109,7 @@ void *DataBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* a
 
 void DataBase::UpdateProp()
 {
-    Elem* eprop = GetNode("../../Value");
+    Elem* eprop = GetNode("./../../Value");
     if (eprop != NULL) {
 	string res;
 	ToString(res);
@@ -119,7 +119,7 @@ void DataBase::UpdateProp()
 	
 TBool DataBase::IsLogeventUpdate() 
 {
-    Elem* node = GetNode("../../Logspec/Update");
+    Elem* node = GetNode("./../../Logspec/Update");
     return node != NULL;
 }
 
@@ -252,9 +252,9 @@ TBool DInt::Update()
 {
     TBool res = EFalse;
     MDIntGet* inp = NULL;
-    Elem* einp = GetNode("../../Capsule/inp");
+    Elem* einp = GetNode("./../../Capsule/inp");
     if (einp == NULL) {
-	einp = GetNode("../../Capsule/Inp");
+	einp = GetNode("./../../Capsule/Inp");
     }
     if (einp != NULL) {
 	Vert* vert = einp->GetObj(vert);
@@ -514,9 +514,9 @@ TBool DVar::Update()
 
 Elem* DVar::GetInp()
 {
-    Elem* einp = GetNode("../../Capsule/inp");
+    Elem* einp = GetNode("./../../Capsule/inp");
     if (einp == NULL) {
-	einp = GetNode("../../Capsule/Inp");
+	einp = GetNode("./../../Capsule/Inp");
     }
     return einp;
 }

@@ -540,6 +540,11 @@
     </sect1>
 
     <sect1 id="ds_nat_agent_hier"><title>How to embed native agents into agents hierarchy</title>
+	<sect2><title>Refs</title>
+	    <itemizedlist>
+		<listitem>Use case: <ulink url="../requirements/index.html#uc_045"/></listitem>
+	    </itemizedlist>
+	</sect2>
 	<sect2><title>Intro</title>
 	    <simpara>All the agents are to have their place in agents hierarhy, so can be pointed to via
 		hierarchy coordinate (uri). Currently there are two hierarchies defined: structural, induced by relation

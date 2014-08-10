@@ -56,7 +56,7 @@ TBool Incaps::IsPtOk(Elem& aContext, Elem* aPt) {
     Elem* man = aContext.GetCompOwning("Incaps", aPt);
     if (man != NULL) {
 	if (man->GetMan() == &aContext) {
-	    Elem* caps = man->GetNode("Capsule");
+	    Elem* caps = man->GetNode("./Capsule");
 	    res = caps->IsComp(aPt);
 	}
     }
@@ -123,6 +123,8 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 					    }
 					}
 					else {
+					    TBool c1 = pt1checker->IsCompatible(pt2);
+					    TBool c2 = pt2checker->IsCompatible(pt1);
 					    Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] - incompatible roles", pt1u.c_str(), pt2u.c_str());
 					}
 				    }

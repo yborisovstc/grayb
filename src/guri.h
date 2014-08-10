@@ -108,9 +108,10 @@ class GUriBase
     public:
 	static const string KTypeAny;
 	static const string KTypeAnywhere;
-	static const string KOwner;
+	static const string KUpperLevel;
 	static const char KParentSep;
 	static const char KNodeSep;
+	static const char KSepNone;
 	static const char KBaseSep;
 };
 

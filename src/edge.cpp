@@ -326,7 +326,7 @@ MVert* Edge::Pair(const MVert* aPoint)
 
 const string& Edge::Point1u()
 {
-    Elem* pte = GetNode("P1");
+    Elem* pte = GetNode("./P1");
     __ASSERT(pte != NULL);
     MProp* pt = pte->GetObj(pt);
     __ASSERT(pt != NULL);
@@ -335,7 +335,7 @@ const string& Edge::Point1u()
 
 const string& Edge::Point2u()
 {
-    Elem* pte = GetNode("P2");
+    Elem* pte = GetNode("./P2");
     __ASSERT(pte != NULL);
     MProp* pt = pte->GetObj(pt);
     __ASSERT(pt != NULL);
@@ -376,7 +376,7 @@ Elem* Edge::Point2rc()
 Elem* Edge::Point1r()
 {
     Elem* res = NULL;
-    Elem* pte = GetNode("P1");
+    Elem* pte = GetNode("./P1");
     __ASSERT(pte != NULL);
     MProp* pt = pte->GetObj(pt);
     __ASSERT(pt != NULL);
@@ -390,7 +390,7 @@ Elem* Edge::Point1r()
 Elem* Edge::Point2r()
 {
     Elem* res = NULL;
-    Elem* pte = GetNode("P2");
+    Elem* pte = GetNode("./P2");
     __ASSERT(pte != NULL);
     MProp* pt = pte->GetObj(pt);
     __ASSERT(pt != NULL);
@@ -416,7 +416,7 @@ Elem* Edge::Pointr(Elem* aCp)
 MVert* Edge::Point1v()
 {
     MVert* res = NULL;
-    Elem* pte = GetNode("P1");
+    Elem* pte = GetNode("./P1");
     const string& uri = Point1u();
     if (!uri.empty()) {
 	Elem* pr = pte->GetNode(uri);
@@ -430,7 +430,7 @@ MVert* Edge::Point1v()
 MVert* Edge::Point2v()
 {
     MVert* res = NULL;
-    Elem* pte = GetNode("P2");
+    Elem* pte = GetNode("./P2");
     const string& uri = Point2u();
     if (!uri.empty()) {
 	Elem* pr = pte->GetNode(uri);
@@ -457,12 +457,12 @@ MVert* Edge::Pointv(Elem* aCp)
 
 Elem* Edge::Point1p()
 {
-    return GetNode("P1");
+    return GetNode("./P1");
 }
 
 Elem* Edge::Point2p()
 {
-    return GetNode("P2");
+    return GetNode("./P2");
 }
 
 Base* Edge::EBase()

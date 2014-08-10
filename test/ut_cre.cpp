@@ -56,9 +56,9 @@ void Ut_cre::test_Cre()
     Elem* root = iEnv->Root();
     Elem* ee = root->GetNode(":Elem");
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* e2 = root->GetNode("elem1/elem2");
+    Elem* e2 = root->GetNode("./elem1/elem2");
     CPPUNIT_ASSERT_MESSAGE("Fail to get e2", e2 != 0);
-    Elem* e4 = root->GetNode("elem3/(elem2:)elem4");
+    Elem* e4 = root->GetNode("./elem3/(elem2:)elem4");
     CPPUNIT_ASSERT_MESSAGE("Fail to get e4", e4 != 0);
     Rank rk_e4;
     e4->GetRank(rk_e4);
@@ -84,7 +84,7 @@ void Ut_cre::test_CreGr()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* v1 = root->GetNode("(Vert:)v1");
+    Elem* v1 = root->GetNode("./(Vert:)v1");
     //Elem* av1 = v1->GetNode("(Elem:)Agents");
     CPPUNIT_ASSERT_MESSAGE("Fail to get v1", v1 != 0);
     MVert* mv1 = v1->GetObj(mv1);
@@ -106,7 +106,7 @@ void Ut_cre::test_CreSyst()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* cp1 = root->GetNode("cp1");
+    Elem* cp1 = root->GetNode("./cp1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get cp1", cp1 != 0);
     MVert* mcp1 = cp1->GetObj(mcp1);
     CPPUNIT_ASSERT_MESSAGE("Fail to get mcp1", mcp1 != 0);
@@ -127,16 +127,16 @@ void Ut_cre::test_CreIncaps()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* ep1 = root->GetNode("test/Ics1/Capsule/ep");
+    Elem* ep1 = root->GetNode("./test/Ics1/Capsule/ep");
     CPPUNIT_ASSERT_MESSAGE("Fail to get ep1", ep1 != 0);
     MVert* mep1 = ep1->GetObj(mep1);
     CPPUNIT_ASSERT_MESSAGE("Fail to get mep1", mep1 != 0);
     MVert* pair = *(mep1->Pairs().begin());
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    Elem* epairt = root->GetNode("test/(Incaps:)Ics2/Capsule/ep");
+    Elem* epairt = root->GetNode("./test/(Incaps:)Ics2/Capsule/ep");
     MVert* mpairt = epairt->GetObj(mpairt);
     CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
-    Elem* wep1 = root->GetNode("test/Ics1/cp_int");
+    Elem* wep1 = root->GetNode("./test/Ics1/cp_int");
     CPPUNIT_ASSERT_MESSAGE("Fail to get wrong edge ep1", wep1 != NULL);
 
     delete iEnv;
@@ -151,7 +151,7 @@ void Ut_cre::test_CreData()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* doutp = root->GetNode("(Incaps:)test/(DataSInt:)DataS_Int_1/(Elem:)Capsule/out");
+    Elem* doutp = root->GetNode("./(Incaps:)test/(DataSInt:)DataS_Int_1/(Elem:)Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
     MDIntGet* doutpget = doutp->GetObj(doutpget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
@@ -160,12 +160,12 @@ void Ut_cre::test_CreData()
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out vertex", mdoutpv != 0);
     MVert* pair = *(mdoutpv->Pairs().begin());
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    Elem* efuninp = root->GetNode("test/Incr/Capsule/inp");
+    Elem* efuninp = root->GetNode("./test/Incr/Capsule/inp");
     CPPUNIT_ASSERT_MESSAGE("Fail to get fun inp", efuninp != NULL);
     MVert* mpairt = efuninp->GetObj(mpairt);
     CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
 
-    Elem* foutp = root->GetNode("test/Incr/Capsule/out");
+    Elem* foutp = root->GetNode("./test/Incr/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
     MDIntGet* foutpget = foutp->GetObj(doutpget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
@@ -178,7 +178,7 @@ void Ut_cre::test_CreData()
 //    CPPUNIT_ASSERT_MESSAGE("Fail to get data out via func-data connection", fdoutp != 0);
 
     // Check serching node, one level search
-    Elem* srdoutp = root->GetNode("test/Incr/*/inp");
+    Elem* srdoutp = root->GetNode("./test/Incr/*/inp");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out via func-data connection", srdoutp != 0);
 
     delete iEnv;

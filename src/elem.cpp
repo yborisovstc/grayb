@@ -141,7 +141,7 @@ Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd): iE
 	    }
 	}
     }
-    else {
+    else if (rel == GUri::KParentSep) {
 	if (iId.second.second == GUri::KTypeAny) {
 	    iChildsRange = pair<TNMReg::iterator, TNMReg::iterator>(iElem.iChilds.begin(), iElem.iChilds.end());
 	}
@@ -253,7 +253,7 @@ Elem*  Elem::IterImplBase::GetElem()
 	    res = iCIter->second;
 	}
     }
-    else {
+    else if (SRel() == GUri::KParentSep) {
 	res = iChildsIter->second;
     }
     return res;
@@ -642,19 +642,6 @@ void Elem::LogIfReqs()
     Logger()->Write(MLogRec::EInfo, this, "Ifaces requests: END");
 }
 
-/*
-   const string Elem::EType(TBool aShort) const
-   {
-   if (aShort) {
-   size_t pos = iEType.find_last_of(GUri::KParentSep);
-   return iEType.substr(pos + 1);
-   }
-    else  {
-	return iEType;
-    }
-}
-*/
-
 const string Elem::EType(TBool aShort) const
 {
     if (iParent == NULL) {
@@ -672,23 +659,6 @@ void Elem::SetEType(const string& aPName, const string& aPEType)
 {
     iEType = aPEType + GUri::KParentSep + aPName;
 }
-
-// TODO [YB] Is it redundant? Actually only one type of node allowed -elem
-/*
-   TBool Elem::AddNode(const ChromoNode& aSpec)
-   {
-   TBool res = EFalse;
-   TNodeType ntype = aSpec.Type();
-   if (ntype == ENt_Node) {
-   Elem* elem = AddElem(aSpec);
-   if (elem != NULL) {
-   res = ETrue;
-   Logger()->WriteFormat("Node [%s] - added node [%s] of type [%s]", Name().c_str(), elem->Name().c_str(), elem->EType().c_str());
-   }
-   }
-   return res;
-   }
-   */
 
 TBool Elem::AddNode(const ChromoNode& aSpec, TBool aRunTime)
 {
@@ -753,6 +723,7 @@ Elem* Elem::GetComp(const string& aParent, const string& aName)
 
 Elem* Elem::GetNode(const GUri& aUri) 
 { 
+    if (aUri.IsErr()) return NULL;
     Elem* res = NULL;
     GUri::const_elem_iter it = aUri.Elems().begin(); 
     if (it != aUri.Elems().end()) {
@@ -762,7 +733,7 @@ Elem* Elem::GetNode(const GUri& aUri)
 	    if (it->second.first == GUri::KNodeSep) {
 		root = GetRoot();
 	    }
-	    else {
+	    else if (it->second.first == GUri::KParentSep) {
 		root = GetInhRoot();
 	    }
 	    if (!anywhere) {
@@ -818,7 +789,12 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aA
     TBool anywhere = aAnywhere;
     if (elem.second.second == "..") {
 	if (iMan != NULL) {
-	    res = iMan->GetNode(aUri, ++aPathBase);
+	    if (++uripos != aUri.Elems().end()) {
+		res = iMan->GetNode(aUri, uripos);
+	    }
+	    else {
+		res = iMan;
+	    }
 	}
 	else {
 	    __ASSERT(EFalse);
@@ -830,32 +806,47 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aA
 	    elem = GUri::Elem(GUri::KParentSep, GUri::KTypeAny, GUri::KTypeAny);
 	    anywhere = ETrue;
 	}
-	Iterator it = NodesLoc_Begin(elem);
-	Iterator itend = NodesLoc_End(elem);
-	if (it != itend) {
+	TBool isnative = elem.second.first == GUri::KSepNone;
+	if (isnative) {
+	    // Native node, not embedded to hier, to get from environment, ref uc_045
 	    uripos++;
 	    if (uripos != aUri.Elems().end()) {
-		for (; it != itend; it++) {
-		    Elem* node = *it;
-		    Elem* res1 = node->GetNode(aUri, uripos);
-		    //if (res1 != NULL && !res1->IsRemoved()) {
-		    if (res1 != NULL) {
-			if (res == NULL) {
-			    res = res1;
-			}
-			else {
-			    res = NULL;
-			    Logger()->Write(MLogRec::EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
-			    break;
-			}
-		    }
+		Elem* node = Provider()->GetNode(elem.second.second);
+		if (node != NULL) {
+		    res = node->GetNode(aUri, uripos);
 		}
 	    }
 	    else {
-		res = *it;
-		if (++it != itend) {
-		    res = NULL;
-		    Logger()->Write(MLogRec::EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
+		res = Provider()->GetNode(elem.second.second);
+	    }
+	}
+	else {
+	    Iterator it = NodesLoc_Begin(elem);
+	    Iterator itend = NodesLoc_End(elem);
+	    if (it != itend) {
+		uripos++;
+		if (uripos != aUri.Elems().end()) {
+		    for (; it != itend; it++) {
+			Elem* node = *it;
+			Elem* res1 = node->GetNode(aUri, uripos);
+			if (res1 != NULL) {
+			    if (res == NULL) {
+				res = res1;
+			    }
+			    else {
+				res = NULL;
+				Logger()->Write(MLogRec::EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
+				break;
+			    }
+			}
+		    }
+		}
+		else {
+		    res = *it;
+		    if (++it != itend) {
+			res = NULL;
+			Logger()->Write(MLogRec::EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
+		    }
 		}
 	    }
 	}
@@ -870,8 +861,8 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aA
 		if (res1 != NULL) {
 		    if (res == NULL) {
 			res = res1;
-		    }
-		    else {
+			}
+			else {
 			res = NULL;
 			Logger()->Write(MLogRec::EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
 			break;
@@ -1190,13 +1181,12 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 		}
 	    }
 	    if (parent == NULL) {
+		/*
 		// No parents found, create from embedded parent
 		parent = Provider()->GetNode(sparent);
 		elem = Provider()->CreateNode(sparent, sname, node, iEnv);
-		if (parent != NULL) {
-		    //parent->AppendChild(elem);
-		}
-		else  {
+		*/
+		if (parent == NULL) {
 		    Logger()->Write(MLogRec::EErr, this, "Creating [%s] - parent [%s] not found", sname.c_str(), sparent.c_str());
 		}
 	    }
@@ -1269,84 +1259,17 @@ const set<string>& Elem::CompsTypes()
 Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont */)
 {
     Elem* heir = NULL;
-    __ASSERT(iParent != NULL);
-    if (Provider()->IsProvided(iParent)) {
-	// Parent is Agent - native element. Create via provider
-	heir = Provider()->CreateNode(EType(), aName, iMan, iEnv);
+    if (Provider()->IsProvided(this)) {
+	heir = Provider()->CreateNode(Name(), aName, aMan, iEnv);
     }
     else {
-	heir = iParent->CreateHeir(aName, iMan);
-    }
-    // Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo
-    ChromoNode root = iChromo->Root();
-    heir->SetMutation(root);
-    // Mutate run-time only - !! DON'T UPDATE CHROMO, ref UC_019
-    heir->Mutate(ETrue);
-    // Mutated with parent's own chromo - so panent's name is the type now. Set also the parent, but it will be updated further
-    heir->SetEType(Name(), EType(EFalse));
-    heir->SetParent(Name());
-    // Relocate heir to hier from which the request of creating heir came
-    heir->SetMan(NULL);
-    heir->SetMan(aMan);
-    // Re-adopte the child
-    iParent->RemoveChild(heir);
-    AppendChild(heir);
-
-    return heir;
-}
-
-#if 0
-// Note that parents chromo is not copied to heirs chromo, ref UC_019
-Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont */)
-{
-    Elem* heir = NULL;
-    // Obtain parent first
-    string sparent = iChromo->Root().Attr(ENa_Parent);
-    // Check the scheme
-    GUri prnturi(sparent);
-    TBool ext_parent = EFalse;
-    Elem *parent = NULL;
-    if (!sparent.empty()) {
-	if (prnturi.Scheme().empty()) {
-	    // Local parent
-	    // If uri is not absolute then correct uri because parent uri is relative to the man context
-	    const string& firstelem = prnturi.Elems().begin()->second.second;
-	    if (!firstelem.empty() && !(firstelem == GUri::KTypeAnywhere)) {
-		prnturi.PrependElem("node", "..");
-	    }
-	    parent = GetNode(prnturi);
-	    /*
-	       if (parent == NULL) {
-	    // No parents found, request provider for native one
-	    parent = Provider()->GetNode(sparent);
-	    }
-	    */
+	__ASSERT(iParent != NULL);
+	if (Provider()->IsProvided(iParent)) {
+	    // Parent is Agent - native element. Create via provider
+	    heir = Provider()->CreateNode(EType(), aName, iMan, iEnv);
 	}
 	else {
-	    // TODO [YB] To add seaching the module - it will allow to specify just file of spec wo full uri
-	    Chromo *spec = Provider()->CreateChromo();
-	    TBool res = spec->Set(sparent);
-	    if (res) {
-		const ChromoNode& root = spec->Root();
-		parent = AddElem(root);
-		delete spec;
-		ext_parent = ETrue;
-	    }
-	}
-	if (parent == NULL) {
-	    // No parents found, create from embedded parent
-	    parent = Provider()->GetNode(sparent);
-	    heir = Provider()->CreateNode(sparent, aName, iMan, iEnv);
-	    if (parent != NULL) {
-		//parent->AppendChild(heir);
-	    }
-	    else {
-		Logger()->Write(MLogRec::EErr, this, "Creating child [%s] - parent [%s] not found", aName.c_str(), sparent.c_str());
-	    }
-	}
-	else {
-	    // Create heir from the parent, the mutation context set to the current (the man)
-	    heir = parent->CreateHeir(aName, iMan);
+	    heir = iParent->CreateHeir(aName, iMan);
 	}
 	// Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo
 	ChromoNode root = iChromo->Root();
@@ -1356,24 +1279,15 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
 	// Mutated with parent's own chromo - so panent's name is the type now. Set also the parent, but it will be updated further
 	heir->SetEType(Name(), EType(EFalse));
 	heir->SetParent(Name());
+	// Relocate heir to hier from which the request of creating heir came
 	heir->SetMan(NULL);
 	heir->SetMan(aMan);
 	// Re-adopte the child
-	parent->RemoveChild(heir);
+	iParent->RemoveChild(heir);
 	AppendChild(heir);
-    }
-    else {
-	// Inheritance root - create native element
-	heir = new Elem(aName, aMan, iEnv);
-	AppendChild(heir);
-    }
-    // Remove external parent from system
-    if (parent != NULL && ext_parent) {
-	//delete parent;
     }
     return heir;
 }
-#endif
 
 TBool Elem::AppendChild(Elem* aChild)
 {
@@ -1733,7 +1647,7 @@ void Elem::GetRUri(GUri& aUri, Elem* aTop)
     GetUri(aUri, cowner);
     Elem* owner = aTop;
     while (owner != cowner) {
-	aUri.PrependElem("", GUri::KOwner);
+	aUri.PrependElem("", GUri::KUpperLevel);
 	owner = owner->GetMan();
     }
 }
@@ -1949,6 +1863,9 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime)
 		delete spec;
 		res = nnode != NULL;
 	    }
+	    else {
+		Logger()->Write(MLogRec::EErr, this, "Moving [%s] to [%s]: source node not found", srcs.c_str(), dests.c_str());
+	    }
 	}
 	if (!aRunTime && res) {
 	    // Adding dependency to object of change
@@ -1974,7 +1891,7 @@ TBool Elem::IsName(const char* aName)
 
 TBool Elem::IsLogeventCreOn() 
 {
-    Elem* node = GetNode("Elem:Logspec/Elem:Creation");
+    Elem* node = GetNode("./Elem:Logspec/Elem:Creation");
     return node != NULL;
 }
 

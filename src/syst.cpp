@@ -38,8 +38,8 @@ void *ConnPointBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqConte
     if (res == NULL) {
 	// Redirect to pairs if iface requiested is provided by this CP
 	//Elem* eprov = GetNode("Prop:Provided");
-	Elem* eprov = GetNode("(Prop:)Provided");
-	Elem* ereq = GetNode("(Prop:)Required");
+	Elem* eprov = GetNode("./(Prop:)Provided");
+	Elem* ereq = GetNode("./(Prop:)Required");
 	if (eprov != NULL) {
 	    MProp* prov = eprov->GetObj(prov);
 	    if (prov != NULL) {
@@ -59,7 +59,7 @@ void *ConnPointBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqConte
 		if (req->Value() == aName) {
 		    for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end() && res == NULL; it++) {
 			Elem* pe = (*it)->EBase()->GetObj(pe);
-			Elem* peprov = pe != NULL ? pe->GetNode("(Prop:)Provided"): NULL;
+			Elem* peprov = pe != NULL ? pe->GetNode("./(Prop:)Provided"): NULL;
 			MProp* pprov = peprov != NULL ? peprov->GetObj(pprov): NULL;
 			if (pprov != NULL && pprov->Value() == aName && !ctx.IsInContext(pe)) {
 			    res = pe->DoGetObj(aName, aIncUpHier, &ctx);
@@ -100,8 +100,8 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
     else {
 	// Redirect to pairs if iface requiested is provided by this CP
-	Elem* eprov = GetNode("(Prop:)Provided");
-	Elem* ereq = GetNode("(Prop:)Required");
+	Elem* eprov = GetNode("./(Prop:)Provided");
+	Elem* ereq = GetNode("./(Prop:)Required");
 	if (eprov != NULL) {
 	    MProp* prov = eprov->GetObj(prov);
 	    if (prov != NULL && prov->Value() == aName) {
@@ -153,10 +153,10 @@ TBool ConnPointBase::IsCompatible(Elem* aPair, TBool aExt)
 	}
 	if (cp != NULL) {
 	    // Check roles conformance
-	    Elem* ept1prov = GetNode("(Prop:)Provided");
-	    Elem* ept2req = cp->GetNode("(Prop:)Required");
-	    Elem* ept2prov = cp->GetNode("(Prop:)Provided");
-	    Elem* ept1req = GetNode("(Prop:)Required");
+	    Elem* ept1prov = GetNode("./(Prop:)Provided");
+	    Elem* ept2req = cp->GetNode("./(Prop:)Required");
+	    Elem* ept2prov = cp->GetNode("./(Prop:)Provided");
+	    Elem* ept1req = GetNode("./(Prop:)Required");
 	    if (ept1prov && ept2req && ept2prov && ept1req) {
 		// Point#1 provided
 		MProp* ppt1prov = ept1prov->GetObj(ppt1prov);
@@ -301,7 +301,7 @@ void *ExtenderAgent::DoGetObj(const char *aName, TBool aIncUpHier, const RqConte
     }
     if (res == NULL) {
 	// Redirect to internal point or pair depending on the requiestor
-	Elem* intcp = GetNode("../../Int");
+	Elem* intcp = GetNode("./../../Int");
 	if (intcp != NULL && !ctx.IsInContext(intcp)) {
 	    res = intcp->DoGetObj(aName, ETrue, &ctx);
 	}
@@ -352,7 +352,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
     if (res == NULL) {
 	// Redirect to internal point or pair depending on the requiestor
-	Elem* intcp = GetNode("../../Int");
+	Elem* intcp = GetNode("./../../Int");
 	if (intcp != NULL && !ctx.IsInContext(intcp)) {
 	    rr = intcp->GetIfi(aName, &ctx);
 	    InsertIfCache(aName, rctx, intcp, rr);
@@ -387,7 +387,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 TBool ExtenderAgent::IsCompatible(Elem* aPair, TBool aExt)
 {
     TBool res = EFalse;
-    Elem* intcp = GetNode("../../Int");
+    Elem* intcp = GetNode("./../../Int");
     MCompatChecker* mint = intcp->GetObj(mint);
     if (mint != NULL) {
 	res = mint->IsCompatible(aPair, !aExt);
@@ -397,7 +397,7 @@ TBool ExtenderAgent::IsCompatible(Elem* aPair, TBool aExt)
 
 Elem* ExtenderAgent::GetExtd()
 {
-    return GetNode("../../Int");
+    return GetNode("./../../Int");
 }
 
 MCompatChecker::TDir ExtenderAgent::GetDir() const

@@ -93,7 +93,7 @@ MDIntGet* ATrInt::GetInp(const string& aInpName)
 Elem::TIfRange ATrInt::GetInpRg(const string& aInpName)
 {
     TIfRange res;
-    string uri = "../../" + aInpName;
+    string uri = "./../../" + aInpName;
     Elem* einp = GetNode(uri);
     if (einp != NULL) {
 	RqContext cont(this);
@@ -394,7 +394,7 @@ string ATrVar::GetInpUri(TInt aId)
 Elem::TIfRange ATrVar::GetInps(TInt aId)
 {
     TIfRange res;
-    Elem* inp = GetNode("../../" + GetInpUri(aId));
+    Elem* inp = GetNode("./../../" + GetInpUri(aId));
     if (inp != NULL) {
 	RqContext cont(this);
 	res =  inp->GetIfi(MDVarGet::Type(), &cont);
@@ -888,8 +888,8 @@ void StateAgent::ResetActive()
 
 void StateAgent::Update()
 {
-    TBool cdata = GetNode("../../Data") != NULL;
-    Elem* eprepu = GetNode(cdata ? "../../Data/Prepared/Capsule/Upd" : "../../Prepared/Capsule/Upd");
+    TBool cdata = GetNode("./../../Data") != NULL;
+    Elem* eprepu = GetNode(cdata ? "./../../Data/Prepared/Capsule/Upd" : "./../../Prepared/Capsule/Upd");
     if (eprepu != NULL) {
 	MUpdatable* upd = eprepu->GetObj(upd);
 	if (upd != NULL) {
@@ -903,14 +903,14 @@ void StateAgent::Update()
 
 void StateAgent::Confirm()
 {
-    TBool cdata = GetNode("../../Data") != NULL;
-    Elem* econfu = GetNode(cdata ? "../../Data/Confirmed/Capsule/Upd" : "../../Confirmed/Capsule/Upd");
+    TBool cdata = GetNode("./../../Data") != NULL;
+    Elem* econfu = GetNode(cdata ? "./../../Data/Confirmed/Capsule/Upd" : "./../../Confirmed/Capsule/Upd");
     if (econfu != NULL) {
 	MUpdatable* upd = econfu->GetObj(upd);
 	if (upd != NULL) {
 	    if (upd->Update()) {
 		// Activate dependencies
-		Elem* eobs = GetNode("../../Capsule/Out/Int/PinObs");
+		Elem* eobs = GetNode("./../../Capsule/Out/Int/PinObs");
 		RqContext ctx(this);
 		// Request w/o context because of possible redirecting request to itself
 		// TODO [YB] To check if iterator is not damage during the cycle, to cache to vector if so

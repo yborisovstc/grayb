@@ -22,12 +22,12 @@ that this mutation is harmful
       <node id="elem2_1" parent="Elem">
       </node>
     </node>
-    <node id="elem3" parent="elem2"/>
+    <node id="elem3" parent="./elem2"/>
     <!-- Mut_2 : Attempt of mutation that is harmful 
     <change node="elem2" attr="id" val="elem2_rn"/>
     -->
   </node>
   <!-- Mut_1: dep of elem3 -->
-  <node node="elem1/(elem2:)elem3" id="elem3_1" parent="Elem"/>
+  <node node="./elem1/(elem2:)elem3" id="elem3_1" parent="Elem"/>
 </node>
 

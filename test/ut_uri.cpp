@@ -44,11 +44,14 @@ void Ut_uri::tearDown()
 void Ut_uri::test_UriOpr()
 {
     printf("\n === Test of uri operations\n");
-    GUri uri_a("(Elem:)Node1/(Elem:)Node2");
-    GUri uri_b("(Elem:)Node3");
+    GUri uri_a("./(Elem:)Node1/(Elem:)Node2");
+    string uri_bis = "./(Elem:)Node3";
+    GUri uri_b(uri_bis);
+    string uri_bs = uri_b.GetUri();
+    CPPUNIT_ASSERT_MESSAGE("Fail to uri_b convert to string", uri_bs == uri_bis);
     uri_a += uri_b;
     string uri_as = uri_a.GetUri();
-    CPPUNIT_ASSERT_MESSAGE("Fail to uri +=", uri_as == "(Elem:)Node1/(Elem:)Node2/(Elem:)Node3");
+    CPPUNIT_ASSERT_MESSAGE("Fail to uri +=", uri_as == "./(Elem:)Node1/(Elem:)Node2/(Elem:)Node3");
 }
 
 void Ut_uri::test_UriBase()
@@ -65,10 +68,23 @@ void Ut_uri::test_UriBase()
     Elem* enode = root->GetNode("/Elem");
     CPPUNIT_ASSERT_MESSAGE("Fail to get node via incorrect  uri", enode == NULL);
 
+    // Getting inheritance root
     enode = root->GetNode(":Elem");
     CPPUNIT_ASSERT_MESSAGE("Fail to get inher root", enode != NULL);
 
-    Elem* doutp = root->GetNode("(Incaps:)test/(DataSInt:)DataS_Int_1/(Elem:)Capsule/out");
+    // Getting native agent
+    enode = root->GetNode("Elem");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get native agent", enode != NULL);
+    
+    enode = root->GetNode(".");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get current node", enode != NULL);
+
+    enode = root->GetNode("./test/Incr");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get Incr", enode != NULL);
+    Elem* owner = enode->GetNode("./..");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get current owner", owner != NULL);
+
+    Elem* doutp = root->GetNode("./(Incaps:)test/(DataSInt:)DataS_Int_1/(Elem:)Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
     MDIntGet* doutpget = doutp->GetObj(doutpget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
@@ -77,25 +93,25 @@ void Ut_uri::test_UriBase()
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out vertex", mdoutpv != 0);
     MVert* pair = *(mdoutpv->Pairs().begin());
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    Elem* efuninp = root->GetNode("(Incaps:)test/(FuncIncInt:)Incr/Capsule/inp");
+    Elem* efuninp = root->GetNode("./(Incaps:)test/(FuncIncInt:)Incr/Capsule/inp");
     CPPUNIT_ASSERT_MESSAGE("Fail to get fun inp", efuninp != NULL);
     MVert* mpairt = efuninp->GetObj(mpairt);
     CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
 
-    Elem* foutp = root->GetNode("test/Incr2/Capsule/out");
+    Elem* foutp = root->GetNode("./test/Incr2/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
     MDIntGet* foutpget = foutp->GetObj(foutpget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
     TInt fres = foutpget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result", fres == 36);
 
-    Elem* resdata = root->GetNode("(Incaps:)test/ResData/(Elem:)Capsule/out");
+    Elem* resdata = root->GetNode("./(Incaps:)test/ResData/(Elem:)Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out", resdata != 0);
     MDIntGet* rdataget = resdata->GetObj(rdataget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget != 0);
     TInt rdataval = rdataget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval == 36);
-    Elem* resdataprop = root->GetNode("(Incaps:)test/(DataSInt:)ResData/(Prop:)Value");
+    Elem* resdataprop = root->GetNode("./(Incaps:)test/(DataSInt:)ResData/(Prop:)Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata value property", resdataprop != 0);
     MProp* rdmprop = resdataprop->GetObj(rdmprop);
     const string& rdval = rdmprop->Value();
@@ -103,20 +119,20 @@ void Ut_uri::test_UriBase()
 
     // Checking the result update on update of input
     // Mutate the input data first
-    Elem* dinp = root->GetNode("(Incaps:)test/(DataSInt:)DataS_Int_1");
+    Elem* dinp = root->GetNode("./(Incaps:)test/(DataSInt:)DataS_Int_1");
     ChromoNode nchange = dinp->Mutation().Root().AddChild(ENt_Cont);
-    nchange.SetAttr(ENa_MutNode, "(Prop:)Value");
+    nchange.SetAttr(ENa_MutNode, "./(Prop:)Value");
     nchange.SetAttr(ENa_MutVal, "57");
     dinp->Mutate();
     // Check the function output
-    Elem* foutp1 = root->GetNode("test/Incr2/Capsule/out");
+    Elem* foutp1 = root->GetNode("./test/Incr2/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out when inp data changed", foutp1 != 0);
     MDIntGet* foutpget1 = foutp1->GetObj(foutpget1);
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface when input data changed", foutpget1 != 0);
     TInt fres1 = foutpget1->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result after input data change", fres1 == 59);
     // Check the output data
-    Elem* resdataprop1 = root->GetNode("test/ResData/Value");
+    Elem* resdataprop1 = root->GetNode("./test/ResData/Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
     MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
     const string& rdval1 = rdmprop1->Value();
@@ -125,7 +141,7 @@ void Ut_uri::test_UriBase()
 
     // Checking URI with asterisk in URI elem
    // Elem* resdata1 = root->GetNode("Incaps:test/DataSInt:ResData/Elem:Capsule/ConnPoint:out");
-    Elem* resdata1 = root->GetNode("(Incaps:)test/(DataSInt:)ResData/(*:)*/out");
+    Elem* resdata1 = root->GetNode("./(Incaps:)test/(DataSInt:)ResData/(*:)*/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out (asterisk URI)", resdata1 != 0);
     // Checking URI with "anywhere" pattern from root
     Elem* node0 = root->GetNode("/testroot/test/Incr2");
@@ -133,10 +149,10 @@ void Ut_uri::test_UriBase()
     Elem* node1 = root->GetNode("/**/Incr2");
     CPPUNIT_ASSERT_MESSAGE("Fail to get node (/**/Incr2)", node1 != 0 && node1->GetUri(NULL) == node0->GetUri(NULL));
     // Checking URI with beginning "anywhere" pattern
-    Elem* node2 = root->GetNode("**/Incr2");
+    Elem* node2 = root->GetNode("./**/Incr2");
     CPPUNIT_ASSERT_MESSAGE("Fail to get node (**/Incr2)", node2 != 0 && node2->GetUri(NULL) == node0->GetUri(NULL));
     // Checking "anywhere" pattern for direct root comp
-    Elem* elm1 = root->GetNode("**/SysComps");
+    Elem* elm1 = root->GetNode("./**/SysComps");
     CPPUNIT_ASSERT_MESSAGE("Fail to get base elm1", elm1 != 0);
     // Checking creation from parent specified with URI with "anywhere" pattern
     Elem* cp1 = root->GetNode("/testroot/test/Cp1");
@@ -148,7 +164,7 @@ void Ut_uri::test_UriBase()
     GUri rduri;
     resdata1->GetUri(rduri, root);
     string rduriss = rduri.GetUri();
-    CPPUNIT_ASSERT_MESSAGE("Fail to get URI from hier", rduriss == "(Incaps:)test/(DataSInt:)ResData/(Elem:)Capsule/(ConnPointOut:)out");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get URI from hier", rduriss == "./(Incaps:)test/(DataSInt:)ResData/(Elem:)Capsule/(ConnPointOut:)out");
     // Checking getting absolute uri
     GUri rduria;
     resdata1->GetUri(rduria);

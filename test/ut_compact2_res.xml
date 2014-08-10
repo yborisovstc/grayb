@@ -1,11 +1,13 @@
 <?xml version="1.0"?>
-<node id="test" parent="Vert">
-  <node id="v1" parent="Vert"/>
-  <node id="v2" parent="Vert"/>
-  <node id="v3" parent="Vert"/>
-  <node id="v4" parent="Vert"/>
-  <node id="Edge1" parent="Edge">
-    <cont node="P1" ref="../../v1"/>
-    <cont node="P2" ref="../../v3"/>
+<node id="test" parent="Vert" tord="9">
+  <node id="v1" parent="Vert" ord="1"/>
+  <node id="v2" parent="Vert" ord="2"/>
+  <node id="v3" parent="Vert" ord="3"/>
+  <node id="v4" parent="Vert" ord="4"/>
+  <node id="Edge1" parent="Edge" ord="5">
+    <cont node="P1" ref="../../v1" ord="6"/>
+    <cont node="P2" ref="../../v2" ord="7"/>
   </node>
+  <cont node="Edge1/P2" ref="../../v4" ord="8"/>
+  <cont node="Edge1/P2" ref="../../v3" ord="9"/>
 </node>

@@ -14,7 +14,7 @@
     <node id="StOutSocket" parent=":Elem:SysComps/SocketInp">
 	<!-- Pin Des observer. Requires DES observer interface to handle activation of the state -->
 	<node id="PinObs" parent=":Elem:SysComps/ConnPoint"> 
-	    <cont node="Provided" val="MDesObserver"/>
+	    <cont node="./Provided" val="MDesObserver"/>
 	</node>
 	<!-- Pin Data observer. Provides data interface -->
 	<node id="PinData" parent=":Elem:SysComps/ConnPoint"> 
@@ -25,7 +25,7 @@
     <node id="StInpSocket" parent=":Elem:SysComps/SocketOut">
 	<!-- Pin Des observer. Requires DES observer interface to handle activation of the state -->
 	<node id="PinObs" parent=":Elem:SysComps/ConnPoint"> 
-	    <cont node="Required" val="MDesObserver"/>
+	    <cont node="./Required" val="MDesObserver"/>
 	</node>
 	<!-- Pin Data observer. Provides data interface -->
 	<node id="PinData" parent=":Elem:SysComps/ConnPoint"> 
@@ -34,33 +34,33 @@
 
     <!-- Input of standard Int State -->
     <node id="StIntInp" parent=":Elem:SysComps/ExtenderInp"> 
-	<rm node="Int"/>
-	<node id="Int" parent="../StInpSocket"> 
-	    <cont node="PinData/Provided" val="MDIntGet"/>
+	<rm node="./Int"/>
+	<node id="Int" parent="./../StInpSocket"> 
+	    <cont node="./PinData/Provided" val="MDIntGet"/>
 	</node>
     </node>
 
     <!-- Output of standard Int State -->
     <node id="StIntOut" parent=":Elem:SysComps/ExtenderOut"> 
-	<rm node="Int"/>
-	<node id="Int" parent="../StOutSocket"> 
-	    <cont node="PinData/Required" val="MDIntGet"/>
+	<rm node="./Int"/>
+	<node id="Int" parent="./../StOutSocket"> 
+	    <cont node="./PinData/Required" val="MDIntGet"/>
 	</node>
     </node>
 
     <!-- Input of standard variable State -->
     <node id="StVarInp" parent=":Elem:SysComps/ExtenderInp"> 
-	<rm node="Int"/>
-	<node id="Int" parent="../StInpSocket"> 
-	    <cont node="PinData/Provided" val="MDVarGet"/>
+	<rm node="./Int"/>
+	<node id="Int" parent="./../StInpSocket"> 
+	    <cont node="./PinData/Provided" val="MDVarGet"/>
 	</node>
     </node>
 
     <!-- Output of standard variable State -->
     <node id="StVarOut" parent=":Elem:SysComps/ExtenderOut"> 
-	<rm node="Int"/>
-	<node id="Int" parent="../StOutSocket"> 
-	    <cont node="PinData/Required" val="MDVarGet"/>
+	<rm node="./Int"/>
+	<node id="Int" parent="./../StOutSocket"> 
+	    <cont node="./PinData/Required" val="MDVarGet"/>
 	</node>
     </node>
 
@@ -68,53 +68,53 @@
 
     <!-- Input of int transition -->
     <node id="TrIntInp" parent=":Elem:SysComps/ConnPointInp"> 
-	<cont node="Required" val="MDIntGet"/>
+	<cont node="./Required" val="MDIntGet"/>
     </node>
 
     <!-- Input of int transition -->
     <node id="TrVarInp" parent=":Elem:SysComps/ConnPointInp"> 
-	<cont node="Required" val="MDVarGet"/>
+	<cont node="./Required" val="MDVarGet"/>
     </node>
 
     <!-- Transition of integer data -->
     <node id="TrInt" parent="Syst"> 
 	<node id="Inp" parent=":Elem:SysComps/ConnPointInp"> 
-	    <cont node="Required" val="MDIntGet"/>
+	    <cont node="./Required" val="MDIntGet"/>
 	</node>
 	<node id="Out" parent=":Elem:SysComps/ConnPointOut"> 
-	    <cont node="Provided" val="MDIntGet"/>
+	    <cont node="./Provided" val="MDIntGet"/>
 	</node>
     </node>
 
     <!-- Transition of integer data : Increment -->
-    <node id="TrIncInt" parent="TrInt"> 
-	<node node="Agents" id="TrAgt" parent="ATrIncInt"/> 
+    <node id="TrIncInt" parent="./TrInt"> 
+	<node node="./Agents" id="TrAgt" parent="ATrIncInt"/> 
     </node>
 
     <!-- Transition of integer data : Multiplication -->
-    <node id="TrMplInt" parent="TrInt"> 
-	<node node="Agents" id="TrAgt" parent="ATrMplInt"/> 
+    <node id="TrMplInt" parent="./TrInt"> 
+	<node node="./Agents" id="TrAgt" parent="ATrMplInt"/> 
     </node>
 
     <!-- Transition of integer data : Division -->
-    <node id="TrDivInt" parent="TrInt"> 
-	<node node="Agents" id="TrAgt" parent="ATrDivInt"/> 
-	<node id="Inp_DR" parent="../TrIntInp"/> 
+    <node id="TrDivInt" parent="./TrInt"> 
+	<node node="./Agents" id="TrAgt" parent="ATrDivInt"/> 
+	<node id="Inp_DR" parent="./../TrIntInp"/> 
     </node>
 
     <!-- Transition of integer data : Subtraction -->
-    <node id="TrSubInt" parent="TrInt"> 
-	<node node="Agents" id="TrAgt" parent="ATrSubInt"/> 
-	<node id="Inp_Sub" parent="../TrIntInp"/> 
+    <node id="TrSubInt" parent="./TrInt"> 
+	<node node="./Agents" id="TrAgt" parent="ATrSubInt"/> 
+	<node id="Inp_Sub" parent="./../TrIntInp"/> 
     </node>
 
     <!-- Transition of variable data -->
     <node id="TrVar" parent="Syst"> 
 	<node id="Inp" parent=":Elem:SysComps/ConnPointInp"> 
-	    <cont node="Required" val="MDVarGet"/>
+	    <cont node="./Required" val="MDVarGet"/>
 	</node>
 	<node id="Out" parent=":Elem:SysComps/ConnPointOut"> 
-	    <cont node="Provided" val="MDVarGet"/>
+	    <cont node="./Provided" val="MDVarGet"/>
 	</node>
 	<node id="ViewData" parent="Vert">
 	    <node id="Res" parent="Prop"/>
@@ -124,86 +124,86 @@
     
     <!-- Transition of variable data : Addition 
     <node id="TrAddVar" parent="TrVar"> 
-	<node node="Agents" id="TrAgt" parent="ATrAddVar"/> 
-	<node id="InpN" parent="../TrVarInp"/> 
-	<cont node="ViewData/Res" ref="../../Agents/TrAgt"/>
+	<node node="./Agents" id="TrAgt" parent="ATrAddVar"/> 
+	<node id="InpN" parent="./../TrVarInp"/> 
+	<cont node="./ViewData/Res" ref="./../../Agents/TrAgt"/>
     </node>
 	 -->
 
     <!-- Transition of variable data : Multiplication -->
-    <node id="TrMplVar" parent="TrVar"> 
-	<node node="Agents" id="TrAgt" parent="ATrMplVar"/> 
-	<cont node="ViewData/Res" ref="../../Agents/TrAgt"/>
+    <node id="TrMplVar" parent="./TrVar"> 
+	<node node="./Agents" id="TrAgt" parent="ATrMplVar"/> 
+	<cont node="./ViewData/Res" ref="./../../Agents/TrAgt"/>
     </node>
 
     <!-- Transition of variable data : Division -->
-    <node id="TrDivVar" parent="TrVar"> 
-	<node node="Agents" id="TrAgt" parent="ATrDivVar"/> 
-	<node id="Inp_Dvs" parent="../TrVarInp"/> 
-	<cont node="ViewData/Res" ref="../../Agents/TrAgt"/>
+    <node id="TrDivVar" parent="./TrVar"> 
+	<node node="./Agents" id="TrAgt" parent="ATrDivVar"/> 
+	<node id="Inp_Dvs" parent="./../TrVarInp"/> 
+	<cont node="./ViewData/Res" ref="./../../Agents/TrAgt"/>
     </node>
 
     <!-- Transition of variable data : Composing vector -->
-    <node id="TrCpsVectVar" parent="TrVar"> 
-	<node node="Agents" id="TrAgt" parent="ATrCpsVectVar"/> 
-	<change node="Inp" attr="id" val="Inp0"/>
-	<node id="Inp1" parent="../TrVarInp"/> 
-	<node id="Inp2" parent="../TrVarInp"/> 
-	<cont node="ViewData/Res" ref="../../Agents/TrAgt"/>
+    <node id="TrCpsVectVar" parent="./TrVar"> 
+	<node node="./Agents" id="TrAgt" parent="ATrCpsVectVar"/> 
+	<change node="./Inp" attr="id" val="Inp0"/>
+	<node id="Inp1" parent="./../TrVarInp"/> 
+	<node id="Inp2" parent="./../TrVarInp"/> 
+	<cont node="./ViewData/Res" ref="./../../Agents/TrAgt"/>
     </node>
 
     <!-- Transition of variable data : Switch -->
-    <node id="TrSwitchVar" parent="TrVar"> 
-	<node node="Agents" id="TrAgt" parent="ATrSwitchVar"/> 
-	<change node="Inp" attr="id" val="Sel"/>
-	<node id="Inp1" parent="../TrVarInp"/> 
-	<node id="Inp2" parent="../TrVarInp"/> 
+    <node id="TrSwitchVar" parent="./TrVar"> 
+	<node node="./Agents" id="TrAgt" parent="ATrSwitchVar"/> 
+	<change node="./Inp" attr="id" val="Sel"/>
+	<node id="Inp1" parent="./../TrVarInp"/> 
+	<node id="Inp2" parent="./../TrVarInp"/> 
     </node>
 
     <!-- Transition of variable data : Getting coord of vector -->
-    <node id="TrAtVar" parent="TrVar"> 
-	<node node="Agents" id="TrAgt" parent="ATrAtVar"/> 
-	<node id="Index" parent="../TrIntInp"/> 
+    <node id="TrAtVar" parent="./TrVar"> 
+	<node node="./Agents" id="TrAgt" parent="ATrAtVar"/> 
+	<node id="Index" parent="./../TrIntInp"/> 
     </node>
 
     <!-- Transition of variable data : Boolean comparition -->
-    <node id="TrLTVar" parent="TrVar"> 
-	<node node="Agents" id="AF_Lt" parent="ATrBcmpVar"/> 
-	<change node="Inp" attr="id" val="Inp1"/>
-	<node id="Inp2" parent="../TrVarInp"/> 
-	<cont node="ViewData/Res" ref="../../Agents/AF_Lt"/>
+    <node id="TrLTVar" parent="./TrVar"> 
+	<node node="./Agents" id="AF_Lt" parent="ATrBcmpVar"/> 
+	<change node="./Inp" attr="id" val="Inp1"/>
+	<node id="Inp2" parent="./../TrVarInp"/> 
+	<cont node="./ViewData/Res" ref="./../../Agents/AF_Lt"/>
     </node>
 
     <!-- Transition of variable data : Boolean comparition -->
-    <node id="TrLEVar" parent="TrVar"> 
-	<node node="Agents" id="AF_Le" parent="ATrBcmpVar"/> 
-	<change node="Inp" attr="id" val="Inp1"/>
-	<node id="Inp2" parent="../TrVarInp"/> 
-	<cont node="ViewData/Res" ref="../../Agents/AF_Le"/>
+    <node id="TrLEVar" parent="./TrVar"> 
+	<node node="./Agents" id="AF_Le" parent="ATrBcmpVar"/> 
+	<change node="./Inp" attr="id" val="Inp1"/>
+	<node id="Inp2" parent="./../TrVarInp"/> 
+	<cont node="./ViewData/Res" ref="./../../Agents/AF_Le"/>
     </node>
 
     <!-- Transition of variable data : Boolean comparition -->
-    <node id="TrEQVar" parent="TrVar"> 
-	<node node="Agents" id="AF_Eq" parent="ATrBcmpVar"/> 
-	<change node="Inp" attr="id" val="Inp1"/>
-	<node id="Inp2" parent="../TrVarInp"/> 
-	<cont node="ViewData/Res" ref="../../Agents/AF_Eq"/>
+    <node id="TrEQVar" parent="./TrVar"> 
+	<node node="./Agents" id="AF_Eq" parent="ATrBcmpVar"/> 
+	<change node="./Inp" attr="id" val="Inp1"/>
+	<node id="Inp2" parent="./../TrVarInp"/> 
+	<cont node="./ViewData/Res" ref="./../../Agents/AF_Eq"/>
     </node>
 
     <!-- Transition of variable data : Boolean comparition -->
-    <node id="TrGTVar" parent="TrVar"> 
-	<node node="Agents" id="AF_Gt" parent="ATrBcmpVar"/> 
-	<change node="Inp" attr="id" val="Inp1"/>
-	<node id="Inp2" parent="../TrVarInp"/> 
-	<cont node="ViewData/Res" ref="../../Agents/AF_Gt"/>
+    <node id="TrGTVar" parent="./TrVar"> 
+	<node node="./Agents" id="AF_Gt" parent="ATrBcmpVar"/> 
+	<change node="./Inp" attr="id" val="Inp1"/>
+	<node id="Inp2" parent="./../TrVarInp"/> 
+	<cont node="./ViewData/Res" ref="./../../Agents/AF_Gt"/>
     </node>
 
     <!-- Transition of variable data : Boolean comparition -->
-    <node id="TrGEVar" parent="TrVar"> 
-	<node node="Agents" id="AF_Ge" parent="ATrBcmpVar"/> 
-	<change node="Inp" attr="id" val="Inp1"/>
-	<node id="Inp2" parent="../TrVarInp"/> 
-	<cont node="ViewData/Res" ref="../../Agents/AF_Ge"/>
+    <node id="TrGEVar" parent="./TrVar"> 
+	<node node="./Agents" id="AF_Ge" parent="ATrBcmpVar"/> 
+	<change node="./Inp" attr="id" val="Inp1"/>
+	<node id="Inp2" parent="./../TrVarInp"/> 
+	<cont node="./ViewData/Res" ref="./../../Agents/AF_Ge"/>
     </node>
 
 
@@ -213,58 +213,58 @@
     <!-- State base -->
     <node id="State" parent=":Elem:IncapsComps/Incaps"> 
 
-	<node node="Agents" id="StateAgt" parent="StateAgent"/> 
+	<node node="./Agents" id="StateAgt" parent="StateAgent"/> 
 
 	<!-- TODO [YB] Do we need dedicated CP or component has to notify it's mgr? -->
-	<node node="Capsule" id="Sync" parent=":Elem:SysComps/ConnPoint"> 
-	    <cont node="Provided" val="MDesSyncable"/>
+	<node node="./Capsule" id="Sync" parent=":Elem:SysComps/ConnPoint"> 
+	    <cont node="./Provided" val="MDesSyncable"/>
 	</node>
 	<!-- Input -->
-	<node node="Capsule" id="Inp" parent=":Elem:SysComps/ExtenderInp"> 
-	    <rm node="Int"/>
-	    <node id="Int" parent="../../../StInpSocket"/> 
+	<node node="./Capsule" id="Inp" parent=":Elem:SysComps/ExtenderInp"> 
+	    <rm node="./Int"/>
+	    <node id="Int" parent="./../../../StInpSocket"/> 
 	</node>
 	<!-- Output -->
-	<node node="Capsule" id="Out" parent=":Elem:SysComps/ExtenderOut"> 
-	    <rm node="Int"/>
-	    <node id="Int" parent="../../../StOutSocket"/> 
+	<node node="./Capsule" id="Out" parent=":Elem:SysComps/ExtenderOut"> 
+	    <rm node="./Int"/>
+	    <node id="Int" parent="./../../../StOutSocket"/> 
 	</node>
     </node>
 
-    <node id="StateInt" parent="State"> 
+    <node id="StateInt" parent="./State"> 
 
 	<node id="Confirmed" parent=":Elem:DataComps/DataSCInt"/>
 	<node id="Prepared" parent=":Elem:DataComps/DataSCInt"/>
 
-	<cont node="Capsule/Inp/Int/PinData/Provided" val="MDIntGet"/>
-	<cont node="Capsule/Out/Int/PinData/Required" val="MDIntGet"/>
+	<cont node="./Capsule/Inp/Int/PinData/Provided" val="MDIntGet"/>
+	<cont node="./Capsule/Out/Int/PinData/Required" val="MDIntGet"/>
 
 	<node id="E_Conf_Out" parent="Edge"> 
-	    <cont node="P1" val="../../Confirmed/Capsule/Out"/> 
-	    <cont node="P2" val="../../Capsule/Out/Int/PinData"/> 
+	    <cont node="./P1" val="./../../Confirmed/Capsule/Out"/> 
+	    <cont node="./P2" val="./../../Capsule/Out/Int/PinData"/> 
 	</node>
 
 	<node id="E_PrepToConf" parent="Edge"> 
-	    <cont node="P1" val="../../Prepared/Capsule/Out"/> 
-	    <cont node="P2" val="../../Confirmed/Capsule/Inp"/> 
+	    <cont node="./P1" val="./../../Prepared/Capsule/Out"/> 
+	    <cont node="./P2" val="./../../Confirmed/Capsule/Inp"/> 
 	</node>
     </node>
 
-    <node id="StateVar" parent="State"> 
+    <node id="StateVar" parent="./State"> 
 
 	<node id="Confirmed" parent=":Elem:DataComps/DataSCVar"/>
 	<node id="Prepared" parent=":Elem:DataComps/DataSCVar"/>
 
-	<cont node="Capsule/Inp/Int/PinData/Provided" val="MDVarGet"/>
-	<cont node="Capsule/Out/Int/PinData/Required" val="MDVarGet"/>
+	<cont node="./Capsule/Inp/Int/PinData/Provided" val="MDVarGet"/>
+	<cont node="./Capsule/Out/Int/PinData/Required" val="MDVarGet"/>
 
 	<node id="E_Conf_Out" parent="Edge"> 
-	    <cont node="P1" ref="../../Confirmed/Capsule/Out"/> 
-	    <cont node="P2" ref="../../Capsule/Out/Int/PinData"/> 
+	    <cont node="./P1" ref="./../../Confirmed/Capsule/Out"/> 
+	    <cont node="./P2" ref="./../../Capsule/Out/Int/PinData"/> 
 	</node>
 	<node id="E_PrepToConf" parent="Edge"> 
-	    <cont node="P1" ref="../../Prepared/Capsule/Out"/> 
-	    <cont node="P2" ref="../../Confirmed/Capsule/Inp"/> 
+	    <cont node="./P1" ref="./../../Prepared/Capsule/Out"/> 
+	    <cont node="./P2" ref="./../../Confirmed/Capsule/Inp"/> 
 	</node>
     </node>
 
@@ -273,59 +273,59 @@
 	 This is required to define type of data because the current scheme doesn't
 	 allow to implicitly get type of confirmed
 	 -->
-    <node id="StateVarC" parent="State"> 
+    <node id="StateVarC" parent="./State"> 
 
 	<node id="Data" parent=":Elem:IncapsComps/Incaps">
 	    <node id="Confirmed" parent=":Elem:DataComps/DataSCVar"/>
 	    <node id="Prepared" parent=":Elem:DataComps/DataSCVar"/>
-	    <node node="Capsule" id="Inp" parent=":Elem:SysComps/ExtenderInp"> <cont node="Int/Provided" val="MDVarGet"/> </node>
-	    <node node="Capsule" id="Out" parent=":Elem:SysComps/ExtenderOut"> <cont node="Int/Required" val="MDVarGet"/> </node>
+	    <node node="./Capsule" id="Inp" parent=":Elem:SysComps/ExtenderInp"> <cont node="./Int/Provided" val="MDVarGet"/> </node>
+	    <node node="./Capsule" id="Out" parent=":Elem:SysComps/ExtenderOut"> <cont node="./Int/Required" val="MDVarGet"/> </node>
 	    <node id="E_Inp_Prep" parent="Edge"> 
-		<cont node="P1" ref="../../Capsule/Inp/Int"/> 
-		<cont node="P2" ref="../../Prepared/Capsule/Inp"/> 
+		<cont node="./P1" ref="./../../Capsule/Inp/Int"/> 
+		<cont node="./P2" ref="./../../Prepared/Capsule/Inp"/> 
 	    </node>
 	    <node id="E_Prep_Conf" parent="Edge">
-		<cont node="P1" ref="../../Prepared/Capsule/Out"/> 
-		<cont node="P2" ref="../../Confirmed/Capsule/Inp"/> 
+		<cont node="./P1" ref="./../../Prepared/Capsule/Out"/> 
+		<cont node="./P2" ref="./../../Confirmed/Capsule/Inp"/> 
 	    </node>
 	    <node id="E_Conf_Out" parent="Edge"> 
-		<cont node="P1" ref="../../Confirmed/Capsule/Out"/> 
-		<cont node="P2" ref="../../Capsule/Out/Int"/> 
+		<cont node="./P1" ref="./../../Confirmed/Capsule/Out"/> 
+		<cont node="./P2" ref="./../../Capsule/Out/Int"/> 
 	    </node>
 	    <node id="ViewData" parent="Vert">
 		<node id="Val" parent="Prop"/>
-		<cont node="Val" ref="../../Confirmed/Value"/>
+		<cont node="./Val" ref="./../../Confirmed/Value"/>
 	    </node>
 	</node>
 
-	<cont node="Capsule/Inp/Int/PinData/Provided" val="MDVarGet"/>
-	<cont node="Capsule/Out/Int/PinData/Required" val="MDVarGet"/>
+	<cont node="./Capsule/Inp/Int/PinData/Provided" val="MDVarGet"/>
+	<cont node="./Capsule/Out/Int/PinData/Required" val="MDVarGet"/>
 
 	<node id="E_Data_Out" parent="Edge"> 
-	    <cont node="P1" ref="../../Data/Capsule/Out"/> 
-	    <cont node="P2" ref="../../Capsule/Out/Int/PinData"/> 
+	    <cont node="./P1" ref="./../../Data/Capsule/Out"/> 
+	    <cont node="./P2" ref="./../../Capsule/Out/Int/PinData"/> 
 	</node>
 	<node id="ViewData" parent="Vert">
 	    <node id="Val" parent="Prop"/>
-	    <cont node="Val" ref="../../Data/Confirmed/Value"/>
+	    <cont node="./Val" ref="./../../Data/Confirmed/Value"/>
 	</node>
     </node>
 
 
     <!-- DES base -->
     <node id="Des" parent=":Elem:IncapsComps/Incaps"> 
-	<node node="Agents" id="DesAgt" parent="ADes"/> 
-	<node node="Capsule" id="Sync" parent=":Elem:SysComps/ConnPoint"> 
-	    <cont node="Provided" val="MDesSyncable"/>
+	<node node="./Agents" id="DesAgt" parent="ADes"/> 
+	<node node="./Capsule" id="Sync" parent=":Elem:SysComps/ConnPoint"> 
+	    <cont node="./Provided" val="MDesSyncable"/>
 	</node>
     </node>
 
     <!-- DES ticks source -->
     <node id="DesTicker" parent=":Elem:IncapsComps/Incaps"> 
-	<node node="Capsule" id="Out" parent=":Elem:SysComps/ConnPointOut"> 
-	    <cont node="Required" val="MDesSyncable"/>
+	<node node="./Capsule" id="Out" parent=":Elem:SysComps/ConnPointOut"> 
+	    <cont node="./Required" val="MDesSyncable"/>
 	</node>
-	<node node="Agents" id="DesSyncAgent" parent="ADesSync"/> 
+	<node node="./Agents" id="DesSyncAgent" parent="ADesSync"/> 
     </node>
 
 </node>
