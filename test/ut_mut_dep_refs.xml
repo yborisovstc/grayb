@@ -16,8 +16,8 @@ removing v1_0 - breakage -->
 	<node id="v2_0" parent="Vert"/>
     </node>
     <node id="edge1" parent="Edge"> 
-	<cont node="./P1" ref="../../v1/v1_0"/> 
-	<cont node="./P2" ref="../../v2/v2_0"/>
+	<cont node="./P1" ref="./../../v1/v1_0"/> 
+	<cont node="./P2" ref="./../../v2/v2_0"/>
     </node>
 </node>
 

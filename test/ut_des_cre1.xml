@@ -30,7 +30,7 @@
 	    </node>
 
 	    <node node="./(DataSCInt:)Confirmed" id="Logspec" parent="Elem">
-		<node id="Update" parent="/DataComps/DataLogevent"/>
+		<node id="Update" parent="/testroot/DataComps/DataLogevent"/>
 	    </node>
 
 	    <node id="Trans" parent="./../../DesComps/(TrInt:)TrIncInt">

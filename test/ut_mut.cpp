@@ -459,10 +459,10 @@ void Ut_mut::test_Compact1()
     // Compact chromo
     root->CompactChromo();
     // Save compacted chromo and recreate the model
-    iEnv->Root()->Chromos().Save("ut_compact1_res.xml");
+    iEnv->Root()->Chromos().Save("ut_compact1_res.xml_");
     delete iEnv;
 
-    iEnv = new Env("Env", "ut_compact1_res.xml", "ut_compact1_res.txt");
+    iEnv = new Env("Env", "ut_compact1_res.xml_", "ut_compact1_res.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env for compacted system", iEnv != 0);
     iEnv->ConstructSystem();
      // Check if elem3 and elem4 are created ok with compacted chromo
@@ -488,22 +488,22 @@ void Ut_mut::test_Compact2()
     // Compact chromo
     root->CompactChromo();
     // Save compacted chromo and recreate the model
-    iEnv->Root()->Chromos().Save("ut_compact2_res.xml");
+    iEnv->Root()->Chromos().Save("ut_compact2_res.xml_");
     delete iEnv;
 
-    iEnv = new Env("Env", "ut_compact2_res.xml", "ut_compact2_res.txt");
+    iEnv = new Env("Env", "ut_compact2_res.xml_", "ut_compact2_res.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to re-create compacted system", iEnv != 0);
     iEnv->ConstructSystem();
      // Check if edge is set correctly
     root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root after compacting", root != 0);
-    Elem* v1 = root->GetNode("(Vert:)v1");
+    Elem* v1 = root->GetNode("./(Vert:)v1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get v1", v1 != 0);
     MVert* mv1 = v1->GetObj(mv1);
     CPPUNIT_ASSERT_MESSAGE("Fail to get mv1", mv1 != 0);
     MVert* pair = *(mv1->Pairs().begin());
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    Elem* v3 = root->GetNode("(Vert:)v3");
+    Elem* v3 = root->GetNode("./(Vert:)v3");
     CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pair->EBase() == v3);
 
     delete iEnv;
@@ -521,10 +521,10 @@ void Ut_mut::test_Compact3()
     // Compact chromo
     //root->CompactChromo();
     // Save compacted chromo and recreate the model
-    iEnv->Root()->Chromos().Save("ut_compact3_res.xml");
+    iEnv->Root()->Chromos().Save("ut_compact3_res.xml_");
     delete iEnv;
 
-    iEnv = new Env("Env", "ut_compact3_res.xml", "ut_compact3_res.txt");
+    iEnv = new Env("Env", "ut_compact3_res.xml_", "ut_compact3_res.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to re-create compacted system", iEnv != 0);
     iEnv->ConstructSystem();
      // Check if edge is set correctly

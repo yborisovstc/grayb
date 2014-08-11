@@ -53,14 +53,14 @@ void Ut_des::test_Cre1()
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
-    Elem* doutp = root->GetNode("test/State1/Capsule/Out/Int/PinData");
+    Elem* doutp = root->GetNode("./test/State1/Capsule/Out/Int/PinData");
     CPPUNIT_ASSERT_MESSAGE("Fail to get state out", doutp != 0);
 //    MDIntGet* doutpget = doutp->GetObj(doutpget);
     MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 0);
     // Sync the state
-    Elem* esync = root->GetNode("test/State1/Capsule/Sync");
+    Elem* esync = root->GetNode("./test/State1/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != 0);
     MDesSyncable* sync = esync->GetObj(sync);
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
@@ -89,14 +89,14 @@ void Ut_des::test_Cre2()
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
-    Elem* doutp = root->GetNode("TestDes/Capsule/Out/Int/PinData");
+    Elem* doutp = root->GetNode("./TestDes/Capsule/Out/Int/PinData");
     CPPUNIT_ASSERT_MESSAGE("Fail to get DES out", doutp != 0);
     //MDIntGet* doutpget = doutp->GetObj(doutpget);
     MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get initial value of data iface", doutpget->Value() == 0);
     // Get Sync iface of DES
-    Elem* esync = root->GetNode("TestDes/Capsule/Sync");
+    Elem* esync = root->GetNode("./TestDes/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get DES's Syncable iface", esync != 0);
     MDesSyncable* sync = esync->GetObj(sync);
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
@@ -124,11 +124,11 @@ void Ut_des::test_Cre4()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    MDIntGet* doutpget = (MDIntGet*) root->GetSIfi("TestDes/Snail_1/Capsule/Out_Mass/Int/PinData", MDIntGet::Type());
+    MDIntGet* doutpget = (MDIntGet*) root->GetSIfi("./TestDes/Snail_1/Capsule/Out_Mass/Int/PinData", MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get initial value of data iface", doutpget->Value() == 1);
     // Get Sync iface of DES
-    Elem* esync = root->GetNode("TestDes/Capsule/Sync");
+    Elem* esync = root->GetNode("./TestDes/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get DES's Syncable iface", esync != 0);
     MDesSyncable* sync = esync->GetObj(sync);
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
