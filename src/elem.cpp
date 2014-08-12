@@ -1015,14 +1015,14 @@ void Elem::GetCont(string& aCont)
 
 void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime)
 {
+    TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
     string snode = aSpec.Attr(ENa_MutNode);
     string mattrs = aSpec.Attr(ENa_MutAttr);
     string mval = aSpec.Attr(ENa_MutVal);
     Elem* node = GetNode(snode);
     TBool mutadded = EFalse;
-    if (node != NULL) {
-	if (IsComp(node)) 
-	{
+    if (node != NULL && IsComp(node)) {
+	if (epheno || node->GetMan() == this || !node->IsChromoAttached() && !node->IsPhenoModif()) {
 	    if (IsMutSafe(node)) {
 		TBool res = node->ChangeAttr(GUri::NodeAttr(mattrs), mval);
 		if (!res) {
@@ -1043,11 +1043,11 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime)
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - node is not my component, rejected", snode.c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - attempt of phenotypic modification - disabled", snode.c_str());
 	}
     }
     else {
-	Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - cannot find node", snode.c_str());
+	Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - cannot find node or node isn't component", snode.c_str());
     }
     // Append mutation to chromo anytype, ref uc_043
     if (!aRunTime && !mutadded) {
@@ -1076,6 +1076,7 @@ TBool Elem::ChangeAttr(TNodeAttr aAttr, const string& aVal)
 TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 {
     TBool res = ETrue;
+    TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
     string snode = aSpec.Attr(ENa_MutNode);
     TBool refex = aSpec.AttrExists(ENa_Ref);
     string mval = aSpec.Attr(refex ? ENa_Ref :ENa_MutVal);
@@ -1089,48 +1090,55 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 	GUri unode(snode);
 	node = GetNode(unode);
     }
-    if (node != NULL) {
-	if (IsMutSafe(node)) {
-	    if (refex) {
-		// For -ref- attr the value is the ref relative to mutated node context
-		rnode = node->GetNode(mval);
-		//mval = rnode->GetRUri(node);
-		if (rnode == NULL) {
-		    Logger()->Write(MLogRec::EErr, this, "Changing contnt of node [%s] to ref [%s] - cannot find ref", snode.c_str(), mval.c_str());
-		    res = EFalse;
-		}
-		else {
-		    if (!IsRefSafe(rnode)) {
-			IsRefSafe(rnode);
-			Logger()->Write(MLogRec::EErr, this, "Changing content of node [%s] - unsafe: rank of ref [%s] is too big", snode.c_str(), mval.c_str());
+    if (node != NULL && (node == this || IsComp(node))) {
+	if (epheno || node == this || !node->IsChromoAttached() && !node->IsPhenoModif()) {
+	    if (IsMutSafe(node)) {
+		if (refex) {
+		    // For -ref- attr the value is the ref relative to mutated node context
+		    rnode = node->GetNode(mval);
+		    //mval = rnode->GetRUri(node);
+		    if (rnode == NULL) {
+			Logger()->Write(MLogRec::EErr, this, "Changing contnt of node [%s] to ref [%s] - cannot find ref", snode.c_str(), mval.c_str());
 			res = EFalse;
 		    }
-		}
-	    }
-	    if (res) {
-		res = node->ChangeCont(mval, EFalse);
-		if (res) {
-		    if (!aRunTime) {
-			ChromoNode chn = iChromo->Root().AddChild(aSpec);
-			mutadded = ETrue;
-			AddCMDep(chn, ENa_MutNode, node);
-			if (refex) {
-			    AddCMDep(chn, ENa_Ref, rnode);
+		    else {
+			if (!IsRefSafe(rnode)) {
+			    IsRefSafe(rnode);
+			    Logger()->Write(MLogRec::EErr, this, "Changing content of node [%s] - unsafe: rank of ref [%s] is too big", 
+				    snode.c_str(), mval.c_str());
+			    res = EFalse;
 			}
 		    }
 		}
-		else {
-		    Logger()->Write(MLogRec::EErr, this, "Changing [%s] - failure", snode.c_str());
+		if (res) {
+		    res = node->ChangeCont(mval, EFalse);
+		    if (res) {
+			if (!aRunTime) {
+			    ChromoNode chn = iChromo->Root().AddChild(aSpec);
+			    mutadded = ETrue;
+			    AddCMDep(chn, ENa_MutNode, node);
+			    if (refex) {
+				AddCMDep(chn, ENa_Ref, rnode);
+			    }
+			}
+		    }
+		    else {
+			Logger()->Write(MLogRec::EErr, this, "Changing [%s] - failure", snode.c_str());
+		    }
 		}
 	    }
+	    else {
+		Logger()->Write(MLogRec::EErr, this, "Changing content of [%s] - unsafe, used in: [%s]", snode.c_str(), 
+			node->GetMajorDep().first.first->GetUri().c_str());
+	    }
 	}
-	else {
-	    Logger()->Write(MLogRec::EErr, this, "Changing content of [%s] - unsafe, used in: [%s]", snode.c_str(), 
-		    node->GetMajorDep().first.first->GetUri().c_str());
+	else  {
+	    Logger()->Write(MLogRec::EErr, this, "Changing content of node [%s]  - attempt of phenotypic modification - disabled", 
+		    snode.c_str());
 	}
     }
     else {
-	Logger()->Write(MLogRec::EErr, this, "Changing [%s] - cannot find node", snode.c_str());
+	Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - cannot find node or node isn't comp", snode.c_str());
     }
     // Append mutation to chromo anytype, ref uc_043
     if (!aRunTime && !mutadded) {
@@ -1144,6 +1152,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
     string snode = aNode.Attr(ENa_MutNode);
     string sparent = aNode.Attr(ENa_Parent);
     string sname = aNode.Name();
+    TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
     TBool mutadded = EFalse;
     __ASSERT(!sname.empty());
     if (IsLogeventCreOn()) {
@@ -1151,97 +1160,103 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
     }
     Elem* elem = NULL;
     Elem* node = snode.empty() ? this: GetNode(snode); 
-    if (node != NULL) {
-	// Obtain parent first
-	Elem *parent = NULL;
-	// Check if the parent is specified
-	if (!sparent.empty()) {
-	    // Check the parent scheme
-	    GUri prnturi(sparent);
-	    TBool ext_parent = ETrue;
-	    if (prnturi.Scheme().empty()) {
-		// Local parent
-		parent = GetNode(prnturi);
-		/*
-		   if (parent == NULL) {
-		// No parents found, request provider for native one
-		parent = Provider()->GetNode(sparent);
-		}
-		*/
-		ext_parent = EFalse;
-	    }
-	    else {
-		// TODO [YB] To add seaching the module - it will allow to specify just file of spec wo full uri
-		Chromo *spec = Provider()->CreateChromo();
-		TBool res = spec->Set(sparent);
-		if (res) {
-		    const ChromoNode& root = spec->Root();
-		    parent = AddElem(root);
-		    delete spec;
-		}
-	    }
-	    if (parent == NULL) {
-		/*
-		// No parents found, create from embedded parent
-		parent = Provider()->GetNode(sparent);
-		elem = Provider()->CreateNode(sparent, sname, node, iEnv);
-		*/
-		if (parent == NULL) {
-		    Logger()->Write(MLogRec::EErr, this, "Creating [%s] - parent [%s] not found", sname.c_str(), sparent.c_str());
-		}
-	    }
-	    else {
-		// Create heir from the parent
-		elem = parent->CreateHeir(sname, node);
-		// TODO [YB] Seems to be just temporal solution. To consider using context instead.
-		// Make heir based on the parent: re-parent the heir (currently it's of grandparent's parent) and clean the chromo
-		//elem->SetEType(sparent); // The type is set when creating heir
-		ChromoNode hroot = elem->Chromos().Root();
-		hroot.SetAttr(ENa_Parent, sparent);
-		// Remove external parent from system
-		// [YB] DON'T remove parent, otherwise the inheritance chain will be broken
-		if (ext_parent) {
-		    // delete parent;
-		}
-	    }
-	    if (elem == NULL) {
-		Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] - failed", sname.c_str());
-	    }
-	    else {
-		TBool res = node->AppendComp(elem);
-		if (!res) {
-		    Logger()->Write(MLogRec::EErr, this, "Adding node [%s:%s] failed", elem->EType().c_str(), elem->Name().c_str());
-		    delete elem;
-		    elem = NULL;
+    if (node != NULL && (node == this || IsComp(node))) {
+	if (epheno || node == this || !node->IsChromoAttached() && !node->IsPhenoModif()) {
+	    // Obtain parent first
+	    Elem *parent = NULL;
+	    // Check if the parent is specified
+	    if (!sparent.empty()) {
+		// Check the parent scheme
+		GUri prnturi(sparent);
+		TBool ext_parent = ETrue;
+		if (prnturi.Scheme().empty()) {
+		    // Local parent
+		    parent = GetNode(prnturi);
+		    /*
+		       if (parent == NULL) {
+		    // No parents found, request provider for native one
+		    parent = Provider()->GetNode(sparent);
+		    }
+		    */
+		    ext_parent = EFalse;
 		}
 		else {
-		    if (!aRunTime) {
-			ChromoNode chn = iChromo->Root();
-			if (node == this) {
-			    // True mutation
-			    chn = iChromo->Root().AddChild(elem->iChromo->Root(), EFalse);
-			}
-			else {
-			    // Fenothypic modification
-			    chn = iChromo->Root().AddChild(aNode);
-			    AddCMDep(chn, ENa_MutNode, node);
-			}
-			AddCMDep(chn, ENa_Id, elem);
-			AddCMDep(chn, ENa_Parent, parent);
-			mutadded = ETrue;
+		    // TODO [YB] To add seaching the module - it will allow to specify just file of spec wo full uri
+		    Chromo *spec = Provider()->CreateChromo();
+		    TBool res = spec->Set(sparent);
+		    if (res) {
+			const ChromoNode& root = spec->Root();
+			parent = AddElem(root);
+			delete spec;
 		    }
-		    // Mutate object 
-		    elem->SetMutation(aNode);
-		    elem->Mutate();
-		    if (IsLogeventCreOn()) {
-			Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
+		}
+		if (parent == NULL) {
+		    /*
+		    // No parents found, create from embedded parent
+		    parent = Provider()->GetNode(sparent);
+		    elem = Provider()->CreateNode(sparent, sname, node, iEnv);
+		    */
+		    if (parent == NULL) {
+			Logger()->Write(MLogRec::EErr, this, "Creating [%s] - parent [%s] not found", sname.c_str(), sparent.c_str());
+		    }
+		}
+		else {
+		    // Create heir from the parent
+		    elem = parent->CreateHeir(sname, node);
+		    // TODO [YB] Seems to be just temporal solution. To consider using context instead.
+		    // Make heir based on the parent: re-parent the heir (currently it's of grandparent's parent) and clean the chromo
+		    //elem->SetEType(sparent); // The type is set when creating heir
+		    ChromoNode hroot = elem->Chromos().Root();
+		    hroot.SetAttr(ENa_Parent, sparent);
+		    // Remove external parent from system
+		    // [YB] DON'T remove parent, otherwise the inheritance chain will be broken
+		    if (ext_parent) {
+			// delete parent;
+		    }
+		}
+		if (elem == NULL) {
+		    Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] - failed", sname.c_str());
+		}
+		else {
+		    TBool res = node->AppendComp(elem);
+		    if (!res) {
+			Logger()->Write(MLogRec::EErr, this, "Adding node [%s:%s] failed", elem->EType().c_str(), elem->Name().c_str());
+			delete elem;
+			elem = NULL;
+		    }
+		    else {
+			if (!aRunTime) {
+			    ChromoNode chn = iChromo->Root();
+			    if (node == this) {
+				// True mutation
+				chn = iChromo->Root().AddChild(elem->iChromo->Root(), EFalse);
+			    }
+			    else {
+				// Fenothypic modification
+				chn = iChromo->Root().AddChild(aNode);
+				AddCMDep(chn, ENa_MutNode, node);
+			    }
+			    AddCMDep(chn, ENa_Id, elem);
+			    AddCMDep(chn, ENa_Parent, parent);
+			    mutadded = ETrue;
+			}
+			// Mutate object 
+			elem->SetMutation(aNode);
+			elem->Mutate();
+			if (IsLogeventCreOn()) {
+			    Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
+			}
 		    }
 		}
 	    }
 	}
+	else  {
+	    Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] in node [%s] - attempt of phenotypic modification - disabled", 
+		    sname.c_str(), snode.c_str());
+	}
     }
     else  {
-	Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] in node [%s] - cannot find node", sname.c_str(), snode.c_str());
+	Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] in node [%s] - cannot find node or node isn't comp", sname.c_str(), snode.c_str());
     }
     if (!aRunTime && !mutadded) {
 	iChromo->Root().AddChild(aNode);
@@ -1736,46 +1751,52 @@ TBool Elem::IsMutSafe(Elem* aRef)
 TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime)
 {
     TBool res = EFalse;
+    TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
     string snode = aSpec.Attr(ENa_MutNode);
     Elem* node = GetNode(snode);
     TBool mutadded = EFalse;
-    if (node != NULL) {
-	// Check dependent mutations
-	if (IsMutSafe(node)) {
-	    res = ETrue;
-	    /*
-	    // If node has children then just mark it as removed but not remove actually
-	    if (node->HasInherDeps()) {
+    if (node != NULL && IsComp(node)) {
+	if (epheno || node->GetMan() == this || !node->IsChromoAttached() && !node->IsPhenoModif()) {
+	    // Check dependent mutations
+	    if (IsMutSafe(node)) {
+		res = ETrue;
+		/*
+		// If node has children then just mark it as removed but not remove actually
+		if (node->HasInherDeps()) {
+		node->SetRemoved();
+		if (!aRunTime) {
+		// Adding dependency to object of change
+		ChromoNode chn = iChromo->Root().AddChild(aSpec);
+		AddCMDep(chn, ENa_MutNode, node);
+		}
+		}
+		else {
+		delete node;
+		}
+		*/
+		// Just mark node as removed but not remove actually
 		node->SetRemoved();
 		if (!aRunTime) {
 		    // Adding dependency to object of change
 		    ChromoNode chn = iChromo->Root().AddChild(aSpec);
 		    AddCMDep(chn, ENa_MutNode, node);
+		    mutadded = ETrue;
+		}
+		if (IsLogeventCreOn()) {
+		    Logger()->Write(MLogRec::EInfo, this, "Removed elem [%s]", snode.c_str());
 		}
 	    }
 	    else {
-		delete node;
-	    }
-	    */
-	    // Just mark node as removed but not remove actually
-	    node->SetRemoved();
-	    if (!aRunTime) {
-		// Adding dependency to object of change
-		ChromoNode chn = iChromo->Root().AddChild(aSpec);
-		AddCMDep(chn, ENa_MutNode, node);
-		mutadded = ETrue;
-	    }
-	    if (IsLogeventCreOn()) {
-		Logger()->Write(MLogRec::EInfo, this, "Removed elem [%s]", snode.c_str());
+		Logger()->Write(MLogRec::EErr, this, "Removing elem [%s] - unsafe, used in: [%s]", snode.c_str(), 
+			node->GetMajorDep().first.first->GetUri().c_str());
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Removing elem [%s] - unsafe, used in: [%s]", snode.c_str(), 
-		    node->GetMajorDep().first.first->GetUri().c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Removing node [%s] - attempt of phenotypic modification - disabled", snode.c_str());
 	}
     }
     else {
-	Logger()->Write(MLogRec::EErr, this, "Removing elem [%s] - not found", snode.c_str());
+	Logger()->Write(MLogRec::EErr, this, "Removing node [%s] - not found or isn't component", snode.c_str());
     }
     // Append mutation to chromo anytype, ref uc_043
     if (!aRunTime && !mutadded) {

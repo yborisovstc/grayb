@@ -11,7 +11,8 @@
 const string KLogFileName = "faplog.txt";
 const char* KRootName = "Root";
 
-ChromoMgr::ChromoMgr(const string& aName, Env& aHost): Base(aName), mHost(aHost), mLim(0)
+ChromoMgr::ChromoMgr(const string& aName, Env& aHost): Base(aName), mHost(aHost), mLim(0), 
+    mEnablePhenoModif(EFalse)
 {
 }
 
@@ -43,6 +44,14 @@ int ChromoMgr::GetSpecMaxOrder() const
     res = sroot.GetOrder(ETrue);
     return res;
 }
+
+void ChromoMgr::SetEnablePhenoModif(TBool aEnable)
+{
+    if (mEnablePhenoModif != aEnable) {
+	mEnablePhenoModif = aEnable;
+    }
+}
+
 
 Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileName): Base(aName), iRoot(NULL), iLogger(NULL),
     iSpecChromo(NULL)

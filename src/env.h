@@ -26,9 +26,12 @@ class ChromoMgr: public Base, public MChromoMgr
 	virtual int GetMaxOrder() const;
 	virtual TInt GetLim() const { return mLim;};
 	virtual void SetLim(TInt aLim) { mLim = aLim;};
+	virtual TBool EnablePhenoModif() const {return mEnablePhenoModif;};
+	virtual void SetEnablePhenoModif(TBool aEnable);
     protected:
 	TInt mLim;
 	Env& mHost;
+	TBool mEnablePhenoModif;
 };
 
 class Env: public Base, public MEnv

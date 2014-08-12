@@ -219,6 +219,8 @@ void Ut_mut::test_MutDepsRm()
     printf("\n === Test of mutation consistency\n");
 
     iEnv = new Env("Env", "ut_mut_dep_1.xml", "ut_mut_dep_1.txt");
+    // Enabling pheno, because of model is basing on pheno
+    iEnv->ChMgr()->SetEnablePhenoModif(ETrue);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
@@ -262,6 +264,8 @@ void Ut_mut::test_MutDepsRm2()
     printf("\n === Test of mutation consistency, mut -rm-, dep - object \n");
 
     iEnv = new Env("Env", "ut_mut_dep_2.xml", "ut_mut_dep_2.txt");
+    // Enabling pheno, because of model is basing on pheno
+    iEnv->ChMgr()->SetEnablePhenoModif(ETrue);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
@@ -303,6 +307,8 @@ void Ut_mut::test_MutDepsChilds1()
     printf("\n === Test of mutation consistency, deps via childs \n");
 
     iEnv = new Env("Env", "ut_mut_dep_3.xml", "ut_mut_dep_3.txt");
+    // Enabling pheno, because of model is basing on pheno
+    iEnv->ChMgr()->SetEnablePhenoModif(ETrue);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
@@ -330,6 +336,8 @@ void Ut_mut::test_MutDepsRmRef()
     printf("\n === Test of mutation consistency, mut -rm-, dep - ref to node \n");
 
     iEnv = new Env("Env", "ut_mut_dep_refs.xml", "ut_mut_dep_refs.txt");
+    // Enabling pheno, because of model is basing on pheno
+    iEnv->ChMgr()->SetEnablePhenoModif(ETrue);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
@@ -449,6 +457,8 @@ void Ut_mut::test_Compact1()
     printf("\n === Test of compacting of chromo: renaming\n");
 
     iEnv = new Env("Env", "ut_compact1.xml", "ut_compact1.txt");
+    // Enabling pheno, because of model is basing on pheno
+    iEnv->ChMgr()->SetEnablePhenoModif(ETrue);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();

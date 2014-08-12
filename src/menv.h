@@ -12,6 +12,8 @@ class MChromoMgr
 	virtual int GetMaxOrder() const = 0;
 	virtual int GetLim() const = 0;
 	virtual void SetLim(int aLim) = 0;
+	virtual bool EnablePhenoModif() const = 0;
+	virtual void SetEnablePhenoModif(bool aEnable) = 0;
 };
 
 // Executive environment interface
