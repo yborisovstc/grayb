@@ -1139,8 +1139,14 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 		ChromoNode mut(aSpec);
 		if (mnode == node) {
 		    mut.SetAttr(ENa_MutNode, "");
-		    mnode->DoMutChangeCont(mut, aRunTime);
 		}
+		else {
+		    GUri nuri;
+		    node->GetRUri(nuri, mnode);
+		    mut.SetAttr(ENa_MutNode, nuri.GetUri(EFalse));
+		}
+		mnode->DoMutChangeCont(mut, aRunTime);
+		mutadded = ETrue;
 	    }
 	    else {
 		Logger()->Write(MLogRec::EErr, this, "Changing content of node [%s]  - attempt of phenotypic modification - disabled", 
