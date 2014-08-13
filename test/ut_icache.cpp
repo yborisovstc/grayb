@@ -74,10 +74,11 @@ void Ut_icache::test_Inv1()
     }
 
     // Connect feedback edge
-    ChromoNode mut = root->Mutation().Root().AddChild(ENt_Cont);
-    mut.SetAttr(ENa_MutNode, "/Root/IncapsRoot/DesRoot/E_back/P1");
+    Elem* mnode = root->GetNode("/Root/IncapsRoot/DesRoot/E_back");
+    ChromoNode mut = mnode->Mutation().Root().AddChild(ENt_Cont);
+    mut.SetAttr(ENa_MutNode, "./P1");
     mut.SetAttr(ENa_Ref, "/Root/IncapsRoot/DesRoot/st/Capsule/Inp");
-    root->Mutate();
+    mnode->Mutate();
 
     // Do some ticks
     ticksnum = 5;

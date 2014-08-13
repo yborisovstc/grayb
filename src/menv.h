@@ -14,6 +14,8 @@ class MChromoMgr
 	virtual void SetLim(int aLim) = 0;
 	virtual bool EnablePhenoModif() const = 0;
 	virtual void SetEnablePhenoModif(bool aEnable) = 0;
+	virtual bool EnableFixErrors() const = 0;
+	virtual void SetEnableFixErrors(bool aEnable) = 0;
 };
 
 // Executive environment interface

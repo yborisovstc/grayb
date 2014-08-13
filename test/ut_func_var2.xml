@@ -3,32 +3,36 @@
 <!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
 
 <node id="Root" parent="Elem">
-  <node id="Modules" parent="Elem">
-    <move id="file:../modules/syst.xml#"/>
-    <move id="file:../modules/capsula.xml#"/>
-    <move id="file:../modules/data.xml#"/>
-    <move id="file:../modules/func.xml#"/>
-  </node>
-  <node id="Start" parent="Elem">
-    <node id="Incaps_root" parent="/(Elem:)Root/(Elem:)Modules/(Elem:)IncapsComps/(Syst:)Incaps">
-      <node id="Dt" parent="/Root/Modules/DataComps/DataTVar"/>
-      <cont node="./Dt/Value" val="B true"/>
-      <node id="GT" parent="/(Elem:)Root/(Elem:)Modules/(Elem:)FuncComps/(FuncVar:)FGTVar"/>
-      <node id="Inp_data1" parent="/Root/Modules/DataComps/DataTVar"/>
-      <cont node="./Inp_data1/Value" val="I 4"/>
-      <node id="e1" parent="Edge"/>
-      <cont node="./(Edge:)e1/(Prop:)P2" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(DataTVar:)Dt/(Elem:)Capsule/inp"/>
-      <cont node="./(Edge:)e1/(Prop:)P1" ref="/Root/Start/Incaps_root/GT/Capsule/(Out_FVar:)out"/>
-      <node id="e2" parent="Edge"/>
-      <cont node="./e2/P2" ref="/Root/Start/Incaps_root/GT/Capsule/Inp1"/>
-      <!--
-      -->
-      <cont node="./e2/P1" ref="/Root/Start/Incaps_root/Inp_data1/Capsule/out"/>
-      <node id="Inp_data2" parent="/Root/Modules/DataComps/DataTVar"/>
-      <cont node="./Inp_data2/Value" val="F 5.0"/>
-      <node id="e3" parent="Edge"/>
-      <cont node="./e3/P2" ref="/Root/Start/Incaps_root/GT/Capsule/Inp2"/>
-      <cont node="./e3/P1" ref="/Root/Start/Incaps_root/Inp_data2/Capsule/out"/>
+    <node id="Modules" parent="Elem">
+	<move id="file:../modules/syst.xml#"/>
+	<move id="file:../modules/capsula.xml#"/>
+	<move id="file:../modules/data.xml#"/>
+	<move id="file:../modules/func.xml#"/>
     </node>
-  </node>
+    <node id="Start" parent="Elem">
+	<node id="Incaps_root" parent="/(Elem:)Root/(Elem:)Modules/(Elem:)IncapsComps/(Syst:)Incaps">
+	    <node id="Dt" parent="/Root/Modules/DataComps/DataTVar">
+		<cont node="./Value" val="B true"/>
+	    </node>
+	    <node id="GT" parent="/(Elem:)Root/(Elem:)Modules/(Elem:)FuncComps/(FuncVar:)FGTVar"/>
+	    <node id="Inp_data1" parent="/Root/Modules/DataComps/DataTVar">
+		<cont node="./Value" val="I 4"/>
+	    </node>
+	    <node id="e1" parent="Edge">
+		<cont node="./(Prop:)P2" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(DataTVar:)Dt/(Elem:)Capsule/inp"/>
+		<cont node="./(Prop:)P1" ref="/Root/Start/Incaps_root/GT/Capsule/(Out_FVar:)out"/>
+	    </node>
+	    <node id="e2" parent="Edge">
+		<cont node="./P2" ref="/Root/Start/Incaps_root/GT/Capsule/Inp1"/>
+		<cont node="./P1" ref="/Root/Start/Incaps_root/Inp_data1/Capsule/out"/>
+	    </node>
+	    <node id="Inp_data2" parent="/Root/Modules/DataComps/DataTVar">
+		<cont node="./Value" val="F 5.0"/>
+	    </node>
+	    <node id="e3" parent="Edge">
+		<cont node="./P2" ref="/Root/Start/Incaps_root/GT/Capsule/Inp2"/>
+		<cont node="./P1" ref="/Root/Start/Incaps_root/Inp_data2/Capsule/out"/>
+	    </node>
+	</node>
+    </node>
 </node>

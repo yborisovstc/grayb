@@ -28,10 +28,13 @@ class ChromoMgr: public Base, public MChromoMgr
 	virtual void SetLim(TInt aLim) { mLim = aLim;};
 	virtual TBool EnablePhenoModif() const {return mEnablePhenoModif;};
 	virtual void SetEnablePhenoModif(TBool aEnable);
+	virtual bool EnableFixErrors() const { return mEnableFixErrors;};
+	virtual void SetEnableFixErrors(bool aEnable);
     protected:
 	TInt mLim;
 	Env& mHost;
 	TBool mEnablePhenoModif;
+	TBool mEnableFixErrors;
 };
 
 class Env: public Base, public MEnv

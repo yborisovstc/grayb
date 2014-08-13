@@ -12,7 +12,7 @@ const string KLogFileName = "faplog.txt";
 const char* KRootName = "Root";
 
 ChromoMgr::ChromoMgr(const string& aName, Env& aHost): Base(aName), mHost(aHost), mLim(0), 
-    mEnablePhenoModif(EFalse)
+    mEnablePhenoModif(EFalse), mEnableFixErrors(EFalse)
 {
 }
 
@@ -49,6 +49,13 @@ void ChromoMgr::SetEnablePhenoModif(TBool aEnable)
 {
     if (mEnablePhenoModif != aEnable) {
 	mEnablePhenoModif = aEnable;
+    }
+}
+
+void ChromoMgr::SetEnableFixErrors(TBool aEnable)
+{
+    if (mEnableFixErrors != aEnable) {
+	mEnableFixErrors = aEnable;
     }
 }
 

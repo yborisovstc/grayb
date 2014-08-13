@@ -304,9 +304,9 @@ void Ut_func::test_FuncVar1()
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
-    Elem* dir = root->GetNode("./Start/Incaps_root");
+    Elem* dir = root->GetNode("./Start/Incaps_root/e2");
     ChromoNode mut1 = dir->Mutation().Root().AddChild(ENt_Cont);
-    mut1.SetAttr(ENa_MutNode, "./e2/P1");
+    mut1.SetAttr(ENa_MutNode, "./P1");
     mut1.SetAttr(ENa_Ref, "/Root/Start/Incaps_root/Inp_data1/Capsule/out");
     dir->Mutate();
 

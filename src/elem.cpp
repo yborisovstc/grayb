@@ -1022,7 +1022,7 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime)
     Elem* node = GetNode(snode);
     TBool mutadded = EFalse;
     if (node != NULL && IsComp(node)) {
-	if (epheno || node->GetMan() == this || !node->IsChromoAttached() && !node->IsPhenoModif()) {
+	if (epheno || node->GetMan() == this || IsInheritedComp(node)) {
 	    if (IsMutSafe(node)) {
 		TBool res = node->ChangeAttr(GUri::NodeAttr(mattrs), mval);
 		if (!res) {
@@ -1077,6 +1077,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 {
     TBool res = ETrue;
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
+    TBool efix = iEnv->ChMgr()->EnableFixErrors();
     string snode = aSpec.Attr(ENa_MutNode);
     TBool refex = aSpec.AttrExists(ENa_Ref);
     string mval = aSpec.Attr(refex ? ENa_Ref :ENa_MutVal);
@@ -1091,7 +1092,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 	node = GetNode(unode);
     }
     if (node != NULL && (node == this || IsComp(node))) {
-	if (epheno || node == this || !node->IsChromoAttached() && !node->IsPhenoModif()) {
+	if (epheno || node == this || IsInheritedComp(node)) {
 	    if (IsMutSafe(node)) {
 		if (refex) {
 		    // For -ref- attr the value is the ref relative to mutated node context
@@ -1133,8 +1134,18 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 	    }
 	}
 	else  {
-	    Logger()->Write(MLogRec::EErr, this, "Changing content of node [%s]  - attempt of phenotypic modification - disabled", 
-		    snode.c_str());
+	    if (efix) {
+		Elem* mnode = node->GetAttachingMgr();
+		ChromoNode mut(aSpec);
+		if (mnode == node) {
+		    mut.SetAttr(ENa_MutNode, "");
+		    mnode->DoMutChangeCont(mut, aRunTime);
+		}
+	    }
+	    else {
+		Logger()->Write(MLogRec::EErr, this, "Changing content of node [%s]  - attempt of phenotypic modification - disabled", 
+			snode.c_str());
+	    }
 	}
     }
     else {
@@ -1161,7 +1172,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
     Elem* elem = NULL;
     Elem* node = snode.empty() ? this: GetNode(snode); 
     if (node != NULL && (node == this || IsComp(node))) {
-	if (epheno || node == this || !node->IsChromoAttached() && !node->IsPhenoModif()) {
+	if (epheno || node == this || IsInheritedComp(node)) {
 	    // Obtain parent first
 	    Elem *parent = NULL;
 	    // Check if the parent is specified
@@ -1251,6 +1262,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 	    }
 	}
 	else  {
+	    TBool isi = IsInheritedComp(node);
 	    Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] in node [%s] - attempt of phenotypic modification - disabled", 
 		    sname.c_str(), snode.c_str());
 	}
@@ -1756,7 +1768,7 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime)
     Elem* node = GetNode(snode);
     TBool mutadded = EFalse;
     if (node != NULL && IsComp(node)) {
-	if (epheno || node->GetMan() == this || !node->IsChromoAttached() && !node->IsPhenoModif()) {
+	if (epheno || node->GetMan() == this || IsInheritedComp(node)) {
 	    // Check dependent mutations
 	    if (IsMutSafe(node)) {
 		res = ETrue;
@@ -1948,10 +1960,25 @@ TBool Elem::IsChromoAttached() const
     return res;
 }
 
-Elem* Elem::GetAttachingMgr()
+Elem* Elem::GetAttachingMgr() 
 {
     Elem* res = NULL;
     Elem* cand = this;
+    while (res == NULL && cand != NULL) {
+	if (cand->IsChromoAttached()) {
+	    res = cand;
+	}
+	else {
+	    cand = cand->GetMan();
+	}
+    }
+    return res;
+}
+
+const Elem* Elem::GetAttachingMgr() const
+{
+    const Elem* res = NULL;
+    const Elem* cand = this;
     while (res == NULL && cand != NULL) {
 	if (cand->IsChromoAttached()) {
 	    res = cand;
@@ -1972,6 +1999,12 @@ TBool Elem::IsPhenoModif() const
 	Elem* depnode = dep.first.first;
 	res = depnode != NULL && depnode->IsChromoAttached();
     }
+    return res;
+}
+
+TBool Elem::IsInheritedComp(const Elem* aNode) const
+{
+    TBool res = !IsChromoAttached() || !aNode->IsChromoAttached() && !aNode->IsPhenoModif() && aNode->GetAttachingMgr() == this;
     return res;
 }
 
