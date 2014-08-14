@@ -1135,6 +1135,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 	}
 	else  {
 	    if (efix) {
+		// Trying to repair chromo by transforming pheno to mut
 		Elem* mnode = node->GetAttachingMgr();
 		ChromoNode mut(aSpec);
 		if (mnode == node) {
@@ -1638,6 +1639,7 @@ Elem* Elem::GetCommonOwner(Elem* aElem)
     return res;
 }
 
+// TODO [YB] Seems to obsolete, consider removing
 void Elem::GetRank(Rank& aRank, const Elem* aBase) const
 {
     if (iMan != (aBase == NULL ? NULL : aBase->GetMan())) {
@@ -1653,9 +1655,9 @@ void Elem::GetRank(Rank& aRank, const Elem* aBase) const
 // chromo is not possible. This simplifies calculating rank: actually rank is calculated as chromo node rank
 // Run-time rank doesn't make sense now. Probably the node in dep record is also not neede.
 // So to consider: 1. removing run-time rank calculation, 2. removing node from dep record
-void Elem::GetRank(Rank& aRank, const ChromoNode& aMut)
+void Elem::GetRank(Rank& aRank, const ChromoNode& aMut) const
 {
-    Elem* att = GetAttachingMgr();
+    const Elem* att = GetAttachingMgr();
     if (att == this) {
 	aMut.GetRank(aRank);
     }
@@ -1663,6 +1665,18 @@ void Elem::GetRank(Rank& aRank, const ChromoNode& aMut)
 	att->Chromos().Root().GetRank(aRank);
     }
 }
+
+void Elem::GetLRank(Rank& aRank, TBool aCur) const
+{
+    ChromoNode end = *(iChromo->Root().Rend());
+    if (aCur) {
+	GetRank(aRank, end);
+    }
+    else {
+	GetRank(aRank, iChromo->Root());
+    }
+}
+
 
 TInt Elem::GetLocalRank() const
 {
