@@ -1146,8 +1146,27 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 		    node->GetRUri(nuri, mnode);
 		    mut.SetAttr(ENa_MutNode, nuri.GetUri(EFalse));
 		}
-		mnode->DoMutChangeCont(mut, aRunTime);
-		mutadded = ETrue;
+		if (refex) {
+		    rnode = node->GetNode(mval);
+		    if (rnode != NULL) {
+			if (mnode->IsRefSafe(rnode)) {
+			    mnode->DoMutChangeCont(mut, aRunTime);
+			    mutadded = ETrue;
+			}
+			else {
+			    Logger()->Write(MLogRec::EWarn, this, "Changing content of node [%s], attempting to repair - cannot repair - rank of ref [%s] is too big", 
+				    snode.c_str(), mval.c_str());
+			}
+		    }
+		    else {
+			Logger()->Write(MLogRec::EWarn, this, "Changing content of node [%s], attempting to repair - cannot find ref [%s]", 
+				snode.c_str(), mval.c_str());
+		    }
+		}
+		else {
+		    mnode->DoMutChangeCont(mut, aRunTime);
+		    mutadded = ETrue;
+		}
 	    }
 	    else {
 		Logger()->Write(MLogRec::EErr, this, "Changing content of node [%s]  - attempt of phenotypic modification - disabled", 
