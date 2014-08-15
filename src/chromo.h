@@ -143,7 +143,9 @@ class ChromoNode
 	void Dump(MLogRec* aLogRec) const { iMdl.Dump(iHandle, aLogRec);};
 	string GetName(const string& aTname);
 	void MoveNextTo(Iterator& aDest) { iMdl.MoveNextTo(iHandle, aDest.iHandle);};
+	void MoveNextTo(ChromoNode& aDest) { iMdl.MoveNextTo(iHandle, aDest.iHandle);};
 	void MovePrevTo(Iterator& aDest) { iMdl.MovePrevTo(iHandle, aDest.iHandle);};
+	void MovePrevTo(ChromoNode& aDest) { iMdl.MovePrevTo(iHandle, aDest.iHandle);};
 	void MoveToEnd() { iMdl.MoveToEnd(iHandle);};
 	TInt GetLocalRank();
 	void GetRank(Rank& aRank) const;

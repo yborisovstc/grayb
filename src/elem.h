@@ -274,9 +274,9 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	inline MLogRec* Logger() const;
 	inline MProvider* Provider() const;
 	TBool AppendComp(Elem* aComp);
-	TBool MoveComp(Elem* aComp, Elem* aDest);
 	TBool RegisterComp(Elem* aComp);
 	TBool RegisterChild(Elem* aChild);
+	TBool MoveComp(Elem* aComp, Elem* aDest);
 	TBool IsCompRegistered(Elem* aComp);
 	// aName is required because the comp can be renamed already. This is the case of 
 	// comp renaming: comp is renamed first, then the renaming is handled
@@ -296,6 +296,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// ICache helpers, for debug only
 	Elem* GetIcCtxComp(const TICacheRCtx& aCtx, TInt aInd);
 	void LogIfReqs();
+	// Chromo modification/repairing utilities
+	TBool ShiftComp(Elem* aComp, Elem* aDest = NULL);
     protected:
 	// Element type - parent's chain
 	// TODO [YB] Is it needed now after implementing inheritance chain?

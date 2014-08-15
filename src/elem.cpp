@@ -1138,32 +1138,36 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 		// Trying to repair chromo by transforming pheno to mut
 		Elem* mnode = node->GetAttachingMgr();
 		ChromoNode mut(aSpec);
-		if (mnode == node) {
-		    mut.SetAttr(ENa_MutNode, "");
-		}
-		else {
-		    GUri nuri;
-		    node->GetRUri(nuri, mnode);
-		    mut.SetAttr(ENa_MutNode, nuri.GetUri(EFalse));
-		}
+		TBool fixok = ETrue;
 		if (refex) {
 		    rnode = node->GetNode(mval);
 		    if (rnode != NULL) {
-			if (mnode->IsRefSafe(rnode)) {
-			    mnode->DoMutChangeCont(mut, aRunTime);
-			    mutadded = ETrue;
-			}
-			else {
-			    Logger()->Write(MLogRec::EWarn, this, "Changing content of node [%s], attempting to repair - cannot repair - rank of ref [%s] is too big", 
-				    snode.c_str(), mval.c_str());
+			if (!mnode->IsRefSafe(rnode)) {
+			    // Trying to move mutnode to the last position
+			    TBool sres = ShiftComp(mnode);
+			    if (!sres) {
+				Logger()->Write(MLogRec::EWarn, this, 
+					"Changing content of node [%s], attempting to repair - cannot repair - rank of ref [%s] is too big", 
+					snode.c_str(), mval.c_str());
+				fixok = EFalse;
+			    }
 			}
 		    }
 		    else {
 			Logger()->Write(MLogRec::EWarn, this, "Changing content of node [%s], attempting to repair - cannot find ref [%s]", 
 				snode.c_str(), mval.c_str());
+			fixok = EFalse;
 		    }
 		}
-		else {
+		if (fixok) {
+		    if (mnode == node) {
+			mut.SetAttr(ENa_MutNode, "");
+		    }
+		    else {
+			GUri nuri;
+			node->GetRUri(nuri, mnode);
+			mut.SetAttr(ENa_MutNode, nuri.GetUri(EFalse));
+		    }
 		    mnode->DoMutChangeCont(mut, aRunTime);
 		    mutadded = ETrue;
 		}
@@ -1198,46 +1202,36 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
     Elem* elem = NULL;
     Elem* node = snode.empty() ? this: GetNode(snode); 
     if (node != NULL && (node == this || IsComp(node))) {
-	if (epheno || node == this || IsInheritedComp(node)) {
-	    // Obtain parent first
-	    Elem *parent = NULL;
-	    // Check if the parent is specified
-	    if (!sparent.empty()) {
-		// Check the parent scheme
-		GUri prnturi(sparent);
-		TBool ext_parent = ETrue;
-		if (prnturi.Scheme().empty()) {
-		    // Local parent
-		    parent = GetNode(prnturi);
-		    /*
-		       if (parent == NULL) {
-		    // No parents found, request provider for native one
-		    parent = Provider()->GetNode(sparent);
-		    }
-		    */
-		    ext_parent = EFalse;
+	// Obtain parent first
+	Elem *parent = NULL;
+	// Check if the parent is specified
+	if (!sparent.empty()) {
+	    // Check the parent scheme
+	    GUri prnturi(sparent);
+	    TBool ext_parent = ETrue;
+	    if (prnturi.Scheme().empty()) {
+		// Local parent
+		parent = GetNode(prnturi);
+		/*
+		   if (parent == NULL) {
+		// No parents found, request provider for native one
+		parent = Provider()->GetNode(sparent);
 		}
-		else {
-		    // TODO [YB] To add seaching the module - it will allow to specify just file of spec wo full uri
-		    Chromo *spec = Provider()->CreateChromo();
-		    TBool res = spec->Set(sparent);
-		    if (res) {
-			const ChromoNode& root = spec->Root();
-			parent = AddElem(root);
-			delete spec;
-		    }
+		*/
+		ext_parent = EFalse;
+	    }
+	    else {
+		// TODO [YB] To add seaching the module - it will allow to specify just file of spec wo full uri
+		Chromo *spec = Provider()->CreateChromo();
+		TBool res = spec->Set(sparent);
+		if (res) {
+		    const ChromoNode& root = spec->Root();
+		    parent = AddElem(root);
+		    delete spec;
 		}
-		if (parent == NULL) {
-		    /*
-		    // No parents found, create from embedded parent
-		    parent = Provider()->GetNode(sparent);
-		    elem = Provider()->CreateNode(sparent, sname, node, iEnv);
-		    */
-		    if (parent == NULL) {
-			Logger()->Write(MLogRec::EErr, this, "Creating [%s] - parent [%s] not found", sname.c_str(), sparent.c_str());
-		    }
-		}
-		else {
+	    }
+	    if (parent != NULL) {
+		if (epheno || node == this || IsInheritedComp(node)) {
 		    // Create heir from the parent
 		    elem = parent->CreateHeir(sname, node);
 		    // TODO [YB] Seems to be just temporal solution. To consider using context instead.
@@ -1250,47 +1244,81 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 		    if (ext_parent) {
 			// delete parent;
 		    }
-		}
-		if (elem == NULL) {
-		    Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] - failed", sname.c_str());
-		}
-		else {
-		    TBool res = node->AppendComp(elem);
-		    if (!res) {
-			Logger()->Write(MLogRec::EErr, this, "Adding node [%s:%s] failed", elem->EType().c_str(), elem->Name().c_str());
-			delete elem;
-			elem = NULL;
+		    if (elem != NULL) {
+			TBool res = node->AppendComp(elem);
+			if (res) {
+			    if (!aRunTime) {
+				ChromoNode chn = iChromo->Root();
+				if (node == this) {
+				    // True mutation
+				    chn = iChromo->Root().AddChild(elem->iChromo->Root(), EFalse);
+				}
+				else {
+				    // Fenothypic modification
+				    chn = iChromo->Root().AddChild(aNode);
+				    AddCMDep(chn, ENa_MutNode, node);
+				}
+				AddCMDep(chn, ENa_Id, elem);
+				AddCMDep(chn, ENa_Parent, parent);
+				mutadded = ETrue;
+			    }
+			    // Mutate object 
+			    elem->SetMutation(aNode);
+			    elem->Mutate();
+			    if (IsLogeventCreOn()) {
+				Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
+			    }
+			}
+			else {
+			    Logger()->Write(MLogRec::EErr, this, "Adding node [%s:%s] failed", elem->EType().c_str(), elem->Name().c_str());
+			    delete elem;
+			    elem = NULL;
+			}
 		    }
 		    else {
-			if (!aRunTime) {
-			    ChromoNode chn = iChromo->Root();
-			    if (node == this) {
-				// True mutation
-				chn = iChromo->Root().AddChild(elem->iChromo->Root(), EFalse);
+			Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] - failed", sname.c_str());
+		    }
+		}
+		else  {
+		    TBool efix = iEnv->ChMgr()->EnableFixErrors();
+		    if (efix) {
+			// Trying to repair chromo by transforming pheno to mut
+			Elem* mnode = node->GetAttachingMgr();
+			ChromoNode mut(aNode);
+			TBool fixok = ETrue;
+			if (!mnode->IsRefSafe(parent)) {
+			    // Trying to move mutnode to the last position
+			    TBool sres = ShiftComp(mnode);
+			    if (!sres) {
+				Logger()->Write(MLogRec::EWarn, this, 
+					"Creating [%s], attempting to repair - cannot repair - rank of parent [%s] is too big", 
+					sname.c_str(), sparent.c_str());
+				fixok = EFalse;
+			    }
+			}
+			if (fixok) {
+			    if (mnode == node) {
+				mut.SetAttr(ENa_MutNode, "");
 			    }
 			    else {
-				// Fenothypic modification
-				chn = iChromo->Root().AddChild(aNode);
-				AddCMDep(chn, ENa_MutNode, node);
+				GUri nuri;
+				node->GetRUri(nuri, mnode);
+				mut.SetAttr(ENa_MutNode, nuri.GetUri(EFalse));
 			    }
-			    AddCMDep(chn, ENa_Id, elem);
-			    AddCMDep(chn, ENa_Parent, parent);
+			    mnode->AddElem(mut, aRunTime);
 			    mutadded = ETrue;
 			}
-			// Mutate object 
-			elem->SetMutation(aNode);
-			elem->Mutate();
-			if (IsLogeventCreOn()) {
-			    Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
-			}
+		    }
+		    else {
+			TBool isi = IsInheritedComp(node);
+			Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] in node [%s] - attempt of phenotypic modification - disabled", 
+				sname.c_str(), snode.c_str());
 		    }
 		}
 	    }
-	}
-	else  {
-	    TBool isi = IsInheritedComp(node);
-	    Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] in node [%s] - attempt of phenotypic modification - disabled", 
-		    sname.c_str(), snode.c_str());
+	    else {
+		Logger()->Write(MLogRec::EErr, this, "Creating [%s] - parent [%s] not found", sname.c_str(), sparent.c_str());
+	    }
 	}
     }
     else  {
@@ -1468,6 +1496,27 @@ TBool Elem::MoveComp(Elem* aComp, Elem* aDest)
 	iComps.push_back(aComp);
     }
     res = ETrue;
+    return res;
+}
+
+TBool Elem::ShiftComp(Elem* aComp, Elem* aDest)
+{
+    TBool res = EFalse;
+    ChromoNode cch = aComp->Chromos().Root();
+    if (aDest != NULL) {
+	ChromoNode dch = aComp->Chromos().Root();
+	if (dch.Root() == cch.Root()) {
+	    cch.MovePrevTo(dch);
+	    res = ETrue;
+	}
+    }
+    else {
+	cch.MoveToEnd();
+	res = ETrue;
+    }
+    if (res) {
+	res = MoveComp(aComp, aDest);
+    }
     return res;
 }
 
