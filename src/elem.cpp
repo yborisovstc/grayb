@@ -889,6 +889,19 @@ void Elem::AppendMutation(const ChromoNode& aMuta)
     iMut->Root().AddChild(aMuta);
 }
 
+TBool Elem::AppendMutation(const string& aFileName)
+{
+    TBool res = EFalse;
+    Chromo *spec = Provider()->CreateChromo();
+    res = spec->Set(aFileName);
+    if (res) {
+	iMut->Root().AddChild(spec->Root(), ETrue);
+	res = ETrue;
+    }
+    delete spec;
+    return res;
+}
+
 void Elem::Mutate(TBool aRunTimeOnly)
 {
     ChromoNode& root = iMut->Root();
@@ -1043,7 +1056,25 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime)
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - attempt of phenotypic modification - disabled", snode.c_str());
+	    TBool efix = iEnv->ChMgr()->EnableFixErrors();
+	    if (efix) {
+		// Trying to repair chromo by transforming pheno to mut
+		Elem* mnode = node->GetMan()->GetAttachingMgr();
+		ChromoNode mut(aSpec);
+		if (mnode == node) {
+		    mut.SetAttr(ENa_MutNode, "");
+		}
+		else {
+		    GUri nuri;
+		    node->GetRUri(nuri, mnode);
+		    mut.SetAttr(ENa_MutNode, nuri.GetUri(EFalse));
+		}
+		mnode->ChangeAttr(mut, aRunTime);
+		mutadded = ETrue;
+	    }
+	    else {
+		Logger()->Write(MLogRec::EErr, this, "Changing node [%s]  - attempt of phenotypic modification - disabled", snode.c_str());
+	    }
 	}
     }
     else {
@@ -1144,7 +1175,9 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 		    if (rnode != NULL) {
 			if (!mnode->IsRefSafe(rnode)) {
 			    // Trying to move mutnode to the last position
-			    TBool sres = ShiftComp(mnode);
+			    TMDep dep = rnode->GetMajorDep(ENt_Cont, MChromo::EDl_Critical);
+			    //TBool sres = ShiftComp(mnode);
+			    TBool sres = ShiftCompOverDep(mnode, dep);
 			    if (!sres) {
 				Logger()->Write(MLogRec::EWarn, this, 
 					"Changing content of node [%s], attempting to repair - cannot repair - rank of ref [%s] is too big", 
@@ -1481,12 +1514,12 @@ TBool Elem::UnregisterComp(Elem* aComp, const string& aName)
     return res;
 }
 
-// TODO [YB] Changing comp position, not used anymore - to remove ?
 TBool Elem::MoveComp(Elem* aComp, Elem* aDest)
 {
     TBool res = EFalse;
     vector<Elem*>::iterator it;
     for (it = iComps.begin(); it != iComps.end() && *it != aComp; it++);
+    __ASSERT(it != iComps.end());
     iComps.erase(it);
     if (aDest != NULL) {
 	for (it = iComps.begin(); it != iComps.end() && *it != aDest; it++);
@@ -1499,6 +1532,72 @@ TBool Elem::MoveComp(Elem* aComp, Elem* aDest)
     return res;
 }
 
+TBool Elem::MoveComp(Elem* aComp, const ChromoNode& aDest)
+{
+    TBool res = EFalse;
+    vector<Elem*>::iterator it;
+    for (it = iComps.begin(); it != iComps.end() && *it != aComp; it++);
+    __ASSERT(it != iComps.end());
+    if (aDest.Handle() != NULL) {
+	// Check first if dest exists 
+	vector<Elem*>::iterator dit;
+	for (dit = iComps.begin(); dit != iComps.end() && (*dit)->Chromos().Root().Handle() != aDest.Handle(); dit++);
+	__ASSERT(dit != iComps.end());
+    }
+    iComps.erase(it);
+    if (aDest.Handle() != NULL) {
+	for (it = iComps.begin(); it != iComps.end() && (*it)->Chromos().Root().Handle() != aDest.Handle(); it++);
+	__ASSERT(it != iComps.end());
+	iComps.insert(it, aComp);
+    }
+    else {
+	iComps.push_back(aComp);
+    }
+    res = ETrue;
+    return res;
+}
+
+TBool Elem::ShiftCompOverDep(Elem* aComp, const TMDep& aDep)
+{
+    /*
+    TBool res = EFalse;
+    Elem* owner = aComp->GetMan();
+    if (aComp->GetMan() == aDep.first.first) {
+	ChromoNode mch = owner->Chromos().Root();
+	ChromoNode cch = aComp->Chromos().Root();
+	ChromoNode::Iterator depit(mch.Mdl(), aDep.first.second);
+	ChromoNode depmut = (*depit);
+	ChromoNode::Iterator nextit = depmut.FindNextSibling(ENt_Node);
+	cch.MoveNextTo(depit);
+	ChromoNode nextmut = *nextit;
+	res = owner->MoveComp(aComp, nextmut);
+    }
+    return res;
+    */
+    TBool res = ETrue;
+    Elem* owner = aComp->GetMan();
+    ChromoNode mch = owner->Chromos().Root();
+    ChromoNode cch = aComp->Chromos().Root();
+    ChromoNode::Iterator depit(mch.Mdl(), aDep.first.second);
+    Elem* depcomp = owner->GetCompOwning(aDep.first.first);
+    if (aDep.first.first == owner) { }
+    else if (depcomp != NULL) {
+	depit = ChromoNode::Iterator(depcomp->Chromos().Root());
+    }
+    else {
+	res = EFalse;
+    }
+    if (res) {
+	ChromoNode depmut = (*depit);
+	ChromoNode::Iterator nextit = depmut.FindNextSibling(ENt_Node);
+	cch.MoveNextTo(depit);
+	ChromoNode nextmut = *nextit;
+	res = owner->MoveComp(aComp, nextmut);
+    }
+    return res;
+}
+
+// TODO [YB] This method seems doesn't make sense, consider to remove
 TBool Elem::ShiftComp(Elem* aComp, Elem* aDest)
 {
     TBool res = EFalse;
@@ -1823,7 +1922,13 @@ TBool Elem::IsRefSafe(Elem* aRef)
     Rank rank;
     GetRank(rank, iChromo->Root());
     Rank deprank;
-    aRef->GetDepRank(deprank, ENa_Id);
+    TMDep dep = aRef->GetMajorDep(ENt_Cont, MChromo::EDl_Critical);
+    Elem* depnode = dep.first.first;
+    if (depnode != NULL) {
+	ChromoNode depmut = iChromo->CreateNode(dep.first.second);
+	depnode->GetRank(deprank, depmut);
+    }
+    //aRef->GetDepRank(deprank, ENa_Id);
     if (deprank > rank && !deprank.IsRankOf(rank)) {
 	res = EFalse;
     }
@@ -1856,7 +1961,7 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime)
     Elem* node = GetNode(snode);
     TBool mutadded = EFalse;
     if (node != NULL && IsComp(node)) {
-	if (epheno || node->GetMan() == this || IsInheritedComp(node)) {
+	if (epheno || node->GetMan() == this || IsCompOfInheritedComp(node)) {
 	    // Check dependent mutations
 	    if (IsMutSafe(node)) {
 		res = ETrue;
@@ -1891,8 +1996,26 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime)
 			node->GetMajorDep().first.first->GetUri().c_str());
 	    }
 	}
-	else {
-	    Logger()->Write(MLogRec::EErr, this, "Removing node [%s] - attempt of phenotypic modification - disabled", snode.c_str());
+	else  {
+	    TBool efix = iEnv->ChMgr()->EnableFixErrors();
+	    if (efix) {
+		// Trying to repair chromo by transforming pheno to mut
+		Elem* mnode = node->GetMan()->GetAttachingMgr();
+		ChromoNode mut(aSpec);
+		if (mnode == node) {
+		    mut.SetAttr(ENa_MutNode, "");
+		}
+		else {
+		    GUri nuri;
+		    node->GetRUri(nuri, mnode);
+		    mut.SetAttr(ENa_MutNode, nuri.GetUri(EFalse));
+		}
+		mnode->RmNode(mut, aRunTime);
+		mutadded = ETrue;
+	    }
+	    else {
+		Logger()->Write(MLogRec::EErr, this, "Removing node [%s] - attempt of phenotypic modification - disabled", snode.c_str());
+	    }
 	}
     }
     else {
@@ -2093,6 +2216,19 @@ TBool Elem::IsPhenoModif() const
 TBool Elem::IsInheritedComp(const Elem* aNode) const
 {
     TBool res = !IsChromoAttached() || !aNode->IsChromoAttached() && !aNode->IsPhenoModif() && aNode->GetAttachingMgr() == this;
+    return res;
+}
+
+TBool Elem::IsCompOfInheritedComp(const Elem* aNode) const
+{
+    TBool res = IsInheritedComp(aNode);
+    if (!res) {
+	const Elem* owner = aNode->GetMan();
+	while (owner != this && !res) {
+	    res = IsInheritedComp(owner);
+	    owner = owner->GetMan();
+	}
+    }
     return res;
 }
 

@@ -18,6 +18,7 @@ class Ut_conn : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Sock);
     CPPUNIT_TEST(test_Sock2);
     CPPUNIT_TEST(test_Reconn);
+    CPPUNIT_TEST(test_Conn2);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -26,6 +27,7 @@ private:
     void test_Sock();
     void test_Sock2();
     void test_Reconn();
+    void test_Conn2();
 private:
     Env* iEnv;
 };
@@ -156,4 +158,30 @@ void Ut_conn::test_Reconn()
     MEdge* me2 = ee2->GetObj(me2);
     MVert* p2_2 = me2->Point2();
     CPPUNIT_ASSERT_MESSAGE("Edges Point2 is not disconnected within e2", p2_2 == 0);
+}
+
+// Test of double connection and then disconnecting one of them. 
+void Ut_conn::test_Conn2()
+{
+    printf("\n === Test of reconnecting edge\n");
+
+    iEnv = new Env("Env", "ut_conn_2.xml", "ut_conn_2.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+ 
+   // Disconnect one point of edge e2
+    Elem* e2 = root->GetNode("./e2");
+    ChromoNode smutr = e2->Mutation().Root();
+    ChromoNode mutn = smutr.AddChild(ENt_Cont);
+    mutn.SetAttr(ENa_MutNode, "./P1");
+    mutn.SetAttr(ENa_Ref, "");
+    e2->Mutate();
+    // Verify that v1 and v2 are still connected
+    Elem* ev1 = root->GetNode("./v1");
+    MVert* mv1 = ev1->GetObj(mv1);
+    set<MVert*>& pairs1 = mv1-> Pairs();
+    int pnum1 = pairs1.size();
+    CPPUNIT_ASSERT_MESSAGE("Wrong number of v1 pairs after e2 disconnection", pnum1 == 1);
 }

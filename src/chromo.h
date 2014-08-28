@@ -100,6 +100,8 @@ class ChromoNode
 	Reverse_Iterator Rend() { return Reverse_Iterator(iMdl, NULL); };
 	Iterator Find(TNodeType aNodeType) { return Iterator(iMdl, iMdl.GetFirstChild(iHandle, aNodeType)); };
 	Const_Iterator Find(TNodeType aNodeType) const { return Const_Iterator(iMdl, iMdl.GetFirstChild(iHandle, aNodeType)); };
+	Iterator FindNextSibling(TNodeType aNodeType) { return Iterator(iMdl, iMdl.Next(iHandle, aNodeType)); };
+	Const_Iterator FindNextSibling(TNodeType aNodeType) const { return Const_Iterator(iMdl, iMdl.Next(iHandle, aNodeType)); };
 	Iterator FindText() { return Iterator(iMdl, iMdl.GetFirstTextChild(iHandle)); };
 	Const_Iterator FindText() const { return Const_Iterator(iMdl, iMdl.GetFirstTextChild(iHandle)); };
 	void Reset() { iHandle = NULL;};

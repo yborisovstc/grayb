@@ -9,35 +9,35 @@
 
     <!-- Parent's representative CP -->
     <node id="Parent" parent=":Elem:SysComps/ConnPoint"> 
-	<cont node="Required" val="MVisChild"/>
-	<cont node="Provided" val="MVisContainer"/>
+	<cont node="./Required" val="MVisChild"/>
+	<cont node="./Provided" val="MVisContainer"/>
     </node>
 
     <!-- Child's representaitve CP -->
     <node id="Child" parent=":Elem:SysComps/ConnPoint"> 
-	<cont node="Required" val="MVisContainer"/>
-	<cont node="Provided" val="MVisChild"/>
+	<cont node="./Required" val="MVisContainer"/>
+	<cont node="./Provided" val="MVisChild"/>
     </node>
 
     <!-- Child's representaitve Extender -->
     <node id="Child" parent=":Elem:SysComps/Extender"> 
-	<rm node="Int"/>
-	<node id="Int" parent="../Parent"/> 
+	<rm node="./Int"/>
+	<node id="Int" parent="./../Parent"/> 
     </node>
 
 
 <!-- Data Int provider representaitve CP -->
     <node id="DIntProv" parent=":Elem:SysComps/ConnPoint"> 
-	<cont node="Provided" val="MDIntGet"/>
+	<cont node="./Provided" val="MDIntGet"/>
     </node>
 
     <!-- Top level window -->
     <node id="Window" parent="Syst"> 
-	<node node="Agents" id="WinAgent" parent="AWindow"/> 
+	<node node="./Agents" id="WinAgent" parent="AWindow"/> 
 	<!-- Parent's representative -->
 	<node id="Parent" parent=":Elem:SysComps/ConnPoint"> 
-	    <cont node="Required" val="MVisChild"/>
-	    <cont node="Provided" val="MVisContainer"/>
+	    <cont node="./Required" val="MVisChild"/>
+	    <cont node="./Provided" val="MVisContainer"/>
 	</node>
     </node>
 
@@ -45,8 +45,8 @@
     <node id="Widget" parent="Syst"> 
 	<!-- Child's representaitve -->
 	<node id="Child" parent=":Elem:SysComps/ConnPoint"> 
-	    <cont node="Required" val="MVisContainer"/>
-	    <cont node="Provided" val="MVisChild"/>
+	    <cont node="./Required" val="MVisContainer"/>
+	    <cont node="./Provided" val="MVisChild"/>
 	</node>
 	<node id="Inp_X" parent=":Elem:DesComps/StIntInp"/> 
 	<node id="Inp_Y" parent=":Elem:DesComps/StIntInp"/> 
@@ -60,8 +60,8 @@
     <node id="WidgetV" parent="Syst"> 
 	<!-- Child's representaitve -->
 	<node id="Child" parent=":Elem:SysComps/ConnPoint"> 
-	    <cont node="Required" val="MVisContainer"/>
-	    <cont node="Provided" val="MVisChild"/>
+	    <cont node="./Required" val="MVisContainer"/>
+	    <cont node="./Provided" val="MVisChild"/>
 	</node>
 	<node id="Inp_X" parent=":Elem:DesComps/StVarInp"/> 
 	<node id="Inp_Y" parent=":Elem:DesComps/StVarInp"/> 
@@ -74,77 +74,77 @@
 
     <!-- Container doing fixed layout -->
     <node id="Fixed" parent="Syst"> 
-	<node node="Agents" id="WinAgent" parent="AVisFixed"/> 
+	<node node="./Agents" id="WinAgent" parent="AVisFixed"/> 
 	<!-- Child's representaitve -->
 	<node id="Child" parent=":Elem:SysComps/ConnPoint"> 
-	    <cont node="Required" val="MVisContainer"/>
-	    <cont node="Provided" val="MVisChild"/>
+	    <cont node="./Required" val="MVisContainer"/>
+	    <cont node="./Provided" val="MVisChild"/>
 	</node>
 	<!-- Parent's representative -->
 	<node id="Parent" parent=":Elem:SysComps/ConnPoint"> 
-	    <cont node="Required" val="MVisChild"/>
-	    <cont node="Provided" val="MVisContainer"/>
+	    <cont node="./Required" val="MVisChild"/>
+	    <cont node="./Provided" val="MVisContainer"/>
 	</node>
     </node>
 
     <!-- Drawing area -->
-    <node id="Drawing" parent="Widget"> 
-	<node node="Agents" id="WinAgent" parent="AVisDrawing"/> 
+    <node id="Drawing" parent="./Widget"> 
+	<node node="./Agents" id="WinAgent" parent="AVisDrawing"/> 
     </node>
 
     <!-- Drawing area, Var i/o -->
-    <node id="DrawingV" parent="WidgetV"> 
-	<node node="Agents" id="WinAgent" parent="AVisDrawing"/> 
+    <node id="DrawingV" parent="./WidgetV"> 
+	<node node="./Agents" id="WinAgent" parent="AVisDrawing"/> 
     </node>
 
     <!-- Drawing area with vector i/o -->
     <node id="DrawingVc" parent=":Elem:DesComps/Des">
 	<node id="VectComp" parent=":Elem:DesComps/StateVarC">
-	    <cont node="Data/Prepared/Value" val="SI 0"/>
-	    <cont node="Data/Confirmed/Value" val="SI 0"/>
+	    <cont node="./Data/Prepared/Value" val="SI 0"/>
+	    <cont node="./Data/Confirmed/Value" val="SI 0"/>
 	    <node id="At" parent=":Elem:FuncComps/TFAtVarI"/>
-	    <node id="E1" parent="Edge"> <cont node="P1" ref="../../Capsule/Inp/Int/PinData"/> <cont node="P2" ref="../../At/Capsule/Inp"/> </node>
-	    <node id="E2" parent="Edge"> <cont node="P1" ref="../../At/Capsule/Out"/> <cont node="P2" ref="../../Data/Capsule/Inp"/> </node>
+	    <node id="E1" parent="Edge"> <cont node="./P1" ref="./../../Capsule/Inp/Int/PinData"/> <cont node="./P2" ref="./../../At/Capsule/Inp"/> </node>
+	    <node id="E2" parent="Edge"> <cont node="./P1" ref="./../../At/Capsule/Out"/> <cont node="./P2" ref="./../../Data/Capsule/Inp"/> </node>
 	</node>
 	<node id="PWHtoV" parent=":Elem:DesComps/StateVarC">
-	    <node node="Capsule" id="Inp2" parent=":Elem:DesComps/StVarInp"/> 
-	    <cont node="Data/Prepared/Value" val="MI,V,2 0 0"/>
-	    <cont node="Data/Confirmed/Value" val="MI,V,2 0 0"/>
+	    <node node="./Capsule" id="Inp2" parent=":Elem:DesComps/StVarInp"/> 
+	    <cont node="./Data/Prepared/Value" val="MI,V,2 0 0"/>
+	    <cont node="./Data/Confirmed/Value" val="MI,V,2 0 0"/>
 	    <node id="Composer" parent=":Elem:FuncComps/TFCpsVectVar"/>
 	    <node id="E1" parent="Edge"> 
-		<cont node="P1" ref="../../Capsule/Inp/Int/PinData"/> <cont node="P2" ref="../../Composer/Capsule/Inp1"/> </node>
+		<cont node="./P1" ref="./../../Capsule/Inp/Int/PinData"/> <cont node="./P2" ref="./../../Composer/Capsule/Inp1"/> </node>
 	    <node id="E2" parent="Edge"> 
-		<cont node="P1" ref="../../Capsule/Inp2/Int/PinData"/> <cont node="P2" ref="../../Composer/Capsule/Inp2"/> </node>
-	    <node id="E3" parent="Edge"> <cont node="P1" ref="../../Composer/Capsule/Out"/> <cont node="P2" ref="../../Data/Capsule/Inp"/> </node>
+		<cont node="./P1" ref="./../../Capsule/Inp2/Int/PinData"/> <cont node="./P2" ref="./../../Composer/Capsule/Inp2"/> </node>
+	    <node id="E3" parent="Edge"> <cont node="./P1" ref="./../../Composer/Capsule/Out"/> <cont node="./P2" ref="./../../Data/Capsule/Inp"/> </node>
 	</node>
 
-	<node node="Capsule" id="Child" parent="../(Extender:)Child"/>
-	<node id="Drw" parent="../DrawingV"/> 
-	<node node="Capsule" id="Inp_XY" parent=":Elem:DesComps/StVarInp"/> 
-	<node node="Capsule" id="Inp_WH" parent=":Elem:DesComps/StVarInp"/> 
-	<node node="Capsule" id="Prov_PWH" parent=":Elem:DesComps/StVarOut"/> 
+	<node node="./Capsule" id="Child" parent="./../(Extender:)Child"/>
+	<node id="Drw" parent="./../DrawingV"/> 
+	<node node="./Capsule" id="Inp_XY" parent=":Elem:DesComps/StVarInp"/> 
+	<node node="./Capsule" id="Inp_WH" parent=":Elem:DesComps/StVarInp"/> 
+	<node node="./Capsule" id="Prov_PWH" parent=":Elem:DesComps/StVarOut"/> 
 	<!-- Child extending -->
-	<node id="ECH" parent="Edge"> <cont node="P1" ref="../../Drw/Child"/> <cont node="P2" ref="../../Capsule/Child/Int"/> </node>
+	<node id="ECH" parent="Edge"> <cont node="./P1" ref="./../../Drw/Child"/> <cont node="./P2" ref="./../../Capsule/Child/Int"/> </node>
 	<!-- Convertor to X -->
-	<node id="XYtoX" parent="VectComp"> <cont node="At/Index/Value" val="SI 0" /> </node>
-	<node id="EX1" parent="Edge"> <cont node="P1" ref="../../Capsule/Inp_XY/Int"/> <cont node="P2" ref="../../XYtoX/Capsule/Inp"/> </node>
-	<node id="EX2" parent="Edge"> <cont node="P1" ref="../../XYtoX/Capsule/Out"/> <cont node="P2" ref="../../Drw/Inp_X"/> </node>
+	<node id="XYtoX" parent="./VectComp"> <cont node="./At/Index/Value" val="SI 0" /> </node>
+	<node id="EX1" parent="Edge"> <cont node="./P1" ref="./../../Capsule/Inp_XY/Int"/> <cont node="./P2" ref="./../../XYtoX/Capsule/Inp"/> </node>
+	<node id="EX2" parent="Edge"> <cont node="./P1" ref="./../../XYtoX/Capsule/Out"/> <cont node="./P2" ref="./../../Drw/Inp_X"/> </node>
 	<!-- Convertor to Y -->
-	<node id="XYtoY" parent="VectComp"> <cont node="At/Index/Value" val="SI 1" /> </node>
-	<node id="EY1" parent="Edge"> <cont node="P1" ref="../../Capsule/Inp_XY/Int"/> <cont node="P2" ref="../../XYtoY/Capsule/Inp"/> </node>
-	<node id="EY2" parent="Edge"> <cont node="P1" ref="../../XYtoY/Capsule/Out"/> <cont node="P2" ref="../../Drw/Inp_Y"/> </node>
+	<node id="XYtoY" parent="./VectComp"> <cont node="./At/Index/Value" val="SI 1" /> </node>
+	<node id="EY1" parent="Edge"> <cont node="./P1" ref="./../../Capsule/Inp_XY/Int"/> <cont node="./P2" ref="./../../XYtoY/Capsule/Inp"/> </node>
+	<node id="EY2" parent="Edge"> <cont node="./P1" ref="./../../XYtoY/Capsule/Out"/> <cont node="./P2" ref="./../../Drw/Inp_Y"/> </node>
 	<!-- Convertor to W -->
-	<node id="WHtoW" parent="VectComp"> <cont node="At/Index/Value" val="SI 0" /> </node>
-	<node id="EW1" parent="Edge"> <cont node="P1" ref="../../Capsule/Inp_WH/Int"/> <cont node="P2" ref="../../WHtoW/Capsule/Inp"/> </node>
-	<node id="EW2" parent="Edge"> <cont node="P1" ref="../../WHtoW/Capsule/Out"/> <cont node="P2" ref="../../Drw/Inp_W"/> </node>
+	<node id="WHtoW" parent="./VectComp"> <cont node="./At/Index/Value" val="SI 0" /> </node>
+	<node id="EW1" parent="Edge"> <cont node="./P1" ref="./../../Capsule/Inp_WH/Int"/> <cont node="./P2" ref="./../../WHtoW/Capsule/Inp"/> </node>
+	<node id="EW2" parent="Edge"> <cont node="./P1" ref="./../../WHtoW/Capsule/Out"/> <cont node="./P2" ref="./../../Drw/Inp_W"/> </node>
 	<!-- Convertor to H -->
-	<node id="WHtoH" parent="VectComp"> <cont node="At/Index/Value" val="SI 1" /> </node>
-	<node id="EH1" parent="Edge"> <cont node="P1" ref="../../Capsule/Inp_WH/Int"/> <cont node="P2" ref="../../WHtoH/Capsule/Inp"/> </node>
-	<node id="EH2" parent="Edge"> <cont node="P1" ref="../../WHtoH/Capsule/Out"/> <cont node="P2" ref="../../Drw/Inp_H"/> </node>
+	<node id="WHtoH" parent="./VectComp"> <cont node="./At/Index/Value" val="SI 1" /> </node>
+	<node id="EH1" parent="Edge"> <cont node="./P1" ref="./../../Capsule/Inp_WH/Int"/> <cont node="./P2" ref="./../../WHtoH/Capsule/Inp"/> </node>
+	<node id="EH2" parent="Edge"> <cont node="./P1" ref="./../../WHtoH/Capsule/Out"/> <cont node="./P2" ref="./../../Drw/Inp_H"/> </node>
 	<!-- Convertor of widget outputs Parent W and H to vector -->
-	<node id="EP1" parent="Edge"> <cont node="P1" ref="../../Drw/Prov_PW"/> <cont node="P2" ref="../../PWHtoV/Capsule/Inp"/> </node>
-	<node id="EP2" parent="Edge"> <cont node="P1" ref="../../Drw/Prov_PH"/> <cont node="P2" ref="../../PWHtoV/Capsule/Inp2"/> </node>
-	<node id="EP3" parent="Edge"> <cont node="P1" ref="../../PWHtoV/Capsule/Out"/> <cont node="P2" ref="../../Capsule/Prov_PWH/Int"/> </node>
+	<node id="EP1" parent="Edge"> <cont node="./P1" ref="./../../Drw/Prov_PW"/> <cont node="./P2" ref="./../../PWHtoV/Capsule/Inp"/> </node>
+	<node id="EP2" parent="Edge"> <cont node="./P1" ref="./../../Drw/Prov_PH"/> <cont node="./P2" ref="./../../PWHtoV/Capsule/Inp2"/> </node>
+	<node id="EP3" parent="Edge"> <cont node="./P1" ref="./../../PWHtoV/Capsule/Out"/> <cont node="./P2" ref="./../../Capsule/Prov_PWH/Int"/> </node>
     </node>
 
 </node>

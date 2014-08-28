@@ -149,6 +149,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void SetObserver(MCompsObserver* aObserver);
 	void SetMutation(const ChromoNode& aMuta);
 	void AppendMutation(const ChromoNode& aMuta);
+	TBool AppendMutation(const string& aFileName);
 	void Mutate(TBool aRunTimeOnly = EFalse);
 	string PName() const;
 	const vector<Elem*>& Comps() const;
@@ -176,6 +177,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// Checks if the node is originated vis phenotypical modification
 	TBool IsPhenoModif() const;
 	TBool IsInheritedComp(const Elem* aNode) const;
+	TBool IsCompOfInheritedComp(const Elem* aNode) const;
 	// Debug helpers
 	Elem* GetNodeS(const char* aUri);
 	TBool IsName(const char* aName);
@@ -277,6 +279,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool RegisterComp(Elem* aComp);
 	TBool RegisterChild(Elem* aChild);
 	TBool MoveComp(Elem* aComp, Elem* aDest);
+	TBool MoveComp(Elem* aComp, const ChromoNode& aDest);
 	TBool IsCompRegistered(Elem* aComp);
 	// aName is required because the comp can be renamed already. This is the case of 
 	// comp renaming: comp is renamed first, then the renaming is handled
@@ -298,6 +301,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void LogIfReqs();
 	// Chromo modification/repairing utilities
 	TBool ShiftComp(Elem* aComp, Elem* aDest = NULL);
+	TBool ShiftCompOverDep(Elem* aComp, const TMDep& aDep);
     protected:
 	// Element type - parent's chain
 	// TODO [YB] Is it needed now after implementing inheritance chain?

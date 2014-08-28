@@ -2383,6 +2383,9 @@ template<class T> void FMplinvDt<T>::DtGet(T& aData)
 	    res = EFalse;
 	}
     }
+    else {
+	res = EFalse;
+    }
     aData.mValid = res;
     if (mRes != aData) {
 	mRes = aData;

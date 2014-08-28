@@ -122,7 +122,7 @@ void Vert::SetRemoved()
 
 TBool Vert::Connect(MVert* aPair)
 {
-    TBool res = ETrue;
+    TBool res = EFalse;
 //    __ASSERT(aPair != NULL && iPairs.count(aPair) == 0);
     if(aPair != NULL && iPairs.count(aPair) == 0) {
 	// Invalidate ifaces cache
@@ -133,6 +133,7 @@ TBool Vert::Connect(MVert* aPair)
 	aPair->Connect(this);
 	__ASSERT(iMan != NULL);
 	iMan->OnCompChanged(*this);
+	res = ETrue;
     }
     return res;
 }
