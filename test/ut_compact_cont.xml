@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for squeezing of chromo: content. 
+     -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Vert">
+    <node id="E1" parent="Elem">
+	<node id="P1" parent="Prop"/>
+    </node>
+    <node id="E2" parent="./E1">
+	<cont node="./P1" val="P1_orig_content"/> 
+	<cont node="./P1" val="P1_new_content"/> 
+    </node>
+</node>
+

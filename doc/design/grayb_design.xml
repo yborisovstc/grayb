@@ -386,6 +386,13 @@
 		    implementation. Another approach is to use currently implemented mechanism of creatng heir. So we can create heir from source node (this is done by source node 
 		    in original context, so doesn't cause any troubles. Then we can re-adopt the heir from source node to its parent.</simpara>
 	    </sect3>
+	    <sect3><title>Is operation of local movement useful?</title>
+		<simpara>The problem here is that the current implementation [ff62b4f15279edfbe4baf36161d3dcad6973725f] the result of local movement is run-time only. It is 
+		    clear, we just need to remember that local movement is specified by simple mutation within the chromo. So there are doubts that local movement is actually useful. There
+		    were no occurances at the moment of using this local movement operation.
+		</simpara>
+		<simpara>There is alternative approach, ref <xref linkend="ds_mut_cutncopy"/></simpara>
+	    </sect3>
 	</sect2>
 	<sect2><title>Moving of node</title>
 	</sect2>
@@ -441,6 +448,17 @@
 	    <sect3 id="ds_drv_int_rel"><title>Approaches: To modify of creating of new node</title>
 		<simpara>Currently to relocation of created heir to new hier is being done quite simple, ref. elem.cpp/Elem::CreateHeir()/Relocate heir to hier ... The only 
 		    new owner is set for created heir, no any corrections in mutations referred to original context.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mut_cutncopy"><title>Chromo cutncopy: do we need it?</title>
+	    <sect3><title>Intro</title>
+		<simpara>There are some usecases clearly indicated that copy of chromo is useful operation. One of cases is:
+		USER has some complex model and he wants to separate some part of this model as independent model.</simpara>
+	    </sect3>
+	    <sect3><title>Cons</title>
+		<itemizedlist>
+		    <listitem>Doesn't support of simple undo. This is because copy operation is not single mutaion but series of mutations.</listitem>
+		</itemizedlist>
 	    </sect3>
 	</sect2>
     </sect1>
@@ -585,6 +603,9 @@
 		ensure clear distinction of native agents ref (uri). Currently native agents uri form doesn't distinct from
 		form of default structural uri (for it also no relation symbol is used in uri, ref GUri::Parse)</simpara>
 	</sect2>
+    </sect1>
+
+    <sect1 id="ds_prb"><title>Problems</title>
     </sect1>
 
 </article>

@@ -1245,12 +1245,6 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 	    if (prnturi.Scheme().empty()) {
 		// Local parent
 		parent = GetNode(prnturi);
-		/*
-		   if (parent == NULL) {
-		// No parents found, request provider for native one
-		parent = Provider()->GetNode(sparent);
-		}
-		*/
 		ext_parent = EFalse;
 	    }
 	    else {
@@ -2057,6 +2051,8 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime)
 		}
 		else {
 		    // Inter-nodes movement
+		    // TODO [YB] To consider if this movement does make sense. It is not movement of chunk of chromo, but 
+		    // run-time only.
 		    if (IsMutSafe(snode)) {
 			// It is rather complicated to re-create snode in new context because all snode
 			// mutation are related to original snode context, so use trick, ref "ds_mv_local"
@@ -2602,28 +2598,47 @@ void Elem::CompactChromo()
 	    TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
 	    if (iCMRelReg.count(key) > 0) {
 		Elem* node = iCMRelReg.at(key);
-		Elem* ref = NULL;
-		Rank refrank;
-		// Get dep on ref, rank of it
-		key = TCMRelFrom(gmut.Handle(), ENa_Ref);
-		if (iCMRelReg.count(key) > 0) {
-		    ref = iCMRelReg.at(key);
-		    ref->GetRank(refrank);
-		}
-		string new_val(gmut.Attr(gmut.AttrExists(ENa_Ref) ? ENa_Ref: ENa_MutVal));
-		// Get mutations that depends on this node, and have lower rank
 		TInt tobecorrected = 0, corrected = 0;
-		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
-		    TMDep dep = *it;
-		    ChromoNode mut = iChromo->CreateNode(dep.first.second);
-		    Rank rank;
-		    mut.GetRank(rank);
-		    if (rank >= grank) break;
-		    // Correct mutation
-		    if (mut.Type() == ENt_Cont && dep.second == ENa_MutNode) {
-			tobecorrected++;
-			if (rank > refrank) {
-			    mut.SetAttr(ENa_Ref, new_val);
+		TBool isref = gmut.AttrExists(ENa_Ref);
+		if (isref) {
+		    Rank refrank;
+		    // Get dep on ref, rank of it
+		    key = TCMRelFrom(gmut.Handle(), ENa_Ref);
+		    if (iCMRelReg.count(key) > 0) {
+			Elem* ref = iCMRelReg.at(key);
+			ref->GetRank(refrank);
+		    }
+		    string new_val = gmut.Attr(ENa_Ref);
+		    // Get mutations that depends on this node, and have lower rank
+		    for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
+			TMDep dep = *it;
+			ChromoNode mut = iChromo->CreateNode(dep.first.second);
+			Rank rank;
+			mut.GetRank(rank);
+			if (rank >= grank) break;
+			// Correct mutation
+			if (mut.Type() == ENt_Cont && mut.AttrExists(ENa_Ref) && dep.second == ENa_MutNode) {
+			    tobecorrected++;
+			    if (rank > refrank) {
+				mut.SetAttr(ENa_Ref, new_val);
+				corrected++;
+			    }
+			}
+		    }
+		}
+		else {
+		    string new_val = gmut.Attr(ENa_MutVal);
+		    // Get mutations that depends on this node, and have lower rank
+		    for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
+			TMDep dep = *it;
+			ChromoNode mut = iChromo->CreateNode(dep.first.second);
+			Rank rank;
+			mut.GetRank(rank);
+			if (rank >= grank) break;
+			// Correct mutation
+			if (mut.Type() == ENt_Cont && mut.AttrExists(ENa_MutVal) && dep.second == ENa_MutNode) {
+			    tobecorrected++;
+			    mut.SetAttr(ENa_MutVal, new_val);
 			    corrected++;
 			}
 		    }
@@ -2653,12 +2668,12 @@ void Elem::CompactChromo()
 		/*
 		// Get mutations that depends on this node, and have lower rank
 		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
-		    TMDep dep = *it;
-		    ChromoNode mut = iChromo->CreateNode(dep.first.second);
-		    Rank rank;
-		    mut.GetRank(rank);
-		    if (rank >= grank) break;
-		    // Correct mutation is not required, the corresponding -node- mut has been already deleted
+		TMDep dep = *it;
+		ChromoNode mut = iChromo->CreateNode(dep.first.second);
+		Rank rank;
+		mut.GetRank(rank);
+		if (rank >= grank) break;
+		// Correct mutation is not required, the corresponding -node- mut has been already deleted
 		}
 		*/
 		// Remove mutation
@@ -2740,28 +2755,48 @@ void Elem::CompactChromo(const ChromoNode& aNode)
 	TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
 	if (iCMRelReg.count(key) > 0) {
 	    Elem* node = iCMRelReg.at(key);
-	    Elem* ref = NULL;
-	    Rank refrank;
-	    // Get dep on ref, rank of it
-	    key = TCMRelFrom(gmut.Handle(), ENa_Ref);
-	    if (iCMRelReg.count(key) > 0) {
-		ref = iCMRelReg.at(key);
-		ref->GetRank(refrank);
-	    }
-	    string new_val(gmut.Attr(gmut.AttrExists(ENa_Ref) ? ENa_Ref: ENa_MutVal));
-	    // Get mutations that depends on this node, and have lower rank
 	    TInt tobecorrected = 0, corrected = 0;
-	    for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
-		TMDep dep = *it;
-		ChromoNode mut = iChromo->CreateNode(dep.first.second);
-		Rank rank;
-		mut.GetRank(rank);
-		if (rank >= grank) break;
-		// Correct mutation
-		if (mut.Type() == ENt_Cont && dep.second == ENa_MutNode) {
-		    tobecorrected++;
-		    if (rank > refrank) {
-			mut.SetAttr(ENa_Ref, new_val);
+	    TBool isref = gmut.AttrExists(ENa_Ref);
+	    if (isref) {
+		Rank refrank;
+		// Get dep on ref, rank of it
+		key = TCMRelFrom(gmut.Handle(), ENa_Ref);
+		if (iCMRelReg.count(key) > 0) {
+		    Elem* ref = iCMRelReg.at(key);
+		    ref->GetRank(refrank);
+		}
+		string new_val = gmut.Attr(ENa_Ref);
+		// Get mutations that depends on this node, and have lower rank
+		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
+		    TMDep dep = *it;
+		    ChromoNode mut = iChromo->CreateNode(dep.first.second);
+		    Rank rank;
+		    mut.GetRank(rank);
+		    if (rank >= grank) break;
+		    // Correct mutation
+		    if (mut.Type() == ENt_Cont && mut.AttrExists(ENa_Ref) && dep.second == ENa_MutNode) {
+			tobecorrected++;
+			if (rank > refrank) {
+			    mut.SetAttr(ENa_Ref, new_val);
+			    corrected++;
+			}
+		    }
+		}
+	    }
+	    else {
+		string new_val = gmut.Attr(ENa_MutVal);
+		// Get mutations that depends on this node, and have lower rank
+		TInt tobecorrected = 0, corrected = 0;
+		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
+		    TMDep dep = *it;
+		    ChromoNode mut = iChromo->CreateNode(dep.first.second);
+		    Rank rank;
+		    mut.GetRank(rank);
+		    if (rank >= grank) break;
+		    // Correct mutation
+		    if (mut.Type() == ENt_Cont && mut.AttrExists(ENa_MutVal) && dep.second == ENa_MutNode) {
+			tobecorrected++;
+			mut.SetAttr(ENa_MutVal, new_val);
 			corrected++;
 		    }
 		}

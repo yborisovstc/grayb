@@ -116,7 +116,14 @@ void* ChromoMdlX::Set(const string& aUri)
 
 void* ChromoMdlX::Set(const void* aHandle)
 {
+    if (iDoc == NULL) {
+	iDocOwned = ETrue;
+	iDoc = xmlNewDoc((const xmlChar*) "1.0");
+	xmlDtdPtr dtd = xmlParseDTD(NULL, (const xmlChar*) KChromoSystemId );
+	iDoc->extSubset = dtd;
+    }
     xmlNodePtr node = xmlDocCopyNode((xmlNodePtr) aHandle, iDoc, 1);
+    xmlDocSetRootElement(iDoc, node);
     return node;
 }
 
@@ -543,7 +550,12 @@ void ChromoX::Init(TNodeType aRootType)
 
 void ChromoX::Save(const string& aFileName) const
 {
-    iMdl.Save(aFileName);
+    // We cannot simply save the doc (iMdl.iDoc) because it will save not only root node but
+    // also adjacent nodes. So we need to create new model and add to doc only one separated root
+    ChromoMdlX mdl;
+    mdl.Set(iRootNode.Handle());
+    mdl.Save(aFileName);
+    //iMdl.Save(aFileName);
 }
 
 ChromoNode ChromoX::CreateNode(void* aHandle)

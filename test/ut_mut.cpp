@@ -28,6 +28,7 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Compact2);
     CPPUNIT_TEST(test_Compact3);
     CPPUNIT_TEST(test_CompactRef1);
+    CPPUNIT_TEST(test_CompactCont);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -47,6 +48,7 @@ private:
     void test_Compact2();
     void test_Compact3();
     void test_CompactRef1();
+    void test_CompactCont();
 private:
     Env* iEnv;
 };
@@ -572,6 +574,45 @@ void Ut_mut::test_CompactRef1()
     ChromoNode mut = *it;
     TBool is_cont_ref = mut.Type() == ENt_Cont && mut.Attr(ENa_MutNode) == "Edge1/P2";
     CPPUNIT_ASSERT_MESSAGE("Fail to keep cont ref mut unsqueezed", is_cont_ref);
+
+
+    delete iEnv;
+}
+
+// Compactization of chromo. Content change
+void Ut_mut::test_CompactCont()
+{
+    printf("\n === Test of compacting of chromo: Content change\n");
+    iEnv = new Env("Env", "ut_compact_cont.xml", "ut_compact_cont.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Compact chromo
+    root->CompactChromo();
+    // Save compacted chromo and recreate the model
+    iEnv->Root()->Chromos().Save("ut_compact_cont_res.xml_");
+    delete iEnv;
+
+    iEnv = new Env("Env", "ut_compact_cont_res.xml_", "ut_compact_cont_res.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to re-create compacted system", iEnv != 0);
+    iEnv->ConstructSystem();
+     // Check if mut is not squeezed
+    root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root after compacting", root != 0);
+    Elem* e2 = root->GetNode("./E2");
+    Elem* p1 = root->GetNode("./E2/P1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get P1", p1 != NULL);
+    string cp1;
+    p1->GetCont(cp1);
+    CPPUNIT_ASSERT_MESSAGE("Incorrect content of P1", cp1 == "P1_new_content");
+    ChromoNode rnode = e2->Chromos().Root();
+    ChromoNode::Reverse_Iterator it = rnode.Rbegin(); 
+    ChromoNode mut = *it;
+    TBool is_cont_ok = mut.Type() == ENt_Cont && mut.Attr(ENa_MutVal) == "P1_new_content";
+    CPPUNIT_ASSERT_MESSAGE("Incorrect cont mutation", is_cont_ok);
+    it++;
+    CPPUNIT_ASSERT_MESSAGE("Init cont mutation is not squeezed", it == rnode.Rend());
 
 
     delete iEnv;
