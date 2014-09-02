@@ -68,6 +68,7 @@ void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...)
 	strcat(buf, fullpath.GetUri(ETrue).c_str());
     }
     strcat(buf, KColSep);
+    strcat(buf, KColSep);
     va_list list;
     va_start(list,aFmt);
     vsprintf(buf1, aFmt, list);
@@ -76,6 +77,28 @@ void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...)
     WriteRecord(buf);
     if (iObs != NULL) {
 	iObs->OnLogAdded(aCtg, aNode, buf1);
+    }
+}
+
+void GLogRec::Write(TLogRecCtg aCtg, const ChromoNode& aMut, Elem* aNode, const char* aFmt,...)
+{
+    char buf1[KLogRecBufSize] = "";
+    stringstream ss;
+    ss << CtgText[aCtg] << KColSep;
+    TInt lineid = aMut.LineId();
+    ss << lineid << KColSep;
+    if (aNode != NULL) {
+	GUri fullpath;
+	aNode->GetUri(fullpath);
+	ss << fullpath.GetUri(ETrue) << KColSep;
+    }
+    va_list list;
+    va_start(list,aFmt);
+    vsprintf(buf1, aFmt, list);
+    ss << buf1;
+    WriteRecord(ss.str().c_str());
+    if (iObs != NULL) {
+	iObs->OnLogAdded(aCtg, aNode, buf1, lineid);
     }
 }
 

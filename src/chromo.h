@@ -108,6 +108,7 @@ class ChromoNode
     public:
 	TNodeType Type() { return iMdl.GetType(iHandle); };
 	TNodeType Type() const { return iMdl.GetType(iHandle); };
+	TInt LineId() const { return iMdl.GetLineId(iHandle); };
 	const string Name() { return Attr(ENa_Id);};
 	const string Name() const { return Attr(ENa_Id);};
 	const string Attr(TNodeAttr aAttr);

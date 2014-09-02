@@ -6,6 +6,7 @@
 
 class Elem;
 class MLogObserver;
+class ChromoNode;
 
 // Log recorder interface
 class MLogRec
@@ -22,6 +23,7 @@ class MLogRec
     public:
 	virtual void WriteFormat(const char* aFmt,...) = 0;
 	virtual void Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...) = 0;
+	virtual void Write(TLogRecCtg aCtg, const ChromoNode& aMut, Elem* aNode, const char* aFmt,...) = 0;
 	virtual void Flush() = 0;
 	virtual TBool AddLogObserver(MLogObserver* aObs) = 0;
 	virtual void RemoveLogObserver(MLogObserver* aObs) = 0;
@@ -31,7 +33,7 @@ class MLogRec
 class MLogObserver
 {
     public:
-	virtual void OnLogAdded(MLogRec::TLogRecCtg aCtg, Elem* aNode, const std::string& aContent) = 0;
+	virtual void OnLogAdded(MLogRec::TLogRecCtg aCtg, Elem* aNode, const std::string& aContent, TInt aMutId = 0) = 0;
 	virtual void OnLogRecDeleting(MLogRec* aLogRec) = 0;
 };
 

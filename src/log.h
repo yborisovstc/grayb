@@ -17,6 +17,7 @@ class GLogRec: public Base, public MLogRec
 	// From MLogRec
 	virtual void WriteFormat(const char* aFmt,...);
 	virtual void Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...);
+	virtual void Write(TLogRecCtg aCtg, const ChromoNode& aMut, Elem* aNode, const char* aFmt,...);
 	virtual void Flush();
 	virtual TBool AddLogObserver(MLogObserver* aObs);
 	virtual void RemoveLogObserver(MLogObserver* aObs);

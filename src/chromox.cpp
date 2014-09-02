@@ -494,6 +494,11 @@ void ChromoMdlX::SetOrder(void* aHandle, TInt aOrder, TBool aTree)
     SetAttr(aHandle, attr, aOrder);
 }
 
+TInt ChromoMdlX::GetLineId(void* aHandle) const
+{
+    xmlNodePtr src = (xmlNodePtr) aHandle;
+    return src->line;
+}
 
 
 ChromoX::ChromoX(): iRootNode(iMdl, NULL)

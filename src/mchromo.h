@@ -52,6 +52,7 @@ class MChromoMdl
 	virtual void* Find(const void* aHandle, const string& aUri) = 0;
 	virtual TInt GetOrder(void* aHandle, TBool aTree = EFalse) const = 0;
 	virtual void SetOrder(void* aHandle, TInt aOrder, TBool aTree = EFalse) = 0;
+	virtual TInt GetLineId(void* aHandle) const = 0;
 };
 
 class ChromoNode;

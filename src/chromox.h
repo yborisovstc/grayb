@@ -47,6 +47,7 @@ class ChromoMdlX: public ChromoMdl
 	virtual void* Find(const void* aHandle, const string& aUri);
 	virtual TInt GetOrder(void* aHandle, TBool aTree = EFalse) const;
 	virtual void SetOrder(void* aHandle, TInt aOrder, TBool aTree = EFalse);
+	virtual TInt GetLineId(void* aHandle) const;
     public:
 	int GetAttrInt(void *aHandle, const char *aName);
 	void* Set(const char* aFileName);
