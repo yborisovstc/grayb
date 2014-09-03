@@ -80,7 +80,7 @@ void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...)
     }
 }
 
-void GLogRec::Write(TLogRecCtg aCtg, const ChromoNode& aMut, Elem* aNode, const char* aFmt,...)
+void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const ChromoNode& aMut, const char* aFmt,...)
 {
     char buf1[KLogRecBufSize] = "";
     stringstream ss;

@@ -23,7 +23,7 @@ class MLogRec
     public:
 	virtual void WriteFormat(const char* aFmt,...) = 0;
 	virtual void Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...) = 0;
-	virtual void Write(TLogRecCtg aCtg, const ChromoNode& aMut, Elem* aNode, const char* aFmt,...) = 0;
+	virtual void Write(TLogRecCtg aCtg, Elem* aNode, const ChromoNode& aMut, const char* aFmt,...) = 0;
 	virtual void Flush() = 0;
 	virtual TBool AddLogObserver(MLogObserver* aObs) = 0;
 	virtual void RemoveLogObserver(MLogObserver* aObs) = 0;

@@ -1130,7 +1130,8 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 		    rnode = node->GetNode(mval);
 		    //mval = rnode->GetRUri(node);
 		    if (rnode == NULL) {
-			Logger()->Write(MLogRec::EErr, this, "Changing contnt of node [%s] to ref [%s] - cannot find ref", snode.c_str(), mval.c_str());
+			Logger()->Write(MLogRec::EErr, this, aSpec,
+				"Changing contnt of node [%s] to ref [%s] - cannot find ref", snode.c_str(), mval.c_str());
 			res = EFalse;
 		    }
 		    else {
@@ -1155,7 +1156,8 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 			}
 		    }
 		    else {
-			Logger()->Write(MLogRec::EErr, this, "Changing [%s] - failure", snode.c_str());
+			Logger()->Write(MLogRec::EErr, this, aSpec, "Changing [%s] - failure", snode.c_str());
+			node->ChangeCont(mval, EFalse);
 		    }
 		}
 	    }
@@ -1216,7 +1218,8 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
     }
     // Append mutation to chromo anytype, ref uc_043
     if (!aRunTime && !mutadded) {
-	iChromo->Root().AddChild(aSpec);
+	ChromoNode mut = iChromo->Root().AddChild(aSpec);
+	TInt mutid = mut.LineId();
     }
     return res;
 }
@@ -1675,31 +1678,34 @@ void Elem::OnCompAdding(Elem& aComp)
 // If providing mechanism is used instead of full relations tracking in Vert. So node A has Ifaces cache
 // that includes ifaces from node B but there is no mechanism of the changes in the cache. To consider
 // to implement cache update notification. Ref UC_010 
-void Elem::OnCompChanged(Elem& aComp)
+TBool Elem::OnCompChanged(Elem& aComp)
 {
     Elem* agents = GetComp("Elem", "Agents");
-    TBool res = false;
+    TBool res = ETrue;
+    TBool handled_by_agents = EFalse;
     if (agents != NULL) {
-	for (vector<Elem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && !res; it++) {
+	for (vector<Elem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && res; it++) {
 	    MACompsObserver* iagent = (*it)->GetObj(iagent);
 	    if (iagent != NULL) {
 		res = iagent->HandleCompChanged(*this, aComp);
+		handled_by_agents = ETrue;
 	    }
 	}
     }
     /*
        DoOnCompChanged(aComp);
        */
-    if (!res) {
+    if (!handled_by_agents) {
 	DoOnCompChanged(aComp);
     }
     // Propagate notification to upper level
-    if (iMan != NULL) {
-	iMan->OnCompChanged(aComp);
+    if (res && iMan != NULL) {
+	res = iMan->OnCompChanged(aComp);
     }
-    if (iObserver != NULL) {
+    if (res && iObserver != NULL) {
 	iObserver->OnCompChanged(aComp);
     }
+    return res;
 }
 
 TBool Elem::OnCompRenamed(Elem& aComp, const string& aOldName)
@@ -1723,14 +1729,16 @@ TBool Elem::OnCompRenamed(Elem& aComp, const string& aOldName)
     return res;
 }
 
-void Elem::OnContentChanged(Elem& aComp)
+TBool Elem::OnContentChanged(Elem& aComp)
 {
+    TBool res = EFalse, res1 = EFalse;
     if (iMan != NULL) {
-	iMan->OnContentChanged(aComp);
+	res = iMan->OnContentChanged(aComp);
     }
     if (iObserver != NULL) {
-	iObserver->OnContentChanged(aComp);
+	res1 = iObserver->OnContentChanged(aComp);
     }
+    return res && res1;
 }
 
 void Elem::DoOnCompChanged(Elem& aComp)

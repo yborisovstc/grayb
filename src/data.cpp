@@ -26,11 +26,12 @@ DataBase::DataBase(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 
 TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
-    TBool res = EFalse;
+    TBool res = ETrue;
     if (aComp.Name() == "Value" && aComp.EType() == "Prop") {
 	MProp* prop = aComp.GetObj(prop);
 	if (prop == NULL) {
 	    Logger()->Write(MLogRec::EErr, this, "Missing MProp iface in property [%s]", aComp.Name().c_str());
+	    res = EFalse;
 	}
 	else {
 	    string curr;
@@ -40,7 +41,6 @@ TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 	    }
 	    FromString(prop->Value());
 	}
-	res = ETrue;
     }
     else {
 	Elem* caps = aContext.GetNode("./Capsule");
@@ -59,7 +59,7 @@ TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 
 TBool DataBase::HandleIoChanged(Elem& aContext, Elem* aCp)
 {
-    return EFalse;
+    return ETrue;
 }
 
 void DataBase::NotifyUpdate()
@@ -469,7 +469,7 @@ bool DVar::ToString(string& aData)
 
 TBool DVar::HandleIoChanged(Elem& aContext, Elem* aCp)
 {
-    TBool res = EFalse;
+    TBool res = ETrue;
     if (aCp->Name() == "inp" || aCp->Name() == "Inp") {
 	// Check input change
 	if (mData != NULL) {
@@ -523,7 +523,7 @@ Elem* DVar::GetInp()
 
 TBool DVar::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
-    DataBase::HandleCompChanged(aContext, aComp);
+    return DataBase::HandleCompChanged(aContext, aComp);
 }
 
 // Bool data

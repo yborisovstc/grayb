@@ -231,9 +231,9 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// From MCompsObserver
 	virtual void OnCompDeleting(Elem& aComp);
 	virtual void OnCompAdding(Elem& aComp);
-	virtual void OnCompChanged(Elem& aComp);
+	virtual TBool OnCompChanged(Elem& aComp);
 	virtual TBool OnCompRenamed(Elem& aComp, const string& aOldName);
-	virtual void OnContentChanged(Elem& aComp);
+	virtual TBool OnContentChanged(Elem& aComp);
 	// From MMutable
 	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime);
 	// Ifaces cache

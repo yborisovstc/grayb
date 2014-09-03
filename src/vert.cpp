@@ -124,16 +124,22 @@ TBool Vert::Connect(MVert* aPair)
 {
     TBool res = EFalse;
 //    __ASSERT(aPair != NULL && iPairs.count(aPair) == 0);
-    if(aPair != NULL && iPairs.count(aPair) == 0) {
-	// Invalidate ifaces cache
-	InvalidateIfCache();
-	iPairs.insert(aPair);
-	// We need to two part connection here. Otherwise CompChanged handling will be incorrect
-	// owner can notify the pair and get back request for iface, so need to have full connection
-	aPair->Connect(this);
-	__ASSERT(iMan != NULL);
-	iMan->OnCompChanged(*this);
-	res = ETrue;
+    if(aPair != NULL) {
+	if(iPairs.count(aPair) == 0) {
+	    // Invalidate ifaces cache
+	    InvalidateIfCache();
+	    iPairs.insert(aPair);
+	    // We need to two part connection here. Otherwise CompChanged handling will be incorrect
+	    // owner can notify the pair and get back request for iface, so need to have full connection
+	    aPair->Connect(this);
+	    __ASSERT(iMan != NULL);
+	    res = iMan->OnCompChanged(*this);
+	}
+	else {
+	    Base* bp = aPair->EBase();
+	    Elem* ep = bp->GetObj(ep);
+	    Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - already connected, failed", ep->GetUri().c_str());
+	}
     }
     return res;
 }

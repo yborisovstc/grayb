@@ -74,10 +74,9 @@ TBool Incaps::IsPtOk(Elem& aContext, Elem* aPt) {
     return res;
 }
 
-
 TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
-    TBool res = EFalse;
+    TBool res = ETrue;
     Elem* eedge = aContext.GetCompOwning("Edge", &aComp);
     if (eedge != NULL) {
 	Elem* host = iMan->GetMan();
@@ -120,6 +119,7 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 					    }
 					    else {
 						Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] failed", pt1u.c_str(), pt2u.c_str());
+						edge->Connect(&aComp);
 					    }
 					}
 					else {

@@ -40,7 +40,7 @@ void *ATrBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aC
 
 TBool ATrBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
-    TBool res = EFalse;
+    TBool res = ETrue;
     return res;
 }
 

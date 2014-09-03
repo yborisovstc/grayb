@@ -42,7 +42,7 @@ void *FuncBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* a
 
 TBool FuncBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
-    TBool res = EFalse;
+    TBool res = ETrue;
     Elem* caps = aContext.GetNode("./Capsule");
     if (caps != NULL) {
 	// TODO [YB] To optimize by using proper utility
@@ -76,7 +76,7 @@ void FuncBase::NotifyUpdate()
 
 TBool FuncBase::HandleIoChanged(Elem& aContext, Elem* aCp)
 {
-    return EFalse;
+    return ETrue;
 }
 
 // Agent base of Int function
@@ -181,27 +181,16 @@ void *AIncInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aC
 
 TBool AIncInt::HandleIoChanged(Elem& aContext, Elem* aCp)
 {
-    TBool res = EFalse;
+    TBool res = ETrue;
     // Checking input change
     if (aCp->Name() == "inp") {
-	/*
-	Vert* vert = aCp->GetObj(vert);
-	MVert* pair = *(vert->Pairs().begin());
-	if (pair != NULL) {
-	    Vert* vpair = pair->EBase()->GetObj(vpair);
-	    MDIntGet* dget = vpair->GetObj(dget);
-	    if (dget != NULL) {
-		TInt val = dget->Value();
-		SetRes(val + 1);
-		res = ETrue;
-	    }
-	}
-	*/
 	MDIntGet* dget = aCp->GetObj(dget);
 	if (dget != NULL) {
 	    TInt val = dget->Value();
 	    SetRes(val + 1);
-	    res = ETrue;
+	}
+	else {
+	    res = EFalse;
 	}
     }
     return res;
@@ -247,7 +236,7 @@ void *AFunIntRes::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext*
 
 TBool AFunIntRes::HandleIoChanged(Elem& aContext, Elem* aCp)
 {
-    TBool res = EFalse;
+    TBool res = ETrue;
     Vert* vert = aCp->GetObj(vert);
     MVert* pair = *(vert->Pairs().begin());
     if (pair != NULL) {
@@ -259,7 +248,9 @@ TBool AFunIntRes::HandleIoChanged(Elem& aContext, Elem* aCp)
 		TInt val = dget->Value();
 		SetRes(val);
 		UpdateOutp();
-		res = ETrue;
+	    }
+	    else {
+		res = EFalse;
 	    }
 	}
 	else if (aCp->Name() == "out") {
@@ -333,7 +324,7 @@ void *AAddInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aC
 
 TBool AAddInt::HandleIoChanged(Elem& aContext, Elem* aCp)
 {
-    TBool res = EFalse;
+    TBool res = ETrue;
     // Checking input change
     if (aCp->Name() == "inp") {
 	RqContext cont(this);
@@ -346,7 +337,6 @@ TBool AAddInt::HandleIoChanged(Elem& aContext, Elem* aCp)
 	    }
 	}
 	SetRes(val);
-	res = ETrue;
     }
     return res;
 }
@@ -394,7 +384,7 @@ void *ACountCritInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqConte
 
 TBool ACountCritInt::HandleIoChanged(Elem& aContext, Elem* aCp)
 {
-    TBool res = EFalse;
+    TBool res = ETrue;
     // Checking input change
     if (aCp->Name() == "inp") {
 	RqContext cont(this);
@@ -407,7 +397,6 @@ TBool ACountCritInt::HandleIoChanged(Elem& aContext, Elem* aCp)
 	    }
 	}
 	SetRes(val);
-	res = ETrue;
     }
     return res;
 }

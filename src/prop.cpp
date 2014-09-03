@@ -42,9 +42,9 @@ TBool Prop::ChangeCont(const string& aVal, TBool aRtOnly)
     if (true) {
 	iValue = aVal;
 	if (aRtOnly) {
-	    iMan->OnContentChanged(*this);
+	    res = iMan->OnContentChanged(*this);
 	} else {
-	    iMan->OnCompChanged(*this);
+	    res = iMan->OnCompChanged(*this);
 	}
     }
     return res;
