@@ -260,6 +260,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr);
 	void RmCMDep(const ChromoNode& aMut);
 	Elem* GetCMDep(const ChromoNode& aMut, TNodeAttr aAttr) const;
+	Elem* GetCMDepViaInher(const ChromoNode& aMut, TNodeAttr aAttr);
 	void GetDep(TMDep& aDep, TNodeAttr aAttr, TBool aLocalOnly = EFalse) const;
 	void GetDepRank(Rank& aRank, TNodeAttr aAttr);
 	TMDep GetMajorDep();

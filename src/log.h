@@ -19,6 +19,7 @@ class GLogRec: public Base, public MLogRec
 	virtual void Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...);
 	virtual void Write(TLogRecCtg aCtg, Elem* aNode, const ChromoNode& aMut, const char* aFmt,...);
 	virtual void Flush();
+	virtual void SetContextMutId(TInt aMutId = -1);
 	virtual TBool AddLogObserver(MLogObserver* aObs);
 	virtual void RemoveLogObserver(MLogObserver* aObs);
     protected:
@@ -28,6 +29,7 @@ class GLogRec: public Base, public MLogRec
 	string iLogFileName;
 	TBool iLogFileValid;
 	MLogObserver* iObs;
+	TInt mCtxMutId;
 };
 
 #endif

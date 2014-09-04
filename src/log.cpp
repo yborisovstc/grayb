@@ -8,7 +8,7 @@ const char* CtgText[MLogRec::ECtg_Max] = {"ERR", "WARN", "INFO", "DBG"};
 const char* KColSep = "; ";
 
 GLogRec::GLogRec(const string& aName, const string& aLogFileName): Base(aName), iLogFileName(aLogFileName), iLogFileValid(EFalse),
-    iObs(NULL)
+    iObs(NULL), mCtxMutId(-1)
 {
     remove(iLogFileName.c_str()); 
     iLogFile = fopen(iLogFileName.c_str(), "w+");
@@ -58,25 +58,28 @@ void GLogRec::WriteFormat(const char* aFmt,...)
 
 void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...)
 {
-    char buf[KLogRecBufSize] = "";
     char buf1[KLogRecBufSize] = "";
-    strcpy(buf, CtgText[aCtg]);
-    strcat(buf, KColSep);
-    GUri fullpath;
-    if (aNode != NULL) {
-	aNode->GetUri(fullpath);
-	strcat(buf, fullpath.GetUri(ETrue).c_str());
+    stringstream ss;
+    ss << CtgText[aCtg] << KColSep;
+    TInt mutid = mCtxMutId;
+    if (mutid != -1) {
+	ss << mutid << KColSep;
     }
-    strcat(buf, KColSep);
-    strcat(buf, KColSep);
+    else {
+	ss << KColSep;
+    }
+    if (aNode != NULL) {
+	GUri fullpath;
+	aNode->GetUri(fullpath);
+	ss << fullpath.GetUri(ETrue) << KColSep;
+    }
     va_list list;
     va_start(list,aFmt);
     vsprintf(buf1, aFmt, list);
-    strcat(buf, buf1);
-    TInt len = strlen(buf);
-    WriteRecord(buf);
+    ss << buf1;
+    WriteRecord(ss.str().c_str());
     if (iObs != NULL) {
-	iObs->OnLogAdded(aCtg, aNode, buf1);
+	iObs->OnLogAdded(aCtg, aNode, buf1, mutid);
     }
 }
 
@@ -124,3 +127,9 @@ void GLogRec::RemoveLogObserver(MLogObserver* aObs)
     iObs = NULL;
 }
 
+void GLogRec::SetContextMutId(TInt aMutId)
+{
+    if (mCtxMutId != aMutId) {
+	mCtxMutId = aMutId;
+    }
+}

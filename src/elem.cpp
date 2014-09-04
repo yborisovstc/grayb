@@ -975,6 +975,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
     {
 	TBool res = EFalse;
 	ChromoNode rno = (*rit);
+	Logger()->SetContextMutId(rno.LineId());
 	TInt order = rno.GetOrder();
 	// Avoiding mutations above limit. Taking into account only attached chromos.
 	if (isattached && tord > 0 && order > tord - lim) {
@@ -1014,6 +1015,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 	else {
 	    Logger()->Write(MLogRec::EErr, this, "Mutating - unknown mutation type [%d]", rnotype);
 	}
+	Logger()->SetContextMutId();
     }
 }
 
@@ -2822,8 +2824,8 @@ void Elem::CompactChromo(const ChromoNode& aNode)
 	}
     }
     else if (muttype == ENt_Rm) {
-	// Get node this mutation relates to
-	Elem* node = GetCMDep(gmut, ENa_MutNode);
+	// Get node this mutation relates to, using inher hier to get the removed node
+	Elem* node = GetCMDepViaInher(gmut, ENa_MutNode);
 	if (node != NULL) {
 	    // Remove mutation of creation of deleted node
 	    TMDeps::iterator it = node->GetMDeps().begin();
@@ -2912,6 +2914,19 @@ Elem* Elem::GetCMDep(const ChromoNode& aMut, TNodeAttr aAttr) const
 	    Elem* comp = *it;
 	    res = comp->GetCMDep(aMut, aAttr);
 	}
+    }
+    return res;
+}
+
+Elem* Elem::GetCMDepViaInher(const ChromoNode& aMut, TNodeAttr aAttr)
+{
+    Elem* res = NULL;
+    const Elem* iroot = GetNode("Elem");
+    __ASSERT(iroot != NULL);
+    TCMRelFrom key((void*) aMut.Handle(), aAttr);
+    for (TNMReg::const_iterator it = iChilds.begin(); it != iChilds.end() && res == NULL; it++) {
+	Elem* comp = it->second;
+	res = comp->GetCMDepViaInher(aMut, aAttr);
     }
     return res;
 }

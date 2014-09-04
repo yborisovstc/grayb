@@ -122,7 +122,7 @@ void Vert::SetRemoved()
 
 TBool Vert::Connect(MVert* aPair)
 {
-    TBool res = EFalse;
+    TBool res = ETrue;
 //    __ASSERT(aPair != NULL && iPairs.count(aPair) == 0);
     if(aPair != NULL) {
 	if(iPairs.count(aPair) == 0) {
@@ -131,14 +131,19 @@ TBool Vert::Connect(MVert* aPair)
 	    iPairs.insert(aPair);
 	    // We need to two part connection here. Otherwise CompChanged handling will be incorrect
 	    // owner can notify the pair and get back request for iface, so need to have full connection
-	    aPair->Connect(this);
+	    // So request pair connection if not connected yet
+	    if(aPair->Pairs().count(this) == 0) {
+		aPair->Connect(this);
+	    }
 	    __ASSERT(iMan != NULL);
 	    res = iMan->OnCompChanged(*this);
 	}
 	else {
+	    // TODO [YB] Seems this happens constantly. To analyze why
 	    Base* bp = aPair->EBase();
 	    Elem* ep = bp->GetObj(ep);
 	    Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - already connected, failed", ep->GetUri().c_str());
+	    res = EFalse;
 	}
     }
     return res;

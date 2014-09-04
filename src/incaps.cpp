@@ -119,7 +119,6 @@ TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 					    }
 					    else {
 						Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] failed", pt1u.c_str(), pt2u.c_str());
-						edge->Connect(&aComp);
 					    }
 					}
 					else {

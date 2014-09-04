@@ -531,7 +531,7 @@ void Ut_mut::test_Compact3()
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Compact chromo
-    //root->CompactChromo();
+    root->CompactChromo();
     // Save compacted chromo and recreate the model
     iEnv->Root()->Chromos().Save("ut_compact3_res.xml_");
     delete iEnv;
@@ -539,11 +539,16 @@ void Ut_mut::test_Compact3()
     iEnv = new Env("Env", "ut_compact3_res.xml_", "ut_compact3_res.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to re-create compacted system", iEnv != 0);
     iEnv->ConstructSystem();
-     // Check if edge is set correctly
+     // Check that v3 is not created
     root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root after compacting", root != 0);
-    Elem* v3 = root->GetNode("(Vert:)v3");
+    Elem* v3 = root->GetNode("./(Vert:)v3");
     CPPUNIT_ASSERT_MESSAGE("V3 is not removed", v3 == NULL);
+    ChromoNode::Iterator it = root->Chromos().Root().Begin(); 
+    it++; it++;
+    ChromoNode mut = *it;
+    TBool is_mut_correct = mut.Type() == ENt_Node && mut.Attr(ENa_Id) == "Edge1";
+    CPPUNIT_ASSERT_MESSAGE("Mut of creation v3 is not squeezed", is_mut_correct);
 
     delete iEnv;
 }
