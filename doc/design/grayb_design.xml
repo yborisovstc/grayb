@@ -30,6 +30,8 @@
 		<revremark>Added <xref linkend="ds_mut"/></revremark> </revision>
 	    <revision> <revnumber>0.07</revnumber> <date>08-Aug-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="ds_nat_agent_hier"/></revremark> </revision>
+	    <revision> <revnumber>0.08</revnumber> <date>09-Sep-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="ds_mut_dis_pheno"/>, <xref linkend="ds_mut_pheno"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -341,25 +343,37 @@
 	    </sect3>
 	    <sect3><title>Possible solutions</title>
 		<sect4><title>To check the parent - if run-time parent doesn't exist then get its chromo from system chromo.</title>
-		    <simpara>This approach goes to using parent's chromo instead of run-time nodes as is in current solution. Can we use chromo? The doubts are
+		    <simpara>This approach goes to using parent's chromo instead of run-time nodes as is in current solution.
+		       Can we use chromo? The doubts are
 			because of the incremental mutation scheme principle "Chromosome as subject and system as object of creation". 
-			This means that the references in chromo (to object node, to parent etc.) are the references within system but not within chromo itserf.</simpara>
-		    <simpara>Usecase is: root node N_R, its comp N_A contains N_A_1, then N_A gets removed, creator makes mutation in N_R to create N_B for that this N_A_1 is in parents chain. 
-			The problem here is that even we get N_A_1 chromo to mutate, the mutation has to be done in context of N_A that is also removed. So the references from
-			mutations within N_A_1 chromo to internals of N_A are broken. How the mutaion with chromo N_A_1 can be done? It shuldn't be a problem if we take into 
-			account the principle "Mutations references of types other than -parent- can point only to onwned node". This means that the mutation within N_A_1 can 
-			contains references only inside of N_A_1. The only parent reference can be to outside of local conext, but as was discussed parents relation is safe in root chromo.</simpara>
-		    <simpara>The weaknes of this solution is that it requires that parents chromo node can be found from the node being mutated with -node- mutation. So 
-			we need to have ChromoNode methods like GetNode, the analogue of such method in run-time Elem. But chromo has only one explicit relations net - native hierarchy of
-			ownership. Chromo doesn't support hierarchy of inheritance. This makes the problem to use this approach because inheritance based URIs cannot be resolved in chromo. </simpara>
+			This means that the references in chromo (to object node, to parent etc.) are the references within system but 
+			not within chromo itserf.</simpara>
+		    <simpara>Usecase is: root node N_R, its comp N_A contains N_A_1, then N_A gets removed, creator makes mutation in 
+			N_R to create N_B for that this N_A_1 is in parents chain. 
+			The problem here is that even we get N_A_1 chromo to mutate, the mutation has to be done in context of N_A 
+			that is also removed. So the references from
+			mutations within N_A_1 chromo to internals of N_A are broken. How the mutaion with chromo N_A_1 can be done? 
+			It shuldn't be a problem if we take into 
+			account the principle "Mutations references of types other than -parent- can point only to onwned node". 
+			This means that the mutation within N_A_1 can 
+			contains references only inside of N_A_1. The only parent reference can be to outside of local conext, 
+			but as was discussed parents relation is safe in root chromo.</simpara>
+		    <simpara>The weaknes of this solution is that it requires that parents chromo node can be found from the 
+			node being mutated with -node- mutation. So 
+			we need to have ChromoNode methods like GetNode, the analogue of such method in run-time Elem. 
+			But chromo has only one explicit relations net - native hierarchy of
+			ownership. Chromo doesn't support hierarchy of inheritance. This makes the problem to use this approach 
+			because inheritance based URIs cannot be resolved in chromo. </simpara>
 		</sect4>
 		<sect4><title>To not actually remove run-time node but mark it as removed</title>
 		    <simpara>Node having this mark shall deny any mutations. The clients should ignore and hide "removed" nodes.</simpara>
 		    <simpara>Weaknesses?</simpara>
 		    <itemizedlist>
 			<listitem> Seems just workaround. </listitem>
-			<listitem>Comp is not deleted actually, so it is kept in owner comps register. This can cause problem with multiple choice when resolving component. 
-			    Currently the following mutation is quite popular, in Extender for instance: to remove default Int and to create custom Int. But in this case there will be two Ints.</listitem>
+			<listitem>Comp is not deleted actually, so it is kept in owner comps register. This can cause problem with 
+			    multiple choice when resolving component. 
+			    Currently the following mutation is quite popular, in Extender for instance: to remove default Int 
+			    and to create custom Int. But in this case there will be two Ints.</listitem>
 		    </itemizedlist>
 		</sect4>
 	    </sect3>
@@ -378,23 +392,92 @@
 	</sect2>
 	<sect2 id="ds_mv_local"><title>Local Moving of node.</title>
 	    <sect3><title>Intro</title>
-		<simpara>Actually local moving of node is not single mutation but two mutations: re-creating node in new context and removing initial node.</simpara>
+		<simpara>Actually local moving of node is not single mutation but two mutations: 
+		    re-creating node in new context and removing initial node.</simpara>
 	    </sect3>
 	    <sect3><title>How to transform chromo for new context</title>
-		<simpara>One of the problem when re-creating node in new context is transformation node's chromo to be sutable for new context. </simpara>
-		<simpara>There can be some solution considered. One of them is to transform source node chromo to destination node context. This approach is rather complicated for
-		    implementation. Another approach is to use currently implemented mechanism of creatng heir. So we can create heir from source node (this is done by source node 
+		<simpara>One of the problem when re-creating node in new context is transformation node's chromo to be 
+		    sutable for new context. </simpara>
+		<simpara>There can be some solution considered. One of them is to transform source node chromo to destination node context. 
+		    This approach is rather complicated for
+		    implementation. Another approach is to use currently implemented mechanism of creatng heir. 
+		    So we can create heir from source node (this is done by source node 
 		    in original context, so doesn't cause any troubles. Then we can re-adopt the heir from source node to its parent.</simpara>
 	    </sect3>
 	    <sect3><title>Is operation of local movement useful?</title>
-		<simpara>The problem here is that the current implementation [ff62b4f15279edfbe4baf36161d3dcad6973725f] the result of local movement is run-time only. It is 
-		    clear, we just need to remember that local movement is specified by simple mutation within the chromo. So there are doubts that local movement is actually useful. There
+		<simpara>The problem here is that the current implementation [ff62b4f15279edfbe4baf36161d3dcad6973725f] 
+		    the result of local movement is run-time only. It is 
+		    clear, we just need to remember that local movement is specified by simple mutation within the chromo.
+		    So there are doubts that local movement is actually useful. There
 		    were no occurances at the moment of using this local movement operation.
 		</simpara>
 		<simpara>There is alternative approach, ref <xref linkend="ds_mut_cutncopy"/></simpara>
 	    </sect3>
 	</sect2>
 	<sect2><title>Moving of node</title>
+	</sect2>
+	<sect2 id="ds_mut_dis_pheno"><title>Disabling/Enabling phenotypic modificaions</title>
+	    <sect3><title>Intro</title>
+		<simpara>Last time there was decision made to introduce new options - disabling pheno modificaions</simpara>
+	    </sect3>
+	    <sect3><title>Cause of the problem</title>
+		<simpara>The root-cause of the problem is contradiction between the sequence of changing model and 
+		    option of inheritance of childs from the structural part of system native hier. If we didn't require 
+		    such an inheritance then we can use flat chromo where the order of mutations completelly corresponds to
+		    the order the changes applied to the system on construction phase.</simpara>
+		<simpara>However native hier (structure) is very important part of system creation and cannot be
+		    avoided or ignored.</simpara>
+		<simpara>There is another option of keeping the original sequence of mutation - mutation order. 
+		    Currently it is possible to set order value for each mutation. So if the "chromo machine" could to
+		    apply the muts according to the order it would be equivalent to flat chromo. Equivelency means that these
+		forms of chromos can be explicitly transformed one to another.</simpara>
+	    </sect3>
+	    <sect3><title>Flat chromo approach</title>
+		<simpara>Issues</simpara>
+		<orderedlist>
+		    <listitem>What if we create child from a node and then apply some mutation to the node. Then we d like to
+		    have this mutaion in child also.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Issues</title>
+		<orderedlist>
+		    <listitem>In case of pheno disabled it will not be possible to change parents. Currently (enabled pheno) it
+			is possible to change parent even after there was children created. Then potentially we have an option to 
+			"rebase" children via moving pheno to mutation. In case of pheno disabled we need to refuse any mutations in 
+			parent or enable the mut, so do "rebasing" immediatelly</listitem>
+		</orderedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mut_pheno"><title>Controlling of Phenotypic modification mode</title>
+	    <sect3><title>Introduction</title>
+		<simpara>Initially phenotypic modification was enabled by default. On practice this mode was rather
+		    inconvenient because of pheno modifs created a lot of dependencies. To keep chromo safe we transform many changes 
+		    to pheno modif and put them after corresponding deps. In result the constructed system chromo
+		    become mess. Also this hardened inheritance - the changes that should be real mutations were transformed to
+		    pheno modif that were not involved in inheritance process.</simpara>
+		<simpara>After this problem analysis it was decided that we need to restrict the pheno modif mode and have
+		    pheno modif disabled by default. Only for inherited nodes the pheno modif would be enabled in this case	.</simpara>
+		<simpara>But this decision also resulted in problem. For instance it got not possible to simply change 
+		    ref in Edges connpoint. So if some edge was created with low rank and then it became required to make connection
+		    to node with greated rank then it result in critical dependency. There were two approached considered: 
+		    <itemizedlist>
+			<listitem>to move edge locally in order to increase edges rank</listitem>
+			<listitem>to introduce the ability to set pheno mode for particular agent.</listitem>
+		    </itemizedlist>
+		</simpara>
+	    </sect3>
+	    <sect3><title>Shifting node to increase its rank</title>
+		<simpara>This approach cons is that actually it is not possible to do it via simple mutation. It was discussed 
+		    many times. The short explanation is that the initial mutaion anytime goes first so to change nodes rank we
+		    need to edit chromo but not mutation it additivelly.</simpara>
+		<simpara>So to shift the node we need to recreate the node, remove initial one and then squeeze the chromo to 
+		    avoid errors reporting because of initial mut is failed. Not simple approach really.</simpara>
+	    </sect3>
+	    <sect3><title>How to set pheno mode for an agent</title>
+		<simpara>The most realistic approach is to add specific new attribute of node and to add specific Elem API, like
+		    IsPhenoEnabled(). Agent will be able have its own default value for this attribute. For instance Edge agent
+		    could set this attribute as enabled.</simpara>
+	    </sect3>
 	</sect2>
 	<sect2 id="ds_mut_sqeezing"><title>Squeezing of mutations</title>
 	    <sect3><title>Intro</title>
@@ -404,9 +487,12 @@
 		    detailed analysis. </simpara>
 	    </sect3>
 	    <sect3><title>Approaches: reverse engineering</title>
-		<simpara>One of the approach for squeezing the mutaions is: as the result of all mutations is the created system, then all what we need is to get the system,
-		    and "regenerate" the mutatation from the system, i.e. to do kind of "reverse engineering". The problem here is that is is not possible to do it by using some
-		    simple algorithm. First of all there is no possibility to "eliminate" any mutation applied to part of node that comes from parent, so called detached chromo. 
+		<simpara>One of the approach for squeezing the mutaions is: as the result of all mutations is the created system, 
+		    then all what we need is to get the system,
+		    and "regenerate" the mutatation from the system, i.e. to do kind of "reverse engineering". 
+		    The problem here is that is is not possible to do it by using some
+		    simple algorithm. First of all there is no possibility to "eliminate" any mutation applied to part of node 
+		    that comes from parent, so called detached chromo. 
 		    But these mutations can have references to node that then changed by further muatinons. Let's look at the example:</simpara>
 		<programlisting>
 		    add node="node_1" {
@@ -414,7 +500,8 @@
 		    }
 		    rename node="some_node" val="some_node_renamed"
 		</programlisting>
-		<simpara>So there is no way to restore the -add- mutation from model. In other words the "outer" mutations aka "phenotype" are ambuguous, so we cannot say from what they 
+		<simpara>So there is no way to restore the -add- mutation from model. In other words the "outer" mutations 
+		    aka "phenotype" are ambuguous, so we cannot say from what they 
 		    were applied. So no possibility to recreate them from the model.</simpara>
 	    </sect3>
 	    <sect3><title>Approaches: Direct merging.</title>
@@ -453,7 +540,7 @@
 	<sect2 id="ds_mut_cutncopy"><title>Chromo cutncopy: do we need it?</title>
 	    <sect3><title>Intro</title>
 		<simpara>There are some usecases clearly indicated that copy of chromo is useful operation. One of cases is:
-		USER has some complex model and he wants to separate some part of this model as independent model.</simpara>
+		    USER has some complex model and he wants to separate some part of this model as independent model.</simpara>
 	    </sect3>
 	    <sect3><title>Cons</title>
 		<itemizedlist>
@@ -466,7 +553,7 @@
     <sect1 id="ds_visrepr"><title>Visual representation</title>
 	<sect2><title>Introduction</title>
 	    <simpara>Visual representation here is not visualization of model like falling ball pictures for the ball model.
-	    The representation is of how to show the structure of model for the user, so it can be described as structure visual representation.</simpara>
+		The representation is of how to show the structure of model for the user, so it can be described as structure visual representation.</simpara>
 	    <itemizedlist>
 		<listitem>Ref <ulink url="../requirements/index.html#uc_036"/> for use-case</listitem>
 	    </itemizedlist>
@@ -486,7 +573,7 @@
 	<sect2 id="ds_visrepr_dea"><title>Approaches: using dedicated agent for the representation</title>
 	    <simpara>The dedicated agent is created to keep the parameters of visual representation. This approach doesn't differ much from 
 		<xref linkend="ds_visrepr_emb"/>, the only change is that instead of having the support of representation in base agent (i.e. 
-	    in each agent), we add specific representation agent into nodes that requires custom visualization.</simpara>
+		in each agent), we add specific representation agent into nodes that requires custom visualization.</simpara>
 	</sect2>
 	<sect2 id="ds_visrepr_mdl"><title>Approaches: representation to be described by means of model itself</title>
 	    <sect3><title>Intro</title>
@@ -505,7 +592,7 @@
 		    we don't need the part related to structure visual representation. This separation can be implemented by having one base element for 
 		    all representation agents, plus env option to not create those, plus support of creation masking on agent base level.</simpara>
 		<simpara>How to avoid dependencies beween general and representational agents? The idea is to keep all representational agents
-		together, e.g in one agent. This would allow to simplify the structure of the whole system.</simpara>
+		    together, e.g in one agent. This would allow to simplify the structure of the whole system.</simpara>
 	    </sect3>
 	    <sect3><title>Representational agents</title>
 		<simpara>The following agents could be used for visual representation:</simpara>
@@ -606,6 +693,12 @@
     </sect1>
 
     <sect1 id="ds_prb"><title>Problems</title>
+    </sect1>
+
+    <sect1 id="ds_tohandle"><title>To handle</title>
+	<orderedlist>
+	    <listitem>Using mut order to ensure original sequence of muts, ref <xref linkend="ds_mut_dis_pheno"/> </listitem>
+	</orderedlist>
     </sect1>
 
 </article>
