@@ -27,7 +27,7 @@ TBool Graph::AddNode(const ChromoNode& aSpec)
 {
 }
 
-TBool Graph::DoMutation(const ChromoNode& aCromo)
+TBool Graph::DoMutation(const ChromoNode& aCromo, TBool aCheckSafety)
 {
 }
 

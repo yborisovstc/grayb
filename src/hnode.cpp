@@ -37,7 +37,7 @@ void MutElem::SetMutation(const ChromoNode& aMuta)
 void MutElem::Mutate(TBool aRunTimeOnly)
 {
     ChromoNode& root = iMut->Root();
-    DoMutation(root, aRunTimeOnly);
+    DoMutation(root, aRunTimeOnly, ETrue);
     // Clear mutation
     for (ChromoNode::Iterator mit = root.Begin(); mit != root.End();)
     {
@@ -48,7 +48,7 @@ void MutElem::Mutate(TBool aRunTimeOnly)
 }
 
 
-void MutElem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
+void MutElem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSafety)
 {
     const ChromoNode& mroot = aMutSpec;
     ChromoNode& chrroot = iChromo->Root();

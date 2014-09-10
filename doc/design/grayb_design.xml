@@ -426,25 +426,45 @@
 		    such an inheritance then we can use flat chromo where the order of mutations completelly corresponds to
 		    the order the changes applied to the system on construction phase.</simpara>
 		<simpara>However native hier (structure) is very important part of system creation and cannot be
-		    avoided or ignored.</simpara>
+		    avoided or ignored. This approach is to create the system via a set of components, which are
+		    improved via inheritance and local mutations. According to this approach the mutation in parent must
+		    be applied before the childs creation. But this mutation applying sequence differs from native secuence 
+		    (the sequence of how the mutation were introduced)</simpara>
+		<simpara>Actually to keep original sequence is not a problem. For instance flat chromo can be used.</simpara>
 		<simpara>There is another option of keeping the original sequence of mutation - mutation order. 
 		    Currently it is possible to set order value for each mutation. So if the "chromo machine" could to
 		    apply the muts according to the order it would be equivalent to flat chromo. Equivelency means that these
-		forms of chromos can be explicitly transformed one to another.</simpara>
+		    forms of chromos can be explicitly transformed one to another.</simpara>
+		<simpara>But again the real problem is that approach of creating system via inherited sybsystems requires that
+		the sequence of applying differs the original sequence.</simpara>
+	    </sect3>
+	    <sect3><title>Inheritance based approach: solving the problems.</title>
+		<simpara>Currently inherirance based approach is the primary mechanism for creation system. The problem of 
+		    not keeping the original sequence in this case can be mitigated by disabling phenotypic modification. What
+		    are the theats of breaking chromo safety:
+		    <itemizedlist>
+			<listitem>Changing ref: dependencies on the local owner comonent with the bigger rank.
+			    This problem can be fixed by shifting mutated node root mutation over to dependency mutation. This will
+			    not affect the model because this shifting is local.  </listitem>
+			<listitem>Renaming subnode that is referenced. No solution here, required change of ref.</listitem>
+		    </itemizedlist>
+		</simpara>
 	    </sect3>
 	    <sect3><title>Flat chromo approach</title>
 		<simpara>Issues</simpara>
 		<orderedlist>
 		    <listitem>What if we create child from a node and then apply some mutation to the node. Then we d like to
-		    have this mutaion in child also.</listitem>
+			have this mutaion in child also.</listitem>
 		</orderedlist>
 	    </sect3>
 	    <sect3><title>Issues</title>
 		<orderedlist>
-		    <listitem>In case of pheno disabled it will not be possible to change parents. Currently (enabled pheno) it
+		    <listitem>In case of pheno disabled it will not be possible to change parents but keep childs out of this change. 
+			Currently (enabled pheno) it
 			is possible to change parent even after there was children created. Then potentially we have an option to 
 			"rebase" children via moving pheno to mutation. In case of pheno disabled we need to refuse any mutations in 
-			parent or enable the mut, so do "rebasing" immediatelly</listitem>
+			parent or enable the mut, so do "rebasing" immediatelly. In fact this "immediate" rebasing is exact 
+			approach of system creation using inheritance.</listitem>
 		</orderedlist>
 	    </sect3>
 	</sect2>

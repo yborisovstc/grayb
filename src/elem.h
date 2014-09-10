@@ -150,7 +150,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void SetMutation(const ChromoNode& aMuta);
 	void AppendMutation(const ChromoNode& aMuta);
 	TBool AppendMutation(const string& aFileName);
-	void Mutate(TBool aRunTimeOnly = EFalse);
+	void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue);
 	string PName() const;
 	const vector<Elem*>& Comps() const;
 	static void ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct);
@@ -235,7 +235,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual TBool OnCompRenamed(Elem& aComp, const string& aOldName);
 	virtual TBool OnContentChanged(Elem& aComp);
 	// From MMutable
-	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime);
+	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety);
 	// Ifaces cache
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
 	void RmIfCache(IfIter& aIt);
@@ -291,7 +291,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool MergeMutMove(const ChromoNode& aSpec);
 	virtual void DoOnCompChanged(Elem& aComp);
 	TBool IsLogeventCreOn();
-	void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime);
+	void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety);
 	TBool HasChilds() const;
 	TBool HasInherDeps() const;
 	void InsertIfQm(const string& aName, const TICacheRCtx& aReq, Base* aProv);

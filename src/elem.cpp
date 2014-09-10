@@ -902,10 +902,10 @@ TBool Elem::AppendMutation(const string& aFileName)
     return res;
 }
 
-void Elem::Mutate(TBool aRunTimeOnly)
+void Elem::Mutate(TBool aRunTimeOnly, TBool aCheckSafety)
 {
     ChromoNode& root = iMut->Root();
-    DoMutation(root, aRunTimeOnly);
+    DoMutation(root, aRunTimeOnly, aCheckSafety);
     // Clear mutation
     for (ChromoNode::Iterator mit = root.Begin(); mit != root.End();)
     {
@@ -963,7 +963,7 @@ TBool Elem::MergeMutMove(const ChromoNode& aSpec)
     return res;
 }
 
-void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
+void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSafety)
 {
     const ChromoNode& mroot = aMutSpec;
     ChromoNode sroot = *(mroot.Root());
@@ -1001,7 +1001,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime)
 	    //AddNode(rno, aRunTime);
 	}
 	else if (rnotype == ENt_Change) {
-	    ChangeAttr(rno, aRunTime);
+	    ChangeAttr(rno, aRunTime, aCheckSafety);
 	}
 	else if (rnotype == ENt_Cont) {
 	    DoMutChangeCont(rno, aRunTime);
@@ -1028,7 +1028,7 @@ void Elem::GetCont(string& aCont)
 {
 }
 
-void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime)
+void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety)
 {
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
     string snode = aSpec.Attr(ENa_MutNode);
@@ -1038,7 +1038,7 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime)
     TBool mutadded = EFalse;
     if (node != NULL && IsComp(node)) {
 	if (epheno || node->GetMan() == this || IsInheritedComp(node)) {
-	    if (IsMutSafe(node)) {
+	    if (!aCheckSafety || IsMutSafe(node)) {
 		TBool res = node->ChangeAttr(GUri::NodeAttr(mattrs), mval);
 		if (!res) {
 		    Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - failure", snode.c_str());
@@ -1071,7 +1071,7 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime)
 		    node->GetRUri(nuri, mnode);
 		    mut.SetAttr(ENa_MutNode, nuri.GetUri(EFalse));
 		}
-		mnode->ChangeAttr(mut, aRunTime);
+		mnode->ChangeAttr(mut, aRunTime, aCheckSafety);
 		mutadded = ETrue;
 	    }
 	    else {
