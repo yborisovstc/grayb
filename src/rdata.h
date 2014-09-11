@@ -196,4 +196,29 @@ template<class T> TBool Mtr<T>::ElemFromString(TInt aInd, istringstream& aStream
 }
 
 
+// Tuple, adds the components on run-time
+class RTuple: public DtBase
+{ 
+    public:
+	typedef vector<DtBase*> tComps;
+	typedef vector<string> tCTypes;
+    public:
+	RTuple(): DtBase() {};
+	RTuple(const RTuple& aTuple): DtBase(aTuple) {};
+	virtual ~RTuple();
+	static const char* TypeSig();
+	static TBool IsSrepFit(const string& aString);
+	static TBool IsDataFit(const RTuple& aData);
+	static int ParseSigPars(const string& aCont, string& aSig, tCTypes& aCTypes);
+	TBool FromString(const string& aString);
+	DtBase* GetElem(int ind) const { __ASSERT(ind >= 0 && ind < mData.size()); return mData.at(ind);};
+	TBool operator==(const RTuple& b) { return this->mValid == b.mValid  && this->mData == b.mData;};
+	TBool operator!=(const RTuple& b) {return !this->operator==(b);};
+	virtual string GetTypeSig() const { return TypeSig();};
+    protected:
+	TBool IsCTypesFit(const tCTypes& aCt) const;
+    public:
+	tComps mData;
+};
+
 #endif

@@ -351,3 +351,108 @@ MtrBase& MtrBase::Invm(const MtrBase& a)
     }
 }
 
+
+
+
+// Tuple
+
+const char* RTuple::TypeSig() { return  "TPL";};
+
+RTuple::~RTuple()
+{
+    for (tComps::iterator it = mData.begin(); it != mData.end(); it++) {
+	DtBase* elem = *it;
+	delete elem;
+    }
+    mData.clear();
+}
+
+TBool RTuple::IsSrepFit(const string& aString)
+{
+    return DtBase::IsSrepFit(aString, TypeSig());
+}
+
+TBool RTuple::IsDataFit(const RTuple& aData)
+{
+    return  aData.mValid && aData.GetTypeSig() == TypeSig();
+}
+
+int RTuple::ParseSigPars(const string& aCont, string& aSig, tCTypes& aCTypes)
+{
+    size_t res = string::npos;
+    size_t end = string::npos;
+    if (!aCont.empty()) {
+	int beg = 0;
+	int sigp_e = aCont.find_first_of(' ');
+	string sigp = aCont.substr(beg, sigp_e);
+	res = sigp_e;
+	size_t sig_e = sigp.find_first_of(',');
+	aSig = sigp.substr(0, sig_e);
+	if (!aSig.empty()) {
+	    aCTypes.clear();
+	    end = sig_e;
+	    do {
+		beg = end + 1;
+		end = sigp.find(',', beg);
+		string ss = sigp.substr(beg, end - beg);
+		aCTypes.push_back(ss);
+	    } while (end != string::npos);
+	}
+    }
+    return res;
+}
+
+TBool RTuple::IsCTypesFit(const tCTypes& aCt) const
+{
+    TBool res = ETrue;
+    if (mData.size() == aCt.size()) {
+	for (TInt i = 0; i < mData.size(); i++) {
+	    DtBase* comp = mData.at(i);
+	    if (comp->GetTypeSig() != aCt.at(i)) {
+		res = EFalse; break;
+	    };
+	}
+    }
+    else {
+	res = EFalse;
+    }
+    return res;
+}
+
+TBool RTuple::FromString(const string& aString)
+{
+    TBool res = ETrue;
+    TBool changed = EFalse;
+    string ss;
+    string sig;
+    tCTypes ctypes;
+    int beg = 0, end = 0;
+    end = ParseSigPars(aString, sig, ctypes);
+    if (sig == GetTypeSig()) {
+	if (!IsCTypesFit(ctypes)) 
+	{ 
+	    mData.clear(); changed = ETrue; 
+	    mData.resize(ctypes.size());
+	}
+	string ss;
+	int cnt = 0;
+	do {
+	    beg = end + 1;
+	    end = aString.find(' ', beg);
+	    ss = aString.substr(beg, end - beg);
+	    if (!ss.empty()) {
+		DtBase* comp = mData.at(cnt);
+		istringstream sstr(ss);
+		changed |= comp->DataFromString(sstr, res);
+	    }
+	} while (end != string::npos && res && cnt < mData.size());
+	if (cnt != mData.size() || end != string::npos) {
+	    res = EFalse;
+	}
+    }
+    else {
+	res = EFalse;
+    }
+    if (mValid != res) { mValid = res; changed = ETrue; }
+    return changed;
+}
