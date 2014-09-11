@@ -429,10 +429,9 @@ TBool RTuple::FromString(const string& aString)
     int beg = 0, end = 0;
     end = ParseSigPars(aString, sig, ctypes);
     if (sig == GetTypeSig()) {
-	if (!IsCTypesFit(ctypes)) 
-	{ 
-	    mData.clear(); changed = ETrue; 
-	    mData.resize(ctypes.size());
+	if (!IsCTypesFit(ctypes)) { 
+	    Init(ctypes);
+	    changed = ETrue; 
 	}
 	string ss;
 	int cnt = 0;
@@ -445,6 +444,7 @@ TBool RTuple::FromString(const string& aString)
 		istringstream sstr(ss);
 		changed |= comp->DataFromString(sstr, res);
 	    }
+	    cnt++;
 	} while (end != string::npos && res && cnt < mData.size());
 	if (cnt != mData.size() || end != string::npos) {
 	    res = EFalse;
@@ -456,3 +456,18 @@ TBool RTuple::FromString(const string& aString)
     if (mValid != res) { mValid = res; changed = ETrue; }
     return changed;
 }
+
+void RTuple::Init(const tCTypes& aCt)
+{
+    mData.clear();
+    for (tCTypes::const_iterator it = aCt.begin(); it != aCt.end(); it++) {
+	const string& sr = *it;
+	DtBase* comp = NULL;
+	if ((comp = Sdata<int>::Construct(sr)) != NULL);
+	else if ((comp = Sdata<float>::Construct(sr)) != NULL);
+	if (comp != NULL) {
+	    mData.push_back(comp);
+	}
+    }
+}
+

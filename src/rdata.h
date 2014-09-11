@@ -47,6 +47,7 @@ template<class T> class Sdata: public DtBase
 	static const char* TypeSig();
 	static TBool IsSrepFit(const string& aString) { return DtBase::IsSrepFit(aString, TypeSig());};
 	static TBool IsDataFit(const Sdata<T>& aData) { return DtBase::IsDataFit(aData, TypeSig());};
+	static Sdata<T>* Construct(const string& aSrep) {Sdata<T>* res = NULL; if (IsSrepFit(aSrep)) { res = new Sdata<T>(); } else ;return res;};
 	//TBool Set(const Sdata& d);
 	virtual string GetTypeSig() const { return TypeSig();};
 	virtual void DataToString(stringstream& aStream) const { aStream << mData;};
@@ -210,6 +211,7 @@ class RTuple: public DtBase
 	static TBool IsSrepFit(const string& aString);
 	static TBool IsDataFit(const RTuple& aData);
 	static int ParseSigPars(const string& aCont, string& aSig, tCTypes& aCTypes);
+	void Init(const tCTypes& aCt);
 	TBool FromString(const string& aString);
 	DtBase* GetElem(int ind) const { __ASSERT(ind >= 0 && ind < mData.size()); return mData.at(ind);};
 	TBool operator==(const RTuple& b) { return this->mValid == b.mValid  && this->mData == b.mData;};
