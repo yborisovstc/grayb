@@ -354,9 +354,8 @@ MtrBase& MtrBase::Invm(const MtrBase& a)
 
 
 
-// Tuple
-
-const char* RTuple::TypeSig() { return  "TPL";};
+// Tuple, unnamed components
+const char* RTuple::TypeSig() { return  "TPU";};
 
 RTuple::~RTuple()
 {
@@ -471,3 +470,156 @@ void RTuple::Init(const tCTypes& aCt)
     }
 }
 
+
+// Tuple, named components
+const char* NTuple::TypeSig() { return  "TPL";};
+
+NTuple::~NTuple()
+{
+    for (tComps::iterator it = mData.begin(); it != mData.end(); it++) {
+	DtBase* elem = it->second;
+	delete elem;
+    }
+    mData.clear();
+}
+
+TBool NTuple::IsSrepFit(const string& aString)
+{
+    return DtBase::IsSrepFit(aString, TypeSig());
+}
+
+TBool NTuple::IsDataFit(const NTuple& aData)
+{
+    return  aData.mValid && aData.GetTypeSig() == TypeSig();
+}
+
+int NTuple::ParseSigPars(const string& aCont, string& aSig, tCTypes& aCTypes)
+{
+    size_t res = string::npos;
+    size_t end = string::npos;
+    if (!aCont.empty()) {
+	int beg = 0;
+	int sigp_e = aCont.find_first_of(' ');
+	string sigp = aCont.substr(beg, sigp_e);
+	res = sigp_e;
+	size_t sig_e = sigp.find_first_of(',');
+	aSig = sigp.substr(0, sig_e);
+	if (!aSig.empty()) {
+	    aCTypes.clear();
+	    end = sig_e;
+	    do {
+		beg = end + 1;
+		end = sigp.find(',', beg);
+		string compsig = sigp.substr(beg, end - beg);
+		size_t cs1 = compsig.find(':');
+		if (cs1 != string::npos) {
+		    string cs_type = compsig.substr(0, cs1);
+		    string cs_name = compsig.substr(cs1 + 1);
+		    aCTypes.push_back(tCompSig(cs_type, cs_name));
+		}
+		else {
+		    break;
+		}
+	    } while (end != string::npos);
+	}
+    }
+    return res;
+}
+
+TBool NTuple::IsCTypesFit(const tCTypes& aCt) const
+{
+    TBool res = ETrue;
+    if (mData.size() == aCt.size()) {
+	for (TInt i = 0; i < mData.size(); i++) {
+	    tComp cp = mData.at(i);
+	    DtBase* comp = cp.second;
+	    const tCompSig& cpsig = aCt.at(i);
+	    if (cp.first != cpsig.first || comp->GetTypeSig() != cpsig.second) {
+		res = EFalse; break;
+	    };
+	}
+    }
+    else {
+	res = EFalse;
+    }
+    return res;
+}
+
+TBool NTuple::FromString(const string& aString)
+{
+    TBool res = ETrue;
+    TBool changed = EFalse;
+    string ss;
+    string sig;
+    tCTypes ctypes;
+    int beg = 0, end = 0;
+    end = ParseSigPars(aString, sig, ctypes);
+    if (sig == GetTypeSig()) {
+	if (!IsCTypesFit(ctypes)) { 
+	    Init(ctypes);
+	    changed = ETrue; 
+	}
+	string ss;
+	int cnt = 0;
+	do {
+	    beg = end + 1;
+	    end = aString.find(' ', beg);
+	    ss = aString.substr(beg, end - beg);
+	    if (!ss.empty()) {
+		tComp& cp =  mData.at(cnt);
+		DtBase* comp = cp.second;
+		istringstream sstr(ss);
+		changed |= comp->DataFromString(sstr, res);
+	    }
+	    cnt++;
+	} while (end != string::npos && res && cnt < mData.size());
+	if (cnt != mData.size() || end != string::npos) {
+	    res = EFalse;
+	}
+    }
+    else {
+	res = EFalse;
+    }
+    if (mValid != res) { mValid = res; changed = ETrue; }
+    return changed;
+}
+
+void NTuple::Init(const tCTypes& aCt)
+{
+    mData.clear();
+    for (tCTypes::const_iterator it = aCt.begin(); it != aCt.end(); it++) {
+	const tCompSig& ctype = *it;
+	const string& sr = ctype.first;
+	const string& name = ctype.second;
+	DtBase* comp = NULL;
+	if ((comp = Sdata<int>::Construct(sr)) != NULL);
+	else if ((comp = Sdata<float>::Construct(sr)) != NULL);
+	if (comp != NULL) {
+	    mData.push_back(tComp(name, comp));
+	}
+    }
+}
+
+DtBase* NTuple::GetElem(const string& aName)
+{
+    DtBase* res = NULL;
+    for (tComps::iterator it = mData.begin(); it != mData.end(); it++) {
+	tComp& cp = *it;
+	if (cp.first == aName) {
+	    res = cp.second;
+	    break;
+	}
+    }
+    return res;
+}
+
+TBool NTuple::operator==(const NTuple& b) 
+{ 
+    TBool res = ETrue;
+    if (mValid != b.mValid || mData.size() != b.mData.size()) {
+	res = EFalse;
+    }
+    else {
+    }
+    return res;
+};

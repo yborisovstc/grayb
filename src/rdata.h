@@ -197,11 +197,13 @@ template<class T> TBool Mtr<T>::ElemFromString(TInt aInd, istringstream& aStream
 }
 
 
-// Tuple, adds the components on run-time
+// Tuple, with unnamed components, adds the components on run-time
 class RTuple: public DtBase
 { 
     public:
+	// Components
 	typedef vector<DtBase*> tComps;
+	// Types signature of components
 	typedef vector<string> tCTypes;
     public:
 	RTuple(): DtBase() {};
@@ -222,5 +224,40 @@ class RTuple: public DtBase
     public:
 	tComps mData;
 };
+
+// Tuple, with named components, adds the components on run-time
+// Full_signature := TypeSig , ',' ,  Paremeters ;
+// Paremeters := CompSig , {"," , CompSig} ;
+// CompSig := CompTypeSig , ':' , CompName ;
+class NTuple: public DtBase
+{ 
+    public:
+	// Components: Name, Data
+	typedef pair<string, DtBase*> tComp;
+	typedef vector<tComp> tComps;
+	// Signature of component: Typesig, Name
+	typedef pair<string, string> tCompSig;
+	// Signature of components
+	typedef vector<tCompSig> tCTypes;
+    public:
+	NTuple(): DtBase() {};
+	NTuple(const NTuple& aTuple): DtBase(aTuple) {};
+	virtual ~NTuple();
+	static const char* TypeSig();
+	static TBool IsSrepFit(const string& aString);
+	static TBool IsDataFit(const NTuple& aData);
+	static int ParseSigPars(const string& aCont, string& aSig, tCTypes& aCTypes);
+	void Init(const tCTypes& aCt);
+	TBool FromString(const string& aString);
+	DtBase* GetElem(const string& aName);
+	TBool operator==(const NTuple& b);
+	TBool operator!=(const NTuple& b) {return !this->operator==(b);};
+	virtual string GetTypeSig() const { return TypeSig();};
+    protected:
+	TBool IsCTypesFit(const tCTypes& aCt) const;
+    public:
+	tComps mData;
+};
+
 
 #endif
