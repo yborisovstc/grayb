@@ -209,8 +209,14 @@ void Ut_mut::test_MutRmRecr()
     Elem* root = iEnv->Root();
      // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    ChromoNode mut = root->Mutation().Root().AddChild(ENt_Node);
+    mut.SetAttr(ENa_Id, "v1");
+    mut.SetAttr(ENa_Parent, "./v1p");
+    root->Mutate();
     Elem* v1 = root->GetNode("./v1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get v1", v1 != 0);
+    Elem* v1p_1i = root->GetNode("./v1/v1p_1i");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get v1p_1i", v1p_1i != 0);
     delete iEnv;
 }
 

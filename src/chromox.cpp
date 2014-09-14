@@ -372,6 +372,14 @@ void ChromoMdlX::SetAttr(void* aNode, TNodeAttr aType, const char* aVal)
     }
 }
 
+void ChromoMdlX::RmAttr(void* aNode, TNodeAttr aType)
+{
+    xmlAttrPtr attr = xmlHasProp((xmlNodePtr) aNode, (const xmlChar *) GUri::NodeAttrName(aType).c_str());
+    if (attr != NULL) {
+	xmlRemoveProp(attr);
+    }
+}
+
 void ChromoMdlX::RmChild(void* aParent, void* aChild, TBool aDeattachOnly)
 {
     xmlNodePtr child = (xmlNodePtr) aChild;
@@ -492,6 +500,18 @@ void ChromoMdlX::SetOrder(void* aHandle, TInt aOrder, TBool aTree)
 {
     TNodeAttr attr = aTree ? ENa_TOrder : ENa_Order;
     SetAttr(aHandle, attr, aOrder);
+}
+
+void ChromoMdlX::DeOrder(void* aHandle)
+{
+    xmlNodePtr node = (xmlNodePtr) aHandle;
+    __ASSERT(node != NULL);
+    RmAttr(node, ENa_Order);
+    xmlNodePtr child = node->children;
+    while (child != NULL) {
+	DeOrder(child);
+	child = child->next;
+    };
 }
 
 TInt ChromoMdlX::GetLineId(void* aHandle) const

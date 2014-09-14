@@ -7,8 +7,13 @@
 <!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
 
 <node id="test" parent="Vert">
-    <node id="v1" parent="Vert"/>
+    <node id="v1p" parent="Vert">
+	<node id="v1p_1" parent="Vert"/>
+	<node id="v1p_1i" parent="./v1p_1"/>
+    </node>
+    <node id="v1" parent="./v1p">
+    </node>
     <rm node="./v1"/>
-    <node id="v1" parent="Vert"/>
+    <!-- <node id="v1" parent="./v1p"/> -->
 </node>
 

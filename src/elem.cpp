@@ -191,9 +191,15 @@ void Elem::IterImplBase::PostIncr()
 {
     if (SRel() == GUri::KNodeSep) {
 	iCIter++;
+	// Omit removed comps from the look
+	for (; iCIter != iCIterRange.second; iCIter++) {
+	    Elem* comp = iCIter->second;
+	    if (comp->IsRemoved()) continue; else break;
+	}
 	if (!iId.first.empty() && iExtsrel == GUri::KParentSep && !iExt.empty() && iExt != GUri::KTypeAny) {
 	    for (; iCIter != iCIterRange.second; iCIter++) {
 		Elem* comp = iCIter->second;
+		if (comp->IsRemoved()) continue;
 		if (comp->GetParent()->Name() == iExt) {
 		    break;
 		}
@@ -202,9 +208,15 @@ void Elem::IterImplBase::PostIncr()
     }
     else {
 	iChildsIter++;
+	// Omit removed children from the look
+	for (; iChildsIter != iChildsRange.second; iChildsIter++) {
+	    Elem* comp = iChildsIter->second;
+	    if (comp->IsRemoved()) continue; else break;
+	}
 	if (!iId.first.empty() && iExtsrel == GUri::KNodeSep && !iExt.empty() && iExt != GUri::KTypeAny) {
 	    for (;iChildsIter != iChildsRange.second; iChildsIter++) {
 		Elem* comp = iChildsIter->second;
+		if (comp->IsRemoved()) continue;
 		if (comp->GetMan()->Name() == iExt) {
 		    break;
 		}
@@ -844,8 +856,9 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aA
 		else {
 		    res = *it;
 		    if (++it != itend) {
-			res = NULL;
+			Elem* dup = *it;
 			Logger()->Write(MLogRec::EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
+			res = NULL;
 		    }
 		}
 	    }

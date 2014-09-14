@@ -45,6 +45,7 @@ class MChromoMdl
 	virtual void MoveToEnd(void* aHandle) = 0;
 	virtual void SetAttr(void* aNode, TNodeAttr aType, const char* aVal) = 0;
 	virtual void SetAttr(void* aNode, TNodeAttr aType, TInt aVal) = 0;
+	virtual void RmAttr(void* aNode, TNodeAttr aType) = 0;
 	//virtual void SetAttr(void* aNode, TNodeAttr aType, TNodeType aVal) = 0;
 	//virtual void SetAttr(void* aNode, TNodeAttr aType, TNodeAttr aVal) = 0;
 	virtual void Dump(void* aNode, MLogRec* aLogRec) = 0;
@@ -52,6 +53,7 @@ class MChromoMdl
 	virtual void* Find(const void* aHandle, const string& aUri) = 0;
 	virtual TInt GetOrder(void* aHandle, TBool aTree = EFalse) const = 0;
 	virtual void SetOrder(void* aHandle, TInt aOrder, TBool aTree = EFalse) = 0;
+	virtual void DeOrder(void* aHandle) = 0;
 	virtual TInt GetLineId(void* aHandle) const = 0;
 };
 

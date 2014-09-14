@@ -55,6 +55,7 @@ template<class T> class Sdata: public DtBase
 	TBool operator==(const Sdata<T>& b) { return DtBase::operator==(b) && mData == b.mData;};
 	Sdata<T>& operator+=(const Sdata<T>& b) { mData += b.mData; return *this;};
 	TBool operator!=(const Sdata<T>& b) {return !this->operator==(b);};
+	TBool Set(const T& aData) { TBool res = aData != mData; mData = aData; mValid = ETrue; return res; };
     public:
 	T mData;
 };

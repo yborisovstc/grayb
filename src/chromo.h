@@ -155,6 +155,7 @@ class ChromoNode
 	void GetRank(Rank& aRank, const ChromoNode& aBase) const;
 	TInt GetOrder(TBool aTree = EFalse) const { iMdl.GetOrder(iHandle, aTree);};
 	void SetOrder(TInt aOrder, TBool aTree = EFalse) { iMdl.SetOrder(iHandle, aOrder, aTree);};
+	void DeOrder() { iMdl.DeOrder(iHandle);};
 	// The number of direct childs
 	TInt Count() { return GetLocalSize();};
 	TInt Count() const;

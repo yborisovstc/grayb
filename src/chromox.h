@@ -42,11 +42,13 @@ class ChromoMdlX: public ChromoMdl
 	virtual void MoveToEnd(void* aHandle);
 	virtual void SetAttr(void* aNode, TNodeAttr aType, const char* aVal);
 	virtual void SetAttr(void* aHandle, TNodeAttr aAttr, TInt aVal);
+	virtual void RmAttr(void* aNode, TNodeAttr aType);
 	virtual void Dump(void* aNode, MLogRec* aLogRec);
 	virtual void Save(const string& aFileName) const;
 	virtual void* Find(const void* aHandle, const string& aUri);
 	virtual TInt GetOrder(void* aHandle, TBool aTree = EFalse) const;
 	virtual void SetOrder(void* aHandle, TInt aOrder, TBool aTree = EFalse);
+	virtual void DeOrder(void* aHandle);
 	virtual TInt GetLineId(void* aHandle) const;
     public:
 	int GetAttrInt(void *aHandle, const char *aName);
