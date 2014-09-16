@@ -154,11 +154,12 @@ Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd): iE
 	else {
 	    if (iId.first.empty() || iExtsrel !=  GUri::KNodeSep || iExt.empty() || iExt == GUri::KTypeAny) {
 		iChildsIter = iChildsRange.first;
+		for (; iChildsIter != iChildsRange.second && iChildsIter->second->IsRemoved(); iChildsIter++); 
 	    }
 	    else {
 		for (iChildsIter = iChildsRange.first; iChildsIter != iChildsRange.second; iChildsIter++) {
 		    Elem* comp = iChildsIter->second;
-		    if (comp->GetMan()->Name() == iExt) {
+		    if (comp->GetMan()->Name() == iExt && !comp->IsRemoved()) {
 			break;
 		    }
 		}
@@ -192,15 +193,11 @@ void Elem::IterImplBase::PostIncr()
     if (SRel() == GUri::KNodeSep) {
 	iCIter++;
 	// Omit removed comps from the look
-	for (; iCIter != iCIterRange.second; iCIter++) {
-	    Elem* comp = iCIter->second;
-	    if (comp->IsRemoved()) continue; else break;
-	}
+	for (; iCIter != iCIterRange.second && iCIter->second->IsRemoved(); iCIter++); 
 	if (!iId.first.empty() && iExtsrel == GUri::KParentSep && !iExt.empty() && iExt != GUri::KTypeAny) {
 	    for (; iCIter != iCIterRange.second; iCIter++) {
 		Elem* comp = iCIter->second;
-		if (comp->IsRemoved()) continue;
-		if (comp->GetParent()->Name() == iExt) {
+		if (comp->GetParent()->Name() == iExt && !comp->IsRemoved()) {
 		    break;
 		}
 	    }
@@ -209,15 +206,11 @@ void Elem::IterImplBase::PostIncr()
     else {
 	iChildsIter++;
 	// Omit removed children from the look
-	for (; iChildsIter != iChildsRange.second; iChildsIter++) {
-	    Elem* comp = iChildsIter->second;
-	    if (comp->IsRemoved()) continue; else break;
-	}
+	for (; iChildsIter != iChildsRange.second && iChildsIter->second->IsRemoved(); iChildsIter++); 
 	if (!iId.first.empty() && iExtsrel == GUri::KNodeSep && !iExt.empty() && iExt != GUri::KTypeAny) {
 	    for (;iChildsIter != iChildsRange.second; iChildsIter++) {
 		Elem* comp = iChildsIter->second;
-		if (comp->IsRemoved()) continue;
-		if (comp->GetMan()->Name() == iExt) {
+		if (comp->GetMan()->Name() == iExt && !comp->IsRemoved()) {
 		    break;
 		}
 	    }
@@ -1023,7 +1016,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    MoveNode(rno, aRunTime);
 	}
 	else if (rnotype == ENt_Rm) {
-	    RmNode(rno, aRunTime);
+	    RmNode(rno, aRunTime, aCheckSafety);
 	}
 	else {
 	    Logger()->Write(MLogRec::EErr, this, "Mutating - unknown mutation type [%d]", rnotype);
@@ -1970,7 +1963,7 @@ TBool Elem::IsMutSafe(Elem* aRef)
     return safemut;
 }
 
-TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime)
+TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety)
 {
     TBool res = EFalse;
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
@@ -1980,7 +1973,7 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime)
     if (node != NULL && IsComp(node)) {
 	if (epheno || node->GetMan() == this || IsCompOfInheritedComp(node)) {
 	    // Check dependent mutations
-	    if (IsMutSafe(node)) {
+	    if (!aCheckSafety || IsMutSafe(node)) {
 		res = ETrue;
 		/*
 		// If node has children then just mark it as removed but not remove actually
@@ -2027,7 +2020,7 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime)
 		    node->GetRUri(nuri, mnode);
 		    mut.SetAttr(ENa_MutNode, nuri.GetUri(EFalse));
 		}
-		mnode->RmNode(mut, aRunTime);
+		mnode->RmNode(mut, aRunTime, ETrue);
 		mutadded = ETrue;
 	    }
 	    else {
