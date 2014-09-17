@@ -2126,7 +2126,9 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime)
 	if (!aRunTime && res) {
 	    // Adding dependency to object of change
 	    ChromoNode chn = iChromo->Root().AddChild(aSpec);
-	    AddCMDep(chn, ENa_MutNode, dnode);
+	    if (dnode != this) {
+		AddCMDep(chn, ENa_MutNode, dnode);
+	    }
 	    mutadded = ETrue;
 	}
     }
