@@ -134,11 +134,18 @@ template <class T> class MDataGet
 };
 
 // Generic data
-template <class T> class MDtGet
+
+class MDtGetBase
+{
+    public:
+	static const char* TypeBase() { return "MDtGet";};
+	static void GetType(const string& aDtTypeSig, string& aRes) { aRes = string(TypeBase()) + "_" + aDtTypeSig;};
+};
+
+template <class T> class MDtGet: public MDtGetBase
 {
     public:
 	static const string mType;
-	static const char* TypeBase() { return "MDtGet";};
 	static const char* Type() { return mType.c_str();};
 	virtual void DtGet(T& aData) = 0;
 };

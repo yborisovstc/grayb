@@ -802,7 +802,6 @@ class AFAtVar: public AFunVar
 	static string PEType();
 	AFAtVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	AFAtVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
-	TInt GetInd(TInt aInpId);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Func::Host
@@ -815,22 +814,7 @@ class FAtBase: public Func
 {
     public:
 	FAtBase(Host& aHost): Func(aHost) {};
-	TInt GetInd();
 };
-
-// 	Getting component of container: vector 
-/*
-template <class T> class FAtVect: public FAtBase, public MDataGet<T> {
-    public:
-	static Func* Create(Host* aHost, const string& aOutIid, const string& aInp1Id);
-	FAtVect(Host& aHost): FAtBase(aHost) {};
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	virtual string IfaceGetId() const { return MDataGet<T>::Type();};
-	virtual void DataGet(T& aData);
-    protected:
-	MVectGet<T>* GetArg();
-};
-*/
 
 // 	Getting component of container: matrix-vector 
 template <class T> class FAtMVect: public FAtBase, public MDtGet<Sdata<T> > {
@@ -843,6 +827,30 @@ template <class T> class FAtMVect: public FAtBase, public MDtGet<Sdata<T> > {
 	virtual void GetResult(string& aResult) {mRes.ToString(aResult);};
     protected:
 	Sdata<T> mRes;
+};
+
+// 	Getting component of container: named tuple
+class FAtNTuple: public FAtBase  {
+    public:
+	class IfProxyBase: public Base {
+	    IfProxyBase(FAtNTuple* aHost): Base(string()), mHost(aHost) {};
+	    FAtNTuple* mHost;
+	};
+	template <class T> class IfProxy: public IfProxyBase, public MDtGet<T> {
+	    IfProxy(FAtNTuple* aHost): IfProxyBase(aHost) {};
+	    virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	    virtual void DtGet(T& aData);
+	};
+    public:
+	static Func* Create(Host* aHost, const string& aInpId, const string& aInpIndId);
+	FAtNTuple(Host& aHost): FAtBase(aHost), mIfProxy(NULL) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const;
+	virtual void GetResult(string& aResult) {mRes.ToString(aResult);};
+	DtBase* GetField();
+    protected:
+	DtBase mRes;
+	IfProxyBase* mIfProxy;
 };
 
 // Composing vector from components

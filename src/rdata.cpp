@@ -10,8 +10,9 @@ DtBase::~DtBase()
 
 // Scalar data
 template<> const char* Sdata<int>::TypeSig() { return  "SI";};
-
 template<> const char* Sdata<float>::TypeSig() { return  "SF";};
+template<> const char* Sdata<bool>::TypeSig() { return  "SB";};
+template<> const char* Sdata<string>::TypeSig() { return  "SB";};
 
 
 int DtBase::ParseSigPars(const string& aCont, string& aSig)

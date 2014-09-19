@@ -3018,9 +3018,10 @@ void AFAtVar::Init(const string& aIfaceName)
     MDVarGet* inp2 = GetInp(Func::EInp2);
     if (inp1 != NULL && inp2 != NULL) {
 	string t1 = inp1->VarGetIfid();
-	//if ((mFunc = FAtVect<float>::Create(this, aIfaceName, t1)) != NULL);
+	string tind = inp2->VarGetIfid();
 	if ((mFunc = FAtMVect<float>::Create(this, aIfaceName, t1)) != NULL);
 	else if ((mFunc = FAtMVect<int>::Create(this, aIfaceName, t1)) != NULL);
+	else if ((mFunc = FAtNTuple::Create(this, t1, tind)) != NULL);
     }
 }
 
@@ -3033,65 +3034,6 @@ Elem::TIfRange AFAtVar::GetInps(TInt aId)
     RqContext cont(this);
     return inp->GetIfi(MDVarGet::Type(), &cont);
 }
-
-TInt FAtBase::GetInd()
-{
-    TInt res = 0;
-    MDVarGet* iv = mHost.GetInp(EInp2);
-    if (iv != NULL) {
-	MDIntGet* intget = iv->GetDObj(intget);
-	if (intget != NULL) {
-	    res = intget->Value();
-	}
-    }
-    return res;
-}
-
-/*
-// Getting component of container: vector of floats
-template <class T> Func* FAtVect<T>::Create(Host* aHost, const string& aOutIid, const string& aInpIid)
-{
-    Func* res = NULL;
-    if (aOutIid == MDataGet<T>::Type() && aInpIid == MVectGet<T>::Type()) {
-	res = new FAtVect<T>(*aHost);
-    }
-    return res;
-}
-
-template <class T> void *FAtVect<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
-{
-    void* res = NULL;
-    if (strcmp(aName, MDataGet<T>::Type()) == 0) res = (MDataGet<T>*) this;
-    return res;
-}
-
-template <class T> void FAtVect<T>::DataGet(T& aData)
-{
-    MVectGet<T>* arg = GetArg();
-    if (arg != NULL) {
-	TInt ind = GetInd();
-	Vect<T> data;
-	arg->VectGet(data);
-	aData = data.at(ind);
-    }
-}
-
-template <class T> MVectGet<T>* FAtVect<T>::GetArg()
-{
-    MVectGet<T>* res = NULL;
-    MDVarGet* iv = mHost.GetInp(EInp1);
-    if (iv != NULL) {
-	string ifi = iv->VarGetIfid();
-	if (!ifi.empty()) {
-	    void* inp = iv->GetDObj(ifi.c_str());
-	    if (ifi == MVectGet<T>::Type()) {
-		res = (MVectGet<T>*) inp;
-	    }
-	}
-    }
-    return res;
-}
-*/
 
 // Getting component of container: matrix-vector
 template <class T> Func* FAtMVect<T>::Create(Host* aHost, const string& aOutIid, const string& aInpIid)
@@ -3152,6 +3094,70 @@ template <class T> void FAtMVect<T>::DtGet(Sdata<T>& aData)
 	mRes = aData;
 	mHost.OnFuncContentChanged();
     }
+}
+
+// 	Getting component of container: named tuple 
+
+Func* FAtNTuple::Create(Host* aHost, const string& aInpId, const string& aInpIndId)
+{
+    Func* res = NULL;
+    if (aInpId == MDtGet<NTuple>::Type() && aInpIndId == MDtGet<Sdata<string> >::Type()) {
+	res = new FAtNTuple(*aHost);
+    }
+    return res;
+}
+
+void *FAtNTuple::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx) 
+{
+    return mIfProxy != NULL ? mIfProxy->DoGetObj(aName, aIncUpHier, aCtx) : NULL;
+}
+
+
+DtBase* FAtNTuple::GetField()
+{
+    TBool res = ETrue;
+    DtBase* dres = NULL;
+    MDVarGet* dget = mHost.GetInp(EInp1);
+    MDtGet<NTuple>* dfget = dget->GetDObj(dfget);
+    dget = mHost.GetInp(EInp2);
+    MDtGet<Sdata<string> >* diget = dget->GetDObj(diget);
+    if (dfget != NULL && diget != NULL) {
+	NTuple arg;
+	dfget->DtGet(arg);
+	Sdata<string> ind;
+	diget->DtGet(ind);
+	if (arg.mValid && ind.mValid ) {
+	    dres = arg.GetElem(ind.mData);
+	}
+	else {
+	    mHost.LogWrite(MLogRec::EErr, "Incorrect argument");
+	    res = EFalse;
+	}
+    }
+    else {
+	mHost.LogWrite(MLogRec::EErr, "Missing or incorrect argument");
+	res = EFalse;
+    }
+    return dres;
+}
+
+string FAtNTuple::IfaceGetId() const
+{
+    DtBase* data = ((FAtNTuple*) this)->GetField();
+    string type;
+    MDtGetBase::GetType(data->GetTypeSig(), type);
+    return type;
+}
+
+template <class T> void *FAtNTuple::IfProxy<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx) 
+{
+    return (strcmp(aName, MDtGet<Sdata<T> >::Type()) == 0) ? (MDtGet<Sdata<T> >*) this: NULL;
+}
+
+template <class T>  void FAtNTuple::IfProxy<T>::DtGet(T& aData)
+{
+    DtBase* dtb = mHost->GetField();
+    aData = *dtb;
 }
 
 
