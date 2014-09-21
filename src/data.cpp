@@ -424,6 +424,7 @@ TBool DVar::Init(const string& aString, MDVarGet* aInpv)
     else if ((mData = HDt<Sdata <int> >::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<Sdata <float> >::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<Sdata <bool> >::Create(this, aString, aInpv)) != NULL);
+    else if ((mData = HDt<Sdata <string> >::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<Mtr <int> >::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<Mtr <float> >::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<NTuple>::Create(this, aString, aInpv)) != NULL);

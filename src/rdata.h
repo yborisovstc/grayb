@@ -28,7 +28,8 @@ class DtBase
 	//TBool Set(const DtBase& d) { return mValid != d.mValid, mValid = d.mValid; };
 	void ToString(string& aString) const;
 	TBool FromString(const string& aString);
-	TBool operator==(const DtBase& b) { return mValid == b.mValid;};
+	virtual TBool operator==(const DtBase& b) { return mValid == b.mValid;};
+	TBool operator!=(const DtBase& b) {return !this->operator==(b);};
     public:
 	virtual string GetTypeSig() const { return "?";};
 	virtual void DataToString(stringstream& aStream) const {aStream << "?";};
@@ -52,32 +53,21 @@ template<class T> class Sdata: public DtBase
 	virtual string GetTypeSig() const { return TypeSig();};
 	virtual void DataToString(stringstream& aStream) const { aStream << mData;};
 	virtual TBool DataFromString(istringstream& aStream, TBool& aRes);
-	TBool operator==(const Sdata<T>& b) { return DtBase::operator==(b) && mData == b.mData;};
+	virtual TBool operator==(const DtBase& sb) { const Sdata<T>& b = dynamic_cast<const Sdata<T>& >(sb); return &b != NULL && DtBase::operator==(b) && mData == b.mData;};
 	Sdata<T>& operator+=(const Sdata<T>& b) { mData += b.mData; return *this;};
-	TBool operator!=(const Sdata<T>& b) {return !this->operator==(b);};
+	//TBool operator!=(const Sdata<T>& b) {return !this->operator==(b);};
 	TBool Set(const T& aData) { TBool res = aData != mData; mData = aData; mValid = ETrue; return res; };
+	Sdata<T>& operator=(const Sdata<T>& b) { mData = b.mData; mValid = b.mValid; mSigTypeOK = b.mSigTypeOK; return *this;};
     public:
 	T mData;
 };
-
-/*
-template<class T> TBool Sdata<T>::Set(const Sdata& d) 
-{ 
-    TBool res = DtBase::Set(d);
-    if (mData != d.mData) {
-	mData = d.mData;
-	res = ETrue;
-    }
-   return res;
-};
-*/
 
 template<class T> TBool Sdata<T>::DataFromString(istringstream& aStream, TBool& aRes)
 {
     TBool changed = EFalse;
     T sdata;
     aStream >> sdata;
-    if ((aRes = !aStream.fail()) && mData != sdata) { mData = sdata; changed = ETrue; }
+    if ((aRes = !aStream.fail()) && mData != sdata) { mData = sdata; mValid = ETrue; changed = ETrue; }
     return changed;
 }
 
@@ -134,9 +124,11 @@ template<class T> class Mtr: public MtrBase
 	static TBool IsDataFit(const Mtr<T>& aData) { return MtrBase::IsDataFit(aData, TypeSig());};
 	T GetElem(int r, int c) const { int i = Ind(r,c); return (i == -1) ? T(0) : mData.at(i);};
 	T& Elem(int r, int c) { int i = Ind(r,c); __ASSERT(i >= 0); return mData.at(i);};
-	TBool operator==(const Mtr<T>& b) { 
-	    return this->mValid == b.mValid && this->mType == b.mType && this->mDim == b.mDim && this->mData == b.mData;};
-	TBool operator!=(const Mtr<T>& b) {return !this->operator==(b);};
+	virtual TBool operator==(const DtBase& sb) { 
+	    const Mtr<T>& b = dynamic_cast<const Mtr<T>& >(sb); return &b != NULL && DtBase::operator==(b) && this->mType == b.mType && this->mDim == b.mDim && this->mData == b.mData;};
+	//TBool operator==(const Mtr<T>& b) { 
+	 //   return this->mValid == b.mValid && this->mType == b.mType && this->mDim == b.mDim && this->mData == b.mData;};
+	//TBool operator!=(const Mtr<T>& b) {return !this->operator==(b);};
 	template <class TA> void CastDown(const Mtr<TA>& a);
 	virtual string GetTypeSig() const { return TypeSig();};
 	virtual void ElemToString(TInt aInd, stringstream& aStream) const { aStream << mData.at(aInd);};
@@ -198,6 +190,7 @@ template<class T> TBool Mtr<T>::ElemFromString(TInt aInd, istringstream& aStream
 }
 
 
+#if 0
 // Tuple, with unnamed components, adds the components on run-time
 class RTuple: public DtBase
 { 
@@ -225,6 +218,7 @@ class RTuple: public DtBase
     public:
 	tComps mData;
 };
+#endif
 
 // Tuple, with named components, adds the components on run-time
 // Full_signature := TypeSig , ',' ,  Paremeters ;
@@ -251,8 +245,10 @@ class NTuple: public DtBase
 	void Init(const tCTypes& aCt);
 	TBool FromString(const string& aString);
 	DtBase* GetElem(const string& aName);
-	TBool operator==(const NTuple& b);
-	TBool operator!=(const NTuple& b) {return !this->operator==(b);};
+	virtual TBool operator==(const DtBase& sb);
+	NTuple& operator=(const NTuple& b);
+	//TBool operator==(const NTuple& b);
+	//TBool operator!=(const NTuple& b) {return !this->operator==(b);};
 	virtual string GetTypeSig() const { return TypeSig();};
     protected:
 	TBool IsCTypesFit(const tCTypes& aCt) const;

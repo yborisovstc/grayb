@@ -833,21 +833,27 @@ template <class T> class FAtMVect: public FAtBase, public MDtGet<Sdata<T> > {
 class FAtNTuple: public FAtBase  {
     public:
 	class IfProxyBase: public Base {
+	    public:
 	    IfProxyBase(FAtNTuple* aHost): Base(string()), mHost(aHost) {};
+	    virtual ~IfProxyBase();
+	    virtual void GetIfaceId(string& aId) const = 0;
 	    FAtNTuple* mHost;
 	};
 	template <class T> class IfProxy: public IfProxyBase, public MDtGet<T> {
+	    public:
 	    IfProxy(FAtNTuple* aHost): IfProxyBase(aHost) {};
+	    virtual void GetIfaceId(string& aId) const { aId = MDtGet<T>::Type();};
 	    virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	    virtual void DtGet(T& aData);
 	};
     public:
 	static Func* Create(Host* aHost, const string& aInpId, const string& aInpIndId);
 	FAtNTuple(Host& aHost): FAtBase(aHost), mIfProxy(NULL) {};
+	void Init();
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	virtual string IfaceGetId() const;
 	virtual void GetResult(string& aResult) {mRes.ToString(aResult);};
-	DtBase* GetField();
+	void GetField(DtBase& aField);
     protected:
 	DtBase mRes;
 	IfProxyBase* mIfProxy;

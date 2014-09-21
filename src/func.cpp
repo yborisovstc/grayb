@@ -3098,6 +3098,10 @@ template <class T> void FAtMVect<T>::DtGet(Sdata<T>& aData)
 
 // 	Getting component of container: named tuple 
 
+FAtNTuple::IfProxyBase::~IfProxyBase()
+{
+}
+
 Func* FAtNTuple::Create(Host* aHost, const string& aInpId, const string& aInpIndId)
 {
     Func* res = NULL;
@@ -3107,16 +3111,34 @@ Func* FAtNTuple::Create(Host* aHost, const string& aInpId, const string& aInpInd
     return res;
 }
 
+void FAtNTuple::Init()
+{
+    string iid = IfaceGetId();
+    if (mIfProxy != NULL) {
+	string proxy_iid; 
+	mIfProxy->GetIfaceId(proxy_iid);
+	if (proxy_iid != iid) {
+	    delete mIfProxy; mIfProxy = NULL;
+	}
+    }
+    if (mIfProxy == NULL) {
+	if (iid == MDtGet<Sdata<int> >::Type()) mIfProxy = new IfProxy<Sdata<int> >(this);
+	else if (iid == MDtGet<Sdata<float> >::Type()) mIfProxy = new IfProxy<Sdata<float> >(this);
+    }
+}
+
 void *FAtNTuple::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx) 
 {
+    if (mIfProxy == NULL) {
+	Init();
+    }
     return mIfProxy != NULL ? mIfProxy->DoGetObj(aName, aIncUpHier, aCtx) : NULL;
 }
 
 
-DtBase* FAtNTuple::GetField()
+void FAtNTuple::GetField(DtBase& aData)
 {
     TBool res = ETrue;
-    DtBase* dres = NULL;
     MDVarGet* dget = mHost.GetInp(EInp1);
     MDtGet<NTuple>* dfget = dget->GetDObj(dfget);
     dget = mHost.GetInp(EInp2);
@@ -3127,7 +3149,14 @@ DtBase* FAtNTuple::GetField()
 	Sdata<string> ind;
 	diget->DtGet(ind);
 	if (arg.mValid && ind.mValid ) {
-	    dres = arg.GetElem(ind.mData);
+	    DtBase* dres = arg.GetElem(ind.mData);
+	    if (dres != NULL) {
+		aData = *dres;
+	    }
+	    else {
+		mHost.LogWrite(MLogRec::EErr, "Cannot find field for given index");
+		res = EFalse;
+	    }
 	}
 	else {
 	    mHost.LogWrite(MLogRec::EErr, "Incorrect argument");
@@ -3138,26 +3167,49 @@ DtBase* FAtNTuple::GetField()
 	mHost.LogWrite(MLogRec::EErr, "Missing or incorrect argument");
 	res = EFalse;
     }
-    return dres;
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
 }
 
 string FAtNTuple::IfaceGetId() const
 {
-    DtBase* data = ((FAtNTuple*) this)->GetField();
     string type;
-    MDtGetBase::GetType(data->GetTypeSig(), type);
+    MDVarGet* dget = mHost.GetInp(EInp1);
+    MDtGet<NTuple>* dfget = dget->GetDObj(dfget);
+    dget = mHost.GetInp(EInp2);
+    MDtGet<Sdata<string> >* diget = dget->GetDObj(diget);
+    if (dfget != NULL && diget != NULL) {
+	NTuple arg;
+	dfget->DtGet(arg);
+	Sdata<string> ind;
+	diget->DtGet(ind);
+	if (arg.mValid && ind.mValid ) {
+	    DtBase* dres = arg.GetElem(ind.mData);
+	    if (dres != NULL && dres->mValid) {
+		string tsig = dres->GetTypeSig();
+		MDtGetBase::GetType(tsig, type);
+	    }
+	}
+    }
+    /*
+    DtBase data; 
+    ((FAtNTuple*) this)->GetField(data);
+    */
     return type;
 }
 
 template <class T> void *FAtNTuple::IfProxy<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx) 
 {
-    return (strcmp(aName, MDtGet<Sdata<T> >::Type()) == 0) ? (MDtGet<Sdata<T> >*) this: NULL;
+    return (strcmp(aName, MDtGet<T>::Type()) == 0) ? (MDtGet<T>*) this: NULL;
 }
 
 template <class T>  void FAtNTuple::IfProxy<T>::DtGet(T& aData)
 {
-    DtBase* dtb = mHost->GetField();
-    aData = *dtb;
+    mHost->GetField(aData);
+    //    aData = *(dynamic_cast<T*> (dtb));
 }
 
 

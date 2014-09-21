@@ -12,7 +12,7 @@ DtBase::~DtBase()
 template<> const char* Sdata<int>::TypeSig() { return  "SI";};
 template<> const char* Sdata<float>::TypeSig() { return  "SF";};
 template<> const char* Sdata<bool>::TypeSig() { return  "SB";};
-template<> const char* Sdata<string>::TypeSig() { return  "SB";};
+template<> const char* Sdata<string>::TypeSig() { return  "SS";};
 
 
 int DtBase::ParseSigPars(const string& aCont, string& aSig)
@@ -354,7 +354,7 @@ MtrBase& MtrBase::Invm(const MtrBase& a)
 
 
 
-
+#if 0
 // Tuple, unnamed components
 const char* RTuple::TypeSig() { return  "TPU";};
 
@@ -470,7 +470,7 @@ void RTuple::Init(const tCTypes& aCt)
 	}
     }
 }
-
+#endif 
 
 // Tuple, named components
 const char* NTuple::TypeSig() { return  "TPL";};
@@ -535,7 +535,7 @@ TBool NTuple::IsCTypesFit(const tCTypes& aCt) const
 	    tComp cp = mData.at(i);
 	    DtBase* comp = cp.second;
 	    const tCompSig& cpsig = aCt.at(i);
-	    if (cp.first != cpsig.first || comp->GetTypeSig() != cpsig.second) {
+	    if (cp.first != cpsig.second || comp->GetTypeSig() != cpsig.first) {
 		res = EFalse; break;
 	    };
 	}
@@ -614,13 +614,36 @@ DtBase* NTuple::GetElem(const string& aName)
     return res;
 }
 
-TBool NTuple::operator==(const NTuple& b) 
+TBool NTuple::operator==(const DtBase& sb) 
 { 
+    const NTuple& b = dynamic_cast<const NTuple&>(sb);
     TBool res = ETrue;
-    if (mValid != b.mValid || mData.size() != b.mData.size()) {
+    if (&b != NULL && DtBase::operator==(b) || mData.size() != b.mData.size()) {
 	res = EFalse;
     }
     else {
     }
     return res;
 };
+
+NTuple& NTuple::operator=(const NTuple& b)
+{
+    if (&b == this) return *this;
+    mValid = b.mValid;
+    mSigTypeOK = b.mSigTypeOK;
+    mData.clear();
+    for (tComps::const_iterator it = b.mData.begin(); it != b.mData.end(); it++) {
+	const tComp& bcomp = *it;
+	const string& name = bcomp.first;
+	const string sr = bcomp.second->GetTypeSig();
+	DtBase* comp = NULL;
+	if ((comp = Sdata<int>::Construct(sr)) != NULL);
+	else if ((comp = Sdata<float>::Construct(sr)) != NULL);
+	if (comp != NULL) {
+	    *comp = *(bcomp.second);
+	    mData.push_back(tComp(name, comp));
+	}
+    }
+    return *this;
+}
+
