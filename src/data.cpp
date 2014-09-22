@@ -1177,6 +1177,10 @@ template<class T> TBool DVar::HDt<T>::Set(MDVarGet* aInp)
 	    res = ETrue;
 	}
     }
+    else {
+	res = mData.mValid != EFalse;;
+	mData.mValid = EFalse;
+    }
     return res;
 }
 

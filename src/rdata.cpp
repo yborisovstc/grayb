@@ -635,12 +635,8 @@ NTuple& NTuple::operator=(const NTuple& b)
     for (tComps::const_iterator it = b.mData.begin(); it != b.mData.end(); it++) {
 	const tComp& bcomp = *it;
 	const string& name = bcomp.first;
-	const string sr = bcomp.second->GetTypeSig();
-	DtBase* comp = NULL;
-	if ((comp = Sdata<int>::Construct(sr)) != NULL);
-	else if ((comp = Sdata<float>::Construct(sr)) != NULL);
+	DtBase* comp = bcomp.second->Clone();
 	if (comp != NULL) {
-	    *comp = *(bcomp.second);
 	    mData.push_back(tComp(name, comp));
 	}
     }

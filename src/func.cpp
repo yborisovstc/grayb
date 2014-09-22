@@ -3216,9 +3216,12 @@ template <class T>  void FAtNTuple::IfProxy<T>::DtGet(T& aData)
 {
     mHost->GetField();
     if (mHost->mRes != NULL) {
-	aData = *dynamic_cast<T*>(mHost->mRes);
+	T* data = dynamic_cast<T*>(mHost->mRes);
+	if (data != NULL) 
+	    aData = *data;
+	else 
+	    aData.mValid = EFalse;
     } 
-    //    aData = *(dynamic_cast<T*> (dtb));
 }
 
 
