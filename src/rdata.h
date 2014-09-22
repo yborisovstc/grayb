@@ -34,6 +34,7 @@ class DtBase
 	virtual string GetTypeSig() const { return "?";};
 	virtual void DataToString(stringstream& aStream) const {aStream << "?";};
 	virtual TBool DataFromString(istringstream& aStream, TBool& aRes) {};
+	virtual DtBase* Clone() {return NULL;};
     public:
 	TBool mValid;
 	// Invalidity reason: sigtype is invalis
@@ -44,7 +45,7 @@ template<class T> class Sdata: public DtBase
 {
     public:
 	Sdata(): DtBase() {};
-	Sdata(const Sdata& d): DtBase(d) {};
+	Sdata(const Sdata& d): DtBase(d), mData(d.mData) {};
 	static const char* TypeSig();
 	static TBool IsSrepFit(const string& aString) { return DtBase::IsSrepFit(aString, TypeSig());};
 	static TBool IsDataFit(const Sdata<T>& aData) { return DtBase::IsDataFit(aData, TypeSig());};
@@ -53,7 +54,9 @@ template<class T> class Sdata: public DtBase
 	virtual string GetTypeSig() const { return TypeSig();};
 	virtual void DataToString(stringstream& aStream) const { aStream << mData;};
 	virtual TBool DataFromString(istringstream& aStream, TBool& aRes);
-	virtual TBool operator==(const DtBase& sb) { const Sdata<T>& b = dynamic_cast<const Sdata<T>& >(sb); return &b != NULL && DtBase::operator==(b) && mData == b.mData;};
+	virtual DtBase* Clone() {return new Sdata<T>(*this);};
+	virtual TBool operator==(const DtBase& sb) 
+	{ const Sdata<T>& b = dynamic_cast<const Sdata<T>& >(sb); return &b != NULL && DtBase::operator==(b) && mData == b.mData;};
 	Sdata<T>& operator+=(const Sdata<T>& b) { mData += b.mData; return *this;};
 	//TBool operator!=(const Sdata<T>& b) {return !this->operator==(b);};
 	TBool Set(const T& aData) { TBool res = aData != mData; mData = aData; mValid = ETrue; return res; };

@@ -848,14 +848,14 @@ class FAtNTuple: public FAtBase  {
 	};
     public:
 	static Func* Create(Host* aHost, const string& aInpId, const string& aInpIndId);
-	FAtNTuple(Host& aHost): FAtBase(aHost), mIfProxy(NULL) {};
+	FAtNTuple(Host& aHost): FAtBase(aHost), mRes(NULL), mIfProxy(NULL) {};
 	void Init();
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	virtual string IfaceGetId() const;
-	virtual void GetResult(string& aResult) {mRes.ToString(aResult);};
-	void GetField(DtBase& aField);
+	virtual void GetResult(string& aResult) {if (mRes != NULL) mRes->ToString(aResult);};
+	void GetField();
     protected:
-	DtBase mRes;
+	DtBase* mRes;
 	IfProxyBase* mIfProxy;
 };
 

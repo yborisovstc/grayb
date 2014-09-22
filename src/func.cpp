@@ -3129,31 +3129,32 @@ void FAtNTuple::Init()
 
 void *FAtNTuple::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx) 
 {
-    if (mIfProxy == NULL) {
+    void *res = NULL;
+    if (mIfProxy == NULL || mIfProxy->DoGetObj(aName, aIncUpHier, aCtx) == NULL) {
 	Init();
     }
     return mIfProxy != NULL ? mIfProxy->DoGetObj(aName, aIncUpHier, aCtx) : NULL;
 }
 
 
-void FAtNTuple::GetField(DtBase& aData)
+void FAtNTuple::GetField()
 {
     TBool res = ETrue;
     MDVarGet* dget = mHost.GetInp(EInp1);
     MDtGet<NTuple>* dfget = dget->GetDObj(dfget);
     dget = mHost.GetInp(EInp2);
-    MDtGet<Sdata<string> >* diget = dget->GetDObj(diget);
+    NTuple arg;
+    DtBase* dres = NULL;
+    MDtGet<Sdata<string> >* diget = NULL;
+    if (dget != NULL) 
+	diget = dget->GetDObj(diget);
     if (dfget != NULL && diget != NULL) {
-	NTuple arg;
 	dfget->DtGet(arg);
 	Sdata<string> ind;
 	diget->DtGet(ind);
 	if (arg.mValid && ind.mValid ) {
-	    DtBase* dres = arg.GetElem(ind.mData);
-	    if (dres != NULL) {
-		aData = *dres;
-	    }
-	    else {
+	    dres = arg.GetElem(ind.mData);
+	    if (dres == NULL) {
 		mHost.LogWrite(MLogRec::EErr, "Cannot find field for given index");
 		res = EFalse;
 	    }
@@ -3167,9 +3168,12 @@ void FAtNTuple::GetField(DtBase& aData)
 	mHost.LogWrite(MLogRec::EErr, "Missing or incorrect argument");
 	res = EFalse;
     }
-    aData.mValid = res;
-    if (mRes != aData) {
-	mRes = aData;
+    if (dres != NULL) {
+	if (mRes != NULL) {
+	    delete mRes; mRes = NULL;
+	}
+	mRes = dres->Clone();
+	mRes->mValid = res;
 	mHost.OnFuncContentChanged();
     }
 }
@@ -3180,7 +3184,9 @@ string FAtNTuple::IfaceGetId() const
     MDVarGet* dget = mHost.GetInp(EInp1);
     MDtGet<NTuple>* dfget = dget->GetDObj(dfget);
     dget = mHost.GetInp(EInp2);
-    MDtGet<Sdata<string> >* diget = dget->GetDObj(diget);
+    MDtGet<Sdata<string> >* diget = NULL;
+    if (dget != NULL) 
+	diget = dget->GetDObj(diget);
     if (dfget != NULL && diget != NULL) {
 	NTuple arg;
 	dfget->DtGet(arg);
@@ -3208,7 +3214,10 @@ template <class T> void *FAtNTuple::IfProxy<T>::DoGetObj(const char *aName, TBoo
 
 template <class T>  void FAtNTuple::IfProxy<T>::DtGet(T& aData)
 {
-    mHost->GetField(aData);
+    mHost->GetField();
+    if (mHost->mRes != NULL) {
+	aData = *dynamic_cast<T*>(mHost->mRes);
+    } 
     //    aData = *(dynamic_cast<T*> (dtb));
 }
 
