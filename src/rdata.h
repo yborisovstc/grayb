@@ -52,7 +52,7 @@ template<class T> class Sdata: public DtBase
 	static Sdata<T>* Construct(const string& aSrep) {Sdata<T>* res = NULL; if (IsSrepFit(aSrep)) { res = new Sdata<T>(); } else ;return res;};
 	//TBool Set(const Sdata& d);
 	virtual string GetTypeSig() const { return TypeSig();};
-	virtual void DataToString(stringstream& aStream) const { aStream << mData;};
+	virtual void DataToString(stringstream& aStream) const { aStream << std::boolalpha << mData;};
 	virtual TBool DataFromString(istringstream& aStream, TBool& aRes);
 	virtual DtBase* Clone() {return new Sdata<T>(*this);};
 	virtual TBool operator==(const DtBase& sb) 
