@@ -3124,6 +3124,7 @@ void FAtNTuple::Init()
     if (mIfProxy == NULL) {
 	if (iid == MDtGet<Sdata<int> >::Type()) mIfProxy = new IfProxy<Sdata<int> >(this);
 	else if (iid == MDtGet<Sdata<float> >::Type()) mIfProxy = new IfProxy<Sdata<float> >(this);
+	else if (iid == MDtGet<Sdata<bool> >::Type()) mIfProxy = new IfProxy<Sdata<bool> >(this);
     }
 }
 

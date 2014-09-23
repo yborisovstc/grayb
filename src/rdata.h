@@ -69,8 +69,10 @@ template<class T> TBool Sdata<T>::DataFromString(istringstream& aStream, TBool& 
 {
     TBool changed = EFalse;
     T sdata;
-    aStream >> sdata;
-    if ((aRes = !aStream.fail()) && mData != sdata) { mData = sdata; mValid = ETrue; changed = ETrue; }
+    aStream >> std::boolalpha >> sdata;
+    if (aRes = !aStream.fail()) {
+	mValid = ETrue; if (mData != sdata) { mData = sdata; changed = ETrue; }
+    }
     return changed;
 }
 
@@ -191,37 +193,6 @@ template<class T> TBool Mtr<T>::ElemFromString(TInt aInd, istringstream& aStream
     }
     return changed;
 }
-
-
-#if 0
-// Tuple, with unnamed components, adds the components on run-time
-class RTuple: public DtBase
-{ 
-    public:
-	// Components
-	typedef vector<DtBase*> tComps;
-	// Types signature of components
-	typedef vector<string> tCTypes;
-    public:
-	RTuple(): DtBase() {};
-	RTuple(const RTuple& aTuple): DtBase(aTuple) {};
-	virtual ~RTuple();
-	static const char* TypeSig();
-	static TBool IsSrepFit(const string& aString);
-	static TBool IsDataFit(const RTuple& aData);
-	static int ParseSigPars(const string& aCont, string& aSig, tCTypes& aCTypes);
-	void Init(const tCTypes& aCt);
-	TBool FromString(const string& aString);
-	DtBase* GetElem(int ind) const { __ASSERT(ind >= 0 && ind < mData.size()); return mData.at(ind);};
-	TBool operator==(const RTuple& b) { return this->mValid == b.mValid  && this->mData == b.mData;};
-	TBool operator!=(const RTuple& b) {return !this->operator==(b);};
-	virtual string GetTypeSig() const { return TypeSig();};
-    protected:
-	TBool IsCTypesFit(const tCTypes& aCt) const;
-    public:
-	tComps mData;
-};
-#endif
 
 // Tuple, with named components, adds the components on run-time
 // Full_signature := TypeSig , ',' ,  Paremeters ;
