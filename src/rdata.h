@@ -55,8 +55,12 @@ template<class T> class Sdata: public DtBase
 	virtual void DataToString(stringstream& aStream) const { aStream << std::boolalpha << mData;};
 	virtual TBool DataFromString(istringstream& aStream, TBool& aRes);
 	virtual DtBase* Clone() {return new Sdata<T>(*this);};
-	virtual TBool operator==(const DtBase& sb) 
+	virtual TBool operator==(const DtBase& sb)
 	{ const Sdata<T>& b = dynamic_cast<const Sdata<T>& >(sb); return &b != NULL && DtBase::operator==(b) && mData == b.mData;};
+	TBool operator>(const Sdata<T>& b) const { return mData > b.mData;};
+	TBool operator>=(const Sdata<T>& b) const { return mData >= b.mData;};
+	TBool operator<(const Sdata<T>& b) const { return mData < b.mData;};
+	TBool operator<=(const Sdata<T>& b) const { return mData <= b.mData;};
 	Sdata<T>& operator+=(const Sdata<T>& b) { mData += b.mData; return *this;};
 	//TBool operator!=(const Sdata<T>& b) {return !this->operator==(b);};
 	TBool Set(const T& aData) { TBool res = aData != mData; mData = aData; mValid = ETrue; return res; };

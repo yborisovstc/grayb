@@ -2912,10 +2912,11 @@ void AFCmpVar::Init(const string& aIfaceName)
     }
     MDVarGet* inp1 = GetInp(Func::EInp1);
     MDVarGet* inp2 = GetInp(Func::EInp2);
-    if (inp1 != NULL && inp2 != NULL) {
+    if (aIfaceName == MDtGet<Sdata<bool> >::Type() && inp1 != NULL && inp2 != NULL) {
 	string t1 = inp1->VarGetIfid();
 	string t2 = inp2->VarGetIfid();
-	if ((mFunc = FCmpFloat::Create(this, aIfaceName, t1, t2)) != NULL);
+	FCmpBase::TFType ftype = GetFType();
+	if ((mFunc = FCmp<Sdata<int> >::Create(this, t1, t2, ftype)) != NULL);
     }
 }
 
@@ -2929,53 +2930,60 @@ Elem::TIfRange AFCmpVar::GetInps(TInt aId)
     return inp->GetIfi(MDVarGet::Type(), &cont);
 }
 
-// Comparition  function, float
-Func* FCmpFloat::Create(Host* aHost, const string& aOutIid, const string& aInp1Iid, const string& aInp2Iid)
+FCmpBase::TFType AFCmpVar::GetFType()
+{
+    FCmpBase::TFType res = FCmpBase::EEq;
+    if (Name() == "AF_Lt") res = FCmpBase::ELt;
+    else if (Name() == "AF_Le") res = FCmpBase::ELe;
+    else if (Name() == "AF_Eq") res = FCmpBase::EEq;
+    else if (Name() == "AF_Gt") res = FCmpBase::EGt;
+    else if (Name() == "AF_Ge") res = FCmpBase::EGe;
+    else {
+	Logger()->Write(MLogRec::EErr, this, "Incorrect type of function [%s]", Name().c_str());
+    }
+    return res;
+}
+
+// Comparition  function
+template <class T> Func* FCmp<T>::Create(Host* aHost, const string& aInp1Iid, const string& aInp2Iid, FCmpBase::TFType aFType)
 {
     Func* res = NULL;
-    if (aOutIid == MDBoolGet::Type() && (aInp1Iid == MDFloatGet::Type() || aInp1Iid == MDIntGet::Type()) 
-	  && (aInp2Iid == MDFloatGet::Type() || aInp2Iid == MDIntGet::Type())) {
-	res = new FCmpFloat(*aHost);
+    if (aInp1Iid == MDtGet<T>::Type() && aInp2Iid == MDtGet<T>::Type()) {
+	res = new FCmp<T>(*aHost, aFType);
     }
     return res;
 }
 
-void *FCmpFloat::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+template <class T> void *FCmp<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
-    if (strcmp(aName, MDIntGet::Type()) == 0) res = (MDIntGet*) this;
+    if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
     return res;
 }
 
-TInt FCmpFloat::Value()
+template <class T> void FCmp<T>::DtGet(Sdata<bool>& aData)
 {
-    TInt res = 0;
-    float arg1 = GetArg(EInp1);
-    float arg2 = GetArg(EInp2);
-    if (arg1 < arg2) res = -1;
-    else if (arg1 > arg2) res = 1;
-    return res;
-}
-
-float FCmpFloat::GetArg(TInt aInpId)
-{
-    float res = 0.0;
-    MDVarGet* iv = mHost.GetInp(aInpId);
-    if (iv != NULL) {
-	string ifi = iv->VarGetIfid();
-	if (!ifi.empty()) {
-	    void* inp = iv->GetDObj(ifi.c_str());
-	    if (ifi == MDFloatGet::Type()) {
-		res = ((MDFloatGet*) inp)->Value();
-	    }
-	    else if (ifi == MDIntGet::Type()) {
-		res = (float) ((MDIntGet*) inp)->Value();
-	    }
+    MDVarGet* av1 = mHost.GetInp(EInp1);
+    MDVarGet* av2 = mHost.GetInp(EInp2);
+    if (av1 != NULL && av2 != NULL) {
+	MDtGet<T>* a1 = av1->GetDObj(a1);
+	MDtGet<T>* a2 = av1->GetDObj(a1);
+	if (a1 != NULL && a2 != NULL) {
+	    T arg1, arg2;
+	    a1->DtGet(arg1);
+	    a2->DtGet(arg2);
+	    TBool res;
+	    if (mFType == ELt) res = arg1 < arg2;
+	    else if (mFType == ELe) res = arg1 <= arg2;
+	    else if (mFType == EEq) res = arg1 == arg2;
+	    else if (mFType == EGt) res = arg1 > arg2;
+	    else if (mFType == EGe) res = arg1 >= arg2;
+	    aData.Set(res);
+	    mRes = res;
+	    mHost.OnFuncContentChanged();
 	}
     }
-    return res;
 }
-
 
 
 // Getting component of container

@@ -767,6 +767,18 @@ class AFBcmpVar: public AFunVar
 };
 
 // Comparition, variable data
+
+class FCmpBase: public Func {
+    public:
+	enum TFType {ELt, ELe, EEq, EGe, EGt};
+	FCmpBase(Host& aHost, TFType aFType): Func(aHost), mFType(aFType) {};
+	virtual string IfaceGetId() const { return MDtGet<Sdata<bool> >::Type();};
+	virtual void GetResult(string& aResult) {stringstream ss; ss << mRes; aResult = ss.str();};
+    protected:
+	TFType mFType;
+	TBool mRes;
+};
+
 class AFCmpVar: public AFunVar
 {
     public:
@@ -774,6 +786,7 @@ class AFCmpVar: public AFunVar
 	static string PEType();
 	AFCmpVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	AFCmpVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	FCmpBase::TFType GetFType();
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Func::Host
@@ -782,15 +795,12 @@ class AFCmpVar: public AFunVar
 	virtual void Init(const string& aIfaceName);
 };
 
-class FCmpFloat: public Func, public MDIntGet {
+template <class T> class FCmp: public FCmpBase, public MDtGet<Sdata<bool> > {
     public:
-	static Func* Create(Host* aHost, const string& aOutIid, const string& aInp1Iid, const string& aInp2Iid);
-	FCmpFloat(Host& aHost): Func(aHost) {};
+	static Func* Create(Host* aHost, const string& aInp1Iid, const string& aInp2Iid, TFType aFType);
+	FCmp(Host& aHost, TFType aFType): FCmpBase(aHost, aFType) {};
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	virtual string IfaceGetId() const { return MDIntGet::Type();};
-	virtual TInt Value();
-    protected:
-	float GetArg(TInt aInpId);
+	virtual void DtGet(Sdata<bool>& aData);
 };
 
 
