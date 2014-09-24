@@ -217,6 +217,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual void GetCont(string& aCont); 
 	//virtual TBool ChangeCont(const string& aVal); 
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue); 
+	virtual TBool IsContChangeable() const; 
 	virtual TBool AddNode(const ChromoNode& aSpec, TBool aRunTime);
 	TBool AppendChild(Elem* aChild);
 	void RemoveChild(Elem* aChild);

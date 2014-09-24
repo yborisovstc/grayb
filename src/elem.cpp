@@ -1025,6 +1025,11 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
     }
 }
 
+TBool Elem::IsContChangeable() const
+{
+    return EFalse;
+}
+
 TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly) 
 {
     return EFalse;

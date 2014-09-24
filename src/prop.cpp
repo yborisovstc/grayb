@@ -35,6 +35,11 @@ const string& Prop::Value() const
     return iValue;
 }
 
+TBool Prop::IsContChangeable() const
+{
+    return ETrue;
+}
+
 TBool Prop::ChangeCont(const string& aVal, TBool aRtOnly)
 {
     TBool res = ETrue;
