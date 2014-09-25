@@ -114,7 +114,7 @@ class MDVarGet
 	void* GetDObj(const char *aType) { return DoGetDObj(aType); };
 	virtual void *DoGetDObj(const char *aName) { return NULL;};
 	// Get iface id. Is used for type negotiation from root to leafs
-	virtual string VarGetIfid() const = 0;
+	virtual string VarGetIfid() = 0;
 };
 
 class MDVarSet

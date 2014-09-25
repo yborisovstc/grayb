@@ -382,7 +382,7 @@ void *DVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
     return res;
 }
 
-string DVar::VarGetIfid() const
+string DVar::VarGetIfid()
 {
     return mData != NULL ? mData->IfaceGetId() : string();
 }

@@ -365,9 +365,9 @@
 	<node node="./Capsule" id="Inp2" parent="./../Inp_TFInt"/> 
     </node>
 
-    <!-- Transition Function Inp1 EQ Inp2  -->
+    <!-- Transition Function EQ  -->
     <node id="TFEQVar" parent="./TFuncVar"> 
-	<node node="./Agents" id="AF_Eq" parent="AFBcmpVar"/>
+	<node node="./Agents" id="AF_Eq" parent="AFCmpVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_TFVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_TFVar"/> 
 	<cont node="./ViewData/Res" ref="./../../Agents/AF_Eq"/>

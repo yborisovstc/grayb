@@ -1206,8 +1206,12 @@ TBool AFunVar::HandleCompChanged(Elem& aContext, Elem& aComp)
     return res;
 }
 
-string AFunVar::VarGetIfid() const
+string AFunVar::VarGetIfid()
 {
+    // Iface negitiation sequence is starting here. It is possible that
+    // the executive func is not set yet. In this case try to init w/o output iface info
+    if (mFunc == NULL) 
+	Init(string());
     return mFunc != NULL ? mFunc->IfaceGetId() : string();
 }
 
@@ -1312,7 +1316,7 @@ void AFAddVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
 	delete mFunc;
-	mFunc == NULL;
+	mFunc = NULL;
     }
     if ((mFunc = FAddInt::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddFloat::Create(this, aIfaceName)) != NULL);
@@ -1724,7 +1728,7 @@ void AFCpsVectVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
 	delete mFunc;
-	mFunc == NULL;
+	mFunc = NULL;
     }
     if ((mFunc = FCpsVect<int>::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FCpsVect<float>::Create(this, aIfaceName)) != NULL);
@@ -1823,7 +1827,7 @@ void AFMplVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
 	delete mFunc;
-	mFunc == NULL;
+	mFunc = NULL;
     }
     if ((mFunc = FMplFloat::Create(this, aIfaceName)) != NULL);
 }
@@ -1918,7 +1922,7 @@ void AFMplncVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
 	delete mFunc;
-	mFunc == NULL;
+	mFunc = NULL;
     }
     if ((mFunc = FMplMtrdVect<float>::Create(this, aIfaceName)) != NULL);
     //else if ((mFunc = FMplMtr<float>::Create(this, aIfaceName)) != NULL);
@@ -2198,7 +2202,7 @@ void AFMplinvVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
 	delete mFunc;
-	mFunc == NULL;
+	mFunc = NULL;
     }
     //if ((mFunc = FMplinvMtrd<float>::Create(this, aIfaceName)) != NULL);
     //if ((mFunc = FMplinvMtr<float>::Create(this, aIfaceName)) != NULL);
@@ -2418,7 +2422,7 @@ void AFCastVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
 	delete mFunc;
-	mFunc == NULL;
+	mFunc = NULL;
     }
     // Checking if input type is defined explicitly
     string ifi;
@@ -2531,7 +2535,7 @@ void AFCpsMtrdVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
 	delete mFunc;
-	mFunc == NULL;
+	mFunc = NULL;
     }
     MDVarGet* inp1 = GetInp(Func::EInp1);
     if ((mFunc = FCpsMtrdVect<float>::Create(this, aIfaceName, inp1)) != NULL);
@@ -2632,7 +2636,7 @@ void AFDivVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
 	delete mFunc;
-	mFunc == NULL;
+	mFunc = NULL;
     }
     if ((mFunc = FDivFloat::Create(this, aIfaceName)) != NULL);
 }
@@ -2840,7 +2844,7 @@ void AFBcmpVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
 	delete mFunc;
-	mFunc == NULL;
+	mFunc = NULL;
     }
     MDVarGet* inp1 = GetInp(FBcmpBase::EInp_1);
     MDVarGet* inp2 = GetInp(FBcmpBase::EInp_2);
@@ -2908,7 +2912,7 @@ void AFCmpVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
 	delete mFunc;
-	mFunc == NULL;
+	mFunc = NULL;
     }
     MDVarGet* inp1 = GetInp(Func::EInp1);
     MDVarGet* inp2 = GetInp(Func::EInp2);
@@ -2917,6 +2921,16 @@ void AFCmpVar::Init(const string& aIfaceName)
 	string t2 = inp2->VarGetIfid();
 	FCmpBase::TFType ftype = GetFType();
 	if ((mFunc = FCmp<Sdata<int> >::Create(this, t1, t2, ftype)) != NULL);
+	if (mFunc != NULL) {
+	    //Func* func = new FCmpBase(*this, ftype);
+	    Func* func = new FCmp<Sdata<bool> >(*this, ftype);
+	    MDtGet<Sdata<bool> >* fget = func->GetObj(fget);
+	    /*
+	    MDtGet<Sdata<bool> >* fget = mFunc->GetObj(fget);
+	    */
+	    Sdata<bool> data;
+	    fget->DtGet(data);
+	}
     }
 }
 
@@ -2945,19 +2959,39 @@ FCmpBase::TFType AFCmpVar::GetFType()
 }
 
 // Comparition  function
+
+FCmpBase::~FCmpBase()
+{
+}
+
+string FCmpBase::IfaceGetId() const
+{ 
+    return MDtGet<Sdata<bool> >::Type();
+}
+
+void FCmpBase::GetResult(string& aResult) 
+{
+    stringstream ss; ss << mRes; aResult = ss.str();
+}
+
+void *FCmpBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MDtGet<Sdata<bool> >::Type()) == 0) res = (MDtGet<Sdata<bool> >*) this;
+    return res;
+}
+
+void FCmpBase::DtGet(Sdata<bool>& aData)
+{
+    aData.Set(ETrue);
+}
+
 template <class T> Func* FCmp<T>::Create(Host* aHost, const string& aInp1Iid, const string& aInp2Iid, FCmpBase::TFType aFType)
 {
     Func* res = NULL;
     if (aInp1Iid == MDtGet<T>::Type() && aInp2Iid == MDtGet<T>::Type()) {
 	res = new FCmp<T>(*aHost, aFType);
     }
-    return res;
-}
-
-template <class T> void *FCmp<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
-{
-    void* res = NULL;
-    if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
     return res;
 }
 
@@ -3020,7 +3054,7 @@ void AFAtVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
 	delete mFunc;
-	mFunc == NULL;
+	mFunc = NULL;
     }
     MDVarGet* inp1 = GetInp(Func::EInp1);
     MDVarGet* inp2 = GetInp(Func::EInp2);
@@ -3285,7 +3319,7 @@ void AFSwitchVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
 	delete mFunc;
-	mFunc == NULL;
+	mFunc = NULL;
     }
     MDVarGet* inp_case = GetInp(Func::EInp1);
     MDVarGet* inp2 = GetInp(Func::EInp2);
@@ -3356,7 +3390,7 @@ MDVarGet* FSwitchBool::GetCase() const
     return res;
 }
 
-string FSwitchBool::VarGetIfid() const
+string FSwitchBool::VarGetIfid()
 {
     MDVarGet* cs = GetCase();
     return cs->VarGetIfid();

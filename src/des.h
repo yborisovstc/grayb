@@ -108,7 +108,7 @@ class ATrVar: public ATrBase, public MDVarGet, public Func::Host
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MDVarGet
-	virtual string VarGetIfid() const;
+	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
 	// From Func::Host
 	virtual Elem::TIfRange GetInps(TInt aId);
@@ -225,7 +225,7 @@ class ATrBcmpVar: public ATrVar
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MDVarGet
-	virtual string VarGetIfid() const;
+	virtual string VarGetIfid();
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
 	virtual string GetInpUri(TInt aId);

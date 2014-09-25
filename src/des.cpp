@@ -356,7 +356,7 @@ void *ATrVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCt
     return res;
 }
 
-string ATrVar::VarGetIfid() const
+string ATrVar::VarGetIfid()
 {
     return mFunc != NULL ? mFunc->IfaceGetId() : string();
 }
@@ -771,7 +771,7 @@ void *ATrBcmpVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext*
     return res;
 }
 
-string ATrBcmpVar::VarGetIfid() const
+string ATrBcmpVar::VarGetIfid()
 {
     return MDBoolGet::Type();
 }

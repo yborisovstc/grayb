@@ -237,7 +237,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	virtual bool FromString(const string& aData); 
 	virtual bool ToString(string& aData); 
 	// From MDVarGet
-	virtual string VarGetIfid() const;
+	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
 	// From MDVarSet
 	virtual Elem* VarSetBase();

@@ -352,7 +352,7 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MDVarGet
-	virtual string VarGetIfid() const;
+	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
@@ -768,16 +768,30 @@ class AFBcmpVar: public AFunVar
 
 // Comparition, variable data
 
-class FCmpBase: public Func {
+class FCmpBase: public Func, public MDtGet<Sdata<bool> >
+{
     public:
 	enum TFType {ELt, ELe, EEq, EGe, EGt};
+    public:
 	FCmpBase(Host& aHost, TFType aFType): Func(aHost), mFType(aFType) {};
-	virtual string IfaceGetId() const { return MDtGet<Sdata<bool> >::Type();};
-	virtual void GetResult(string& aResult) {stringstream ss; ss << mRes; aResult = ss.str();};
+	virtual ~FCmpBase();
+	virtual string IfaceGetId() const;
+	virtual void GetResult(string& aResult);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual void DtGet(Sdata<bool>& aData);
     protected:
 	TFType mFType;
 	TBool mRes;
 };
+
+template <class T> class FCmp: public FCmpBase
+{
+    public:
+	static Func* Create(Host* aHost, const string& aInp1Iid, const string& aInp2Iid, TFType aFType);
+	FCmp(Host& aHost, TFType aFType): FCmpBase(aHost, aFType) {};
+	virtual void DtGet(Sdata<bool>& aData);
+};
+
 
 class AFCmpVar: public AFunVar
 {
@@ -794,15 +808,6 @@ class AFCmpVar: public AFunVar
     protected:
 	virtual void Init(const string& aIfaceName);
 };
-
-template <class T> class FCmp: public FCmpBase, public MDtGet<Sdata<bool> > {
-    public:
-	static Func* Create(Host* aHost, const string& aInp1Iid, const string& aInp2Iid, TFType aFType);
-	FCmp(Host& aHost, TFType aFType): FCmpBase(aHost, aFType) {};
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	virtual void DtGet(Sdata<bool>& aData);
-};
-
 
 // Getting component of container
 class AFAtVar: public AFunVar
@@ -930,7 +935,7 @@ class FSwitchBool: public FSwithcBase, public MDVarGet
 	virtual string IfaceGetId() const { return MDFloatGet::Type();};
 	MDVarGet* GetCase() const;
 	// From MDVarGet
-	virtual string VarGetIfid() const;
+	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
     private:
 	TBool GetCtrl() const;
