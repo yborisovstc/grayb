@@ -2921,16 +2921,16 @@ void AFCmpVar::Init(const string& aIfaceName)
 	string t2 = inp2->VarGetIfid();
 	FCmpBase::TFType ftype = GetFType();
 	if ((mFunc = FCmp<Sdata<int> >::Create(this, t1, t2, ftype)) != NULL);
+	/* Debuggng
 	if (mFunc != NULL) {
 	    //Func* func = new FCmpBase(*this, ftype);
 	    Func* func = new FCmp<Sdata<bool> >(*this, ftype);
 	    MDtGet<Sdata<bool> >* fget = func->GetObj(fget);
-	    /*
-	    MDtGet<Sdata<bool> >* fget = mFunc->GetObj(fget);
-	    */
+	    //MDtGet<Sdata<bool> >* fget = mFunc->GetObj(fget);
 	    Sdata<bool> data;
 	    fget->DtGet(data);
 	}
+	*/
     }
 }
 
@@ -2971,7 +2971,7 @@ string FCmpBase::IfaceGetId() const
 
 void FCmpBase::GetResult(string& aResult) 
 {
-    stringstream ss; ss << mRes; aResult = ss.str();
+    stringstream ss; ss << std::boolalpha << mRes; aResult = ss.str();
 }
 
 void *FCmpBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -3001,7 +3001,7 @@ template <class T> void FCmp<T>::DtGet(Sdata<bool>& aData)
     MDVarGet* av2 = mHost.GetInp(EInp2);
     if (av1 != NULL && av2 != NULL) {
 	MDtGet<T>* a1 = av1->GetDObj(a1);
-	MDtGet<T>* a2 = av1->GetDObj(a1);
+	MDtGet<T>* a2 = av2->GetDObj(a2);
 	if (a1 != NULL && a2 != NULL) {
 	    T arg1, arg2;
 	    a1->DtGet(arg1);
