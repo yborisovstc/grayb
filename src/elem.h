@@ -223,6 +223,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void RemoveChild(Elem* aChild);
 	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety);
 	virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime);
+	virtual TBool ReorderNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety);
 	vector<Elem*>& Comps();
 	// From MChild
 	virtual void OnParentDeleting(Elem* aParent);

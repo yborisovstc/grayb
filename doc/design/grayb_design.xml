@@ -3,13 +3,13 @@
 <!DOCTYPE article SYSTEM "/usr/share/sgml/docbook/dtd/xml/4.5/docbookx.dtd">
 
 
-<article status="draft" class="specification"> <title>Enhanced Discrete Events System framework (graph based). Design.</title>
+<article status="draft" class="specification"> <title>Enhanced Discrete Events System framework (multiagents based). Design.</title>
 
     <articleinfo>
 	<author><personname><firstname>Yuri</firstname><surname>Borisov</surname></personname>
 	    <email>yuri.borisov.v@gmail.com</email></author> 
 
-	<releaseinfo>Ver.0.05 at 18-Jan-2014</releaseinfo>
+	<releaseinfo>Ver.0.09 at 29-Sep-2014</releaseinfo>
 
 	<abstract>
 	    <simpara>This document collects use-cases and software desing for Discrete Events System framework ver 2.</simpara>
@@ -32,12 +32,19 @@
 		<revremark>Added <xref linkend="ds_nat_agent_hier"/></revremark> </revision>
 	    <revision> <revnumber>0.08</revnumber> <date>09-Sep-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="ds_mut_dis_pheno"/>, <xref linkend="ds_mut_pheno"/></revremark> </revision>
+	    <revision> <revnumber>0.09</revnumber> <date>29-Sep-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="ds_transp"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
 
     <bibliolist>
 	<title>References</title>
+
+	<biblioentry id="ref_incr_mut"> <abbrev>INCR_MUT</abbrev>
+	    <productname><ulink url="../../../fap-doc/doc_incr_syst_creation/index.html "/></productname>
+	    <title>Y.Borisov. Using incremental mutation process for systems modeling</title> </biblioentry>
+
     </bibliolist>
 
 
@@ -416,6 +423,36 @@
 	</sect2>
 	<sect2><title>Moving of node</title>
 	</sect2>
+	<sect2 id="ds_transp"><title>Nodes transposition</title>
+	    <sect3><title>Intro</title>
+		<simpara> Nodes transposition, or nodes shifting is just changing the order the nodes in the 
+		    owner node. The order is inportant for model creation because actually the model creation "machine" is single-pass. 
+		    So the mutation that use reference to some node must be applied AFTER the referenced node is created.</simpara>
+		<simpara>There was the discussion around this operation, 
+		    ref <ulink url="../../../fap-doc/doc_incr_syst_creation/index.html#sec_lim_transp"/>. There was conclusion
+		that transposition is not allowed in the scope of incremental mutations approach.</simpara>
+	    </sect3>
+	    <sect3><title>Approached</title>
+		<simpara>There are potential solution for the problem of changing order:</simpara>
+		<orderedlist>
+		    <listitem>Not consider changing order as chromo mutaion, ref <xref linkend="ds_transp_nochange"/></listitem>
+		    <listitem>Add specific mutation, improve ordering mechanism, ref <xref linkend="ds_transp_mut"/></listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3 id="ds_transp_nochange"><title>Approach: Not consider changing order as chromo mutaion </title>
+		<simpara>The disadvantage here is that there will not be the history of change.</simpara>
+	    </sect3>
+	    <sect3 id="ds_transp_mut"><title>Mutation for transposition instead of direct changing of chromo</title>
+		<simpara>The decision of transposition is not allowed in incremental mutation scheme is based on the assumtion that
+		    the transposition is done via direct chromo changing. But it is still possible to change the order without 
+		    direct changing of chromo. The idea is that the mutation can be used, that specifies the change of order.  </simpara>
+		<simpara>In this case we still follow the incremental mutaions approach and the same time can change the order. 
+		    Another point is that the mutaion mechanism needs to be improved to support the change order mutation. This is 
+		    because the mechanism should operate not only with the current mutation as usual but take into account all nodes
+		    in the current upper level node and "create" the order before adding the nodes. There is also the option of 
+		    inserting the order change mutation at the beginning of the upper level node.</simpara>
+	    </sect3>
+	</sect2>
 	<sect2 id="ds_mut_dis_pheno"><title>Disabling/Enabling phenotypic modificaions</title>
 	    <sect3><title>Intro</title>
 		<simpara>Last time there was decision made to introduce new options - disabling pheno modificaions</simpara>
@@ -425,16 +462,16 @@
 		    option of inheritance of childs from the structural part of system native hier. If we didn't require 
 		    such an inheritance then we can use flat chromo where the order of mutations completelly corresponds to
 		    the order the changes applied to the system on construction phase.</simpara>
-		<simpara>However native hier (structure) is very important part of system creation and cannot be
-		    avoided or ignored. This approach is to create the system via a set of components, which are
-		    improved via inheritance and local mutations. According to this approach the mutation in parent must
-		    be applied before the childs creation. But this mutation applying sequence differs from native secuence 
-		    (the sequence of how the mutation were introduced)</simpara>
-		<simpara>Actually to keep original sequence is not a problem. For instance flat chromo can be used.</simpara>
-		<simpara>There is another option of keeping the original sequence of mutation - mutation order. 
-		    Currently it is possible to set order value for each mutation. So if the "chromo machine" could to
-		    apply the muts according to the order it would be equivalent to flat chromo. Equivelency means that these
-		    forms of chromos can be explicitly transformed one to another.</simpara>
+	    <simpara>However native hier (structure) is very important part of system creation and cannot be
+		avoided or ignored. This approach is to create the system via a set of components, which are
+		improved via inheritance and local mutations. According to this approach the mutation in parent must
+		be applied before the childs creation. But this mutation applying sequence differs from native secuence 
+		(the sequence of how the mutation were introduced)</simpara>
+	    <simpara>Actually to keep original sequence is not a problem. For instance flat chromo can be used.</simpara>
+	    <simpara>There is another option of keeping the original sequence of mutation - mutation order. 
+		Currently it is possible to set order value for each mutation. So if the "chromo machine" could to
+		apply the muts according to the order it would be equivalent to flat chromo. Equivelency means that these
+		forms of chromos can be explicitly transformed one to another.</simpara>
 		<simpara>But again the real problem is that approach of creating system via inherited sybsystems requires that
 		the sequence of applying differs the original sequence.</simpara>
 	    </sect3>
@@ -488,7 +525,9 @@
 	    </sect3>
 	    <sect3><title>Shifting node to increase its rank</title>
 		<simpara>This approach cons is that actually it is not possible to do it via simple mutation. It was discussed 
-		    many times. The short explanation is that the initial mutaion anytime goes first so to change nodes rank we
+		    many times, ref <xref linkend="ref_incr_mut"/> for the discusstion, specifically the section
+		    "Transposition of nodes within chromo is not allowed". Also ref <xref linkend="ds_transp"/> for the design 
+		    related discussion. The short explanation is that the initial mutaion anytime goes first so to change nodes rank we
 		    need to edit chromo but not mutation it additivelly.</simpara>
 		<simpara>So to shift the node we need to recreate the node, remove initial one and then squeeze the chromo to 
 		    avoid errors reporting because of initial mut is failed. Not simple approach really.</simpara>

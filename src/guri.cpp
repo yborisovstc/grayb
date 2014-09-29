@@ -52,6 +52,7 @@ void GUriBase::Construct()
 	KNodeTypes["change"] = ENt_Change;
 	KNodeTypes["cont"] = ENt_Cont;
 	KNodeTypes["add"] = ENt_Add;
+	KNodeTypes["order"] = ENt_Order;
 
 	for (map<string, TNodeType>::const_iterator it = KNodeTypes.begin(); it != KNodeTypes.end(); it++) {
 	    KNodeTypesNames[it->second] = it->first;
@@ -68,6 +69,7 @@ void GUriBase::Construct()
 	KNodeAttrsNames[ENa_MutVal] = "val";
 	KNodeAttrsNames[ENa_Order] = "ord";
 	KNodeAttrsNames[ENa_TOrder] = "tord";
+	KNodeAttrsNames[ENa_Pos] = "pos";
 
 	for (map<TNodeAttr, string>::const_iterator it = KNodeAttrsNames.begin(); it != KNodeAttrsNames.end(); it++) {
 	    KNodeAttrs[it->second] = it->first;

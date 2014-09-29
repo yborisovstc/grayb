@@ -12,6 +12,7 @@ enum TNodeType
 {
     ENt_Unknown = 0,
     ENt_Node = 1,
+    ENt_Order = 2,	// Set order of node
     ENt_Move = 3, 	// Mutation - move node
     ENt_Rm = 4,   	// Mutation - removal
     ENt_Change = 5, 	// Change node attribute
@@ -30,6 +31,7 @@ enum TNodeAttr
     ENa_MutNode = 10,
     ENa_MutAttr = 11,
     ENa_MutVal = 12,
+    ENa_Pos = 14,	// Target position in reordering
 };
 
 // Node identification can be done by specifying it's "position" within given type of coordinates.

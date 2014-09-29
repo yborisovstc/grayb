@@ -1018,6 +1018,9 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	else if (rnotype == ENt_Rm) {
 	    RmNode(rno, aRunTime, aCheckSafety);
 	}
+	else if (rnotype == ENt_Order) {
+	    ReorderNode(rno, aRunTime, aCheckSafety);
+	}
 	else {
 	    Logger()->Write(MLogRec::EErr, this, "Mutating - unknown mutation type [%d]", rnotype);
 	}
@@ -1037,6 +1040,28 @@ TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly)
 
 void Elem::GetCont(string& aCont)
 {
+}
+
+TBool Elem::ReorderNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety)
+{
+    string snode = aSpec.Attr(ENa_MutNode);
+    string spos = aSpec.Attr(ENa_Pos);
+    Elem* node = GetNode(snode);
+    Elem* pos = GetNode(spos);
+    if (node != NULL && pos != NULL) {
+	if (!aCheckSafety || node->IsMutSafe(pos)) {
+	}
+	else {
+	    Logger()->Write(MLogRec::EErr, this, "Reordering node [%s] - unsafe, used in: [%s]", 
+		    snode.c_str(), node->GetMajorDep().first.first->GetUri().c_str());
+	}
+    }
+    else {
+	if (node == NULL) 
+	    Logger()->Write(MLogRec::EErr, this, "Reordering node [%s] - cannot find node", snode.c_str());
+	else 
+	    Logger()->Write(MLogRec::EErr, this, "Reordering node [%s] - cannot find position", spos.c_str());
+    }
 }
 
 void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety)
