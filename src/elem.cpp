@@ -1875,7 +1875,7 @@ void Elem::GetRank(Rank& aRank, const ChromoNode& aMut) const
 
 void Elem::GetLRank(Rank& aRank, TBool aCur) const
 {
-    ChromoNode end = *(iChromo->Root().Rend());
+    ChromoNode end = *(iChromo->Root().Rbegin());
     if (aCur) {
 	GetRank(aRank, end);
     }

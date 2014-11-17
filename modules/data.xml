@@ -22,6 +22,12 @@
 	<node id="Value" parent="Prop"/>
     </node>
 
+    <!-- Data with separate input for setting and output for getting. Props for Type and Value -->
+    <node id="DataST" parent="./DataS"> 
+	<cont node="./D_1" val="Base of Data with separate input for setting and output for getting. Separate Type property."/>
+	<node id="Type" parent="Prop"/>
+    </node>
+
     <!-- Data with separate input for setting and output for getting. W/o notificaion -->
     <node id="DataSU" parent=":Elem:IncapsComps/Incaps"> 
 	<node id="D_1" parent="Description">
@@ -43,6 +49,14 @@
     <!-- Data with separate input for setting and output for getting. Variant -->
     <node id="DataSVar"  parent="./DataS"> 
 	<cont node="./D_1" val="Variant Data with separate input for setting and output for getting"/>
+	<node node="./Agents" id="MACompsObserver" parent="DVar"/>
+	<cont node="./Capsule/inp/Provided" val="MDVarSet"/>
+	<cont node="./Capsule/out/Provided" val="MDVarGet"/>
+    </node>
+
+    <!-- Data with separate input for setting and output for getting. Variant. Separate type prop -->
+    <node id="DataSTVar"  parent="./DataST"> 
+	<cont node="./D_1" val="Variant Data with separate input for setting and output for getting. Separate Type property."/>
 	<node node="./Agents" id="MACompsObserver" parent="DVar"/>
 	<cont node="./Capsule/inp/Provided" val="MDVarSet"/>
 	<cont node="./Capsule/out/Provided" val="MDVarGet"/>
@@ -86,6 +100,15 @@
     <!-- Terminal data, input only, provided data observer, required gettng data -->
     <node id="DataTVar"  parent="./DataS"> 
 	<cont node="./D_1" val="Terminal data, input only, variable type. Monitoring input and update itself"/>
+    	<node node="./Agents" id="AData" parent="DVar"/>
+	<cont node="./Capsule/inp/Provided" val="MDataObserver"/>
+	<cont node="./Capsule/inp/Required" val="MDVarGet"/>
+	<cont node="./Capsule/out/Provided" val="MDVarGet"/>
+    </node>
+
+    <!-- Terminal data, input only, provided data observer, required gettng data. Separate type prop -->
+    <node id="DataTTVar"  parent="./DataST"> 
+	<cont node="./D_1" val="Terminal data, input only, variable type. Monitoring input and update itself. Separate type property."/>
     	<node node="./Agents" id="AData" parent="DVar"/>
 	<cont node="./Capsule/inp/Provided" val="MDataObserver"/>
 	<cont node="./Capsule/inp/Required" val="MDVarGet"/>

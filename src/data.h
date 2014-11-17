@@ -12,9 +12,11 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable, public M
 	DataBase(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	DataBase(Elem* aMan = NULL, MEnv* aEnv = NULL);
     protected:
+	TBool FromString(const string& aType, const string& aData); 
 	virtual TBool FromString(const string& aData); 
 	virtual bool ToString(string& aData); 
 	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
+	bool ToString(string& aType, string& aData);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MACompsObserver

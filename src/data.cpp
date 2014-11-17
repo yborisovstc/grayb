@@ -27,8 +27,11 @@ DataBase::DataBase(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
     TBool res = ETrue;
-    if (aComp.Name() == "Value" && aComp.EType() == "Prop") {
-	MProp* prop = aComp.GetObj(prop);
+    if ((aComp.Name() == "Value" || aComp.Name() == "Type") && aComp.EType() == "Prop") {
+	Elem* etype = aContext.GetNode("./Type");
+	Elem* eval = aContext.GetNode("./Value");
+	__ASSERT(eval != NULL);
+	MProp* prop = eval->GetObj(prop);
 	if (prop == NULL) {
 	    Logger()->Write(MLogRec::EErr, this, "Missing MProp iface in property [%s]", aComp.Name().c_str());
 	    res = EFalse;
@@ -39,7 +42,9 @@ TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 	    if (IsLogeventUpdate()) {
 		Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", prop->Value().c_str(), curr.c_str());
 	    }
-	    FromString(prop->Value());
+	    MProp* ptype = etype == NULL ? NULL: etype->GetObj(ptype);
+	    string stype = ptype == NULL ? string() : ptype->Value();
+	    FromString(stype, prop->Value());
 	}
     }
     else {
@@ -111,9 +116,18 @@ void DataBase::UpdateProp()
 {
     Elem* eprop = GetNode("./../../Value");
     if (eprop != NULL) {
-	string res;
-	ToString(res);
-	eprop->ChangeCont(res);
+	Elem* etype = GetNode("./../../Type");
+	if (etype == NULL) {
+	    string res;
+	    ToString(res);
+	    eprop->ChangeCont(res);
+	}
+	else {
+	    string data, type;
+	    ToString(type, data);
+	    etype->ChangeCont(type);
+	    eprop->ChangeCont(data);
+	}
     }
 }
 	
@@ -134,6 +148,16 @@ TBool DataBase::Update()
     return EFalse;
 }
 
+TBool DataBase::FromString(const string& aType, const string& aData)
+{
+    if (aType.empty()) {
+	FromString(aData);
+    }
+    else {
+	FromString(aType + string(1, DtBase::mKTypeToDataSep) + aData);
+    }
+}
+
 TBool DataBase::FromString(const string& aData) 
 {
     return EFalse;
@@ -144,6 +168,14 @@ bool DataBase::ToString(string& aData)
     return EFalse;
 }
 
+bool DataBase::ToString(string& aType, string& aData)
+{
+    string full;
+    ToString(full);
+    int end = full.find(DtBase::mKTypeToDataSep);
+    aType = full.substr(0, end);
+    aData = full.substr(end + 1, string::npos);
+}
 
 
 string DInt::PEType()
@@ -428,6 +460,7 @@ TBool DVar::Init(const string& aString, MDVarGet* aInpv)
     else if ((mData = HDt<Mtr <int> >::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<Mtr <float> >::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<NTuple>::Create(this, aString, aInpv)) != NULL);
+    else if ((mData = HDt<Enum>::Create(this, aString, aInpv)) != NULL);
     //else if ((mData = HVect<float>::Create(this, aString, aInpv)) != NULL);
     //else if ((mData = HMtrd<float>::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HBool::Create(this, aString, aInpv)) != NULL);

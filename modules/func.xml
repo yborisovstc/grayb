@@ -461,9 +461,10 @@
 
     <!-- Function Inp1 EQ Inp2  -->
     <node id="FEQVar" parent="./FuncVar"> 
-	<node node="./Agents" id="AF_Eq" parent="AFBcmpVar"/>
+	<node node="./Agents" id="AF_Eq" parent="AFCmpVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_FVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_FVar"/> 
+	<cont node="./ViewData/Res" ref="./../../Agents/AF_Eq"/>
     </node>
 
     <!-- Function Inp1 GT Inp2  -->

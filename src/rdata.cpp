@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include "rdata.h"
 
+const char KSigParsToDataSep = ' ';
+const char KSigToParsSep = ',';
+const char KParsSep = ',';
 
 DtBase::~DtBase()
 {
@@ -14,6 +17,7 @@ template<> const char* Sdata<float>::TypeSig() { return  "SF";};
 template<> const char* Sdata<bool>::TypeSig() { return  "SB";};
 template<> const char* Sdata<string>::TypeSig() { return  "SS";};
 
+char DtBase::mKTypeToDataSep = KSigParsToDataSep;
 
 int DtBase::ParseSigPars(const string& aCont, string& aSig)
 {
@@ -525,3 +529,186 @@ NTuple& NTuple::operator=(const NTuple& b)
     return *this;
 }
 
+
+
+// Enumeration
+const char* Enum::TypeSig() { return  "E";};
+
+Enum::~Enum()
+{
+}
+
+TBool Enum::IsSrepFit(const string& aString)
+{
+    return DtBase::IsSrepFit(aString, TypeSig());
+}
+
+TBool Enum::IsDataFit(const Enum& aData)
+{
+    TBool res = aData.mValid && aData.GetTypeSig() == TypeSig();
+    return res;
+}
+
+int Enum::ParseSigPars(const string& aCont, string& aSig, tSet& aSet)
+{
+    size_t res = string::npos;
+    size_t end = string::npos;
+    if (!aCont.empty()) {
+	int beg = 0;
+	int sigp_e = aCont.find_first_of(KSigParsToDataSep);
+	string sigp = aCont.substr(beg, sigp_e);
+	res = sigp_e;
+	size_t sig_e = sigp.find_first_of(KSigToParsSep);
+	aSig = sigp.substr(0, sig_e);
+	if (!aSig.empty()) {
+	    aSet.clear();
+	    end = sig_e;
+	    do {
+		beg = end + 1;
+		end = sigp.find(KParsSep, beg);
+		string compsig = sigp.substr(beg, end - beg);
+		aSet.push_back(compsig);
+	    } while (end != string::npos);
+	}
+    }
+    return res;
+}
+
+int Enum::ParseSig(const string& aCont, string& aSig)
+{
+    size_t res = string::npos;
+    size_t end = string::npos;
+    if (!aCont.empty()) {
+	int beg = 0;
+	int sigp_e = aCont.find_first_of(KParsSep);
+	aSig = aCont.substr(beg, sigp_e);
+	res = sigp_e;
+    }
+    return res;
+}
+
+TBool Enum::AreTypeParsFit(const tSet& aSet) const
+{
+    TBool res = ETrue;
+    if (mSet.size() != aSet.size()) {
+	res = EFalse;
+    }
+    else {
+	for (TInt cnt = 0; cnt < mSet.size() && res; cnt++) {
+	    res = mSet.at(cnt) == aSet.at(cnt);
+	}
+    }
+    return res;
+}
+
+void Enum::Init(const tSet& aSet)
+{
+    mSet.clear();
+    mSet = aSet;
+}
+
+TBool Enum::FromString(const string& aString)
+{
+    TBool res = ETrue;
+    TBool changed = EFalse;
+    string ss;
+    string sig;
+    int beg = 0, end = 0;
+    tSet set;
+    end = ParseSigPars(aString, sig, set);
+    if (sig == GetTypeSig()) {
+	if (!AreTypeParsFit(set)) { 
+	    Init(set);
+	    changed = ETrue; 
+	}
+	if (end != string::npos) {
+	    int beg = end + 1;
+	    end = aString.find(' ', beg);
+	    ss = aString.substr(beg, end - beg);
+	}
+	if (!ss.empty()) {
+	    istringstream sstr(ss);
+	    changed |= DataFromString(sstr, res);
+	}
+    }
+    else {
+	res = EFalse;
+    }
+    if (mValid != res) { mValid = res; changed = ETrue; }
+    return changed;
+}
+
+TBool Enum::DataFromString(istringstream& aStream, TBool& aRes)
+{
+    TBool changed = EFalse;
+    string sdata;
+    aStream >> sdata;
+    if (aRes = !aStream.fail()) {
+	TBool valid = EFalse; 
+	TInt data = -1;
+	// Check if data belongs to the set
+	for (TInt ind = 0; ind != mSet.size() && !valid; ind++) {
+	    string& selem = mSet.at(ind);
+	    if (sdata == selem) {
+		valid = ETrue; data = ind;
+	    }
+	}
+	if (mValid != valid) { 
+	    mValid = valid; changed = ETrue; 
+	}
+	if (mValid && mData != data) { 
+	    mData = data; changed = ETrue; 
+	}
+    }
+    return changed;
+}
+
+void Enum::TypeParsToString(stringstream& aStream) const
+{
+    for (tSet::const_iterator it = mSet.begin(); it != mSet.end(); it++) {
+	if (it != mSet.begin()) {
+	    string sep(1, KParsSep);
+	    aStream << sep;
+	}
+	aStream << *it;
+    }
+}
+
+void Enum::ToString(string& aString) const
+{
+    stringstream ss;
+    ss << GetTypeSig() << KSigToParsSep;
+    if (!mValid) {
+	ss << " <ERROR>";
+    }
+    else {
+	TypeParsToString(ss);
+	ss << KSigParsToDataSep;
+	DataToString(ss);
+    }
+    aString = ss.str();
+}
+
+void Enum::DataToString(stringstream& aStream) const 
+{ 
+    aStream << mSet.at(mData);
+}
+
+TBool Enum::IsCompatible(const DtBase& sb)
+{
+    const Enum& b = dynamic_cast<const Enum& >(sb); 
+    TBool res = b.mValid && b.GetTypeSig() == TypeSig() && mSet.size() == b.mSet.size();
+    if (res) {
+	for (TInt i = 0; i < mSet.size() && res; i++) {
+	    if (mSet.at(i) != b.mSet.at(i)) 
+		res = EFalse;
+	}
+    }
+    return res;
+}
+
+TBool Enum::operator==(const DtBase& sb)
+{ 
+    const Enum& b = dynamic_cast<const Enum& >(sb); 
+    return &b != NULL && DtBase::operator==(b)  && mData == b.mData;
+};

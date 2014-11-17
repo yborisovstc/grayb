@@ -34,6 +34,8 @@
 		<revremark>Added <xref linkend="ds_mut_dis_pheno"/>, <xref linkend="ds_mut_pheno"/></revremark> </revision>
 	    <revision> <revnumber>0.09</revnumber> <date>29-Sep-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="ds_transp"/></revremark> </revision>
+	    <revision> <revnumber>0.10</revnumber> <date>26-Oct-2014</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="ds_agt_data"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -423,7 +425,7 @@
 	</sect2>
 	<sect2><title>Moving of node</title>
 	</sect2>
-	<sect2 id="ds_transp"><title>Nodes transposition</title>
+	<sect2 id="ds_transp"><title>Nodes (mutations) transposition (reordering)</title>
 	    <sect3><title>Intro</title>
 		<simpara> Nodes transposition, or nodes shifting is just changing the order the nodes in the 
 		    owner node. The order is inportant for model creation because actually the model creation "machine" is single-pass. 
@@ -443,7 +445,7 @@
 		<simpara>The disadvantage here is that there will not be the history of change.</simpara>
 	    </sect3>
 	    <sect3 id="ds_transp_mut"><title>Mutation for transposition instead of direct changing of chromo</title>
-		<simpara>The decision of transposition is not allowed in incremental mutation scheme is based on the assumtion that
+		<simpara>The decision that transposition is not allowed in incremental mutation scheme is based on the assumption that
 		    the transposition is done via direct chromo changing. But it is still possible to change the order without 
 		    direct changing of chromo. The idea is that the mutation can be used, that specifies the change of order.  </simpara>
 		<simpara>In this case we still follow the incremental mutaions approach and the same time can change the order. 
@@ -451,6 +453,11 @@
 		    because the mechanism should operate not only with the current mutation as usual but take into account all nodes
 		    in the current upper level node and "create" the order before adding the nodes. There is also the option of 
 		    inserting the order change mutation at the beginning of the upper level node.</simpara>
+		<simpara>One of the solution could be as following. The -node- mutation includes specific element - container of reordering mutations. This element should be the first
+		    within -node-. Reordering mutation is like: 'order' object_order target_order, where object order is the initial order of reordered mutation and target order is initial order of 
+		    mutation before that the reordered mutation is shifted. The initial order is id of native order of mutation in owned node, i.e the order of mutation in local chromo. When -node- mutation
+		    gets applied, the mutated agent first calculate the order of mutations using reodreding mutations and then applies the mutaion according to new order. In result the chromo of 
+		    agent will be reordered. To keep chromo original this reordered chromo needs to be transformed back to unordered state on chromo saving.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_mut_dis_pheno"><title>Disabling/Enabling phenotypic modificaions</title>
@@ -748,6 +755,19 @@
 		can be obtained via inherirance hierarchy uri or simple native agents uri. It should work, we just need to
 		ensure clear distinction of native agents ref (uri). Currently native agents uri form doesn't distinct from
 		form of default structural uri (for it also no relation symbol is used in uri, ref GUri::Parse)</simpara>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_agt_data"><title>Agents for data</title>
+	<sect2 id="ds_agt_data_repr"><title>Data string representation scheme</title>
+	    <programlisting>
+		data_repr = type , ":" value
+		type = type_signature , "," , type_parameters
+	    </programlisting>
+	    <itemizedlist>
+		<listitem>type_signature is primarily type identifier. It assosiates to type implementation where type_parameters are served as paremeters of 
+		    type implementation.</listitem>
+	    </itemizedlist>
 	</sect2>
     </sect1>
 

@@ -2921,6 +2921,7 @@ void AFCmpVar::Init(const string& aIfaceName)
 	string t2 = inp2->VarGetIfid();
 	FCmpBase::TFType ftype = GetFType();
 	if ((mFunc = FCmp<Sdata<int> >::Create(this, t1, t2, ftype)) != NULL);
+	else if ((mFunc = FCmp<Enum>::Create(this, t1, t2, ftype)) != NULL);
 	/* Debuggng
 	if (mFunc != NULL) {
 	    //Func* func = new FCmpBase(*this, ftype);
@@ -3006,15 +3007,21 @@ template <class T> void FCmp<T>::DtGet(Sdata<bool>& aData)
 	    T arg1, arg2;
 	    a1->DtGet(arg1);
 	    a2->DtGet(arg2);
-	    TBool res;
-	    if (mFType == ELt) res = arg1 < arg2;
-	    else if (mFType == ELe) res = arg1 <= arg2;
-	    else if (mFType == EEq) res = arg1 == arg2;
-	    else if (mFType == EGt) res = arg1 > arg2;
-	    else if (mFType == EGe) res = arg1 >= arg2;
-	    aData.Set(res);
-	    mRes = res;
-	    mHost.OnFuncContentChanged();
+	    if (arg1.mValid && arg2.mValid && arg1.IsCompatible(arg2)) {
+		TBool res;
+		if (mFType == ELt) res = arg1 < arg2;
+		else if (mFType == ELe) res = arg1 <= arg2;
+		else if (mFType == EEq) res = arg1 == arg2;
+		else if (mFType == EGt) res = arg1 > arg2;
+		else if (mFType == EGe) res = arg1 >= arg2;
+		aData.Set(res);
+		mRes = res;
+		mHost.OnFuncContentChanged();
+	    }
+	    else {
+		aData.mValid = EFalse;
+		mHost.OnFuncContentChanged();
+	    }
 	}
     }
 }

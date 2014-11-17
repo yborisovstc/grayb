@@ -35,7 +35,9 @@ class DtBase
 	virtual void DataToString(stringstream& aStream) const {aStream << "?";};
 	virtual TBool DataFromString(istringstream& aStream, TBool& aRes) {};
 	virtual DtBase* Clone() {return NULL;};
+	virtual TBool IsCompatible(const DtBase& b) {return ETrue;};
     public:
+	static char mKTypeToDataSep;
 	TBool mValid;
 	// Invalidity reason: sigtype is invalis
 	TBool mSigTypeOK;
@@ -234,5 +236,42 @@ class NTuple: public DtBase
 	tComps mData;
 };
 
+// Enumeration, element of ordered finite set
+// Data is represented by index in the set
+class Enum: public DtBase
+{
+    public:
+	typedef vector<string> tSet;
+    public:
+	Enum(): DtBase() {};
+	Enum(const Enum& aData): DtBase(aData) {};
+	virtual ~Enum();
+	static const char* TypeSig();
+	static TBool IsSrepFit(const string& aString);
+	static TBool IsDataFit(const Enum& aData);
+	static int ParseSigPars(const string& aCont, string& aSig, tSet& aSet);
+	static int ParseSig(const string& aCont, string& aSig);
+	TBool AreTypeParsFit(const tSet& aSet) const;
+	void ToString(string& aString) const;
+	TBool FromString(const string& aString);
+	void Init(const tSet& aSet);
+    public:
+	virtual string GetTypeSig() const { return TypeSig();};
+	virtual TBool DataFromString(istringstream& aStream, TBool& aRes);
+	virtual void DataToString(stringstream& aStream) const;
+	virtual TBool IsCompatible(const DtBase& b);
+    public:
+	virtual TBool operator==(const DtBase& sb);
+	TBool operator>(const Enum& b) const { return mData > b.mData;};
+	TBool operator>=(const Enum& b) const { return mData >= b.mData;};
+	TBool operator<(const Enum& b) const { return mData < b.mData;};
+	TBool operator<=(const Enum& b) const { return mData <= b.mData;};
+
+    protected:
+	void TypeParsToString(stringstream& aStream) const;
+    protected:
+	tSet mSet;
+	TInt mData;
+};
 
 #endif
