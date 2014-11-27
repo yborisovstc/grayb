@@ -168,7 +168,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	Elem* GetCompOwningN(const string& aParent, Elem* aElem);
 	Elem* GetRoot() const;
 	Elem* GetInhRoot() const;
-	TBool IsComp(Elem* aElem);
+	TBool IsComp(const Elem* aElem) const;
 	Elem* GetCommonOwner(Elem* aElem);
 	// Checks if elements chromo is attached. Ref UC_019 for details
 	TBool IsChromoAttached() const;
@@ -304,6 +304,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// Chromo modification/repairing utilities
 	TBool ShiftComp(Elem* aComp, Elem* aDest = NULL);
 	TBool ShiftCompOverDep(Elem* aComp, const TMDep& aDep);
+	// Resolve owned mutation unsafety via changing mutation position
+	TBool ResolveMutUnsafety(Elem* aMutated, Elem* aDepOn);
     protected:
 	// Element type - parent's chain
 	// TODO [YB] Is it needed now after implementing inheritance chain?

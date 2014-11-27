@@ -614,6 +614,13 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_indp_mutord"><title>Independence on local mutations order</title>
+	    <sect3><title>Refs</title>
+		<itemizedlist>
+		    <listitem>Use case: <ulink url="../requirements/index.html#uc_046"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_visrepr"><title>Visual representation</title>
@@ -698,7 +705,7 @@
 	    <orderedlist>
 		<listitem>To introduce fake customized agents for CPs.
 		    <simpara>Here we are saying: "Any CP can be used for getting info or passing it out. Even CP itself doesn't know of that and is not customizing to 
-		    to it specifically, we "marking" them so the system using it can indicate this CP specialization.</simpara>
+			to it specifically, we "marking" them so the system using it can indicate this CP specialization.</simpara>
 		</listitem>
 		<listitem>To customize systems boundary: to introduce specific parts "Input" and "Output" in capsule.
 		    <simpara>The idea is that system is responsible for moving data thru, so the system can customize its structure to indicate the CPs 

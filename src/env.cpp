@@ -12,7 +12,7 @@ const string KLogFileName = "faplog.txt";
 const char* KRootName = "Root";
 
 ChromoMgr::ChromoMgr(const string& aName, Env& aHost): Base(aName), mHost(aHost), mLim(0), 
-    mEnablePhenoModif(EFalse), mEnableFixErrors(EFalse)
+    mEnablePhenoModif(EFalse), mEnableFixErrors(EFalse), mEnableReposMuts(EFalse)
 {
 }
 
@@ -59,6 +59,12 @@ void ChromoMgr::SetEnableFixErrors(TBool aEnable)
     }
 }
 
+void ChromoMgr::SetEnableReposMuts(bool aEnable)
+{
+    if (mEnableReposMuts != aEnable) {
+	mEnableReposMuts = aEnable;
+    }
+}
 
 Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileName): Base(aName), iRoot(NULL), iLogger(NULL),
     iSpecChromo(NULL)

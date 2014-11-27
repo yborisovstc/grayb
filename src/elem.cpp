@@ -1147,6 +1147,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
     TBool res = ETrue;
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
     TBool efix = iEnv->ChMgr()->EnableFixErrors();
+    TBool erepos = iEnv->ChMgr()->EnableReposMuts();
     string snode = aSpec.Attr(ENa_MutNode);
     TBool refex = aSpec.AttrExists(ENa_Ref);
     string mval = aSpec.Attr(refex ? ENa_Ref :ENa_MutVal);
@@ -1169,15 +1170,20 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 		    //mval = rnode->GetRUri(node);
 		    if (rnode == NULL) {
 			Logger()->Write(MLogRec::EErr, this, aSpec,
-				"Changing contnt of node [%s] to ref [%s] - cannot find ref", snode.c_str(), mval.c_str());
+				"Changing content of node [%s] to ref [%s] - cannot find ref", snode.c_str(), mval.c_str());
 			res = EFalse;
 		    }
 		    else {
 			if (!IsRefSafe(rnode)) {
-			    IsRefSafe(rnode);
-			    Logger()->Write(MLogRec::EErr, this, "Changing content of node [%s] - unsafe: rank of ref [%s] is too big", 
-				    snode.c_str(), mval.c_str());
+			    //IsRefSafe(rnode);
 			    res = EFalse;
+			    if (erepos && iMan != NULL) {
+				res = iMan->ResolveMutUnsafety(this, rnode);
+			    }
+			    if (!res) {
+				Logger()->Write(MLogRec::EErr, this, "Changing content of node [%s] - unsafe: rank of ref [%s] is too big", 
+					snode.c_str(), mval.c_str());
+			    }
 			}
 		    }
 		}
@@ -1796,7 +1802,7 @@ Elem* Elem::GetCompOwning(const string& aParent, Elem* aElem)
     return res;
 }
 
-// TODO [YB] to use the generic mathod that uses uri instead of having specific func for type and name
+// TODO [YB] to use the generic method that uses uri instead of having specific func for type and name
 Elem* Elem::GetCompOwningN(const string& aName, Elem* aElem)
 {
     Elem* res = NULL;
@@ -1823,9 +1829,9 @@ Elem* Elem::GetCompOwning(Elem* aElem)
     return res;
 }
 
-TBool Elem::IsComp(Elem* aElem)
+TBool Elem::IsComp(const Elem* aElem) const
 {
-    Elem* man = aElem->GetMan();
+    const Elem* man = aElem->GetMan();
     while (man != NULL && man != this) {
 	man = man->GetMan();	
     }
@@ -2955,6 +2961,27 @@ Elem* Elem::GetCMDep(const ChromoNode& aMut, TNodeAttr aAttr) const
     }
     return res;
 }
+
+TBool Elem::ResolveMutUnsafety(Elem* aMutated, Elem* aDepOn)
+{
+    TBool res = EFalse;
+    // Check if both mutated and dependency are owned
+    Elem* mcomp = GetCompOwning(aMutated);
+    Elem* dcomp = GetCompOwning(aDepOn);
+    if (mcomp != NULL && dcomp != NULL) {
+	// Owned, shifting the mutated over the dependency
+	mcomp->Chromos().Root().MoveNextTo(dcomp->Chromos().Root());
+	res = ETrue;
+    }
+    else {
+	// Not owned, redirect to owner
+	if (iMan != NULL) 
+	    iMan->ResolveMutUnsafety(aMutated, aDepOn);
+    }
+    return res;
+}
+
+
 
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {

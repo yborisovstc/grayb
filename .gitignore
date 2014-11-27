@@ -61,3 +61,4 @@ lcov_report
 *-trunk
 install-root
 ut-grayb-lib
+*.xml_

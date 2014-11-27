@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for invariant againts mutations order, ref uc_046 
+USER tries to change edge1/P2 to v3, but this breaks safety
+SYSTEM has to reorder mutations to keep safety -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Vert">
+    <node id="v1" parent="Vert"/>
+    <node id="v2" parent="Vert"/>
+    <node id="edge1" parent="Edge"> 
+	<cont node="./P1" ref="./../../v1"/> 
+	<cont node="./P2" ref="./../../v2"/>
+    </node>
+    <node id="p1" parent="Prop">
+	<cont ref="./../edge1/P1"/>
+    </node>
+    <node id="v3" parent="Vert"/>
+</node>
+

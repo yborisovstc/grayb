@@ -16,6 +16,9 @@ class MChromoMgr
 	virtual void SetEnablePhenoModif(bool aEnable) = 0;
 	virtual bool EnableFixErrors() const = 0;
 	virtual void SetEnableFixErrors(bool aEnable) = 0;
+	// Enable to re-postion owned mutations in order to resolve unsafety
+	virtual bool EnableReposMuts() const = 0;
+	virtual void SetEnableReposMuts(bool aEnable) = 0;
 };
 
 // Executive environment interface

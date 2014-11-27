@@ -30,11 +30,14 @@ class ChromoMgr: public Base, public MChromoMgr
 	virtual void SetEnablePhenoModif(TBool aEnable);
 	virtual bool EnableFixErrors() const { return mEnableFixErrors;};
 	virtual void SetEnableFixErrors(bool aEnable);
+	virtual bool EnableReposMuts() const { return mEnableReposMuts;};
+	virtual void SetEnableReposMuts(bool aEnable);
     protected:
 	TInt mLim;
 	Env& mHost;
 	TBool mEnablePhenoModif;
 	TBool mEnableFixErrors;
+	TBool mEnableReposMuts;
 };
 
 class Env: public Base, public MEnv
