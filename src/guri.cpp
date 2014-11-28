@@ -8,7 +8,7 @@
 
 map<string, TNodeType> KNodeTypes;
 map<TNodeType, string> KNodeTypesNames;
-map<TNodeAttr, string> KNodeAttrsNames;
+map<TNodeAttr, string> GUriBase::KNodeAttrsNames;
 map<string, TNodeAttr> KNodeAttrs;
 
 const string GUriBase::KTypeAny = "*";

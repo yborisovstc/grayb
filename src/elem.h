@@ -21,7 +21,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	typedef string TNMKey;
 	typedef pair<TNMKey, Elem*> TNMVal;
 	typedef multimap<string, Elem*> TNMReg;
-	// Ref to mutation
+	// Ref to mutation: [model node, mut handle]
 	typedef pair<Elem*, void*> TMutRef;
 	// Rank of node
 	typedef vector<TInt> TRank;
@@ -262,7 +262,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr);
 	void RmCMDep(const ChromoNode& aMut);
 	Elem* GetCMDep(const ChromoNode& aMut, TNodeAttr aAttr) const;
-	void GetDep(TMDep& aDep, TNodeAttr aAttr, TBool aLocalOnly = EFalse) const;
+	void GetDep(TMDep& aDep, TNodeAttr aAttr, TBool aLocalOnly = EFalse, TBool aAnyType = EFalse) const;
 	void GetDepRank(Rank& aRank, TNodeAttr aAttr);
 	TMDep GetMajorDep();
 	void GetMajorDep(TMDep& aDep, TBool aUp = EFalse, TBool aDown = ETrue);
@@ -306,6 +306,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool ShiftCompOverDep(Elem* aComp, const TMDep& aDep);
 	// Resolve owned mutation unsafety via changing mutation position
 	TBool ResolveMutUnsafety(Elem* aMutated, Elem* aDepOn);
+	TBool ResolveMutsUnsafety();
+	ChromoNode GetLocalForwardCCDep(Elem* aOwner, const ChromoNode& aMut = ChromoNode()) const;
     protected:
 	// Element type - parent's chain
 	// TODO [YB] Is it needed now after implementing inheritance chain?

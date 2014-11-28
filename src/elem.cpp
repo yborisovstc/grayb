@@ -2361,12 +2361,12 @@ void Elem::GetMajorChild(Elem*& aElem, Rank& rr)
     }
 }
 
-void Elem::GetDep(TMDep& aDep, TNodeAttr aAttr, TBool aLocalOnly) const 
+void Elem::GetDep(TMDep& aDep, TNodeAttr aAttr, TBool aLocalOnly, TBool aAnyType) const 
 {
     if (iMDeps.begin() != iMDeps.end()) {
 	for (TMDeps::const_iterator it = iMDeps.begin(); it != iMDeps.end(); it++) {
 	    TMDep dep = *it;
-	    if (dep.second == aAttr) {
+	    if (aAnyType || dep.second == aAttr) {
 		aDep = dep;
 		break;
 	    }
@@ -2962,6 +2962,39 @@ Elem* Elem::GetCMDep(const ChromoNode& aMut, TNodeAttr aAttr) const
     return res;
 }
 
+ChromoNode Elem::GetLocalForwardCCDep(Elem* aOwner, const ChromoNode& aMut) const
+{
+    ChromoNode res;
+    Rank mutrank;
+    GetRank(mutrank, aMut);
+    typedef map<TNodeAttr, string> TAttrs;
+    // Looking thru all types of dependencies
+    for (TAttrs::const_iterator it = GUriBase::KNodeAttrsNames.begin(); it != GUriBase::KNodeAttrsNames.end(); it++) {
+	TNodeAttr attr = it->first;
+	TCMRelFrom key((void*) aMut.Handle(), attr);
+	if (iCMRelReg.count(key) > 0) {
+	    Elem* mnode = iCMRelReg.at(key);
+	    // Check if this is forward dep, i.e. model node rank is greater that mut rank
+	    Rank mdeprank;
+	    GetRank(mdeprank, mnode->Chromos().Root());
+	    if (mdeprank > mutrank) {
+		Elem* comp = aOwner->GetCompOwning(mnode);
+		if (comp != NULL) {
+		    res = comp->Chromos().Root();
+		    break;
+		}
+		else {
+		    res = mnode->GetLocalForwardCCDep(aOwner);
+		    if (res.Handle() != NULL) {
+			break;
+		    }
+		}
+	    }
+	}
+    }
+    return res;
+}
+
 TBool Elem::ResolveMutUnsafety(Elem* aMutated, Elem* aDepOn)
 {
     TBool res = EFalse;
@@ -2971,6 +3004,8 @@ TBool Elem::ResolveMutUnsafety(Elem* aMutated, Elem* aDepOn)
     if (mcomp != NULL && dcomp != NULL) {
 	// Owned, shifting the mutated over the dependency
 	mcomp->Chromos().Root().MoveNextTo(dcomp->Chromos().Root());
+	// Shifting changes deps scheme, resolve forward deps
+	ResolveMutsUnsafety();
 	res = ETrue;
     }
     else {
@@ -2981,6 +3016,23 @@ TBool Elem::ResolveMutUnsafety(Elem* aMutated, Elem* aDepOn)
     return res;
 }
 
+TBool Elem::ResolveMutsUnsafety()
+{
+    // Use simple direct algorithm: find out the node with forward dep and move it
+    // Repeat the search from the beginning
+    ChromoNode& root = Chromos().Root();
+    for (ChromoNode::Iterator mit = root.Begin(); mit != root.End(); mit++)
+    {
+	ChromoNode node = *mit;
+	ChromoNode dep = GetLocalForwardCCDep(this, node);
+	if (dep.Handle() != NULL) {
+	    // Dep found, shifting the current mutation over the dependency
+	    node.MoveNextTo(dep);
+	    // Restart searching dep
+	    mit = root.Begin();
+	}
+    }
+}
 
 
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)

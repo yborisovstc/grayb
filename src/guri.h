@@ -115,6 +115,7 @@ class GUriBase
 	static const char KNodeSep;
 	static const char KSepNone;
 	static const char KBaseSep;
+	static map<TNodeAttr, string> KNodeAttrsNames;
 };
 
 

@@ -2,7 +2,9 @@
 
 <!-- Unit test for invariant againts mutations order, ref uc_046 
 USER tries to change edge1/P2 to v3, but this breaks safety
-SYSTEM has to reorder mutations to keep safety -->
+SYSTEM has to reorder mutations to keep safety 
+Also the second dependency is from mut [cont ref="./../edge1/P1"] to edge1 which 
+gets reordered. So SYSTEM has to shift this mut also -->
 
 
 <!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 

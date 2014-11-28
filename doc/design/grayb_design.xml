@@ -620,6 +620,19 @@
 		    <listitem>Use case: <ulink url="../requirements/index.html#uc_046"/></listitem>
 		</itemizedlist>
 	    </sect3>
+	    <sect3><title>Extra UCs and questions</title>
+		<sect4><title>Refusing of mut with non-resolvable unsafety</title>
+		    <simple>Main usecase is that new mutation is checked for safety and SYSTEM repositions the mutations
+			in case if unsafety is detected. But what if mutation introduces unsafety that cannot be fixed?
+			This can be the case of cyclic dependencies for instance.</simple>
+		    <simple>Assuming that initially there is no cycles in the node. So the procedure would be as:
+			Checking if new mutation introduce a cycle into the node, is so then refuse it.</simple>
+		    <simple>To prove: If there are no cycles in the node then it is not possible to creaty any cycle via
+			re-positioning the node components.</simple>
+		    <simple>To prove: If there are no cycles int the node then the node components can be ordered to have 
+		    only backword dependencies.</simple>
+		</sect4>
+	    </sect3>
 	</sect2>
     </sect1>
 
