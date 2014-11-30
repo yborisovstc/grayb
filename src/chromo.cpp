@@ -136,7 +136,9 @@ ChromoNode::ChromoNode(const ChromoNode& aNode): iMdl(aNode.iMdl), iHandle(aNode
 
 ChromoNode& ChromoNode::operator=(const ChromoNode& aNode) 
 { 
-    iMdl = aNode.iMdl; iHandle = aNode.iHandle;
+    // TODO [YB] Wrong to assign model because its base is not assignable (Base). To redesign.
+//    iMdl = aNode.iMdl; iHandle = aNode.iHandle;
+    iHandle = aNode.iHandle;
     return *this; 
 }
 

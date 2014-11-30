@@ -2964,33 +2964,43 @@ Elem* Elem::GetCMDep(const ChromoNode& aMut, TNodeAttr aAttr) const
 
 ChromoNode Elem::GetLocalForwardCCDep(Elem* aOwner, const ChromoNode& aMut) const
 {
-    ChromoNode res;
-    Rank mutrank;
-    GetRank(mutrank, aMut);
-    typedef map<TNodeAttr, string> TAttrs;
-    // Looking thru all types of dependencies
-    for (TAttrs::const_iterator it = GUriBase::KNodeAttrsNames.begin(); it != GUriBase::KNodeAttrsNames.end(); it++) {
-	TNodeAttr attr = it->first;
-	TCMRelFrom key((void*) aMut.Handle(), attr);
-	if (iCMRelReg.count(key) > 0) {
-	    Elem* mnode = iCMRelReg.at(key);
-	    // Check if this is forward dep, i.e. model node rank is greater that mut rank
-	    Rank mdeprank;
-	    GetRank(mdeprank, mnode->Chromos().Root());
-	    if (mdeprank > mutrank) {
-		Elem* comp = aOwner->GetCompOwning(mnode);
-		if (comp != NULL) {
-		    res = comp->Chromos().Root();
-		    break;
-		}
-		else {
-		    res = mnode->GetLocalForwardCCDep(aOwner);
-		    if (res.Handle() != NULL) {
+    ChromoNode res(Chromos().Root().Mdl(), NULL);
+    TBool smut = aMut.Handle() != NULL;
+
+    const ChromoNode& root = Chromos().Root();
+    for (ChromoNode::Const_Iterator mit = root.Begin(); mit != root.End(); mit++) {
+	ChromoNode mut = smut ? aMut: *mit;
+	Rank mutrank;
+	GetRank(mutrank, mut);
+	typedef map<TNodeAttr, string> TAttrs;
+	// Looking thru all types of dependencies
+	for (TAttrs::const_iterator it = GUriBase::KNodeAttrsNames.begin(); it != GUriBase::KNodeAttrsNames.end(); it++) {
+	    TNodeAttr attr = it->first;
+	    TCMRelFrom key((void*) mut.Handle(), attr);
+	    if (iCMRelReg.count(key) > 0) {
+		Elem* mnode = iCMRelReg.at(key);
+		// Check if this is forward dep, i.e. model node rank is greater that mut rank
+		Rank mdeprank;
+		mnode->GetRank(mdeprank, mnode->Chromos().Root());
+		if (mdeprank > mutrank) {
+		    Elem* comp = aOwner->GetCompOwning(mnode);
+		    if (comp != NULL) {
+			res = comp->Chromos().Root();
 			break;
 		    }
 		}
 	    }
 	}
+	// If dep isn't found and mut is the node, look into its deep
+	if (res.Handle() == NULL && mut.Type() == ENt_Node) {
+	    TCMRelFrom key((void*) mut.Handle(), ENa_Id);
+	    __ASSERT(iCMRelReg.count(key) != 0);
+	    Elem* mnode = iCMRelReg.at(key);
+	    res = mnode->GetLocalForwardCCDep(aOwner);
+	    if (res.Handle() != NULL) break;
+	}
+	if (res.Handle() != NULL) break;
+	if (smut) break;
     }
     return res;
 }
@@ -3021,8 +3031,7 @@ TBool Elem::ResolveMutsUnsafety()
     // Use simple direct algorithm: find out the node with forward dep and move it
     // Repeat the search from the beginning
     ChromoNode& root = Chromos().Root();
-    for (ChromoNode::Iterator mit = root.Begin(); mit != root.End(); mit++)
-    {
+    for (ChromoNode::Iterator mit = root.Begin(); mit != root.End(); mit++) {
 	ChromoNode node = *mit;
 	ChromoNode dep = GetLocalForwardCCDep(this, node);
 	if (dep.Handle() != NULL) {

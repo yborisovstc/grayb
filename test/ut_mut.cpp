@@ -402,6 +402,12 @@ void Ut_mut::test_MutInv1()
     Elem* v3 = root->GetNode("./v3");
     MVert* mv3 = v3->GetObj(mv3);
     CPPUNIT_ASSERT_MESSAGE("Fail to connect v1 to v3", mv1->Pairs().count(mv3) == 1);
+    // Check that secondary forward dependency was resolved
+    Elem* p1 = root->GetNode("./p1");
+    string p1_cont;
+    p1->GetCont(p1_cont);
+    CPPUNIT_ASSERT_MESSAGE("Fail to set p1 with ref to edge1/P1", p1_cont == "./../edge1/P1");
+    
     // Save upated chromo 
     iEnv->Root()->Chromos().Save("ut_mut_inv_1_res.xml_");
     delete iEnv;
