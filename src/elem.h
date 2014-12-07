@@ -253,6 +253,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void GetMajorChild(Elem*& aElem, Rank& rr);
 	TBool IsMutSafe(Elem* aRef);
 	TBool IsRefSafe(Elem* aRef);
+	TBool IsForwardRef(Elem* aRef);
 	TMDeps& GetMDeps() { return iMDeps;};
 	void AddMDep(Elem* aNode, const ChromoNode& aMut, TNodeAttr aAttr);
 	void RemoveMDep(const TMDep& aDep);

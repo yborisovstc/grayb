@@ -107,7 +107,7 @@
 	    </sect3>
 	</sect2>
 
-	<sect2 id="uc_01"><title>UC_01 Logging</title>
+	<sect2 id="uc_001"><title>UC_001 Logging</title>
 	    <sect3><title>Description</title>
 		CLIENT requests logging and specifies logging parameters - SYSTEM provides CLIENT with logging data
 	    </sect3>
@@ -116,6 +116,8 @@
 	    <sect3><title>Extended by</title>
 		<itemizedlist>
 		    <listitem><xref linkend="uc_020"/></listitem>
+		    <listitem><xref linkend="uc_047"/></listitem>
+		    <listitem><xref linkend="uc_048"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>
@@ -126,7 +128,7 @@
 		logging configuration.
 	    </sect3>
 	    <sect3><title>Extension of</title>
-		<simpara><xref linkend="uc_01"/></simpara>
+		<simpara><xref linkend="uc_001"/></simpara>
 	    </sect3>
 	    <sect3><title>Extended by</title>
 	    </sect3>
@@ -1405,6 +1407,66 @@
 	    </sect3>
 	    <sect3><title>Clarification</title> </sect3>
 	</sect2>
+
+	<sect2 id="uc_047"><title>UC_047 Logger Observer interface </title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of SYSTEM</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<itemizedlist>
+		    <listitem>SYSTEM introduces Logger Oblserver interface</listitem>
+		    <listitem>USER implements Logger Oblserver interface</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER prepares models chromo.</listitem>
+		    <listitem>USER requests SYSTEM to register Logger Observer interface implementation as observer </listitem>
+		    <listitem>USER requests SYSTEM for creating model from the chromo</listitem>
+		    <listitem>SYSTEM creates the model. SYSTEM notifies USER of logger events via USER implementation of Logger Observer interface </listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_001"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_048"><title>UC_048 Logging Event</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of SYSTEM</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER prepares models chromo.</listitem>
+		    <listitem>USER requests SYSTEM for creating model from the chromo</listitem>
+		    <listitem>SYSTEM creates the model. SYSTEM record logging information as Logging Events.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_001"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<itemizedlist>
+		    <listitem>Logging Events includes the following information:
+			<itemizedlist>
+			    <listitem>Code</listitem>
+			    <listitem>Message</listitem>
+			    <listitem>Parameters</listitem>
+			</itemizedlist>
+		    </listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+
     </sect1>
 
 </article>

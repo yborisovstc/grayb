@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for invariant againts mutations order, ref uc_046 
+dependency that contradicts with the native order - ref to parent
+USER tries to add to v1 child of v2
+SYSTEM has to reorder mutations to keep safety: move v1 after v2 
+Also the second dependencies are:
+1. from mut [cont ref="./../v1"] to v1 which gets reordered.
+2. from mut [node id="v3" parent="./v1"] to v1 which gets reordered.
+ So SYSTEM has to shift these muts also 
+-->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Vert">
+    <node id="v1" parent="Vert"/>
+    <node id="p1" parent="Prop">
+	<cont ref="./../v1"/>
+    </node>
+    <node id="v3" parent="./v1"/>
+    <node id="v2" parent="Vert"/>
+</node>
+

@@ -1274,7 +1274,9 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
     string sparent = aNode.Attr(ENa_Parent);
     string sname = aNode.Name();
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
+    TBool erepos = iEnv->ChMgr()->EnableReposMuts();
     TBool mutadded = EFalse;
+    TBool res = EFalse;
     __ASSERT(!sname.empty());
     if (IsLogeventCreOn()) {
 	Logger()->Write(MLogRec::EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
@@ -1297,7 +1299,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 	    else {
 		// TODO [YB] To add seaching the module - it will allow to specify just file of spec wo full uri
 		Chromo *spec = Provider()->CreateChromo();
-		TBool res = spec->Set(sparent);
+		res = spec->Set(sparent);
 		if (res) {
 		    const ChromoNode& root = spec->Root();
 		    parent = AddElem(root);
@@ -1306,6 +1308,16 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 	    }
 	    if (parent != NULL) {
 		if (epheno || node == this || IsInheritedComp(node)) {
+		    if (IsForwardRef(parent)) {
+			res = EFalse;
+			if (erepos && iMan != NULL) {
+			    res = iMan->ResolveMutUnsafety(this, parent);
+			}
+			if (!res) {
+			    Logger()->Write(MLogRec::EErr, this, 
+				    "Creating [%s] - cannot create - rank of parent [%s] is too big", sname.c_str(), sparent.c_str());
+			}
+		    }
 		    // Create heir from the parent
 		    elem = parent->CreateHeir(sname, node);
 		    // TODO [YB] Seems to be just temporal solution. To consider using context instead.
@@ -1319,7 +1331,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 			// delete parent;
 		    }
 		    if (elem != NULL) {
-			TBool res = node->AppendComp(elem);
+			res = node->AppendComp(elem);
 			if (res) {
 			    if (!aRunTime) {
 				ChromoNode chn = iChromo->Root();
@@ -1997,6 +2009,19 @@ TBool Elem::IsMutSafe(Elem* aRef)
 	}
     }
     return safemut;
+}
+
+TBool Elem::IsForwardRef(Elem* aRef)
+{
+    TBool res = EFalse;
+    Rank crank;
+    GetLRank(crank);
+    Rank rrank;
+    aRef->GetLRank(rrank);
+    if (rrank > crank && !rrank.IsRankOf(crank)) {
+	res = ETrue;
+    }
+    return res;
 }
 
 TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety)
@@ -3031,7 +3056,9 @@ TBool Elem::ResolveMutsUnsafety()
     // Use simple direct algorithm: find out the node with forward dep and move it
     // Repeat the search from the beginning
     ChromoNode& root = Chromos().Root();
-    for (ChromoNode::Iterator mit = root.Begin(); mit != root.End(); mit++) {
+    ChromoNode::Iterator mit = root.Begin();
+//    for (ChromoNode::Iterator mit = root.Begin(); mit != root.End(); mit++) {
+    while (mit != root.End()) {
 	ChromoNode node = *mit;
 	ChromoNode dep = GetLocalForwardCCDep(this, node);
 	if (dep.Handle() != NULL) {
@@ -3039,6 +3066,9 @@ TBool Elem::ResolveMutsUnsafety()
 	    node.MoveNextTo(dep);
 	    // Restart searching dep
 	    mit = root.Begin();
+	}
+	else {
+	    mit++;
 	}
     }
 }

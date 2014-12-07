@@ -23,6 +23,7 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_MutDepsChilds1);
     CPPUNIT_TEST(test_MutDepsRmRef);
     CPPUNIT_TEST(test_MutInv1);
+    CPPUNIT_TEST(test_MutInvParent);
     CPPUNIT_TEST(test_MutRmParent);
     CPPUNIT_TEST(test_MutRenameParent);
     CPPUNIT_TEST(test_Compact1);
@@ -44,6 +45,7 @@ private:
     void test_MutDepsChilds1();
     void test_MutDepsRmRef();
     void test_MutInv1();
+    void test_MutInvParent();
     void test_MutRmParent();
     void test_MutRenameParent();
     void test_Compact1();
@@ -420,6 +422,53 @@ void Ut_mut::test_MutInv1()
     iEnv->ConstructSystem();
     // Save upated chromo 
     iEnv->Root()->Chromos().Save("ut_mut_inv_1_res2.xml_");
+    delete iEnv;
+}
+
+// Suppotring invariance with respect to mutations position
+// Dependency that contradicts to the native order: ref to parent
+void Ut_mut::test_MutInvParent()
+{
+    printf("\n === Test of mutation invariance with respect to mutations rank, dep: ref to parent \n");
+
+    iEnv = new Env("Env", "ut_mut_inv_prnt.xml", "ut_mut_inv_prnt.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    // Enabling mutation repositioning in order to resolve unsafety
+    iEnv->ChMgr()->SetEnableReposMuts(ETrue);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    // Check creation first
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
+    Elem* v1 = root->GetNode("./v1");
+    Elem* v2 = root->GetNode("./v2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get v1 and v2", v1 != NULL && v2 != NULL);
+    // Try to mutate v1 by adding child of v2
+    ChromoNode mut = v1->Mutation().Root().AddChild(ENt_Node);
+    mut.SetAttr(ENa_Id, "v2_child");
+    mut.SetAttr(ENa_Parent, "./../v2");
+    v1->Mutate();
+    // Check that the mutation applied
+    Elem* v2_child = root->GetNode("./v1/v2_child");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create v2_child", v2_child != NULL);
+    
+    // Save upated chromo 
+    iEnv->Root()->Chromos().Save("ut_mut_inv_prnt_res.xml_");
+    delete iEnv;
+    // Shifting mutation introduced another unsafety for -p1-, checking if it will be 
+    // resolved next model creation
+    iEnv = new Env("Env", "ut_mut_inv_prnt_res.xml_", "ut_mut_inv_prnt_res.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env1", iEnv != 0);
+    // Enabling mutation repositioning in order to resolve unsafety
+    iEnv->ChMgr()->SetEnableReposMuts(ETrue);
+    iEnv->ConstructSystem();
+    root = iEnv->Root();
+    // Check that secondary forward dependency was resolved
+    Elem* p1 = root->GetNode("./p1");
+    string p1_cont;
+    p1->GetCont(p1_cont);
+    CPPUNIT_ASSERT_MESSAGE("Fail to set p1 with ref to v1", p1_cont == "./../v1");
+    // Save upated chromo 
+    iEnv->Root()->Chromos().Save("ut_mut_inv_prnt_res2.xml_");
     delete iEnv;
 }
 
