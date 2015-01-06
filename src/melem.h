@@ -8,6 +8,7 @@
 class ChromoNode;
 class Base;
 class Elem;
+class TMDep;
 
 class MCompsObserver
 {
@@ -19,6 +20,8 @@ class MCompsObserver
 	// For run-time only. Use OnCompChanged when the content is changed via mutation
 	virtual TBool OnContentChanged(Elem& aComp) = 0;
 	virtual TBool OnCompRenamed(Elem& aComp, const string& aOldName) = 0;
+	// Gets major dep for referenced node, ref ds_indp_mutord_impl
+//	virtual void GetRefDep(TMDep& aDep, Elem* aObj, Elem* aRef) = 0;
 };
 
 class MChildsObserver

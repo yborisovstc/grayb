@@ -1178,7 +1178,8 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 			    //IsRefSafe(rnode);
 			    res = EFalse;
 			    if (erepos && iMan != NULL) {
-				res = iMan->ResolveMutUnsafety(this, rnode);
+				// Forward ref found, keep chromo consistent using invriance principle, ref uc_046
+				res = iMan->ResolveMutUnsafety(this, rnode, ENt_Cont);
 			    }
 			    if (!res) {
 				Logger()->Write(MLogRec::EErr, this, "Changing content of node [%s] - unsafe: rank of ref [%s] is too big", 
@@ -1311,7 +1312,8 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 		    if (IsForwardRef(parent)) {
 			res = EFalse;
 			if (erepos && iMan != NULL) {
-			    res = iMan->ResolveMutUnsafety(this, parent);
+			    // Forward ref found, keep chromo consistent using invriance principle, ref uc_046
+			    res = iMan->ResolveMutUnsafety(this, parent, ENt_Node);
 			}
 			if (!res) {
 			    Logger()->Write(MLogRec::EErr, this, 
@@ -2516,7 +2518,7 @@ void Elem::GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDPath aDpath, MChr
     }
     // Owner, ref ds_mut_unappr_rt_ths2
     if (iMan != NULL && aUp) {
-	iMan->GetMajorDep(aDep, aMut, MChromo::EDp_Direct, aLevel, ETrue, EFalse);
+	iMan->GetMajorDep(aDep, aMut, MChromo::EDp_Owner, aLevel, ETrue, EFalse);
     }
     if (aDown) {
 	// Childs
@@ -3030,15 +3032,26 @@ ChromoNode Elem::GetLocalForwardCCDep(Elem* aOwner, const ChromoNode& aMut) cons
     return res;
 }
 
-TBool Elem::ResolveMutUnsafety(Elem* aMutated, Elem* aDepOn)
+TBool Elem::ResolveMutUnsafety(Elem* aMutated, Elem* aDepOn, TNodeType aMutType)
 {
     TBool res = EFalse;
+    // Get dependency on dependent node
+    // TODO [YB] Mut type is used incorrectly here! It is not mut of aDepOn, so there is no
+    // sense to pass it to aDepOn->GetMajorDep
+    TMDep dep = aDepOn->GetMajorDep(aMutType, MChromo::EDl_Critical);
     // Check if both mutated and dependency are owned
     Elem* mcomp = GetCompOwning(aMutated);
-    Elem* dcomp = GetCompOwning(aDepOn);
+    // Target point for shifting is dep mutation if dcomp is this and dcomp creation mut if not
+    Elem* dcomp = this;
+    ChromoNode targmut(iChromo->CreateNode(dep.first.second));
+    if (dep.first.first != this) {
+	dcomp = GetCompOwning(dep.first.first);
+	targmut = dcomp->Chromos().Root();
+    }
+
     if (mcomp != NULL && dcomp != NULL) {
 	// Owned, shifting the mutated over the dependency
-	mcomp->Chromos().Root().MoveNextTo(dcomp->Chromos().Root());
+	mcomp->Chromos().Root().MoveNextTo(targmut);
 	// Shifting changes deps scheme, resolve forward deps
 	ResolveMutsUnsafety();
 	res = ETrue;
@@ -3046,7 +3059,7 @@ TBool Elem::ResolveMutUnsafety(Elem* aMutated, Elem* aDepOn)
     else {
 	// Not owned, redirect to owner
 	if (iMan != NULL) 
-	    iMan->ResolveMutUnsafety(aMutated, aDepOn);
+	    iMan->ResolveMutUnsafety(aMutated, aDepOn, aMutType);
     }
     return res;
 }
@@ -3057,7 +3070,6 @@ TBool Elem::ResolveMutsUnsafety()
     // Repeat the search from the beginning
     ChromoNode& root = Chromos().Root();
     ChromoNode::Iterator mit = root.Begin();
-//    for (ChromoNode::Iterator mit = root.Begin(); mit != root.End(); mit++) {
     while (mit != root.End()) {
 	ChromoNode node = *mit;
 	ChromoNode dep = GetLocalForwardCCDep(this, node);
@@ -3073,6 +3085,9 @@ TBool Elem::ResolveMutsUnsafety()
     }
 }
 
+//void Elem::GetRefDep(TMDep& aDep, Elem* aObj, Elem* aRef)
+//{
+//}
 
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {

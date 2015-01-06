@@ -925,14 +925,14 @@ class FSwithcBase: public Func
 	FSwithcBase(Host& aHost): Func(aHost) {};
 };
 
-// 	Boolean case
+// 	Boolean case, selector should be of MDBoolGet or MDtGet<Sdata<bool> >
 class FSwitchBool: public FSwithcBase, public MDVarGet
 {
     public:
 	static Func* Create(Func::Host* aHost, const string& aOutIid, const string& aInp1Id);
 	FSwitchBool(Func::Host& aHost): FSwithcBase(aHost) {};
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	virtual string IfaceGetId() const { return MDFloatGet::Type();};
+	    virtual string IfaceGetId() const { return MDVarGet::Type();};
 	MDVarGet* GetCase() const;
 	// From MDVarGet
 	virtual string VarGetIfid();

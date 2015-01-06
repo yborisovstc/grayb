@@ -60,6 +60,10 @@ Chromo::TDeps Chromo::mDeps;
 
 Chromo::Chromo()
 {
+    // TODO [YB] This scheme of deps is not complete. The idea was to get the map
+    // pair<mutation_being_applied_to_node, dependency_this_node_have> to level of dep
+    // but currently instead of dependency_this_node_have the only muts arg is used
+    // but not the whole dep (muts type, muts arg). To improve.
     if (!mInitiated) {
 	mDeps.insert(TDepsElm(TDep(ENt_Node, ENa_Id, EDp_Direct), EDl_Critical));
 	mDeps.insert(TDepsElm(TDep(ENt_Node, ENa_Parent, EDp_Direct), EDl_Affecting));

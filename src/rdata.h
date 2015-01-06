@@ -269,7 +269,7 @@ class Enum: public DtBase
 
     protected:
 	void TypeParsToString(stringstream& aStream) const;
-    protected:
+    public:
 	tSet mSet;
 	TInt mData;
 };

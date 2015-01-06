@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for invariant againts mutations order when implicate dep, ref uc_050 
+USER tries to add to v1 child of v2
+SYSTEM has to reorder mutations to keep safety: move v1 after v2 
+Also the second dependencies are:
+1. from mut [cont ref="./../v1"] to v1 which gets reordered.
+2. from mut [node id="v3" parent="./v1"] to v1 which gets reordered.
+ So SYSTEM has to shift these muts also 
+-->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Syst">
+    <!-- Module containing components of system layer -->
+    <move id="file:../modules/syst.xml#SysComps" />
+
+    <node id="Syst_Base" parent="Syst">
+	<node id="Syst_A" parent="Syst">
+	    <node id="Cp" parent="./../../SysComps/ConnPoint"> 
+		<cont node="./Provided" val="Role1"/> <cont node="./Required" val="Role2"/>
+	    </node>
+	</node>
+	<node id="Syst_B" parent="Syst">
+	    <node id="Cp" parent="./../../SysComps/ConnPoint"> 
+		<cont node="./Provided" val="Role2"/>
+	    </node>
+	</node>
+    </node>
+
+    <node id="System" parent="./Syst_Base">
+	<node id="E" parent="Edge">
+	    <cont node="./P1" ref="./../../Syst_A/Cp"/>
+	</node>
+	<cont node="./Syst_B/Cp/Required" val="Role1"/>
+    </node>
+</node>
+

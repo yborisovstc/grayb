@@ -512,6 +512,16 @@
 	<node node="./Capsule" id="Sel" parent="./../Inp_FVar"/> 
     </node>
 
+    <!-- Transition Function of switching  -->
+    <node id="TFSwitchVar" parent="./TFuncVar"> 
+	<node node="./Agents" id="func_agt" parent="AFSwitchVar"/>
+	<node node="./Capsule" id="Inp1" parent="./../Inp_TFVar"/> 
+	<node node="./Capsule" id="Inp2" parent="./../Inp_TFVar"/> 
+	<node node="./Capsule" id="Sel" parent="./../Inp_TFVar"/> 
+    </node>
+
+
+
 
 
     <!-- Function Bool to Int  -->

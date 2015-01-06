@@ -312,6 +312,48 @@
     </node>
 
 
+    <!-- StateVarC improved to use data with separate type -->
+
+    <node id="StateVarCT" parent="./State"> 
+
+	<node id="Data" parent=":Elem:IncapsComps/Incaps">
+	    <node id="Confirmed" parent=":Elem:DataComps/DataSCTVar"/>
+	    <node id="Prepared" parent=":Elem:DataComps/DataSCTVar"/>
+	    <node node="./Capsule" id="Inp" parent=":Elem:SysComps/ExtenderInp"> <cont node="./Int/Provided" val="MDVarGet"/> </node>
+	    <node node="./Capsule" id="Out" parent=":Elem:SysComps/ExtenderOut"> <cont node="./Int/Required" val="MDVarGet"/> </node>
+	    <node id="E_Inp_Prep" parent="Edge"> 
+		<cont node="./P1" ref="./../../Capsule/Inp/Int"/> 
+		<cont node="./P2" ref="./../../Prepared/Capsule/Inp"/> 
+	    </node>
+	    <node id="E_Prep_Conf" parent="Edge">
+		<cont node="./P1" ref="./../../Prepared/Capsule/Out"/> 
+		<cont node="./P2" ref="./../../Confirmed/Capsule/Inp"/> 
+	    </node>
+	    <node id="E_Conf_Out" parent="Edge"> 
+		<cont node="./P1" ref="./../../Confirmed/Capsule/Out"/> 
+		<cont node="./P2" ref="./../../Capsule/Out/Int"/> 
+	    </node>
+	    <node id="ViewData" parent="Vert">
+		<node id="Val" parent="Prop"/>
+		<cont node="./Val" ref="./../../Confirmed/Value"/>
+	    </node>
+	</node>
+
+	<cont node="./Capsule/Inp/Int/PinData/Provided" val="MDVarGet"/>
+	<cont node="./Capsule/Out/Int/PinData/Required" val="MDVarGet"/>
+
+	<node id="E_Data_Out" parent="Edge"> 
+	    <cont node="./P1" ref="./../../Data/Capsule/Out"/> 
+	    <cont node="./P2" ref="./../../Capsule/Out/Int/PinData"/> 
+	</node>
+	<node id="ViewData" parent="Vert">
+	    <node id="Val" parent="Prop"/>
+	    <cont node="./Val" ref="./../../Data/Confirmed/Value"/>
+	</node>
+    </node>
+
+
+
     <!-- DES base -->
     <node id="Des" parent=":Elem:IncapsComps/Incaps"> 
 	<node node="./Agents" id="DesAgt" parent="ADes"/> 

@@ -24,6 +24,7 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_MutDepsRmRef);
     CPPUNIT_TEST(test_MutInv1);
     CPPUNIT_TEST(test_MutInvParent);
+    CPPUNIT_TEST(test_MutInvImplicit);
     CPPUNIT_TEST(test_MutRmParent);
     CPPUNIT_TEST(test_MutRenameParent);
     CPPUNIT_TEST(test_Compact1);
@@ -46,6 +47,7 @@ private:
     void test_MutDepsRmRef();
     void test_MutInv1();
     void test_MutInvParent();
+    void test_MutInvImplicit();
     void test_MutRmParent();
     void test_MutRenameParent();
     void test_Compact1();
@@ -400,16 +402,7 @@ void Ut_mut::test_MutInv1()
     mut.SetAttr(ENa_MutNode, "./P2");
     mut.SetAttr(ENa_Ref, "./../../v3");
     edge1->Mutate();
-    // Check that the renewed connection is set
-    Elem* v3 = root->GetNode("./v3");
-    MVert* mv3 = v3->GetObj(mv3);
-    CPPUNIT_ASSERT_MESSAGE("Fail to connect v1 to v3", mv1->Pairs().count(mv3) == 1);
-    // Check that secondary forward dependency was resolved
-    Elem* p1 = root->GetNode("./p1");
-    string p1_cont;
-    p1->GetCont(p1_cont);
-    CPPUNIT_ASSERT_MESSAGE("Fail to set p1 with ref to edge1/P1", p1_cont == "./../edge1/P1");
-    
+   
     // Save upated chromo 
     iEnv->Root()->Chromos().Save("ut_mut_inv_1_res.xml_");
     delete iEnv;
@@ -420,6 +413,19 @@ void Ut_mut::test_MutInv1()
     // Enabling mutation repositioning in order to resolve unsafety
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     iEnv->ConstructSystem();
+    root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
+    // Check that the renewed connection is set
+    v1 = root->GetNode("./v1");
+    mv1 = v1->GetObj(mv1);
+    Elem* v3 = root->GetNode("./v3");
+    MVert* mv3 = v3->GetObj(mv3);
+    CPPUNIT_ASSERT_MESSAGE("Fail to connect v1 to v3", mv1->Pairs().count(mv3) == 1);
+    // Check that secondary forward dependency was resolved
+    Elem* p1 = root->GetNode("./p1");
+    string p1_cont;
+    p1->GetCont(p1_cont);
+    CPPUNIT_ASSERT_MESSAGE("Fail to set p1 with ref to edge1/P1", p1_cont == "./../edge1/P1");
     // Save upated chromo 
     iEnv->Root()->Chromos().Save("ut_mut_inv_1_res2.xml_");
     delete iEnv;
@@ -469,6 +475,59 @@ void Ut_mut::test_MutInvParent()
     CPPUNIT_ASSERT_MESSAGE("Fail to set p1 with ref to v1", p1_cont == "./../v1");
     // Save upated chromo 
     iEnv->Root()->Chromos().Save("ut_mut_inv_prnt_res2.xml_");
+    delete iEnv;
+}
+
+// Suppotring invariance with respect to mutations position
+// Imlicit dependency, ref uc_050, ds_indp_mutord_impl
+void Ut_mut::test_MutInvImplicit()
+{
+    printf("\n === Test of mutation invariance with respect to mutations rank, implicit dep: Connectable \n");
+
+    iEnv = new Env("Env", "ut_mut_inv_impl.xml", "ut_mut_inv_impl.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    // Enabling mutation repositioning in order to resolve unsafety
+    iEnv->ChMgr()->SetEnableReposMuts(ETrue);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    // Check creation first
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
+    Elem* ee = root->GetNode("./System/E");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get edge [E]", ee != NULL);
+    // Try to mutate edge by setting ref to P2
+    ChromoNode mut = ee->Mutation().Root().AddChild(ENt_Cont);
+    mut.SetAttr(ENa_MutNode, "./P2");
+    mut.SetAttr(ENa_Ref, "./../../Syst_B/Cp");
+    ee->Mutate();
+    // Check that the mutation applied
+    Elem* sacp = root->GetNode("./System/Syst_A/Cp");
+    Elem* sbcp = root->GetNode("./System/Syst_B/Cp");
+    MVert* sacpv = sacp->GetObj(sacpv);
+    MVert* sbcpv = sbcp->GetObj(sbcpv);
+    MVert* pair = *(sacpv->Pairs().begin());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get pair of Syst_A Cp", pair != 0);
+    CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pair->EBase() == sbcp);
+    
+    // Save upated chromo 
+    iEnv->Root()->Chromos().Save("ut_mut_inv_impl_res.xml_");
+    delete iEnv;
+    // Recreate the system
+    iEnv = new Env("Env", "ut_mut_inv_impl_res.xml_", "ut_mut_inv_impl_res.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env1", iEnv != 0);
+    // Enabling mutation repositioning in order to resolve unsafety
+    iEnv->ChMgr()->SetEnableReposMuts(ETrue);
+    iEnv->ConstructSystem();
+    root = iEnv->Root();
+    // Check that the mutation applied
+    sacp = root->GetNode("./System/Syst_A/Cp");
+    sbcp = root->GetNode("./System/Syst_B/Cp");
+    sacpv = sacp->GetObj(sacpv);
+    sbcpv = sbcp->GetObj(sbcpv);
+    pair = *(sacpv->Pairs().begin());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get pair of Syst_A Cp", pair != 0);
+    CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pair->EBase() == sbcp);
+    // Save upated chromo 
+    iEnv->Root()->Chromos().Save("ut_mut_inv_impl_res2.xml_");
     delete iEnv;
 }
 

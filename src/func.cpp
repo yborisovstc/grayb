@@ -3357,7 +3357,7 @@ Elem::TIfRange AFSwitchVar::GetInps(TInt aId)
 Func* FSwitchBool::Create(Host* aHost, const string& aOutIid, const string& aInpIid)
 {
     Func* res = NULL;
-    if (aOutIid == MDVarGet::Type() && aInpIid == MDBoolGet::Type()) {
+    if (aOutIid == MDVarGet::Type() && (aInpIid == MDBoolGet::Type() || aInpIid == MDtGet<Sdata<bool> >::Type())) {
 	res = new FSwitchBool(*aHost);
     }
     return res;
@@ -3367,8 +3367,8 @@ void *FSwitchBool::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext
 {
     void* res = NULL;
     // There are two approach of commutation. The first one is to commutate MDVarGet ifase, i.e.
-    // that swithcer result is this iface of selected case. The second is that switcher 
-    // implements MDVarGet by itselt and does commutatation in this iface methods.
+    // that switcher result is this iface of selected case. The second is that switcher 
+    // implements MDVarGet by itselt and does commutation in this iface methods.
     // The first approach requires iface cache refresh any time the swithcher ctrl is changed.
     // This is not what the cache is intended to and makes overhead. So let's select approach#2 for now.
     if (strcmp(aName, MDVarGet::Type()) == 0) res = (MDVarGet*) this;
@@ -3384,6 +3384,15 @@ TBool FSwitchBool::GetCtrl() const
 	MDBoolGet* getif= iv->GetDObj(getif);
 	if (getif != NULL) {
 	    res = getif->Value();
+	} else {
+	    MDtGet<Sdata<bool> >* getif= iv->GetDObj(getif);
+	    if (getif != NULL) {
+		Sdata<bool> data;
+		getif->DtGet(data);
+		if (data.mValid) {
+		    res = data.mData;
+		}
+	    }
 	}
     }
     return res;

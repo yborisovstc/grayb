@@ -478,7 +478,7 @@ TBool DVar::FromString(const string& aData)
     }
     if (mData != NULL) {
 	res = mData->FromString(aData);
-	if (!mData->IsValid() && !mData->IsSigOK()) {
+	if (!res && !mData->IsSigOK()) {
 	    // Signature get's not fit, reinit
 	    Init(aData);
 	    res = ETrue;
@@ -590,10 +590,12 @@ TBool DVar::HBool::FromString(const string& aString)
     TBool res = EFalse;
     if (aString.at(0) == 'B') {
 	istringstream ss(aString.substr(2));
-	ss >> std::boolalpha >> res;
-	Set(res);
+	TBool data;
+	ss >> std::boolalpha >> data;
+	Set(data);
+	res = ETrue;
     }
-    return ETrue;
+    return res;
 }
 
 void DVar::HBool::ToString(string& aString)

@@ -236,6 +236,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual TBool OnCompChanged(Elem& aComp);
 	virtual TBool OnCompRenamed(Elem& aComp, const string& aOldName);
 	virtual TBool OnContentChanged(Elem& aComp);
+	//virtual void GetRefDep(TMDep& aDep, Elem* aObj, Elem* aRef);
 	// From MMutable
 	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety);
 	// Ifaces cache
@@ -306,7 +307,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool ShiftComp(Elem* aComp, Elem* aDest = NULL);
 	TBool ShiftCompOverDep(Elem* aComp, const TMDep& aDep);
 	// Resolve owned mutation unsafety via changing mutation position
-	TBool ResolveMutUnsafety(Elem* aMutated, Elem* aDepOn);
+	TBool ResolveMutUnsafety(Elem* aMutated, Elem* aDepOn, TNodeType aMutType);
 	TBool ResolveMutsUnsafety();
 	ChromoNode GetLocalForwardCCDep(Elem* aOwner, const ChromoNode& aMut = ChromoNode()) const;
     protected:

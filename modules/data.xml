@@ -129,12 +129,17 @@
     <node id="Update"  parent="./DataLogevent" />
 
 
-    <!-- Data base -->
+    <!-- Data base with separate conn point for update -->
     <node id="DataSC" parent=":Elem:IncapsComps/Incaps"> 
 	<node node="./Capsule" id="Inp" parent=":Elem:SysComps/ConnPointInp"/> 
 	<node node="./Capsule" id="Out" parent=":Elem:SysComps/ConnPointOut"/> 
 	<node node="./Capsule" id="Upd" parent=":Elem:SysComps/ConnPoint"/> 
 	<node id="Value" parent="Prop"/>
+    </node>
+
+    <!-- Data base with separate conn point for update and separate type -->
+    <node id="DataSCT" parent="./DataSC"> 
+	<node id="Type" parent="Prop"/>
     </node>
 
     <!-- Data Int -->
@@ -152,6 +157,15 @@
 	<cont node="./Capsule/Out/Provided" val="MDVarGet"/>
 	<cont node="./Capsule/Upd/Provided" val="MUpdatable"/>
     </node>
+
+    <!-- Data Var with separate type -->
+    <node id="DataSCTVar"  parent="./DataSCT"> 
+	<node node="./Agents" id="MACompsObserver" parent="DVar"/> 
+	<cont node="./Capsule/Inp/Required" val="MDVarGet"/>
+	<cont node="./Capsule/Out/Provided" val="MDVarGet"/>
+	<cont node="./Capsule/Upd/Provided" val="MUpdatable"/>
+    </node>
+
 
 
     <!-- END: Data with separate input, output, and dedicated input for initiating of setting data-->

@@ -560,15 +560,20 @@ int Enum::ParseSigPars(const string& aCont, string& aSig, tSet& aSet)
 	res = sigp_e;
 	size_t sig_e = sigp.find_first_of(KSigToParsSep);
 	aSig = sigp.substr(0, sig_e);
-	if (!aSig.empty()) {
-	    aSet.clear();
-	    end = sig_e;
-	    do {
-		beg = end + 1;
-		end = sigp.find(KParsSep, beg);
-		string compsig = sigp.substr(beg, end - beg);
-		aSet.push_back(compsig);
-	    } while (end != string::npos);
+	if (sig_e != string::npos) {
+	    if (!aSig.empty()) {
+		aSet.clear();
+		end = sig_e;
+		do {
+		    beg = end + 1;
+		    end = sigp.find(KParsSep, beg);
+		    string compsig = sigp.substr(beg, end - beg);
+		    aSet.push_back(compsig);
+		} while (end != string::npos);
+	    }
+	} else {
+	    // No pars found, take as error
+	    res = string::npos;
 	}
     }
     return res;
@@ -616,7 +621,7 @@ TBool Enum::FromString(const string& aString)
     int beg = 0, end = 0;
     tSet set;
     end = ParseSigPars(aString, sig, set);
-    if (sig == GetTypeSig()) {
+    if (end != string::npos && sig == GetTypeSig()) {
 	if (!AreTypeParsFit(set)) { 
 	    Init(set);
 	    changed = ETrue; 
@@ -691,7 +696,11 @@ void Enum::ToString(string& aString) const
 
 void Enum::DataToString(stringstream& aStream) const 
 { 
-    aStream << mSet.at(mData);
+    if (mData < 0 || mData >= mSet.size()) {
+	aStream << "ERROR";
+    } else {
+	aStream << mSet.at(mData);
+    }
 }
 
 TBool Enum::IsCompatible(const DtBase& sb)

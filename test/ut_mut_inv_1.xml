@@ -4,7 +4,10 @@
 USER tries to change edge1/P2 to v3, but this breaks safety
 SYSTEM has to reorder mutations to keep safety 
 Also the second dependency is from mut [cont ref="./../edge1/P1"] to edge1 which 
-gets reordered. So SYSTEM has to shift this mut also -->
+gets reordered. So SYSTEM has to shift this mut also 
+There is dep on the referenced node: mut [change node="./v3_orig" attr="id" value="v3"] 
+SYSTEM has to take it into account and shift edge1 node after this mut
+-->
 
 
 <!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
@@ -19,6 +22,7 @@ gets reordered. So SYSTEM has to shift this mut also -->
     <node id="p1" parent="Prop">
 	<cont ref="./../edge1/P1"/>
     </node>
-    <node id="v3" parent="Vert"/>
+    <node id="v3_orig" parent="Vert"/>
+    <change node="./v3_orig" attr="id" val="v3"/>
 </node>
 
