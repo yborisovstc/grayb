@@ -13,28 +13,21 @@ class Chromo;
 class MProvider;
 
 // Element of native hier - mutable
-class Elem: public Base, public MMutable, public MCompsObserver, public MChildsObserver, 
-    public MChild
+class Elem: public Base, public MMutable, public MCompsObserver, public MChildsObserver, public MChild
 {
     public:
+
 	// Regiser keyed by name, multimap
 	typedef string TNMKey;
 	typedef pair<TNMKey, Elem*> TNMVal;
 	typedef multimap<string, Elem*> TNMReg;
-	// Ref to mutation: [model node, mut handle]
-	typedef pair<Elem*, void*> TMutRef;
-	// Rank of node
-	typedef vector<TInt> TRank;
 	// Relation chromo to model
 	typedef pair<Elem*, TNodeAttr> TCMRelTo;
 	typedef pair<void*, TNodeAttr> TCMRelFrom;
 	typedef pair<TCMRelFrom, Elem*> TCMRel;
 	typedef map<TCMRelFrom, Elem*> TCMRelReg;
-	// Deps Mutations on RT model node
-	// Elem of deps mutation on RT node: chromo node handle, type of dep
-	typedef pair<TMutRef, TNodeAttr> TMDep;
+	// Deps muts on run-time agent node
 	typedef vector<TMDep> TMDeps;
-	
 
     public:
 	// Request context
@@ -236,7 +229,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual TBool OnCompChanged(Elem& aComp);
 	virtual TBool OnCompRenamed(Elem& aComp, const string& aOldName);
 	virtual TBool OnContentChanged(Elem& aComp);
-	//virtual void GetRefDep(TMDep& aDep, Elem* aObj, Elem* aRef);
+	// Gets major dep for referenced node, ref ds_indp_mutord_impl
+	virtual void GetImplicitDep(TMDep& aDep, Elem* aObj, Elem* aRef);
 	// From MMutable
 	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety);
 	// Ifaces cache
@@ -253,7 +247,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	Elem* GetMajorChild(Rank& rr);
 	void GetMajorChild(Elem*& aElem, Rank& rr);
 	TBool IsMutSafe(Elem* aRef);
-	TBool IsRefSafe(Elem* aRef);
+	TMDep GetRefDep(Elem* aRef, TNodeAttr aReftype, Elem* aObj = NULL);
+	TBool IsRefSafe(Elem* aRef, TNodeAttr aReftype, Elem* aObj = NULL, TMDep* aDep = NULL);
 	TBool IsForwardRef(Elem* aRef);
 	TMDeps& GetMDeps() { return iMDeps;};
 	void AddMDep(Elem* aNode, const ChromoNode& aMut, TNodeAttr aAttr);
@@ -307,7 +302,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool ShiftComp(Elem* aComp, Elem* aDest = NULL);
 	TBool ShiftCompOverDep(Elem* aComp, const TMDep& aDep);
 	// Resolve owned mutation unsafety via changing mutation position
-	TBool ResolveMutUnsafety(Elem* aMutated, Elem* aDepOn, TNodeType aMutType);
+	TBool ResolveMutUnsafety(Elem* aMutated, const TMDep& aDep);
 	TBool ResolveMutsUnsafety();
 	ChromoNode GetLocalForwardCCDep(Elem* aOwner, const ChromoNode& aMut = ChromoNode()) const;
     protected:

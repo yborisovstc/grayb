@@ -123,7 +123,7 @@ Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd): iE
 	}
     }
     if (rel == GUri::KNodeSep) {
-	iCIterRange = iElem.iMComps.equal_range(Elem::TNMKey(iId.second.second));
+	iCIterRange = iElem.iMComps.equal_range(TNMKey(iId.second.second));
 	if (aToEnd) {
 	    iCIter = iCIterRange.second;
 	}
@@ -1073,7 +1073,7 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafet
     Elem* node = GetNode(snode);
     TBool mutadded = EFalse;
     if (node != NULL && IsComp(node)) {
-	if (epheno || node->GetMan() == this || IsInheritedComp(node)) {
+	if (epheno || node->GetMan() == this || node->GetAttachingMgr() == this || IsInheritedComp(node)) {
 	    if (!aCheckSafety || IsMutSafe(node)) {
 		TBool res = node->ChangeAttr(GUri::NodeAttr(mattrs), mval);
 		if (!res) {
@@ -1174,12 +1174,13 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 			res = EFalse;
 		    }
 		    else {
-			if (!IsRefSafe(rnode)) {
-			    //IsRefSafe(rnode);
+			TMDep dep;
+			if (!IsRefSafe(rnode, ENa_Ref, node, &dep)) {
 			    res = EFalse;
 			    if (erepos && iMan != NULL) {
 				// Forward ref found, keep chromo consistent using invriance principle, ref uc_046
-				res = iMan->ResolveMutUnsafety(this, rnode, ENt_Cont);
+				//TMDep dep = GetRefDep(rnode, ENa_Ref, node);
+				res = iMan->ResolveMutUnsafety(this, dep);
 			    }
 			    if (!res) {
 				Logger()->Write(MLogRec::EErr, this, "Changing content of node [%s] - unsafe: rank of ref [%s] is too big", 
@@ -1220,7 +1221,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime)
 		if (refex) {
 		    rnode = node->GetNode(mval);
 		    if (rnode != NULL) {
-			if (!mnode->IsRefSafe(rnode)) {
+			if (!mnode->IsRefSafe(rnode, ENa_Ref, node)) {
 			    // Trying to move mutnode to the last position
 			    TMDep dep = rnode->GetMajorDep(ENt_Cont, MChromo::EDl_Critical);
 			    //TBool sres = ShiftComp(mnode);
@@ -1313,7 +1314,8 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 			res = EFalse;
 			if (erepos && iMan != NULL) {
 			    // Forward ref found, keep chromo consistent using invriance principle, ref uc_046
-			    res = iMan->ResolveMutUnsafety(this, parent, ENt_Node);
+			    TMDep dep = parent->GetMajorDep(ENt_Change, MChromo::EDl_Critical);
+			    res = iMan->ResolveMutUnsafety(this, dep);
 			}
 			if (!res) {
 			    Logger()->Write(MLogRec::EErr, this, 
@@ -1374,7 +1376,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime)
 			Elem* mnode = node->GetAttachingMgr();
 			ChromoNode mut(aNode);
 			TBool fixok = ETrue;
-			if (!mnode->IsRefSafe(parent)) {
+			if (!mnode->IsRefSafe(parent, ENa_Parent)) {
 			    // Trying to move mutnode to the last position
 			    TBool sres = ShiftComp(mnode);
 			    if (!sres) {
@@ -1976,21 +1978,23 @@ Elem* Elem::GetInhRoot() const
 
 }
 
-TBool Elem::IsRefSafe(Elem* aRef)
+TBool Elem::IsRefSafe(Elem* aRef, TNodeAttr aReftype, Elem* aObj, TMDep* aDep)
 {
     TBool res = ETrue;
     Rank rank;
     GetRank(rank, iChromo->Root());
     Rank deprank;
-    TMDep dep = aRef->GetMajorDep(ENt_Cont, MChromo::EDl_Critical);
+    TMDep dep = GetRefDep(aRef, aReftype, aObj);
     Elem* depnode = dep.first.first;
     if (depnode != NULL) {
 	ChromoNode depmut = iChromo->CreateNode(dep.first.second);
 	depnode->GetRank(deprank, depmut);
     }
-    //aRef->GetDepRank(deprank, ENa_Id);
     if (deprank > rank && !deprank.IsRankOf(rank)) {
 	res = EFalse;
+	if (aDep != NULL) {
+	    *aDep = dep;
+	}
     }
     return res;
 }
@@ -2407,7 +2411,7 @@ void Elem::GetDep(TMDep& aDep, TNodeAttr aAttr, TBool aLocalOnly, TBool aAnyType
     }
 }
 
-Elem::TMDep Elem::GetMajorDep()
+TMDep Elem::GetMajorDep()
 {
     // Starting from dep Id considering also deattached nodes, ref uc_038
     TMDep res(TMutRef(NULL, NULL), ENa_Unknown);
@@ -2473,7 +2477,7 @@ void Elem::GetMajorDep(TMDep& aDep, TBool aUp, TBool aDown)
     }
 }
 
-Elem::TMDep Elem::GetMajorDep(TNodeType aMut, MChromo::TDepsLevel aLevel)
+TMDep Elem::GetMajorDep(TNodeType aMut, MChromo::TDepsLevel aLevel)
 {
     // Starting from dep Id considering also deattached nodes, ref uc_038
     TMDep res(TMutRef(NULL, NULL), ENa_Unknown);
@@ -3032,20 +3036,20 @@ ChromoNode Elem::GetLocalForwardCCDep(Elem* aOwner, const ChromoNode& aMut) cons
     return res;
 }
 
-TBool Elem::ResolveMutUnsafety(Elem* aMutated, Elem* aDepOn, TNodeType aMutType)
+TBool Elem::ResolveMutUnsafety(Elem* aMutated, const TMDep& aDep)
 {
     TBool res = EFalse;
     // Get dependency on dependent node
     // TODO [YB] Mut type is used incorrectly here! It is not mut of aDepOn, so there is no
     // sense to pass it to aDepOn->GetMajorDep
-    TMDep dep = aDepOn->GetMajorDep(aMutType, MChromo::EDl_Critical);
+//    TMDep dep = aRef->GetMajorDep(aMutType, MChromo::EDl_Critical);
     // Check if both mutated and dependency are owned
     Elem* mcomp = GetCompOwning(aMutated);
     // Target point for shifting is dep mutation if dcomp is this and dcomp creation mut if not
     Elem* dcomp = this;
-    ChromoNode targmut(iChromo->CreateNode(dep.first.second));
-    if (dep.first.first != this) {
-	dcomp = GetCompOwning(dep.first.first);
+    ChromoNode targmut(iChromo->CreateNode(aDep.first.second));
+    if (aDep.first.first != this) {
+	dcomp = GetCompOwning(aDep.first.first);
 	targmut = dcomp->Chromos().Root();
     }
 
@@ -3059,7 +3063,7 @@ TBool Elem::ResolveMutUnsafety(Elem* aMutated, Elem* aDepOn, TNodeType aMutType)
     else {
 	// Not owned, redirect to owner
 	if (iMan != NULL) 
-	    iMan->ResolveMutUnsafety(aMutated, aDepOn, aMutType);
+	    iMan->ResolveMutUnsafety(aMutated, aDep);
     }
     return res;
 }
@@ -3085,9 +3089,20 @@ TBool Elem::ResolveMutsUnsafety()
     }
 }
 
-//void Elem::GetRefDep(TMDep& aDep, Elem* aObj, Elem* aRef)
-//{
-//}
+void Elem::GetImplicitDep(TMDep& aDep, Elem* aObj, Elem* aRef)
+{
+}
+
+TMDep Elem::GetRefDep(Elem* aRef, TNodeAttr aReftype, Elem* aObj)
+{
+    // Get regular dep first
+    TMDep dep = aRef->GetMajorDep(ENt_Change, MChromo::EDl_Critical);
+    // Try to check also implicit deps, ref ds_indp_mutord_impl
+    if (aReftype == ENa_Ref && iMan != NULL && aObj != NULL) {
+	iMan->GetImplicitDep(dep, aObj, aRef);
+    }
+    return dep;
+}
 
 Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {

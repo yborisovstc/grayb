@@ -46,6 +46,8 @@
 		<revremark>Added <xref linkend="uc_045"/></revremark> </revision>
 	    <revision> <revnumber>0.14</revnumber> <date>26-Nov-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_046"/></revremark> </revision>
+	    <revision> <revnumber>0.15</revnumber> <date>06-Nov-2015</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="uc_050"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -1372,7 +1374,7 @@
 	    <sect3><title>Clarification</title> </sect3>
 	</sect2>
 
-	<sect2 id="uc_046"><title>UC_046 Models invariant agaings chromo nodes order</title>
+	<sect2 id="uc_046"><title>UC_046 Models invariance with respect to chromo nodes order</title>
 	    <sect3><title>Actors</title>
 		<itemizedlist>
 		    <listitem> USER: client of SYSTEM</listitem>
@@ -1399,10 +1401,17 @@
 		    <listitem><xref linkend="uc_002"/></listitem>
 		</itemizedlist>
 	    </sect3>
-	    <sect3><title>Extended by</title> <itemizedlist> </itemizedlist> </sect3>
+	    <sect3><title>Extended by</title> 
+		<itemizedlist> 
+		    <listitem><xref linkend="uc_049"/></listitem>
+		    <listitem><xref linkend="uc_050"/></listitem>
+		</itemizedlist> 
+	    </sect3>
 	    <sect3><title>Discussion</title> 
 		<orderedlist>
 		    <listitem>Status of this usecase is just "PROPOSED". Needs confirmation of feasibility.</listitem>
+		    <listitem>Note that there could be some levels of support of invariance. Currently it is proposed to 
+			support weak approach, ref <xref linkend="uc_049"/></listitem>
 		</orderedlist>
 	    </sect3>
 	    <sect3><title>Clarification</title> </sect3>
@@ -1465,6 +1474,98 @@
 		    </listitem>
 		</itemizedlist>
 	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_049"><title>UC_049 Models invariant agaings chromo nodes order: weak approach only</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of SYSTEM</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<orderedlist>
+		    <listitem>USER prepared the following model: root, node A, node B. In node A there is mutation MA1 referring to node B</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER request SYSTEM for creating model from the given chromo</listitem>
+		    <listitem>SYSTEM creates the model. SYSTEM detects that MA1 reference to node B cannot be resolved (B not found yet)</listitem>
+		    <listitem>SYSTEM generate error event against MA1</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_046"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title> <itemizedlist> </itemizedlist> </sect3>
+	    <sect3><title>Discussion</title> 
+		<orderedlist>
+		    <listitem>The idea of this case is that SYSTEM supports only weak invariance with regards to nodes order. 
+			This means that for any new mutation introduced SYSTEM takes care of correcting muts position to ensure chromo 
+			consistency. But the condition is that this new mutation is correct with respect to runtime model. So MA1 in the case is not
+			correct with respect to runtime model, there is no node B in the model. Weak approach allows us to simplify the implementation
+			of invariance support.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
+	<sect2 id="uc_050"><title>UC_050 Models invariant agaings chromo nodes order: hidden dependencies</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of SYSTEM</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<orderedlist>
+		    <listitem>USER prepared the following model, system root: 
+			<programlisting>
+			    node A parent Syst { node ConnPoint_A } 
+			    node B parent Syst { node ConnPoint_B } 
+			    node E parent Edge { content point_A ref_to(ConnPoint_A)}
+			    content ConnPoint_B/Provided new_content
+			</programlisting>
+			<simpara>The model is simple: two systems A and B with the connection points ConnPoint_A and ConnPoint_B respectivelly.
+			    Edge E connects only one connection points. Then root mutate connection point ConnPoint_B to change it Provided parameter.
+			    </simpara>
+		    </listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER request SYSTEM for creating model from the given chromo - SYSTEM creates the model.</listitem>
+		    <listitem>USER request the mutaion in "E"  "content point_B ref_to(ConnPoint_B)" to connect to ConnPoint_B</listitem>
+		    <listitem>SYSTEM detects dependency of mutation "content ConnPoint_B ..." on this mutation and shift edge over the 
+		    dependency</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_046"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title> <itemizedlist> </itemizedlist> </sect3>
+	    <sect3><title>Discussion</title> 
+		<orderedlist>
+		    <listitem>The idea here is that SYSTEM has to detect not only expliict dependency but implicit also. Currently (sha c558593f48 at 20141407)
+			the only explicit deps are taken into account. These deps are calculated basing on mutation dependency registered for the run-time node
+			plus default predefined dependencies level map. But this map doesn't show the given dependency as critical. Indeed, the 
+			mutation of changing of content of nodes some component (content ConnPoint_B/Provided new_content) is not critical by default for 
+			mutation that create reference to the node. But in our case the specific of agent (Edge) and components owner (system "root") makes
+		    this dependency critical because content of the nodes component "Provided" is important for connecting systems A and B.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title> </sect3>
 	</sect2>
 
     </sect1>

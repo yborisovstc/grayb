@@ -3,6 +3,7 @@
 #include "edge.h"
 #include "prov.h"
 #include "mvert.h"
+#include "mchromo.h"
 #include "mprop.h"
 
 string ConnPointBase::PEType()
@@ -191,6 +192,13 @@ MCompatChecker::TDir ConnPointBase::GetDir() const
     return ERegular;
 }
 
+void ConnPointBase::GetMajorIdep(TMDep& aDep)
+{
+    Elem* eprov = GetNode("./(Prop:)Provided");
+    Elem* ereq = GetNode("./(Prop:)Required");
+    eprov->GetMajorDep(aDep, ENt_Change, MChromo::EDp_Direct, MChromo::EDl_Critical);
+    ereq->GetMajorDep(aDep, ENt_Change, MChromo::EDp_Direct, MChromo::EDl_Critical);
+}
 
 
 // Input ConnPoint base
@@ -403,6 +411,13 @@ Elem* ExtenderAgent::GetExtd()
 MCompatChecker::TDir ExtenderAgent::GetDir() const
 {
     return ERegular;
+}
+
+void ExtenderAgent::GetMajorIdep(TMDep& aDep)
+{
+    Elem* extd = GetExtd();
+    MCompatChecker* conn = extd->GetObj(conn);
+    conn->GetMajorIdep(aDep);
 }
 
 
@@ -790,6 +805,10 @@ MCompatChecker::TDir ASocket::GetDir() const
     return ERegular;
 }
 
+void ASocket::GetMajorIdep(TMDep& aDep)
+{
+}
+
 
 // Input Socket Agent
 string ASocketInp::PEType()
@@ -973,3 +992,13 @@ void Syst::DoOnCompChanged(Elem& aComp)
     }
 }
 
+void Syst::GetImplicitDep(TMDep& aDep, Elem* aObj, Elem* aRef)
+{
+    Elem* eedge = GetCompOwning("Edge", aObj);
+    if (eedge != NULL) {
+	MCompatChecker* conn = aRef->GetObj(conn);
+	if (conn != NULL) {
+	    conn->GetMajorIdep(aDep);
+	}
+    }
+}

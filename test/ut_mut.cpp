@@ -250,7 +250,7 @@ void Ut_mut::test_MutDepsRm()
     CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major child", mc == e3);
     // Get major dep
     //Elem::TDep mdep = e2->GetMajorDep();
-    Elem::TMDep mdep = e2->GetMajorDep();
+    TMDep mdep = e2->GetMajorDep();
     //CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major dep", mdep.first == e3 && mdep.second == -1);
     TBool e2dep_ok = mdep.first.first == root && mdep.first.second == e3->Chromos().Root().Handle() && mdep.second == ENa_Parent;
     CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major dep", e2dep_ok);
@@ -295,7 +295,7 @@ void Ut_mut::test_MutDepsRm2()
     e2r.GetRank(rec);
     CPPUNIT_ASSERT_MESSAGE("Fail to calculate elem2 rank", re == rec);
     // Get major dep
-    Elem::TMDep mdep = e2->GetMajorDep();
+    TMDep mdep = e2->GetMajorDep();
     CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major dep", mdep.first.first == root);
     // Try to remove elem2 from elem1 - unsafe mutation
     Elem* e1 = root->GetNode("./elem1");

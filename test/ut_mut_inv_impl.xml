@@ -1,12 +1,11 @@
 <?xml version="1.0" ?>
 
 <!-- Unit test for invariant againts mutations order when implicate dep, ref uc_050 
-USER tries to add to v1 child of v2
-SYSTEM has to reorder mutations to keep safety: move v1 after v2 
-Also the second dependencies are:
-1. from mut [cont ref="./../v1"] to v1 which gets reordered.
-2. from mut [node id="v3" parent="./v1"] to v1 which gets reordered.
- So SYSTEM has to shift these muts also 
+USER tries to set ref to Syst_B/Cp to the point of edge. Referred Cp exists and
+there is no explicit deps for it. But there is implicit dep on Cp prop "Required"
+This prop is set by mutation with higher rank, so the connection will fail if 
+this implicit dep is not taken into account.
+So SYSTEM has to get this implicit dep and shift edge over the dep
 -->
 
 

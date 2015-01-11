@@ -2,6 +2,7 @@
 #define __GRAYB_MVERT_H
 
 #include "plat.h"
+#include "melem.h"
 #include <set>
 
 using namespace std;
@@ -29,6 +30,8 @@ class MCompatChecker
 	virtual TDir GetDir() const = 0;
 	// Getting associated point
 //	virtual vector<Elem*> GetAssoc(RqContext* aCtx) = 0;
+//	// Obtaining major dependency
+	virtual void GetMajorIdep(TMDep& aDep) = 0;
 };
 
 // Graph vertex interface

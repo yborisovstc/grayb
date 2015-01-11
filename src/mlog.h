@@ -34,6 +34,8 @@ class MLogRec
 class MLogObserver
 {
     public:
+	virtual void AddObservable(MLogRec* aObservable) = 0;
+	virtual void RemoveObservable(MLogRec* aObservable) = 0;
 	virtual void OnLogAdded(MLogRec::TLogRecCtg aCtg, Elem* aNode, const std::string& aContent, TInt aMutId = 0) = 0;
 	virtual void OnLogRecDeleting(MLogRec* aLogRec) = 0;
 };

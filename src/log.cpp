@@ -116,6 +116,7 @@ TBool GLogRec::AddLogObserver(MLogObserver* aObs)
     TBool res = EFalse;
     if (aObs != NULL && iObs == NULL) {
 	iObs = aObs;
+	iObs->AddObservable(this);
 	res = ETrue;
     }
     return res;
@@ -124,6 +125,7 @@ TBool GLogRec::AddLogObserver(MLogObserver* aObs)
 void GLogRec::RemoveLogObserver(MLogObserver* aObs)
 {
     __ASSERT(aObs == iObs);
+    iObs->RemoveObservable(this);
     iObs = NULL;
 }
 

@@ -20,6 +20,7 @@ class ConnPointBase: public Vert, public MCompatChecker
 	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse);
 	virtual Elem* GetExtd();
 	virtual TDir GetDir() const;
+	virtual void GetMajorIdep(TMDep& aDep);
 //	virtual Elem* GetAssoc(RqContext* aCtx);
 };
 
@@ -65,6 +66,7 @@ class ExtenderAgent: public Elem, public MCompatChecker
 	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse);
 	virtual Elem* GetExtd();
 	virtual TDir GetDir() const;
+	virtual void GetMajorIdep(TMDep& aDep);
 	// From Elem
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
 };
@@ -110,6 +112,7 @@ class ASocket: public Elem, public MCompatChecker
 	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse);
 	virtual Elem* GetExtd();
 	virtual TDir GetDir() const;
+	virtual void GetMajorIdep(TMDep& aDep);
 	// From Elem
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
 };
@@ -151,6 +154,8 @@ class Syst: public Vert
 	// From MCompsObserver
 	virtual void OnCompDeleting(Elem& aComp);
 	virtual void DoOnCompChanged(Elem& aComp);
+	// Gets major dep for referenced node, ref ds_indp_mutord_impl
+	virtual void GetImplicitDep(TMDep& aDep, Elem* aObj, Elem* aRef);
 };
 
 #endif
