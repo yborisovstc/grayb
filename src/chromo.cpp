@@ -148,7 +148,7 @@ ChromoNode& ChromoNode::operator=(const ChromoNode& aNode)
 
 TBool ChromoNode::operator==(const ChromoNode& aNode) 
 { 
-    return &iMdl == &(aNode.iMdl) && iHandle == aNode.iHandle;
+    return iHandle == aNode.iHandle;
 }
 
 const string ChromoNode::Attr(TNodeAttr aAttr) 

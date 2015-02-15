@@ -372,10 +372,34 @@
 	<node node="./Capsule" id="Inp2" parent="./../Inp_TFVar"/> 
 	<cont node="./ViewData/Res" ref="./../../Agents/AF_Eq"/>
     </node>
+ 
+    <!-- Transition Function GE  -->
+    <node id="TFGEVar" parent="./TFuncVar"> 
+	<node node="./Agents" id="AF_Ge" parent="AFCmpVar"/>
+	<node node="./Capsule" id="Inp1" parent="./../Inp_TFVar"/> 
+	<node node="./Capsule" id="Inp2" parent="./../Inp_TFVar"/> 
+	<cont node="./ViewData/Res" ref="./../../Agents/AF_Ge"/>
+    </node>
+ 
+    <!-- Transition Function LT  -->
+    <node id="TFLTVar" parent="./TFuncVar"> 
+	<node node="./Agents" id="AF_Lt" parent="AFCmpVar"/>
+	<node node="./Capsule" id="Inp1" parent="./../Inp_TFVar"/> 
+	<node node="./Capsule" id="Inp2" parent="./../Inp_TFVar"/> 
+	<cont node="./ViewData/Res" ref="./../../Agents/AF_Lt"/>
+    </node>
 
     <!-- Transition Function of variable adding -->
     <node id="TFAddVar" parent="./TFuncVar"> 
 	<node node="./Agents" id="func_agt" parent="AFAddVar"/>
+	<!-- Input positives -->
+	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
+	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+    </node>
+
+    <!-- Transition Function of variable multiplication -->
+    <node id="TFMplVar" parent="./TFuncVar"> 
+	<node node="./Agents" id="func_agt" parent="AFMplVar"/>
 	<!-- Input positives -->
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
 	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
@@ -425,6 +449,13 @@
 	<node node="./Agents" id="func_agt" parent="AFAtVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
 	<node node="./Capsule" id="Index" parent="./../Inp_TFVar"/> 
+	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+    </node>
+
+    <!-- Transition Function of boolean negation -->
+    <node id="TFNegVar" parent="./TFuncVar"> 
+	<node node="./Agents" id="func_agt" parent="AFBoolNegVar"/>
+	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
 	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
     </node>
 

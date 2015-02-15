@@ -75,6 +75,11 @@ void Ut_uri::test_UriBase()
     // Getting native agent
     enode = root->GetNode("Elem");
     CPPUNIT_ASSERT_MESSAGE("Fail to get native agent", enode != NULL);
+
+    // Generating native agent uri
+    string euri = enode->GetUri();
+    Elem* enode1 = root->GetNode(euri);
+    CPPUNIT_ASSERT_MESSAGE("Fail to generate URI of native agent", enode1 == enode);
     
     enode = root->GetNode(".");
     CPPUNIT_ASSERT_MESSAGE("Fail to get current node", enode != NULL);

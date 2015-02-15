@@ -54,6 +54,7 @@ void GLogRec::WriteFormat(const char* aFmt,...)
     vsprintf(buf, aFmt, list);
     TInt len = strlen(buf);
     WriteRecord(buf);
+    va_end(list);
 }
 
 void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...)
@@ -81,6 +82,7 @@ void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...)
     if (iObs != NULL) {
 	iObs->OnLogAdded(aCtg, aNode, buf1, mutid);
     }
+    va_end(list);
 }
 
 void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const ChromoNode& aMut, const char* aFmt,...)
@@ -103,6 +105,7 @@ void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const ChromoNode& aMut, const 
     if (iObs != NULL) {
 	iObs->OnLogAdded(aCtg, aNode, buf1, lineid);
     }
+    va_end(list);
 }
 
 void GLogRec::Flush()

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "rdata.h"
 
+const char KDataSep = ' ';
 const char KSigParsToDataSep = ' ';
 const char KSigToParsSep = ',';
 const char KParsSep = ',';
@@ -430,6 +431,45 @@ TBool NTuple::IsCTypesFit(const tCTypes& aCt) const
     }
     return res;
 }
+
+void NTuple::TypeParsToString(stringstream& aStream) const
+{
+    for (tComps::const_iterator it = mData.begin(); it != mData.end(); it++) {
+	if (it != mData.begin()) {
+	    string sep(1, KParsSep);
+	    aStream << sep;
+	}
+	const tComp& comp = *it;
+	aStream << comp.second->GetTypeSig() << ":" << comp.first;
+    }
+}
+
+void NTuple::DataToString(stringstream& aStream) const
+{
+    for (tComps::const_iterator it = mData.begin(); it != mData.end(); it++) {
+	if (it != mData.begin()) {
+	    string sep(1, KDataSep);
+	    aStream << sep;
+	}
+	const tComp& comp = *it;
+	comp.second->DataToString(aStream);
+    }
+}
+void NTuple::ToString(string& aString) const
+{
+    stringstream ss;
+    ss << GetTypeSig() << KSigToParsSep;
+    if (!mValid) {
+	ss << " <ERROR>";
+    }
+    else {
+	TypeParsToString(ss);
+	ss << KSigParsToDataSep;
+	DataToString(ss);
+    }
+    aString = ss.str();
+}
+
 
 TBool NTuple::FromString(const string& aString)
 {

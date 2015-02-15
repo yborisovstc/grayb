@@ -35,12 +35,12 @@ const string& Prop::Value() const
     return iValue;
 }
 
-TBool Prop::IsContChangeable() const
+TBool Prop::IsContChangeable(const string& aName) const
 {
     return ETrue;
 }
 
-TBool Prop::ChangeCont(const string& aVal, TBool aRtOnly)
+TBool Prop::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
 {
     TBool res = ETrue;
     //if (aVal != iValue) {
@@ -55,7 +55,7 @@ TBool Prop::ChangeCont(const string& aVal, TBool aRtOnly)
     return res;
 }
 
-void Prop::GetCont(string& aCont)
+void Prop::GetCont(string& aCont, const string& aName)
 {
     aCont = iValue;
 }

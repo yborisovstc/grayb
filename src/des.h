@@ -114,11 +114,13 @@ class ATrVar: public ATrBase, public MDVarGet, public Func::Host
 	virtual Elem::TIfRange GetInps(TInt aId);
 	virtual void OnFuncContentChanged();
 	virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...);
+	virtual Elem* GetAgent() {return this;};
+	virtual TInt GetInpsCount() const {return 0;};
 	// From Elem
-	virtual void GetCont(string& aCont); 
+	virtual void GetCont(string& aCont, const string& aName=string()); 
     protected:
 	virtual void Init(const string& aIfaceName) {};
-	virtual string GetInpUri(TInt aId);
+	virtual string GetInpUri(TInt aId) const;
     protected:
 	Func* mFunc;
 };
@@ -136,7 +138,9 @@ class ATrAddVar: public ATrVar
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
-	virtual string GetInpUri(TInt aId);
+	virtual string GetInpUri(TInt aId) const;
+	// From Func::Host
+	virtual TInt GetInpsCount() const {return 2;};
 };
 
 // Agent function "Multiplication of Var data"
@@ -151,7 +155,9 @@ class ATrMplVar: public ATrVar
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
-	virtual string GetInpUri(TInt aId);
+	virtual string GetInpUri(TInt aId) const;
+	// From Func::Host
+	virtual TInt GetInpsCount() const {return 1;};
 };
 
 // Agent function "Division of Var data"
@@ -166,7 +172,9 @@ class ATrDivVar: public ATrVar
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
-	virtual string GetInpUri(TInt aId);
+	virtual string GetInpUri(TInt aId) const;
+	// From Func::Host
+	virtual TInt GetInpsCount() const {return 2;};
 };
 
 // Agent function "Switch controlled by var data"
@@ -181,7 +189,9 @@ class ATrSwitchVar: public ATrVar
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
-	virtual string GetInpUri(TInt aId);
+	virtual string GetInpUri(TInt aId) const;
+	// From Func::Host
+	virtual TInt GetInpsCount() const {return 2;};
 };
 
 // Agent function "Switch controlled by var data"
@@ -196,7 +206,9 @@ class ATrAtVar: public ATrVar
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
-	virtual string GetInpUri(TInt aId);
+	virtual string GetInpUri(TInt aId) const;
+	// From Func::Host
+	virtual TInt GetInpsCount() const {return 2;};
 };
 
 // Agent function "Composing of vector, var data"
@@ -211,7 +223,9 @@ class ATrCpsVectVar: public ATrVar
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
-	virtual string GetInpUri(TInt aId);
+	virtual string GetInpUri(TInt aId) const;
+	// From Func::Host
+	virtual TInt GetInpsCount() const {return 0;};
 };
 
 // Agent function "Boolean comparition of Var data"
@@ -228,7 +242,9 @@ class ATrBcmpVar: public ATrVar
 	virtual string VarGetIfid();
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
-	virtual string GetInpUri(TInt aId);
+	virtual string GetInpUri(TInt aId) const;
+	// From Func::Host
+	virtual TInt GetInpsCount() const {return 2;};
     protected:
 	FBcmpBase::TFType GetFType();
 };

@@ -382,7 +382,7 @@ void *ATrVar::DoGetDObj(const char *aName)
     return res;
 }
 
-string ATrVar::GetInpUri(TInt aId) 
+string ATrVar::GetInpUri(TInt aId) const 
 {
     if (aId == Func::EInp1) return "Inp1";
     else if (aId == Func::EInp2) return "Inp2";
@@ -410,7 +410,7 @@ void ATrVar::OnFuncContentChanged()
     OnContentChanged(*this);
 }
 
-void ATrVar::GetCont(string& aCont)
+void ATrVar::GetCont(string& aCont, const string& aName)
 {
     if (mFunc != NULL) {
 	mFunc->GetResult(aCont);
@@ -467,7 +467,7 @@ void ATrAddVar::Init(const string& aIfaceName)
     else if ((mFunc = FAddMtrd<float>::Create(this, aIfaceName)) != NULL);
 }
 
-string ATrAddVar::GetInpUri(TInt aId) 
+string ATrAddVar::GetInpUri(TInt aId) const 
 {
     if (aId == FAddBase::EInp) return "Inp";
     else return string();
@@ -513,7 +513,7 @@ void ATrMplVar::Init(const string& aIfaceName)
     if ((mFunc = FMplFloat::Create(this, aIfaceName)) != NULL);
 }
 
-string ATrMplVar::GetInpUri(TInt aId) 
+string ATrMplVar::GetInpUri(TInt aId) const 
 {
     if (aId == FMplBase::EInp) return "Inp";
     else return string();
@@ -558,7 +558,7 @@ void ATrDivVar::Init(const string& aIfaceName)
     if ((mFunc = FDivFloat::Create(this, aIfaceName)) != NULL);
 }
 
-string ATrDivVar::GetInpUri(TInt aId) 
+string ATrDivVar::GetInpUri(TInt aId) const 
 {
     if (aId == FDivBase::EInp) return "Inp";
     else if (aId == FDivBase::EInp_Dvs) return "Inp_Dvs";
@@ -629,7 +629,7 @@ void ATrSwitchVar::Init(const string& aIfaceName)
     }
 }
 
-string ATrSwitchVar::GetInpUri(TInt aId) 
+string ATrSwitchVar::GetInpUri(TInt aId) const 
 {
     if (aId == FSwithcBase::EInp_Sel) return "Sel";
     else if (aId > FSwithcBase::EInp_Sel) {
@@ -686,7 +686,7 @@ void ATrAtVar::Init(const string& aIfaceName)
     }
 }
 
-string ATrAtVar::GetInpUri(TInt aId) 
+string ATrAtVar::GetInpUri(TInt aId) const 
 { 
     if (aId == Func::EInp2) return "Index";
     else if (aId == Func::EInp1) return "Inp";
@@ -733,7 +733,7 @@ void ATrCpsVectVar::Init(const string& aIfaceName)
     if ((mFunc = FCpsVect<float>::Create(this, aIfaceName)) != NULL);
 }
 
-string ATrCpsVectVar::GetInpUri(TInt aId) 
+string ATrCpsVectVar::GetInpUri(TInt aId) const 
 {
     stringstream ss;
     ss <<  "Inp" << (aId - Func::EInp1);
@@ -790,7 +790,7 @@ void ATrBcmpVar::Init(const string& aIfaceName)
     }
 }
 
-string ATrBcmpVar::GetInpUri(TInt aId) 
+string ATrBcmpVar::GetInpUri(TInt aId) const 
 {
     if (aId == FBcmpBase::EInp_1) return "Inp1";
     else if (aId == FBcmpBase::EInp_2) return "Inp2";

@@ -143,7 +143,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void SetMutation(const ChromoNode& aMuta);
 	void AppendMutation(const ChromoNode& aMuta);
 	TBool AppendMutation(const string& aFileName);
-	void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue);
+	void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue, TBool aTrialMode = EFalse);
 	string PName() const;
 	const vector<Elem*>& Comps() const;
 	static void ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct);
@@ -159,13 +159,19 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	Elem* GetCompOwning(Elem* aElem);
 	// Gets the comp with given name and owning given element
 	Elem* GetCompOwningN(const string& aParent, Elem* aElem);
+	// Gets acomp that attaches the given node or node itself if this is attaching it
+	Elem* GetAcompAttaching(Elem* aElem);
 	Elem* GetRoot() const;
 	Elem* GetInhRoot() const;
 	TBool IsComp(const Elem* aElem) const;
 	Elem* GetCommonOwner(Elem* aElem);
+	Elem* GetCommonAowner(Elem* aElem);
+	TBool IsAownerOf(const Elem* aElem) const;
 	// Checks if elements chromo is attached. Ref UC_019 for details
 	TBool IsChromoAttached() const;
 	Elem* GetAttachingMgr();
+	Elem* GetAowner();
+	const Elem* GetAowner() const;
 	const Elem* GetAttachingMgr() const;
 	// Checks if the node is originated vis phenotypical modification
 	TBool IsPhenoModif() const;
@@ -204,18 +210,21 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual Elem* GetNode(const string& aUri);
 	virtual Elem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere = EFalse);
 	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);
-	// TODO [YB] The only attr allowed for change is name. To consider replacing
-	// of ChangeAttr to Rename 
+	// TODO [YB] The only attr allowed for change is name. To consider replacing of ChangeAttr to Rename 
 	virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal);
-	virtual void GetCont(string& aCont); 
-	//virtual TBool ChangeCont(const string& aVal); 
-	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue); 
-	virtual TBool IsContChangeable() const; 
+	virtual void GetCont(string& aCont, const string& aName = string()); 
+	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
+	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()); 
+	virtual TBool IsContChangeable(const string& aName = string()) const; 
+	virtual TInt GetContCount() const;
+	// Debugging
+	virtual void GetContactsData(vector<string, string>& aData) const;
+	// Nodes
 	virtual TBool AddNode(const ChromoNode& aSpec, TBool aRunTime);
 	TBool AppendChild(Elem* aChild);
 	void RemoveChild(Elem* aChild);
-	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety);
-	virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime);
+	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
+	virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse);
 	virtual TBool ReorderNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety);
 	vector<Elem*>& Comps();
 	// From MChild
@@ -232,7 +241,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// Gets major dep for referenced node, ref ds_indp_mutord_impl
 	virtual void GetImplicitDep(TMDep& aDep, Elem* aObj, Elem* aRef);
 	// From MMutable
-	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety);
+	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
 	// Ifaces cache
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
 	void RmIfCache(IfIter& aIt);
@@ -269,10 +278,10 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	ChromoNode GetChNode(const GUri& aUri) const;
 	void CompactChromo();
 	void CompactChromo(const ChromoNode& aNode);
-    protected:
-	Elem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse);
-	static void Init();
 	inline MLogRec* Logger() const;
+    protected:
+	Elem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, TBool aTrialMode = EFalse);
+	static void Init();
 	inline MProvider* Provider() const;
 	TBool AppendComp(Elem* aComp);
 	TBool RegisterComp(Elem* aComp);
@@ -285,12 +294,12 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool UnregisterComp(Elem* aComp, const string& aName = string());
 	TBool UnregisterChild(Elem* aChild, const string& aName = string());
 	Elem* GetComp(const string& aParent, const string& aName);
-	TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime);
+	TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse);
 	TBool MergeMutation(const ChromoNode& aSpec);
 	TBool MergeMutMove(const ChromoNode& aSpec);
 	virtual void DoOnCompChanged(Elem& aComp);
 	TBool IsLogeventCreOn();
-	void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety);
+	void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
 	TBool HasChilds() const;
 	TBool HasInherDeps() const;
 	void InsertIfQm(const string& aName, const TICacheRCtx& aReq, Base* aProv);

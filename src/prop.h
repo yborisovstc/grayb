@@ -19,9 +19,9 @@ class Prop: public Elem, public MProp
 	// From MProp
 	virtual const string& Value() const;
 	// From MElem
-	virtual void GetCont(string& aCont); 
-	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue); 
-	virtual TBool IsContChangeable() const; 
+	virtual void GetCont(string& aCont, const string& aName=string()); 
+	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName = string()); 
+	virtual TBool IsContChangeable(const string& aName = string()) const; 
     protected:
 	string iValue;
 };

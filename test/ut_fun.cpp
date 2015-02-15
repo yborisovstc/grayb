@@ -323,15 +323,6 @@ void Ut_func::test_FuncVar1()
     CPPUNIT_ASSERT_MESSAGE("Cannot get MDFloatGet from result data", resdata1f != NULL);
     float res1 = resdata1f->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect result data", res1 == 4.0);
-    
-    // Checking the type establishing
-    // Mutate the result data first
-    Elem* diroot = root->GetNode("./Start/Incaps_root");
-    ChromoNode nchange = diroot->Mutation().Root().AddChild(ENt_Cont);
-    nchange.SetAttr(ENa_MutNode, "./Inp_data1/Value");
-    nchange.SetAttr(ENa_MutVal, "I 80");
-    diroot->Mutate();
-
     delete iEnv;
 }
 

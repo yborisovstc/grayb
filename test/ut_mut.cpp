@@ -599,11 +599,13 @@ void Ut_mut::test_MutRenameParent()
     Elem* root = iEnv->Root();
      // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    Elem* e1 = root->GetNode("./elem1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get elem1", e1 != 0);
     Elem* e2 = root->GetNode("./elem1/elem2");
     CPPUNIT_ASSERT_MESSAGE("Fail to get elem2", e2 != 0);
     // Rename elem2, which is parent of elem5 
-    ChromoNode mut = root->Mutation().Root().AddChild(ENt_Change);
-    mut.SetAttr(ENa_MutNode, "./elem1/elem2");
+    ChromoNode mut = e1->Mutation().Root().AddChild(ENt_Change);
+    mut.SetAttr(ENa_MutNode, "./elem2");
     mut.SetAttr(ENa_MutAttr, GUriBase::NodeAttrName(ENa_Id));
     mut.SetAttr(ENa_MutVal, "elem2_renamed");
     root->Mutate();

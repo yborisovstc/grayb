@@ -675,6 +675,29 @@
 	    <simpara>So at the moment the only specific deps for mutation nodes referenced via ref attribute have to be taken into account.</simpara>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_mut_attach"><title>Concept of nodes chromo attaching</title>
+	    <sect3 id="ds_mut_attach_calc"><title>Attaching sign calculation</title>
+		<simpara>Currently the concept of nodes chromo attaching is actively used. There is base agents proper APIs for that: IsChromoAttached.
+		    We say that nodes chromo is attached if there is path from nodes chromo to system chromo root node. But currently the attaching sign
+		    is calculated a bit incorrectly. In result the nodes not directly attached but placed to component are not considered as attached, example is: 
+		    [node node=some_component parent=some_parent name=some_name]. This causes problem when pheno modification disabled: on one hand such node 
+		    is detected as not attached so its attached owner is selected as the mutation point,
+		    on another hand the error "attempt of pheno modif, disabled" occurs because the node isn't inherited.</simpara>
+	    </sect3>
+	    <sect3><title>Attaching node and ownining node</title>
+		<simpara>It makes sense to consider also relation of attaching. So the let's call "attaching node" the node that chromo is attaching of 
+		    given node chromo. This attaching node also is some level owner of given node but not necessary direct owner. For direct mutation of 
+		    type "node" (i.e. the mutation that doesn't have argument "node") the attaching owner is direct owner. To simplify the referring, let's
+		    use to following abbreviation:
+		    <itemizedlist>
+			<listitem> Acomp - component attached to the given node.
+			    <simpara>Acomp is also component but not necessary direct.</simpara> </listitem>
+			<listitem>Aowner - near owner attaching the given node.
+			    <simpara>Aowner is owner but not necessary direct owner.  </simpara></listitem>
+		    </itemizedlist>
+		</simpara>
+	    </sect3>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_visrepr"><title>Visual representation</title>
@@ -829,6 +852,132 @@
 		<listitem>type_signature is primarily type identifier. It assosiates to type implementation where type_parameters are served as paremeters of 
 		    type implementation.</listitem>
 	    </itemizedlist>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_visdbg"><title>Visual debugging support</title>
+	<sect2><title>Intro</title>
+	    <simpara>
+		For the debugging purpose it is required to see some "internal" data of the agent. For instance for agent-function it could be the value of its 
+		arguments. Currently this feature is implemented only partially: visual representation of function has some parameter that
+		defines content of which agent to display. What could be the approaches of support the full visual debugging functionality.
+	    </simpara>
+	</sect2>
+	<sect2><title>Approach: special iface for debugging</title>
+	    <simpara>This iface can include the following methods:</simpara>
+	    <itemizedlist>
+		<listitem>Getting value that agent gets from the given input. Use-case here is: debugging some function, there is an error within
+		some internal function, user move mouse pointer to input, tooltip gets displayed showing the value.</listitem>
+	    </itemizedlist>
+	    <simpara>What is difference between using debugging iface and complex content for keeping debug info (ref. <xref linkend="ds_cplx_cont"/>) ?.
+		Using content assumes that agent constantly updated content part that aims for debug info. This results in overhead. Of course we can
+		"switch" agent to "debug mode" via dedicated content, but it seems quite complex. ARGUING: It is not nececcary that object constantly
+	    refreshes debugging content. It depends on object. It can refresh the content only on demand via content getter.</simpara>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_cplx_cont"><title>Complex content of agent: pros and cons</title>
+	<sect2><title>Intro</title>
+	    <simpara>There is proposal to add support of complex content of agent. Currently agents content is simple - just single string. 
+		The complex data can be implemented as set of named data, like map[string, string] where the key is data name, and the value is the data.
+		So the complex data can be considered as set of named fields.
+		In many cases having complex content seems convenient and preferrable.
+	       	The example is visual debugging of complex system. 
+		For the debugging purpose it is required to see some "internal" data of the agent. For agent-function it could be the value of its 
+		arguments. Currently this feature is implemented only partially: visual representation of function has some parameter that
+		defines content of which agent to display. So to support debugging data there are two ways: 
+		<orderedlist>
+		    <listitem>To extend the current approach by adding some agents-paremeters (agent-function can set their content by debug data)</listitem>
+		    <listitem>To add support of complex data. Agent function can set the debug data to the corresponding content fields.</listitem>
+		</orderedlist>
+	    </simpara>
+       	</sect2>
+	<sect2 id="ds_cplx_cont_cns"><title>Considerations</title>
+	    <sect3><title>Simple agent philosophy</title>
+		<simpara>The simple content correspond to the multy-agent philosophy "agent is simple". Complex content makes agent more comples. Does it
+		    breaks the philosophy?</simpara>
+	    </sect3>
+	    <sect3 id="ds_cplx_cont_cns_if"><title>Agent expose its behaviour via interfaces</title>
+		<simpara>So why we need content access methods in base agent interface at all? Why not have specific interfaces for access to 
+		    agents content? Like it is imlpemented for property? For instance we can add the extended Prop interface, that supports named
+		    property, read-only for instance or changeable. 
+		    This depends on how base is this functionality, have the base agent support named properties as default? Initially the
+		    idea of base agent was that it only supports native and inheritance hier.  </simpara>
+		<simpara>The point here is that for changeable property also observation interface have to be defined. So the agent that
+		    uses anothers agent extended Prop iface can register itself as observer. In case of embedding extd Prop iface into the base
+		    agent with usage of notification to owner, this notif can create overhead.</simpara>
+	    </sect3>
+	    <sect3><title>Why the content update iface is required in base agent?</title>
+		<simpara>It is required to support change agent via mutation. The mutation scheme is applicable to base agent only, so we
+		    need some mechanism for changing agent. The subject of changing was defined as much base as possible: just some abstract content. 
+		    To have complex content the agent needs to include some specific owning agents, like it is done for Edge.
+		</simpara>
+		<simpara>This approach differs from extended Prop iface, ref <xref linkend="ds_cplx_cont_cns_if"/> - actually there isn't 
+		    mechanism to change these props via mutations. Let's have short comparition of these approaches:</simpara>
+		<itemizedlist>
+		    <listitem>Extended Prop iface:
+			<programlisting>
+			    Supports only non-persistent properties (cannot change them via mutation)
+			    Supports specific observation of props, but not to owner by default
+			</programlisting>
+		    </listitem>
+		    <listitem>Named content in base agent:
+			<programlisting>
+			    Supports persistent content (can be changed via mutation)
+			    Supports base observation only, to owner
+			</programlisting>
+		    </listitem>
+		</itemizedlist>
+		<simpara>So it makes sense to use these approach for different aims: Complex content - to enrich the base agent, but extended prop - to
+		support debugging feature.</simpara>
+	    </sect3>
+	    <sect3><title>Agents for just keeping data</title>
+		<simpara>Currently the agent-property for just keeping data is used widely. This seems too wasteful.</simpara>
+	    </sect3>
+	    <sect3><title>Simple agent as subject of random mutation</title>
+		<simpara>There was also idea to apply random mutation approach for system adaptation. For random approach it is important to have 
+		    mutations without variable parameters. Complex content introduces mutation of type "Change content" with such variable 
+		    parameter "Content name".</simpara>
+		<simpara>Not sure the idea is fruitful. Even simple content agents have such kind of mutation. For instance "Change content" has
+		variable parameter "Content value"</simpara>
+	    </sect3>
+	    <sect3><title>Content as parameters</title>
+		<simpara>The content can be considered as mechanism of parametrization of agent, like it is done in OOP languages. The difference is
+		    that in OOP any object can have paremeters, both primitive (like Int in Scala) and derivated. By the way, primitive object in Scala
+		    has single parameter, and this paremeter is literals - "super-primitive", i.e. not object. Derivated object can be paremetrizied by
+		    other objects. For our mutli-agent environment these paremeter that passed via constructor in OOP don't have sense: there is no 
+		    classes in agent env, but all agent is created via inheritance. So such paremetrization in agents env can be done via mutation or 
+		    view phenotypic modification. Pheno modif is more corresponding to parametrization in OOP because of OOP parametrization is the way to
+		    create different instance avoiding inheritance (i.e mutation).</simpara>
+		<simpara>So an agent can be parametrized via "inserting" another agents-parameters to it. The given agent has to "know" of agent-parameters 
+		    capabilities in order to use them. This is the same as parameters-argument of constructor in OOP. But what if we just need primitive
+		    parameter, like text data.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2><title>Comparition the apporaches in case of visual debugging</title>
+	    <simpara>We will use abbreviation SC and CC for simple content and complex content correspondingly.</simpara>
+	    <orderedlist>
+		<listitem>Simplicity for agent-function: SD - to get the agent-prop and set its content; CC - to set the field. CC wins.</listitem>
+		<listitem>For visual representation: SD - simply add new props for config of displaying; CC - same, but to interpret the props as 
+		    field name. Win-win.</listitem>
+		<listitem></listitem>
+	    </orderedlist>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_comprtransf_mut"><title>Component transformation to heir with applying pheno modifications to chromo</title>
+	<sect2><title>Introduction</title>
+	    <simpara>The practic of systems development uncover the serious problem. Let's describe the use-case. There is system A containing component
+		A_1. The system B is derivation of system A. System B also significantly modifies A_1. After that we are going to create child of A_1 assuming
+		that all modification made to A_1 will go to the child also. But this is obviously not the case because the modification are not inherited.</simpara>
+	    <simpara>This case shows that the following operation would be useful: to create the child with all the modification inherited.</simpara>
+	</sect2>
+	<sect2><title>Approach: replacing inherited component by it's child.</title>
+	    <simpara>One of realistic approach would be to replace the inherited component A_1 within B to child of A_1 - B_1. In this case all the 
+		modifications that are needed to be done in the component will be done via mutations but not modifications. This will allow the 
+		further inheritance of B_1.</simpara> 
+	    <simpara>But what if we already have B with component A_1 modified? How can we achieve the expected outcome? In that case we need to replace A1 with
+	    (A_1:)B_1 and transforming all the modif to mutations.</simpara>
 	</sect2>
     </sect1>
 

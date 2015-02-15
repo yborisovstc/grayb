@@ -64,6 +64,8 @@ template<class T> class Sdata: public DtBase
 	TBool operator<(const Sdata<T>& b) const { return mData < b.mData;};
 	TBool operator<=(const Sdata<T>& b) const { return mData <= b.mData;};
 	Sdata<T>& operator+=(const Sdata<T>& b) { mData += b.mData; return *this;};
+	Sdata<T>& operator*=(const Sdata<T>& b) { mData *= b.mData; return *this;};
+	Sdata<T>& operator!() { mData = !mData; return *this;};
 	//TBool operator!=(const Sdata<T>& b) {return !this->operator==(b);};
 	TBool Set(const T& aData) { TBool res = aData != mData; mData = aData; mValid = ETrue; return res; };
 	Sdata<T>& operator=(const Sdata<T>& b) { mData = b.mData; mValid = b.mValid; mSigTypeOK = b.mSigTypeOK; return *this;};
@@ -201,9 +203,9 @@ template<class T> TBool Mtr<T>::ElemFromString(TInt aInd, istringstream& aStream
 }
 
 // Tuple, with named components, adds the components on run-time
-// Full_signature := TypeSig , ',' ,  Paremeters ;
-// Paremeters := CompSig , {"," , CompSig} ;
-// CompSig := CompTypeSig , ':' , CompName ;
+// Full_signature := TypeSig  ','   Paremeters ;
+// Parameters := CompSig {"," CompSig} ;
+// CompSig := CompTypeSig  ':' CompName ;
 class NTuple: public DtBase
 { 
     public:
@@ -223,6 +225,7 @@ class NTuple: public DtBase
 	static TBool IsDataFit(const NTuple& aData);
 	static int ParseSigPars(const string& aCont, string& aSig, tCTypes& aCTypes);
 	void Init(const tCTypes& aCt);
+	void ToString(string& aString) const;
 	TBool FromString(const string& aString);
 	DtBase* GetElem(const string& aName);
 	virtual TBool operator==(const DtBase& sb);
@@ -230,8 +233,10 @@ class NTuple: public DtBase
 	//TBool operator==(const NTuple& b);
 	//TBool operator!=(const NTuple& b) {return !this->operator==(b);};
 	virtual string GetTypeSig() const { return TypeSig();};
+	virtual void DataToString(stringstream& aStream) const;
     protected:
 	TBool IsCTypesFit(const tCTypes& aCt) const;
+	void TypeParsToString(stringstream& aStream) const;
     public:
 	tComps mData;
 };
