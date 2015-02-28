@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for squeezing of chromo: reference
+     -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Vert">
+    <node id="VA" parent="Vert">
+	<node id="VA_1" parent="Vert">
+	</node>
+    </node>
+    <node id="VB" parent="./VA">
+	<node node="./VA_1" id="VA_1_B1" parent="Vert"></node>
+	<node node="./VA_1" id="VA_1_B2" parent="Vert"></node>
+	<rm node="./VA_1/VA_1_B2"/>
+	<node id="VB_1" parent="./VA_1"/>
+    </node>
+</node>
+

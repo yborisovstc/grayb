@@ -698,6 +698,11 @@
 		</simpara>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_mut_refs"><title>References: rules and limitations</title>
+	    <simpara>References are important part of relation in systems native topology (hier + inher). Establishing rules and limitations for
+		referencing can significantly affects the topology. Currently the only limitation is that rank of referenced node has to be less than the 
+		referencing one. What rules and llimitation can be applied?</simpara>
+       	</sect2>
     </sect1>
 
     <sect1 id="ds_visrepr"><title>Visual representation</title>
@@ -965,19 +970,60 @@
 	</sect2>
     </sect1>
 
-    <sect1 id="ds_comprtransf_mut"><title>Component transformation to heir with applying pheno modifications to chromo</title>
-	<sect2><title>Introduction</title>
-	    <simpara>The practic of systems development uncover the serious problem. Let's describe the use-case. There is system A containing component
-		A_1. The system B is derivation of system A. System B also significantly modifies A_1. After that we are going to create child of A_1 assuming
-		that all modification made to A_1 will go to the child also. But this is obviously not the case because the modification are not inherited.</simpara>
-	    <simpara>This case shows that the following operation would be useful: to create the child with all the modification inherited.</simpara>
+    <sect1 id="ds_transf"><title>Chromo transformations</title>
+	<sect2 id="ds_transf_intro"><title>Introduction</title>
+	    <simpara>Ref <ulink url="../requirements/index.html#uc_051"/> for use-case.</simpara>
+	    <simpara>Chromo transformations are not mutations as change of model, but change of chromo itself.</simpara>
+	    <simpara>Below is outline of importants points to be considered when implementing transformations:</simpara>
+	    <orderedlist>
+		<listitem>How to rollback transf?
+		    <listitem>Some transf are just series of new mutations. In this case they can be rolled back. But the problem is that for the 
+			developer they are "anonimous" and are not directly assotiated to some developers actions.</listitem>
+		</listitem>
+		<listitem>Transf as rich mutation
+		    <simpara></simpara>
+		</listitem>
+	    </orderedlist>
 	</sect2>
-	<sect2><title>Approach: replacing inherited component by it's child.</title>
-	    <simpara>One of realistic approach would be to replace the inherited component A_1 within B to child of A_1 - B_1. In this case all the 
-		modifications that are needed to be done in the component will be done via mutations but not modifications. This will allow the 
-		further inheritance of B_1.</simpara> 
-	    <simpara>But what if we already have B with component A_1 modified? How can we achieve the expected outcome? In that case we need to replace A1 with
-	    (A_1:)B_1 and transforming all the modif to mutations.</simpara>
+	<sect2 id="ds_transf_prntmodif"><title>Transformation to heir with applying parents pheno modifications to chromo</title>
+	    <sect3><title>Introduction</title>
+		<simpara>Ref <ulink url="../requirements/index.html#uc_052"/> for use-case.</simpara>
+		<simpara>The practic of systems development uncover the serious problem. Let's describe the use-case. There is system A containing component
+		    A_1. The system B is derivation of system A. System B also significantly modifies A_1. After that we are going to create child of A_1 assuming
+		    that all modification made to A_1 will go to the child also. But this is obviously not the case because the modification are not inherited.</simpara>
+		<simpara>This case shows that the following operation would be useful: to create the child with all the modification inherited.</simpara>
+	    </sect3>
+	    <sect3 id="ds_transf_prntmodif_repl"><title>Approach: replacing inherited component by it's child.</title>
+		<simpara>One of approaches would be to replace the inherited component A_1 within B to child of A_1 - B_1. In this case all the 
+		    modifications that are needed to be done in the component will be done via mutations but not modifications. This will allow the 
+		    further inheritance of B_1.</simpara> 
+		<simpara>But what if we already have B with component A_1 modified? How can we achieve the expected outcome? In that case we need to replace A1 with
+		    (A_1:)B_1 and transforming all the modif to mutations.</simpara>
+	    </sect3>
+	    <sect3><title>Approach: leave inherited component but support child chromo transformation to get all parents modifto chromo.</title>
+		<simpara>This approach seems more realistic.</simpara>
+	    </sect3>
+	    <sect3><title>Questions</title>
+		<orderedlist>
+		    <listitem>Could we just use "copy" of parents modifs to child? This would be naturally understanded by developer.</listitem>
+		    <listitem>Why not use mutation of creating child with the option "copy modifs from parent"?
+			<simpara>This would be just mutation, so no problems with its rollback. We need to take into account the 
+			    inheritance mechanism where the chain of inheriting is performed beginning from root parent. To keep this mechanism we
+			would need also to modify relation to parent by adding relation type ("regular inheritance", "inheritance with modifs adopted"</simpara>
+		    </listitem>
+		    <listitem>Why don't disable pheno modifs completely?
+			<simpara>I.e. if the owner wants to change inherited comp it will need to make the comp non-inherited. This would keep the
+			    whole model clear and simple. This approach is discussed in <xref linkend="ds_transf_prntmodif_repl"/>.
+			    The quesion remaining - what to do if we already have such inherited comps with modifs. Anycase we need to do transformation,
+			    but it will be not regular transformation but repairing. The similar repairing is already implemented for repair chromo when 
+			prohibited pheno modif is disabled. Not sure this approach is correct. </simpara>
+		    </listitem>
+		    <listitem>How to rollback the tansformation?
+			<simpara>The rollback is quite simple because the transformation is implemented via series of mutations. So
+			    the initial chromo order can be stored before the transformation and then can be used for rollback.  </simpara>
+		    </listitem>
+		</orderedlist>
+	    </sect3>
 	</sect2>
     </sect1>
 
@@ -987,7 +1033,9 @@
     <sect1 id="ds_tohandle"><title>To handle</title>
 	<orderedlist>
 	    <listitem>Using mut order to ensure original sequence of muts, ref <xref linkend="ds_mut_dis_pheno"/> </listitem>
+	    <listitem>References: rules and limitations, ref <xref linkend="ds_mut_refs"/> </listitem>
 	</orderedlist>
+
     </sect1>
 
 </article>

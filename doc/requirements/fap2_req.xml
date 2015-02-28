@@ -1568,6 +1568,97 @@
 	    <sect3><title>Clarification</title> </sect3>
 	</sect2>
 
+	<sect2 id="uc_051"><title>UC_051 Transformation of chromosome</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of SYSTEM</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<orderedlist>
+		    <listitem>USER prepared some system, i.e. creates systems chromosome </listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER request SYSTEM for some kind of transforming of the systems chromosome</listitem>
+		    <listitem>SYSTEM transforms the chromosome</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> <itemizedlist> </itemizedlist> </sect3>
+	    <sect3><title>Extended by</title> 
+		<itemizedlist> 
+		    <listitem><xref linkend="uc_052"/></listitem>
+		</itemizedlist> 
+	    </sect3>
+	    <sect3><title>Discussion</title> 
+		<orderedlist>
+		    <listitem>Transformation differs from mutations. Mutations is the mechanism of changing the system, but transformation is
+			the mechanism of changing mutations. Why are the transformations required. There are some reasons of that:
+			<itemizedlist>
+			    <listitem>Chromo optimization
+				<simpara>The chromo as result of system development is not compact. It contains a lot of intermediate mutations that are
+				    overwriting by further mutations. So, to make the chromo compact, the transformation is required that "squeeze" the
+				    mutations in chromo, merging the subsequent mutations etc.</simpara> </listitem>
+			    <listitem>Making chromo compatible to the mode of mutation application.
+				<simpara>There could be specific modes of application of mutation. For instance the mode, that enables or disables
+				    pheno modifications, etc. So the chromo created for some mode needs to be transformed in order to be able to be
+				    applicable for another mode.</simpara></listitem>
+			</itemizedlist>
+		    </listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
+	<sect2 id="uc_052"><title>UC_052 Transformation of chromosome: getting pheno modif from parent to chromo</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of SYSTEM</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<orderedlist>
+		    <listitem>USER prepared some system where:
+			<itemizedlist>
+			    <listitem>There is subsystem A with component A_1</listitem>
+			    <listitem>There is subsystem B inherited from A. B emitted a series of modifications into A_1</listitem>
+			</itemizedlist>
+		    </listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER request SYSTEM to create within B child B_1 from B/A_1 - SYSTEM creates B_1. B_1 doesn't include the
+			modifications emitted to it's parent B/A_1. </listitem>
+		    <listitem>USER request SYSTEM to transform chromo of B_1 by adding to B_1 as mutations all the modifications emitted to its parent B/A_1 -
+		    SYSTEM makes this transformation.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_051"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title> <itemizedlist> </itemizedlist> </sect3>
+	    <sect3><title>Discussion</title> 
+		<orderedlist>
+		    <listitem>This transformation is useful in case of mutation mode "disabled pheno modif". In this mode the result chromo doesn't contain
+			pheno modifs in general, so there is no problem with missing some changes after inheriting. But the changes still can be missed in case
+		    if some owner modificates it's inherited component. So the transformation allows to create consistent child from such modified component.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
     </sect1>
 
 </article>

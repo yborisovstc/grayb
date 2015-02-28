@@ -890,9 +890,9 @@ void Elem::SetMutation(const ChromoNode& aMuta)
     iMut->Set(aMuta);
 }
 
-void Elem::AppendMutation(const ChromoNode& aMuta)
+ChromoNode Elem::AppendMutation(const ChromoNode& aMuta)
 {
-    iMut->Root().AddChild(aMuta);
+    return iMut->Root().AddChild(aMuta);
 }
 
 TBool Elem::AppendMutation(const string& aFileName)
@@ -1261,6 +1261,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aTria
 		}
 	    }
 	    else {
+		IsInheritedComp(node);
 		Logger()->Write(MLogRec::EErr, this, "Changing content of node [%s]  - attempt of phenotypic modification - disabled", 
 			snode.c_str());
 	    }
@@ -1316,7 +1317,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 		}
 	    }
 	    if (parent != NULL) {
-		if (epheno || node == this || IsInheritedComp(node)) {
+		if (epheno || node == this || IsDirectInheritedComp(node)) {
 		    if (IsForwardRef(parent)) {
 			res = EFalse;
 			if (erepos && iMan != NULL) {
@@ -1406,7 +1407,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 				node->GetRUri(nuri, mnode);
 				mut.SetAttr(ENa_MutNode, nuri.GetUri(EFalse));
 			    }
-			    mnode->AddElem(mut, aRunTime);
+			    elem = mnode->AddElem(mut, aRunTime);
 			    mutadded = ETrue;
 			}
 		    }
@@ -1859,6 +1860,7 @@ Elem* Elem::GetCompOwning(Elem* aElem)
 }
 
 // Gets acomp that attaches the given node or node itself if this is attaching it
+// !! Returns only 1st level acomp or this
 Elem* Elem::GetAcompAttaching(Elem* aElem)
 {
     Elem* res = NULL;
@@ -1874,6 +1876,30 @@ Elem* Elem::GetAcompAttaching(Elem* aElem)
     return res;
 }
 
+// TODO [YB] Do we need it?
+Elem* Elem::GetAttachedAowner() {
+    Elem* res = NULL;
+    Elem* cand = this;
+    while (res == NULL && cand != NULL) {
+	if (cand->IsChromoAttached()) {
+	    res = cand;
+	} else {
+	    cand = cand->GetAowner();
+	}
+    }
+    return res;
+}
+
+Elem* Elem::GetUpperAowner() {
+    Elem* cand = GetAowner();
+    Elem* res = NULL;
+    while (cand != NULL) {
+	res = cand;
+	cand = cand->GetAowner();
+    }
+    return res;
+}
+
 TBool Elem::IsComp(const Elem* aElem) const
 {
     const Elem* man = aElem->GetMan();
@@ -1885,7 +1911,7 @@ TBool Elem::IsComp(const Elem* aElem) const
 
 TBool Elem::IsAownerOf(const Elem* aElem) const
 {
-    const Elem* aowner = aElem->GetMan();
+    const Elem* aowner = aElem->GetAowner();
     while (aowner != NULL && aowner != this) {
 	aowner = aowner->GetAowner();	
     }
@@ -2328,6 +2354,21 @@ const Elem* Elem::GetAttachingMgr() const
     return res;
 }
 
+Elem* Elem::GetAcompOwning(Elem* aComp)
+{
+    Elem* res = NULL;
+    Elem* cand = aComp;
+    while (res == NULL && cand != NULL) {
+	if (IsAownerOf(cand)) {
+	    res = cand;
+	} else {
+	    cand = cand->GetMan();
+	}
+    }
+    return res;
+}
+
+
 // Get the node that attaches this node. Don't confuse with the nearest attached
 // owner, for that ref to GetAttachingMgr
 Elem* Elem::GetAowner()
@@ -2361,6 +2402,7 @@ const Elem* Elem::GetAowner() const
     }
     return res;
 }
+
 TBool Elem::IsPhenoModif() const
 {
     TBool res = !IsChromoAttached();
@@ -2375,7 +2417,18 @@ TBool Elem::IsPhenoModif() const
 
 TBool Elem::IsInheritedComp(const Elem* aNode) const
 {
-    TBool res = !IsChromoAttached() || !aNode->IsChromoAttached() && !aNode->IsPhenoModif() && aNode->GetAttachingMgr() == this;
+    Elem* uaowner = ((Elem*) aNode)->GetUpperAowner();
+    TBool res = uaowner == NULL || IsComp(uaowner) && !uaowner->IsComp(this);
+    return res;
+}
+
+TBool Elem::IsDirectInheritedComp(const Elem* aNode) const
+{
+    Elem* aaowner = ((Elem*) aNode)->GetAttachedAowner();
+    Elem* uaowner = ((Elem*) aNode)->GetUpperAowner();
+    Elem* acompo = ((Elem*) this)->GetAcompOwning((Elem*) aNode);
+    TBool isinher = uaowner == NULL || IsComp(uaowner) && !uaowner->IsComp(this);
+    TBool res = isinher && acompo == NULL;
     return res;
 }
 
@@ -3180,7 +3233,9 @@ void Elem::GetImplicitDep(TMDep& aDep, Elem* aObj, Elem* aRef)
 TMDep Elem::GetRefDep(Elem* aRef, TNodeAttr aReftype, Elem* aObj)
 {
     // Get regular dep first
-    TMDep dep = aRef->GetMajorDep(ENt_Change, MChromo::EDl_Critical);
+    // TODO [YB] Using ENt_Cont at the moment, because it seems to be nearest
+    // to evolve dependencies we looking at. To consider more solid solution
+    TMDep dep = aRef->GetMajorDep(ENt_Cont, MChromo::EDl_Critical);
     // Try to check also implicit deps, ref ds_indp_mutord_impl
     if (aReftype == ENa_Ref && iMan != NULL && aObj != NULL) {
 	iMan->GetImplicitDep(dep, aObj, aRef);
@@ -3192,14 +3247,118 @@ void Elem::GetContactsData(vector<string, string>& aData) const
 {
 }
 
-Agent::Agent(const string &aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+TBool Elem::HasParentModifs() const
 {
-    SetEType(Type());
-    SetParent(Type());
+    return iParent->HasModifs(iParent);
 }
 
-void *Agent::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void Elem::CopyModifsFromParent()
 {
-    return (strcmp(aName, Type()) == 0) ? this : NULL;
+    Elem* aowner = GetAowner();
+    if (aowner != NULL) {
+	aowner->CopyParentModifsToComp(this);
+    }
 }
 
+// Checking if agent has modifs made outside of owner/self aBase
+TBool Elem::HasModifs(const Elem* aBase) const
+{
+    TBool res = false;
+    for (vector<Elem*>::const_iterator it = iComps.begin(); it != iComps.end() && !res; it++) {
+	Elem* comp = *it;
+	res = comp->HasModifs(aBase);
+    }
+    for (TMDeps::const_iterator it = iMDeps.begin(); it != iMDeps.end() && !res; it++) {
+	TMDep dep = *it;
+	if (dep.second == ENa_MutNode && dep.first.first->IsComp(aBase)) res = true;
+    }
+    return res;
+}
+
+/* Transforms modif to comps parent to comps mutations, ref ds_transf_prntmodif
+ * Modifs just are rebased from parents aowner to this (owner of comp)
+ * Then during the mutation the modifs are transromed to muts because of phenomdf disabled
+ * Rebasing scheme is as:
+ *                parents_owner - parent - tart_in_parent - ref_in_parent
+ *              /
+ * common_owner
+ *              \
+ *                compons_owner - comp   -  targ_in_comp  - ref_in_comp
+ *
+ * Where parent is parent of comp
+ * aBase - parents_owner
+ * aMut - mut of aBase
+ */
+void Elem::CopyParentModifsToComp(Elem* aComp)
+{
+    TBool efix = iEnv->ChMgr()->EnableFixErrors();
+    iEnv->ChMgr()->SetEnableFixErrors(ETrue);
+    Elem* cparent = aComp->GetParent();
+    Elem* paowner = cparent->GetAttachingMgr();
+    // Go thru muts in chromo, select comps parents related and copy
+    ChromoNode& chrroot = paowner->Chromos().Root();
+    for (ChromoNode::Iterator it = chrroot.Begin(); it != chrroot.End(); it++) {
+	ChromoNode mut = *it;
+	if (mut.AttrExists(ENa_MutNode)) {
+	    string tnodeuris = mut.Attr(ENa_MutNode);
+	    GUri tnodeuri(tnodeuris);
+	    GUri uri_prnt_to_targ;
+	    TBool isuriofcomp = paowner->RebaseUriToIntNode(tnodeuri, cparent, uri_prnt_to_targ);
+	    if (isuriofcomp) {
+		// Rebase target uri from parent to comp
+		GUri uri_this_to_ctarg;
+		aComp->GetUri(uri_this_to_ctarg, this);
+		uri_this_to_ctarg.Append(uri_prnt_to_targ);
+		string curi = uri_this_to_ctarg.GetUri();
+		ChromoNode newmut = AppendMutation(mut);
+		// Rebase parent
+		if (newmut.AttrExists(ENa_Parent)) {
+		    string cururis = newmut.Attr(ENa_Parent);
+		    GUri cururi(cururis);
+		    GUri newuri;
+		    RebaseUriToOuterNode(paowner, cururi, newuri);
+		    newmut.SetAttr(ENa_Parent, newuri.GetUri());
+		}
+		// No need to rebase refs because it's relative to targ
+		newmut.SetAttr(ENa_MutNode, curi);
+		Mutate(EFalse, ETrue, ETrue);
+	    }
+	}
+    }
+    iEnv->ChMgr()->SetEnableFixErrors(efix);
+}
+
+/* Rebases uri to the node that is within uri chain
+ * aUri - input uri
+ * aComp - new base, the comp of base of input uri
+ * aResult - relult uri
+ */
+TBool Elem::RebaseUriToIntNode(const GUri& aUri, const Elem* aComp, GUri& aResult)
+{
+    TBool res = EFalse;
+    const Elem* node = GetNode(aUri);
+    if (node == aComp) {
+	res = ETrue;
+    } else {
+	for (GUriBase::const_elem_iter it = aUri.Elems().begin(); it != aUri.Elems().end(); it++) {
+	    string uri = aUri.GetUriBody(it);
+	    const Elem* node = GetNode(uri);
+	    if (node == aComp) {
+		res = ETrue;
+		aResult.AppendTail(aUri, it);
+		break;
+	    };
+	}
+    }
+    return res;
+}
+
+/* Rebases uri to this node that is out of uri chain
+ * aBase - old base
+ * aResult - result node
+ */
+void Elem::RebaseUriToOuterNode(Elem* aOldBase, const GUri& aUri, GUri& aResult)
+{
+    aOldBase->GetRUri(aResult, this);
+    aResult.Append(aUri);
+}

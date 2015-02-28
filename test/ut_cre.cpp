@@ -19,6 +19,7 @@ class Ut_cre : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_CreSyst);
     CPPUNIT_TEST(test_CreIncaps);
     CPPUNIT_TEST(test_CreData);
+    CPPUNIT_TEST(test_BaseApis1);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -29,6 +30,7 @@ private:
     void test_CreSyst();
     void test_CreIncaps();
     void test_CreData();
+    void test_BaseApis1();
 private:
     Env* iEnv;
 };
@@ -183,3 +185,24 @@ void Ut_cre::test_CreData()
 
     delete iEnv;
 }
+
+// Base agent apis: nets
+void Ut_cre::test_BaseApis1()
+{
+    printf("\n === Test of base agent apis\n");
+    iEnv = new Env("Env", "ut_baseapis1.xml", "ut_baseapis1.txt");
+    iEnv->ChMgr()->SetEnableFixErrors(ETrue);
+    iEnv->ChMgr()->SetEnableReposMuts(ETrue);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Make illegal modif and enable transformation
+    Elem* vb = root->GetNode("./VB");
+    Elem* va1b1 = root->GetNode("./VB/VA_1/VA_1_B1");
+    bool isdirinh1 = vb->IsDirectInheritedComp(va1b1);
+    CPPUNIT_ASSERT_MESSAGE("Wrong result of IsDirectInheritedComp for VA_1_B1", !isdirinh1);
+    delete iEnv;
+}
+
+

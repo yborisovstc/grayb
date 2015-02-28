@@ -32,6 +32,8 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Compact3);
     CPPUNIT_TEST(test_CompactRef1);
     CPPUNIT_TEST(test_CompactCont);
+    CPPUNIT_TEST(test_TransfModif1);
+    CPPUNIT_TEST(test_GetParentModifs);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -55,6 +57,8 @@ private:
     void test_Compact3();
     void test_CompactRef1();
     void test_CompactCont();
+    void test_TransfModif1();
+    void test_GetParentModifs();
 private:
     Env* iEnv;
 };
@@ -791,3 +795,70 @@ void Ut_mut::test_CompactCont()
 
     delete iEnv;
 }
+
+// Getting parents modifs
+void Ut_mut::test_GetParentModifs()
+{
+    printf("\n === Test of getting parent modifs\n");
+    iEnv = new Env("Env", "ut_parmod1.xml", "ut_parmod1.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Make the transformation
+    Elem* vb1 = root->GetNode("./VB/VB_1");
+    TBool hasModifs = vb1->HasParentModifs();
+    vb1->CopyModifsFromParent();
+    // Save transformed chromo and recreate the model
+    iEnv->Root()->Chromos().Save("ut_parmod1_res.xml_");
+    delete iEnv;
+
+    iEnv = new Env("Env", "ut_parmod1_res.xml_", "ut_parmod1_res.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to re-create system after gettin parent modifs", iEnv != 0);
+    iEnv->ConstructSystem();
+     // Check if edge is set correctly
+    root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root after transforming", root != 0);
+    Elem* va1b1 = root->GetNode("./VB/VB_1/VA_1_B1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get ./VB/VB_1/VA_1_B1", va1b1 != 0);
+
+    delete iEnv;
+
+}
+
+// Transform modif to mutation
+void Ut_mut::test_TransfModif1()
+{
+    printf("\n === Test of transforming modif to mut\n");
+    iEnv = new Env("Env", "ut_transfmdf1.xml", "ut_transfmdf1.txt");
+    iEnv->ChMgr()->SetEnableFixErrors(ETrue);
+    iEnv->ChMgr()->SetEnableReposMuts(ETrue);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Make illegal modif and enable transformation
+    Elem* va = root->GetNode("./VA");
+    ChromoNode madd = va->Mutation().Root().AddChild(ENt_Node);
+    madd.SetAttr(ENa_Id, "VA_1_1");
+    madd.SetAttr(ENa_Parent, "Vert");
+    root->Mutate();
+    // Save transformed chromo and recreate the model
+    iEnv->Root()->Chromos().Save("ut_transfmdf1_res.xml_");
+    delete iEnv;
+
+    iEnv = new Env("Env", "ut_transfmdf1_res.xml_", "ut_transfmdf1_res.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to re-create system after transfortation of modifs", iEnv != 0);
+    iEnv->ConstructSystem();
+     // Check if edge is set correctly
+    root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root after transforming", root != 0);
+    //Elem* va1b1 = root->GetNode("./VB/VB_1/VA_1_B1");
+    //CPPUNIT_ASSERT_MESSAGE("Fail to get ./VB/VB_1/VA_1_B1", va1b1 != 0);
+
+    delete iEnv;
+
+}
+
+
+

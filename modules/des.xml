@@ -293,8 +293,9 @@
 		<cont node="./P2" ref="./../../Capsule/Out/Int"/> 
 	    </node>
 	    <node id="ViewData" parent="Vert">
-		<node id="Val" parent="Prop"/>
-		<cont node="./Val" ref="./../../Confirmed/Value"/>
+		<node id="Val" parent="Prop">
+		    <cont ref="./../../Confirmed/Value"/>
+		</node>
 	    </node>
 	</node>
 
@@ -306,8 +307,9 @@
 	    <cont node="./P2" ref="./../../Capsule/Out/Int/PinData"/> 
 	</node>
 	<node id="ViewData" parent="Vert">
-	    <node id="Val" parent="Prop"/>
-	    <cont node="./Val" ref="./../../Data/Confirmed/Value"/>
+	    <node id="Val" parent="Prop">
+		<cont ref="./../../Data/Confirmed/Value"/>
+	    </node>
 	</node>
     </node>
 
@@ -334,8 +336,9 @@
 		<cont node="./P2" ref="./../../Capsule/Out/Int"/> 
 	    </node>
 	    <node id="ViewData" parent="Vert">
-		<node id="Val" parent="Prop"/>
-		<cont node="./Val" ref="./../../Confirmed/Value"/>
+		<node id="Val" parent="Prop">
+		    <cont ref="./../../Confirmed/Value"/>
+		</node>
 	    </node>
 	</node>
 
@@ -347,8 +350,9 @@
 	    <cont node="./P2" ref="./../../Capsule/Out/Int/PinData"/> 
 	</node>
 	<node id="ViewData" parent="Vert">
-	    <node id="Val" parent="Prop"/>
-	    <cont node="./Val" ref="./../../Data/Confirmed/Value"/>
+	    <node id="Val" parent="Prop">
+		<cont ref="./../../Data/Confirmed/Value"/>
+	    </node>
 	</node>
     </node>
 

@@ -141,7 +141,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void SetMan(Elem* aMan);
 	void SetObserver(MCompsObserver* aObserver);
 	void SetMutation(const ChromoNode& aMuta);
-	void AppendMutation(const ChromoNode& aMuta);
+	ChromoNode AppendMutation(const ChromoNode& aMuta);
 	TBool AppendMutation(const string& aFileName);
 	void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue, TBool aTrialMode = EFalse);
 	string PName() const;
@@ -170,12 +170,16 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// Checks if elements chromo is attached. Ref UC_019 for details
 	TBool IsChromoAttached() const;
 	Elem* GetAttachingMgr();
+	Elem* GetAttachedAowner();
 	Elem* GetAowner();
 	const Elem* GetAowner() const;
+	Elem* GetUpperAowner();
 	const Elem* GetAttachingMgr() const;
+	Elem* GetAcompOwning(Elem* aComp);
 	// Checks if the node is originated vis phenotypical modification
 	TBool IsPhenoModif() const;
 	TBool IsInheritedComp(const Elem* aNode) const;
+	TBool IsDirectInheritedComp(const Elem* aNode) const;
 	TBool IsCompOfInheritedComp(const Elem* aNode) const;
 	// Debug helpers
 	Elem* GetNodeS(const char* aUri);
@@ -186,6 +190,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void GetRUri(GUri& aUri, Elem* aTop = NULL);
 	string GetUri(Elem* aTop = NULL);
 	string GetRUri(Elem* aTop = NULL);
+	void RebaseUriToOuterNode(Elem* aOldBase, const GUri& aUri, GUri& aResult);
 	virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
 	virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
 	// Iface provider
@@ -279,6 +284,11 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void CompactChromo();
 	void CompactChromo(const ChromoNode& aNode);
 	inline MLogRec* Logger() const;
+	// Transformations
+	TBool HasParentModifs() const;
+	void CopyModifsFromParent();
+	TBool HasModifs(const Elem* aOwner) const;
+	void CopyParentModifsToComp(Elem* aComp);
     protected:
 	Elem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, TBool aTrialMode = EFalse);
 	static void Init();
@@ -289,6 +299,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool MoveComp(Elem* aComp, Elem* aDest);
 	TBool MoveComp(Elem* aComp, const ChromoNode& aDest);
 	TBool IsCompRegistered(Elem* aComp);
+	TBool RebaseUriToIntNode(const GUri& aUri, const Elem* aComp, GUri& aResult);
 	// aName is required because the comp can be renamed already. This is the case of 
 	// comp renaming: comp is renamed first, then the renaming is handled
 	TBool UnregisterComp(Elem* aComp, const string& aName = string());
@@ -356,16 +367,5 @@ inline MLogRec* Elem::Logger() const {return iEnv ? iEnv->Logger(): NULL; }
 
 inline MProvider* Elem::Provider() const {return iEnv ? iEnv->Provider(): NULL; }
 
-
-// Runtime agent - implements interfaces that can be used by the man
-
-class Agent: public Elem
-{
-    public:
-	static const char* Type() { return "Agent";};
-	Agent(const string &aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
-	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-};
 
 #endif

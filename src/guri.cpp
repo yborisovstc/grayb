@@ -126,6 +126,13 @@ void GUriBase::Append(const GUriBase& aUri)
     }
 }
 
+void GUriBase::AppendTail(const GUriBase& aUri, const_elem_iter aIter)
+{
+    for (const_elem_iter it = aIter; it != aUri.Elems().end(); it++) {
+	AppendElem(*it);
+    }
+}
+
 void GUriBase::AppendElem(const string& aType, const string& aName, char aRelType)
 {
     iElems.push_back(TElem(aType, TRel(aRelType, aName)));
@@ -152,9 +159,14 @@ void GUriBase::AppendQueryElem(TQueryOpr aOpr, TNodeAttr aAttr, const string& aV
     iQueryElems.push_back(TQueryElem(aOpr, TQueryCnd(aAttr, aValue)));
 }
 
-string GUriBase::GetUri(vector<TElem>::const_iterator aStart, TBool aShort) const
+string GUriBase::GetUri(const_elem_iter aStart, TBool aShort) const
 {
-    return DoGetUri(aStart, aShort);
+    return DoGetUri(aStart, iElems.end(), aShort);
+}
+
+string GUriBase::GetUriBody(const_elem_iter aEnd, TBool aShort) const
+{
+    return DoGetUri(iElems.begin(), aEnd, aShort);
 }
 
 string GUriBase::SelectGroup(const string& aData, int aEndPos)
@@ -312,11 +324,11 @@ void GUri::Parse()
     }
 }
 
-string GUri::DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort) const
+string GUri::DoGetUri(const_elem_iter aStart, const_elem_iter aEnd, TBool aShort) const
 {
     string res;
     // Hier
-    for (vector<GUri::TElem>::const_iterator it = aStart; it != iElems.end(); it++) {
+    for (vector<GUri::TElem>::const_iterator it = aStart; it != aEnd; it++) {
 	GUri::TElem elem = *it;
 	if (it == aStart && (!elem.first.empty() || !elem.second.second.empty()) && elem.second.first != KSepNone) {
 	    // Current node

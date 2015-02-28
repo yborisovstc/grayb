@@ -75,11 +75,13 @@ class GUriBase
 	GUriBase();
 	const vector<TElem>& Elems() const {return iElems;};
 	string GetUri(vector<TElem>::const_iterator aStart, TBool aShort = EFalse) const;
+	string GetUriBody(const_elem_iter aEnd, TBool aShort = EFalse) const;
 	string GetUri(TBool aShort = EFalse) const { return GetUri(iElems.begin(), aShort);};
 	const string& GetLoc() const;
 	const string& Scheme() const;
 	string GetName() const;
 	void Append(const GUriBase& aUri);
+	void AppendTail(const GUriBase& aUri, const_elem_iter aIter);
 	void AppendElem(const string& aType, const string& aName, char aRelType = KNodeSep);
 	void AppendElem(const string& aExt, const char aExtRel, const string& aName, char aRelType = KNodeSep);
 	void AppendElem(const TElem& aElem);
@@ -94,7 +96,7 @@ class GUriBase
 	TBool IsErr() const { return iErr;};
 	static char GetExtFirstPart(const string& aExt, string& aPart);
     protected:
-	virtual string DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort = EFalse) const = 0;
+	virtual string DoGetUri(const_elem_iter aStart, const_elem_iter aEnd, TBool aShort = EFalse) const = 0;
 	static void Construct();
 	static string SelectGroup(const string& aData, int aEndPos);
 	static size_t FindGroup(const string& aStr, size_t aPos);
@@ -133,7 +135,7 @@ class GUri: public GUriBase
 	GUri operator+(const GUri& aUri);
 	GUri& operator+=(const GUri& aUri);
     protected:
-	virtual string DoGetUri(vector<TElem>::const_iterator aStart, TBool aShort = EFalse) const;
+	virtual string DoGetUri(const_elem_iter  aStart, const_elem_iter aEnd, TBool aShort = EFalse) const;
 	void Parse();
 };
 

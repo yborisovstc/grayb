@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for transforming modif to mut
+     -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Vert">
+    <node id="VA" parent="Vert">
+	<node id="VA_1" parent="Vert">
+	</node>
+	<node id="VA_1_1" parent="Vert" node="./VA_1"/>
+    </node>
+</node>
+
