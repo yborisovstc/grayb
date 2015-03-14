@@ -9,6 +9,9 @@
 set<string> Elem::iCompsTypes;
 bool Elem::iInit = false;
 
+string Elem::Fmt::mSepContInp = ";";
+string Elem::Fmt::mSepContName = "~";
+
 string Elem::PEType()
 {
     return string() + GUri::KParentSep + Elem::Type();
@@ -1077,7 +1080,7 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafet
     Elem* node = GetNode(snode);
     TBool mutadded = EFalse;
     if (node != NULL && IsComp(node)) {
-	if (epheno || node->GetMan() == this || node->GetMan()->GetAttachingMgr() == this || IsInheritedComp(node)) {
+	if (epheno || node->GetAowner() == this  || IsDirectInheritedComp(node)) {
 	    if (!aCheckSafety || IsMutSafe(node)) {
 		TBool res = node->ChangeAttr(GUri::NodeAttr(mattrs), mval);
 		if (!res) {
@@ -1166,7 +1169,8 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aTria
 	node = GetNode(unode);
     }
     if (node != NULL && (node == this || IsComp(node))) {
-	if (epheno || node == this || IsInheritedComp(node)) {
+	// Only direct inherited comp is available for modif, ref. uc_044_disc_3
+	if (epheno || node == this || IsDirectInheritedComp(node)) {
 	    if (IsMutSafe(node)) {
 		if (refex) {
 		    // For -ref- attr the value is the ref relative to mutated node context
@@ -3184,7 +3188,8 @@ TBool Elem::ResolveMutUnsafety(Elem* aMutated, const TMDep& aDep)
 	Elem* dcomp = this;
 	ChromoNode targmut(iChromo->CreateNode(aDep.first.second));
 	if (aDep.first.first != this) {
-	    dcomp = GetAcompAttaching(aDep.first.first);
+	    //dcomp = GetAcompAttaching(aDep.first.first);
+	    dcomp = GetAcompOwning(aDep.first.first);
 	    if (dcomp != NULL) {
 		targmut = dcomp->Chromos().Root();
 	    }

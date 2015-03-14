@@ -1331,8 +1331,11 @@
 	    <sect3><title>Extended by</title> <itemizedlist> </itemizedlist> </sect3>
 	    <sect3><title>Discussion</title> 
 		<orderedlist>
-		    <listitem>The restrictions allows redicing of dependencies in the whole system chromo. </listitem>
+		    <listitem>The restrictions allows reducing of dependencies in the whole system chromo. </listitem>
 		    <listitem>Probably SYSTEM should indicate the muts not met the restriction as warnings.</listitem>
+		    <listitem id="uc_044_disc_3">The condition "this node unattached internal node" is important. This means that the node to apply 
+			the mutation should be "nearest" attached node for unattached component. The matter is that there can be upper owners for that
+			unattached node. But to minimize the deps the nearest node should be selected for mutation.  </listitem>
 		</orderedlist>
 	    </sect3>
 	    <sect3><title>Clarification</title> </sect3>

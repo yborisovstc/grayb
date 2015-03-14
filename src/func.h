@@ -329,9 +329,9 @@ class Func: public Base {
 	class Host {
 	    friend class Elem;
 	    public: 
-	    virtual TInt GetInpsCount() const = 0;
-	    MDVarGet* GetInp(TInt aInpId);
-	    virtual Elem::TIfRange GetInps(TInt aId) = 0;
+	    virtual TInt GetInpCpsCount() const = 0;
+	    MDVarGet* GetInp(TInt aInpId, TBool aOpt = EFalse);
+	    virtual Elem::TIfRange GetInps(TInt aId, TBool aOpt = EFalse) = 0;
 	    virtual void OnFuncContentChanged() = 0;
 	    virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...) = 0;
 	    virtual string GetInpUri(TInt aId) const = 0;
@@ -340,11 +340,13 @@ class Func: public Base {
     public:
     Func(Host& aHost): Base(string()), mHost(aHost) {};
     virtual string IfaceGetId() const = 0;
-    virtual void GetResult(string& aResult) const {};
-    virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const {};
+    virtual void GetResult(string& aResult) const { aResult = "<?>";};
+    virtual string GetInpExpType(TInt aId) const { return "<?>";};
+    virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
     virtual TInt GetContCount() const {return 1;};
     MLogRec* Logger() {return mHost.GetAgent()->Logger();};
     Host& mHost;
+    map<MDVarGet*, string> mInps;
 };
 
 // Agent of function of variable type
@@ -363,11 +365,11 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
 	// From Func::Host
-	virtual Elem::TIfRange GetInps(TInt aId);
+	virtual Elem::TIfRange GetInps(TInt aId, TBool aOpt = EFalse);
 	virtual void OnFuncContentChanged();
 	virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...);
 	virtual Elem* GetAgent() {return this;};
-	virtual TInt GetInpsCount() const {return 0;};
+	virtual TInt GetInpCpsCount() const {return -1;};
 	// From Elem
 	virtual void GetCont(string& aCont, const string& aName=string()); 
 	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
@@ -377,6 +379,8 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	virtual string GetInpUri(TInt aId) const;
     protected:
 	void GetContInpTypes(string& aCont) const;
+	void GetContInp(TInt aInd, string& aName, string& aCont) const;
+	TInt GetInpsCount() const;
     protected:
 	Func* mFunc;
 	string mIfaceReq;
@@ -465,6 +469,7 @@ template <class T> class FAddDt: public FAddBase, public MDtGet<T> {
 	virtual string IfaceGetId() const { return MDtGet<T>::Type();};
 	virtual void DtGet(T& aData);
 	virtual void GetResult(string& aResult) const;
+	virtual string GetInpExpType(TInt aId) const;
 	T mRes;
 };
 
@@ -479,7 +484,7 @@ class AFAddVar: public AFunVar
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
-	virtual TInt GetInpsCount() const {return 2;};
+	virtual TInt GetInpCpsCount() const;
     protected:
 	virtual void Init(const string& aIfaceName);
 };
@@ -514,6 +519,8 @@ template <class T> class FMplDt: public FMplBase, public MDtGet<T> {
 	virtual string IfaceGetId() const { return MDtGet<T>::Type();};
 	virtual void DtGet(T& aData);
 	virtual void GetResult(string& aResult) const;
+	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
+	virtual TInt GetContCount() const {return 2;};
 	T mRes;
 };
 
@@ -527,8 +534,8 @@ class AFMplVar: public AFunVar
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Func::Host
-	virtual Elem::TIfRange GetInps(TInt aId);
-	virtual TInt GetInpsCount() const {return 1;};
+	virtual string GetInpUri(TInt aId) const;
+	virtual TInt GetInpCpsCount() const {return 1;};
     protected:
 	virtual void Init(const string& aIfaceName);
 };
@@ -577,7 +584,20 @@ template <class T> class FMplncDt: public FMplncBase, public MDtGet<T> {
 	virtual string IfaceGetId() const { return MDtGet<T>::Type();};
 	virtual void DtGet(T& aData);
 	virtual void GetResult(string& aResult) const;
+	virtual string GetInpExpType(TInt aId) const;
 	T mRes;
+};
+
+// Multiplication, scalar data to matrix
+template <class T> class FMplncScMtr: public FMplncBase, public MDtGet<Mtr<T> > {
+    public:
+	static Func* Create(Host* aHost, const string& aIfaceName);
+	FMplncScMtr(Host& aHost): FMplncBase(aHost) {};
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual string IfaceGetId() const { return MDtGet<Mtr<T> >::Type();};
+	virtual void DtGet(Mtr<T>& aData);
+	virtual void GetResult(string& aResult) const;
+	Mtr<T> mRes;
 };
 
 
@@ -591,8 +611,8 @@ class AFMplncVar: public AFunVar
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Func::Host
-	virtual Elem::TIfRange GetInps(TInt aId);
-	virtual TInt GetInpsCount() const {return 2;};
+	virtual string GetInpUri(TInt aId) const;
+	virtual TInt GetInpCpsCount() const {return 2;};
     protected:
 	virtual void Init(const string& aIfaceName);
 };
@@ -651,7 +671,7 @@ class AFMplinvVar: public AFunVar
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
-	virtual TInt GetInpsCount() const {return 1;};
+	virtual TInt GetInpCpsCount() const {return 1;};
     protected:
 	virtual void Init(const string& aIfaceName);
 };
@@ -669,7 +689,7 @@ class AFCastVar: public AFunVar
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
-	virtual TInt GetInpsCount() const {return 1;};
+	virtual TInt GetInpCpsCount() const {return 1;};
     protected:
 	virtual void Init(const string& aIfaceName);
 };
@@ -700,6 +720,7 @@ template <class T> class FCpsMtrdVect: public Func, public MDtGet<Mtr<T> > {
 	virtual string IfaceGetId() const { return MDtGet<Mtr<T> >::Type();};
 	virtual void DtGet(Mtr<T>& aData);
 	virtual void GetResult(string& aResult) const {mRes.ToString(aResult);};
+	virtual string GetInpExpType(TInt aId) const;
     protected:
 	Mtr<T> mRes;
 };
@@ -715,7 +736,7 @@ class AFCpsMtrdVar: public AFunVar
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
-	virtual TInt GetInpsCount() const {return 1;};
+	virtual TInt GetInpCpsCount() const {return 1;};
     protected:
 	virtual void Init(const string& aIfaceName);
 };
@@ -753,8 +774,8 @@ class AFDivVar: public AFunVar
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Func::Host
-	virtual Elem::TIfRange GetInps(TInt aId);
-	virtual TInt GetInpsCount() const {return 2;};
+	virtual string GetInpUri(TInt aId) const;
+	virtual TInt GetInpCpsCount() const {return 2;};
     protected:
 	virtual void Init(const string& aIfaceName);
 };
@@ -794,8 +815,8 @@ class AFBcmpVar: public AFunVar
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Func::Host
-	virtual Elem::TIfRange GetInps(TInt aId);
-	virtual TInt GetInpsCount() const {return 3;};
+	virtual string GetInpUri(TInt aId) const;
+	virtual TInt GetInpCpsCount() const {return 3;};
     protected:
 	virtual void Init(const string& aIfaceName);
 	FBcmpBase::TFType GetFType();
@@ -816,7 +837,7 @@ class FCmpBase: public Func, public MDtGet<Sdata<bool> >
 	virtual void DtGet(Sdata<bool>& aData);
     protected:
 	TFType mFType;
-	TBool mRes;
+	Sdata<bool> mRes;
 };
 
 template <class T> class FCmp: public FCmpBase
@@ -839,8 +860,8 @@ class AFCmpVar: public AFunVar
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Func::Host
-	virtual Elem::TIfRange GetInps(TInt aId);
-	virtual TInt GetInpsCount() const {return 2;};
+	virtual string GetInpUri(TInt aId) const;
+	virtual TInt GetInpCpsCount() const {return 2;};
     protected:
 	virtual void Init(const string& aIfaceName);
 };
@@ -856,8 +877,8 @@ class AFAtVar: public AFunVar
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Func::Host
-	virtual Elem::TIfRange GetInps(TInt aId);
-	virtual TInt GetInpsCount() const {return 2;};
+	virtual string GetInpUri(TInt aId) const;
+	virtual TInt GetInpCpsCount() const {return 2;};
     protected:
 	virtual void Init(const string& aIfaceName);
 };
@@ -866,7 +887,6 @@ class FAtBase: public Func
 {
     public:
 	FAtBase(Host& aHost): Func(aHost) {};
-	virtual TInt GetContCount() const { return 3;};
 };
 
 // 	Getting component of container: matrix-vector 
@@ -878,7 +898,7 @@ template <class T> class FAtMVect: public FAtBase, public MDtGet<Sdata<T> > {
 	virtual string IfaceGetId() const { return MDtGet<Sdata<T> >::Type();};
 	virtual void DtGet(Sdata<T>& aData);
 	virtual void GetResult(string& aResult) const {mRes.ToString(aResult);};
-	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
+	virtual string GetInpExpType(TInt aId) const;
     protected:
 	Sdata<T> mRes;
 };
@@ -907,7 +927,7 @@ class FAtNTuple: public FAtBase  {
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	virtual string IfaceGetId() const;
 	virtual void GetResult(string& aResult) const {if (mRes != NULL) mRes->ToString(aResult);};
-	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
+	virtual string GetInpExpType(TInt aId) const;
 	void GetField();
     protected:
 	DtBase* mRes;
@@ -925,8 +945,6 @@ class AFCpsVectVar: public AFunVar
 	AFCpsVectVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	TInt GetInd(TInt aInpId);
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
-	// From Func::Host
-	virtual TInt GetInpsCount() const;
     protected:
 	virtual void Init(const string& aIfaceName);
 };
@@ -940,6 +958,7 @@ template <class T> class FCpsVect: public Func, public MDtGet<Mtr<T> > {
 	virtual string IfaceGetId() const { return MDtGet<Mtr<T> >::Type();};
 	virtual void DtGet(Mtr<T>& aData);
 	virtual void GetResult(string& aResult) const {mRes.ToString(aResult);};
+	virtual string GetInpExpType(TInt aId) const;
     protected:
 	Mtr<T> mRes;
 };
@@ -954,9 +973,11 @@ class AFSwitchVar: public AFunVar
 	AFSwitchVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From AFunVar
+	virtual void *DoGetDObj(const char *aName);
 	// From Func::Host
-	virtual Elem::TIfRange GetInps(TInt aId);
-	virtual TInt GetInpsCount() const {return 2;};
+	virtual string GetInpUri(TInt aId) const;
+	virtual TInt GetInpCpsCount() const {return 3;};
     protected:
 	virtual void Init(const string& aIfaceName);
 };
@@ -977,6 +998,7 @@ class FSwitchBool: public FSwithcBase, public MDVarGet
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	    virtual string IfaceGetId() const { return MDVarGet::Type();};
 	MDVarGet* GetCase() const;
+	virtual string GetInpExpType(TInt aId) const;
 	// From MDVarGet
 	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
@@ -996,7 +1018,7 @@ class AFBoolNegVar: public AFunVar
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
-	virtual TInt GetInpsCount() const {return 1;};
+	virtual TInt GetInpCpsCount() const {return 1;};
     protected:
 	virtual void Init(const string& aIfaceName);
 };

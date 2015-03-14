@@ -46,6 +46,11 @@ TBool DtBase::IsDataFit(const DtBase& aData, const string& aTypeSig)
     return  aData.mValid && aData.GetTypeSig() == aTypeSig;
 }
 
+string DtBase::ToString() const
+{
+    string res; ToString(res); return res;
+}
+
 void DtBase::ToString(string& aString) const
 {
     stringstream ss;
@@ -276,6 +281,41 @@ MtrBase& MtrBase::operator+=(const MtrBase& b)
     return *this;
 }
 
+MtrBase& MtrBase::operator-=(const MtrBase& b)
+{
+    TBool res = ETrue;
+    if (mDim == b.mDim) {
+	for (TInt cntr = 0; cntr < mDim.first; cntr++) {
+	    for (TInt cntc = 0; cntc < mDim.second; cntc++) {
+		TInt cnt = mDim.second*cntr + cntc;
+		SubElem(b, cntr, cntc);
+	    }
+	}
+    }
+    else {
+	res = EFalse;
+    }
+    if (mValid != res) { mValid = res; }
+    return *this;
+}
+
+
+MtrBase& MtrBase::Mpl(const void* b)
+{
+    if (mValid) {
+	if (mType == EMt_Diagonal) {
+	    for (TInt r = 0; r < mDim.first; r++) {
+		MplElem(r, r, b);
+	    }
+	} else {
+	    for (TInt r = 0; r < mDim.first; r++) {
+		for (TInt c = 0; c < mDim.second; c++) {
+		    MplElem(r, c, b);
+		}
+	    }
+	}
+    }
+}
 
 MtrBase& MtrBase::Mpl(const MtrBase& a, const MtrBase& b) 
 {
@@ -335,6 +375,35 @@ MtrBase& MtrBase::Mpl(const MtrBase& a, const MtrBase& b)
     }
 }
 
+void MtrBase::SetMplncArg1Hint(const DtBase& res, const DtBase& arg2)
+{
+    if (res.mValid) {
+	const MtrBase* mres = dynamic_cast<const MtrBase*>(&res);
+	__ASSERT(mres != NULL);
+	mDim.first = mres->mDim.first;
+	mValid = true;
+    }
+    if (arg2.mValid) {
+	const MtrBase* marg2 = dynamic_cast<const MtrBase*>(&arg2);
+	__ASSERT(marg2 != NULL);
+	mDim.second = marg2->mDim.second;
+    }
+}
+
+void MtrBase::SetMplncArg2Hint(const DtBase& res, const DtBase& arg1)
+{
+    if (res.mValid) {
+	const MtrBase* mres = dynamic_cast<const MtrBase*>(&res);
+	__ASSERT(mres != NULL);
+	mDim.second = mres->mDim.second;
+	mValid = true;
+    }
+    if (arg1.mValid) {
+	const MtrBase* marg1 = dynamic_cast<const MtrBase*>(&arg1);
+	__ASSERT(marg1 != NULL);
+	mDim.first = marg1->mDim.second;
+    }
+}
 
 MtrBase& MtrBase::Invm(const MtrBase& a)
 {

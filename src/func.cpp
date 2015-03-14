@@ -1243,7 +1243,7 @@ void *AFunVar::DoGetDObj(const char *aName)
     return res;
 }
 
-Elem::TIfRange AFunVar::GetInps(TInt aId)
+Elem::TIfRange AFunVar::GetInps(TInt aId, TBool aOpt)
 {
     TIfRange res;
     Elem* inp = GetNode("./../../Capsule/" + GetInpUri(aId));
@@ -1251,7 +1251,7 @@ Elem::TIfRange AFunVar::GetInps(TInt aId)
 	RqContext cont(this);
 	res =  inp->GetIfi(MDVarGet::Type(), &cont);
     }
-    else {
+    else if (!aOpt) {
 	Logger()->Write(MLogRec::EErr, this, "Cannot get input [%s]", GetInpUri(aId).c_str());
     }
     return res;
@@ -1284,20 +1284,116 @@ void AFunVar::GetCont(string& aCont, const string& aName)
     }
 }
 
+TInt AFunVar::GetInpsCount() const
+{
+    TInt res = 0;
+    TInt cpscnt = GetInpCpsCount();
+    for (TInt ind = 0; ind < cpscnt || cpscnt == -1; ind++) {
+	Elem::TIfRange range = ((AFunVar*) this)->GetInps(ind);
+	if (range.first == range.second) {
+	    if (cpscnt == -1) break;
+	    else {
+		res++;
+		continue;
+	    }
+	}
+	for (Elem::IfIter it = range.first; it != range.second; it++) {
+	    res++;
+	}
+    }
+    return res;
+}
+
+void AFunVar::GetContInp(TInt aInd, string& aName, string& aCont) const
+{
+    TInt cind = 0;
+    TInt cpscnt = GetInpCpsCount();
+    for (TInt ind = 0; ind < cpscnt || cpscnt == -1; ind++) {
+	Elem::TIfRange range = ((AFunVar*) this)->GetInps(ind);
+	if (range.first != range.second) {
+	    TInt cnt = 0;
+	    for (Elem::IfIter it = range.first; it != range.second; it++) {
+		if (cind == aInd) {
+		    MDVarGet* inp = (MDVarGet*) (*it);
+		    // Get name
+		    stringstream ss;
+		    ss <<  "Inp" << Elem::Fmt::mSepContName << GetInpUri(ind);
+		    if (cnt > 0) ss << Elem::Fmt::mSepContName << cnt;
+		    aName = ss.str();
+		    if (mFunc != NULL) {
+			// Get requested iface
+			aCont.append(mFunc->GetInpExpType(ind));
+			// Get value
+			aCont.append(Elem::Fmt::mSepContInp);
+			if (mFunc->mInps.count(inp) > 0) {
+			    aCont.append(mFunc->mInps.at(inp));
+			} else {
+			    aCont.append("<unknown>");
+			}
+			// Get provided iface
+			/*
+			   MDVarGet* inp = (MDVarGet*) (*it);
+			   string ifid;
+			   if (inp != NULL) {
+			   ifid = inp->VarGetIfid();
+			   if (ifid.empty()) ifid = "<?>";
+			   } else {
+			   ifid = "<unknown>";
+			   }
+			   aCont.append(Elem::Fmt::mSepContInp);
+			   aCont.append(ifid);
+			   */
+		    } else {
+			aCont.append("<Init Err>");
+		    }
+		    return;
+		}
+		cnt++;
+		cind++;
+	    }
+	} else {
+	    if (cind == aInd) {
+		// Get name
+		aName = "Inp~ " + GetInpUri(aInd);
+		// Get requested iface
+		aCont.append(mFunc->GetInpExpType(aInd));
+		// Get value
+		aCont.append("<none>");
+		return;
+	    }
+	    if (cpscnt == -1) return;
+	    cind++;
+	}
+    }
+}
+
 void AFunVar::GetContInpTypes(string& aCont) const
 {
-    for (TInt ind = 0; ind < GetInpsCount(); ind++) {
+    for (TInt ind = 0; ind < GetInpCpsCount() || GetInpCpsCount() == -1; ind++) {
 	if (ind != 0) {
 	    aCont.append("; ");
 	}
-	aCont.append(GetInpUri(ind) + ": ");
+	string inp_uri = GetInpUri(ind);
+	if (inp_uri.empty() && GetInpCpsCount() == -1) break;
+	aCont.append(inp_uri + ": ");
 	Elem::TIfRange range = ((AFunVar*) this)->GetInps(ind);
-	for (Elem::IfIter it = range.first; it != range.second; it++) {
-	    if (it != range.first) {
-		aCont.append(", ");
+	if (range.first != range.second) {
+	    for (Elem::IfIter it = range.first; it != range.second; it++) {
+		if (it != range.first) {
+		    aCont.append(", ");
+		}
+		MDVarGet* inp = (MDVarGet*) (*it);
+		string ifid;
+		if (inp != NULL) {
+		    ifid = inp->VarGetIfid();
+		    if (ifid.empty()) ifid = "<?>";
+		} else {
+		    ifid = "<unknown>";
+		}
+		aCont.append(ifid);
 	    }
-	    MDVarGet* inp = (MDVarGet*) (*it);
-	    aCont.append((inp != NULL) ? inp->VarGetIfid() : "None");
+	} else {
+	    aCont.append("<none>");
 	}
     }
 }
@@ -1305,25 +1401,41 @@ void AFunVar::GetContInpTypes(string& aCont) const
 TBool AFunVar::GetCont(TInt aInd, string& aName, string& aCont) const
 {
     if (aInd == 0) {
-	aName = "Outp_Iface";
-	aCont = mIfaceReq;
+	if (mFunc != NULL) {
+	    mFunc->GetResult(aCont);
+	} else { aCont = "Init ERR"; }
     } else if (aInd == 1) {
+	aName = "OutpType";
+	aCont = mIfaceReq;
+    } else if (aInd == 2) {
 	aName = "InpsTypes";
 	GetContInpTypes(aCont);
+    } else if (aInd > 2) {
+	TInt inpscnt = GetInpsCount();
+	if (aInd - 3 < inpscnt) {
+	    GetContInp(aInd - 3, aName, aCont);
+	} else if (mFunc != NULL) {
+	    mFunc->GetCont(aInd - 3 - inpscnt, aName, aCont);
+	} 
     }
-    else if (mFunc != NULL) {
-	mFunc->GetCont(aInd, aName, aCont);
-    } 
 }
 
 TInt AFunVar::GetContCount() const
 {
-    TInt res = 2;
+    TInt res = 3 + GetInpsCount();
     if (mFunc != NULL) {
 	res += mFunc->GetContCount();
     }
     return res;
 }
+
+TBool Func::GetCont(TInt aInd, string& aName, string& aCont) const
+{
+    if (aInd == 0) {
+	aName = "Result";
+	GetResult(aCont);
+    }
+};
 
 // Addintion, variable 
 string AFAddVar::PEType()
@@ -1377,8 +1489,17 @@ void AFAddVar::Init(const string& aIfaceName)
 string AFAddVar::GetInpUri(TInt aId) const 
 {
     if (aId == FAddBase::EInp) return "Inp";
+    else if (aId == FAddBase::EInpN) return "InpN";
     else return string();
 }
+
+TInt AFAddVar::GetInpCpsCount() const
+{
+    TInt res = 1;
+    if (((AFunVar*) this)->GetInp(FAddBase::EInpN, ETrue) != NULL) res = 2;
+    return res;
+}
+
 
 // Int function
 Func* FAddInt::Create(Host* aHost, const string& aString)
@@ -1601,10 +1722,10 @@ template<class T> void FAddVect<T>::GetResult(string& aResult) const
     aResult = ss.str();
 }
 
-MDVarGet* Func::Host::GetInp(TInt aInpId)
+MDVarGet* Func::Host::GetInp(TInt aInpId, TBool aOpt)
 {
     MDVarGet* res = NULL;
-    Elem::TIfRange inpr = GetInps(aInpId);
+    Elem::TIfRange inpr = GetInps(aInpId, aOpt);
     if (inpr.first != inpr.second) {
 	res = (MDVarGet*) *inpr.first;
     }
@@ -1696,19 +1817,19 @@ template<class T> void FAddMtr<T>::MtrGet(Mtr<T>& aData)
 		    }
 		}
 		else {
-		    mHost.LogWrite(MLogRec::EErr, "Incorrect dimensions of argument [%s]", mHost.GetInpUri(EInp).c_str());
+		    Logger()->Write(MLogRec::EErr, mHost.GetAgent(), "Incorrect dimensions of argument [%s]",  mHost.GetInpUri(EInp).c_str());
 		    res = EFalse;
 		    break;
 		}
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
+		Logger()->Write(MLogRec::EErr, mHost.GetAgent(), "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
 		res = EFalse;
 		break;
 	    }
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]",  mHost.GetInpUri(EInp).c_str());
+	    Logger()->Write(MLogRec::EErr, mHost.GetAgent(), "Non-matrix argument  [%s]",  mHost.GetInpUri(EInp).c_str());
 	    res = EFalse;
 	    break;
 	}
@@ -1767,6 +1888,7 @@ template<class T> void FAddDt<T>::DtGet(T& aData)
 	if (dfget != NULL) {
 	    T arg = aData;
 	    dfget->DtGet(arg);
+	    mInps[dget] = arg.DtBase::ToString();
 	    if (arg.mValid) {
 		if (it == range.first) {
 		    aData = arg;
@@ -1776,12 +1898,33 @@ template<class T> void FAddDt<T>::DtGet(T& aData)
 		}
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
+		Logger()->Write(MLogRec::EErr, mHost.GetAgent(), "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
 		res = EFalse; break;
 	    }
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Incompatible argument [%s]",  mHost.GetInpUri(EInp).c_str());
+	    Logger()->Write(MLogRec::EErr, mHost.GetAgent(), "Incompatible argument [%s]",  mHost.GetInpUri(EInp).c_str());
+	    res = EFalse; break;
+	}
+    }
+    range = mHost.GetInps(EInpN, ETrue);
+    for (Elem::IfIter it = range.first; it != range.second; it++) {
+	MDVarGet* dget = (MDVarGet*) (*it);
+	MDtGet<T>* dfget = dget->GetDObj(dfget);
+	if (dfget != NULL) {
+	    T arg = aData;
+	    dfget->DtGet(arg);
+	    mInps[dget] = arg.DtBase::ToString();
+	    if (arg.mValid) {
+		aData -= arg;
+	    }
+	    else {
+		Logger()->Write(MLogRec::EErr, mHost.GetAgent(), "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
+		res = EFalse; break;
+	    }
+	}
+	else {
+	    Logger()->Write(MLogRec::EErr, mHost.GetAgent(), "Incompatible argument [%s]",  mHost.GetInpUri(EInp).c_str());
 	    res = EFalse; break;
 	}
     }
@@ -1796,6 +1939,16 @@ template<class T> void FAddDt<T>::GetResult(string& aResult) const
 {
     mRes.ToString(aResult);
 }
+
+template <class T> string FAddDt<T>::GetInpExpType(TInt aId) const
+{
+    string res;
+    if (aId == EInp) {
+	res = MDtGet<T>::Type();
+    }
+    return res;
+}
+
 
 // Composing vector from components
 
@@ -1838,12 +1991,6 @@ void AFCpsVectVar::Init(const string& aIfaceName)
     else if ((mFunc = FCpsVect<float>::Create(this, aIfaceName)) != NULL);
 }
 
-TInt AFCpsVectVar::GetInpsCount() const
-{
-    TInt res = 0;
-    return res;
-}
-
 // Composing vector from components: float
 template<class T> Func* FCpsVect<T>::Create(Host* aHost, const string& aString)
 {
@@ -1864,7 +2011,11 @@ template<class T> void *FCpsVect<T>::DoGetObj(const char *aName, TBool aIncUpHie
 template<class T> void FCpsVect<T>::DtGet(Mtr<T>& aData)
 {
     TBool res = ETrue;
-    if (aData.mDim.second == 1) {
+    if (aData.mDim.second == 1 && (aData.mType == MtrBase::EMt_Unknown || aData.mType == MtrBase::EMt_Regular)) {
+	if (aData.mType == MtrBase::EMt_Unknown) {
+	    aData.mType = MtrBase::EMt_Regular;
+	    aData.SetIntSize(aData.mDim.first*aData.mDim.second);
+	}
 	for (TInt cnt = 0; cnt < aData.mDim.first && res; cnt++) {
 	    MDVarGet* vinp = mHost.GetInp(EInp1 + cnt);
 	    if (vinp != NULL) {
@@ -1872,6 +2023,9 @@ template<class T> void FCpsVect<T>::DtGet(Mtr<T>& aData)
 		if (inp != NULL) {
 		    Sdata<T> arg;
 		    inp->DtGet(arg);
+		    string inpv;
+		    arg.ToString(inpv);
+		    mInps[vinp] = inpv;
 		    if (arg.mValid) {
 			aData.Elem(cnt, 0) = arg.mData;
 		    }
@@ -1900,6 +2054,11 @@ template<class T> void FCpsVect<T>::DtGet(Mtr<T>& aData)
 	mRes = aData;
 	mHost.OnFuncContentChanged();
     }
+}
+
+template<class T> string FCpsVect<T>::GetInpExpType(TInt aId) const
+{
+    return MDtGet<Sdata<T> >::Type();
 }
 
 
@@ -1943,14 +2102,9 @@ void AFMplVar::Init(const string& aIfaceName)
     else if ((mFunc = FMplDt<Sdata<bool> >::Create(this, aIfaceName)) != NULL);
 }
 
-Elem::TIfRange AFMplVar::GetInps(TInt aId)
+string AFMplVar::GetInpUri(TInt aId) const
 {
-    if (aId == FAddBase::EInp) {
-	Elem* inp = GetNode("./../../Capsule/Inp");
-	__ASSERT(inp != NULL);
-	RqContext cont(this);
-	return inp->GetIfi(MDVarGet::Type(), &cont);
-    }
+    if (aId == FAddBase::EInp) return "Inp"; else return string();
 }
 
 // Multiplication, variable type - Float function
@@ -2014,6 +2168,32 @@ template<class T> void *FMplDt<T>::DoGetObj(const char *aName, TBool aIncUpHier,
     void* res = NULL;
     if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
     return res;
+}
+
+template<class T> TBool FMplDt<T>::GetCont(TInt aInd, string& aName, string& aCont) const
+{
+    if (aInd == 0) {
+	FMplBase::GetCont(aInd, aName, aCont);
+    } else if (aInd == 1) {
+	// Inputs values
+	aName = "Inp_values";
+	aCont.append(mHost.GetInpUri(EInp) + ": ");
+	Elem::TIfRange range = mHost.GetInps(EInp);
+	for (Elem::IfIter it = range.first; it != range.second; it++) {
+	    if (it != range.first) {
+		aCont.append(", ");
+	    }
+	    MDVarGet* dget = (MDVarGet*) (*it);
+	    MDtGet<T>* dfget = dget->GetDObj(dfget);
+	    if (dfget != NULL) {
+		T arg;
+		dfget->DtGet(arg);
+		string args;
+		arg.ToString(args);
+		aCont.append(args);
+	    }
+	}
+    }
 }
 
 template<class T> void FMplDt<T>::DtGet(T& aData)
@@ -2097,25 +2277,14 @@ void AFMplncVar::Init(const string& aIfaceName)
     //else if ((mFunc = FMplMtr<float>::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FMplncDt<Mtr<float> >::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FMplncDt<Mtr<int> >::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FMplncScMtr<float>::Create(this, aIfaceName)) != NULL);
 }
 
-Elem::TIfRange AFMplncVar::GetInps(TInt aId)
+string AFMplncVar::GetInpUri(TInt aId) const
 {
-    Elem::TIfRange res;
-    string uri;
-    if (aId == FMplncBase::EInp1) {
-	uri = "./../../Capsule/Inp1";
-    }
-    else if (aId == FMplncBase::EInp2) { 
-	uri = "./../../Capsule/Inp2";
-    }
-    if (!uri.empty()) {
-	Elem* inp = GetNode(uri);
-	__ASSERT(inp != NULL);
-	RqContext cont(this);
-	res = inp->GetIfi(MDVarGet::Type(), &cont);
-    }
-    return res;
+    if (aId == FMplncBase::EInp1) return "Inp1";
+    else if (aId == FMplncBase::EInp2) return "Inp2";
+    else return string();
 }
 
 // Multiplication, diag matrix * vector
@@ -2281,8 +2450,25 @@ template<class T> Func* FMplncDt<T>::Create(Host* aHost, const string& aString)
 {
     Func* res = NULL;
     if (aString == MDtGet<T>::Type()) {
-	res = new FMplncDt<T>(*aHost);
+	MDVarGet* vget = aHost->GetInp(EInp1);
+	if (vget != NULL) {
+	    MDtGet<T>* a1 = vget->GetDObj(a1);
+	    if (a1 != NULL) {
+		res = new FMplncDt<T>(*aHost);
+	    }
+	}
+    } else {
+	// Weak negotiation - just base on input type
+	MDVarGet* vget = aHost->GetInp(EInp1);
+	MDVarGet* vget2 = aHost->GetInp(EInp2);
+	string ss = vget->VarGetIfid();
+	bool ssb = ss == MDtGet<T>::Type();
+	if (vget != NULL && vget->VarGetIfid() == MDtGet<T>::Type() &&
+		vget2 != NULL && vget2->VarGetIfid() == MDtGet<T>::Type()) {
+	    res = new FMplncDt<T>(*aHost);
+	}
     }
+
     return res;
 }
 
@@ -2301,14 +2487,18 @@ template<class T> void FMplncDt<T>::DtGet(T& aData)
     if (range1.first != range1.second && range2.first != range2.second) {
 	MDVarGet* dget = (MDVarGet*) (*range1.first);
 	MDtGet<T>* dfget1 = dget->GetDObj(dfget1);
-	dget = (MDVarGet*) (*range2.first);
-	MDtGet<T>* dfget2 = dget->GetDObj(dfget2);
+	MDVarGet* dget2 = (MDVarGet*) (*range2.first);
+	MDtGet<T>* dfget2 = dget2->GetDObj(dfget2);
 	if (dfget1 != NULL && dfget2 != NULL) {
 	    aData.mValid = ETrue;
 	    T arg1;
 	    T arg2;
+	    arg1.SetMplncArg1Hint(aData, arg2);
 	    dfget1->DtGet(arg1);
+	    mInps[dget] = arg1.DtBase::ToString();
+	    arg2.SetMplncArg2Hint(aData, arg1);
 	    dfget2->DtGet(arg2);
+	    mInps[dget2] = arg2.DtBase::ToString();
 	    if (arg1.mValid && arg2.mValid) {
 		aData.Mpl(arg1, arg2);
 		res = aData.mValid;
@@ -2335,7 +2525,78 @@ template<class T> void FMplncDt<T>::GetResult(string& aResult) const
     mRes.ToString(aResult);
 }
 
+template <class T> string FMplncDt<T>::GetInpExpType(TInt aId) const
+{
+    string res;
+    if (aId == EInp1 || aId == EInp2) {
+	res = MDtGet<T>::Type();
+    }
+    return res;
+}
 
+
+
+// Mutltiplication non-commutative, scalar to matrix
+template<class T> Func* FMplncScMtr<T>::Create(Host* aHost, const string& aString)
+{
+    Func* res = NULL;
+    if (aString == MDtGet<Mtr<T> >::Type()) {
+	MDVarGet* vget = aHost->GetInp(EInp1);
+	if (vget != NULL) {
+	    MDtGet<Sdata<T> >* sd = vget->GetDObj(sd);
+	    if (sd != NULL) {
+		res = new FMplncScMtr<T>(*aHost);
+	    }
+	}
+    }
+    return res;
+}
+
+template<class T> void *FMplncScMtr<T>::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, MDtGet<Mtr<T> >::Type()) == 0) res = (MDtGet<Mtr<T> >*) this;
+    return res;
+}
+
+template<class T> void FMplncScMtr<T>::DtGet(Mtr<T>& aData)
+{
+    TBool res = ETrue;
+    MDVarGet* dget = mHost.GetInp(EInp1);
+    MDtGet<Sdata<T> >* dfget1 = dget->GetDObj(dfget1);
+    dget = mHost.GetInp(EInp2);
+    MDtGet<Mtr<T> >* dfget2 = dget->GetDObj(dfget2);
+    if (dfget1 != NULL && dfget2 != NULL) {
+	aData.mValid = ETrue;
+	Sdata<T> arg1;
+	Mtr<T> arg2 = aData;
+	dfget1->DtGet(arg1);
+	dfget2->DtGet(arg2);
+	if (arg1.mValid && arg2.mValid) {
+	    aData = arg2;
+	    aData.Mpl(&(arg1.mData));
+	    res = aData.mValid;
+	}
+	else {
+	    mHost.LogWrite(MLogRec::EErr, "Incorrect argument");
+	    res = EFalse;
+	}
+    }
+    else {
+	mHost.LogWrite(MLogRec::EErr, "Non-compatible argument");
+	res = EFalse;
+    }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
+}
+
+template<class T> void FMplncScMtr<T>::GetResult(string& aResult) const
+{
+    mRes.ToString(aResult);
+}
 
 // Inversion for multiplication operation, variable
 string AFMplinvVar::PEType()
@@ -2376,6 +2637,7 @@ void AFMplinvVar::Init(const string& aIfaceName)
     //if ((mFunc = FMplinvMtrd<float>::Create(this, aIfaceName)) != NULL);
     //if ((mFunc = FMplinvMtr<float>::Create(this, aIfaceName)) != NULL);
     if ((mFunc = FMplinvDt<Mtr<float> >::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FMplinvDt<Sdata<float> >::Create(this, aIfaceName)) != NULL);
 }
 
 string AFMplinvVar::GetInpUri(TInt aId) const 
@@ -2508,7 +2770,13 @@ template<class T> Func* FMplinvDt<T>::Create(Host* aHost, const string& aString)
 {
     Func* res = NULL;
     if (aString == MDtGet<T>::Type()) {
-	res = new FMplinvDt<T>(*aHost);
+	MDVarGet* vget = aHost->GetInp(EInp);
+	if (vget != NULL) {
+	    MDtGet<T>* a1 = vget->GetDObj(a1);
+	    if (a1 != NULL) {
+		res = new FMplinvDt<T>(*aHost);
+	    }
+	}
     }
     return res;
 }
@@ -2609,6 +2877,7 @@ void AFCastVar::Init(const string& aIfaceName)
     if (!ifi.empty()) {
 	if ((mFunc = FCastDt<Mtr<int> , Mtr<float> >::Create(this, aIfaceName, ifi)) != NULL);
 	else if ((mFunc = FCastDt<Mtr<float> , Mtr<int> >::Create(this, aIfaceName, ifi)) != NULL);
+	else if ((mFunc = FCastDt<Sdata<float> , Sdata<int> >::Create(this, aIfaceName, ifi)) != NULL);
     }
 }
 
@@ -2641,11 +2910,12 @@ template<class T, class TA> void FCastDt<T, TA>::DtGet(T& aData)
     MDVarGet* dget = mHost.GetInp(EInp1);
     MDtGet<TA>* dfget = dget->GetDObj(dfget);
     if (dfget != NULL) {
-	TA arg;
+	TA arg = aData;
 	dfget->DtGet(arg);
 	if (arg.mValid) {
 	    aData.mValid = ETrue;
-	    aData.CastDown(arg);
+	    aData = arg;
+	    //aData.CastDown(arg);
 	    res = aData.mValid;
 	}
 	else {
@@ -2770,6 +3040,16 @@ template<class T> void FCpsMtrdVect<T>::DtGet(Mtr<T>& aData)
     }
 }
 
+template <class T> string FCpsMtrdVect<T>::GetInpExpType(TInt aId) const
+{
+    string res;
+    if (aId == EInp1) {
+	res = MDtGet<Mtr<T> >::Type();
+    }
+    return res;
+}
+
+
 
 // Division, variable
 string AFDivVar::PEType()
@@ -2810,14 +3090,11 @@ void AFDivVar::Init(const string& aIfaceName)
     if ((mFunc = FDivFloat::Create(this, aIfaceName)) != NULL);
 }
 
-Elem::TIfRange AFDivVar::GetInps(TInt aId)
+string AFDivVar::GetInpUri(TInt aId) const
 {
-    if (aId == FAddBase::EInp) {
-	Elem* inp = GetNode("./../../Capsule/Inp");
-	__ASSERT(inp != NULL);
-	RqContext cont(this);
-	return inp->GetIfi(MDVarGet::Type(), &cont);
-    }
+    if (aId == FDivBase::EInp) return "Inp";
+    else if (aId == FDivBase::EInp_Dvs) return "Inp_Dvs";
+    else return string();
 }
 
 // Division, variable type - Float function
@@ -3023,14 +3300,11 @@ void AFBcmpVar::Init(const string& aIfaceName)
     }
 }
 
-Elem::TIfRange AFBcmpVar::GetInps(TInt aId)
+string AFBcmpVar::GetInpUri(TInt aId) const
 {
-    __ASSERT(aId == FBcmpBase::EInp_1 || aId == FBcmpBase::EInp_2);
-    Elem* inp = NULL;
-    inp = GetNode(aId == FBcmpBase::EInp_1 ? "./../../Capsule/Inp1" : "./../../Capsule/Inp2");
-    __ASSERT(inp != NULL);
-    RqContext cont(this);
-    return inp->GetIfi(MDVarGet::Type(), &cont);
+    if (aId == FBcmpBase::EInp_1) return "Inp1";
+    else if (aId == FBcmpBase::EInp_2) return "Inp2";
+    else return string();
 }
 
 FBcmpBase::TFType AFBcmpVar::GetFType()
@@ -3092,26 +3366,23 @@ void AFCmpVar::Init(const string& aIfaceName)
 	if ((mFunc = FCmp<Sdata<int> >::Create(this, t1, t2, ftype)) != NULL);
 	else if ((mFunc = FCmp<Enum>::Create(this, t1, t2, ftype)) != NULL);
 	/* Debuggng
-	if (mFunc != NULL) {
-	    //Func* func = new FCmpBase(*this, ftype);
-	    Func* func = new FCmp<Sdata<bool> >(*this, ftype);
-	    MDtGet<Sdata<bool> >* fget = func->GetObj(fget);
-	    //MDtGet<Sdata<bool> >* fget = mFunc->GetObj(fget);
-	    Sdata<bool> data;
-	    fget->DtGet(data);
+	   if (mFunc != NULL) {
+	//Func* func = new FCmpBase(*this, ftype);
+	Func* func = new FCmp<Sdata<bool> >(*this, ftype);
+	MDtGet<Sdata<bool> >* fget = func->GetObj(fget);
+	//MDtGet<Sdata<bool> >* fget = mFunc->GetObj(fget);
+	Sdata<bool> data;
+	fget->DtGet(data);
 	}
 	*/
     }
 }
 
-Elem::TIfRange AFCmpVar::GetInps(TInt aId)
+string AFCmpVar::GetInpUri(TInt aId) const
 {
-    __ASSERT(aId == Func::EInp1 || aId == Func::EInp2);
-    Elem* inp = NULL;
-    inp = GetNode(aId == Func::EInp1 ? "./../../Capsule/Inp1" : "./../../Capsule/Inp2");
-    __ASSERT(inp != NULL);
-    RqContext cont(this);
-    return inp->GetIfi(MDVarGet::Type(), &cont);
+    if (aId == Func::EInp1) return "Inp1";
+    else if (aId == Func::EInp2) return "Inp2";
+    else return string();
 }
 
 FCmpBase::TFType AFCmpVar::GetFType()
@@ -3142,7 +3413,7 @@ string FCmpBase::IfaceGetId() const
 
 void FCmpBase::GetResult(string& aResult) const
 {
-    stringstream ss; ss << std::boolalpha << mRes; aResult = ss.str();
+    mRes.ToString(aResult);
 }
 
 void *FCmpBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
@@ -3168,6 +3439,7 @@ template <class T> Func* FCmp<T>::Create(Host* aHost, const string& aInp1Iid, co
 
 template <class T> void FCmp<T>::DtGet(Sdata<bool>& aData)
 {
+    TBool res = ETrue;
     MDVarGet* av1 = mHost.GetInp(EInp1);
     MDVarGet* av2 = mHost.GetInp(EInp2);
     if (av1 != NULL && av2 != NULL) {
@@ -3185,15 +3457,18 @@ template <class T> void FCmp<T>::DtGet(Sdata<bool>& aData)
 		else if (mFType == EGt) res = arg1 > arg2;
 		else if (mFType == EGe) res = arg1 >= arg2;
 		aData.Set(res);
-		mRes = res;
-		mHost.OnFuncContentChanged();
 	    }
 	    else {
-		aData.mValid = EFalse;
-		mHost.OnFuncContentChanged();
+		res = EFalse;
 	    }
 	}
     }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
+
 }
 
 
@@ -3241,17 +3516,29 @@ void AFAtVar::Init(const string& aIfaceName)
 	if ((mFunc = FAtMVect<float>::Create(this, aIfaceName, t1)) != NULL);
 	else if ((mFunc = FAtMVect<int>::Create(this, aIfaceName, t1)) != NULL);
 	else if ((mFunc = FAtNTuple::Create(this, t1, tind)) != NULL);
+	else {
+	    LogWrite(MLogRec::EErr, "Init error, outp_iface [%s], inp_iface", aIfaceName.c_str(), t1.c_str());
+	}
     }
 }
 
-Elem::TIfRange AFAtVar::GetInps(TInt aId)
+/*
+   Elem::TIfRange AFAtVar::GetInps(TInt aId)
+   {
+   __ASSERT(aId == Func::EInp1 || aId == Func::EInp2);
+   Elem* inp = NULL;
+   inp = GetNode(aId == Func::EInp1 ? "./../../Capsule/Inp" : "./../../Capsule/Index");
+   __ASSERT(inp != NULL);
+   RqContext cont(this);
+   return inp->GetIfi(MDVarGet::Type(), &cont);
+   }
+   */
+
+string AFAtVar::GetInpUri(TInt aId) const
 {
-    __ASSERT(aId == Func::EInp1 || aId == Func::EInp2);
-    Elem* inp = NULL;
-    inp = GetNode(aId == Func::EInp1 ? "./../../Capsule/Inp" : "./../../Capsule/Index");
-    __ASSERT(inp != NULL);
-    RqContext cont(this);
-    return inp->GetIfi(MDVarGet::Type(), &cont);
+    if (aId == Func::EInp1) return "Inp";
+    else if (aId == Func::EInp2) return "Index";
+    else return string();
 }
 
 
@@ -3323,30 +3610,15 @@ template <class T> void FAtMVect<T>::DtGet(Sdata<T>& aData)
     }
 }
 
-template <class T> TBool FAtMVect<T>::GetCont(TInt aInd, string& aName, string& aCont) const
+template <class T> string FAtMVect<T>::GetInpExpType(TInt aId) const
 {
-    if (aInd == 2) {
-	aName = "";
-	GetResult(aCont);
+    string res;
+    if (aId == EInp1) {
+	res = MDtGet<Mtr<T> >::Type();
+    } else if (aId == EInp2) {
+	res = MDtGet<Sdata<int> >::Type();
     }
-    else if (aInd == 3) {
-	aName = "Index";
-	MDVarGet* dget = mHost.GetInp(EInp2);
-	MDtGet<Sdata<int> >* diget = dget->GetDObj(diget);
-	if (diget != NULL) {
-	    Sdata<int> ind;
-	    diget->DtGet(ind);
-	    ind.ToString(aCont);
-	}
-    }
-    else if (aInd == 4) {
-	aName = "Input";
-	MDVarGet* dget = mHost.GetInp(EInp1);
-	MDtGet<Mtr<T> >* dfget = dget->GetDObj(dfget);
-	Mtr<T> arg;
-	dfget->DtGet(arg);
-	arg.ToString(aCont);
-    }
+    return res;
 }
 
 
@@ -3456,9 +3728,9 @@ string FAtNTuple::IfaceGetId() const
 	}
     }
     /*
-    DtBase data; 
-    ((FAtNTuple*) this)->GetField(data);
-    */
+       DtBase data; 
+       ((FAtNTuple*) this)->GetField(data);
+       */
     return type;
 }
 
@@ -3479,32 +3751,16 @@ template <class T>  void FAtNTuple::IfProxy<T>::DtGet(T& aData)
     } 
 }
 
-TBool FAtNTuple::GetCont(TInt aInd, string& aName, string& aCont) const
+string FAtNTuple::GetInpExpType(TInt aId) const
 {
-    if (aInd == 2) {
-	aName = "";
-	GetResult(aCont);
+    string res;
+    if (aId == EInp1) {
+	res = MDtGet<NTuple>::Type();
+    } else if (aId == EInp2) {
+	res = MDtGet<Sdata<string> >::Type();
     }
-    else if (aInd == 3) {
-	aName = "Index";
-	MDVarGet* dget = mHost.GetInp(EInp2);
-	MDtGet<Sdata<string> >* diget = dget->GetDObj(diget);
-	if (diget != NULL) {
-	    Sdata<string> ind;
-	    diget->DtGet(ind);
-	    ind.ToString(aCont);
-	}
-    }
-    else if (aInd == 4) {
-	aName = "Input";
-	MDVarGet* dget = mHost.GetInp(EInp1);
-	MDtGet<NTuple>* dfget = dget->GetDObj(dfget);
-	NTuple arg;
-	dfget->DtGet(arg);
-	arg.ToString(aCont);
-    }
+    return res;
 }
-
 
 
 // Boolean case - if
@@ -3525,32 +3781,62 @@ AFSwitchVar::AFSwitchVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
+/*
+   void *AFSwitchVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+   {
+   void* res = NULL;
+   if (strcmp(aName, Type()) == 0) {
+   res = this;
+   }
+   else if (strcmp(aName, MDVarGet::Type()) == 0) {
+   if (mFunc == NULL) {
+   Init(aName);
+   if (mFunc != NULL) {
+   res = mFunc->DoGetObj(aName, aIncUpHier);
+   }
+   }
+   else {
+   res = mFunc->DoGetObj(aName, aIncUpHier);
+   if (res == NULL) {
+   Init(aName);
+   if (mFunc != NULL) {
+   res = mFunc->DoGetObj(aName, aIncUpHier);
+   }
+   }
+   }
+   }
+   else {
+   res = AFunVar::DoGetObj(aName, aIncUpHier);
+   }
+   return res;
+   }
+   */
+
 void *AFSwitchVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
-    }
-    else if (strcmp(aName, MDVarGet::Type()) == 0) {
-	if (mFunc == NULL) {
-	    Init(aName);
-	    if (mFunc != NULL) {
-		res = mFunc->DoGetObj(aName, aIncUpHier);
-	    }
-	}
-	else {
-	    res = mFunc->DoGetObj(aName, aIncUpHier);
-	    if (res == NULL) {
-		Init(aName);
-		if (mFunc != NULL) {
-		    res = mFunc->DoGetObj(aName, aIncUpHier);
-		}
-	    }
-	}
-    }
-    else {
+    } else {
 	res = AFunVar::DoGetObj(aName, aIncUpHier);
     }
+    return res;
+}
+
+void *AFSwitchVar::DoGetDObj(const char *aName)
+{
+    void* res = NULL;
+    // Just translate the request to func
+    if (mFunc == NULL) {
+	Init(MDVarGet::Type());
+    }
+    if (mFunc != NULL) {
+	MDVarGet* vget = mFunc->GetObj(vget);
+	if (vget != NULL) {
+	    res = vget->DoGetDObj(aName);
+	}
+    }
+    mIfaceReq = aName;
     return res;
 }
 
@@ -3569,21 +3855,33 @@ void AFSwitchVar::Init(const string& aIfaceName)
     }
 }
 
-// TODO [YB] It is simpler to use just mapping Func::EInp* to inputs uris
-Elem::TIfRange AFSwitchVar::GetInps(TInt aId)
+string AFSwitchVar::GetInpUri(TInt aId) const
 {
-    Elem* inp = NULL;
-    string inp_uri = "./../../Capsule/Sel";
-    if (aId != Func::EInp1) {
+    if (aId == Func::EInp1) return "Sel";
+    else {
 	stringstream ss;
-	ss <<  "./../../Capsule/Inp" << (aId - Func::EInp1);
-	inp_uri = ss.str();
+	ss <<  "Inp" << (aId - Func::EInp1);
+	return ss.str();
     }
-    inp = GetNode(inp_uri);
-    __ASSERT(inp != NULL);
-    RqContext cont(this);
-    return inp->GetIfi(MDVarGet::Type(), &cont);
 }
+
+// TODO [YB] It is simpler to use just mapping Func::EInp* to inputs uris
+/*
+   Elem::TIfRange AFSwitchVar::GetInps(TInt aId)
+   {
+   Elem* inp = NULL;
+   string inp_uri = "./../../Capsule/Sel";
+   if (aId != Func::EInp1) {
+   stringstream ss;
+   ss <<  "./../../Capsule/Inp" << (aId - Func::EInp1);
+   inp_uri = ss.str();
+   }
+   inp = GetNode(inp_uri);
+   __ASSERT(inp != NULL);
+   RqContext cont(this);
+   return inp->GetIfi(MDVarGet::Type(), &cont);
+   }
+   */
 
 // Case - commutation of inputs
 Func* FSwitchBool::Create(Host* aHost, const string& aOutIid, const string& aInpIid)
@@ -3621,6 +3919,7 @@ TBool FSwitchBool::GetCtrl() const
 	    if (getif != NULL) {
 		Sdata<bool> data;
 		getif->DtGet(data);
+		((Func*) this)->mInps[iv] = data.DtBase::ToString();
 		if (data.mValid) {
 		    res = data.mData;
 		}
@@ -3648,6 +3947,17 @@ void *FSwitchBool::DoGetDObj(const char *aName)
 {
     MDVarGet* cs = GetCase();
     return cs != NULL ? cs->DoGetDObj(aName) : NULL;
+}
+
+string FSwitchBool::GetInpExpType(TInt aId) const
+{
+    string res;
+    if (aId == EInp_Sel) {
+	res = MDtGet<Sdata<bool> >::Type();
+    } else {
+	res = "<any>";
+    }
+    return res;
 }
 
 

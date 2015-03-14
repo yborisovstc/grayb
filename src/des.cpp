@@ -391,7 +391,7 @@ string ATrVar::GetInpUri(TInt aId) const
     else return string();
 }
 
-Elem::TIfRange ATrVar::GetInps(TInt aId)
+Elem::TIfRange ATrVar::GetInps(TInt aId, TBool aOpt)
 {
     TIfRange res;
     Elem* inp = GetNode("./../../" + GetInpUri(aId));
@@ -399,7 +399,7 @@ Elem::TIfRange ATrVar::GetInps(TInt aId)
 	RqContext cont(this);
 	res =  inp->GetIfi(MDVarGet::Type(), &cont);
     }
-    else {
+    else if (!aOpt) {
 	Logger()->Write(MLogRec::EErr, this, "Cannot get input [%s]", GetInpUri(aId).c_str());
     }
     return res;

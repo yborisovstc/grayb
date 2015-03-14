@@ -125,6 +125,16 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	IterImplBase* iImpl;
     };
 
+    public:
+	// Formatter
+	class Fmt 
+	{
+	    public:
+	    // Separator of content inputs info
+	    static string mSepContInp;
+	    // Separator of parts of content name
+	    static string mSepContName;
+	};
 
     public:
 	static const char* Type() { return "Elem";};

@@ -9,7 +9,7 @@
 	<author><personname><firstname>Yuri</firstname><surname>Borisov</surname></personname>
 	    <email>yuri.borisov.v@gmail.com</email></author> 
 
-	<releaseinfo>Ver.0.09 at 29-Sep-2014</releaseinfo>
+	<releaseinfo>Ver.0.11 at 08-Mar-2015</releaseinfo>
 
 	<abstract>
 	    <simpara>This document collects use-cases and software desing for Discrete Events System framework ver 2.</simpara>
@@ -36,6 +36,8 @@
 		<revremark>Added <xref linkend="ds_transp"/></revremark> </revision>
 	    <revision> <revnumber>0.10</revnumber> <date>26-Oct-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="ds_agt_data"/></revremark> </revision>
+	    <revision> <revnumber>0.11</revnumber> <date>08-Mar-2015</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="ds_ifnegot"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -1024,6 +1026,33 @@
 		    </listitem>
 		</orderedlist>
 	    </sect3>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_ifnegot"><title>Agents interaction: interfaces negotiation</title>
+	<sect2><title>Introduction</title>
+	    <simpara>It isn't rare case that just connection establishing is not enough for agents interaction. This happens when the agent suppots 
+		more that one interface to interact and it isn't suitable to specify the particular iface on connection phase. Example is function agent supporting
+		variable type data. The agent is capable to handle more that one type of data. Why is such agent needed? This allows to avoid creating
+		multiple similar agents, for instance agent for addition function of integer data, agent for addition function of float data etc. All these
+		agents would have similar connections points set, so it seems more resonable to have agent that can supports all the types of data. </simpara>
+	    <simpara>The same for data. It is excessive to have mutliple agents for keeping data of particular type. Simple is to have agent that 
+		can keep data of different types. To support such approach the agent has to provide and request "flexible" interface, that specifies 
+		generic methods like put data, get data, etc, but has also methods to preсise the variable parameters like data type etc.
+		Such ifaces (MDVarGet, MDVarSet...) were introduced for data mutlitype agents.</simpara>
+	    <simpara>Using such variable iface introduces the question of how the agents have to hegotiate to establish variable part of iface.</simpara>
+	</sect2>
+	<sect2><title>Negotiation of multitype function agents</title>
+	    <simpara>The normal negotiation flow stars from the whole function system result point (often result data agent) and spreads to the first layer
+		agents (gettng the whole function arguments), i.e. the negotiation is "from root to leafs". The negotiation procedure is as: the "upper" (nearest
+		to result) agent requested the "lower" agent for required iface, the lower agent tries to handle the request, configures itself propery
+		and provide the requested iface.</simpara>
+	    <simpara>Breake of normal flow: the lower agent cannot provide the requested iface. This can happen when the arguments types of lower agent leads
+		to result of the type that is incompatible to requested by upper agent. In this case upper agent tries other suitable variant of ifaces, if
+		all they are not accepted the negitiation fails. There can be also different strategy. The simplest is that upper agent proposes other 
+		ifaces keeping the contract with its upper neighbour unchanged. Another variant is that it can try also those variants that cause to the
+		already established contract to upper neighbour broken. This will cause re-negotiation from lower to upper layer. </simpara>
+	    <simpara>The latest approach, re-negotiation is the worther one. This is because it complicates the negotiation process.</simpara>
 	</sect2>
     </sect1>
 

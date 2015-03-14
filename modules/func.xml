@@ -397,6 +397,17 @@
 	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
     </node>
 
+    <!-- Transition Function of variable adding and substraction -->
+    <node id="TFAddNVar" parent="./TFuncVar"> 
+	<node node="./Agents" id="func_agt" parent="AFAddVar"/>
+	<!-- Input positives -->
+	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
+	<!-- Input negative -->
+	<node node="./Capsule" id="InpN" parent="./../Inp_TFVar"/> 
+	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+    </node>
+
+
     <!-- Transition Function of variable multiplication -->
     <node id="TFMplVar" parent="./TFuncVar"> 
 	<node node="./Agents" id="func_agt" parent="AFMplVar"/>

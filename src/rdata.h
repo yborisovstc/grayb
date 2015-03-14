@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <cmath>
 
 // Row data
 //
@@ -26,8 +27,10 @@ class DtBase
 	static TBool IsSrepFit(const string& aString, const string& aTypeSig);
 	static TBool IsDataFit(const DtBase& aData, const string& aTypeSig);
 	//TBool Set(const DtBase& d) { return mValid != d.mValid, mValid = d.mValid; };
-	void ToString(string& aString) const;
+	virtual void ToString(string& aString) const;
+	string ToString() const;
 	TBool FromString(const string& aString);
+	DtBase& operator=(const DtBase& b) { mValid = b.mValid; mSigTypeOK = EFalse; return *this;};
 	virtual TBool operator==(const DtBase& b) { return mValid == b.mValid;};
 	TBool operator!=(const DtBase& b) {return !this->operator==(b);};
     public:
@@ -36,6 +39,8 @@ class DtBase
 	virtual TBool DataFromString(istringstream& aStream, TBool& aRes) {};
 	virtual DtBase* Clone() {return NULL;};
 	virtual TBool IsCompatible(const DtBase& b) {return ETrue;};
+	virtual void SetMplncArg1Hint(const DtBase& res, const DtBase& arg2) {};
+	virtual void SetMplncArg2Hint(const DtBase& res, const DtBase& arg1) {};
     public:
 	static char mKTypeToDataSep;
 	TBool mValid;
@@ -48,6 +53,7 @@ template<class T> class Sdata: public DtBase
     public:
 	Sdata(): DtBase() {};
 	Sdata(const Sdata& d): DtBase(d), mData(d.mData) {};
+	template <class TA> Sdata(const Sdata<TA>& b): DtBase(b), mData(static_cast<T>(b.mData)) {};
 	static const char* TypeSig();
 	static TBool IsSrepFit(const string& aString) { return DtBase::IsSrepFit(aString, TypeSig());};
 	static TBool IsDataFit(const Sdata<T>& aData) { return DtBase::IsDataFit(aData, TypeSig());};
@@ -63,12 +69,15 @@ template<class T> class Sdata: public DtBase
 	TBool operator>=(const Sdata<T>& b) const { return mData >= b.mData;};
 	TBool operator<(const Sdata<T>& b) const { return mData < b.mData;};
 	TBool operator<=(const Sdata<T>& b) const { return mData <= b.mData;};
+	Sdata<T>& Invm(const Sdata<T>& b) { mData = 1 / b.mData; return *this;};
+	Sdata<T>& operator=(const Sdata<T>& b) { this->DtBase::operator=(b); mData = b.mData; return *this;};
+	//Sdata<T>& operator=(const Sdata<T>& b) { mData = b.mData; mValid = b.mValid; mSigTypeOK = b.mSigTypeOK; return *this;};
 	Sdata<T>& operator+=(const Sdata<T>& b) { mData += b.mData; return *this;};
+	Sdata<T>& operator-=(const Sdata<T>& b) { mData -= b.mData; return *this;};
 	Sdata<T>& operator*=(const Sdata<T>& b) { mData *= b.mData; return *this;};
 	Sdata<T>& operator!() { mData = !mData; return *this;};
 	//TBool operator!=(const Sdata<T>& b) {return !this->operator==(b);};
 	TBool Set(const T& aData) { TBool res = aData != mData; mData = aData; mValid = ETrue; return res; };
-	Sdata<T>& operator=(const Sdata<T>& b) { mData = b.mData; mValid = b.mValid; mSigTypeOK = b.mSigTypeOK; return *this;};
     public:
 	T mData;
 };
@@ -105,23 +114,30 @@ class MtrBase: public DtBase
     public: 
 	MtrBase(): DtBase(), mType(EMt_Unknown), mDim(TMtrDim(0, 0)) {};
 	MtrBase(const MtrBase& aMtr): DtBase(aMtr), mType(aMtr.mType), mDim(aMtr.mDim) {};
-	void ToString(string& aString) const;
+	virtual void ToString(string& aString) const;
 	TBool FromString(const string& aString);
 	static TBool IsSrepFit(const string& aString, const string& aTypeSig);
 	static TBool IsDataFit(const MtrBase& aData, const string& aTypeSig);
 	static int ParseSigPars(const string& aCont, string& aSig, MtrBase::TMtrType& aType, MtrBase::TMtrDim& aDim);
 	int Ind(int r, int c) const;
 	int IntSize() const;
+	MtrBase& operator=(const MtrBase& b) { this->DtBase::operator=(b); mType = b.mType; mDim = b.mDim; return *this;};
 	MtrBase& operator+=(const MtrBase& b);
+	MtrBase& operator-=(const MtrBase& b);
 	MtrBase& Mpl(const MtrBase& a, const MtrBase& b);
+	MtrBase& Mpl(const void* b);
 	MtrBase& Invm(const MtrBase& a);
 	virtual void ElemToString(TInt aInd, stringstream& aStream) const { aStream << "?";};
 	virtual TBool ElemFromString(TInt aInd, istringstream& aStream, TBool& aRes) {};
 	virtual void AddElem(const MtrBase& aB, TInt aRI, TInt aCI) {};
+	virtual void SubElem(const MtrBase& aB, TInt aRI, TInt aCI) {};
 	virtual void MplElems(TInt r, TInt c, const MtrBase& a, TInt ar, TInt ac, const MtrBase& b, TInt br, TInt bc) {};
+	virtual void MplElem(TInt r, TInt c, const void* b) {};
 	virtual void MplRtoC(TInt r, TInt c, const MtrBase& a, const MtrBase& b) {};
 	virtual void InvmElem(TInt r, TInt c, const MtrBase& a, TInt ar, TInt ac) {};
 	virtual void SetIntSize(TInt aSize) {};
+	virtual void SetMplncArg1Hint(const DtBase& res, const DtBase& arg2);
+	virtual void SetMplncArg2Hint(const DtBase& res, const DtBase& arg1);
     public:
 	TMtrType mType;
 	TMtrDim mDim;
@@ -132,28 +148,38 @@ template<class T> class Mtr: public MtrBase
     public:
 	Mtr(): MtrBase() {};
 	Mtr(const Mtr<T>& aMtr): MtrBase(aMtr), mData(aMtr.mData) {};
+	template <class TA> Mtr(const Mtr<TA>& aMtr);
 	static const char* TypeSig();
 	static TBool IsSrepFit(const string& aString) { return MtrBase::IsSrepFit(aString, TypeSig());};
 	static TBool IsDataFit(const Mtr<T>& aData) { return MtrBase::IsDataFit(aData, TypeSig());};
 	T GetElem(int r, int c) const { int i = Ind(r,c); return (i == -1) ? T(0) : mData.at(i);};
-	T& Elem(int r, int c) { int i = Ind(r,c); __ASSERT(i >= 0); return mData.at(i);};
+	T& Elem(int r, int c) { int i = Ind(r,c); __ASSERT(i >= 0 && i < mData.size()); return mData.at(i);};
 	virtual TBool operator==(const DtBase& sb) { 
-	    const Mtr<T>& b = dynamic_cast<const Mtr<T>& >(sb); return &b != NULL && DtBase::operator==(b) && this->mType == b.mType && this->mDim == b.mDim && this->mData == b.mData;};
+	    const Mtr<T>& b = dynamic_cast<const Mtr<T>& >(sb); return &b != NULL && DtBase::operator==(b) &&
+		this->mType == b.mType && this->mDim == b.mDim && this->mData == b.mData;};
 	//TBool operator==(const Mtr<T>& b) { 
 	 //   return this->mValid == b.mValid && this->mType == b.mType && this->mDim == b.mDim && this->mData == b.mData;};
 	//TBool operator!=(const Mtr<T>& b) {return !this->operator==(b);};
+	Mtr<T>& operator=(const Mtr<T>& b) { this->MtrBase::operator=(b); mData = b.mData; return *this;};
 	template <class TA> void CastDown(const Mtr<TA>& a);
 	virtual string GetTypeSig() const { return TypeSig();};
 	virtual void ElemToString(TInt aInd, stringstream& aStream) const { aStream << mData.at(aInd);};
 	virtual TBool ElemFromString(TInt aInd, istringstream& aStream, TBool& aRes);
 	virtual void AddElem(const MtrBase& b, TInt r, TInt c);
+	virtual void SubElem(const MtrBase& b, TInt r, TInt c);
 	virtual void MplElems(TInt r, TInt c, const MtrBase& a, TInt ar, TInt ac, const MtrBase& b, TInt br, TInt bc);
+	virtual void MplElem(TInt r, TInt c, const void* b);
 	virtual void MplRtoC(TInt r, TInt c, const MtrBase& a, const MtrBase& b);
-	virtual void InvmElem(TInt r, TInt c, const MtrBase& a, TInt ar, TInt ac) { T e = ((Mtr<T>&) a).GetElem(ar, ac); Elem(r, c) = 1/e;};
+	virtual void InvmElem(TInt r, TInt c, const MtrBase& a, TInt ar, TInt ac) { T e = ((Mtr<T>&) a).GetElem(ar, ac); T res = 1/e; Elem(r, c) = res;
+	    if (std::isinf(res)) mValid = EFalse;};
 	virtual void SetIntSize(TInt aSize) { if (mData.size() != aSize) mData.resize(aSize);};
     public:
 	vector<T> mData;
 };
+
+template <class T> template <class TA> Mtr<T>::Mtr(const Mtr<TA>& aMtr): MtrBase(aMtr) {
+    CastDown(aMtr);
+}
 
 template <class T> template<class TA>  void Mtr<T>::CastDown(const Mtr<TA>& a) 
 {
@@ -182,11 +208,23 @@ template<class T> void Mtr<T>::MplElems(TInt r, TInt c, const MtrBase& a, TInt a
     Elem(r, c) = ((Mtr<T>&) a).GetElem(ar, ac) * ((Mtr<T>&) b).GetElem(br, bc);
 }
 
+template<class T> void Mtr<T>::MplElem(TInt r, TInt c, const void* b)
+{
+    Elem(r, c) *= *((const T*) b);
+}
+
 template<class T> void Mtr<T>::AddElem(const MtrBase& b, TInt r, TInt c) 
 { 
     if (Ind(r,c) == -1) {
 	mValid = EFalse; return;} ; 
     Elem(r, c) += ((Mtr<T>&) b).GetElem(r, c);
+};
+
+template<class T> void Mtr<T>::SubElem(const MtrBase& b, TInt r, TInt c)
+{
+    if (Ind(r,c) == -1) {
+	mValid = EFalse; return;} ;
+    Elem(r, c) -= ((Mtr<T>&) b).GetElem(r, c);
 };
 
 template<class T> TBool Mtr<T>::ElemFromString(TInt aInd, istringstream& aStream, TBool& aRes)
@@ -225,7 +263,7 @@ class NTuple: public DtBase
 	static TBool IsDataFit(const NTuple& aData);
 	static int ParseSigPars(const string& aCont, string& aSig, tCTypes& aCTypes);
 	void Init(const tCTypes& aCt);
-	void ToString(string& aString) const;
+	virtual void ToString(string& aString) const;
 	TBool FromString(const string& aString);
 	DtBase* GetElem(const string& aName);
 	virtual TBool operator==(const DtBase& sb);
@@ -257,7 +295,7 @@ class Enum: public DtBase
 	static int ParseSigPars(const string& aCont, string& aSig, tSet& aSet);
 	static int ParseSig(const string& aCont, string& aSig);
 	TBool AreTypeParsFit(const tSet& aSet) const;
-	void ToString(string& aString) const;
+	virtual void ToString(string& aString) const;
 	TBool FromString(const string& aString);
 	void Init(const tSet& aSet);
     public:
