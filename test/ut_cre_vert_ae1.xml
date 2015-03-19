@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for ceation of vertex, aedge for relation 
+     -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Vert">
+    <node id="v1" parent="Vert"/>
+    <node id="v2" parent="Vert"/>
+    <node id="e1" parent="Aedge"> <cont id="P1" ref="./../v1"/> <cont id="P2" ref="./../v2"/> </node>
+</node>
+

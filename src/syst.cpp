@@ -928,7 +928,7 @@ void Syst::OnCompDeleting(Elem& aComp)
     Vert::OnCompDeleting(aComp);
 }
 
-void Syst::DoOnCompChanged(Elem& aComp)
+void Syst::DoOnCompChanged(Elem& aComp, const string& aContName)
 {
     Elem* eedge = GetCompOwning("Edge", &aComp);
     if (eedge != NULL) {
@@ -988,7 +988,7 @@ void Syst::DoOnCompChanged(Elem& aComp)
 	}
     }
     else {
-	Vert::DoOnCompChanged(aComp);
+	Vert::DoOnCompChanged(aComp, aContName);
     }
 }
 

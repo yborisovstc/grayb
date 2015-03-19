@@ -21,7 +21,7 @@ class MCompsObserver
 	static const char* Type() { return "MCompsObserver";};
 	virtual void OnCompDeleting(Elem& aComp) = 0;
 	virtual void OnCompAdding(Elem& aComp) = 0;
-	virtual TBool OnCompChanged(Elem& aComp) = 0;
+	virtual TBool OnCompChanged(Elem& aComp, const string& aContName = string()) = 0;
 	// For run-time only. Use OnCompChanged when the content is changed via mutation
 	virtual TBool OnContentChanged(Elem& aComp) = 0;
 	virtual TBool OnCompRenamed(Elem& aComp, const string& aOldName) = 0;

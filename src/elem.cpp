@@ -1156,6 +1156,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aTria
     TBool efix = iEnv->ChMgr()->EnableFixErrors();
     TBool erepos = iEnv->ChMgr()->EnableReposMuts();
     string snode = aSpec.Attr(ENa_MutNode);
+    string cname = aSpec.Attr(ENa_Id);
     TBool refex = aSpec.AttrExists(ENa_Ref);
     string mval = aSpec.Attr(refex ? ENa_Ref :ENa_MutVal);
     Elem* node = NULL;
@@ -1200,7 +1201,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aTria
 		    }
 		}
 		if (res) {
-		    res = node->ChangeCont(mval, EFalse);
+		    res = node->ChangeCont(mval, EFalse, cname);
 		    if (res) {
 			if (!aRunTime) {
 			    ChromoNode chn = iChromo->Root().AddChild(aSpec);
@@ -1213,7 +1214,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aTria
 		    }
 		    else {
 			Logger()->Write(MLogRec::EErr, this, aSpec, "Changing [%s] - failure", snode.c_str());
-			node->ChangeCont(mval, EFalse);
+			node->ChangeCont(mval, EFalse, cname);
 		    }
 		}
 	    }
@@ -1751,12 +1752,12 @@ void Elem::OnCompAdding(Elem& aComp)
 // TODO [YB] To include agents as member of elem. This will be more effective
 // TODO [YB] The current scheme doesn't allow element to get notification of related node change.
 // The only notification thry hier can be get via MCompsObserver, but not relation thru edges.
-// Thus is node A is related to node B via the chain of edges, the change of B or even the change
+// Thus if node A is related to node B via the chain of edges, the change of B or even the change
 // of the relation chain cannot be observed by node A. This is the serious lack. This is because the 
 // If providing mechanism is used instead of full relations tracking in Vert. So node A has Ifaces cache
 // that includes ifaces from node B but there is no mechanism of the changes in the cache. To consider
 // to implement cache update notification. Ref UC_010 
-TBool Elem::OnCompChanged(Elem& aComp)
+TBool Elem::OnCompChanged(Elem& aComp, const string& aContName)
 {
     Elem* agents = GetComp("Elem", "Agents");
     TBool res = ETrue;
@@ -1774,14 +1775,14 @@ TBool Elem::OnCompChanged(Elem& aComp)
        DoOnCompChanged(aComp);
        */
     if (!handled_by_agents) {
-	DoOnCompChanged(aComp);
+	DoOnCompChanged(aComp, aContName);
     }
     // Propagate notification to upper level
     if (res && iMan != NULL) {
-	res = iMan->OnCompChanged(aComp);
+	res = iMan->OnCompChanged(aComp, aContName);
     }
     if (res && iObserver != NULL) {
-	iObserver->OnCompChanged(aComp);
+	iObserver->OnCompChanged(aComp, aContName);
     }
     return res;
 }
@@ -1819,7 +1820,7 @@ TBool Elem::OnContentChanged(Elem& aComp)
     return res && res1;
 }
 
-void Elem::DoOnCompChanged(Elem& aComp)
+void Elem::DoOnCompChanged(Elem& aComp, const string& aContName)
 {
 }
 

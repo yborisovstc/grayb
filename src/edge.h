@@ -53,9 +53,6 @@ class Edge: public Elem, public MEdge
 	MVert* Point1v();
 	MVert* Point2v();
 	MVert* Pointv(Elem* aCp);
-	void SetPoints(MVert* aPoint1, MVert* aPoint2);
-	void SetPoint1(MVert* aPoint);
-	void SetPoint2(MVert* aPoint);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MEdge
@@ -83,4 +80,61 @@ class Edge: public Elem, public MEdge
 	MVert* iPoint2;
 };
 
+// Edge agent using named content to keep the refs to conn points
+class Aedge: public Elem, public MEdge
+{
+    protected:
+	enum {
+	    ECnt_P1 = 0,
+	    ECnt_P2 = 1,
+	    ECnt_Num_
+	};
+    public:
+	static const char* Type() { return "Aedge";};
+	static string PEType();
+	Aedge(const string& aName, Elem* aMan, MEnv* aEnv);
+	Aedge(Elem* aMan, MEnv* aEnv);
+	virtual ~Aedge();
+    public:
+	const string& Point1u();
+	const string& Point2u();
+	const string& Pointu(const string& aPname);
+	Elem* Point1r();
+	Elem* Point2r();
+	Elem* Point1rc();
+	Elem* Point2rc();
+	Elem* Pointr(const string& aPname);
+	MVert* Point1v();
+	MVert* Point2v();
+	MVert* Pointv(const string& aPname);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MEdge
+	virtual Base* EBase();
+	virtual const Base* EBase() const;
+	virtual TBool Connect();
+	virtual TBool ConnectP1(MVert* aPoint);
+	virtual TBool ConnectP2(MVert* aPoint);
+	virtual void Disconnect(MVert* aPoint);
+	virtual void Disconnect();
+	virtual MVert* Pair(const MVert* aPoint);
+	virtual MVert* Point1() const;
+	virtual MVert* Point2() const;
+	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);
+	// From Elem
+	virtual void GetCont(string& aCont, const string& aName = string()); 
+	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
+	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()); 
+	virtual TBool IsContChangeable(const string& aName = string()) const; 
+	virtual TInt GetContCount() const {return ECnt_Num_;};
+    public:
+	static const string& mP1ContName;
+	static const string& mP2ContName;
+    protected:
+	static const TInt mContNum;
+	string mPoint1Uri;
+	string mPoint2Uri;
+	MVert* iPoint1;
+	MVert* iPoint2;
+};
 #endif

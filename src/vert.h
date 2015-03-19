@@ -31,7 +31,7 @@ class Vert: public Elem, public MVert
 	// From Elem
 	virtual void OnCompDeleting(Elem& aComp);
 	virtual void OnCompAdding(Elem& aComp);
-	virtual void DoOnCompChanged(Elem& aComp);
+	virtual void DoOnCompChanged(Elem& aComp, const string& aContName);
 	// Iface cache
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
     protected:

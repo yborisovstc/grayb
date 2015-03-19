@@ -153,7 +153,7 @@ class Syst: public Vert
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MCompsObserver
 	virtual void OnCompDeleting(Elem& aComp);
-	virtual void DoOnCompChanged(Elem& aComp);
+	virtual void DoOnCompChanged(Elem& aComp, const string& aContName = string());
 	// Gets major dep for referenced node, ref ds_indp_mutord_impl
 	virtual void GetImplicitDep(TMDep& aDep, Elem* aObj, Elem* aRef);
 };

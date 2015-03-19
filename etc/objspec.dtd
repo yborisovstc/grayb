@@ -51,11 +51,13 @@
 >
 
 <!-- Change content attributes:
-     node - changed elem
+     node - changed elem,
+     id - name of content
      val - new value OR ref - new value - ref to node,
      -->
 <!ATTLIST cont
    node CDATA #IMPLIED
+   id CDATA #IMPLIED
    val CDATA #IMPLIED
    ref CDATA #IMPLIED
     ord CDATA #IMPLIED

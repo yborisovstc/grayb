@@ -16,6 +16,7 @@ class Ut_cre : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST_SUITE(Ut_cre);
     CPPUNIT_TEST(test_Cre);
     CPPUNIT_TEST(test_CreGr);
+    CPPUNIT_TEST(test_CreGr1);
     CPPUNIT_TEST(test_CreSyst);
     CPPUNIT_TEST(test_CreIncaps);
     CPPUNIT_TEST(test_CreData);
@@ -27,6 +28,7 @@ public:
 private:
     void test_Cre();
     void test_CreGr();
+    void test_CreGr1();
     void test_CreSyst();
     void test_CreIncaps();
     void test_CreData();
@@ -82,6 +84,28 @@ void Ut_cre::test_CreGr()
     printf("\n === Test of creation of graph\n");
 
     iEnv = new Env("Env", "ut_cre_gr.xml", "ut_cre_gr.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    Elem* v1 = root->GetNode("./(Vert:)v1");
+    //Elem* av1 = v1->GetNode("(Elem:)Agents");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get v1", v1 != 0);
+    MVert* mv1 = v1->GetObj(mv1);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get mv1", mv1 != 0);
+    MVert* pair = *(mv1->Pairs().begin());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
+    const string pname = pair->EBase()->Name();
+    CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pname == "v2");
+
+    delete iEnv;
+}
+
+void Ut_cre::test_CreGr1()
+{
+    printf("\n === Test of creation of graph, aedge for relation\n");
+
+    iEnv = new Env("Env", "ut_cre_vert_ae1.xml", "ut_cre_vert_ae1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();

@@ -250,7 +250,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// From MCompsObserver
 	virtual void OnCompDeleting(Elem& aComp);
 	virtual void OnCompAdding(Elem& aComp);
-	virtual TBool OnCompChanged(Elem& aComp);
+	virtual TBool OnCompChanged(Elem& aComp, const string& aContName = string());
 	virtual TBool OnCompRenamed(Elem& aComp, const string& aOldName);
 	virtual TBool OnContentChanged(Elem& aComp);
 	// Gets major dep for referenced node, ref ds_indp_mutord_impl
@@ -318,7 +318,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse);
 	TBool MergeMutation(const ChromoNode& aSpec);
 	TBool MergeMutMove(const ChromoNode& aSpec);
-	virtual void DoOnCompChanged(Elem& aComp);
+	virtual void DoOnCompChanged(Elem& aComp, const string& aContName = string());
 	TBool IsLogeventCreOn();
 	void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
 	TBool HasChilds() const;

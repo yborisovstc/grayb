@@ -191,25 +191,6 @@ MVert* Edge::Point2() const
     return iPoint2;
 }
 
-void Edge::SetPoints(MVert* aPoint1, MVert* aPoint2)
-{
-    __ASSERT(iPoint1 == NULL && iPoint2 == NULL && aPoint1 != NULL && aPoint2 != NULL);
-    iPoint1 = aPoint1;
-    iPoint2 = aPoint2;
-}
-
-void Edge::SetPoint1(MVert* aPoint)
-{
-    __ASSERT(iPoint1 == NULL && aPoint != NULL);
-    iPoint1 = aPoint;
-}
-
-void Edge::SetPoint2(MVert* aPoint)
-{
-    __ASSERT(iPoint2 == NULL && aPoint != NULL);
-    iPoint2 = aPoint;
-}
-
 TBool Edge::Connect()
 {
     TBool res = EFalse;
@@ -514,4 +495,309 @@ Elem::Iterator Edge::NodesLoc_End(const GUri::TElem& aId)
     return Iterator(new IterImplEdge(*this, aId, ETrue));
 }
 */
+
+
+
+
+// Edge agent using named content to keep the refs to conn points
+
+const string& Aedge::mP1ContName = "P1";
+const string& Aedge::mP2ContName = "P2";
+
+string Aedge::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
+
+Aedge::Aedge(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
+{
+    SetEType(Type(), Elem::PEType());
+    SetParent(Type());
+}
+
+Aedge::Aedge(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
+{
+    SetEType(Elem::PEType());
+    SetParent(Elem::PEType());
+}
+
+Aedge::~Aedge() 
+{
+    Disconnect();
+}
+
+void* Aedge::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    } else if (strcmp(aName, MEdge::Type()) == 0) {
+	res = (MEdge*) this;
+    } else {
+	res = Elem::DoGetObj(aName, aIncUpHier);
+    }
+    return res;
+}
+
+
+MVert* Aedge::Point1() const
+{
+    return iPoint1;
+}
+
+MVert* Aedge::Point2() const
+{
+    return iPoint2;
+}
+
+TBool Aedge::Connect()
+{
+    TBool res = EFalse;
+    res = iPoint1->Connect(this) && iPoint2->Connect(this);
+    return res;
+}
+
+TBool Aedge::ConnectP1(MVert* aPoint)
+{
+    TBool res = EFalse;
+    __ASSERT(iPoint1 == NULL);
+    iPoint1 = aPoint; // Set first to make Pair() working
+    res = aPoint->Connect(this);
+    if (!res) {
+	iPoint1 = NULL;
+    }
+    return res;
+}
+
+TBool Aedge::ConnectP2(MVert* aPoint)
+{
+    TBool res = EFalse;
+    __ASSERT(iPoint2 == NULL);
+    iPoint2 = aPoint; // Set first to make Pair() working
+    res = aPoint->Connect(this);
+    if (!res) {
+	iPoint2 = NULL;
+    }
+    return res;
+}
+
+void Aedge::Disconnect(MVert* aPoint)
+{
+    if (aPoint != NULL) {
+	if (aPoint == iPoint1) {
+	    iPoint1->Disconnect(this);
+	    if (iPoint2 != NULL) {
+		iPoint2->Disconnect(iPoint1);
+	    }
+	    iPoint1 = NULL;
+	}
+	if (aPoint == iPoint2) {
+	    iPoint2->Disconnect(this);
+	    if (iPoint1 != NULL) {
+		iPoint1->Disconnect(iPoint2);
+	    }
+	    iPoint2 = NULL;
+	}
+    }
+}
+
+void Aedge::Disconnect()
+{
+    if (iPoint1 != NULL) {
+	Disconnect(iPoint1);
+    }
+    if (iPoint2 != NULL) {
+	Disconnect(iPoint2);
+    }
+}
+
+MVert* Aedge::Pair(const MVert* aPoint)
+{
+    return aPoint == iPoint1 ? iPoint2 : iPoint1;
+}
+
+const string& Aedge::Point1u()
+{
+    return mPoint1Uri;
+}
+
+const string& Aedge::Point2u()
+{
+    return mPoint2Uri;
+}
+
+const string& Aedge::Pointu(const string& aPname)
+{
+    if (aPname == mP1ContName) return mPoint1Uri;
+    else if (aPname == mP2ContName) return mPoint2Uri;
+    else __ASSERT(EFalse);
+}
+
+Elem* Aedge::Point1rc()
+{
+    Elem* res = NULL;
+    if (iPoint1 != NULL) {
+	res = iPoint1->EBase()->GetObj(res);
+    } else {
+	res = Point1r();
+    }
+    return res;
+}
+
+Elem* Aedge::Point2rc()
+{
+    Elem* res = NULL;
+    if (iPoint2 != NULL) {
+	res = iPoint2->EBase()->GetObj(res);
+    } else {
+	res = Point2r();
+    }
+    return res;
+}
+
+Elem* Aedge::Point1r()
+{
+    Elem* res = NULL;
+    if (!Point1u().empty()) {
+	res = GetNode(Point1u());
+    }
+    return res;
+}
+
+Elem* Aedge::Point2r()
+{
+    Elem* res = NULL;
+    if (!Point2u().empty()) {
+	res = GetNode(Point2u());
+    }
+    return res;
+}
+
+Elem* Aedge::Pointr(const string& aPname)
+{
+    Elem* res = NULL;
+    const string& uri = Pointu(aPname);
+    if (!uri.empty()) {
+	res = GetNode(uri);
+    }
+    return res;
+
+}
+
+MVert* Aedge::Point1v()
+{
+    MVert* res = NULL;
+    const string& uri = Point1u();
+    if (!uri.empty()) {
+	Elem* pr = GetNode(uri);
+	if (pr != NULL) {
+	    res = pr->GetObj(res);
+	}
+    }
+    return res;
+}
+
+MVert* Aedge::Point2v()
+{
+    MVert* res = NULL;
+    const string& uri = Point2u();
+    if (!uri.empty()) {
+	Elem* pr = GetNode(uri);
+	if (pr != NULL) {
+	    res = pr->GetObj(res);
+	}
+    }
+    return res;
+}
+
+MVert* Aedge::Pointv(const string& aPname)
+{
+    MVert* res = NULL;
+    const string& uri = Pointu(aPname);
+    if (!uri.empty()) {
+	Elem* pr = GetNode(uri);
+	if (pr != NULL) {
+	    res = pr->GetObj(res);
+	}
+    }
+    return res;
+}
+
+Base* Aedge::EBase()
+{
+    return (Base*) this;
+}
+
+const Base* Aedge::EBase() const
+{
+    return (const Base*) this;
+}
+
+Elem* Aedge::GetNodeLoc(const GUri::TElem& aElem)
+{
+    Elem* res = NULL;
+    // Try hier first
+    res = Elem::GetNodeLoc(aElem);
+    // Check points then
+    Elem* p1 = iPoint1 != NULL ? iPoint1->EBase()->GetObj(p1) : NULL;
+    Elem* p2 = iPoint2 != NULL ? iPoint2->EBase()->GetObj(p1) : NULL;
+    Elem* pres = NULL;
+    if (p1 != NULL && (aElem.second.second == "*" || aElem.second.second != "*" && p1->Name() == aElem.second.second) && 
+	    (aElem.first == "*" || aElem.first != "*" && p1->EType() == aElem.first)) {
+	pres = p1;
+    }
+    else if (p2 != NULL && (aElem.second.second == "*" || aElem.second.second != "*" && p2->Name() == aElem.second.second) && 
+	    (aElem.first == "*" || aElem.first != "*" && p2->EType() == aElem.first)) {
+	pres = p1;
+    }
+    if (pres != NULL) {
+	if (res == NULL) {
+	    res = pres;
+	}
+	else {
+	    Logger()->Write(MLogRec::EErr, this,  "URI elem [%s:%s] - resolution conflict", aElem.second.second.c_str(), aElem.first.c_str()); 
+	    res = NULL;
+	}
+    }
+    return res;
+}
+
+void Aedge::GetCont(string& aCont, const string& aName)
+{
+    if (aName == mP1ContName) aCont = mPoint1Uri;
+    else if (aName == mP2ContName) aCont = mPoint2Uri;
+   
+}
+
+TBool Aedge::GetCont(TInt aInd, string& aName, string& aCont) const
+{
+    TBool res = ETrue;
+    if (aInd == ECnt_P1) { aName = mP1ContName; aCont = mPoint1Uri; }
+    else if (aInd == ECnt_P2) { aName = mP2ContName; aCont = mPoint2Uri; }
+    else res = EFalse;
+    return res;
+}
+
+TBool Aedge::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
+{
+    TBool res = ETrue;
+    TBool changed = EFalse;
+    if (aName == mP1ContName) {
+	if (aVal != mPoint1Uri) { mPoint1Uri = aVal; changed = ETrue; }
+    }
+    else if (aName == mP2ContName) {
+	if (aVal != mPoint2Uri) { mPoint2Uri = aVal; changed = ETrue; }
+    }
+    else res = EFalse;
+    if (changed) {
+	if (aRtOnly) iMan->OnContentChanged(*this);
+	else iMan->OnCompChanged(*this, aName);
+    }
+    return res;
+}
+
+TBool Aedge::IsContChangeable(const string& aName) const
+{
+    return (aName == mP1ContName || aName == mP2ContName);
+}
 

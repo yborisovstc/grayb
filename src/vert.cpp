@@ -152,7 +152,7 @@ TBool Vert::Connect(MVert* aPair)
 TBool Vert::Connect(MEdge* aEdge)
 {
     TBool res = ETrue;
-    Edge* ee = aEdge->EBase()->GetObj(ee);
+    Base* ee = aEdge->EBase();
     __ASSERT(iMEdges.find(TNMKey(ee->Name())) == iMEdges.end());
     if (aEdge->Pair(this) != NULL) {
 	res = Connect(aEdge->Pair(this));
@@ -205,7 +205,7 @@ void Vert::Disconnect()
 
 void Vert::Disconnect(MEdge* aEdge)
 {
-    Edge* ee = aEdge->EBase()->GetObj(ee);
+    Base* ee = aEdge->EBase();
     TEdgesMap::iterator found = iMEdges.find(TNMKey(ee->Name()));
     //__ASSERT(found != iMEdges.end());
     if (found != iMEdges.end()) {
@@ -242,8 +242,7 @@ void Vert::OnCompAdding(Elem& aComp)
     Elem::OnCompAdding(aComp);
 }
 
-
-void Vert::DoOnCompChanged(Elem& aComp)
+void Vert::DoOnCompChanged(Elem& aComp, const string& aContName)
 {
     Elem* eedge = GetCompOwning("Edge", &aComp);
     if (eedge != NULL) {
@@ -279,6 +278,41 @@ void Vert::DoOnCompChanged(Elem& aComp)
 		Logger()->Write(MLogRec::EErr, this, "Connection [%s - %s] failed", edge->Point1u().c_str(), edge->Point2u().c_str());
 	    }
 	}
+    }
+    else if (aComp.IsHeirOf(Aedge::Type())) {
+	Aedge* edge = aComp.GetObj(edge);	
+	TBool res = EFalse;
+	if (aContName == Aedge::mP1ContName) {
+	    edge->Disconnect(edge->Point1());
+	    if (!edge->Point1u().empty()) {
+		MVert* pt1v = edge->Point1v();
+		if (pt1v != NULL) {
+		    res = edge->ConnectP1(pt1v);
+		}
+		else {
+		    Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find or not vertex", edge->Point1u().c_str());
+		}
+	    }
+	}
+	else if (aContName == Aedge::mP2ContName) {
+	    edge->Disconnect(edge->Point2());
+	    MVert* pt2v = edge->Point2v();
+	    if (pt2v != NULL) {
+		res = edge->ConnectP2(pt2v);
+	    }
+	    else {
+		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find or not vertex", edge->Point2u().c_str());
+	    }
+	}
+	if (edge->Point1r() != NULL && edge->Point2r() != NULL) {
+	    if (res) {
+		Logger()->Write(MLogRec::EInfo, this, "Connected [%s - %s]", edge->Point1u().c_str(), edge->Point2u().c_str());
+	    }
+	    else {
+		Logger()->Write(MLogRec::EErr, this, "Connection [%s - %s] failed", edge->Point1u().c_str(), edge->Point2u().c_str());
+	    }
+	}
+
     }
     Elem::DoOnCompChanged(aComp);
 }
