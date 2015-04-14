@@ -1,8 +1,8 @@
-#include <env.h>
 #include <stdlib.h>
 #include <elem.h>
 #include <mvert.h>
 #include <mdata.h>
+#include <env.h>
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -153,7 +153,7 @@ void Ut_cre::test_CreData()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* doutp = root->GetNode("./(Incaps:)test/(DataSInt:)DataS_Int_1/(Elem:)Capsule/out");
+    Elem* doutp = root->GetNode("./(Incaps:)test/(DataSInt:)DataS_Int_1/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
     MDIntGet* doutpget = doutp->GetObj(doutpget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);

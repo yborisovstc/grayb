@@ -26,9 +26,8 @@ void* ChromoMdlX::Init(TNodeType aRootType)
     string sroottype = GUri::NodeTypeName(aRootType);
     xmlNodePtr root = xmlNewNode(NULL, (const xmlChar *) sroottype.c_str());
     xmlDocSetRootElement(iDoc, root);
-    //xmlDtdPtr dtd = xmlNewDtd(iDoc, (const xmlChar*) "iobject", (const xmlChar*) KChromoSystemId, (const xmlChar*) KChromoSystemId);
-    xmlDtdPtr dtd = xmlParseDTD(NULL, (const xmlChar*) KChromoSystemId );
-    iDoc->extSubset = dtd;
+    //xmlDtdPtr dtd = xmlParseDTD(NULL, (const xmlChar*) KChromoSystemId );
+    //iDoc->extSubset = dtd;
     return root;
 }
 
@@ -74,6 +73,7 @@ void* ChromoMdlX::Set(const char *aFileName)
     xmlNode *sEnv = NULL; // Node of environment element
     xmlNode *sRoot = NULL; // Node of root element
     // Read and parse the CAE spec file
+    Reset();
     iDoc = xmlReadFile(aFileName, NULL, XML_PARSE_DTDLOAD | XML_PARSE_DTDVALID);
     __ASSERT(iDoc != NULL);
     // Get the node 
@@ -88,6 +88,7 @@ void* ChromoMdlX::Set(const string& aUri)
     xmlNode *sEnv = NULL; // Node of environment element
     xmlNode *sRoot = NULL; // Node of root element
     // Read and parse the CAE spec file
+    Reset();
     string path;
     Chromo::GetPath(aUri, path);
     iDoc = xmlReadFile(path.c_str(), NULL, XML_PARSE_DTDLOAD | XML_PARSE_DTDVALID);

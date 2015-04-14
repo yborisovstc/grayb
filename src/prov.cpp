@@ -1,4 +1,5 @@
 #include "prov.h"
+#include "elem.h"
 
 const string KModPath;
 
@@ -8,6 +9,11 @@ GProvider::GProvider(const string &aName, MEnv* aEnv): Base(aName), iEnv(aEnv)
 
 GProvider::~GProvider() 
 {
+    while (!iReg.empty()) {
+	Elem* elem = iReg.begin()->second;
+	delete elem;
+	iReg.erase(iReg.begin());
+    }
 }
 
 void GProvider::SetEnv(MEnv* aEnv)

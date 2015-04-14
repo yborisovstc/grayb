@@ -4,7 +4,7 @@
 #include "mprov.h"
 #include "base.h"
 
-class Vert;
+class Elem;
 
 // Base class for graph providers
 class GProvider: public Base, public MProvider

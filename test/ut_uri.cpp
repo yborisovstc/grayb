@@ -89,7 +89,7 @@ void Ut_uri::test_UriBase()
     Elem* owner = enode->GetNode("./..");
     CPPUNIT_ASSERT_MESSAGE("Fail to get current owner", owner != NULL);
 
-    Elem* doutp = root->GetNode("./(Incaps:)test/(DataSInt:)DataS_Int_1/(Elem:)Capsule/out");
+    Elem* doutp = root->GetNode("./(Incaps:)test/(DataSInt:)DataS_Int_1/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
     MDIntGet* doutpget = doutp->GetObj(doutpget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
@@ -110,7 +110,7 @@ void Ut_uri::test_UriBase()
     TInt fres = foutpget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result", fres == 36);
 
-    Elem* resdata = root->GetNode("./(Incaps:)test/ResData/(Elem:)Capsule/out");
+    Elem* resdata = root->GetNode("./(Incaps:)test/ResData/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out", resdata != 0);
     MDIntGet* rdataget = resdata->GetObj(rdataget);
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget != 0);
@@ -169,13 +169,13 @@ void Ut_uri::test_UriBase()
     GUri rduri;
     resdata1->GetUri(rduri, root);
     string rduriss = rduri.GetUri();
-    CPPUNIT_ASSERT_MESSAGE("Fail to get URI from hier", rduriss == "./(Incaps:)test/(DataSInt:)ResData/(Elem:)Capsule/(ConnPointOut:)out");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get URI from hier", rduriss == "./(Incaps:)test/(DataSInt:)ResData/(ACapsule:)Capsule/(ConnPointOut:)out");
     // Checking getting absolute uri
     GUri rduria;
     resdata1->GetUri(rduria);
     string rduriass= rduria.GetUri();
     CPPUNIT_ASSERT_MESSAGE("Fail to get absolute URI", 
-	    rduriass == "/(Elem:)testroot/(Incaps:)test/(DataSInt:)ResData/(Elem:)Capsule/(ConnPointOut:)out");
+	    rduriass == "/(Elem:)testroot/(Incaps:)test/(DataSInt:)ResData/(ACapsule:)Capsule/(ConnPointOut:)out");
     // Checking of getting node by absolute uri
     Elem* nodeau = resdata1->GetNode(rduriass);
     CPPUNIT_ASSERT_MESSAGE("Fail to get node by absolute URI", nodeau == resdata1);

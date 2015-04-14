@@ -4,6 +4,21 @@
 #include "mconn.h"
 #include "vert.h"
 
+// Caplule
+class ACapsule: public Elem
+{
+    public:
+	static const char* Type() { return "ACapsule";};
+	static string PEType();
+	ACapsule(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	ACapsule(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	// From MCompsObserver
+	virtual TBool OnCompChanged(Elem& aComp);
+};
+
+
 // Base of ConnPoint reimplement obj provider iface to redirect the request to the hier mgr
 class ConnPointBase: public Vert, public MCompatChecker
 {
@@ -153,9 +168,11 @@ class Syst: public Vert
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MCompsObserver
 	virtual void OnCompDeleting(Elem& aComp);
-	virtual void DoOnCompChanged(Elem& aComp);
+	virtual TBool OnCompChanged(Elem& aComp);
 	// Gets major dep for referenced node, ref ds_indp_mutord_impl
 	virtual void GetImplicitDep(TMDep& aDep, Elem* aObj, Elem* aRef);
+    protected:
+	TBool IsPtOk(Elem* aPt);
 };
 
 #endif

@@ -19,8 +19,8 @@
 		<cont node="./Value" val="I 4"/>
 	    </node>
 	    <node id="e1" parent="Edge">
-		<cont node="./(Prop:)P2" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(DataTVar:)Dt/(Elem:)Capsule/inp"/>
-		<cont node="./(Prop:)P1" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(FAddVar:)Add/(Elem:)Capsule/(Out_FVar:)out"/>
+		<cont node="./(Prop:)P2" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(DataTVar:)Dt/Capsule/inp"/>
+		<cont node="./(Prop:)P1" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(FAddVar:)Add/Capsule/(Out_FVar:)out"/>
 	    </node>
 	    <node id="e2" parent="Edge">
 		<cont node="./P2" ref="/Root/Start/Incaps_root/Add/Capsule/Inp"/>

@@ -23,6 +23,7 @@ Makefile
 *.so
 *.so.*
 *~
+*~old
 tmp
 *.log
 *.gcov

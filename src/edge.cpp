@@ -121,9 +121,6 @@ Elem*  Edge::IterImplEdge::GetElem()
     return res;
 }
 
-
-bool Edge::iInit = false;
-
 string Edge::PEType()
 {
     return Elem::PEType() + GUri::KParentSep + Type();
@@ -131,8 +128,6 @@ string Edge::PEType()
 
 Edge::Edge(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
 {
-    if (!iInit) 
-	Init();
     SetEType(Type(), Elem::PEType());
     SetParent(Type());
     // Adding properties "Points"
@@ -147,8 +142,6 @@ Edge::Edge(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 
 Edge::Edge(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
 {
-    if (!iInit) 
-	Init();
     SetEType(Elem::PEType());
     SetParent(Elem::PEType());
     // Adding properties "Points"
@@ -189,33 +182,6 @@ MVert* Edge::Point1() const
 MVert* Edge::Point2() const
 {
     return iPoint2;
-}
-
-void Edge::SetPoints(MVert* aPoint1, MVert* aPoint2)
-{
-    __ASSERT(iPoint1 == NULL && iPoint2 == NULL && aPoint1 != NULL && aPoint2 != NULL);
-    iPoint1 = aPoint1;
-    iPoint2 = aPoint2;
-}
-
-void Edge::SetPoint1(MVert* aPoint)
-{
-    __ASSERT(iPoint1 == NULL && aPoint != NULL);
-    iPoint1 = aPoint;
-}
-
-void Edge::SetPoint2(MVert* aPoint)
-{
-    __ASSERT(iPoint2 == NULL && aPoint != NULL);
-    iPoint2 = aPoint;
-}
-
-TBool Edge::Connect()
-{
-    TBool res = EFalse;
-    //res = iPoint1->Connect(iPoint2) && iPoint2->Connect(iPoint1);
-    res = iPoint1->Connect(this) && iPoint2->Connect(this);
-    return res;
 }
 
 TBool Edge::ConnectP1(MVert* aPoint)
@@ -441,6 +407,41 @@ MVert* Edge::Point2v()
     return res;
 }
 
+MVert* Edge::Ref1() const
+{
+    MVert* res = NULL;
+    Elem* pte = ((Elem*) this)->GetNode("./P1");
+    __ASSERT(pte != NULL);
+    MProp* pt = pte->GetObj(pt);
+    __ASSERT(pt != NULL);
+    const string& uri = pt->Value();
+    if (!uri.empty()) {
+	Elem* pr = pte->GetNode(uri);
+	if (pr != NULL) res = pr->GetObj(res);
+	if (res == NULL) {
+	    Logger()->Write(MLogRec::EErr, pte, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());
+	}
+    }
+    return res;
+}
+
+MVert* Edge::Ref2() const
+{
+    MVert* res = NULL;
+    Elem* pte = ((Elem*) this)->GetNode("./P2");
+    MProp* pt = pte->GetObj(pt);
+    __ASSERT(pt != NULL);
+    const string& uri = pt->Value();
+    if (!uri.empty()) {
+	Elem* pr = pte->GetNode(uri);
+	if (pr != NULL) res = pr->GetObj(res);
+	if (res == NULL) {
+	    Logger()->Write(MLogRec::EErr, pte, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());
+	}
+    }
+    return res;
+}
+
 MVert* Edge::Pointv(Elem* aCp)
 {
     __ASSERT(aCp == Point1p() || aCp == Point2p());
@@ -515,3 +516,15 @@ Elem::Iterator Edge::NodesLoc_End(const GUri::TElem& aId)
 }
 */
 
+TBool Edge::OnCompChanged(Elem& aComp)
+{
+    Elem::OnCompChanged(aComp);
+    // Propagate notification to upper level
+    if (iMan != NULL) {
+	iMan->OnCompChanged(*this);
+    }
+    if (iObserver != NULL) {
+	iObserver->OnCompChanged(*this);
+    }
+    return ETrue;
+}

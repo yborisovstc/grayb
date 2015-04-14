@@ -114,12 +114,6 @@ Vert::~Vert()
     Disconnect();
 }
 
-void Vert::SetRemoved()
-{
-    Disconnect();
-    Elem::SetRemoved();
-}
-
 TBool Vert::Connect(MVert* aPair)
 {
     TBool res = ETrue;
@@ -136,7 +130,7 @@ TBool Vert::Connect(MVert* aPair)
 		aPair->Connect(this);
 	    }
 	    __ASSERT(iMan != NULL);
-	    res = iMan->OnCompChanged(*this);
+	    iMan->OnCompChanged(*this);
 	}
 	else {
 	    // TODO [YB] Seems this happens constantly. To analyze why
@@ -242,45 +236,34 @@ void Vert::OnCompAdding(Elem& aComp)
     Elem::OnCompAdding(aComp);
 }
 
-
-void Vert::DoOnCompChanged(Elem& aComp)
+TBool Vert::OnCompChanged(Elem& aComp)
 {
-    Elem* eedge = GetCompOwning("Edge", &aComp);
-    if (eedge != NULL) {
-	Edge* edge = eedge->GetObj(edge);	
-	TBool res = EFalse;
-	if (&aComp == edge->Point1p()) {
-	    edge->Disconnect(edge->Point1());
-	    if (!edge->Point1u().empty()) {
-		MVert* pt1v = edge->Point1v();
-		if (pt1v != NULL) {
-		    res = edge->ConnectP1(pt1v);
-		}
-		else {
-		    Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find or not vertex", edge->Point1u().c_str());
-		}
-	    }
-	}
-	else if (&aComp == edge->Point2p()) {
-	    edge->Disconnect(edge->Point2());
-	    MVert* pt2v = edge->Point2v();
-	    if (pt2v != NULL) {
-		res = edge->ConnectP2(pt2v);
-	    }
-	    else {
-		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find or not vertex", edge->Point2u().c_str());
-	    }
-	}
-	if (edge->Point1r() != NULL && edge->Point2r() != NULL) {
-	    if (res) {
-		Logger()->Write(MLogRec::EInfo, this, "Connected [%s - %s]", edge->Point1u().c_str(), edge->Point2u().c_str());
-	    }
-	    else {
-		Logger()->Write(MLogRec::EErr, this, "Connection [%s - %s] failed", edge->Point1u().c_str(), edge->Point2u().c_str());
+    TBool hres = Elem::OnCompChanged(aComp);
+    if (hres) return ETrue;
+    MEdge* edge = aComp.GetObj(edge);	
+    if (edge != NULL) {
+	hres = ETrue;
+	MVert* ref1 = edge->Ref1();
+	MVert* ref2 = edge->Ref2();
+	MVert* cp1 = edge->Point1();
+	MVert* cp2 = edge->Point2();
+	if (cp1 != ref1 || cp2 != ref2) {
+	    Elem* pt1 = ref1 == NULL ? NULL : ref1->EBase()->GetObj(pt1);
+	    Elem* pt2 = ref2 == NULL ? NULL : ref2->EBase()->GetObj(pt2);
+	    if (cp1 != NULL && ref1 != cp1) edge->Disconnect(cp1);
+	    if (cp2 != NULL && ref2 != cp2) edge->Disconnect(cp2);
+	    cp1 = edge->Point1();
+	    cp2 = edge->Point2();
+	    TBool res = ETrue;
+	    if (cp1 == NULL && ref1 != NULL) res = edge->ConnectP1(ref1);
+	    else if (cp2 == NULL && ref2 != NULL) res = edge->ConnectP2(ref2);
+	    if (!res) {
+		Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri().c_str(), pt2->GetUri().c_str());
 	    }
 	}
     }
-    Elem::DoOnCompChanged(aComp);
+    return hres;
 }
+
 
 

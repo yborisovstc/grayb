@@ -13,7 +13,7 @@
 	<!-- Element that acts as place for all extenders of the system.
 	 IncapsSystem allows the connection outside only for those EPs that are in capsula
 	 -->
-	<node id="Capsule" parent="Elem"/> 
+	<node id="Capsule" parent="ACapsule"/>
     </node>
 
 </node>

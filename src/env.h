@@ -1,8 +1,8 @@
 #ifndef __GRAYB_ENV_H
 #define __GRAYB_ENV_H
 
+#include "base.h"
 #include "menv.h"
-#include "mgraph.h"
 
 class GProvider;
 class GFactory;
@@ -32,12 +32,15 @@ class ChromoMgr: public Base, public MChromoMgr
 	virtual void SetEnableFixErrors(bool aEnable);
 	virtual bool EnableReposMuts() const { return mEnableReposMuts;};
 	virtual void SetEnableReposMuts(bool aEnable);
+	virtual bool EnableCheckSafety() const { return mEnableCheckSafety;};
+	virtual void SetEnableCheckSafety(bool aEnable);
     protected:
 	TInt mLim;
 	Env& mHost;
 	TBool mEnablePhenoModif;
 	TBool mEnableFixErrors;
 	TBool mEnableReposMuts;
+	TBool mEnableCheckSafety;
 };
 
 class Env: public Base, public MEnv
@@ -50,6 +53,7 @@ public:
 	// Separated from constructor because constr can be followed by second phase - setting providers etc.
 	void ConstructSystem();
 	void AddProvider(GProvider* aProv);
+	void RemoveProvider(GProvider* aProv);
 public:
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
@@ -58,6 +62,8 @@ public:
 	virtual MLogRec *Logger();
 	virtual Elem* Root();
 	virtual MChromoMgr* ChMgr();
+	virtual TBool GetSBool(TSBool aId) const;
+	virtual void SetSBool(TSBool aId, TBool aVal);
 private:
 	GLogRec* iLogger; 
 	Elem* iRoot;
@@ -65,6 +71,7 @@ private:
 	ChromoMgr* iChMgr;
 	string iSystSpec;
 	Chromo* iSpecChromo;
+	TBool mEnPerfTrace;
 };
 
 

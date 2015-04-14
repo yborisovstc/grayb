@@ -11,8 +11,10 @@ class GFactory: public Base, public MProvider
     public:
 	static const char* Type() { return "GFactory";};
 	GFactory(const string& aName, MEnv* aEnv);
+	virtual ~GFactory();
 	void LoadPlugins();
 	void AddProvider(GProvider* aProv);
+	void RemoveProvider(GProvider* aProv);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MProvider

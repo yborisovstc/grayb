@@ -7,12 +7,14 @@
 #include "prov.h"
 #include "chromo.h"
 #include <stdlib.h>
+#include <sys/time.h>
 
 const string KLogFileName = "faplog.txt";
 const char* KRootName = "Root";
 
 ChromoMgr::ChromoMgr(const string& aName, Env& aHost): Base(aName), mHost(aHost), mLim(0), 
-    mEnablePhenoModif(EFalse), mEnableFixErrors(EFalse), mEnableReposMuts(EFalse)
+    mEnablePhenoModif(EFalse), mEnableFixErrors(EFalse), mEnableReposMuts(EFalse),
+    mEnableCheckSafety(ETrue)
 {
 }
 
@@ -66,8 +68,15 @@ void ChromoMgr::SetEnableReposMuts(bool aEnable)
     }
 }
 
+void ChromoMgr::SetEnableCheckSafety(bool aEnable)
+{
+    if (mEnableCheckSafety != aEnable) {
+	mEnableCheckSafety = aEnable;
+    }
+}
+
 Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileName): Base(aName), iRoot(NULL), iLogger(NULL),
-    iSpecChromo(NULL)
+    iSpecChromo(NULL), mEnPerfTrace(EFalse)
 {
     iLogger = new GLogRec("Logger", aLogFileName.empty() ? KLogFileName : aLogFileName);
     iProvider = new GFactory("Factory", this);
@@ -79,7 +88,11 @@ Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileNam
 
 Env::~Env()
 {
+    Logger()->Write(MLogRec::EInfo, iRoot, "Starting deleting system");
     delete iRoot;
+    Logger()->Write(MLogRec::EInfo, NULL, "Finished deleting system");
+    delete iChMgr;
+    delete iProvider;
     delete iLogger;
 }
 
@@ -96,14 +109,24 @@ void Env::ConstructSystem()
     else {
 	spec->Set(iSystSpec.c_str());
 	const ChromoNode& root = spec->Root();
-//	iRoot = new Elem(root.Name(), NULL, this);
 	string sparent = root.Attr(ENa_Parent);
 	Elem* parent = iProvider->GetNode(sparent);
 	iRoot = iProvider->CreateNode(sparent, root.Name(), NULL, this);
-	//parent->AppendChild(iRoot);
 	if (iRoot != NULL) {
+	    stringstream ss;
+	    struct timeval tp;
+	    gettimeofday(&tp, NULL);
+	    long int beg_us = tp.tv_sec * 1000000 + tp.tv_usec;
+	    Logger()->Write(MLogRec::EInfo, iRoot, "Started of creating system, spec [%s]", iSystSpec.c_str());
 	    iRoot->SetMutation(root);
 	    iRoot->Mutate();
+	    gettimeofday(&tp, NULL);
+	    long int fin_us = tp.tv_sec * 1000000 + tp.tv_usec;
+	    ss << (fin_us - beg_us);
+	    TInt cpc = iRoot->GetCapacity();
+	    Logger()->Write(MLogRec::EInfo, iRoot, "Completed of creating system, nodes: %d, time, us: %s", cpc,  ss.str().c_str());
+	    //Logger()->Write(MLogRec::EInfo, iRoot, "Components");
+	    //iRoot->LogComps();
 	}
 	else {
 	    Logger()->WriteFormat("Env: cannot create elem [%s] of type [%s]", root.Name().c_str(), sparent.c_str());
@@ -138,9 +161,25 @@ void Env::AddProvider(GProvider* aProv)
     aProv->SetEnv(this);
 }
 
+void Env::RemoveProvider(GProvider* aProv)
+{
+    iProvider->RemoveProvider(aProv);
+}
+
 void *Env::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
 
+TBool Env::GetSBool(TSBool aId) const
+{
+    TBool res = EFalse;
+    if (aId == ESb_EnPerfTrace) res = mEnPerfTrace;
+    return res;
+}
+
+void Env::SetSBool(TSBool aId, TBool aVal)
+{
+    if (aId == ESb_EnPerfTrace) mEnPerfTrace = aVal;
+}
 

@@ -53,31 +53,29 @@ class Edge: public Elem, public MEdge
 	MVert* Point1v();
 	MVert* Point2v();
 	MVert* Pointv(Elem* aCp);
-	void SetPoints(MVert* aPoint1, MVert* aPoint2);
-	void SetPoint1(MVert* aPoint);
-	void SetPoint2(MVert* aPoint);
+	TBool Connect(Elem* aCp);
+	void Disconnect(Elem* aCp);
 	// From Base
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MEdge
 	virtual Base* EBase();
 	virtual const Base* EBase() const;
-	virtual TBool Connect();
 	virtual TBool ConnectP1(MVert* aPoint);
 	virtual TBool ConnectP2(MVert* aPoint);
-	virtual TBool Connect(Elem* aCp);
 	virtual void Disconnect(MVert* aPoint);
 	virtual void Disconnect();
-	virtual void Disconnect(Elem* aCp);
 	virtual MVert* Pair(const MVert* aPoint);
 	virtual MVert* Point1() const;
 	virtual MVert* Point2() const;
+	virtual MVert* Ref1() const; // Proposed refs point1
+	virtual MVert* Ref2() const; // Proposed refs point2
+	// From MCompsObserver
+	virtual TBool OnCompChanged(Elem& aComp);
 	// From Elem
 	//virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
 	//virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
 	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);
     protected:
-	// Sign of inited
-	static bool iInit;
 	// Just one-way relation to vert. It does't mean the full point to point relation is established.
 	MVert* iPoint1;
 	MVert* iPoint2;

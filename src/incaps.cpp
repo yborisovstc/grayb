@@ -74,78 +74,155 @@ TBool Incaps::IsPtOk(Elem& aContext, Elem* aPt) {
     return res;
 }
 
+#if 0
+// Alternative implementation of HandleCompChanged
 TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
 {
-    TBool res = ETrue;
-    Elem* eedge = aContext.GetCompOwning("Edge", &aComp);
-    if (eedge != NULL) {
-	Elem* host = iMan->GetMan();
-	Edge* edge = eedge->GetObj(edge);	
-	__ASSERT(edge != NULL);
-	if (&aComp == edge->Point1p() || &aComp == edge->Point2p()) {
-	    edge->Disconnect(&aComp);
-	    if (!edge->Pointu(&aComp).empty()) {
-		if (edge->Pointr(&aComp) != NULL) {
-		    TBool isptok = IsPtOk(aContext, edge->Pointr(&aComp));
-		    if (isptok) {
-			if (edge->Pointv(&aComp) != NULL) {
-			    if (edge->Point1() == NULL && edge->Point2() == NULL) {
-				// Partial connection, compat checking isn't needed
-				res = edge->Connect(&aComp);
-				if (!res) {
-				    Logger()->Write(MLogRec::EErr, host, "Connecting [%s] failed", edge->Pointu(&aComp).c_str());
-				}
-			    }
-			    else {
-				// Full connection, compat checking is needed
-				Elem* pt1 = edge->Point1rc();
-				Elem* pt2 = edge->Point2rc();
-				if (pt1 != NULL && pt2 != NULL) {
-				    string pt1u = edge->Point1u();
-				    string pt2u = edge->Point2u();
-				    MVert* pt1v = pt1->GetObj(pt1v);
-				    MVert* pt2v = pt2->GetObj(pt2v);
-				    if (pt1v != NULL && pt2v != NULL) {
-					// Check roles conformance
-					MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
-					MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
-					TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
-					TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
-					if (ispt1cptb && ispt2cptb) {
-					    // Are compatible - connect
-					    res = edge->Connect(&aComp);
-					    if (res) {
-						//Logger()->Write(MLogRec::EInfo, host, "Connected [%s - %s]", pt1u.c_str(), pt2u.c_str());
-					    }
-					    else {
-						Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] failed", pt1u.c_str(), pt2u.c_str());
-					    }
-					}
-					else {
-					    TBool c1 = pt1checker->IsCompatible(pt2);
-					    TBool c2 = pt2checker->IsCompatible(pt1);
-					    Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] - incompatible roles", pt1u.c_str(), pt2u.c_str());
-					}
-				    }
-				    else {
-					Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] - ends aren't vertexes", pt1u.c_str(), pt2u.c_str());
-				    }
-				}
-			    }
+    TBool hres = EFalse;
+    MEdge* edge = aComp.GetObj(edge);	
+    if (edge != NULL) {
+	hres = ETrue;
+	MVert* ref1 = edge->Ref1();
+	MVert* ref2 = edge->Ref2();
+	MVert* cp1 = edge->Point1();
+	MVert* cp2 = edge->Point2();
+	Elem* pt1 = ref1 == NULL ? NULL : ref1->EBase()->GetObj(pt1);
+	Elem* pt2 = ref2 == NULL ? NULL : ref2->EBase()->GetObj(pt2);
+	if (cp1 != ref1) {
+	    TBool isptok = (ref1 == NULL || IsPtOk(aContext, pt1));
+	    if (isptok) {
+		if (cp1 != NULL && ref1 != cp1) edge->Disconnect(cp1);
+		if (ref1 != NULL) {
+		    TBool res = EFalse;
+		    if (ref1 != NULL && cp2 != NULL) {
+			// Full connection, compatibility checking is needed
+			MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
+			MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
+			TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
+			TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
+			if (ispt1cptb && ispt2cptb) {
+			    // Are compatible - connect
+			    res = edge->ConnectP1(ref1);
 			}
 			else {
-			    Logger()->Write(MLogRec::EErr, host, "Connecting [%s] - cannot find or not vertex", edge->Pointu(&aComp).c_str());
+			    TBool c1 = pt1checker->IsCompatible(pt2);
+			    TBool c2 = pt2checker->IsCompatible(pt1);
+			    Elem* host = iMan->GetMan();
+			    Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] - incompatible roles", pt1->GetUri().c_str(), pt2->GetUri().c_str());
 			}
+
+		    } else {
+			// Partial connection, compatibility checking isn't needed
+			res = edge->ConnectP1(ref1);
 		    }
-		    else {
-			Logger()->Write(MLogRec::EErr, host, "Connecting [%s] - not allowed cp", edge->Pointu(&aComp).c_str());
+		    if (!res) {
+			Elem* host = iMan->GetMan();
+			Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] failed", pt1->GetUri().c_str(), pt2->GetUri().c_str());
 		    }
 		}
-		else {
-		    Logger()->Write(MLogRec::EErr, host, "Connecting [%s] - cannot find", edge->Pointu(&aComp).c_str());
+	    } else {
+		Elem* pt = pt1;
+		Elem* host = iMan->GetMan();
+		Logger()->Write(MLogRec::EErr, host, "Connecting [%s] - not allowed cp", pt->GetUri().c_str());
+	    }
+	}
+	else if (cp2 != ref2) {
+	    TBool isptok = (ref2 == NULL || IsPtOk(aContext, pt2));
+	    if (isptok) {
+		if (cp2 != NULL && ref2 != cp2) edge->Disconnect(cp2);
+		if (ref2 != NULL) {
+		    TBool res = EFalse;
+		    if (ref2 != NULL && cp1 != NULL) {
+			// Full connection, compatibility checking is needed
+			MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
+			MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
+			TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
+			TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
+			if (ispt1cptb && ispt2cptb) {
+			    // Are compatible - connect
+			    res = edge->ConnectP2(ref2);
+			}
+			else {
+			    TBool c1 = pt1checker->IsCompatible(pt2);
+			    TBool c2 = pt2checker->IsCompatible(pt1);
+			    Elem* host = iMan->GetMan();
+			    Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] - incompatible roles", pt1->GetUri().c_str(), pt2->GetUri().c_str());
+			}
+
+		    } else {
+			// Partial connection, compatibility checking isn't needed
+			res = edge->ConnectP2(ref2);
+		    }
+		    if (!res) {
+			Elem* host = iMan->GetMan();
+			Logger()->Write(MLogRec::EErr, host, "Connecting [%s - %s] failed", pt1->GetUri().c_str(), pt2->GetUri().c_str());
+		    }
 		}
+	    } else {
+		Elem* pt = pt2;
+		Elem* host = iMan->GetMan();
+		Logger()->Write(MLogRec::EErr, host, "Connecting [%s] - not allowed cp", pt->GetUri().c_str());
 	    }
 	}
     }
-    return res;
+    return hres;
+}
+#endif
+
+TBool Incaps::HandleCompChanged(Elem& aContext, Elem& aComp)
+{
+    TBool hres = EFalse;
+    MEdge* edge = aComp.GetObj(edge);	
+    if (edge != NULL) {
+	hres = ETrue;
+	MVert* ref1 = edge->Ref1();
+	MVert* ref2 = edge->Ref2();
+	MVert* cp1 = edge->Point1();
+	MVert* cp2 = edge->Point2();
+	if (cp1 != ref1 || cp2 != ref2) {
+	    Elem* pt1 = ref1 == NULL ? NULL : ref1->EBase()->GetObj(pt1);
+	    Elem* pt2 = ref2 == NULL ? NULL : ref2->EBase()->GetObj(pt2);
+	    TBool isptok1 = (ref1 == NULL || IsPtOk(aContext, pt1));
+	    TBool isptok2 = (ref2 == NULL || IsPtOk(aContext, pt2));
+	    if (isptok1 && isptok2) {
+		if (cp1 != NULL && ref1 != cp1) edge->Disconnect(cp1);
+		if (cp2 != NULL && ref2 != cp2) edge->Disconnect(cp2);
+		if (ref1 != NULL && ref2 != NULL) {
+		    cp1 = edge->Point1();
+		    cp2 = edge->Point2();
+		    // Full connection, compatibility checking is needed
+		    MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
+		    MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
+		    TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
+		    TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
+		    if (ispt1cptb && ispt2cptb) {
+			// Are compatible - connect
+			TBool res = ETrue;
+			if (cp1 == NULL) res = edge->ConnectP1(ref1);
+			if (res && cp2 == NULL) res = edge->ConnectP2(ref2);
+			if (!res) {
+			    Elem* host = iMan->GetMan();
+			    Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
+			}
+		    }
+		    else {
+			TBool c1 = pt1checker->IsCompatible(pt2);
+			TBool c2 = pt2checker->IsCompatible(pt1);
+			Elem* host = iMan->GetMan();
+			Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
+		    }
+
+		} else {
+		    // Partial connection, compatibility checking isn't needed
+		    if (cp1 == NULL && ref1 != NULL) edge->ConnectP1(ref1);
+		    else if (cp2 == NULL && ref2 != NULL) edge->ConnectP2(ref2);
+		}
+	    } else {
+		Elem* pt = isptok1 ? pt2 : pt1;
+		Elem* host = iMan->GetMan();
+		Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
+	    }
+	}
+    }
+    return hres;
 }

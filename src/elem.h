@@ -8,6 +8,7 @@
 #include "mmuta.h"
 #include "base.h"
 #include "chromo.h"
+#include <time.h>
 
 class Chromo;
 class MProvider;
@@ -21,6 +22,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	typedef string TNMKey;
 	typedef pair<TNMKey, Elem*> TNMVal;
 	typedef multimap<string, Elem*> TNMReg;
+	typedef pair<TNMReg::iterator, TNMReg::iterator> TNMRegItRange;
 	// Relation chromo to model
 	typedef pair<Elem*, TNodeAttr> TCMRelTo;
 	typedef pair<void*, TNodeAttr> TCMRelFrom;
@@ -144,8 +146,6 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	Elem(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	Elem* GetNode(const GUri& aUri);
 	virtual ~Elem();
-	TBool IsRemoved() const;
-	virtual void SetRemoved();
 	void SetEType(const string& aPName, const string& aPEType = string());
 	void SetParent(const string& aParent);
 	void SetMan(Elem* aMan);
@@ -198,7 +198,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
 	void GetUri(GUri& aUri, Elem* aTop = NULL);
 	void GetRUri(GUri& aUri, Elem* aTop = NULL);
-	string GetUri(Elem* aTop = NULL);
+	string GetUri(Elem* aTop = NULL, TBool aShort = EFalse);
 	string GetRUri(Elem* aTop = NULL);
 	void RebaseUriToOuterNode(Elem* aOldBase, const GUri& aUri, GUri& aResult);
 	virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
@@ -212,7 +212,6 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
 	// From MElem
 	virtual const string EType(TBool aShort = ETrue) const;
-	virtual const set<string>& CompsTypes();
 	virtual Elem* GetMan();
 	virtual const Elem* GetMan() const;
 	Elem* GetParent();
@@ -234,6 +233,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual TInt GetContCount() const;
 	// Debugging
 	virtual void GetContactsData(vector<string, string>& aData) const;
+	TInt GetCapacity() const;
 	// Nodes
 	virtual TBool AddNode(const ChromoNode& aSpec, TBool aRunTime);
 	TBool AppendChild(Elem* aChild);
@@ -276,12 +276,14 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool IsForwardRef(Elem* aRef);
 	TMDeps& GetMDeps() { return iMDeps;};
 	void AddMDep(Elem* aNode, const ChromoNode& aMut, TNodeAttr aAttr);
-	void RemoveMDep(const TMDep& aDep);
+	void RemoveMDep(const TMDep& aDep, const Elem* aContext = NULL);
+	void RmMCDeps();
 	static void GetDepRank(const TMDep& aDep, Rank& aRank);
 	// Adding two directions chromo-model dependencies
 	void AddCMDep(const ChromoNode& aMut, TNodeAttr aAttr, Elem* aNode);
-	TBool RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr);
+	TBool RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr, const Elem* aContext = NULL);
 	void RmCMDep(const ChromoNode& aMut);
+	void RmCMDeps();
 	Elem* GetCMDep(const ChromoNode& aMut, TNodeAttr aAttr) const;
 	void GetDep(TMDep& aDep, TNodeAttr aAttr, TBool aLocalOnly = EFalse, TBool aAnyType = EFalse) const;
 	void GetDepRank(Rank& aRank, TNodeAttr aAttr);
@@ -299,9 +301,10 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void CopyModifsFromParent();
 	TBool HasModifs(const Elem* aOwner) const;
 	void CopyParentModifsToComp(Elem* aComp);
+	// Utils
+	void LogComps() const;
     protected:
 	Elem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, TBool aTrialMode = EFalse);
-	static void Init();
 	inline MProvider* Provider() const;
 	TBool AppendComp(Elem* aComp);
 	TBool RegisterComp(Elem* aComp);
@@ -315,14 +318,14 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool UnregisterComp(Elem* aComp, const string& aName = string());
 	TBool UnregisterChild(Elem* aChild, const string& aName = string());
 	Elem* GetComp(const string& aParent, const string& aName);
-	TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse);
+	TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
 	TBool MergeMutation(const ChromoNode& aSpec);
 	TBool MergeMutMove(const ChromoNode& aSpec);
 	virtual void DoOnCompChanged(Elem& aComp);
 	TBool IsLogeventCreOn();
 	void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
 	TBool HasChilds() const;
-	TBool HasInherDeps() const;
+	TBool HasInherDeps(const Elem* aScope) const;
 	void InsertIfQm(const string& aName, const TICacheRCtx& aReq, Base* aProv);
 	void UnregAllIfRel(TBool aInv = EFalse);
 	// ICache helpers, for debug only
@@ -335,6 +338,11 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool ResolveMutUnsafety(Elem* aMutated, const TMDep& aDep);
 	TBool ResolveMutsUnsafety();
 	ChromoNode GetLocalForwardCCDep(Elem* aOwner, const ChromoNode& aMut = ChromoNode()) const;
+	// Profiling
+	static void Delay(long us);
+	static long GetClockElapsed(const timespec& aStart, timespec& aEnd);
+	static long GetClockElapsed(long aStart);
+	static long GetClock();
     protected:
 	// Element type - parent's chain
 	// TODO [YB] Is it needed now after implementing inheritance chain?
@@ -349,10 +357,6 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	Chromo* iChromo;
 	// Mutation
 	Chromo* iMut;
-	// Sign of inited
-	static bool iInit;
-	// Components types
-	static set<string> iCompsTypes;
 	// Components, owninig container
 	vector<Elem*> iComps;
 	// Components map, not owning
@@ -369,8 +373,10 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TMDeps iMDeps;
 	// Mutation to model node relation, required for chromo squeezing, ref ds_mut_sqeezing
 	TCMRelReg iCMRelReg;
-	// Sign of that node is removed
-	TBool isRemoved;
+	static TBool EN_PERF_TRACE;
+	static TBool EN_PERF_METR;
+	static TBool EN_MUT_LIM;
+	static TBool EN_PERF_DBG1;
 };
 
 inline MLogRec* Elem::Logger() const {return iEnv ? iEnv->Logger(): NULL; }

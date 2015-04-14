@@ -8,24 +8,19 @@
 <node id="SysComps" parent="Elem">
 
     <node id="ConnPoint" parent="ConnPointBase">
-	<!-- Just mutate by adding the provider iface 
-	<node id="Prov" parent="Elem"></node>
-	-->
-	<node id="Provided" parent="Prop"></node>
-	<node id="Required" parent="Prop"></node>
+	<node id="Provided" parent="Prop"/>
+	<node id="Required" parent="Prop"/>
     </node>
 
     <node id="ConnPointInp" parent="ConnPointBaseInp">
-	<node id="Provided" parent="Prop"></node>
-	<node id="Required" parent="Prop"></node>
+	<node id="Provided" parent="Prop"/>
+	<node id="Required" parent="Prop"/>
     </node>
 
     <node id="ConnPointOut" parent="ConnPointBaseOut">
-	<node id="Provided" parent="Prop"></node>
-	<node id="Required" parent="Prop"></node>
+	<node id="Provided" parent="Prop"/>
+	<node id="Required" parent="Prop"/>
     </node>
-
-
 
     <!-- Element that acts as feedthrough for capsula of system - it extend
 	 the connection from outside into the system. The extention is implemented via embedding inernal CP,
@@ -34,32 +29,19 @@
 	 CP needs to be replaced by the enhanced conn point. 
 	 -->
     <node id="Extender" parent="Vert"> 
-
-	<node id="Logspec" parent="Elem">
-	    <node id="Creation" parent="Elem">
-	    </node>
-	</node>
-
-	<node id="Int" parent="./../ConnPoint"></node>
+	<node id="Int" parent="./../ConnPoint"/>
 	<node node="./(Elem:)Agents" id="MAExteder" parent="ExtenderAgent"/> 
     </node>
 
     <node id="ExtenderInp" parent="Vert"> 
-
-	<node id="Logspec" parent="Elem">
-	    <node id="Creation" parent="Elem">
-	    </node>
-	</node>
-
-	<node id="Int" parent="./../ConnPoint"></node>
+	<node id="Int" parent="./../ConnPoint"/>
 	<node node="./(Elem:)Agents" id="MAExteder" parent="ExtenderAgentInp"/> 
     </node>
 
     <node id="ExtenderOut" parent="Vert"> 
-	<node id="Int" parent="./../ConnPoint"></node>
+	<node id="Int" parent="./../ConnPoint"/>
 	<node node="./(Elem:)Agents" id="MAExteder" parent="ExtenderAgentOut"/> 
     </node>
-
 
 
     <!-- Socket -->

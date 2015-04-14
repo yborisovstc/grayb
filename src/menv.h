@@ -19,16 +19,25 @@ class MChromoMgr
 	// Enable to re-postion owned mutations in order to resolve unsafety
 	virtual bool EnableReposMuts() const = 0;
 	virtual void SetEnableReposMuts(bool aEnable) = 0;
+	virtual bool EnableCheckSafety() const = 0;
+	virtual void SetEnableCheckSafety(bool aEnable) = 0;
 };
 
 // Executive environment interface
 class MEnv
 {
     public:
+	enum TSBool
+	{
+	    ESb_EnPerfTrace = 1
+	};
+    public:
 	virtual MProvider *Provider() const = 0;
 	virtual MLogRec *Logger() = 0;
 	virtual Elem* Root() = 0;
 	virtual MChromoMgr* ChMgr() = 0;
+	virtual TBool GetSBool(TSBool aId) const = 0;
+	virtual void SetSBool(TSBool aId, TBool aVal) = 0;
 };
 
 

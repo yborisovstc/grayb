@@ -29,6 +29,9 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     else if (aType.compare(Edge::Type()) == 0) {
 	res = new Edge(aName, aMan, aEnv);
     }
+    else if (aType.compare(ACapsule::Type()) == 0) {
+	res = new ACapsule(aName, aMan, aEnv);
+    }
     else if (aType.compare(Prop::Type()) == 0) {
 	res = new Prop(aName, aMan, aEnv);
     }
@@ -211,11 +214,14 @@ Elem* ProvDef::GetNode(const string& aUri)
 	Elem* parent = NULL;
 	if (aUri.compare(Elem::Type()) == 0) {
 	    res = new Elem(NULL, iEnv);
-	    iReg.insert(TRegVal(aUri, res));
 	}
 	else if (aUri.compare(Vert::Type()) == 0) {
 	    parent = GetNode("Elem");
 	    res = new Vert(NULL, iEnv);
+	}
+	else if (aUri.compare(ACapsule::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new ACapsule(NULL, iEnv);
 	}
 	else if (aUri.compare(Edge::Type()) == 0) {
 	    parent = GetNode("Elem");

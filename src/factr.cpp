@@ -9,6 +9,15 @@ GFactory::GFactory(const string& aName, MEnv* aEnv): Base(aName), iEnv(aEnv)
     AddProvider(baseprov);
 }
 
+GFactory::~GFactory()
+{
+    while (!iProviders.empty()) {
+	GProvider* prov = iProviders.begin()->second;
+	delete prov;
+	iProviders.erase(iProviders.begin());
+    }
+}
+
 void *GFactory::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
@@ -60,6 +69,12 @@ void GFactory::AddProvider(GProvider* aProv)
     map<string, GProvider*>::const_iterator res = iProviders.find(aProv->Name());
     __ASSERT(res == iProviders.end());
     iProviders.insert(pair<string, GProvider*>(aProv->Name(), aProv));
+}
+
+void GFactory::RemoveProvider(GProvider* aProv)
+{
+    __ASSERT(iProviders.count(aProv->Name()) > 0);
+    iProviders.erase(aProv->Name());
 }
 
 void GFactory::AppendNodesInfo(vector<string>& aInfo)

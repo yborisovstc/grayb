@@ -23,6 +23,7 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_MutDepsChilds1);
     CPPUNIT_TEST(test_MutDepsRmRef);
     CPPUNIT_TEST(test_MutInv1);
+    CPPUNIT_TEST(test_MutInvRename);
     CPPUNIT_TEST(test_MutInvParent);
     CPPUNIT_TEST(test_MutInvImplicit);
     CPPUNIT_TEST(test_MutRmParent);
@@ -48,6 +49,7 @@ private:
     void test_MutDepsChilds1();
     void test_MutDepsRmRef();
     void test_MutInv1();
+    void test_MutInvRename();
     void test_MutInvParent();
     void test_MutInvImplicit();
     void test_MutRmParent();
@@ -239,6 +241,7 @@ void Ut_mut::test_MutDepsRm()
     iEnv = new Env("Env", "ut_mut_dep_1.xml", "ut_mut_dep_1.txt");
     // Enabling pheno, because of model is basing on pheno
     iEnv->ChMgr()->SetEnablePhenoModif(ETrue);
+    iEnv->ChMgr()->SetEnableCheckSafety(ETrue);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
@@ -270,9 +273,9 @@ void Ut_mut::test_MutDepsRm()
     mut = root->Mutation().Root().AddChild(ENt_Rm);
     mut.SetAttr(ENa_MutNode, "./elem1/elem2");
     root->Mutate();
-    // Check that the mutation is not refused
+    // Check that the mutation is refused because of having childs, to be unparent first
     e2 = root->GetNode("./elem1/elem2");
-    CPPUNIT_ASSERT_MESSAGE("Root mutation -rm- of elem2 is refused", e2 == NULL);
+    CPPUNIT_ASSERT_MESSAGE("Root mutation -rm- of elem2 is not refused", e2 != NULL);
 }
 
 // Preventing of mutation braking model consistency
@@ -436,6 +439,61 @@ void Ut_mut::test_MutInv1()
 }
 
 // Suppotring invariance with respect to mutations position
+void Ut_mut::test_MutInvRename()
+{
+    printf("\n === Test of mutation invariance with respect to mutations rank, dep: renaming of referred node\n");
+
+    iEnv = new Env("Env", "ut_mut_inv_rnm.xml", "ut_mut_inv_rnm.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    // Enabling mutation repositioning in order to resolve unsafety
+    iEnv->ChMgr()->SetEnableReposMuts(ETrue);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    // Check creation first
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
+    Elem* v1 = root->GetNode("./v1");
+    Elem* v2 = root->GetNode("./v2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get v1 and v2", v1 != NULL && v2 != NULL);
+    // Check that the inital connection is set
+    MVert* mv1 = v1->GetObj(mv1);
+    MVert* mv2 = v2->GetObj(mv2);
+    CPPUNIT_ASSERT_MESSAGE("Fail to connect v1 to v2", mv1->Pairs().count(mv2) == 1);
+    // Try to mutate edge point P2 to change v2 to v3
+    Elem* edge1 = root->GetNode("./edge1");
+    ChromoNode mut = edge1->Mutation().Root().AddChild(ENt_Cont);
+    mut.SetAttr(ENa_MutNode, "./P2");
+    mut.SetAttr(ENa_Ref, "./../../v3");
+    edge1->Mutate();
+   
+    // Save upated chromo 
+    iEnv->Root()->Chromos().Save("ut_mut_inv_rnm_res.xml_");
+    delete iEnv;
+    // Shifting mutation introduced another unsafety for -p1-, checking if it will be 
+    // resolved next model creation
+    iEnv = new Env("Env", "ut_mut_inv_rnm_res.xml_", "ut_mut_inv_rnm_res.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env1", iEnv != 0);
+    // Enabling mutation repositioning in order to resolve unsafety
+    iEnv->ChMgr()->SetEnableReposMuts(ETrue);
+    iEnv->ConstructSystem();
+    root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
+    // Check that the renewed connection is set
+    v1 = root->GetNode("./v1");
+    mv1 = v1->GetObj(mv1);
+    Elem* v3 = root->GetNode("./v3");
+    MVert* mv3 = v3->GetObj(mv3);
+    CPPUNIT_ASSERT_MESSAGE("Fail to connect v1 to v3", mv1->Pairs().count(mv3) == 1);
+    // Check that secondary forward dependency was resolved
+    Elem* p1 = root->GetNode("./p1");
+    string p1_cont;
+    p1->GetCont(p1_cont);
+    CPPUNIT_ASSERT_MESSAGE("Fail to set p1 with ref to edge1/P1", p1_cont == "./../edge1/P1");
+    // Save upated chromo 
+    iEnv->Root()->Chromos().Save("ut_mut_inv_rnm_res2.xml_");
+    delete iEnv;
+}
+
+// Suppotring invariance with respect to mutations position
 // Dependency that contradicts to the native order: ref to parent
 void Ut_mut::test_MutInvParent()
 {
@@ -573,7 +631,7 @@ void Ut_mut::test_MutRmParent()
     e3->Mutate();
     // Check that the mutation is dinied
     Elem* e4 = root->GetNode("./elem3/elem4");
-    CPPUNIT_ASSERT_MESSAGE("Removing elem4 from elem3 isn't denied", e4 != NULL && !e4->IsRemoved());
+    CPPUNIT_ASSERT_MESSAGE("Removing elem4 from elem3 isn't denied", e4 != NULL);
 
     // Remove elem3/elem4- owner of elem4_1, which is parent of elem4_1i 
     // The deps are mutations that referred to components of the node

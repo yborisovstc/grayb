@@ -49,21 +49,20 @@
     </node>
 
     <!-- Input of standard variable State -->
-    <node id="StVarInp" parent=":Elem:SysComps/ExtenderInp"> 
-	<rm node="./Int"/>
+    <node id="StVarInp" parent="Vert">
+	<node node="./Agents" id="MAExteder" parent="ExtenderAgentInp"/>
 	<node id="Int" parent="./../StInpSocket"> 
 	    <cont node="./PinData/Provided" val="MDVarGet"/>
 	</node>
     </node>
 
     <!-- Output of standard variable State -->
-    <node id="StVarOut" parent=":Elem:SysComps/ExtenderOut"> 
-	<rm node="./Int"/>
+    <node id="StVarOut" parent="Vert">
+	<node node="./Agents" id="MAExteder" parent="ExtenderAgentOut"/>
 	<node id="Int" parent="./../StOutSocket"> 
 	    <cont node="./PinData/Required" val="MDVarGet"/>
 	</node>
     </node>
-
 
 
     <!-- Input of int transition -->

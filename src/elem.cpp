@@ -4,10 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sstream>
+#include <sys/time.h>
 
 
-set<string> Elem::iCompsTypes;
-bool Elem::iInit = false;
+TBool Elem::EN_PERF_TRACE = EFalse;
+TBool Elem::EN_PERF_METR = EFalse;
+TBool Elem::EN_PERF_DBG1 = ETrue;
+TBool Elem::EN_MUT_LIM = EFalse;
 
 string Elem::Fmt::mSepContInp = ";";
 string Elem::Fmt::mSepContName = "~";
@@ -126,7 +129,11 @@ Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd): iE
 	}
     }
     if (rel == GUri::KNodeSep) {
-	iCIterRange = iElem.iMComps.equal_range(TNMKey(iId.second.second));
+	if (iId.second.second == GUri::KTypeAny) {
+	    iCIterRange = TNMRegItRange(iElem.iMComps.begin(), iElem.iMComps.end());
+	} else {
+	    iCIterRange = iElem.iMComps.equal_range(iId.second.second);
+	}
 	if (aToEnd) {
 	    iCIter = iCIterRange.second;
 	}
@@ -146,9 +153,8 @@ Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd): iE
     }
     else if (rel == GUri::KParentSep) {
 	if (iId.second.second == GUri::KTypeAny) {
-	    iChildsRange = pair<TNMReg::iterator, TNMReg::iterator>(iElem.iChilds.begin(), iElem.iChilds.end());
-	}
-	else {
+	    iChildsRange = TNMRegItRange(iElem.iChilds.begin(), iElem.iChilds.end());
+	} else {
 	    iChildsRange = iElem.iChilds.equal_range(iId.second.second);
 	}
 	if (aToEnd) {
@@ -157,12 +163,11 @@ Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd): iE
 	else {
 	    if (iId.first.empty() || iExtsrel !=  GUri::KNodeSep || iExt.empty() || iExt == GUri::KTypeAny) {
 		iChildsIter = iChildsRange.first;
-		for (; iChildsIter != iChildsRange.second && iChildsIter->second->IsRemoved(); iChildsIter++); 
 	    }
 	    else {
 		for (iChildsIter = iChildsRange.first; iChildsIter != iChildsRange.second; iChildsIter++) {
 		    Elem* comp = iChildsIter->second;
-		    if (comp->GetMan()->Name() == iExt && !comp->IsRemoved()) {
+		    if (comp->GetMan()->Name() == iExt) {
 			break;
 		    }
 		}
@@ -195,12 +200,10 @@ void Elem::IterImplBase::PostIncr()
 {
     if (SRel() == GUri::KNodeSep) {
 	iCIter++;
-	// Omit removed comps from the look
-	for (; iCIter != iCIterRange.second && iCIter->second->IsRemoved(); iCIter++); 
 	if (!iId.first.empty() && iExtsrel == GUri::KParentSep && !iExt.empty() && iExt != GUri::KTypeAny) {
 	    for (; iCIter != iCIterRange.second; iCIter++) {
 		Elem* comp = iCIter->second;
-		if (comp->GetParent()->Name() == iExt && !comp->IsRemoved()) {
+		if (comp->GetParent()->Name() == iExt) {
 		    break;
 		}
 	    }
@@ -208,12 +211,10 @@ void Elem::IterImplBase::PostIncr()
     }
     else {
 	iChildsIter++;
-	// Omit removed children from the look
-	for (; iChildsIter != iChildsRange.second && iChildsIter->second->IsRemoved(); iChildsIter++); 
 	if (!iId.first.empty() && iExtsrel == GUri::KNodeSep && !iExt.empty() && iExt != GUri::KTypeAny) {
 	    for (;iChildsIter != iChildsRange.second; iChildsIter++) {
 		Elem* comp = iChildsIter->second;
-		if (comp->GetMan()->Name() == iExt && !comp->IsRemoved()) {
+		if (comp->GetMan()->Name() == iExt) {
 		    break;
 		}
 	    }
@@ -268,35 +269,57 @@ Elem*  Elem::IterImplBase::GetElem()
 }
 
 
-// Element
-void Elem::Init()
+void Elem::Delay(long us)
 {
-    iCompsTypes.insert("Elem");
-    iInit = true;
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    long int cur_us = tp.tv_sec * 1000000 + tp.tv_usec;
+    long int end_us = cur_us + us;
+    while (cur_us < end_us) {
+	gettimeofday(&tp, NULL);
+	cur_us = tp.tv_sec * 1000000 + tp.tv_usec;
+    };
 }
 
+// Element
+
 Elem::Elem(const string &aName, Elem* aMan, MEnv* aEnv): Base(aName), iMan(aMan), iEnv(aEnv),
-    iObserver(NULL), iParent(NULL), isRemoved(EFalse)
+    iObserver(NULL), iParent(NULL)
 {
-    if (!iInit) 
-	Init();
+    /*
+    stringstream ss;
+    long prt = (long) this;
+    ss << prt << ";Constr";
+    Logger()->Write(MLogRec::EInfo, this, ss.str().c_str());
+    */
     // Set elem type (parent) by default
     //    iEType = Type();
+    //Logger()->Write(MLogRec::EInfo, this, "Elem constr p0");
+    //Delay(100);
+    //Logger()->Write(MLogRec::EInfo, this, "Elem constr p1");
     iMut = Provider()->CreateChromo();
+    //Logger()->Write(MLogRec::EInfo, this, "Elem constr p2");
     iMut->Init(ENt_Node);
+    //Logger()->Write(MLogRec::EInfo, this, "Elem constr p3");
     iChromo = Provider()->CreateChromo();
     iChromo->Init(ENt_Node);
+    //Logger()->Write(MLogRec::EInfo, this, "Elem constr p4");
     ChromoNode croot = iChromo->Root();
     croot.SetAttr(ENa_Id, iName);
     SetEType(Type());
     SetParent(Type());
+    iComps.reserve(100);
 }
 
 Elem::Elem(Elem* aMan, MEnv* aEnv): Base(Type()), iMan(aMan), iEnv(aEnv),
     iObserver(NULL), iParent(NULL)
 {
-    if (!iInit) 
-	Init();
+    /*
+    stringstream ss;
+    long prt = (long) this;
+    ss << prt << ";Constr";
+    Logger()->Write(MLogRec::EInfo, this, ss.str().c_str());
+    */
     iMut = Provider()->CreateChromo();
     iMut->Init(ENt_Node);
     iChromo = Provider()->CreateChromo();
@@ -310,6 +333,16 @@ Elem::Elem(Elem* aMan, MEnv* aEnv): Base(Type()), iMan(aMan), iEnv(aEnv),
 Elem::~Elem() 
 {
     // Notify the man of deleting
+    /*
+    stringstream ss;
+    long prt = (long) this;
+    ss << prt << ";Destr";
+    Logger()->Write(MLogRec::EInfo, this, ss.str().c_str());
+    */
+
+    // TODO [YB] OnCompDeleting called only here, i.e. after Elem derivation desctuctor completed
+    // This means that the ovner notified will not be able to understand what agent is deleted
+    // To consider to add one more notification - before deletions
     if (iMan != NULL) {
 	iMan->OnCompDeleting(*this);
     }
@@ -322,7 +355,6 @@ Elem::~Elem()
     // Unregigster ifaces providers
     UnregAllIfRel();
     // Remove the comps, using iterator refresh because the map is updated on each comp deletion
-    // TODO [YB] Comp marked as remved via SetRemoved() will not be deleted - mem leak
     vector<Elem*>::reverse_iterator it = iComps.rbegin();
     while (it != iComps.rend()) {
 	delete *it;
@@ -342,6 +374,9 @@ Elem::~Elem()
 	delete iMut;
 	iMut = NULL;
     }
+    // Remove deps
+    RmCMDeps();
+    RmMCDeps();
     if (iChromo != NULL) {
 	// Remove chromo only if it is deattached from parent's chromo. Ref UC_016. Normally the parent does
 	// not deattach the childs chromo even if the child is deleted. This allows to keep node creation 
@@ -975,11 +1010,16 @@ TBool Elem::MergeMutMove(const ChromoNode& aSpec)
 void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode)
 {
     const ChromoNode& mroot = aMutSpec;
+    if (mroot.Begin() == mroot.End()) return;
     ChromoNode sroot = *(mroot.Root());
-    //TInt tord = sroot.GetOrder(ETrue);
-    TInt tord = iEnv->ChMgr()->GetSpecMaxOrder();
-    TInt lim = iEnv->ChMgr()->GetLim();
-    TBool isattached = IsChromoAttached();
+    TInt tord = 0;
+    TInt lim = 0;
+    TBool isattached = EFalse;
+    if (EN_MUT_LIM) {
+	tord = iEnv->ChMgr()->GetSpecMaxOrder();
+	lim = iEnv->ChMgr()->GetLim();
+	isattached = IsChromoAttached();
+    }
     for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End(); rit++)
     {
 	TBool res = EFalse;
@@ -987,7 +1027,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	Logger()->SetContextMutId(rno.LineId());
 	TInt order = rno.GetOrder();
 	// Avoiding mutations above limit. Taking into account only attached chromos.
-	if (isattached && tord > 0 && order > tord - lim) {
+	if (EN_MUT_LIM && isattached && tord > 0 && order > tord - lim) {
 	    continue;
 	}
 	TNodeType rnotype = rno.Type();
@@ -1007,7 +1047,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    ChangeAttr(rno, aRunTime, aCheckSafety, aTrialMode);
 	}
 	else if (rnotype == ENt_Cont) {
-	    DoMutChangeCont(rno, aRunTime, aTrialMode);
+	    DoMutChangeCont(rno, aRunTime, aCheckSafety, aTrialMode);
 	}
 	else if (rnotype == ENt_Move) {
 	    MoveNode(rno, aRunTime, aTrialMode);
@@ -1149,7 +1189,7 @@ TBool Elem::ChangeAttr(TNodeAttr aAttr, const string& aVal)
     return res;
 }
 
-TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
+TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode)
 {
     TBool res = ETrue;
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
@@ -1170,20 +1210,21 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aTria
     }
     if (node != NULL && (node == this || IsComp(node))) {
 	// Only direct inherited comp is available for modif, ref. uc_044_disc_3
-	if (epheno || node == this || IsDirectInheritedComp(node)) {
-	    if (IsMutSafe(node)) {
+	if (epheno || node == this || (!aCheckSafety || IsDirectInheritedComp(node))) {
+	    if (!aCheckSafety || IsMutSafe(node)) {
 		if (refex) {
 		    // For -ref- attr the value is the ref relative to mutated node context
 		    rnode = node->GetNode(mval);
 		    //mval = rnode->GetRUri(node);
 		    if (rnode == NULL) {
+			rnode = node->GetNode(mval);
 			Logger()->Write(MLogRec::EErr, this, aSpec,
 				"Changing content of node [%s] to ref [%s] - cannot find ref", snode.c_str(), mval.c_str());
 			res = EFalse;
 		    }
 		    else {
 			TMDep dep;
-			if (!IsRefSafe(rnode, ENa_Ref, node, &dep)) {
+			if (aCheckSafety && !IsRefSafe(rnode, ENa_Ref, node, &dep)) {
 			    res = EFalse;
 			    if (erepos && iMan != NULL) {
 				// Forward ref found, keep chromo consistent using invriance principle, ref uc_046
@@ -1223,7 +1264,6 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aTria
 	    }
 	}
 	else  {
-	    IsInheritedComp(node);
 	    if (efix) {
 		// Trying to repair chromo by transforming pheno to mut
 		Elem* mnode = node->GetAttachingMgr();
@@ -1260,7 +1300,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aTria
 			node->GetRUri(nuri, mnode);
 			mut.SetAttr(ENa_MutNode, nuri.GetUri(EFalse));
 		    }
-		    mnode->DoMutChangeCont(mut, aRunTime);
+		    mnode->DoMutChangeCont(mut, aRunTime, aCheckSafety);
 		    mutadded = ETrue;
 		}
 	    }
@@ -1289,15 +1329,39 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
     string sname = aNode.Name();
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
     TBool erepos = iEnv->ChMgr()->EnableReposMuts();
+    TBool ecsaf = iEnv->ChMgr()->EnableCheckSafety();
     TBool mutadded = EFalse;
     TBool res = EFalse;
+    TBool ptrace = EN_PERF_TRACE;
+    TBool ptevent = EFalse;
+    //if (EN_PERF_METR && iName == "Held1" && sname == "1211685360"/* && sparent == "/(Elem:)Root/(Elem:)Modules/(Elem:)VisComps/(Extender:)DrawingElemExt"*/) {
+    //if (EN_PERF_METR && EN_PERF_DBG1 && iName == "DrawingElem" && sname == "Logspec") {
+    if (EN_PERF_METR && EN_PERF_DBG1 && iName == "Velocity_L" && sname == "448726636") {
+	Logger()->Write(MLogRec::EInfo, this, "Point_1");
+	ptrace = ETrue;
+	iEnv->SetSBool(MEnv::ESb_EnPerfTrace, ETrue);
+	ptevent = ETrue;
+    }
+    /* Profiling using wall-clock. It doesn't shows time interval within given thread, other threads are affecting
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    long int t1 = tp.tv_sec * 1000000 + tp.tv_usec;
+    */
+    //timespec t1;
+    //clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t1);
+    if (ptrace) Logger()->Write(MLogRec::EInfo, this, "Adding node [%s], t1", sname.c_str());
+    long t1 = GetClock();
+
     __ASSERT(!sname.empty());
+    /*
     if (IsLogeventCreOn()) {
 	Logger()->Write(MLogRec::EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
     }
+    */
+    //Logger()->Write(MLogRec::EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
     Elem* elem = NULL;
     Elem* node = snode.empty() ? this: GetNode(snode); 
-    if (node != NULL && (node == this || IsComp(node))) {
+    if (node != NULL) {
 	// Obtain parent first
 	Elem *parent = NULL;
 	// Check if the parent is specified
@@ -1321,8 +1385,8 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 		}
 	    }
 	    if (parent != NULL) {
-		if (epheno || node == this || IsDirectInheritedComp(node)) {
-		    if (IsForwardRef(parent)) {
+		if (epheno || node == this || !ecsaf || IsDirectInheritedComp(node)) {
+		    if (ecsaf && IsForwardRef(parent)) {
 			res = EFalse;
 			if (erepos && iMan != NULL) {
 			    // Forward ref found, keep chromo consistent using invriance principle, ref uc_046
@@ -1335,7 +1399,10 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 			}
 		    }
 		    // Create heir from the parent
+		    if (ptrace) { long t1_2 = GetClockElapsed(t1); Logger()->Write(MLogRec::EInfo, this, "Adding node, t1-t2: %d", t1_2);}
+		    long t3; if (ptrace) t3 = GetClock();
 		    elem = parent->CreateHeir(sname, node);
+		    if (ptrace) { long t3_4 = GetClockElapsed(t3); Logger()->Write(MLogRec::EInfo, this, "Adding node, t3-t4: %d", t3_4);}
 		    // TODO [YB] Seems to be just temporal solution. To consider using context instead.
 		    // Make heir based on the parent: re-parent the heir (currently it's of grandparent's parent) and clean the chromo
 		    //elem->SetEType(sparent); // The type is set when creating heir
@@ -1369,11 +1436,16 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 				mutadded = ETrue;
 			    }
 			    // Mutate object 
+			    long t5; if (ptrace) t5 = GetClock();
 			    elem->SetMutation(aNode);
-			    elem->Mutate();
+			    elem->Mutate(EFalse, ecsaf);
+			    if (ptrace) { long t5_6 = GetClockElapsed(t3); Logger()->Write(MLogRec::EInfo, this, "Adding node, t5-t6: %d", t5_6);}
+			    //Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
+			    /*
 			    if (IsLogeventCreOn()) {
 				Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
 			    }
+			    */
 			}
 			else {
 			    Logger()->Write(MLogRec::EErr, this, "Adding node [%s:%s] failed", elem->EType().c_str(), elem->Name().c_str());
@@ -1428,17 +1500,52 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 	}
     }
     else  {
-	Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] in node [%s] - cannot find node or node isn't comp", sname.c_str(), snode.c_str());
+	Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] in node [%s] - cannot find node", sname.c_str(), snode.c_str());
     }
     if (!aRunTime && !mutadded && !aTrialMode) {
 	iChromo->Root().AddChild(aNode);
     }
+    if (EN_PERF_METR && elem != NULL) {
+	/* Profiling using wall-clock. It doesn't shows time interval within given thread, other threads are affecting
+	gettimeofday(&tp, NULL);
+	long int t2 = tp.tv_sec * 1000000 + tp.tv_usec;
+	int nodes = elem->GetCapacity();
+	long tspan = t2-t1;
+	long tspan_n = tspan/(nodes + 1);
+	Logger()->Write(MLogRec::EInfo, this, "Created comp [%s] in node [%s];%d;%d", sname.c_str(), snode.c_str(), tspan, tspan_n);
+	*/
+	timespec te;
+	//long tspan = GetClockElapsed(t1, te);
+	long tspan = GetClockElapsed(t1);
+	int nodes = elem->GetCapacity();
+	long tspan_n = tspan/(nodes + 1);
+	Logger()->Write(MLogRec::EInfo, this, "Created comp [%s] in node [%s];%d;%d;%d", sname.c_str(), snode.c_str(), nodes, tspan, tspan_n);
+    }
+    if (ptevent) {
+	iEnv->SetSBool(MEnv::ESb_EnPerfTrace, EFalse);
+    }
     return elem;
 }
 
-const set<string>& Elem::CompsTypes()
+long Elem::GetClock()
 {
-    return iCompsTypes;
+    timespec tt;
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &tt);
+    return tt.tv_nsec/1000;
+}
+
+long Elem::GetClockElapsed(const timespec& aStart, timespec& aEnd)
+{
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &aEnd);
+    return ((aEnd.tv_nsec-aStart.tv_nsec) < 0) ? (1000000000 + aEnd.tv_nsec - aStart.tv_nsec) : (aEnd.tv_nsec - aStart.tv_nsec);
+}
+
+long Elem::GetClockElapsed(long aStart)
+{
+    timespec aEnd;
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &aEnd);
+    long end_us = aEnd.tv_nsec/1000;
+    return ((end_us - aStart) < 0) ? (1000000 + end_us - aStart) : (end_us - aStart);
 }
 
 // Reimplemented to keep system consistency. New version is based on run-time model only
@@ -1446,6 +1553,7 @@ const set<string>& Elem::CompsTypes()
 Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont */)
 {
     Elem* heir = NULL;
+    //Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p1 ");
     if (Provider()->IsProvided(this)) {
 	heir = Provider()->CreateNode(Name(), aName, aMan, iEnv);
     }
@@ -1458,11 +1566,14 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
 	else {
 	    heir = iParent->CreateHeir(aName, iMan);
 	}
+	if (EN_PERF_TRACE) Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p2 ");
 	// Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo
 	ChromoNode root = iChromo->Root();
 	heir->SetMutation(root);
 	// Mutate run-time only - !! DON'T UPDATE CHROMO, ref UC_019
 	heir->Mutate(ETrue);
+	if (EN_PERF_TRACE) Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p3 ");
+	// Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo
 	// Mutated with parent's own chromo - so panent's name is the type now. Set also the parent, but it will be updated further
 	heir->SetEType(Name(), EType(EFalse));
 	heir->SetParent(Name());
@@ -1472,6 +1583,7 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
 	// Re-adopte the child
 	iParent->RemoveChild(heir);
 	AppendChild(heir);
+	if (EN_PERF_TRACE) Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p4 ");
     }
     return heir;
 }
@@ -1514,9 +1626,7 @@ TBool Elem::RegisterComp(Elem* aComp)
     Elem* node = GetComp(aComp->EType(), aComp->Name());
     if (node == NULL) {
 	iMComps.insert(TNMVal(TNMKey(aComp->Name()), aComp));
-	iMComps.insert(TNMVal(TNMKey("*"), aComp));
-    }
-    else {
+    } else {
 	Logger()->Write(MLogRec::EErr, this, "Registering component [%s] - already exists", aComp->Name().c_str());
 	res = EFalse;
     }
@@ -1574,15 +1684,6 @@ TBool Elem::UnregisterComp(Elem* aComp, const string& aName)
 	}
     }
     //__ASSERT(found); /* To avoid panic when deleting comp that hasn't been registered yet */
-    found = EFalse;
-    range = iMComps.equal_range(TNMKey("*"));
-    for (TNMReg::iterator it = range.first; it != range.second && !found; it++) {
-	if (it->second == aComp) {
-	    iMComps.erase(it);
-	    found = ETrue;
-	}
-    }
-    //__ASSERT(found);
     res = ETrue;
     return res;
 }
@@ -1710,12 +1811,14 @@ Elem* Elem::GetNode(const string& aUri)
 void Elem::OnCompDeleting(Elem& aComp)
 {
     // Translate to hier
+    /*
     if (iMan != NULL) {
 	iMan->OnCompDeleting(aComp);
     }
     if (iObserver != NULL) {
 	iObserver->OnCompDeleting(aComp);
     }
+    */
     // Handle for direct child
     if (aComp.GetMan() == this) {
 	// Don't deattach the childs chromo. Ref UC_016. The childs chromo (childs creation mutation) needs
@@ -1738,6 +1841,7 @@ void Elem::OnCompDeleting(Elem& aComp)
 void Elem::OnCompAdding(Elem& aComp)
 {
     // If the comp is already registered then propagate the event
+    /*
     if (IsCompRegistered(&aComp)) {
 	if (iMan != NULL) {
 	    iMan->OnCompAdding(aComp);
@@ -1746,6 +1850,7 @@ void Elem::OnCompAdding(Elem& aComp)
 	    iObserver->OnCompAdding(aComp);
 	}
     }
+    */
 }
 
 // TODO [YB] To include agents as member of elem. This will be more effective
@@ -1759,20 +1864,16 @@ void Elem::OnCompAdding(Elem& aComp)
 TBool Elem::OnCompChanged(Elem& aComp)
 {
     Elem* agents = GetComp("Elem", "Agents");
-    TBool res = ETrue;
-    TBool handled_by_agents = EFalse;
+    TBool res = EFalse;
     if (agents != NULL) {
-	for (vector<Elem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && res; it++) {
+	for (vector<Elem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && !res; it++) {
 	    MACompsObserver* iagent = (*it)->GetObj(iagent);
 	    if (iagent != NULL) {
 		res = iagent->HandleCompChanged(*this, aComp);
-		handled_by_agents = ETrue;
 	    }
 	}
     }
     /*
-       DoOnCompChanged(aComp);
-       */
     if (!handled_by_agents) {
 	DoOnCompChanged(aComp);
     }
@@ -1783,6 +1884,7 @@ TBool Elem::OnCompChanged(Elem& aComp)
     if (res && iObserver != NULL) {
 	iObserver->OnCompChanged(aComp);
     }
+    */
     return res;
 }
 
@@ -2042,11 +2144,11 @@ void Elem::GetUri(GUri& aUri, Elem* aTop)
     }
 }
 
-string Elem::GetUri(Elem* aTop)
+string Elem::GetUri(Elem* aTop, TBool aShort)
 {
     GUri uri;
     GetUri(uri, aTop);
-    return uri.GetUri();
+    return uri.GetUri(aShort);
 }
 
 Elem* Elem::GetRoot() const
@@ -2132,20 +2234,21 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
 	    // Check dependent mutations
 	    if (!aCheckSafety || IsMutSafe(node)) {
 		res = ETrue;
-		/*
+		/* Solution 1
 		// If node has children then just mark it as removed but not remove actually
 		if (node->HasInherDeps()) {
-		node->SetRemoved();
-		if (!aRunTime) {
-		// Adding dependency to object of change
-		ChromoNode chn = iChromo->Root().AddChild(aSpec);
-		AddCMDep(chn, ENa_MutNode, node);
-		}
-		}
-		else {
-		delete node;
+		    node->SetRemoved();
+		    if (!aRunTime) {
+			// Adding dependency to object of change
+			ChromoNode chn = iChromo->Root().AddChild(aSpec);
+			AddCMDep(chn, ENa_MutNode, node);
+			mutadded = ETrue;
+		    }
+		} else {
+		    delete node;
 		}
 		*/
+		/* Solution 2
 		// Just mark node as removed but not remove actually
 		node->SetRemoved();
 		if (!aRunTime) {
@@ -2153,6 +2256,14 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
 		    ChromoNode chn = iChromo->Root().AddChild(aSpec);
 		    AddCMDep(chn, ENa_MutNode, node);
 		    mutadded = ETrue;
+		}
+		*/
+		// Solution3: disable removing if here are heirs, needs to unparent them first
+		if (!node->HasInherDeps(node)) {
+		    delete node;
+		} else {
+		    Logger()->Write(MLogRec::EInfo, this, "Removing node [%s], refused, there are heirs of the node, unparent first", snode.c_str());
+		    node->HasInherDeps(node);
 		}
 		if (IsLogeventCreOn()) {
 		    Logger()->Write(MLogRec::EInfo, this, "Removed elem [%s]", snode.c_str());
@@ -2238,8 +2349,9 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 			if (res) {
 			    // Remove source node
 			    // If node has children then just mark it as removed but not remove actually
-			    if (snode->HasInherDeps()) {
-				snode->SetRemoved();
+			    if (snode->HasInherDeps(snode)) {
+				//TODO [YB] Consider to handle correctly
+				//!!snode->SetRemoved();
 			    }
 			    else {
 				delete snode;
@@ -2379,13 +2491,15 @@ Elem* Elem::GetAowner()
 {
     Elem* res = NULL;
     ChromoNode::Iterator prnt = iChromo->Root().Parent();
-    Elem* cand = GetMan();
-    while (res == NULL && cand != NULL) {
-	if (cand->iChromo->Root() == *prnt) {
-	    res = cand;
-	}
-	else {
-	    cand = cand->GetMan();
+    if (prnt != iChromo->Root().End()) {
+	Elem* cand = GetMan();
+	while (res == NULL && cand != NULL) {
+	    if (cand->iChromo->Root() == *prnt) {
+		res = cand;
+	    }
+	    else {
+		cand = cand->GetMan();
+	    }
 	}
     }
     return res;
@@ -2395,13 +2509,15 @@ const Elem* Elem::GetAowner() const
 {
     const Elem* res = NULL;
     ChromoNode::Iterator prnt = iChromo->Root().Parent();
-    const Elem* cand = GetMan();
-    while (res == NULL && cand != NULL) {
-	if (cand->iChromo->Root() == *prnt) {
-	    res = cand;
-	}
-	else {
-	    cand = cand->GetMan();
+    if (prnt != iChromo->Root().End()) {
+	const Elem* cand = GetMan();
+	while (res == NULL && cand != NULL) {
+	    if (cand->iChromo->Root() == *prnt) {
+		res = cand;
+	    }
+	    else {
+		cand = cand->GetMan();
+	    }
 	}
     }
     return res;
@@ -2428,7 +2544,7 @@ TBool Elem::IsInheritedComp(const Elem* aNode) const
 
 TBool Elem::IsDirectInheritedComp(const Elem* aNode) const
 {
-    Elem* aaowner = ((Elem*) aNode)->GetAttachedAowner();
+    //Elem* aaowner = ((Elem*) aNode)->GetAttachedAowner();
     Elem* uaowner = ((Elem*) aNode)->GetUpperAowner();
     Elem* acompo = ((Elem*) this)->GetAcompOwning((Elem*) aNode);
     TBool isinher = uaowner == NULL || IsComp(uaowner) && !uaowner->IsComp(this);
@@ -2713,43 +2829,21 @@ ChromoNode Elem::GetChNode(const GUri& aUri) const
 {
 }
 
-TBool Elem::IsRemoved() const
-{
-    return isRemoved;
-}
-
-void Elem::SetRemoved()
-{
-    // Remove node from native hier but keep it in inher hier
-    // Notify the man of deleting
-    if (iMan != NULL) {
-	iMan->OnCompDeleting(*this);
-    }
-    if (iObserver != NULL) {
-	iObserver->OnCompDeleting(*this);
-    }
-    // Mark the comps as removed, using iterator refresh because the map is updated on each comp deletion
-    vector<Elem*>::reverse_iterator it = iComps.rbegin();
-    while (it != iComps.rend()) {
-	Elem* comp = *it;
-	comp->SetRemoved();
-	it = iComps.rbegin();
-    }
-    // Mark node as removed from hative hier
-    isRemoved = ETrue;
-}
-
 TBool Elem::HasChilds() const
 {
     return !iChilds.empty();
 }
 
-TBool Elem::HasInherDeps() const
+TBool Elem::HasInherDeps(const Elem* aScope) const
 {
-    TBool res = !iChilds.empty();
+    TBool res = EFalse;
+    for (TNMReg::const_iterator it = iChilds.begin(); it != iChilds.end() && !res; it++) {
+	Elem* comp = it->second;
+	res =  !aScope->IsComp(comp);
+    }
     for (TNMReg::const_iterator it = iMComps.begin(); it != iMComps.end() && !res; it++) {
 	Elem* comp = it->second;
-	res = comp->HasInherDeps();
+	res = comp->HasInherDeps(aScope);
     }
     return res;
 }
@@ -3076,13 +3170,28 @@ void Elem::AddMDep(Elem* aNode, const ChromoNode& aMut, TNodeAttr aAttr)
     iMDeps.push_back(TMDep(TMutRef(aNode, (void*) aMut.Handle()), aAttr));
 }
 
-void Elem::RemoveMDep(const TMDep& aDep)
+void Elem::RemoveMDep(const TMDep& aDep, const Elem* aContext)
 {
+    if (aContext == this) return;
     for (TMDeps::iterator it = iMDeps.begin(); it != iMDeps.end(); it++) {
 	if (*it == aDep) {
+	    Elem* node = aDep.first.first;
+	    ChromoNode mut = iChromo->CreateNode(aDep.first.second);
+	    node->RmCMDep(mut, aDep.second, aContext != NULL ? aContext: this);
 	    iMDeps.erase(it);
 	    break;
 	}
+    }
+}
+
+void Elem::RmMCDeps()
+{
+    while (iMDeps.begin() != iMDeps.end()) {
+	TMDep dep = *(iMDeps.begin());
+	Elem* node = dep.first.first;
+	ChromoNode mut = iChromo->CreateNode(dep.first.second);
+	node->RmCMDep(mut, dep.second, this);
+	iMDeps.erase(iMDeps.begin());
     }
 }
 
@@ -3094,14 +3203,24 @@ void Elem::AddCMDep(const ChromoNode& aMut, TNodeAttr aAttr, Elem* aNode)
     iCMRelReg.insert(TCMRel(TCMRelFrom((void*) aMut.Handle(), aAttr), aNode));
 }
 
-TBool Elem::RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr)
+void Elem::RmCMDeps()
+{
+    while (iCMRelReg.begin() != iCMRelReg.end()) {
+	TCMRelReg::iterator it = iCMRelReg.begin();
+	ChromoNode mut = iChromo->CreateNode(it->first.first);
+	RmCMDep(mut, it->first.second);
+    }
+}
+
+TBool Elem::RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr, const Elem* aContext)
 {
     TBool res = EFalse;
+    if (aContext == this) return res;
     TCMRelFrom key((void*) aMut.Handle(), aAttr);
     if (iCMRelReg.count(key) > 0) {
 	Elem* node = iCMRelReg.at(key);
 	iCMRelReg.erase(key);
-	node->RemoveMDep(TMDep(TMutRef(this, (void*) aMut.Handle()), aAttr));
+	node->RemoveMDep(TMDep(TMutRef(this, (void*) aMut.Handle()), aAttr), aContext != NULL ? aContext: this);
 	res = ETrue;
     }
     else {
@@ -3366,4 +3485,24 @@ void Elem::RebaseUriToOuterNode(Elem* aOldBase, const GUri& aUri, GUri& aResult)
 {
     aOldBase->GetRUri(aResult, this);
     aResult.Append(aUri);
+}
+
+TInt Elem::GetCapacity() const
+{
+    TInt res = 0;
+    for (vector<Elem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
+	res++;
+	Elem* comp = *it;
+	res += comp->GetCapacity();
+    }
+    return res;
+}
+
+void Elem::LogComps() const
+{
+    for (vector<Elem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
+	Elem* comp = *it;
+	Logger()->Write(MLogRec::EInfo, comp, ">");
+	comp->LogComps();
+    }
 }

@@ -4020,11 +4020,16 @@ void FBnegDt::DtGet(Sdata<bool>& aData)
 {
     TBool res = ETrue;
     MDVarGet* dget = mHost.GetInp(EInp1);
-    MDtGet<Sdata<bool> >* dfget = dget->GetDObj(dfget);
-    if (dfget != NULL) {
-	Sdata<bool> arg;
-	dfget->DtGet(arg);
-	aData = !arg;
+    if (dget != NULL) {
+	MDtGet<Sdata<bool> >* dfget = dget->GetDObj(dfget);
+	if (dfget != NULL) {
+	    Sdata<bool> arg;
+	    dfget->DtGet(arg);
+	    aData = !arg;
+	}
+    } else {
+	dget = mHost.GetInp(EInp1);
+	res = EFalse;
     }
     aData.mValid = res;
     if (mRes != aData) {

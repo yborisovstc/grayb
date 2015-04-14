@@ -28,7 +28,6 @@ libgrayb_la_SOURCES = \
 		       provdef.h \
 		       factr.cpp \
 		       factr.h \
-		       mgraph.h \
 		       mvert.h \
 		       medge.h \
 		       vert.h \
@@ -55,9 +54,7 @@ libgrayb_la_SOURCES = \
 		       rdata.h \
 		       rdata.cpp \
 		       mmuta.h \
-		       mconn.h \
-		       graph.cpp \
-		       graph.h 
+		       mconn.h
 
 
 include_HEADERS = \
@@ -80,15 +77,13 @@ include_HEADERS = \
 		  guri.h \
 		  mprov.h \
 		  prov.h \
-		  mgraph.h \
 		  elem.h \
 		  syst.h \
 		  prop.h \
 		  vert.h \
 		  edge.h \
 		  rdata.h \
-		  incaps.h \
-		  graph.h 
+		  incaps.h
 
 
 libgrayb_la_LDFLAGS = -rdynamic -no-undefined

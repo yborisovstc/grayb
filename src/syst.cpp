@@ -6,6 +6,48 @@
 #include "mchromo.h"
 #include "mprop.h"
 
+// Caplule
+
+string ACapsule::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
+
+ACapsule::ACapsule(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+{
+    SetEType(Type(), Elem::PEType());
+    SetParent(Type());
+}
+
+ACapsule::ACapsule(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+{
+    SetEType(Elem::PEType());
+    SetParent(Elem::PEType());
+}
+
+void *ACapsule::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+{
+    void* res = NULL;
+    RqContext ctx(this, aCtx);
+    if (strcmp(aName, Type()) == 0) res = this;
+    else res = Elem::DoGetObj(aName, EFalse, aCtx);
+    return res;
+}
+
+TBool ACapsule::OnCompChanged(Elem& aComp)
+{
+    Elem::OnCompChanged(aComp);
+    if (iMan != NULL) {
+	iMan->OnCompChanged(aComp);
+    }
+    if (iObserver != NULL) {
+	iObserver->OnCompChanged(aComp);
+    }
+    return ETrue;
+}
+
+// Base of ConnPoint reimplement obj provider iface to redirect the request to the hier mgr
+
 string ConnPointBase::PEType()
 {
     return Vert::PEType() + GUri::KParentSep + Type();
@@ -918,6 +960,7 @@ void *Syst::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 
 void Syst::OnCompDeleting(Elem& aComp)
 {
+    /*
     Elem* eedge = GetCompOwning("Edge", &aComp);
     if (eedge != NULL) {
 	// Reconnect the edge
@@ -925,71 +968,73 @@ void Syst::OnCompDeleting(Elem& aComp)
 	__ASSERT(edge != NULL);
 	edge->Disconnect();
     }
+    */
     Vert::OnCompDeleting(aComp);
 }
 
-void Syst::DoOnCompChanged(Elem& aComp)
+
+TBool Syst::IsPtOk(Elem* aPt) {
+    return ETrue;
+}
+
+TBool Syst::OnCompChanged(Elem& aComp)
 {
-    Elem* eedge = GetCompOwning("Edge", &aComp);
-    if (eedge != NULL) {
-	Edge* edge = eedge->GetObj(edge);	
-	__ASSERT(edge != NULL);
-	if (&aComp == edge->Point1p() || &aComp == edge->Point2p()) {
-	    edge->Disconnect(&aComp);
-	    if (!edge->Pointu(&aComp).empty()) {
-		TBool res = EFalse;
-		if (edge->Pointv(&aComp) != NULL) {
-		    if (edge->Point1() == NULL && edge->Point2() == NULL) {
-			// Partial connection, compat checking isn't needed
-			res = edge->Connect(&aComp);
+    TBool res = Elem::OnCompChanged(aComp);
+    if (res) return res;
+    TBool hres = EFalse;
+    MEdge* edge = aComp.GetObj(edge);	
+    if (edge != NULL) {
+	hres = ETrue;
+	MVert* ref1 = edge->Ref1();
+	MVert* ref2 = edge->Ref2();
+	MVert* cp1 = edge->Point1();
+	MVert* cp2 = edge->Point2();
+	if (cp1 != ref1 || cp2 != ref2) {
+	    Elem* pt1 = ref1 == NULL ? NULL : ref1->EBase()->GetObj(pt1);
+	    Elem* pt2 = ref2 == NULL ? NULL : ref2->EBase()->GetObj(pt2);
+	    TBool isptok1 = (ref1 == NULL || IsPtOk(pt1));
+	    TBool isptok2 = (ref2 == NULL || IsPtOk(pt2));
+	    if (isptok1 && isptok2) {
+		if (cp1 != NULL && ref1 != cp1) edge->Disconnect(cp1);
+		if (cp2 != NULL && ref2 != cp2) edge->Disconnect(cp2);
+		if (ref1 != NULL && ref2 != NULL) {
+		    cp1 = edge->Point1();
+		    cp2 = edge->Point2();
+		    // Full connection, compatibility checking is needed
+		    MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
+		    MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
+		    TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
+		    TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
+		    if (ispt1cptb && ispt2cptb) {
+			// Are compatible - connect
+			TBool res = ETrue;
+			if (cp1 == NULL) res = edge->ConnectP1(ref1);
+			if (res && cp2 == NULL) res = edge->ConnectP2(ref2);
 			if (!res) {
-			    Logger()->Write(MLogRec::EErr, this, "Connecting [%s] failed", edge->Pointu(&aComp).c_str());
+			    Elem* host = iMan->GetMan();
+			    Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
 			}
 		    }
 		    else {
-			// Full connection, compat checking is needed
-			Elem* pt1 = edge->Point1rc();
-			Elem* pt2 = edge->Point2rc();
-			if (pt1 != NULL && pt2 != NULL) {
-			    string pt1u = edge->Point1u();
-			    string pt2u = edge->Point2u();
-			    MVert* pt1v = pt1->GetObj(pt1v);
-			    MVert* pt2v = pt2->GetObj(pt2v);
-			    if (pt1v != NULL && pt2v != NULL) {
-				// Check roles conformance
-				MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
-				MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
-				TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
-				TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
-				if (ispt1cptb && ispt2cptb) {
-				    // Are compatible - connect
-				    res = edge->Connect(&aComp);
-				    if (res) {
-					//Logger()->Write(MLogRec::EInfo, this, "Connected [%s - %s]", pt1u.c_str(), pt2u.c_str());
-				    }
-				    else {
-					Logger()->Write(MLogRec::EErr, this, "Connecting [%s - %s] failed", pt1u.c_str(), pt2u.c_str());
-				    }
-				}
-				else {
-				    Logger()->Write(MLogRec::EErr, this, "Connecting [%s - %s] - incompatible roles", pt1u.c_str(), pt2u.c_str());
-				}
-			    }
-			    else {
-				Logger()->Write(MLogRec::EErr, this, "Connecting [%s - %s] - ends aren't vertexes", pt1u.c_str(), pt2u.c_str());
-			    }
-			}
+			TBool c1 = pt1checker->IsCompatible(pt2);
+			TBool c2 = pt2checker->IsCompatible(pt1);
+			Elem* host = this;
+			Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
 		    }
+
+		} else {
+		    // Partial connection, compatibility checking isn't needed
+		    if (cp1 == NULL && ref1 != NULL) edge->ConnectP1(ref1);
+		    else if (cp2 == NULL && ref2 != NULL) edge->ConnectP2(ref2);
 		}
-		else {
-		    Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot find or not vertex", edge->Pointu(&aComp).c_str());
-		}
+	    } else {
+		Elem* pt = isptok1 ? pt2 : pt1;
+		Elem* host = this;
+		Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
 	    }
 	}
     }
-    else {
-	Vert::DoOnCompChanged(aComp);
-    }
+    return hres;
 }
 
 void Syst::GetImplicitDep(TMDep& aDep, Elem* aObj, Elem* aRef)

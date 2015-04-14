@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "log.h"
 #include "elem.h"
+#include <sys/time.h>
 
 const TInt KLogRecBufSize = 400;
 
@@ -10,12 +11,13 @@ const char* KColSep = "; ";
 GLogRec::GLogRec(const string& aName, const string& aLogFileName): Base(aName), iLogFileName(aLogFileName), iLogFileValid(EFalse),
     iObs(NULL), mCtxMutId(-1)
 {
-    remove(iLogFileName.c_str()); 
+    //remove(iLogFileName.c_str()); 
+    rename(iLogFileName.c_str(), (iLogFileName + "~old").c_str()); 
     iLogFile = fopen(iLogFileName.c_str(), "w+");
     if(iLogFile)
     {
 	iLogFileValid=ETrue;
-	fputs("----------New Log----------\015\012", iLogFile);
+	//fputs("----------New Log----------\015\012", iLogFile);
 	fflush(iLogFile);
     }
     else
@@ -61,6 +63,11 @@ void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...)
 {
     char buf1[KLogRecBufSize] = "";
     stringstream ss;
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    //long int ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+    long int ms = tp.tv_sec * 1000000 + tp.tv_usec;
+    ss << ms << KColSep;
     ss << CtgText[aCtg] << KColSep;
     TInt mutid = mCtxMutId;
     if (mutid != -1) {
@@ -80,7 +87,7 @@ void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...)
     ss << buf1;
     WriteRecord(ss.str().c_str());
     if (iObs != NULL) {
-	iObs->OnLogAdded(aCtg, aNode, buf1, mutid);
+	iObs->OnLogAdded(ms, aCtg, aNode, buf1, mutid);
     }
     va_end(list);
 }
@@ -103,7 +110,7 @@ void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const ChromoNode& aMut, const 
     ss << buf1;
     WriteRecord(ss.str().c_str());
     if (iObs != NULL) {
-	iObs->OnLogAdded(aCtg, aNode, buf1, lineid);
+	iObs->OnLogAdded(0, aCtg, aNode, buf1, lineid);
     }
     va_end(list);
 }

@@ -38,6 +38,8 @@
 		<revremark>Added <xref linkend="ds_agt_data"/></revremark> </revision>
 	    <revision> <revnumber>0.11</revnumber> <date>08-Mar-2015</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="ds_ifnegot"/></revremark> </revision>
+	    <revision> <revnumber>0.12</revnumber> <date>14-Apr-2015</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="ds_mod"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -48,6 +50,10 @@
 	<biblioentry id="ref_incr_mut"> <abbrev>INCR_MUT</abbrev>
 	    <productname><ulink url="../../../fap-doc/doc_incr_syst_creation/index.html "/></productname>
 	    <title>Y.Borisov. Using incremental mutation process for systems modeling</title> </biblioentry>
+
+	<biblioentry id="ref_rfc_3986"> <abbrev>RFC_3986_URI</abbrev>
+	    <productname><ulink url="http://www.ietf.org/rfc/rfc3986.txt"/></productname>
+	    <title>RFC 3986: Uniform Resource Identifier (URI): Generic Syntax</title> </biblioentry>
 
     </bibliolist>
 
@@ -979,8 +985,8 @@
 	    <simpara>Below is outline of importants points to be considered when implementing transformations:</simpara>
 	    <orderedlist>
 		<listitem>How to rollback transf?
-		    <listitem>Some transf are just series of new mutations. In this case they can be rolled back. But the problem is that for the 
-			developer they are "anonimous" and are not directly assotiated to some developers actions.</listitem>
+		    <simpara>Some transf are just series of new mutations. In this case they can be rolled back. But the problem is that for the 
+			developer they are "anonimous" and are not directly assotiated to some developers actions.</simpara>
 		</listitem>
 		<listitem>Transf as rich mutation
 		    <simpara></simpara>
@@ -1053,6 +1059,152 @@
 		ifaces keeping the contract with its upper neighbour unchanged. Another variant is that it can try also those variants that cause to the
 		already established contract to upper neighbour broken. This will cause re-negotiation from lower to upper layer. </simpara>
 	    <simpara>The latest approach, re-negotiation is the worther one. This is because it complicates the negotiation process.</simpara>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_elem_iact"><title>Native hier: scheme of agents elementary interaction</title>
+	<sect2><title>Intro</title>
+	    <simpara>Agents in narive hier are related one to another according to two elemetary relation types: comp-owner for structural hier and
+		parent-child for inheritance hier. This relations assume some interactions between related agents. We will call this interactions elementary
+		interactions for they are induced by elementary relations. Elementary interactions are defined via interface of base object. For 
+		structural hier the interface is component observer for component intercting to owner.</simpara>
+	    <simpara>Actually we can consider not only single elementary relation but also relation that are induced by chan of relateions. For instance any 
+		owner relates to its component, not only to direct components but also to the indirect, i.e. component of deeper layers.
+		So there could be different schemes of organizing of interactions between agents related via chain of elementary relations.</simpara>
+	</sect2>
+	<sect2><title>Unlimited propagation</title>
+	    <simpara>Currently (260ee587a) the approach is used to propagate notifications from comp to owner without any limit, to the notifications 
+		achieve system root finally. This approach is simple but it causes to system getting not scalable. To have system scalable the principle of 
+		isolating any relations needs to be used. Actually the tree structure itself is good example of such isolating of relations: the 
+	    number of relations is reduced from bottom (comp) to uppper layers.</simpara>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_mod"><title>Support of modules</title>
+	<sect2><title>Refs</title>
+	    <orderedlist>
+		<listitem>Use-case: <ulink url="../requirements/index.html#uc_53"/></listitem>
+	    </orderedlist>
+	</sect2>
+	<sect2><title>Introduction</title>
+	    <simpara>The current implementation of module system is rather limited: it is allowed to use ref to parent within external chromo. Also 
+		it is possible to "move" node from external chromo to the model, this creates not the child of the node but the node itself, the node in
+		model gets unattached. In the scope of current implementation it is not allowed to ref to external parent if this parent in turn refers to
+		something.</simpara>
+	    <simpara>So current approach is as: to move some modules to the model, and then refer to these modules only in scope of the model. The 
+	    problem here is that there is overhead in case of big modules - not all nodes from module are used in the model.</simpara>
+	</sect2>
+	<sect2><title>Additional requirements.</title>
+	    <sect3><title>What should be the reference?</title>
+		<simpara>Currently the ref is based on url that includes uri according to RFC 3986, <xref linkend="ref_rfc_3986"/>: access protocole, authority, path, and
+		    native path as uri fragment.  The native path is path in the model within native
+		    coordinates. It is not convenient to use such referring approach because of necessity to specify authority and path. This makes model depending on
+		environment.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2><title>Using of native uri only.</title>
+	    <simpara>Using of of native uri for referring external nodes assumes that native uri allows us to unambiguously specify the node. But currently onwing hier has 
+		local model as the root, so cannot be used to specify external node. Inher hier is ambiguous, so needs hint form owning heir to resolve the node.
+		Nevetheless it can be used for referring - in case if system discovers some ambiguous in inher-hier it can extend ref to keep ref correct.</simpara>
+	    <simpara>How it works? Assume that there are two modules and referred nodes within them:</simpara>
+	    <itemizedlist>
+		<listitem>Module 1: name "(Elem:)Mod_A", node "Node_R" within it </listitem>
+		<listitem>Module 2: name "(Elem:)Mod_B", node "Node_R" within it </listitem>
+	    </itemizedlist>
+	    <simpara>In this case we can have the following unambiguous ref to Node_R in Mod_A: (Elem:)Mod_A/Node_R</simpara>
+	    <simpara>What if module names are ambiguous?</simpara>
+	    <itemizedlist>
+		<listitem>Module 1: name "(Elem:)Mod_A", node "Node_R" within it </listitem>
+		<listitem>Module 2: name "(Elem:)Mod_A", node "Node_R" within it </listitem>
+	    </itemizedlist>
+	    <simpara>This is possible only in case if Module 2 is delivered by some authority independent from that delivers Module 1. So how to extend ref uri?
+		One way is to extend with base rfc url authority/path, having specific authority/path for Module 2 authority.</simpara>
+	    <simpara>In fact the authority/path is nothing but one more coordinate in the system space. We can achieve the similar result with explicitly
+		adding new specific coordinate, for instance "authority", to strengthen ref safety. To have one more coordinate we need to introduce new type of 
+		relations, that generates the coordinate. Of course specific node is required by authority. 
+		Looking at this we can propose simpler approach: system can just extend owning-hier by authority node in case if system
+		discover ref unambiguousness.</simpara>
+	    <itemizedlist>
+		<listitem>Module 1: name "(Elem:)Mod_A", node "Node_R" within it </listitem>
+		<listitem>Module 2: name "(Elem:)Mod_A", node "Node_R" within it </listitem>
+		<listitem>System create module with unambiguous "Module_2_Authority" node and "includes" Module 2 Mod_A into it. So now we refer to Module 2
+		    Node_R as: Elem:(Module_2_Authority/Mod_A/)Node_R </listitem>
+	    </itemizedlist>
+	    <simpara>Looks good, so now we have heir-hier as one "absolute" coordinate, but resolving unambiguousness with onwining-hier. System searches modules
+		on local file or specified url according to some rules. But we still haven't avoided explicit stating rfc url, because actually system includes
+		Module 2 Mod_A into Module_2_Authority by authority/path. Howewer for our model, we can use only native url.</simpara>
+	</sect2>
+	<sect2><title>How to include nodes from modules in the model</title>
+	    <sect3><title>Intro</title>
+		<simpara>First of all system has to provide the hierarchy of the nodes in modules in order to allow user to select the node required.</simpara>
+		<simpara>Then system has to differentiate refs to the models nodes (real nodes) from refs to modules nodes (actually not real nodes but nodes chromo).</simpara>
+	    </sect3>
+	    <sect3><title>Considerations</title>
+		<orderedlist>
+		    <listitem>
+			The main idea for the modules is to support full referencing for modules, i.e. 
+			that standard references from models chromo to any “nodes” in modules are to be allowed, as if it is run-time node. 
+			The rationale of such ajn approach is that it should be simple for implementation because of modules compacted 
+			chromo native space (inducted by coordinates of native hierarchies) is the same as for runtime generated from modules chromo.  </listitem>
+		    <listitem>
+			To implement this approach we need to re-implement chromo in order to support inheritance hier also.  
+			There is a problem here: actually the chromo itself is not isomorphic to run-time, for instance mutation of adding 
+			not to destination has different owner as generated model.  Solution here would be implementing of “enhanced” chromo, 
+			where mutations “branching” nodes (i.e. [node]) keeps also run-time relations owner-component.  </listitem>
+		    <listitem>
+			Or we could create “intermediate” run-time model, where only structure is evolved but not all mutations applied. 
+			But any case is will not the same as currently implemented. Current implementation allows user to reference to any node 
+			within module, even the inherited node. Nor chromo neither intermediate model don’t allow to do that. 
+			Is this real limitation? Perhaps not. We can apply the restrictions for referencing nodes from modules: 
+			to use only direct and attached nodes (direct means that adding node destination is mutation owner. 
+			In this case we just need simple extended chromo with support of inher hier.  </listitem>
+		    <listitem>
+			There is fundamental problem in referring to modules. In fact the current referring scheme is dedicated for run-time, 
+			so any reference is reference to an agent. So even now, referring to the whole module is ambiguous because it’s 
+			the reference to chromo. The differentiation between ref to agent and ref to chromo is performed implicitly, look at 
+			Elem::AddElem(): uri scheme is used to decide what ref is. Some kind of logic presents here: if we ref inside the model 
+			then scheme (or base part of uri) isn’t needed (internal ref), if we referring to external something then it is cpec (chromo) </listitem>
+		    <listitem>
+			Note that referring to chromo is required only for referring to parent or to moving source. So maybe it makes sense 
+			to keep the current implementation with small improvement: A). introduce specific scheme or base part for modules nodes, 
+			for instance fap://modules#....  B). environment to provide the modules tree </listitem>
+		    <listitem>
+			Problem: creating from external parent is ambiguous. This is because creating two agent from one parent in the same owner 
+			will cause an error: second creation parent will filed because of already having such agent in the owner.  
+			Solution here would be to disable external parent, so only moving will be allowed for externals.  </listitem>
+		    <listitem>
+			In some module it is possible that internal node has ref to another node in this module, for instance Molule/B can have ref to local 
+			parent Module/A. In this case moving “B” will cause an error. Solution: consider such nodes as dependent and disable moving them.  </listitem>
+		    <listitem>
+			One more problem : currently the cyclic resolution of module refs are not supported.
+			This means that if model uses module_1 and within module_2 there are refs to module_2 so just moving module_1 to the model will 
+			cause the error of refs not resolved. Solution here could be to move dependency to the module. The disadvantage here is that the 
+			deps can be duplicated in many modules. Another solution would be “importing” deps. 
+			Importing means that we have specific node for modules in owning hier and move specified dep to this node in case 
+			if it’s not there yet. Such dedicated node is “/Modules” in the current implementation. OR system can do it automatically, 
+			enumerating all deps, checking if dep is already “imported” and import if not. This is actually caching the modules: 
+			system uses the proper run-time url in the “cache” (/Modules) and moves the external in case the cache is missing for it. 
+			Even more: we can create dedicated agent for modules. This agent behavior is to cache externals, i.e to create the proper 
+			nodes with externals chromo. Module agent can also provide the tree of module, whereas getting chromo itself needs to 
+			be implemented on env level because is platform dependent.  </listitem>
+		    <listitem> What if base agent includes specific modules agent for keeping agent related modules?  </listitem>
+		</orderedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mod_agt"><title>Module agent</title>
+	    <sect3 id="ds_mod_agt_uc"><title>Use-cases</title>
+		<sect4><title>Getting tree of chromo nodes</title>
+		</sect4>
+		<sect4><title>Moving component of module</title>
+		    <simple>This is creating component via applying given chromo node from the module. Agent creates all owning hier but not fulfilles
+		    owners of created comp.</simple>
+		</sect4>
+	    </sect3>
+	    <sect3><title>APIs</title>
+		<itemizedlist>
+		    <listitem>Get tree of chromo nodes</listitem>
+		</itemizedlist>
+	    </sect3>
 	</sect2>
     </sect1>
 

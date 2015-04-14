@@ -46,8 +46,10 @@
 		<revremark>Added <xref linkend="uc_045"/></revremark> </revision>
 	    <revision> <revnumber>0.14</revnumber> <date>26-Nov-2014</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_046"/></revremark> </revision>
-	    <revision> <revnumber>0.15</revnumber> <date>06-Nov-2015</date> <authorinitials>Yuri Borisov</authorinitials>
+	    <revision> <revnumber>0.15</revnumber> <date>06-Jan-2015</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_050"/></revremark> </revision>
+	    <revision> <revnumber>0.16</revnumber> <date>12-Apr-2015</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="uc_053"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -1657,6 +1659,40 @@
 		    <listitem>This transformation is useful in case of mutation mode "disabled pheno modif". In this mode the result chromo doesn't contain
 			pheno modifs in general, so there is no problem with missing some changes after inheriting. But the changes still can be missed in case
 		    if some owner modificates it's inherited component. So the transformation allows to create consistent child from such modified component.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
+	<sect2 id="uc_053"><title>UC_053 Referring to external chromo</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of SYSTEM</listitem>
+		    <listitem> SYSTEM: modelling run-time</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<orderedlist>
+		    <listitem>There is external CHROMO defined: </listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER request SYSTEM to create model from given chromo. There is reference from given chromo into external chromo.</listitem>
+		    <listitem>SYSTEM resolves reference into external chromo and creates the model properly.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> </sect3>
+	    <sect3><title>Extended by</title> <itemizedlist> </itemizedlist> </sect3>
+	    <sect3><title>Discussion</title> 
+		<orderedlist>
+		    <listitem>This is required to have model modular. There can be different approaches used to support the modularity.
+			The reference is mostly childs-to-parent. Currently (20150412) the only possible to create node from external
+		    chromo in case if the node doesn't have refs to outside.</listitem>
 		</orderedlist>
 	    </sect3>
 	    <sect3><title>Clarification</title> </sect3>
