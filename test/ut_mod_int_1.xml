@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for importing internal node to module
+-->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd">
+
+<node id="test" parent="Vert">
+    <node id="Modules" parent="Elem">
+	<node id="ut_mod_int_1m" parent="AMod">
+	    <cont val="ut_mod_int_1m.xml"/>
+	</node>
+    </node>
+    <node id="v1" parent="Vert"/>
+    <node id="v2" parent="Vert"/>
+</node>
+

@@ -186,6 +186,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	Elem* GetUpperAowner();
 	const Elem* GetAttachingMgr() const;
 	Elem* GetAcompOwning(Elem* aComp);
+	Elem* GetOwnerWithIface(const string& aType);
 	// Checks if the node is originated vis phenotypical modification
 	TBool IsPhenoModif() const;
 	TBool IsInheritedComp(const Elem* aNode) const;

@@ -10,6 +10,8 @@ libgrayb_la_SOURCES = \
 		       base.h \
 		       guri.cpp \
 		       guri.h \
+		       module.cpp \
+		       module.h \
 		       chromo.cpp \
 		       chromo.h \
 		       chromox.cpp \
@@ -54,6 +56,7 @@ libgrayb_la_SOURCES = \
 		       rdata.h \
 		       rdata.cpp \
 		       mmuta.h \
+		       mmod.h \
 		       mconn.h
 
 
@@ -66,6 +69,7 @@ include_HEADERS = \
 		  medge.h \
 		  mlog.h \
 		  mmuta.h \
+		  mmod.h \
 		  mprop.h \
 		  mconn.h \
 		  mvert.h \

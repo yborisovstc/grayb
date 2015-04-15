@@ -1925,6 +1925,19 @@ void Elem::DoOnCompChanged(Elem& aComp)
 {
 }
 
+Elem* Elem::GetOwnerWithIface(const string& aType)
+{
+    Elem* res = NULL;
+    Elem* node = this;
+    while (node != NULL && node->DoGetObj(aType.c_str()) == NULL) {
+	node = node->GetMan();
+    }
+    if (node != NULL) {
+	res = node;
+    }
+    return res;
+}
+
 Elem* Elem::GetCompOwning(const string& aParent, Elem* aElem)
 {
     Elem* res = NULL;
