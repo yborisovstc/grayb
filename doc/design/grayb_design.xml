@@ -1088,24 +1088,28 @@
 	</sect2>
 	<sect2><title>Introduction</title>
 	    <simpara>The current implementation of module system is rather limited: it is allowed to use ref to parent within external chromo. Also 
-		it is possible to "move" node from external chromo to the model, this creates not the child of the node but the node itself, the node in
-		model gets unattached. In the scope of current implementation it is not allowed to ref to external parent if this parent in turn refers to
-		something.</simpara>
+                it is possible to "move" node from external chromo to the model, this creates not the child of the node but the node itself,
+                the node in model gets unattached. In the scope of current implementation it is not allowed to ref to external 
+                parent if this parent in turn refers to something.</simpara>
 	    <simpara>So current approach is as: to move some modules to the model, and then refer to these modules only in scope of the model. The 
 	    problem here is that there is overhead in case of big modules - not all nodes from module are used in the model.</simpara>
 	</sect2>
 	<sect2><title>Additional requirements.</title>
 	    <sect3><title>What should be the reference?</title>
-		<simpara>Currently the ref is based on url that includes uri according to RFC 3986, <xref linkend="ref_rfc_3986"/>: access protocole, authority, path, and
+                <simpara>Currently the ref is based on url that includes uri according to RFC 3986,
+                    <xref linkend="ref_rfc_3986"/>: access protocole, authority, path, and
 		    native path as uri fragment.  The native path is path in the model within native
-		    coordinates. It is not convenient to use such referring approach because of necessity to specify authority and path. This makes model depending on
+                    coordinates. It is not convenient to use such referring approach because of necessity to specify authority and path.
+                    This makes model depending on
 		environment.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2><title>Using of native uri only.</title>
-	    <simpara>Using of of native uri for referring external nodes assumes that native uri allows us to unambiguously specify the node. But currently onwing hier has 
-		local model as the root, so cannot be used to specify external node. Inher hier is ambiguous, so needs hint form owning heir to resolve the node.
-		Nevetheless it can be used for referring - in case if system discovers some ambiguous in inher-hier it can extend ref to keep ref correct.</simpara>
+            <simpara>Using of of native uri for referring external nodes assumes that native uri allows us to unambiguously specify the node.
+                But currently onwing hier has local model as the root, so cannot be used to specify external node.
+                Inher hier is ambiguous, so needs hint form owning heir to resolve the node.
+                Nevetheless it can be used for referring - in case if system discovers some ambiguous in
+                inher-hier it can extend ref to keep ref correct.</simpara>
 	    <simpara>How it works? Assume that there are two modules and referred nodes within them:</simpara>
 	    <itemizedlist>
 		<listitem>Module 1: name "(Elem:)Mod_A", node "Node_R" within it </listitem>
@@ -1117,69 +1121,75 @@
 		<listitem>Module 1: name "(Elem:)Mod_A", node "Node_R" within it </listitem>
 		<listitem>Module 2: name "(Elem:)Mod_A", node "Node_R" within it </listitem>
 	    </itemizedlist>
-	    <simpara>This is possible only in case if Module 2 is delivered by some authority independent from that delivers Module 1. So how to extend ref uri?
+            <simpara>This is possible only in case if Module 2 is delivered by some authority independent from that delivers Module 1.
+                So how to extend ref uri?
 		One way is to extend with base rfc url authority/path, having specific authority/path for Module 2 authority.</simpara>
-	    <simpara>In fact the authority/path is nothing but one more coordinate in the system space. We can achieve the similar result with explicitly
-		adding new specific coordinate, for instance "authority", to strengthen ref safety. To have one more coordinate we need to introduce new type of 
+            <simpara>In fact the authority/path is nothing but one more coordinate in the system space. 
+                We can achieve the similar result with explicitly
+                adding new specific coordinate, for instance "authority", to strengthen ref safety. To have one more coordinate 
+                we need to introduce new type of 
 		relations, that generates the coordinate. Of course specific node is required by authority. 
 		Looking at this we can propose simpler approach: system can just extend owning-hier by authority node in case if system
 		discover ref unambiguousness.</simpara>
 	    <itemizedlist>
 		<listitem>Module 1: name "(Elem:)Mod_A", node "Node_R" within it </listitem>
 		<listitem>Module 2: name "(Elem:)Mod_A", node "Node_R" within it </listitem>
-		<listitem>System create module with unambiguous "Module_2_Authority" node and "includes" Module 2 Mod_A into it. So now we refer to Module 2
+                <listitem>System create module with unambiguous "Module_2_Authority" node and "includes" Module 2 
+                    Mod_A into it. So now we refer to Module 2
 		    Node_R as: Elem:(Module_2_Authority/Mod_A/)Node_R </listitem>
 	    </itemizedlist>
-	    <simpara>Looks good, so now we have heir-hier as one "absolute" coordinate, but resolving unambiguousness with onwining-hier. System searches modules
-		on local file or specified url according to some rules. But we still haven't avoided explicit stating rfc url, because actually system includes
+            <simpara>Looks good, so now we have heir-hier as one "absolute" coordinate, but resolving unambiguousness 
+                with onwining-hier. System searches modules
+                on local file or specified url according to some rules. But we still haven't avoided explicit stating rfc url, 
+                because actually system includes
 		Module 2 Mod_A into Module_2_Authority by authority/path. Howewer for our model, we can use only native url.</simpara>
 	</sect2>
 	<sect2><title>How to include nodes from modules in the model</title>
 	    <sect3><title>Intro</title>
-		<simpara>First of all system has to provide the hierarchy of the nodes in modules in order to allow user to select the node required.</simpara>
-		<simpara>Then system has to differentiate refs to the models nodes (real nodes) from refs to modules nodes (actually not real nodes but nodes chromo).</simpara>
+                <simpara>First of all system has to provide the hierarchy of the nodes in modules in order to 
+                    allow user to select the node required.</simpara>
+                <simpara>Then system has to differentiate refs to the models nodes (real nodes) from refs to 
+                    modules nodes (actually not real nodes but nodes chromo).</simpara>
 	    </sect3>
 	    <sect3><title>Considerations</title>
 		<orderedlist>
-		    <listitem>
-			The main idea for the modules is to support full referencing for modules, i.e. 
+		    <listitem> The main idea for the modules is to support full referencing for modules, i.e. 
 			that standard references from models chromo to any “nodes” in modules are to be allowed, as if it is run-time node. 
 			The rationale of such ajn approach is that it should be simple for implementation because of modules compacted 
-			chromo native space (inducted by coordinates of native hierarchies) is the same as for runtime generated from modules chromo.  </listitem>
-		    <listitem>
-			To implement this approach we need to re-implement chromo in order to support inheritance hier also.  
+                        chromo native space (inducted by coordinates of native hierarchies) is the same as for runtime generated 
+                        from modules chromo.  </listitem>
+		    <listitem> To implement this approach we need to re-implement chromo in order to support inheritance hier also.  
 			There is a problem here: actually the chromo itself is not isomorphic to run-time, for instance mutation of adding 
 			not to destination has different owner as generated model.  Solution here would be implementing of “enhanced” chromo, 
 			where mutations “branching” nodes (i.e. [node]) keeps also run-time relations owner-component.  </listitem>
-		    <listitem>
-			Or we could create “intermediate” run-time model, where only structure is evolved but not all mutations applied. 
+		    <listitem> Or we could create “intermediate” run-time model, where only structure is evolved but not all mutations applied. 
 			But any case is will not the same as currently implemented. Current implementation allows user to reference to any node 
 			within module, even the inherited node. Nor chromo neither intermediate model don’t allow to do that. 
 			Is this real limitation? Perhaps not. We can apply the restrictions for referencing nodes from modules: 
 			to use only direct and attached nodes (direct means that adding node destination is mutation owner. 
 			In this case we just need simple extended chromo with support of inher hier.  </listitem>
-		    <listitem>
-			There is fundamental problem in referring to modules. In fact the current referring scheme is dedicated for run-time, 
+		    <listitem> There is fundamental problem in referring to modules. In fact the current referring scheme is dedicated for run-time, 
 			so any reference is reference to an agent. So even now, referring to the whole module is ambiguous because it’s 
 			the reference to chromo. The differentiation between ref to agent and ref to chromo is performed implicitly, look at 
 			Elem::AddElem(): uri scheme is used to decide what ref is. Some kind of logic presents here: if we ref inside the model 
-			then scheme (or base part of uri) isn’t needed (internal ref), if we referring to external something then it is cpec (chromo) </listitem>
-		    <listitem>
-			Note that referring to chromo is required only for referring to parent or to moving source. So maybe it makes sense 
+                        then scheme (or base part of uri) isn’t needed (internal ref), if we referring to external 
+                        something then it is cpec (chromo) </listitem>
+		    <listitem> Note that referring to chromo is required only for referring to parent or to moving source. So maybe it makes sense 
 			to keep the current implementation with small improvement: A). introduce specific scheme or base part for modules nodes, 
 			for instance fap://modules#....  B). environment to provide the modules tree </listitem>
-		    <listitem>
-			Problem: creating from external parent is ambiguous. This is because creating two agent from one parent in the same owner 
+                    <listitem> Problem: creating from external parent is ambiguous.
+                       This is because creating two agent from one parent in the same owner 
 			will cause an error: second creation parent will filed because of already having such agent in the owner.  
 			Solution here would be to disable external parent, so only moving will be allowed for externals.  </listitem>
-		    <listitem>
-			In some module it is possible that internal node has ref to another node in this module, for instance Molule/B can have ref to local 
-			parent Module/A. In this case moving “B” will cause an error. Solution: consider such nodes as dependent and disable moving them.  </listitem>
-		    <listitem>
-			One more problem : currently the cyclic resolution of module refs are not supported.
-			This means that if model uses module_1 and within module_2 there are refs to module_2 so just moving module_1 to the model will 
-			cause the error of refs not resolved. Solution here could be to move dependency to the module. The disadvantage here is that the 
-			deps can be duplicated in many modules. Another solution would be “importing” deps. 
+		    <listitem> In some module it is possible that internal node has ref to another node in this module, 
+                        for instance Molule/B can have ref to local 
+                        parent Module/A. In this case moving “B” will cause an error. Solution: consider such nodes as
+                        dependent and disable moving them.  </listitem>
+		    <listitem> One more problem : currently the cyclic resolution of module refs are not supported.
+                        This means that if model uses module_1 and within module_2 there are refs to 
+                        module_2 so just moving module_1 to the model will 
+                        cause the error of refs not resolved. Solution here could be to move dependency to the module.
+                        The disadvantage here is that the deps can be duplicated in many modules. Another solution would be “importing” deps. 
 			Importing means that we have specific node for modules in owning hier and move specified dep to this node in case 
 			if it’s not there yet. Such dedicated node is “/Modules” in the current implementation. OR system can do it automatically, 
 			enumerating all deps, checking if dep is already “imported” and import if not. This is actually caching the modules: 
@@ -1191,20 +1201,80 @@
 		</orderedlist>
 	    </sect3>
 	</sect2>
-	<sect2 id="ds_mod_agt"><title>Module agent</title>
+	<sect2 id="ds_mod_agt"><title>Approach: Dedicated Module agent</title>
 	    <sect3 id="ds_mod_agt_uc"><title>Use-cases</title>
 		<sect4><title>Getting tree of chromo nodes</title>
 		</sect4>
 		<sect4><title>Moving component of module</title>
-		    <simple>This is creating component via applying given chromo node from the module. Agent creates all owning hier but not fulfilles
-		    owners of created comp.</simple>
+		    <simpara>This is creating component via applying given chromo node from the module. Agent creates all owning hier but not fulfilles
+                        owners of created comp.</simpara>
+                    <simpara>Discussion:</simpara>
+                    <simpara>Why it is needed to create owning hier? To keep original path to comp witin the module.</simpara>
+                    <simpara>This "incomplete" applying chromo seems queerly. Right, but we can allow only compact chromo to be module. So,
+                    only add nodes mutations will be there, that will make partial mutation quite acceptable.</simpara>
 		</sect4>
+                <sect4><title>Disabling mutation "move" for all agents other than "module"</title>
+                </sect4>
+                <sect4 id="ds_mod_agt_uc_crn"><title>Creating requested node from modules chromo if the node still not exists</title>
+                    <simpara>USER creates node in model with parent from modules - owning agent requests parent from modules - module agent
+                    gets involved in resolving request, agent checks if requested comp exists and creates it if not.</simpara>
+                <simpara>Ref <xref linkend="ds_mod_prb_int"/> for discussion of problems with this use-case.</simpara>
+                </sect4>
 	    </sect3>
-	    <sect3><title>APIs</title>
+	    <sect3><title>Import module APIs</title>
 		<itemizedlist>
 		    <listitem>Get tree of chromo nodes</listitem>
+                    <listitem>Import node by given uri, ref <xref linkend="ds_mod_prb_int"/></listitem>
 		</itemizedlist>
 	    </sect3>
+            <sect3 id="ds_mod_prb"><title>Problems</title>
+                <sect4 id="ds_mod_prb_int"><title>How to create node in module if the node is requested from modiles internal node.</title>
+                    <simpara>This relates to use-case <xref linkend="ds_mod_agt_uc_crn"/>. This approach assumes that upper
+                        owner - module agent is involved in handling request. But it's not true in case of request from 
+                        modules internal comp.</simpara>
+                    <simpara>This problem is because this use-case contradicts to concept: "only module provide creating 
+                        on demand". This request from internal comp actually is not to module but to some regular 
+                        owner within module. This means that only deps to modules can be resolved automatically, 
+                        so it's not possible to create some part of module that has internal dep.</simpara>
+                    <simpara>If we define imported module, or just "import" as the agent which chromo is sourced with 
+                        given external module (chromo) then we can say that any component of import is also import. 
+                        Agent can check if it's import via examining of owners, if some its owner is import. 
+                        We can define specific iface for import module agent.</simpara>
+                    <simpara>Then the mechanism of importin required node can be implemented as:</simpara>
+                    <itemizedlist>
+                        <listitem>Base agent requests some dep (using base agent api GetNode) - GetNode tries 
+                            to get requested dep</listitem>
+                        <listitem>If GetNode cannot find dep requested, then GetNode checks if the dep is contained in 
+                            module via getting nearest owner and requesting its owner - module.</listitem>
+                        <listitem>If there is module for the dep, then GetNode requests the module for importing dep</listitem>
+                        <listitem>Module imports dep and return it to GetNode, that in turn returns it to requestor</listitem>
+                    </itemizedlist>
+                </sect4>
+                <sect4><title>What is import module agent? Holder of one chromo or all external chromos?</title>
+                    <simpara>One approach is to create import module agent for each external chromo. 
+                        This is fearly resonable - the agent can be assigned to particular external chromo and manage it.
+                       But how to import some models dep in case when the module itself is not created?</simpara>
+                    <simpara>Alternative way is to create one agent for all imports on model init phase 
+                        (e.g "/Modules").</simpara>
+                    <simpara>The third way is to have two agent: one for imported module, and second for modules containing. In
+                        this case modules container will be responsible to create the module for dep requested.
+                        Container itself can support modules iface but redirect all requests via the 
+                        iface to its components - modules.</simpara>
+                </sect4>
+                <sect4><title>What is difference between module and model?</title>
+                    <simpara>As discussed the model can include imports, to have specific node for modules container.
+                    But what about modules? Do they implement imports in the same manner? </simpara>
+                <simpara>One approach is to not use the same way for modules. This is because the module is not
+                    independent model but some framework that is to be embedded into the model. So module has to 
+                    resolve its own deps to another modules in the scope of modules of model embedding the module.</simpara>
+                <simpara>Even this approach seems resonable the question is still remaining: 
+                    "Why they are different?". Potentially it is completelly allowed to create modules container 
+                    within module and import module to it. The only result will be that there will be another instance of
+                import within models import.</simpara>
+                </sect4>
+            </sect3>
+            <sect3><title>Concept: module</title>
+            </sect3>
 	</sect2>
     </sect1>
 
