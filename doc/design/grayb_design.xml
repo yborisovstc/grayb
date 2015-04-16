@@ -1201,26 +1201,42 @@
 		</orderedlist>
 	    </sect3>
 	</sect2>
-	<sect2 id="ds_mod_agt"><title>Approach: Dedicated Module agent</title>
-	    <sect3 id="ds_mod_agt_uc"><title>Use-cases</title>
-		<sect4><title>Getting tree of chromo nodes</title>
-		</sect4>
-		<sect4><title>Moving component of module</title>
-		    <simpara>This is creating component via applying given chromo node from the module. Agent creates all owning hier but not fulfilles
-                        owners of created comp.</simpara>
-                    <simpara>Discussion:</simpara>
-                    <simpara>Why it is needed to create owning hier? To keep original path to comp witin the module.</simpara>
-                    <simpara>This "incomplete" applying chromo seems queerly. Right, but we can allow only compact chromo to be module. So,
-                    only add nodes mutations will be there, that will make partial mutation quite acceptable.</simpara>
-		</sect4>
-                <sect4><title>Disabling mutation "move" for all agents other than "module"</title>
+        <sect2><title>Approach: Explicit importing.</title>
+            <sect3><title>Introduction</title>
+                <simpara>The idea is to implicit import modules required for given model. So each module (so also
+                    each module because any module is model too) should has dedicated node (e.g. /Modules) for 
+                    import. The obvious problem here is that imported agents can be duplicated, especially
+                    generic modules. Also to import comp of some module /Modules has to be imported too that 
+                    created some overhead.</simpara>
+                <simpara>This approach was already used in earlier versions of sysem. Problem of duplication was
+                the reason of refusing to use it.</simpara>
+            </sect3>
+            <sect3><title>How to avoid duplication?</title>
+                <simpara>One approach is module to use inher uri referencing models modules container:
+                    <programlisting> move node="AModCont:Modules" id="some_module"; </programlisting>
+                </simpara>
+                <simpara>Module conatiner agent should handle correctly moving module if this module is 
+                    already moved in. So modules container acts here as the node with global kind of access.
+                    This allows to have "sub-modules" within big module. For that each "sub-module" should include
+                    all its imports (even those in scope of big module) to "global" modules container. 
+                    Also any module should ref to it's deps in safe manner: using predefined node as "root" for 
+                    modules (like /Root/Modules) or inher based uri.</simpara>
+                <simpara>In fact this approach almost implemented now. Modules are using safe refs. The
+                only part missing is importing deps.</simpara>
+            </sect3>
+            <sect3><title>Pros and cons</title>
+                <sect4><title>Cons</title>
+                    <orderedlist>
+                        <listitem>For modules internal sub-modules it is necessary to add owner that includes
+                            import mutation. This causes overheads.</listitem>
+                    </orderedlist>
                 </sect4>
-                <sect4 id="ds_mod_agt_uc_crn"><title>Creating requested node from modules chromo if the node still not exists</title>
-                    <simpara>USER creates node in model with parent from modules - owning agent requests parent from modules - module agent
-                    gets involved in resolving request, agent checks if requested comp exists and creates it if not.</simpara>
-                <simpara>Ref <xref linkend="ds_mod_prb_int"/> for discussion of problems with this use-case.</simpara>
-                </sect4>
-	    </sect3>
+            </sect3>
+        </sect2>
+	<sect2 id="ds_mod_agt"><title>Approach: Dynamic resolution of the deps via Dedicated Module agent.</title>
+            <sect3><title>Introduction</title>
+                <simpara>The idea is to resolve the deps automatically, without explicit importing. </simpara>
+            </sect3>
 	    <sect3><title>Import module APIs</title>
 		<itemizedlist>
 		    <listitem>Get tree of chromo nodes</listitem>
@@ -1228,8 +1244,9 @@
 		</itemizedlist>
 	    </sect3>
             <sect3 id="ds_mod_prb"><title>Problems</title>
-                <sect4 id="ds_mod_prb_int"><title>How to create node in module if the node is requested from modiles internal node.</title>
-                    <simpara>This relates to use-case <xref linkend="ds_mod_agt_uc_crn"/>. This approach assumes that upper
+                <sect4 id="ds_mod_prb_int"><title>How to create node in module if the node is requested from 
+                        modiles internal node.</title>
+                    <simpara>This relates to use-case <xref linkend="ds_mod_uc_crn"/>. This approach assumes that upper
                         owner - module agent is involved in handling request. But it's not true in case of request from 
                         modules internal comp.</simpara>
                     <simpara>This problem is because this use-case contradicts to concept: "only module provide creating 
@@ -1263,29 +1280,82 @@
                 </sect4>
                 <sect4><title>What is difference between module and model?</title>
                     <simpara>As discussed the model can include imports, to have specific node for modules container.
-                    But what about modules? Do they implement imports in the same manner? </simpara>
-                <simpara>One approach is to not use the same way for modules. This is because the module is not
-                    independent model but some framework that is to be embedded into the model. So module has to 
-                    resolve its own deps to another modules in the scope of modules of model embedding the module.</simpara>
-                <simpara>Even this approach seems resonable the question is still remaining: 
-                    "Why they are different?". Potentially it is completelly allowed to create modules container 
-                    within module and import module to it. The only result will be that there will be another instance of
-                import within models import.</simpara>
+                        But what about modules? Do they implement imports in the same manner? </simpara>
+                    <simpara>One approach is to not use the same way for modules. This is because the module is not
+                        independent model but some framework that is to be embedded into the model. So module has to 
+                        resolve its own deps to another modules in the scope of modules of model embedding the module.</simpara>
+                    <simpara>Even this approach seems resonable the question is still remaining: 
+                        "Why they are different?". Potentially it is completelly allowed to create modules container 
+                        within module and import module to it. The only result will be that there will be another instance of
+                        import within models import.</simpara>
+                </sect4>
+                <sect4><title>How to handle missing requested dep?</title>
+                    <simpara>The mechanism described in <xref linkend="ds_mod_prb_int"/> for handling of 
+                        missing requested node event is not generic enough because base event knows of moudule iface.
+                        It make sense to implement generic way for handling such case. For instance new method in
+                        comp observer iface can be introduced, like OnCompNotResolved. This method implementation is
+                        to help resolving component and returns the comp resolved. Agent can run this handler
+                        in case if it cannot resolve comp for instance in GetNode().</simpara>
+                    <simpara>This is abmiguous actually because not only owning hier can be used in getting node but
+                        inher hier also. There is response argument that only owning hier can be responsible for 
+                        handling such exceptions. How about case when model requests comp from module via pure
+                        inher based uri? In this case the notifications should up to root that has to redirect it 
+                        to modules.</simpara>
                 </sect4>
             </sect3>
-            <sect3><title>Concept: module</title>
+            <sect3><title>How to auto-import dep if it's inher hier referenced?</title>
+                <simpara>Currently many deps in modules are based on inher hier in order to make it
+                    independent on import owning node. Is it possible to evaluate inher hier in 
+                    modules external chromo? Seems no. So this needs to be restricted.</simpara>
             </sect3>
-	</sect2>
+            <sect3><title>Concept: module</title>
+                <sect4><title>Module as model with only internal deps or deps to other modules.</title>
+                    <simpara>So module can be considered as kind of closure. This allows to move modules simply.</simpara>
+                </sect4>
+            </sect3>
+        </sect2>
+        <sect2 id="ds_mod_uc"><title>Use-cases</title>
+            <sect3><title>Getting tree of chromo nodes</title>
+            </sect3>
+            <sect3><title>Importing component of module</title>
+                <simpara>This is creating component via applying given chromo node from the module. 
+                    Agent creates all owning hier but not fulfilles owners of created comp.</simpara>
+                <simpara>Discussion:</simpara>
+                <simpara>Why it is needed to create owning hier? To keep original path to comp witin the module.</simpara>
+                <simpara>This "incomplete" applying chromo seems queerly. Right, but we can allow only 
+                    compact chromo to be module. So, only add nodes mutations will be there, that will make 
+                    partial mutation quite acceptable.</simpara>
+            </sect3>
+            <sect3><title>Disabling mutation "move" for all agents other than "module"</title>
+            </sect3>
+            <sect3 id="ds_mod_uc_crn"><title>Creating requested node from modules chromo if the node still not exists</title>
+                <simpara>USER creates node in model with parent from modules - owning agent requests parent from modules 
+                    - module agent gets involved in resolving request, agent checks if requested comp exists and 
+                    creates it if not.</simpara>
+                <simpara>Ref <xref linkend="ds_mod_prb_int"/> for discussion of problems with this use-case.</simpara>
+            </sect3>
+            <sect3><title>Importing modules comp that deps on other comp within this module.</title>
+                <sect4><title>Discussion</title>
+                    <simpara>Is it really required to import just part of the module but not the whole module? 
+                        Keeping module monolitic would allow simplify importing. The response argument here
+                        is that it causes overhead for big modules. To avoid this we can consider implements
+                        parts of big module also as module.</simpara>
+                </sect4>
+            </sect3>
+            <sect3><title>Importing module, thus importing all modules that are deps for initial module </title>
+                <simpara>This is recursive importing all the modules required for given module.</simpara>
+            </sect3>
+        </sect2>
     </sect1>
 
     <sect1 id="ds_prb"><title>Problems</title>
     </sect1>
 
     <sect1 id="ds_tohandle"><title>To handle</title>
-	<orderedlist>
-	    <listitem>Using mut order to ensure original sequence of muts, ref <xref linkend="ds_mut_dis_pheno"/> </listitem>
-	    <listitem>References: rules and limitations, ref <xref linkend="ds_mut_refs"/> </listitem>
-	</orderedlist>
+        <orderedlist>
+            <listitem>Using mut order to ensure original sequence of muts, ref <xref linkend="ds_mut_dis_pheno"/> </listitem>
+            <listitem>References: rules and limitations, ref <xref linkend="ds_mut_refs"/> </listitem>
+        </orderedlist>
 
     </sect1>
 
