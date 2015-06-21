@@ -10,6 +10,37 @@ class Elem;
 class GLogRec;
 class Env;
 class Chromo;
+class ChromoNode;
+
+class ImportsMgr: public Base, public MImportMgr
+{
+    friend class Env;
+    public:
+	static const char* Type() { return "ImportsMgr";};
+	ImportsMgr(const string& aName, Env& aHost);
+	virtual ~ImportsMgr();
+	// From Base
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+    public:
+	// From MImportMgr
+	virtual void GetModulesNames(vector<string>& aModules) const;
+	virtual void ResetImportsPaths();
+	virtual void AddImportsPaths(const string& aPaths);
+	virtual string GetModulePath(const string& aModName) const;
+	virtual TBool Import(const string& aUri);
+	virtual Elem* OnUriNotResolved(Elem* aNode, const GUri& aUri);
+    private:
+	void AddImportModulesInfo(const string& aPath);
+	Elem* GetImportsContainer() const;
+	void ImportToNode(Elem* aNode, const ChromoNode& aMut, const ChromoNode& aSel);
+	Elem* DoImport(const string& aUri);
+    private:
+	Env& mHost;
+	vector<string> mImportsPaths;
+	map<string, string> mModsPaths;
+	static const string KDefImportPath;
+	static const string KImportsContainerUri;
+};
 
 class ChromoMgr: public Base, public MChromoMgr
 {
@@ -62,6 +93,7 @@ public:
 	virtual MLogRec *Logger();
 	virtual Elem* Root();
 	virtual MChromoMgr* ChMgr();
+	virtual MImportMgr* ImpsMgr();
 	virtual TBool GetSBool(TSBool aId) const;
 	virtual void SetSBool(TSBool aId, TBool aVal);
 private:
@@ -69,6 +101,7 @@ private:
 	Elem* iRoot;
 	GFactory *iProvider;
 	ChromoMgr* iChMgr;
+	ImportsMgr* iImpMgr;
 	string iSystSpec;
 	Chromo* iSpecChromo;
 	TBool mEnPerfTrace;

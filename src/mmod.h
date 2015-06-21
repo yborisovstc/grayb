@@ -14,4 +14,13 @@ class MMod
 	virtual Elem* Import(const GUri& aUri) = 0;
 };
 
+// Importing modules container
+class MImports
+{
+    public:
+	static const char* Type() { return "MImports";};
+	virtual TBool Import(const string& aUri) = 0;
+};
+
+
 #endif

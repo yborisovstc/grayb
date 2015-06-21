@@ -55,6 +55,8 @@ void Ut_func::test_FuncSeq1()
 
     iEnv = new Env("Env", "ut_func_seq1.xml", "ut_func_seq1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
@@ -121,6 +123,8 @@ void Ut_func::test_FuncSeq2()
 
     iEnv = new Env("Env", "ut_func_seq2.xml", "ut_func_seq2.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
@@ -187,6 +191,8 @@ void Ut_func::test_FuncSeq3()
 
     iEnv = new Env("Env", "ut_func_seq3.xml", "ut_func_seq3.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
@@ -253,6 +259,8 @@ void Ut_func::test_FuncSeq4()
 
     iEnv = new Env("Env", "ut_func_seq4.xml", "ut_func_seq4.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
@@ -300,6 +308,8 @@ void Ut_func::test_FuncVar1()
 
     iEnv = new Env("Env", "ut_func_var1.xml", "ut_func_var1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
@@ -333,6 +343,8 @@ void Ut_func::test_FuncVar2()
 
     iEnv = new Env("Env", "ut_func_var2.xml", "ut_func_var2.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);

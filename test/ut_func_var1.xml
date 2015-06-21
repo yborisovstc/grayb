@@ -4,10 +4,14 @@
 
 <node id="Root" parent="Elem">
     <node id="Modules" parent="Elem">
-	<move id="file:../modules/syst.xml#"/>
-	<move id="file:../modules/capsula.xml#"/>
-	<move id="file:../modules/data.xml#"/>
-	<move id="file:../modules/func.xml#"/>
+	<!-- Module containing components of incaps layer -->
+	<import id="/IncapsComps/Incaps" />
+	<!-- Module containing components of data -->
+	<import id="/DataComps/DataTVar" />
+	<import id="/DataComps/DataSVar" />
+	<!-- Module containing components of func -->
+	<import id="/FuncComps/FAddVar" />
+	<import id="/FuncComps/FuncIntRes" />
     </node>
     <node id="Start" parent="Elem">
 	<node id="Incaps_root" parent="/(Elem:)Root/(Elem:)Modules/(Elem:)IncapsComps/(Syst:)Incaps">

@@ -5,14 +5,14 @@
 -->
 
 
-<!DOCTYPE node SYSTEM "../etc/objspec.dtd">
+<!DOCTYPE node SYSTEM "../../etc/objspec.dtd">
 
 <node id="Mod_root" parent="Vert">
     <node id="Mod_comp_1" parent="Vert">
 	<node id="Mod_comp_1_1" parent="Vert">
 	</node>
     </node>
-    <import id="file:./ut_mod_int_2m.xml#/Mod2_root/Mod2_comp_2"/>
+    <import id="/Mod2_root/Mod2_comp_2"/>
     <node id="Mod_comp_2" parent=":Elem:AImports/Mod2_root/Mod2_comp_2"/>
 </node>
 

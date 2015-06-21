@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for importing internal node to module
+     Module. Using env imports mgr and /Modules as modules global container 
+-->
+
+
+<!DOCTYPE node SYSTEM "../../etc/objspec.dtd">
+
+<node id="Mod_root_3" parent="Vert">
+    <import id="/Mod2_root_3/Mod2_comp_2"/>
+    <node id="Mod3_comp_int2" parent="Vert">
+    </node>
+    <node id="Mod3_comp_int" parent="Vert">
+	<node id="Mod3_comp_int_c1" parent="Vert">
+	</node>
+    </node>
+    <node id="Mod_comp_2" parent="/*/Modules/Mod2_root_3/Mod2_comp_2"/>
+    <node id="Mod3_comp_3" parent="./Mod3_comp_int"/>
+    <!-- Test on handling of cases when system has to resolve model hier uri that
+	 doesn't directly correspond chromo uri becasue of nodes destination path -->
+    <node id="Mod3_c4" parent="./Mod3_comp_int">
+	<node node="./Mod3_comp_int_c1" id="Mod3_c4_c1" parent="Vert">
+	    <node id="Mod3_c4_c1_c1" parent="./../../../Mod3_comp_int2"/>
+	</node>
+    </node>
+</node>
+

@@ -579,10 +579,11 @@
 		    were applied. So no possibility to recreate them from the model.</simpara>
 	    </sect3>
 	    <sect3><title>Approaches: Direct merging.</title>
-		<simpara>Let's assume that we have all relations between the model and mutaions in chromo. There are relations of two directions: rt node to mutations and mutations to node. This 
-		    allows getting relations quickly from both parts.
+		<simpara>Let's assume that we have all relations between the model and mutaions in chromo. There are relations of two directions: 
+		    rt node to mutations and mutations to node. This allows getting relations quickly from both parts.
 		    The relations includes the reference to muation, and the type, ref <xref linkend="ds_mut_unappr_intro"/> </simpara>
-		<simpara>The algorithm of squeezing chromo of the given RT node would be like outlined below. For clarity aim let's consider the particular mutation, -rn-:</simpara>
+		<simpara>The algorithm of squeezing chromo of the given RT node would be like outlined below. 
+		    For clarity aim let's consider the particular mutation, -rn-:</simpara>
 		<orderedlist>
 		    <listitem>Start from the second mutation (remember the first is -node- itself)</listitem>
 		    <listitem>Check if the mutation can be squeezed. For -rn NODE_X- the checking passes be default because there must be mutation -node- with lower rank.</listitem>
@@ -1229,11 +1230,14 @@
                     <orderedlist>
                         <listitem>For modules internal sub-modules it is necessary to add owner that includes
                             import mutation. This causes overheads.</listitem>
+			<listitem>Explicit import mutation is not true mutation because it doesn't change the 
+			    node itself but dedicated import agent instead. So it doesn't follow the approach
+			"mutation is unambiguously interpret within run-time model"</listitem>
                     </orderedlist>
                 </sect4>
             </sect3>
         </sect2>
-	<sect2 id="ds_mod_agt"><title>Approach: Dynamic resolution of the deps via Dedicated Module agent.</title>
+	<sect2 id="ds_dyn_res"><title>Approach: Dynamic resolution of the deps via Dedicated Module agent.</title>
             <sect3><title>Introduction</title>
                 <simpara>The idea is to resolve the deps automatically, without explicit importing. </simpara>
             </sect3>
@@ -1267,7 +1271,7 @@
                         <listitem>Module imports dep and return it to GetNode, that in turn returns it to requestor</listitem>
                     </itemizedlist>
                 </sect4>
-                <sect4><title>What is import module agent? Holder of one chromo or all external chromos?</title>
+                <sect4 id="ds_mod_prb_alldeps"><title>What is import module agent? Holder of one chromo or all external chromos?</title>
                     <simpara>One approach is to create import module agent for each external chromo. 
                         This is fearly resonable - the agent can be assigned to particular external chromo and manage it.
                        But how to import some models dep in case when the module itself is not created?</simpara>
@@ -1291,7 +1295,7 @@
                 </sect4>
                 <sect4><title>How to handle missing requested dep?</title>
                     <simpara>The mechanism described in <xref linkend="ds_mod_prb_int"/> for handling of 
-                        missing requested node event is not generic enough because base event knows of moudule iface.
+                        missing requested node event is not generic enough because base agent knows of moudule iface.
                         It make sense to implement generic way for handling such case. For instance new method in
                         comp observer iface can be introduced, like OnCompNotResolved. This method implementation is
                         to help resolving component and returns the comp resolved. Agent can run this handler
@@ -1302,35 +1306,112 @@
                         inher based uri? In this case the notifications should up to root that has to redirect it 
                         to modules.</simpara>
                 </sect4>
+		<sect4 id="ds_mod_prb_uri_chromo"><title>In some cases models uri cannot be resolved on models chromo</title>
+		    <simpara>One of the cases is node mut with destination specified. This causes difference between chomo hier and
+			model hier.</simpara>
+		    <simpara>Solution here can be to scan the modules against this cases and transform invalid uris to 
+			theirs absolute representation.</simpara>
+		    <simpara>No, even for absolute model uri there no robust algorithm of finding assosiate chomo uri. Consider
+			for example case of node insertion into some inherited node. The chromo itself doesn't contain the node
+			corresponding to this inherited node, so it is not possible to find the node when traversing thru chromo.</simpara>
+		    <simpara>This problem hardens using explicit import (i.e. dynamic resolution of deps). Solution here would be 
+			to improve algorithm of getting chromo node by model hier uri. This can be done by analysing of destination path
+			in the chromo nodes with destination specified.</simpara>
+		</sect4>
+	    </sect3>
+	    <sect3><title>How to auto-import dep if it's inher hier referenced?</title>
+		<simpara>Currently many deps in modules are based on inher hier in order to make it
+		    independent on import owning node. Is it possible to evaluate inher hier in 
+		    modules external chromo? Seems no. So this needs to be restricted: the only those 
+		    uris to be enabled that ref via module node.</simpara>
             </sect3>
-            <sect3><title>How to auto-import dep if it's inher hier referenced?</title>
-                <simpara>Currently many deps in modules are based on inher hier in order to make it
-                    independent on import owning node. Is it possible to evaluate inher hier in 
-                    modules external chromo? Seems no. So this needs to be restricted.</simpara>
-            </sect3>
-            <sect3><title>Concept: module</title>
-                <sect4><title>Module as model with only internal deps or deps to other modules.</title>
-                    <simpara>So module can be considered as kind of closure. This allows to move modules simply.</simpara>
-                </sect4>
-            </sect3>
-        </sect2>
-        <sect2 id="ds_mod_uc"><title>Use-cases</title>
-            <sect3><title>Getting tree of chromo nodes</title>
-            </sect3>
-            <sect3><title>Importing component of module</title>
-                <simpara>This is creating component via applying given chromo node from the module. 
-                    Agent creates all owning hier but not fulfilles owners of created comp.</simpara>
-                <simpara>Discussion:</simpara>
-                <simpara>Why it is needed to create owning hier? To keep original path to comp witin the module.</simpara>
-                <simpara>This "incomplete" applying chromo seems queerly. Right, but we can allow only 
-                    compact chromo to be module. So, only add nodes mutations will be there, that will make 
-                    partial mutation quite acceptable.</simpara>
-            </sect3>
-            <sect3><title>Disabling mutation "move" for all agents other than "module"</title>
-            </sect3>
-            <sect3 id="ds_mod_uc_crn"><title>Creating requested node from modules chromo if the node still not exists</title>
-                <simpara>USER creates node in model with parent from modules - owning agent requests parent from modules 
-                    - module agent gets involved in resolving request, agent checks if requested comp exists and 
+	    <sect3><title>How to resolve deps from module: specific root in uri ?</title>
+		<simpara>When constructing module via studio the absolute owning hier uri is used, with 
+		    specific root name, i.e. "Root". This uri can be incorrect when we use the module in some
+		    model having another root name, i.e "Root_1". How to handle this?</simpara>
+		<simpara>One solution is to use anonymous root in uri, but this requires to significantly modify 
+		    studio logic and seems not solid.</simpara>
+		<simpara>Another solution is to use inher hier based uri for import agent. After import agent uri should
+		    be of onwning hier. This is because imported modules are "mounted" on import agent. "Mounting" means owning 
+		    relation so leads to using of owning based uri. Using inher hier for import agent itself allows make the uri
+		    insensible against root name.</simpara>
+	    </sect3>
+	    <sect3><title>Concept: module</title>
+		<sect4><title>Module as model with only internal deps or deps to other modules.</title>
+		    <simpara>So module can be considered as kind of closure. This allows to move modules simply.</simpara>
+		</sect4>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mod_selmut"><title>Selective mutation with merge option</title>
+	    <sect3><title>Introduction</title>
+		<simpara>Applying selective mutation within chromo to module is important part of 
+		    approach of deps dynamic resolution, ref <xref linkend="ds_dyn_res"/>. For the approach
+		    it is also required to apply mutation only in case if such mutation is not applied yet.
+		    The term "selective mutation with merging" will be used for the mutation desctibed.</simpara>
+	    </sect3>
+	</sect2>
+    <sect2 id="ds_mod_imp"><title>Introducing mutation "import"</title>
+	<sect3><title>Introduction</title>
+	    <simpara>Use-case <xref linkend="ds_mod_uc_explimp"/> required mechanism to import some component from modules chromo.
+		    It should also create component along with hier as stated by chromo. Currently there is no such mechanism - the
+		    only mutation "move" is used to import modules component, but it doesn't support creating hier. One solution here is to
+		    introduce new mutation "import" similar to move but supporting creating hier. It makes sense also to disable "move"
+		    mutation to create node from the external chromo, so only "import" can do it. So there will be only one way to import 
+		    external chromo.</simpara>
+	    </sect3>
+	    <sect3><title>Import locally or globally?</title>
+		<simpara>The solution needs to be verified with use-case <xref linkend="ds_mod_uc_rec"/>. How to secure recursive resolving
+		    deps for the module being imported? The approach would be to use explicit "import" within the module. But the question is how to 
+		    resolve deps when only some comp is being imported? This was already discussed in <xref linkend="ds_mod_prb_alldeps"/> in scope
+		    of automatic resolution approach using specific agents.</simpara>
+		<simpara>There also working approach can be proposed in scope of explicit import. Base agent can process all import mutations in 
+		    the cromo node imported explicitly and apply the mutation first in order to resolve deps. There are two options of
+		    import within module: local and global. Local means that chromo node is imported into the scope of the module. Even if having local
+		    deps is convenient, this causes overhead because of duplicating imports in different modules. The second option is global 
+		    importing, that means importing to some predefined module in global context (i.e /Modules in model). At the first look global
+		    import is ambuguous. This is because local mutation leads to change in global context.</simpara>
+		<simpara>This ambiguousness can be partially mitigated by using specific native agent (e.g. "Import") for imports.</simpara>
+	    </sect3>
+	    <sect3><title>Specific agent or environment?</title>
+		<simpara>There are two options of where to implements importing:
+		    <itemizedlist>
+			<listitem>In specific agent (e.g. AImports)</listitem>
+			<listitem>In environment imports manager.</listitem>
+		    </itemizedlist>
+		</simpara>
+		<simpara>The former assumes that the agent will be "point of mounting" of imports, when the latter allows mounting to 
+		    different point, to /Modules in owning hier for instance.</simpara>
+	    </sect3>
+	    <sect3><title>Explicit import in agent run-time </title>
+		<simpara>Ref <xref linkend="ds_mod_uc_rm"/> for use-case and discussion. As discussed, one approach to keep explicit imports
+		mutation aligned with models generic principles is to have import representation in agent model.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mod_uc"><title>Use-cases</title>
+	    <sect3><title>Getting tree of chromo nodes</title>
+	    </sect3>
+	    <sect3 id="ds_mod_uc_explimp"><title>Explicitly importing node of modules remote chromo</title>
+		<simpara>CLIENT knows that some node of modules remote chromo will be dep for model, so CLIENT explicitly
+		    imports node to the module in the model</simpara>
+		<simpara>Similar functionality is implemented currently with only limitation that the whole module to be imported. The import
+		    itself is implemented via "move" mutation.</simpara>
+	    </sect3>
+	    <sect3><title>Importing component of module</title>
+		<simpara>CLIENT gets MODULE agent and request importing component from remote chromo "attached" to MODULE using specific MODULE method.</simpara>
+		<simpara>This is creating component via applying given chromo node from the modules attached chromo. 
+		    This case is mostly for support of "automatic" resolution of dep on node of modules chromo, ref <xref linkend="ds_mod_uc_crn"/>.
+		    Agent creates all owning hier but not fulfilles owners of created comp.</simpara>
+		<simpara>Discussion:</simpara>
+		<simpara>Why it is needed to create owning hier? To keep original path to comp witin the module.</simpara>
+		<simpara>This "incomplete" applying chromo seems queerly. Right, but we can allow only 
+		    compact chromo to be module. So, only add nodes mutations will be there, that will make 
+		    partial mutation quite acceptable.</simpara>
+	    </sect3>
+	    <sect3><title>Disabling mutation "move" for all agents other than "module"</title>
+	    </sect3>
+	    <sect3 id="ds_mod_uc_crn"><title>Creating requested node from modules chromo if the node still not exists</title>
+		<simpara>USER creates node in model with parent from modules - owning agent requests parent from modules 
+		    - module agent gets involved in resolving request, agent checks if requested comp exists and 
                     creates it if not.</simpara>
                 <simpara>Ref <xref linkend="ds_mod_prb_int"/> for discussion of problems with this use-case.</simpara>
             </sect3>
@@ -1342,20 +1423,53 @@
                         parts of big module also as module.</simpara>
                 </sect4>
             </sect3>
-            <sect3><title>Importing module, thus importing all modules that are deps for initial module </title>
+            <sect3 id="ds_mod_uc_rec"><title>Importing module, thus importing all modules that are deps for initial module </title>
                 <simpara>This is recursive importing all the modules required for given module.</simpara>
             </sect3>
-        </sect2>
+	    <sect3 id="ds_mod_uc_rm"><title>Removing import</title>
+		<simpara>Precondition: There is explicit import mutation within some AGENT.</simpara>
+		<simpara>Normal: USER decides that the import specified is not required anymore, so USER requested mutation of AGENT
+		    in order to remove the import - SYSTEM mutates AGENT to remove import</simpara>
+		<sect4><title>Discussion</title>
+		    <simpara>This is obviously required but not sure what mutation should be for deleting import. This is because
+			"import" mutation doesn't change AGENT actually but request environment for import. This clearly indicates that
+			implementing explicit import via mutation doesn't conform to nature of mutation - to change the specified node of model.</simpara>
+		    <simpara>To keep this conformed the imports have to be kind of part ot mutated agent, e.g. properties or special node.</simpara>
+		</sect4>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mod_uc_impl"><title>Implementation</title>
+	    <sect3><title>First implemetation: dynamic resolution plus explicit import to import agent. May-2015</title>
+		<simpara>Dynamic resolution is used as the main mechanism of resolving ref to modules. Explicit import to dedicated agent
+		    is used for initial creating modules model. Potentially even this explicit import can be avoided by generating 
+		correct uri to module within import agent from modules chromo uri.</simpara>
+	    <simpara>Currently dynamic resolution from model is disabled. Only deps from import agent itself are resolved. So combined
+	    approach is implemented.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mod_uc_sav"><title>Saving model as module</title>
+	    <simpara>USER creates model and requests SYSTEM to save some part of model as module - SYSTEM saves the part of model, so 
+		this module can be imported in the models.</simpara>
+	</sect2>
+	<sect2 id="ds_mod_uc_cre"><title>Creating model from module</title>
+	    <simpara>USER request SYSTEM to create model directly from module - SYSTEM creates the model.</simpara>
+	    <sect4><title>Discussion</title>
+		<simpara>Current implementation and imports approach doesn't allow to this scenario. But this use-case is
+		    important to see the preferred behaviour. Currently the modules structure differs from the structure of 
+		    model. For instance there isn't dedicated import agent in module. The idea is that SYSTEM has to 
+		    correctly create modules run-time both inside import agent and inside models body.</simpara>
+	    </sect4>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_prb"><title>Problems</title>
     </sect1>
 
     <sect1 id="ds_tohandle"><title>To handle</title>
-        <orderedlist>
-            <listitem>Using mut order to ensure original sequence of muts, ref <xref linkend="ds_mut_dis_pheno"/> </listitem>
-            <listitem>References: rules and limitations, ref <xref linkend="ds_mut_refs"/> </listitem>
-        </orderedlist>
+	<orderedlist>
+	    <listitem>Using mut order to ensure original sequence of muts, ref <xref linkend="ds_mut_dis_pheno"/> </listitem>
+	    <listitem>References: rules and limitations, ref <xref linkend="ds_mut_refs"/> </listitem>
+	</orderedlist>
 
     </sect1>
 

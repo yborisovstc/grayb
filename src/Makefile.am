@@ -12,6 +12,8 @@ libgrayb_la_SOURCES = \
 		       guri.h \
 		       module.cpp \
 		       module.h \
+		       imports.cpp \
+		       imports.h \
 		       chromo.cpp \
 		       chromo.h \
 		       chromox.cpp \

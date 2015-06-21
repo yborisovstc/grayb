@@ -8,80 +8,80 @@
 <node id="FuncComps" parent="Elem">
 
    <!-- Input of Func with Int arg/res -->
-   <node id="Inp_FInt" parent=":Elem:SysComps/ConnPointInp"> 
+   <node id="Inp_FInt" parent="/*/Modules/SysComps/ConnPointInp"> 
        <cont node="./Required" val="MDIntGet"/>
        <cont node="./Provided" val="MDataObserver"/>
    </node>
 
    <!-- Extended Input of Func with Int arg/res -->
-   <node id="Inp_FEInt" parent=":Elem:SysComps/Extender"> 
+   <node id="Inp_FEInt" parent="/*/Modules/SysComps/Extender"> 
        <cont node="./Int/Provided" val="MDIntGet"/>
        <cont node="./Int/Required" val="MDataObserver"/>
    </node>
 
    <!-- Extended Input of Func with var arg/res -->
-   <node id="Inp_FEVar" parent=":Elem:SysComps/ExtenderInp"> 
+   <node id="Inp_FEVar" parent="/*/Modules/SysComps/ExtenderInp"> 
        <cont node="./Int/Provided" val="MDVarGet"/>
        <cont node="./Int/Required" val="MDataObserver"/>
    </node>
 
 
    <!-- Output of Func with Int arg/res -->
-   <node id="Out_FInt" parent=":Elem:SysComps/ConnPointOut"> 
+   <node id="Out_FInt" parent="/*/Modules/SysComps/ConnPointOut"> 
        <cont node="./Required" val="MDataObserver"/>
        <cont node="./Provided" val="MDIntGet"/>
    </node>
 
    <!-- Extended Output of Func with Int arg/res -->
-   <node id="Out_FEInt" parent=":Elem:SysComps/Extender"> 
+   <node id="Out_FEInt" parent="/*/Modules/SysComps/Extender"> 
        <cont node="./Int/Provided" val="MDataObserver"/>
        <cont node="./Int/Required" val="MDIntGet"/>
    </node>
 
    <!-- Extended Output of Func with Var arg/res -->
-   <node id="Out_FEVar" parent=":Elem:SysComps/ExtenderOut"> 
+   <node id="Out_FEVar" parent="/*/Modules/SysComps/ExtenderOut"> 
        <cont node="./Int/Provided" val="MDataObserver"/>
        <cont node="./Int/Required" val="MDVarGet"/>
    </node>
 
 
    <!-- Output of Bool Func -->
-   <node id="Out_FBool" parent=":Elem:SysComps/ConnPointOut"> 
+   <node id="Out_FBool" parent="/*/Modules/SysComps/ConnPointOut"> 
        <cont node="./Required" val="MDataObserver"/>
        <cont node="./Provided" val="MDBoolGet"/>
    </node>
 
    <!-- Input of Bool Func -->
-   <node id="Inp_FBool" parent=":Elem:SysComps/ConnPointInp"> 
+   <node id="Inp_FBool" parent="/*/Modules/SysComps/ConnPointInp"> 
        <cont node="./Required" val="MDBoolGet"/>
        <cont node="./Provided" val="MDataObserver"/>
    </node>
 
    <!-- Output of Func with Vect Int -->
-   <node id="Out_FVInt" parent=":Elem:SysComps/ConnPointOut"> 
+   <node id="Out_FVInt" parent="/*/Modules/SysComps/ConnPointOut"> 
        <cont node="./Required" val="MDataObserver"/>
        <cont node="./Provided" val="MVIntGet"/>
    </node>
 
    <!-- Input of Func with Var arg/res -->
-   <node id="Inp_FVar" parent=":Elem:SysComps/ConnPointInp"> 
+   <node id="Inp_FVar" parent="/*/Modules/SysComps/ConnPointInp"> 
        <cont node="./Required" val="MDVarGet"/>
        <cont node="./Provided" val="MDataObserver"/>
    </node>
 
    <!-- Output of Func with Var result -->
-   <node id="Out_FVar" parent=":Elem:SysComps/ConnPointOut"> 
+   <node id="Out_FVar" parent="/*/Modules/SysComps/ConnPointOut"> 
        <cont node="./Required" val="MDataObserver"/>
        <cont node="./Provided" val="MDVarGet"/>
    </node>
 
     <!-- Int function wo inputs  -->
-    <node id="FuncInt" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="FuncInt" parent="/*/Modules/IncapsComps/Incaps"> 
 	<node node="./Capsule" id="out" parent="./../Out_FInt"/> 
     </node>
 
     <!-- Var function wo inputs  -->
-    <node id="FuncVar" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="FuncVar" parent="/*/Modules/IncapsComps/Incaps"> 
 	<node node="./Capsule" id="out" parent="./../Out_FVar"/> 
 	<node id="ViewData" parent="Vert">
 	    <node id="Res" parent="Prop"/>
@@ -89,7 +89,7 @@
     </node>
 
     <!-- Composed/Reduced Var function wo inputs  -->
-    <node id="FuncVarC" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="FuncVarC" parent="/*/Modules/IncapsComps/Incaps"> 
 	<node node="./Capsule" id="Out" parent="./../Out_FEVar"/> 
 	<node id="ViewData" parent="Vert">
 	    <node id="Res" parent="Prop"/>
@@ -98,58 +98,58 @@
 
 
     <!-- Input of Transition Func with Int arg/res -->
-    <node id="Inp_TFInt" parent=":Elem:SysComps/ConnPointInp"> 
+    <node id="Inp_TFInt" parent="/*/Modules/SysComps/ConnPointInp"> 
 	<cont node="./Required" val="MDIntGet"/>
     </node>
 
     <!-- Output of Transition Func with Int arg/res -->
-    <node id="Out_TFInt" parent=":Elem:SysComps/ConnPointOut"> 
+    <node id="Out_TFInt" parent="/*/Modules/SysComps/ConnPointOut"> 
 	<cont node="./Provided" val="MDIntGet"/>
     </node>
 
     <!-- Extended Input of Transition Func with Int arg/res -->
-    <node id="Inp_TFEInt" parent=":Elem:SysComps/Extender"> 
+    <node id="Inp_TFEInt" parent="/*/Modules/SysComps/Extender"> 
 	<cont node="./Int/Provided" val="MDIntGet"/>
     </node>
 
     <!-- Extended Output of Transition Func with Int arg/res -->
-    <node id="Out_TFEInt" parent=":Elem:SysComps/Extender"> 
+    <node id="Out_TFEInt" parent="/*/Modules/SysComps/Extender"> 
 	<cont node="./Int/Required" val="MDIntGet"/>
     </node>
 
     <!-- Input of Transition Func with variable arg/res -->
-    <node id="Inp_TFVar" parent=":Elem:SysComps/ConnPointInp"> 
+    <node id="Inp_TFVar" parent="/*/Modules/SysComps/ConnPointInp"> 
 	<cont node="./Required" val="MDVarGet"/>
     </node>
 
     <!-- Output of Transition Func with variable arg/res -->
-    <node id="Out_TFVar" parent=":Elem:SysComps/ConnPointOut"> 
+    <node id="Out_TFVar" parent="/*/Modules/SysComps/ConnPointOut"> 
 	<cont node="./Provided" val="MDVarGet"/>
     </node>
 
     <!-- Extended Input of Transition Func with Var arg/res -->
-    <node id="Inp_TFEVar" parent=":Elem:SysComps/ExtenderInp"> 
+    <node id="Inp_TFEVar" parent="/*/Modules/SysComps/ExtenderInp"> 
 	<cont node="./Int/Provided" val="MDVarGet"/>
     </node>
 
     <!-- Extended Output of Transition Func with Var arg/res -->
-    <node id="Out_TFEVar" parent=":Elem:SysComps/ExtenderOut"> 
+    <node id="Out_TFEVar" parent="/*/Modules/SysComps/ExtenderOut"> 
 	<cont node="./Int/Required" val="MDVarGet"/>
     </node>
 
 
     <!-- Output of Bool Transition Func -->
-    <node id="Out_TFBool" parent=":Elem:SysComps/ConnPointOut"> 
+    <node id="Out_TFBool" parent="/*/Modules/SysComps/ConnPointOut"> 
 	<cont node="./Provided" val="MDBoolGet"/>
     </node>
 
     <!-- Input of Bool Transition Func -->
-    <node id="Inp_TFBool" parent=":Elem:SysComps/ConnPointInp"> 
+    <node id="Inp_TFBool" parent="/*/Modules/SysComps/ConnPointInp"> 
        <cont node="./Required" val="MDBoolGet"/>
    </node>
 
     <!-- Composed/Reduced Var transition function wo inputs  -->
-    <node id="TFuncVarC" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="TFuncVarC" parent="/*/Modules/IncapsComps/Incaps"> 
 	<node node="./Capsule" id="Out" parent="./../Out_TFEVar"/> 
 	<node id="ViewData" parent="Vert">
 	    <node id="Res" parent="Prop"/>
@@ -159,46 +159,46 @@
 
 
     <!-- Int function with single input  -->
-    <node id="FuncIntSi" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="FuncIntSi" parent="/*/Modules/IncapsComps/Incaps"> 
 
-	<node node="./Capsule" id="inp" parent=":Elem:SysComps/ConnPointInp"> 
+	<node node="./Capsule" id="inp" parent="/*/Modules/SysComps/ConnPointInp"> 
 	    <cont node="./Required" val="MDIntGet"/>
 	    <cont node="./Provided" val="MDataObserver"/>
 	</node>
-	<node node="./Capsule" id="out" parent=":Elem:SysComps/ConnPointOut"> 
+	<node node="./Capsule" id="out" parent="/*/Modules/SysComps/ConnPointOut"> 
 	    <cont node="./Required" val="MDataObserver"/>
 	    <cont node="./Provided" val="MDIntGet"/>
 	</node>
     </node>
 
     <!-- Bool function with simgle input  -->
-    <node id="FuncBoolSi" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="FuncBoolSi" parent="/*/Modules/IncapsComps/Incaps"> 
 	<node node="./Capsule" id="out" parent="./../Out_FBool"/> 
     </node>
 
 
-    <node id="FuncIncInt" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="FuncIncInt" parent="/*/Modules/IncapsComps/Incaps"> 
 
 	<node node="./Agents" id="func_agt" parent="AIncInt"/> 
 
-	<node node="./Capsule" id="inp" parent=":Elem:SysComps/ConnPointInp"> 
+	<node node="./Capsule" id="inp" parent="/*/Modules/SysComps/ConnPointInp"> 
 	    <cont node="./Required" val="MDIntGet"/>
 	    <cont node="./Provided" val="MDataObserver"/>
 	</node>
-	<node node="./Capsule" id="out" parent=":Elem:SysComps/ConnPointOut"> 
+	<node node="./Capsule" id="out" parent="/*/Modules/SysComps/ConnPointOut"> 
 	    <cont node="./Required" val="MDataObserver"/>
 	    <cont node="./Provided" val="MDIntGet"/>
 	</node>
     </node>
 
     <!-- Function of integer result -->
-    <node id="FuncIntRes" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="FuncIntRes" parent="/*/Modules/IncapsComps/Incaps"> 
 	<node node="./Agents" id="func_agt" parent="AFunIntRes"/> 
-	<node node="./Capsule" id="inp" parent=":Elem:SysComps/ConnPointInp"> 
+	<node node="./Capsule" id="inp" parent="/*/Modules/SysComps/ConnPointInp"> 
 	    <cont node="./Required" val="MDIntGet"/>
 	    <cont node="./Provided" val="MDataObserver"/>
 	</node>
-	<node node="./Capsule" id="out" parent=":Elem:SysComps/ConnPointOut"> 
+	<node node="./Capsule" id="out" parent="/*/Modules/SysComps/ConnPointOut"> 
 	    <cont node="./Required" val="MDIntSet"/>
 	</node>
     </node>
@@ -261,12 +261,12 @@
 	<!-- Input for getting result from Working function  -->
 	<node node="./Capsule" id="Inp_WFres" parent="./../Inp_FInt"/> 
 	<!-- Value of Working function argument -->
-	<node id="WFArg" parent="./**/DataComps/DataSNInt"/>
+	<node id="WFArg" parent="/*/Modules/DataComps/DataSNInt"/>
 	<node id="E1" parent="Edge"> <cont node="./P1" val="./../../WFArg/Capsule/out"/> <cont node="./P2" val="./../../Capsule/Out_WFarg/Int"/> </node>
     </node>
 
     <!-- Int  inputs to Int vector conversation -->
-    <node id="FuncInpToVectInt" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="FuncInpToVectInt" parent="/*/Modules/IncapsComps/Incaps"> 
 	<!-- Input -->
 	<node node="./Capsule" id="Inp" parent="./../Inp_FInt"/> 
 	<!-- Output -->
@@ -289,17 +289,17 @@
     <!-- Transition function. It doesn's support observation of inputs change -->
 
     <!-- Int Transition function wo inputs  -->
-    <node id="TFuncInt" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="TFuncInt" parent="/*/Modules/IncapsComps/Incaps"> 
 	<node node="./Capsule" id="out" parent="./../Out_TFInt"/> 
     </node>
 
     <!-- Bool Transition function wo inputs  -->
-    <node id="TFuncBool" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="TFuncBool" parent="/*/Modules/IncapsComps/Incaps"> 
 	<node node="./Capsule" id="out" parent="./../Out_TFBool"/> 
     </node>
 
     <!-- Var Transition function wo inputs  -->
-    <node id="TFuncVar" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="TFuncVar" parent="/*/Modules/IncapsComps/Incaps"> 
 	<node node="./Capsule" id="Out" parent="./../Out_TFVar"/> 
 	<node id="ViewData" parent="Vert">
 	    <node id="Res" parent="Prop"/>
@@ -354,7 +354,7 @@
 	<!-- Input for getting result from Working function  -->
 	<node node="./Capsule" id="Inp_WFres" parent="./../Inp_TFInt"/> 
 	<!-- Value of Working function argument -->
-	<node id="WFArg" parent="./**/DataComps/DataSUInt"/>
+	<node id="WFArg" parent="/*/Modules/DataComps/DataSUInt"/>
 	<node id="E1" parent="Edge"> <cont node="./P1" val="./../../WFArg/Capsule/out"/> <cont node="./P2" val="./../../Capsule/Out_WFarg/Int"/> </node>
     </node>
 
@@ -474,7 +474,7 @@
     <!-- Transition Function of getting component of containter, reduced by index  -->
     <node id="TFAtVarI" parent="./TFuncVarC"> 
 	<node id="At" parent="./../TFAtVar"/>
-	<node id="Index" parent=":Elem:DataComps/DataSCVar"/>
+	<node id="Index" parent="/*/Modules/DataComps/DataSCVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFEVar"/> 
 	<node id="E1" parent="Edge"> <cont node="./P1" ref="./../../Capsule/Inp/Int"/> <cont node="./P2" ref="./../../At/Capsule/Inp"/> </node>
 	<node id="E2" parent="Edge"> <cont node="./P1" ref="./../../At/Capsule/Out"/> <cont node="./P2" ref="./../../Capsule/Out/Int"/> </node>
@@ -534,7 +534,7 @@
     <!-- Function of getting component of containter, reduced by index  -->
     <node id="FAtVarI" parent="./FuncVarC"> 
 	<node id="At" parent="./../FAtVar"/>
-	<node id="Index" parent=":Elem:DataComps/DataTVar"/>
+	<node id="Index" parent="/*/Modules/DataComps/DataTVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_FEVar"/> 
 	<node id="E1" parent="Edge"> <cont node="./P1" ref="./../../Capsule/Inp/Int"/> <cont node="./P2" ref="./../../At/Capsule/Inp"/> </node>
 	<node id="E2" parent="Edge"> <cont node="./P1" ref="./../../At/Capsule/out"/> <cont node="./P2" ref="./../../Capsule/Out/Int"/> </node>

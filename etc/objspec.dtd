@@ -5,6 +5,9 @@
 <!-- Mutation - moving component within the owner node -->
 <!ELEMENT move EMPTY>
 
+<!-- Mutation - import node from modules chromo -->
+<!ELEMENT import EMPTY>
+
 <!-- Mutation - Removing node -->
 <!ELEMENT rm EMPTY >
 
@@ -12,7 +15,7 @@
 <!ELEMENT change EMPTY >
 
 <!-- Element of base hier -->
-<!ELEMENT node (node*, rm*, change*, cont*, move*)* >
+<!ELEMENT node (node*, rm*, change*, cont*, move*, import*)* >
 
 <!-- Mutation - Set order of node -->
 <!ELEMENT order EMPTY >
@@ -66,6 +69,16 @@
      node - destination node
      -->
 <!ATTLIST move
+   id CDATA #REQUIRED
+   node CDATA #IMPLIED
+    ord CDATA #IMPLIED
+>
+
+<!-- Attributes of import:
+     id - moved node URI
+     node - destination node
+     -->
+<!ATTLIST import
    id CDATA #REQUIRED
    node CDATA #IMPLIED
     ord CDATA #IMPLIED

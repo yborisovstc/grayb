@@ -154,6 +154,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	ChromoNode AppendMutation(const ChromoNode& aMuta);
 	TBool AppendMutation(const string& aFileName);
 	void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue, TBool aTrialMode = EFalse);
+	void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue, TBool aTrialMode = EFalse);
 	string PName() const;
 	const vector<Elem*>& Comps() const;
 	static void ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct);
@@ -225,6 +226,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual Elem* GetNode(const string& aUri);
 	virtual Elem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere = EFalse);
 	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);
+	TBool RebaseUri(const GUri& aUri, const Elem* aBase, GUri& aRes);
+	TBool RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere, const Elem* aBase, GUri& aRes);
 	// TODO [YB] The only attr allowed for change is name. To consider replacing of ChangeAttr to Rename 
 	virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal);
 	virtual void GetCont(string& aCont, const string& aName = string()); 
@@ -242,6 +245,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
 	virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse);
 	virtual TBool ReorderNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety);
+	virtual TBool ImportNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse);
 	vector<Elem*>& Comps();
 	// From MChild
 	virtual void OnParentDeleting(Elem* aParent);
@@ -257,7 +261,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// Gets major dep for referenced node, ref ds_indp_mutord_impl
 	virtual void GetImplicitDep(TMDep& aDep, Elem* aObj, Elem* aRef);
 	// From MMutable
-	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
+	//virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
+	virtual void DoMutation(const ChromoNode& aMutSpec, const ChromoNode& aSelMut, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode);
 	// Ifaces cache
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
 	void RmIfCache(IfIter& aIt);

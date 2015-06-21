@@ -51,6 +51,8 @@ void Ut_conn::test_Sock()
 
     iEnv = new Env("Env", "ut_conn_sock.xml", "ut_conn_sock.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
@@ -82,6 +84,8 @@ void Ut_conn::test_Sock2()
     printf("\n === Test of extending of sockets\n");
 
     iEnv = new Env("Env", "ut_conn_sock2.xml", "ut_conn_sock2.txt");
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();

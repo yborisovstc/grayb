@@ -438,7 +438,7 @@ TBool ExtenderAgent::IsCompatible(Elem* aPair, TBool aExt)
 {
     TBool res = EFalse;
     Elem* intcp = GetNode("./../../Int");
-    MCompatChecker* mint = intcp->GetObj(mint);
+    MCompatChecker* mint = (intcp != NULL) ? intcp->GetObj(mint) : NULL;
     if (mint != NULL) {
 	res = mint->IsCompatible(aPair, !aExt);
     }

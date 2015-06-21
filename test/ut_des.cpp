@@ -49,6 +49,8 @@ void Ut_des::test_Cre1()
 
     iEnv = new Env("Env", "ut_des_cre1.xml", "ut_des_cre1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
@@ -85,6 +87,8 @@ void Ut_des::test_Cre2()
 
     iEnv = new Env("Env", "ut_des_cre2.xml", "ut_des_cre2.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
@@ -121,6 +125,8 @@ void Ut_des::test_Cre4()
 
     iEnv = new Env("Env", "ut_des_cre4.xml", "ut_des_cre4.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);

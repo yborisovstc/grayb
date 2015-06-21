@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <sstream>
 #include <sys/time.h>
+#include "mmod.h"
 
 
 TBool Elem::EN_PERF_TRACE = EFalse;
@@ -703,6 +704,7 @@ void Elem::SetEType(const string& aPName, const string& aPEType)
     iEType = aPEType + GUri::KParentSep + aPName;
 }
 
+// TODO [YB] Not used anymore, to remove ?
 TBool Elem::AddNode(const ChromoNode& aSpec, TBool aRunTime)
 {
     TBool res = ETrue;
@@ -764,6 +766,117 @@ Elem* Elem::GetComp(const string& aParent, const string& aName)
     return res;
 }
 
+TBool Elem::RebaseUri(const GUri& aUri, const Elem* aBase, GUri& aRes)
+{
+    __ASSERT(aUri.IsAbsolute());
+    TBool res = EFalse;
+    if (aUri.IsErr()) return res;
+    GUri::const_elem_iter it = aUri.Elems().begin();
+    if (it != aUri.Elems().end()) {
+	TBool anywhere = (*it).second.second == GUri::KTypeAnywhere;
+	if (it->second.second.empty() || anywhere) {
+	    Elem* root = NULL;
+	    if (it->second.first == GUri::KNodeSep) {
+		root = GetRoot();
+	    } else if (it->second.first == GUri::KParentSep) {
+		root = GetInhRoot();
+	    }
+	    if (!anywhere) {
+		it++;
+		GUri::TElem elem = *it;
+		anywhere = elem.second.second == GUri::KTypeAnywhere;
+		TBool any = elem.second.second == GUri::KTypeAny;
+		if (!anywhere && !any && root->Name() != elem.second.second) {
+		    root = NULL;
+		}
+	    }
+	    if (root == aBase) {
+		aRes.AppendTail(aUri, ++it);
+		return ETrue;
+	    }
+	    if (root != NULL && ++it != aUri.Elems().end()) {
+		res = root->RebaseUri(aUri, it, anywhere, aBase, aRes);
+	    }
+	} else {
+	    res = RebaseUri(aUri, it, EFalse, aBase, aRes);
+	}
+    }
+    return res;
+}
+
+TBool Elem::RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere, const Elem* aBase, GUri& aRes)
+{
+    TBool res = EFalse;
+    GUri::const_elem_iter uripos = aPathBase;
+    GUri::TElem elem = *uripos;
+    TBool anywhere = aAnywhere;
+    if (elem.second.second == "..") {
+	if (iMan == aBase) {
+	    aRes.AppendTail(aUri, ++uripos);
+	    return ETrue;
+	}
+	if (iMan != NULL) {
+	    if (++uripos != aUri.Elems().end()) {
+		res = iMan->RebaseUri(aUri, uripos, EFalse, aBase, aRes);
+	    }
+	} else {
+	    __ASSERT(EFalse);
+	    Logger()->Write(MLogRec::EErr, this, "Revasing uri [%s] - path to top of root", aUri.GetUri().c_str());
+	}
+    } else {
+	if (!anywhere && elem.second.second == GUri::KTypeAnywhere) {
+	    elem = GUri::Elem(GUri::KParentSep, GUri::KTypeAny, GUri::KTypeAny);
+	    anywhere = ETrue;
+	}
+	TBool isnative = elem.second.first == GUri::KSepNone;
+	if (isnative) {
+	    // Native node, not embedded to hier, to get from environment, ref uc_045
+	    uripos++;
+	    if (uripos != aUri.Elems().end()) {
+		Elem* node = Provider()->GetNode(elem.second.second);
+		if (node == aBase) {
+		    aRes.AppendTail(aUri, ++uripos);
+		    return ETrue;
+		}
+		if (node != NULL) {
+		    res = node->RebaseUri(aUri, uripos, EFalse, aBase, aRes);
+		}
+	    }
+	} else {
+	    Iterator it = NodesLoc_Begin(elem);
+	    Iterator itend = NodesLoc_End(elem);
+	    if (it != itend) {
+		uripos++;
+		if (uripos != aUri.Elems().end()) {
+		    for (; it != itend && !res; it++) {
+			Elem* node = *it;
+			if (node == aBase) {
+			    aRes.AppendTail(aUri, uripos);
+			    return ETrue;
+			}
+			res = node->RebaseUri(aUri, uripos, EFalse, aBase, aRes);
+		    }
+		}
+	    }
+	}
+	if (!res && anywhere && uripos != aUri.Elems().end()) {
+	    // Try to search in all nodes
+	    elem = GUri::Elem(GUri::KNodeSep, GUri::KTypeAny, GUri::KTypeAny);
+	    Iterator it = NodesLoc_Begin(elem);
+	    Iterator itend = NodesLoc_End(elem);
+	    for (; it != itend && !res; it++) {
+		Elem* node = *it;
+		if (node == aBase) {
+		    aRes.AppendTail(aUri, uripos);
+		    return ETrue;
+		}
+		res = node->RebaseUri(aUri, uripos, anywhere, aBase, aRes);
+	    }
+	}
+    }
+    return res;
+}
+
 Elem* Elem::GetNode(const GUri& aUri) 
 { 
     if (aUri.IsErr()) return NULL;
@@ -783,7 +896,8 @@ Elem* Elem::GetNode(const GUri& aUri)
 		it++;
 		GUri::TElem elem = *it;
 		anywhere = elem.second.second == GUri::KTypeAnywhere; 
-		if (!anywhere && root->Name() != elem.second.second) {
+		TBool any = elem.second.second == GUri::KTypeAny;
+		if (!anywhere && !any && root->Name() != elem.second.second) {
 		    root = NULL;
 		}
 	    }
@@ -949,7 +1063,7 @@ TBool Elem::AppendMutation(const string& aFileName)
 void Elem::Mutate(TBool aRunTimeOnly, TBool aCheckSafety, TBool aTrialMode)
 {
     ChromoNode& root = iMut->Root();
-    DoMutation(root, aRunTimeOnly, aCheckSafety, aTrialMode);
+    DoMutation(root, root, aRunTimeOnly, aCheckSafety, aTrialMode);
     // Clear mutation
     for (ChromoNode::Iterator mit = root.Begin(); mit != root.End();)
     {
@@ -957,6 +1071,11 @@ void Elem::Mutate(TBool aRunTimeOnly, TBool aCheckSafety, TBool aTrialMode)
 	mit++; // It is required because removing node by iterator breakes iterator itself
 	root.RmChild(node);
     }
+}
+
+void Elem::Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly, TBool aCheckSafety, TBool aTrialMode)
+{
+    DoMutation(aMutsRoot, aMutsRoot, aRunTimeOnly, aCheckSafety, aTrialMode);
 }
 
 // TODO [YB] Is megre the valid idea at all ?
@@ -1007,7 +1126,7 @@ TBool Elem::MergeMutMove(const ChromoNode& aSpec)
     return res;
 }
 
-void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode)
+void Elem::DoMutation(const ChromoNode& aMutSpec, const ChromoNode& aMutSel, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode)
 {
     const ChromoNode& mroot = aMutSpec;
     if (mroot.Begin() == mroot.End()) return;
@@ -1020,10 +1139,12 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	lim = iEnv->ChMgr()->GetLim();
 	isattached = IsChromoAttached();
     }
+    TBool selmut = !(aMutSpec == aMutSel);
+    ChromoNode selnode = selmut ? (*mroot.GetChildOwning(aMutSel)) : ChromoNode();
     for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End(); rit++)
     {
-	TBool res = EFalse;
 	ChromoNode rno = (*rit);
+	if (selmut && !(rno == selnode)) continue;
 	Logger()->SetContextMutId(rno.LineId());
 	TInt order = rno.GetOrder();
 	// Avoiding mutations above limit. Taking into account only attached chromos.
@@ -1052,6 +1173,9 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	else if (rnotype == ENt_Move) {
 	    MoveNode(rno, aRunTime, aTrialMode);
 	}
+	else if (rnotype == ENt_Import) {
+	    ImportNode(rno, aRunTime, aTrialMode);
+	}
 	else if (rnotype == ENt_Rm) {
 	    RmNode(rno, aRunTime, aCheckSafety, aTrialMode);
 	}
@@ -1064,6 +1188,32 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	Logger()->SetContextMutId();
     }
 }
+
+// Selective mutation, ref ds_mod_selmut
+#if 0
+void Elem::DoMutation(const ChromoNode& aMutSpec, const ChromoNode& aSelMut, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode)
+{
+    if (aMutSpec == aSelMut) {
+	DoMutation(aMutSpec, aRunTime, aCheckSafety, aTrialMode);
+    } else {
+	// Loop by chromo hier
+	ChromoNode mutc = *aMutSpec.GetChildOwning(aSelMut);
+	// Ignore all childs other than selective
+	//ChromoNode mut = iChromo->CreateNode(mutc.Handle());
+	/*
+	TNodeType rnotype = rno.Type();
+	__ASSERT(rnotype == ENt_Node);
+	Elem* node = AddElem(rno, aRunTime, aTrialMode);
+	if (node != NULL) {
+	    node->DoMutation(aMutSpec, aRunTime, aCheckSafety, aTrialMode);
+	} else
+	    string pname = rno.Attr(ENa_Parent);
+	    Logger()->Write(MLogRec::EErr, this, "Adding node with parent [%s] failed", pname.c_str());
+	}
+	*/
+    }
+}
+#endif
 
 TBool Elem::IsContChangeable(const string& aName) const
 {
@@ -1372,6 +1522,12 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 	    if (prnturi.Scheme().empty()) {
 		// Local parent
 		parent = GetNode(prnturi);
+		if (parent == NULL) {
+		    // Probably external node not imported yet - ask env for resolving uri
+		    GUri pruri(prnturi);
+		    MImportMgr* impmgr = iEnv->ImpsMgr();
+		    parent = impmgr->OnUriNotResolved(this, pruri);
+		}
 		ext_parent = EFalse;
 	    }
 	    else {
@@ -1811,14 +1967,12 @@ Elem* Elem::GetNode(const string& aUri)
 void Elem::OnCompDeleting(Elem& aComp)
 {
     // Translate to hier
-    /*
     if (iMan != NULL) {
 	iMan->OnCompDeleting(aComp);
     }
     if (iObserver != NULL) {
 	iObserver->OnCompDeleting(aComp);
     }
-    */
     // Handle for direct child
     if (aComp.GetMan() == this) {
 	// Don't deattach the childs chromo. Ref UC_016. The childs chromo (childs creation mutation) needs
@@ -1838,10 +1992,11 @@ void Elem::OnCompDeleting(Elem& aComp)
     }
 }
 
+// TODO [YB] To avoid propagation thru the whole model. It is temporarily remaining because of
+// missing proper mechanism of the whole model observer.
 void Elem::OnCompAdding(Elem& aComp)
 {
     // If the comp is already registered then propagate the event
-    /*
     if (IsCompRegistered(&aComp)) {
 	if (iMan != NULL) {
 	    iMan->OnCompAdding(aComp);
@@ -1850,7 +2005,6 @@ void Elem::OnCompAdding(Elem& aComp)
 	    iObserver->OnCompAdding(aComp);
 	}
     }
-    */
 }
 
 // TODO [YB] To include agents as member of elem. This will be more effective
@@ -1877,6 +2031,7 @@ TBool Elem::OnCompChanged(Elem& aComp)
     if (!handled_by_agents) {
 	DoOnCompChanged(aComp);
     }
+    */
     // Propagate notification to upper level
     if (res && iMan != NULL) {
 	res = iMan->OnCompChanged(aComp);
@@ -1884,7 +2039,6 @@ TBool Elem::OnCompChanged(Elem& aComp)
     if (res && iObserver != NULL) {
 	iObserver->OnCompChanged(aComp);
     }
-    */
     return res;
 }
 
@@ -3518,4 +3672,38 @@ void Elem::LogComps() const
 	Logger()->Write(MLogRec::EInfo, comp, ">");
 	comp->LogComps();
     }
+}
+
+#if 0
+// This variant is for using dedicated agent for import
+TBool Elem::ImportNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
+{
+    Elem* impe = iEnv->Provider()->GetNode("AImports");
+    __ASSERT(impe != NULL);
+    MImports* imp = impe->GetObj(imp);
+    __ASSERT(imp != NULL);
+    TBool res = EFalse;
+    TBool mutadded = EFalse;
+    string srcs = aSpec.Attr(ENa_Id);
+    res = imp->Import(srcs);
+    if (!aRunTime && !mutadded && !aTrialMode) {
+	iChromo->Root().AddChild(aSpec);
+    }
+    return ETrue;
+}
+#endif
+
+// This variant is for using env imports manager
+TBool Elem::ImportNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
+{
+    MImportMgr* impmgr = iEnv->ImpsMgr();
+    __ASSERT(impmgr != NULL);
+    TBool res = EFalse;
+    TBool mutadded = EFalse;
+    string srcs = aSpec.Attr(ENa_Id);
+    res = impmgr->Import(srcs);
+    if (!aRunTime && !mutadded && !aTrialMode) {
+	iChromo->Root().AddChild(aSpec);
+    }
+    return ETrue;
 }

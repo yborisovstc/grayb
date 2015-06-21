@@ -234,8 +234,10 @@ void *ChromoMdlX::Prev(const void *aHandle, TNodeType aType)
     xmlNodePtr res = ((xmlNodePtr) aHandle)->prev;
     if (res != NULL) {
 	TNodeType type = GetType((void*) res);
-	while ((res != NULL) && ((res->type != XML_ELEMENT_NODE) || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown))))
+	while ((res != NULL) && ((res->type != XML_ELEMENT_NODE) || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown)))) {
 	    res = res->prev;
+	    type = GetType((void*) res);
+	}
     }
     return res;
 }
@@ -589,3 +591,13 @@ ChromoNode ChromoX::CreateNode(void* aHandle)
     return ChromoNode(iMdl, aHandle);
 }
 
+void ChromoX::ReduceToSelection(const ChromoNode& aSelNode)
+{
+    ChromoNode sel = aSelNode;
+    ChromoNode prnt = *sel.Parent();
+    while (prnt != ChromoNode()) {
+	prnt.ReduceToSelection(sel);
+	sel = prnt;
+	prnt = *sel.Parent();
+    }
+}

@@ -9,6 +9,7 @@
 #include "func.h"
 #include "des.h"
 #include "module.h"
+#include "imports.h"
 
 // TODO [YB] To import from build variable
 const string KModulesPath = "/usr/share/grayb/modules/";
@@ -32,6 +33,9 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, 
     }
     else if (aType.compare(AMod::Type()) == 0) {
 	res = new AMod(aName, aMan, aEnv);
+    }
+    else if (aType.compare(AImports::Type()) == 0) {
+	res = new AImports(aName, aMan, aEnv);
     }
     else if (aType.compare(ACapsule::Type()) == 0) {
 	res = new ACapsule(aName, aMan, aEnv);
@@ -234,6 +238,10 @@ Elem* ProvDef::GetNode(const string& aUri)
 	else if (aUri.compare(AMod::Type()) == 0) {
 	    parent = GetNode("Elem");
 	    res = new AMod(NULL, iEnv);
+	}
+	else if (aUri.compare(AImports::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new AImports(NULL, iEnv);
 	}
 	else if (aUri.compare(Prop::Type()) == 0) {
 	    parent = GetNode("Elem");

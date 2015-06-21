@@ -42,10 +42,12 @@ void Ut_icache::tearDown()
 
 void Ut_icache::test_Inv1()
 {
-    printf("\n === Test of creation of simple des\n");
+    printf("\n === Tests invalidation of function add inputs ifaces cache after feedback edge has been connected\n");
 
     iEnv = new Env("Env", "ut_icache_inv1.xml", "ut_icache_inv1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);

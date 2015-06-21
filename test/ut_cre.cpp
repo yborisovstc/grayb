@@ -54,6 +54,8 @@ void Ut_cre::test_Cre()
 
     iEnv = new Env("Env", "ut_cre_1.xml", "ut_cre_1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     Elem* ee = root->GetNode(":Elem");
@@ -83,6 +85,8 @@ void Ut_cre::test_CreGr()
 
     iEnv = new Env("Env", "ut_cre_gr.xml", "ut_cre_gr.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
@@ -105,6 +109,8 @@ void Ut_cre::test_CreSyst()
 
     iEnv = new Env("Env", "ut_cre_syst1.xml", "ut_cre_syst.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
@@ -126,6 +132,8 @@ void Ut_cre::test_CreIncaps()
 
     iEnv = new Env("Env", "ut_cre_incaps.xml", "ut_cre_incaps.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
@@ -150,6 +158,8 @@ void Ut_cre::test_CreData()
 
     iEnv = new Env("Env", "ut_cre_data.xml", "ut_cre_data.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
@@ -194,6 +204,8 @@ void Ut_cre::test_BaseApis1()
     iEnv->ChMgr()->SetEnableFixErrors(ETrue);
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);

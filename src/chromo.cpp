@@ -138,20 +138,25 @@ ChromoNode::ChromoNode(const ChromoNode& aNode): iMdl(aNode.iMdl), iHandle(aNode
 {
 }
 
-ChromoNode& ChromoNode::operator=(const ChromoNode& aNode) 
-{ 
+ChromoNode& ChromoNode::operator=(const ChromoNode& aNode)
+{
     // TODO [YB] Wrong to assign model because its base is not assignable (Base). To redesign.
 //    iMdl = aNode.iMdl; iHandle = aNode.iHandle;
     iHandle = aNode.iHandle;
-    return *this; 
+    return *this;
 }
 
-TBool ChromoNode::operator==(const ChromoNode& aNode) 
+TBool ChromoNode::operator==(const ChromoNode& aNode)
+{
+    return iHandle == aNode.iHandle;
+}
+
+TBool ChromoNode::operator==(const ChromoNode& aNode) const
 { 
     return iHandle == aNode.iHandle;
 }
 
-const string ChromoNode::Attr(TNodeAttr aAttr) 
+const string ChromoNode::Attr(TNodeAttr aAttr)
 {
     char* sattr = iMdl.GetAttr(iHandle, aAttr); 
     string res; 
@@ -254,6 +259,30 @@ ChromoNode::Iterator ChromoNode::Find(TNodeType aType, const string& aName, TNod
     return res;
 };
 
+ChromoNode::Iterator ChromoNode::FindNodeInMhUri(const GUri& aMhUri, const GUri::const_elem_iter& aMhUriPos, GUri::const_elem_iter& aResPos)
+{
+    ChromoNode::Iterator res = End();
+    for (ChromoNode::Iterator it = Begin(); it != End(); it++) {
+	ChromoNode node = *it;
+	if (node.Type() == ENt_Node) {
+	    GUri nuri;
+	    if (node.AttrExists(ENa_MutNode)) {
+		GUri duri(node.Attr(ENa_MutNode));
+		nuri.Append(duri);
+	    }
+	    nuri.AppendElem(string(), node.Name());
+	    GUri::const_elem_iter rpos;
+	    TBool matched = aMhUri.Compare(aMhUriPos, nuri, rpos);
+	    if (matched) {
+		aResPos = rpos;
+		return it;
+	    }
+	}
+    }
+    return res;
+
+}
+
 TInt ChromoNode::GetLocalRank()
 {
     TInt res = 0;
@@ -271,6 +300,17 @@ TInt ChromoNode::GetLocalSize()
 {
     TInt res = 0;
     for (Iterator it = Begin(); it != End(); it++, res++);
+    return res;
+}
+
+TInt ChromoNode::GetLocalSize(TNodeType aType) const
+{
+    TInt res = 0;
+    for (Const_Iterator it = Begin(); it != End(); it++) {
+	if ((*it).Type() == aType) {
+	    res++;
+	}
+    }
     return res;
 }
 
@@ -292,8 +332,175 @@ ChromoNode ChromoNode::At(TInt aInd) const
     return res;
 }
 
-ChromoNode& ChromoNode::GetNode(const GUri& aUri) const
+ChromoNode ChromoNode::At(TInt aInd, TNodeType aType) const
 {
+    ChromoNode res = *End();
+    TIter it = TBegin(aType);
+    for (TInt ind = 0; it != TEnd() && ind != aInd; it++, ind++);
+    if (it != TEnd()) {
+	res = *it;
+    }
+    return res;
+}
+
+ChromoNode ChromoNode::GetNodeByMhUri(const GUri& aUri)
+{
+    if (aUri.IsErr()) return ChromoNode();
+    GUri::const_elem_iter it = aUri.Elems().begin();
+    if (it != aUri.Elems().end()) {
+	if (it->second.second.empty()) {
+	    Iterator root = End();
+	    if (it->second.first == GUri::KNodeSep) {
+		root = Root();
+	    } else {
+		__ASSERT(false);
+	    }
+	    it++;
+	    GUri::TElem elem = *it;
+	    if ((*root).Name() != elem.second.second) {
+		root = End();
+	    }
+	    if (root != End() && ++it != aUri.Elems().end()) {
+		return (*root).GetNodeByMhUri(aUri, it);
+	    } else {
+		return *root;
+	    }
+	} else {
+	    return GetNodeByMhUri(aUri, it);
+	}
+    } else {
+	return *this;
+    }
+}
+
+ChromoNode ChromoNode::GetNodeByMhUri(const GUri& aUri, GUri::const_elem_iter& aPathBase)
+{
+    GUri::const_elem_iter uripos = aPathBase;
+    GUri::TElem elem = *uripos;
+    if (elem.second.second == GUri::KUpperLevel) {
+	// Handle nodes distination path
+	// Get number of hops
+	TInt hops = 0;
+	if (AttrExists(ENa_MutNode)) {
+	    string destpath = Attr(ENa_MutNode);
+	    GUri dp(destpath);
+	    hops = dp.Elems().size();
+	}
+	Iterator it = Parent();
+	TBool hopsok = ETrue;
+	for (TInt ct = 0; ct < hops; ct++) {
+	    uripos++;
+	    if (uripos->second.second != GUri::KUpperLevel) {
+		hopsok = EFalse;
+		break;
+	    }
+	}
+	if (!hopsok) return *(End());
+	if (it != End()) {
+	    uripos++;
+	    if (uripos != aUri.Elems().end()) {
+		ChromoNode node = *it;
+		return node.GetNodeByMhUri(aUri, uripos);
+	    } else {
+		return *it;
+	    }
+	} else {
+	    return *it;
+	}
+    } else {
+	GUri::const_elem_iter path_res;
+	Iterator it = FindNodeInMhUri(aUri, aPathBase, path_res);
+	if (it != End()) {
+	    uripos = path_res;
+	    if (uripos != aUri.Elems().end()) {
+		ChromoNode node = *it;
+		return node.GetNodeByMhUri(aUri, uripos);
+	    } else {
+		return *it;
+	    }
+	} else {
+	    return *it;
+	}
+    }
+}
+
+ChromoNode ChromoNode::GetNode(const GUri& aUri)
+{
+    if (aUri.IsErr()) return ChromoNode();
+    GUri::const_elem_iter it = aUri.Elems().begin();
+    if (it != aUri.Elems().end()) {
+	if (it->second.second.empty()) {
+	    Iterator root = End();
+	    if (it->second.first == GUri::KNodeSep) {
+		root = Root();
+	    } else {
+		__ASSERT(false);
+	    }
+	    it++;
+	    GUri::TElem elem = *it;
+	    if ((*root).Name() != elem.second.second) {
+		root = End();
+	    }
+	    if (root != End() && ++it != aUri.Elems().end()) {
+		return (*root).GetNode(aUri, it);
+	    } else {
+		return *root;
+	    }
+	} else {
+	    return GetNode(aUri, it);
+	}
+    } else {
+	return *this;
+    }
+}
+
+ChromoNode ChromoNode::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase)
+{
+    GUri::const_elem_iter uripos = aPathBase;
+    GUri::TElem elem = *uripos;
+    if (elem.second.second == GUri::KUpperLevel) {
+	// Get number of hops
+	TInt hops = 0;
+	if (AttrExists(ENa_MutNode)) {
+	    string destpath = Attr(ENa_MutNode);
+	    GUri dp(destpath);
+	    hops = dp.Elems().size();
+	}
+	Iterator it = Parent();
+	TBool hopsok = ETrue;
+	for (TInt ct = 0; ct < hops; ct++) {
+	    uripos++;
+	    if (uripos->second.second != GUri::KUpperLevel) {
+		hopsok = EFalse;
+		break;
+	    }
+	}
+	if (!hopsok) return *(End());
+	if (it != End()) {
+	    uripos++;
+	    if (uripos != aUri.Elems().end()) {
+		ChromoNode node = *it;
+		return node.GetNode(aUri, uripos);
+	    } else {
+		return *it;
+	    }
+	} else {
+	    return *it;
+	}
+    } else {
+	Iterator it = Find(ENt_Node, elem.second.second);
+	if (it != End()) {
+	    uripos++;
+	    if (uripos != aUri.Elems().end()) {
+		ChromoNode node = *it;
+		return node.GetNode(aUri, uripos);
+	    } else {
+		return *it;
+	    }
+	} else {
+	    return *it;
+	}
+    }
 }
 
 void ChromoNode::GetRank(Rank& aRank) const
@@ -328,3 +535,61 @@ ChromoNode ChromoNode::AddChild(const ChromoNode& aNode, TBool aCopy)
     return ChromoNode(iMdl, iMdl.AddChild(iHandle, aNode.Handle(), aCopy)); 
 }
 
+ChromoNode::Iterator ChromoNode::GetChildOwning(const ChromoNode& aNode) const
+{
+    ChromoNode res(aNode);
+    ChromoNode prnt = *res.Parent();
+    while (prnt != *this && prnt != ChromoNode()) {
+	res = prnt;
+    }
+    return Iterator(res);
+}
+
+void ChromoNode::ReduceToSelection(const ChromoNode& aSelNode)
+{
+    __ASSERT(*aSelNode.Parent() == *this);
+    Iterator it = Begin();
+    while (it != End() && !(*it == aSelNode)) {
+	ChromoNode node = *it;
+	if (node.Type() == ENt_Import) {
+	    it++;
+	} else {
+	    RmChild(node);
+	    it = Begin();
+	}
+    }
+    Reverse_Iterator itr = Rbegin();
+    while (itr != Rend() && !(*itr == aSelNode)) {
+	RmChild(*itr);
+	itr = Rbegin();
+    }
+}
+
+void ChromoNode::GetUri(GUri& aUri) const
+{
+    Const_Iterator parent = Parent();
+    if (parent != End()) {
+	aUri.PrependElem(string(), Name());
+	(*parent).GetUri(aUri);
+    }
+    else {
+	aUri.PrependElem(string(), Name());
+	aUri.PrependElem("", "");
+    }
+}
+
+void ChromoNode::GetUri(GUri& aUri, const ChromoNode& aBase) const
+{
+    Const_Iterator parent = Parent();
+    if (parent != End()) {
+	if (parent == aBase) {
+	    return;
+	}
+	aUri.PrependElem(string(), Name());
+	(*parent).GetUri(aUri);
+    }
+    else {
+	aUri.PrependElem(string(), Name());
+	aUri.PrependElem("", "");
+    }
+}

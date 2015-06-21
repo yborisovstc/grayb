@@ -7,12 +7,16 @@
 <!DOCTYPE node SYSTEM "../etc/objspec.dtd">
 
 <node id="test" parent="Vert">
+    <!-- <import id="file:./ut_mod_int_1m.xml#/Mod_root/Mod_comp_2"/> -->
+    <import id="/Mod_root/Mod_comp_2"/>
+    <!--
     <node id="Modules" parent="Elem">
 	<node id="ut_mod_int_1m" parent="AMod">
 	    <cont val="ut_mod_int_1m.xml"/>
 	</node>
-    </node>
+    </node> -->
     <node id="v1" parent="Vert"/>
     <node id="v2" parent="Vert"/>
+    <node id="v4" parent=":Elem:AImports/Mod_root/Mod_comp_2"/>
 </node>
 

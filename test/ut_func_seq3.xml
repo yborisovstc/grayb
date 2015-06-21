@@ -9,30 +9,31 @@
 <!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
 
 <node id="testroot" parent="Elem">
-    <!-- Module containing components of system layer -->
-    <move id="file:../modules/syst.xml#SysComps" />
-    <!-- Module containing components of incaps layer -->
-    <move id="file:../modules/capsula.xml#IncapsComps" />
-    <!-- Module containing components of data -->
-    <move id="file:../modules/data.xml#DataComps" />
-    <!-- Module containing components of func -->
-    <move id="file:../modules/func.xml#FuncComps" />
+    <node id="Modules" parent="AImports">
+	<!-- Module containing components of incaps layer -->
+	<import id="/IncapsComps/Incaps" />
+	<!-- Module containing components of data -->
+	<import id="/DataComps/DataSInt" />
+	<!-- Module containing components of func -->
+	<import id="/FuncComps/FAddInt" />
+	<import id="/FuncComps/FuncIntRes" />
+    </node>
 
-    <node id="test" parent="./IncapsComps/Incaps">
+    <node id="test" parent="./Modules/IncapsComps/Incaps">
 
-	<node id="DataS_Int_1" parent="./../DataComps/DataSInt">
+	<node id="DataS_Int_1" parent="./../Modules/DataComps/DataSInt">
 	    <cont node="./Value" val="34"/> 
 	</node>
 
-	<node id="DataS_Int_2" parent="./../DataComps/DataSInt">
+	<node id="DataS_Int_2" parent="./../Modules/DataComps/DataSInt">
 	    <cont node="./Value" val="26"/> 
 	</node>
 
-	<node id="Add" parent="./../FuncComps/FAddInt"/>
+	<node id="Add" parent="./../Modules/FuncComps/FAddInt"/>
 
-	<node id="Result" parent="./../FuncComps/FuncIntRes"/>
+	<node id="Result" parent="./../Modules/FuncComps/FuncIntRes"/>
 
-	<node id="ResData" parent="./../DataComps/DataSInt"/>
+	<node id="ResData" parent="./../Modules/DataComps/DataSInt"/>
 
 	<node id="E1" parent="Edge"> 
 	    <cont node="./P1" val="./../../DataS_Int_1/Capsule/out"/> 

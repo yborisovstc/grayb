@@ -17,6 +17,7 @@ class Ut_uri : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST_SUITE(Ut_uri);
     CPPUNIT_TEST(test_UriOpr);
     CPPUNIT_TEST(test_UriBase);
+    CPPUNIT_TEST(test_UriChromo_1);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -24,6 +25,7 @@ public:
 private:
     void test_UriOpr();
     void test_UriBase();
+    void test_UriChromo_1();
 private:
     Env* iEnv;
 };
@@ -191,15 +193,39 @@ void Ut_uri::test_UriBase()
     */
  
     // Checking getting uri basing on inheritance relations
-    Elem* node_ni_1 = root->GetNode("/testroot/IncapsComps/Incaps");
+    Elem* node_ni_1 = root->GetNode("/testroot/Modules/IncapsComps/Incaps");
     Elem* node_ih_1 = root->GetNode(":Elem:Vert:Syst:Incaps");
     CPPUNIT_ASSERT_MESSAGE("Fail to get node by inh URI", node_ni_1 != NULL && node_ih_1 != NULL && node_ni_1 == node_ih_1);
     Elem* node_ih_2 = root->GetNode(":Elem:IncapsComps/Incaps");
     CPPUNIT_ASSERT_MESSAGE("Fail to get node by inh URI", node_ni_1 != NULL && node_ih_2 != NULL && node_ni_1 == node_ih_2);
     // With any pattern
-    Elem* incapsmod_ni_1 = root->GetNode("/testroot/IncapsComps");
+    Elem* incapsmod_ni_1 = root->GetNode("/testroot/Modules/IncapsComps");
     Elem* incapsmod_ih_1 = root->GetNode(":Elem:IncapsComps");
     CPPUNIT_ASSERT_MESSAGE("Fail to get node by inh URI and -any- pattern", incapsmod_ni_1 != NULL && incapsmod_ih_1 != NULL && incapsmod_ni_1 == incapsmod_ih_1);
+}
+
+// Test of operating with chromo uris
+void Ut_uri::test_UriChromo_1()
+{
+    printf("\n === Test of chromo uri\n");
+
+    iEnv = new Env("Env", "ut_uri_chromo_1.xml", "ut_uri_chromo_1.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
+
+    // Check if chromo GetNode works ok in case of node with destination
+    Elem* e_2_1 = root->GetNode("/testroot/E_2/E_1_1/E_2_1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get e_2_1", e_2_1 != NULL);
+    Elem* e_1 = root->GetNode("/testroot/E_1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get e_1", e_1 != NULL);
+    ChromoNode n_2_1 = e_2_1->Chromos().Root();
+    ChromoNode n_1 = e_1->Chromos().Root();
+    GUri uri1("./../../../E_1");
+    ChromoNode nres = n_2_1.GetNode(uri1);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get node from node with destination", nres == n_1);
+
 }
 
 

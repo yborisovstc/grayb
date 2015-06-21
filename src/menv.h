@@ -3,6 +3,20 @@
 class MProvider; class MLogRec;
 class Elem;
 class MChromo;
+class GUri;
+
+// Import manager
+
+class MImportMgr
+{
+    public:
+	virtual void GetModulesNames(vector<string>& aModules) const = 0;
+	virtual void ResetImportsPaths() = 0;
+	virtual void AddImportsPaths(const string& aPaths) = 0;
+	virtual string GetModulePath(const string& aModName) const = 0;
+	virtual TBool Import(const string& aUri) = 0;
+	virtual Elem* OnUriNotResolved(Elem* aNode, const GUri& aUri) = 0;
+};
 
 // Chromo manager
 class MChromoMgr
@@ -36,6 +50,7 @@ class MEnv
 	virtual MLogRec *Logger() = 0;
 	virtual Elem* Root() = 0;
 	virtual MChromoMgr* ChMgr() = 0;
+	virtual MImportMgr* ImpsMgr() = 0;
 	virtual TBool GetSBool(TSBool aId) const = 0;
 	virtual void SetSBool(TSBool aId, TBool aVal) = 0;
 };

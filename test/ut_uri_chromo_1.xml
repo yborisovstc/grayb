@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for chromo uri operations
+     -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="testroot" parent="Elem">
+
+    <node id="E_1" parent="Elem">
+	<node id="E_1_1" parent="Elem">
+	</node>
+    </node>
+    <node id="E_2" parent="./E_1">
+	<node node="./E_1_1" id="E_2_1" parent="Elem">
+	</node>
+    </node>
+</node>
+

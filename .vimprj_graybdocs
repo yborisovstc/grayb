@@ -1,5 +1,5 @@
 
-docs=/home/yborisov/projects/fap/git CD=. filter=".doc" {
+docs=/home/yborisov/projects/fap CD=. filter=".doc" {
  fap-doc=fap-doc CD=. filter="_" {
   doc_dsa_in_swd=doc_dsa_in_swd CD=. filter="*.xml Makefile *.png" {
    using_sm_sync_set_in_swd.xml
@@ -82,7 +82,7 @@ docs=/home/yborisov/projects/fap/git CD=. filter=".doc" {
   }
  }
 }
-fap-md=/home/yborisov/projects/fap/md CD=. filter="*" {
+fap-md=/home/yborisov/projects/fap/fap-md CD=. filter="*" {
  Makefile
  fap_md_yb.xml
  index.html

@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for importing internal node to module
+     Module
+-->
+
+
+<!DOCTYPE node SYSTEM "../../etc/objspec.dtd">
+
+<node id="Mod2_root_3" parent="Vert">
+    <node id="Mod2_comp_2" parent="Vert"/>
+</node>
+

@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for env imports manager
+-->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd">
+
+<node id="test" parent="Vert">
+    <node id="Modules" parent="Elem"/>
+    <import id="/Mod_root_3/Mod_comp_2"/>
+    <import id="/Mod_root_3/Mod3_comp_3"/>
+    <import id="/Mod_root_3/Mod3_c4"/>
+    <node id="v1" parent="Vert"/>
+    <node id="v4" parent="/test/Modules/Mod_root_3/Mod_comp_2"/>
+    <node id="v5" parent="/test/Modules/Mod_root_3/Mod3_comp_3"/>
+    <node id="v6" parent="/test/Modules/Mod_root_3/Mod3_c4"/>
+</node>
+

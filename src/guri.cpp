@@ -23,7 +23,7 @@ const char GUriBase::KSepNone = ' ';
 const char GUriBase::KNodeSep = '/';
 const char KGroupStart = '(';
 const char KGroupEnd = ')';
-const char KCurUnit = '.';
+const char GUriBase::KCurUnit = '.';
 const string KGroupMark = "()";
 const string KRelTypesMarks = "/:";
 
@@ -53,6 +53,7 @@ void GUriBase::Construct()
 	KNodeTypes["cont"] = ENt_Cont;
 	KNodeTypes["add"] = ENt_Add;
 	KNodeTypes["order"] = ENt_Order;
+	KNodeTypes["import"] = ENt_Import;
 
 	for (map<string, TNodeType>::const_iterator it = KNodeTypes.begin(); it != KNodeTypes.end(); it++) {
 	    KNodeTypesNames[it->second] = it->first;
@@ -111,6 +112,11 @@ const string& GUriBase::GetLoc() const
 const string& GUriBase::Scheme() const
 {
     return iScheme;
+}
+
+const string& GUriBase::GetBase() const
+{
+    return iBase;
 }
 
 string GUriBase::GetName() const
@@ -239,6 +245,29 @@ size_t GUriBase::FindGroup(const string& aStr, size_t aPos)
     return res;
 }
 
+TBool GUriBase::IsAbsolute() const
+{
+    const_elem_iter it = iElems.begin();
+    TElem elem = *it;
+    return  elem.first.empty() && elem.second.second.empty();
+}
+
+TBool GUriBase::Compare(const_elem_iter aStart, const GUriBase& aUri, const_elem_iter& aResPos) const
+{
+    TBool res = EFalse;
+    TBool matched = ETrue;
+    const_elem_iter itb = aStart;
+    for (const_elem_iter itf = aUri.Elems().begin(); itf != aUri.Elems().end() && matched; itf++, itb++) {
+	matched = (*itb == *itf);
+    }
+    if (matched) {
+	aResPos = itb;
+	res = ETrue;
+    }
+    return res;
+}
+
+
 void GUri::Parse()
 {
     TBool fin = EFalse;
@@ -248,7 +277,7 @@ void GUri::Parse()
     if (base_end != string::npos) {
 	// Base part is presented
 	iBase = iUri.substr(0, base_end);
-	frag = iUri.substr(0, base_end + 1);
+	frag = iUri.substr(base_end + 1);
 	size_t scheme_end = iUri.find_first_of(':', 0);
 	if (scheme_end != string::npos) {
 	    iScheme = iUri.substr(0, scheme_end);

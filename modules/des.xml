@@ -11,29 +11,29 @@
     <node id="DesLogevent" parent="Elem" />
     
     <!-- Output socket -->
-    <node id="StOutSocket" parent=":Elem:SysComps/SocketInp">
+    <node id="StOutSocket" parent="/*/Modules/SysComps/SocketInp">
 	<!-- Pin Des observer. Requires DES observer interface to handle activation of the state -->
-	<node id="PinObs" parent=":Elem:SysComps/ConnPoint"> 
+	<node id="PinObs" parent="/*/Modules/SysComps/ConnPoint"> 
 	    <cont node="./Provided" val="MDesObserver"/>
 	</node>
 	<!-- Pin Data observer. Provides data interface -->
-	<node id="PinData" parent=":Elem:SysComps/ConnPoint"> 
+	<node id="PinData" parent="/*/Modules/SysComps/ConnPoint"> 
 	</node>
     </node>
 
     <!-- Input socket -->
-    <node id="StInpSocket" parent=":Elem:SysComps/SocketOut">
+    <node id="StInpSocket" parent="/*/Modules/SysComps/SocketOut">
 	<!-- Pin Des observer. Requires DES observer interface to handle activation of the state -->
-	<node id="PinObs" parent=":Elem:SysComps/ConnPoint"> 
+	<node id="PinObs" parent="/*/Modules/SysComps/ConnPoint"> 
 	    <cont node="./Required" val="MDesObserver"/>
 	</node>
 	<!-- Pin Data observer. Provides data interface -->
-	<node id="PinData" parent=":Elem:SysComps/ConnPoint"> 
+	<node id="PinData" parent="/*/Modules/SysComps/ConnPoint"> 
 	</node>
     </node>
 
     <!-- Input of standard Int State -->
-    <node id="StIntInp" parent=":Elem:SysComps/ExtenderInp"> 
+    <node id="StIntInp" parent="/*/Modules/SysComps/ExtenderInp"> 
 	<rm node="./Int"/>
 	<node id="Int" parent="./../StInpSocket"> 
 	    <cont node="./PinData/Provided" val="MDIntGet"/>
@@ -41,7 +41,7 @@
     </node>
 
     <!-- Output of standard Int State -->
-    <node id="StIntOut" parent=":Elem:SysComps/ExtenderOut"> 
+    <node id="StIntOut" parent="/*/Modules/SysComps/ExtenderOut"> 
 	<rm node="./Int"/>
 	<node id="Int" parent="./../StOutSocket"> 
 	    <cont node="./PinData/Required" val="MDIntGet"/>
@@ -66,21 +66,21 @@
 
 
     <!-- Input of int transition -->
-    <node id="TrIntInp" parent=":Elem:SysComps/ConnPointInp"> 
+    <node id="TrIntInp" parent="/*/Modules/SysComps/ConnPointInp"> 
 	<cont node="./Required" val="MDIntGet"/>
     </node>
 
     <!-- Input of int transition -->
-    <node id="TrVarInp" parent=":Elem:SysComps/ConnPointInp"> 
+    <node id="TrVarInp" parent="/*/Modules/SysComps/ConnPointInp"> 
 	<cont node="./Required" val="MDVarGet"/>
     </node>
 
     <!-- Transition of integer data -->
     <node id="TrInt" parent="Syst"> 
-	<node id="Inp" parent=":Elem:SysComps/ConnPointInp"> 
+	<node id="Inp" parent="/*/Modules/SysComps/ConnPointInp"> 
 	    <cont node="./Required" val="MDIntGet"/>
 	</node>
-	<node id="Out" parent=":Elem:SysComps/ConnPointOut"> 
+	<node id="Out" parent="/*/Modules/SysComps/ConnPointOut"> 
 	    <cont node="./Provided" val="MDIntGet"/>
 	</node>
     </node>
@@ -109,10 +109,10 @@
 
     <!-- Transition of variable data -->
     <node id="TrVar" parent="Syst"> 
-	<node id="Inp" parent=":Elem:SysComps/ConnPointInp"> 
+	<node id="Inp" parent="/*/Modules/SysComps/ConnPointInp"> 
 	    <cont node="./Required" val="MDVarGet"/>
 	</node>
-	<node id="Out" parent=":Elem:SysComps/ConnPointOut"> 
+	<node id="Out" parent="/*/Modules/SysComps/ConnPointOut"> 
 	    <cont node="./Provided" val="MDVarGet"/>
 	</node>
 	<node id="ViewData" parent="Vert">
@@ -210,21 +210,21 @@
 
 
     <!-- State base -->
-    <node id="State" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="State" parent="/*/Modules/IncapsComps/Incaps"> 
 
 	<node node="./Agents" id="StateAgt" parent="StateAgent"/> 
 
 	<!-- TODO [YB] Do we need dedicated CP or component has to notify it's mgr? -->
-	<node node="./Capsule" id="Sync" parent=":Elem:SysComps/ConnPoint"> 
+	<node node="./Capsule" id="Sync" parent="/*/Modules/SysComps/ConnPoint"> 
 	    <cont node="./Provided" val="MDesSyncable"/>
 	</node>
 	<!-- Input -->
-	<node node="./Capsule" id="Inp" parent=":Elem:SysComps/ExtenderInp"> 
+	<node node="./Capsule" id="Inp" parent="/*/Modules/SysComps/ExtenderInp"> 
 	    <rm node="./Int"/>
 	    <node id="Int" parent="./../../../StInpSocket"/> 
 	</node>
 	<!-- Output -->
-	<node node="./Capsule" id="Out" parent=":Elem:SysComps/ExtenderOut"> 
+	<node node="./Capsule" id="Out" parent="/*/Modules/SysComps/ExtenderOut"> 
 	    <rm node="./Int"/>
 	    <node id="Int" parent="./../../../StOutSocket"/> 
 	</node>
@@ -232,8 +232,8 @@
 
     <node id="StateInt" parent="./State"> 
 
-	<node id="Confirmed" parent=":Elem:DataComps/DataSCInt"/>
-	<node id="Prepared" parent=":Elem:DataComps/DataSCInt"/>
+	<node id="Confirmed" parent="/*/Modules/DataComps/DataSCInt"/>
+	<node id="Prepared" parent="/*/Modules/DataComps/DataSCInt"/>
 
 	<cont node="./Capsule/Inp/Int/PinData/Provided" val="MDIntGet"/>
 	<cont node="./Capsule/Out/Int/PinData/Required" val="MDIntGet"/>
@@ -251,8 +251,8 @@
 
     <node id="StateVar" parent="./State"> 
 
-	<node id="Confirmed" parent=":Elem:DataComps/DataSCVar"/>
-	<node id="Prepared" parent=":Elem:DataComps/DataSCVar"/>
+	<node id="Confirmed" parent="/*/Modules/DataComps/DataSCVar"/>
+	<node id="Prepared" parent="/*/Modules/DataComps/DataSCVar"/>
 
 	<cont node="./Capsule/Inp/Int/PinData/Provided" val="MDVarGet"/>
 	<cont node="./Capsule/Out/Int/PinData/Required" val="MDVarGet"/>
@@ -274,11 +274,11 @@
 	 -->
     <node id="StateVarC" parent="./State"> 
 
-	<node id="Data" parent=":Elem:IncapsComps/Incaps">
-	    <node id="Confirmed" parent=":Elem:DataComps/DataSCVar"/>
-	    <node id="Prepared" parent=":Elem:DataComps/DataSCVar"/>
-	    <node node="./Capsule" id="Inp" parent=":Elem:SysComps/ExtenderInp"> <cont node="./Int/Provided" val="MDVarGet"/> </node>
-	    <node node="./Capsule" id="Out" parent=":Elem:SysComps/ExtenderOut"> <cont node="./Int/Required" val="MDVarGet"/> </node>
+	<node id="Data" parent="/*/Modules/IncapsComps/Incaps">
+	    <node id="Confirmed" parent="/*/Modules/DataComps/DataSCVar"/>
+	    <node id="Prepared" parent="/*/Modules/DataComps/DataSCVar"/>
+	    <node node="./Capsule" id="Inp" parent="/*/Modules/SysComps/ExtenderInp"> <cont node="./Int/Provided" val="MDVarGet"/> </node>
+	    <node node="./Capsule" id="Out" parent="/*/Modules/SysComps/ExtenderOut"> <cont node="./Int/Required" val="MDVarGet"/> </node>
 	    <node id="E_Inp_Prep" parent="Edge"> 
 		<cont node="./P1" ref="./../../Capsule/Inp/Int"/> 
 		<cont node="./P2" ref="./../../Prepared/Capsule/Inp"/> 
@@ -317,11 +317,11 @@
 
     <node id="StateVarCT" parent="./State"> 
 
-	<node id="Data" parent=":Elem:IncapsComps/Incaps">
-	    <node id="Confirmed" parent=":Elem:DataComps/DataSCTVar"/>
-	    <node id="Prepared" parent=":Elem:DataComps/DataSCTVar"/>
-	    <node node="./Capsule" id="Inp" parent=":Elem:SysComps/ExtenderInp"> <cont node="./Int/Provided" val="MDVarGet"/> </node>
-	    <node node="./Capsule" id="Out" parent=":Elem:SysComps/ExtenderOut"> <cont node="./Int/Required" val="MDVarGet"/> </node>
+	<node id="Data" parent="/*/Modules/IncapsComps/Incaps">
+	    <node id="Confirmed" parent="/*/Modules/DataComps/DataSCTVar"/>
+	    <node id="Prepared" parent="/*/Modules/DataComps/DataSCTVar"/>
+	    <node node="./Capsule" id="Inp" parent="/*/Modules/SysComps/ExtenderInp"> <cont node="./Int/Provided" val="MDVarGet"/> </node>
+	    <node node="./Capsule" id="Out" parent="/*/Modules/SysComps/ExtenderOut"> <cont node="./Int/Required" val="MDVarGet"/> </node>
 	    <node id="E_Inp_Prep" parent="Edge"> 
 		<cont node="./P1" ref="./../../Capsule/Inp/Int"/> 
 		<cont node="./P2" ref="./../../Prepared/Capsule/Inp"/> 
@@ -358,16 +358,16 @@
 
 
     <!-- DES base -->
-    <node id="Des" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="Des" parent="/*/Modules/IncapsComps/Incaps"> 
 	<node node="./Agents" id="DesAgt" parent="ADes"/> 
-	<node node="./Capsule" id="Sync" parent=":Elem:SysComps/ConnPoint"> 
+	<node node="./Capsule" id="Sync" parent="/*/Modules/SysComps/ConnPoint"> 
 	    <cont node="./Provided" val="MDesSyncable"/>
 	</node>
     </node>
 
     <!-- DES ticks source -->
-    <node id="DesTicker" parent=":Elem:IncapsComps/Incaps"> 
-	<node node="./Capsule" id="Out" parent=":Elem:SysComps/ConnPointOut"> 
+    <node id="DesTicker" parent="/*/Modules/IncapsComps/Incaps"> 
+	<node node="./Capsule" id="Out" parent="/*/Modules/SysComps/ConnPointOut"> 
 	    <cont node="./Required" val="MDesSyncable"/>
 	</node>
 	<node node="./Agents" id="DesSyncAgent" parent="ADesSync"/> 

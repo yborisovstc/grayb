@@ -8,20 +8,19 @@
 <!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
 
 <node id="testroot" parent="Elem">
-    <!-- Module containing components of system layer -->
-    <move id="file:../modules/syst.xml#SysComps" />
-    <!-- Module containing components of incaps layer -->
-    <move id="file:../modules/capsula.xml#IncapsComps" />
-    <!-- Module containing components of data -->
-    <move id="file:../modules/data.xml#DataComps" />
-    <!-- Module containing components of func -->
-    <move id="file:../modules/func.xml#FuncComps" />
-    <!-- Module containing components of des layer -->
-    <move id="file:../modules/des.xml#DesComps" />
+    <node id="Modules" parent="AImports">
+	<!-- Module containing components of incaps layer -->
+	<import id="/IncapsComps/Incaps" />
+	<!-- Module containing components of data -->
+	<import id="/DataComps/DataLogevent" />
+	<!-- Module containing components of des layer -->
+	<import id="/DesComps/StateInt" />
+	<import id="/DesComps/TrIncInt" />
+    </node>
 
-    <node id="test" parent="./IncapsComps/Incaps">
+    <node id="test" parent="./Modules/IncapsComps/Incaps">
 
-	<node id="State1" parent="./../DesComps/StateInt">
+	<node id="State1" parent="./../Modules/DesComps/StateInt">
 	    <!-- <cont node="./DataSInt:Confirmed/Value" val="34"/> -->
 
 	    <node id="Logspec" parent="Elem">
@@ -30,10 +29,10 @@
 	    </node>
 
 	    <node node="./(DataSCInt:)Confirmed" id="Logspec" parent="Elem">
-		<node id="Update" parent="/testroot/DataComps/DataLogevent"/>
+		<node id="Update" parent="/testroot/Modules/DataComps/DataLogevent"/>
 	    </node>
 
-	    <node id="Trans" parent="./../../DesComps/(TrInt:)TrIncInt">
+	    <node id="Trans" parent="./../../Modules/DesComps/(TrInt:)TrIncInt">
 	    </node>
 
 	    <node id="E1" parent="Edge"> 

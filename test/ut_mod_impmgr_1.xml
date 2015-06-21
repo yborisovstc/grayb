@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for env imports manager
+-->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd">
+
+<node id="test" parent="Vert">
+    <node id="v1" parent="Vert"/>
+</node>
+

@@ -12,11 +12,11 @@
     <node id="DataLogevent" parent="Elem" />
 
     <!-- Data with separate input for setting and output for getting -->
-    <node id="DataS" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="DataS" parent="/*/Modules/IncapsComps/Incaps"> 
 	<node id="D_1" parent="Description">
 	    <cont val="Base of Data with separate input for setting and output for getting"/></node>
-	<node node="./Capsule" id="inp" parent=":Elem:SysComps/ConnPointInp"/> 
-	<node node="./Capsule" id="out" parent=":Elem:SysComps/ConnPointOut"> 
+	<node node="./Capsule" id="inp" parent="/*/Modules/SysComps/ConnPointInp"/> 
+	<node node="./Capsule" id="out" parent="/*/Modules/SysComps/ConnPointOut"> 
 	    <cont node="./Required" val="MDataObserver"/>
 	</node>
 	<node id="Value" parent="Prop"/>
@@ -29,11 +29,11 @@
     </node>
 
     <!-- Data with separate input for setting and output for getting. W/o notificaion -->
-    <node id="DataSU" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="DataSU" parent="/*/Modules/IncapsComps/Incaps"> 
 	<node id="D_1" parent="Description">
 	    <cont val="Data with separate input for setting and output for getting, w/o notification"/></node>
-	<node node="./Capsule" id="inp" parent=":Elem:SysComps/ConnPointInp"/> 
-	<node node="./Capsule" id="out" parent=":Elem:SysComps/ConnPointOut"/> 
+	<node node="./Capsule" id="inp" parent="/*/Modules/SysComps/ConnPointInp"/> 
+	<node node="./Capsule" id="out" parent="/*/Modules/SysComps/ConnPointOut"/> 
 	<node id="Value" parent="Prop"/>
     </node>
 
@@ -116,9 +116,9 @@
     </node>
 
 
-    <node id="DataInt" parent=":Elem:IncapsComps/Incaps"> 
+    <node id="DataInt" parent="/*/Modules/IncapsComps/Incaps"> 
     	<node node="./Agents" id="ADInt" parent="DInt"/>
-	<node node="./Capsule" id="out" parent=":Elem:SysComps/ConnPointOut"> 
+	<node node="./Capsule" id="out" parent="/*/Modules/SysComps/ConnPointOut"> 
 	    <cont node="./Provided" val="MDInt"/>
 	</node>
     </node>
@@ -130,10 +130,10 @@
 
 
     <!-- Data base with separate conn point for update -->
-    <node id="DataSC" parent=":Elem:IncapsComps/Incaps"> 
-	<node node="./Capsule" id="Inp" parent=":Elem:SysComps/ConnPointInp"/> 
-	<node node="./Capsule" id="Out" parent=":Elem:SysComps/ConnPointOut"/> 
-	<node node="./Capsule" id="Upd" parent=":Elem:SysComps/ConnPoint"/> 
+    <node id="DataSC" parent="/*/Modules/IncapsComps/Incaps"> 
+	<node node="./Capsule" id="Inp" parent="/*/Modules/SysComps/ConnPointInp"/> 
+	<node node="./Capsule" id="Out" parent="/*/Modules/SysComps/ConnPointOut"/> 
+	<node node="./Capsule" id="Upd" parent="/*/Modules/SysComps/ConnPoint"/> 
 	<node id="Value" parent="Prop"/>
     </node>
 

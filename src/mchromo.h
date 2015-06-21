@@ -73,6 +73,7 @@ class MChromo
 	// Dependencies path
 	enum TDPath { EDp_Direct = 0, EDp_Comps = 1, EDp_Child = 2, EDp_Owner = 3};
     public:
+	virtual ~MChromo() {};
 	virtual ChromoNode& Root() = 0;
 	virtual const ChromoNode& Root() const= 0;
 	virtual void Set(const char *aFileName) = 0;
@@ -82,6 +83,7 @@ class MChromo
 	virtual void Reset() = 0;
 	virtual void Save(const string& aFileName) const = 0;
 	virtual ChromoNode CreateNode(void* aHandle) = 0;
+	virtual void ReduceToSelection(const ChromoNode& aSelNode) = 0;
 };
 
 #endif

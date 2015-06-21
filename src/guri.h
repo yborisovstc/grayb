@@ -18,6 +18,7 @@ enum TNodeType
     ENt_Change = 5, 	// Change node attribute
     ENt_Cont = 6, 	// Change node content
     ENt_Add = 7, 	// Add elem to node
+    ENt_Import = 8, 	// Importing node
 };
 
 enum TNodeAttr
@@ -80,6 +81,7 @@ class GUriBase
 	const string& GetLoc() const;
 	const string& Scheme() const;
 	string GetName() const;
+	const string& GetBase() const;
 	void Append(const GUriBase& aUri);
 	void AppendTail(const GUriBase& aUri, const_elem_iter aIter);
 	void AppendElem(const string& aType, const string& aName, char aRelType = KNodeSep);
@@ -94,7 +96,9 @@ class GUriBase
 	//void ToString(string& aRes);
 	static TElem Elem(char aRelType, const string& aName, const string& aExt);
 	TBool IsErr() const { return iErr;};
+	TBool IsAbsolute() const;
 	static char GetExtFirstPart(const string& aExt, string& aPart);
+	TBool Compare(const_elem_iter aStart, const GUriBase& aUri, const_elem_iter& aResPos) const;
     protected:
 	virtual string DoGetUri(const_elem_iter aStart, const_elem_iter aEnd, TBool aShort = EFalse) const = 0;
 	static void Construct();
@@ -117,6 +121,7 @@ class GUriBase
 	static const char KNodeSep;
 	static const char KSepNone;
 	static const char KBaseSep;
+	static const char KCurUnit;
 	static map<TNodeAttr, string> KNodeAttrsNames;
 };
 

@@ -22,6 +22,7 @@ class Rank: public vector<TInt>
 };
 
 
+// TODO [YB] No need to have Base inheritance, just use MChromoMdl - to remove
 class ChromoMdl: public Base, public MChromoMdl
 {
     public:
@@ -84,6 +85,28 @@ class ChromoNode
 	    void* iHandle; // NULL point to the past-of-the-end element
 	};
 
+	// Iterator using node type filter
+	class TIter: public iterator<input_iterator_tag, ChromoNode> {
+	    friend class ChromoNode;
+	    public:
+	    TIter(const ChromoNode& aNode): iMdl(aNode.iMdl), iHandle(aNode.iHandle), iType(aNode.Type()) {};
+	    TIter(ChromoMdl& aMdl, void* aHandle, TNodeType aType): iMdl(aMdl), iHandle(aHandle), iType(aType) {};
+	    TIter(const TIter& aIt): iMdl(aIt.iMdl), iHandle(aIt.iHandle), iType(aIt.iType) {};
+	    TIter& operator=(const TIter& aIt) { iMdl = aIt.iMdl; iHandle = aIt.iHandle; return *this; };
+	    TIter& operator++() { iHandle = iMdl.Next(iHandle, iType); return *this; };
+	    TIter operator++(int) { TIter tmp(*this); operator++(); return tmp; };
+	    TBool operator==(const TIter& aIt) { return (iHandle == aIt.iHandle); };
+	    TBool operator==(const Iterator& aIt) { return (iHandle == aIt.iHandle); };
+	    TBool operator!=(const TIter& aIt) { return !(iHandle == aIt.iHandle); };
+	    TBool operator!=(const Iterator& aIt) { return !(iHandle == aIt.iHandle); };
+	    ChromoNode operator*() { return ChromoNode(iMdl, iHandle);};
+	    public:
+	    ChromoMdl& iMdl;
+	    void* iHandle; // NULL point to the past-of-the-end element
+	    TNodeType iType;
+	};
+
+
 
     public:
 	ChromoNode(): iMdl(*(ChromoMdl*) NULL), iHandle(NULL) {};
@@ -91,11 +114,14 @@ class ChromoNode
 	ChromoNode(const ChromoNode& aNode);
 	ChromoNode& operator=(const ChromoNode& aNode);
 	TBool operator==(const ChromoNode& aNode);
+	TBool operator==(const ChromoNode& aNode) const;
 	TBool operator!=(const ChromoNode& aNode) { return !this->operator==(aNode);};
 	Iterator Begin() { return Iterator(iMdl, iMdl.GetFirstChild(iHandle)); };
+	TIter TBegin(TNodeType aType) const { return TIter(iMdl, iMdl.GetFirstChild(iHandle, aType), aType); };
 	Const_Iterator Begin() const { return Const_Iterator(iMdl, iMdl.GetFirstChild(iHandle)); };
 	Iterator End() { return Iterator(iMdl, NULL); };
 	Const_Iterator End() const { return Const_Iterator(iMdl, NULL); };
+	TIter TEnd() const { return TIter(iMdl, NULL, ENt_Unknown); };
 	Reverse_Iterator Rbegin() { return Reverse_Iterator(iMdl, iMdl.GetLastChild(iHandle)); };
 	Reverse_Iterator Rend() { return Reverse_Iterator(iMdl, NULL); };
 	Iterator Find(TNodeType aNodeType) { return Iterator(iMdl, iMdl.GetFirstChild(iHandle, aNodeType)); };
@@ -143,6 +169,8 @@ class ChromoNode
 	ChromoNode::Iterator Find(TNodeType aType, const string& aName);
 	ChromoNode::Const_Iterator Find(TNodeType aType, const string& aName) const;
 	ChromoNode::Iterator Find(TNodeType aType, const string& aName, TNodeAttr aAttr, const string& aAttrVal);
+	ChromoNode::Iterator FindNodeInMhUri(const GUri& aMhUri, const GUri::const_elem_iter& aMhUriPos, GUri::const_elem_iter& aResPos);
+	ChromoNode::Iterator GetChildOwning(const ChromoNode& aNode) const;
 	void Dump(MLogRec* aLogRec) const { iMdl.Dump(iHandle, aLogRec);};
 	string GetName(const string& aTname);
 	void MoveNextTo(Iterator& aDest) { iMdl.MoveNextTo(iHandle, aDest.iHandle);};
@@ -159,9 +187,19 @@ class ChromoNode
 	// The number of direct childs
 	TInt Count() { return GetLocalSize();};
 	TInt Count() const;
+	TInt Count(TNodeType aType) const { return GetLocalSize(aType);};
 	TInt GetLocalSize();
-	ChromoNode& GetNode(const GUri& aUri) const;
+	TInt GetLocalSize(TNodeType aType) const;
+	ChromoNode GetNode(const GUri& aUri);
+	ChromoNode GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase);
+	// Get node by model hier uri
+	ChromoNode GetNodeByMhUri(const GUri& aUri);
+	ChromoNode GetNodeByMhUri(const GUri& aUri, GUri::const_elem_iter& aPathBase);
+	void GetUri(GUri& aUri) const;
+	void GetUri(GUri& aUri, const ChromoNode& aBase) const;
 	ChromoNode At(TInt aInd) const;
+	ChromoNode At(TInt aInd, TNodeType aType) const;
+	void ReduceToSelection(const ChromoNode& aSelNode);
     private :
 	ChromoMdl& iMdl;
 	void* iHandle;
@@ -180,7 +218,7 @@ class Chromo: public MChromo
 	typedef map<TDep, TDepsLevel> TDeps;
     public:
 	Chromo();
-	virtual ~Chromo() {};
+	virtual ChromoMdl& GetModel() = 0;
     public:
 	static void GetPath(const string& aUri, string& aPath);
 	static void GetFrag(const string& aUri, string& aFrag);

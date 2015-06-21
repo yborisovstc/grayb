@@ -9,11 +9,12 @@
 
 <node id="Root" parent="Elem">
     <node id="Modules" parent="Elem">
-	<move id="file:../modules/syst.xml#SysComps" />
-	<move id="file:../modules/capsula.xml#IncapsComps" />
-	<move id="file:../modules/data.xml#DataComps" />
-	<move id="file:../modules/func.xml#FuncComps" />
-	<move id="file:../modules/des.xml#DesComps" />
+	<import id="/IncapsComps/Incaps" />
+	<import id="/DataComps/DataSUInt" />
+	<import id="/DataComps/DataSUVar" />
+	<import id="/FuncComps/TFAddVar" />
+	<import id="/DesComps/Des" />
+	<import id="/DesComps/StateVar" />
     </node>
     <node id="IncapsRoot" parent="/Root/Modules/IncapsComps/Incaps">
 	<node id="DesRoot" parent="/Root/Modules/DesComps/Des">

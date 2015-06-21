@@ -92,6 +92,8 @@ class ChromoX: public Chromo
 	virtual void Reset();
 	virtual void Save(const string& aFileName) const;
 	virtual ChromoNode CreateNode(void* aHandle);
+	virtual void ReduceToSelection(const ChromoNode& aSelNode);
+	virtual ChromoMdl& GetModel() { return iMdl;};
     private:
 	ChromoMdlX iMdl;
 	ChromoNode iRootNode;

@@ -9,24 +9,27 @@
 <!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
 
 <node id="testroot" parent="Elem">
-    <!-- Module containing components of system layer -->
-    <move id="file:../modules/syst.xml#SysComps" />
-    <!-- Module containing components of incaps layer -->
-    <move id="file:../modules/capsula.xml#IncapsComps" />
-    <!-- Module containing components of data -->
-    <move id="file:../modules/data.xml#DataComps" />
-    <!-- Module containing components of func -->
-    <move id="file:../modules/func.xml#FuncComps" />
-    <!-- Module containing components of des layer -->
-    <move id="file:../modules/des.xml#DesComps" />
+    <node id="Modules" parent="AImports">
+	<!-- Module containing components of system layer -->
+	<import id="/SysComps" />
+	<!-- Module containing components of incaps layer -->
+	<import id="/IncapsComps" />
+	<!-- Module containing components of data -->
+	<import id="/DataComps/DataLogevent" />
+	<!-- Module containing components of des layer -->
+	<import id="/DesComps/Des" />
+	<import id="/DesComps/StIntOut" />
+	<import id="/DesComps/StateInt" />
+	<import id="/DesComps/TrIncInt" />
+    </node>
 
-    <node id="TestDes" parent="./DesComps/Des">
+    <node id="TestDes" parent="./Modules/DesComps/Des">
 
 	<!-- Output: Mass -->
-	<node node="./Capsule" id="Out" parent="./../DesComps/StIntOut"/> 
+	<node node="./Capsule" id="Out" parent="./../Modules/DesComps/StIntOut"/> 
 
 	<!-- Incrementor 1 -->
-	<node id="Incr1" parent="./../DesComps/StateInt">
+	<node id="Incr1" parent="./../Modules/DesComps/StateInt">
 	    <!-- <cont node="./DataSInt:Confirmed/Value" val="34"/> -->
 
 	    <node id="Logspec" parent="Elem">
@@ -35,11 +38,11 @@
 	    </node>
 
 	    <node node="./Confirmed" id="Logspec" parent="Elem">
-		<node id="Update" parent="./../../../../DataComps/DataLogevent">
+		<node id="Update" parent="./../../../../Modules/DataComps/DataLogevent">
 		</node>
 	    </node>
 
-	    <node id="Trans" parent="./../../DesComps/TrIncInt">
+	    <node id="Trans" parent="./../../Modules/DesComps/TrIncInt">
 	    </node>
 
 	    <node id="E1" parent="Edge"> 
