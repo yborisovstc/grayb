@@ -1063,7 +1063,7 @@ TBool Elem::AppendMutation(const string& aFileName)
 void Elem::Mutate(TBool aRunTimeOnly, TBool aCheckSafety, TBool aTrialMode)
 {
     ChromoNode& root = iMut->Root();
-    DoMutation(root, root, aRunTimeOnly, aCheckSafety, aTrialMode);
+    DoMutation(root, aRunTimeOnly, aCheckSafety, aTrialMode);
     // Clear mutation
     for (ChromoNode::Iterator mit = root.Begin(); mit != root.End();)
     {
@@ -1075,7 +1075,7 @@ void Elem::Mutate(TBool aRunTimeOnly, TBool aCheckSafety, TBool aTrialMode)
 
 void Elem::Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly, TBool aCheckSafety, TBool aTrialMode)
 {
-    DoMutation(aMutsRoot, aMutsRoot, aRunTimeOnly, aCheckSafety, aTrialMode);
+    DoMutation(aMutsRoot, aRunTimeOnly, aCheckSafety, aTrialMode);
 }
 
 // TODO [YB] Is megre the valid idea at all ?
@@ -1126,7 +1126,7 @@ TBool Elem::MergeMutMove(const ChromoNode& aSpec)
     return res;
 }
 
-void Elem::DoMutation(const ChromoNode& aMutSpec, const ChromoNode& aMutSel, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode)
+void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode)
 {
     const ChromoNode& mroot = aMutSpec;
     if (mroot.Begin() == mroot.End()) return;
@@ -1139,12 +1139,9 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, const ChromoNode& aMutSel, TBo
 	lim = iEnv->ChMgr()->GetLim();
 	isattached = IsChromoAttached();
     }
-    TBool selmut = !(aMutSpec == aMutSel);
-    ChromoNode selnode = selmut ? (*mroot.GetChildOwning(aMutSel)) : ChromoNode();
     for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End(); rit++)
     {
 	ChromoNode rno = (*rit);
-	if (selmut && !(rno == selnode)) continue;
 	Logger()->SetContextMutId(rno.LineId());
 	TInt order = rno.GetOrder();
 	// Avoiding mutations above limit. Taking into account only attached chromos.
@@ -1188,32 +1185,6 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, const ChromoNode& aMutSel, TBo
 	Logger()->SetContextMutId();
     }
 }
-
-// Selective mutation, ref ds_mod_selmut
-#if 0
-void Elem::DoMutation(const ChromoNode& aMutSpec, const ChromoNode& aSelMut, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode)
-{
-    if (aMutSpec == aSelMut) {
-	DoMutation(aMutSpec, aRunTime, aCheckSafety, aTrialMode);
-    } else {
-	// Loop by chromo hier
-	ChromoNode mutc = *aMutSpec.GetChildOwning(aSelMut);
-	// Ignore all childs other than selective
-	//ChromoNode mut = iChromo->CreateNode(mutc.Handle());
-	/*
-	TNodeType rnotype = rno.Type();
-	__ASSERT(rnotype == ENt_Node);
-	Elem* node = AddElem(rno, aRunTime, aTrialMode);
-	if (node != NULL) {
-	    node->DoMutation(aMutSpec, aRunTime, aCheckSafety, aTrialMode);
-	} else
-	    string pname = rno.Attr(ENa_Parent);
-	    Logger()->Write(MLogRec::EErr, this, "Adding node with parent [%s] failed", pname.c_str());
-	}
-	*/
-    }
-}
-#endif
 
 TBool Elem::IsContChangeable(const string& aName) const
 {

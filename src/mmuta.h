@@ -9,8 +9,7 @@ class ChromoNode;
 class MMutable
 {
     public:
-	//virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse) = 0;
-	virtual void DoMutation(const ChromoNode& aMutSpec, const ChromoNode& aSelMut, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode) =  0;
+	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse) = 0;
 };
 
 #endif

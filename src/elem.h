@@ -261,8 +261,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// Gets major dep for referenced node, ref ds_indp_mutord_impl
 	virtual void GetImplicitDep(TMDep& aDep, Elem* aObj, Elem* aRef);
 	// From MMutable
-	//virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
-	virtual void DoMutation(const ChromoNode& aMutSpec, const ChromoNode& aSelMut, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode);
+	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
 	// Ifaces cache
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
 	void RmIfCache(IfIter& aIt);
