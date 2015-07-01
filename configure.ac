@@ -20,10 +20,6 @@ AC_ARG_ENABLE([debug],
 			      [enable debug code (default is no)])],
 			      [debug="$withval"], [debug=no])
 
-PKG_CHECK_MODULES(GLIB, [glib-2.0 >= 2.0.0], , [AC_MSG_ERROR([
-You must have the GLib 2.0 and development headers installed to build.
-])])
-
 PKG_CHECK_MODULES(LIBXML, [libxml-2.0], , [AC_MSG_ERROR([
 You must have the libxml-2.0 and development headers installed to build.
 ])])
