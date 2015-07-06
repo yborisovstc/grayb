@@ -472,32 +472,32 @@
 	    <sect3><title>Intro</title>
 		<simpara>Last time there was decision made to introduce new options - disabling pheno modificaions</simpara>
 	    </sect3>
-	    <sect3><title>Cause of the problem</title>
+	    <sect3 id="ds_mut_dis_pheno_cs"><title>Cause of the problem</title>
 		<simpara>The root-cause of the problem is contradiction between the sequence of changing model and 
 		    option of inheritance of childs from the structural part of system native hier. If we didn't require 
 		    such an inheritance then we can use flat chromo where the order of mutations completelly corresponds to
 		    the order the changes applied to the system on construction phase.</simpara>
-	    <simpara>However native hier (structure) is very important part of system creation and cannot be
-		avoided or ignored. This approach is to create the system via a set of components, which are
-		improved via inheritance and local mutations. According to this approach the mutation in parent must
-		be applied before the childs creation. But this mutation applying sequence differs from native secuence 
-		(the sequence of how the mutation were introduced)</simpara>
-	    <simpara>Actually to keep original sequence is not a problem. For instance flat chromo can be used.</simpara>
-	    <simpara>There is another option of keeping the original sequence of mutation - mutation order. 
-		Currently it is possible to set order value for each mutation. So if the "chromo machine" could to
-		apply the muts according to the order it would be equivalent to flat chromo. Equivelency means that these
-		forms of chromos can be explicitly transformed one to another.</simpara>
+		<simpara>However native hier (structure) is very important part of system creation and cannot be
+		    avoided or ignored. This approach is to create the system via a set of components, which are
+		    improved via inheritance and local mutations. According to this approach the mutation in parent must
+		    be applied before the childs creation. But this mutation applying sequence differs from native secuence 
+		    (the sequence of how the mutation were introduced)</simpara>
+		<simpara>Actually to keep original sequence is not a problem. For instance flat chromo can be used.</simpara>
+		<simpara>There is another option of keeping the original sequence of mutation - mutation order. 
+		    Currently it is possible to set order value for each mutation. So if the "chromo machine" could to
+		    apply the muts according to the order it would be equivalent to flat chromo. Equivelency means that these
+		    forms of chromos can be explicitly transformed one to another.</simpara>
 		<simpara>But again the real problem is that approach of creating system via inherited sybsystems requires that
-		the sequence of applying differs the original sequence.</simpara>
+		    the sequence of applying differs the original sequence.</simpara>
 	    </sect3>
 	    <sect3><title>Inheritance based approach: solving the problems.</title>
 		<simpara>Currently inherirance based approach is the primary mechanism for creation system. The problem of 
 		    not keeping the original sequence in this case can be mitigated by disabling phenotypic modification. What
 		    are the theats of breaking chromo safety:
 		    <itemizedlist>
-			<listitem>Changing ref: dependencies on the local owner comonent with the bigger rank.
+			<listitem>Changing ref: dependencies on the local owner component with the bigger rank.
 			    This problem can be fixed by shifting mutated node root mutation over to dependency mutation. This will
-			    not affect the model because this shifting is local.  </listitem>
+			    not affect the model because this shifting is local, ref also <xref lindkend="ds_indp_mutord"/></listitem>
 			<listitem>Renaming subnode that is referenced. No solution here, required change of ref.</listitem>
 		    </itemizedlist>
 		</simpara>
@@ -508,6 +508,19 @@
 		    <listitem>What if we create child from a node and then apply some mutation to the node. Then we d like to
 			have this mutaion in child also.</listitem>
 		</orderedlist>
+	    </sect3>
+	    <sect3 id="ds_mut_dis_pheno_rebase"><title>Hibrid approach: pheno modif not hampering inheritance. Reparent mutation.</title>
+		<simpara>As mentioned in <xref linkend="ds_mut_dis_pheno_cs"/> the approach of creating system via inherited 
+		    subsystems are explicit and convenient. Subsystem_B that inherites Subsystem_A is "improvement" of Subystem_A. 
+		    The whole system normally "grows up" by adding new improvements to the current chaing: Subystem_C, or branching. 
+		    But it is also possible that system creation requires to change initial subsystem in the chain. This can happen 
+		    for instance in case when there already is big three of inherited subsystem and then error in some base subsystem gets
+		    discovered.</simpara>
+		<simpara>The "traditional" approach works here: we can mutate the base subsystem and there regenerate the system. This 
+		    is how "disabled pheno modif" is working. As discussed there is problem with that approach - we introduce break in native
+		    sequence of mutations. There is one approach that potentially allows to make change in base subsystems and same time
+		    keep native sequence of mutation. This approach is not to mutate base subsystem, but create inherited subsystem, 
+		    mutate it properly and then "rebase" the upper tree part to it.</simpara>
 	    </sect3>
 	    <sect3><title>Issues</title>
 		<orderedlist>
@@ -533,19 +546,22 @@
 		    ref in Edges connpoint. So if some edge was created with low rank and then it became required to make connection
 		    to node with greated rank then it result in critical dependency. There were two approached considered: 
 		    <itemizedlist>
-			<listitem>to move edge locally in order to increase edges rank</listitem>
+			<listitem>to move edge locally in order to increase edges rank, ref <xref lindkend="ds_indp_mutord"/></listitem>
 			<listitem>to introduce the ability to set pheno mode for particular agent.</listitem>
 		    </itemizedlist>
 		</simpara>
 	    </sect3>
 	    <sect3><title>Shifting node to increase its rank</title>
-		<simpara>This approach cons is that actually it is not possible to do it via simple mutation. It was discussed 
+		<simpara> This approach cons is that actually it is not possible to do it via simple mutation. It was discussed 
 		    many times, ref <xref linkend="ref_incr_mut"/> for the discusstion, specifically the section
 		    "Transposition of nodes within chromo is not allowed". Also ref <xref linkend="ds_transp"/> for the design 
 		    related discussion. The short explanation is that the initial mutaion anytime goes first so to change nodes rank we
 		    need to edit chromo but not mutation it additivelly.</simpara>
 		<simpara>So to shift the node we need to recreate the node, remove initial one and then squeeze the chromo to 
 		    avoid errors reporting because of initial mut is failed. Not simple approach really.</simpara>
+		<simpara>The update here is that "chromo invariance with regards to node order" principle can be applied,
+		    ref <xref linkend="ds_indp_mutord"/>. This will solve the problem mentioned above because shifting of the node
+		    is not mutation anymore (nodes position just doesn't affect the model at all).</simpara>
 	    </sect3>
 	    <sect3><title>How to set pheno mode for an agent</title>
 		<simpara>The most realistic approach is to add specific new attribute of node and to add specific Elem API, like
@@ -555,7 +571,7 @@
 	</sect2>
 	<sect2 id="ds_mut_sqeezing"><title>Squeezing of mutations</title>
 	    <sect3><title>Intro</title>
-		<simpara>Squeezing of mutation seems at the first glance obvious and simple. Indeed, if there are two adjacent renamings the same node then why we cannot
+		<simpara>Squeezing of mutation seems at the first glance obvious and simple. Indeed, if there are two adjacent renamings the same node then why we can
 		    remove the first one because its effect is completelly eliminated by the mutation following. So generalizing this particular case to all the mutations we
 		    can go to the simple idea that all mutations can be checked for being excessive and removed or maybe merged. But this simple idea became not realistic on
 		    detailed analysis. </simpara>
@@ -623,7 +639,7 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
-	<sect2 id="ds_indp_mutord"><title>Independence on local mutations order</title>
+	<sect2 id="ds_indp_mutord"><title>Independence on local mutations order (chromo invariance with respect to nodes order)</title>
 	    <sect3><title>Refs</title>
 		<itemizedlist>
 		    <listitem>Use case: <ulink url="../requirements/index.html#uc_046"/></listitem>
@@ -654,34 +670,34 @@
 		<simpara>Let's look at the agent "Edge" (the scenario is exactly described in use-case ref). The agent itself doesn't expose
 		    some specific dependencies, because of being just almost "passive" owner of pair of references. But real "creator" the
 		    implicit dependencies here is the system owning the edge. This is because the connection point compatibility checking is being done
-		by onwning system but not the edge itself. Exaclty on the checking the dependency is become apparent.</simpara>
-	    <simpara>How would be the approach of checking the implicit dependency in this case ? The approach would be like this:</simpara>
-	    <itemizedlist>
-		<itemizedlist>Supposing the base agent (Elem) has the virtual method "GetImplicitDeps", which default implementation
-		is just run "GetMajorDep" and if no dep found, just redirect it to its owner.</itemizedlist>
-		<listitem>Edge gets mutation. Edge runs GetImplicitDeps, that just is redirected to edges owner - the system.</listitem>
-		<listitem>The system analyses the request, understands that the initial mutation is the change of edges point, so 
-		asks the points ref to get the deps</listitem>
-	    </itemizedlist>
-	    <simpara>This approach has one defect: just having virtual agent method will not work. The reason is that the deps are not determine 
-		by agent itself but by the role the agent plays in its owner. For instance, ConnectionPoint agent can be referenced within vertes 
-		as just vertex but not Connectable. So as a vertex ConnectionPoint doesn't have some specifics for deps. But if it is referenced
-		within system, then it becomes specific deps as Connectable. So Connectable has to have its own method for deps.
-	    </simpara>
-	    <simpara>Also it needs to be considered if all mutation require asking owner to find implicit deps. As we see the implicit deps are 
-		generated by run-time behaviour, i.e by agents specific. Let's look at what parts of mutation require knowledge of deps. As we 
-		already discussed the dep is actually dep runtime node on another dep. So saying "what are the deps for the given mutation" we
-		have to say "what are the deps for all runtime nodes referenced by this mutation". There are three kinds of runtime nodes 
-		references in mutations: object, parent, and ref. What refs can generate implicit deps in agents? To answer this question we
-		need to look at which references are specifically handled by agents. All such handling is initiated via MCompsObserver iface. The
-		review of the current handling implementation is as: </simpara>
-	    <programlisting>
-		Syst::OnCompDeleting - object
-		OnCompAdding - default handling only
-		OnCompChanged - many agents hadnling change of ref in content. So - ref
-		OnCompRenamed - default handling only
-	    </programlisting>
-	    <simpara>So at the moment the only specific deps for mutation nodes referenced via ref attribute have to be taken into account.</simpara>
+		    by onwning system but not the edge itself. Exaclty on the checking the dependency is become apparent.</simpara>
+		<simpara>How would be the approach of checking the implicit dependency in this case ? The approach would be like this:</simpara>
+		<itemizedlist>
+		    <itemizedlist>Supposing the base agent (Elem) has the virtual method "GetImplicitDeps", which default implementation
+			is just run "GetMajorDep" and if no dep found, just redirect it to its owner.</itemizedlist>
+		    <listitem>Edge gets mutation. Edge runs GetImplicitDeps, that just is redirected to edges owner - the system.</listitem>
+		    <listitem>The system analyses the request, understands that the initial mutation is the change of edges point, so 
+			asks the points ref to get the deps</listitem>
+		</itemizedlist>
+		<simpara>This approach has one defect: just having virtual agent method will not work. The reason is that the deps are not determine 
+		    by agent itself but by the role the agent plays in its owner. For instance, ConnectionPoint agent can be referenced within vertes 
+		    as just vertex but not Connectable. So as a vertex ConnectionPoint doesn't have some specifics for deps. But if it is referenced
+		    within system, then it becomes specific deps as Connectable. So Connectable has to have its own method for deps.
+		</simpara>
+		<simpara>Also it needs to be considered if all mutation require asking owner to find implicit deps. As we see the implicit deps are 
+		    generated by run-time behaviour, i.e by agents specific. Let's look at what parts of mutation require knowledge of deps. As we 
+		    already discussed the dep is actually dep runtime node on another dep. So saying "what are the deps for the given mutation" we
+		    have to say "what are the deps for all runtime nodes referenced by this mutation". There are three kinds of runtime nodes 
+		    references in mutations: object, parent, and ref. What refs can generate implicit deps in agents? To answer this question we
+		    need to look at which references are specifically handled by agents. All such handling is initiated via MCompsObserver iface. The
+		    review of the current handling implementation is as: </simpara>
+		<programlisting>
+		    Syst::OnCompDeleting - object
+		    OnCompAdding - default handling only
+		    OnCompChanged - many agents hadnling change of ref in content. So - ref
+		    OnCompRenamed - default handling only
+		</programlisting>
+		<simpara>So at the moment the only specific deps for mutation nodes referenced via ref attribute have to be taken into account.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_mut_attach"><title>Concept of nodes chromo attaching</title>
@@ -711,7 +727,7 @@
 	    <simpara>References are important part of relation in systems native topology (hier + inher). Establishing rules and limitations for
 		referencing can significantly affects the topology. Currently the only limitation is that rank of referenced node has to be less than the 
 		referencing one. What rules and llimitation can be applied?</simpara>
-       	</sect2>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_visrepr"><title>Visual representation</title>
@@ -881,12 +897,12 @@
 	    <simpara>This iface can include the following methods:</simpara>
 	    <itemizedlist>
 		<listitem>Getting value that agent gets from the given input. Use-case here is: debugging some function, there is an error within
-		some internal function, user move mouse pointer to input, tooltip gets displayed showing the value.</listitem>
+		    some internal function, user move mouse pointer to input, tooltip gets displayed showing the value.</listitem>
 	    </itemizedlist>
 	    <simpara>What is difference between using debugging iface and complex content for keeping debug info (ref. <xref linkend="ds_cplx_cont"/>) ?.
 		Using content assumes that agent constantly updated content part that aims for debug info. This results in overhead. Of course we can
 		"switch" agent to "debug mode" via dedicated content, but it seems quite complex. ARGUING: It is not nececcary that object constantly
-	    refreshes debugging content. It depends on object. It can refresh the content only on demand via content getter.</simpara>
+		refreshes debugging content. It depends on object. It can refresh the content only on demand via content getter.</simpara>
 	</sect2>
     </sect1>
 
@@ -896,7 +912,7 @@
 		The complex data can be implemented as set of named data, like map[string, string] where the key is data name, and the value is the data.
 		So the complex data can be considered as set of named fields.
 		In many cases having complex content seems convenient and preferrable.
-	       	The example is visual debugging of complex system. 
+		The example is visual debugging of complex system. 
 		For the debugging purpose it is required to see some "internal" data of the agent. For agent-function it could be the value of its 
 		arguments. Currently this feature is implemented only partially: visual representation of function has some parameter that
 		defines content of which agent to display. So to support debugging data there are two ways: 
@@ -905,7 +921,7 @@
 		    <listitem>To add support of complex data. Agent function can set the debug data to the corresponding content fields.</listitem>
 		</orderedlist>
 	    </simpara>
-       	</sect2>
+	</sect2>
 	<sect2 id="ds_cplx_cont_cns"><title>Considerations</title>
 	    <sect3><title>Simple agent philosophy</title>
 		<simpara>The simple content correspond to the multy-agent philosophy "agent is simple". Complex content makes agent more comples. Does it
@@ -943,7 +959,7 @@
 		    </listitem>
 		</itemizedlist>
 		<simpara>So it makes sense to use these approach for different aims: Complex content - to enrich the base agent, but extended prop - to
-		support debugging feature.</simpara>
+		    support debugging feature.</simpara>
 	    </sect3>
 	    <sect3><title>Agents for just keeping data</title>
 		<simpara>Currently the agent-property for just keeping data is used widely. This seems too wasteful.</simpara>
@@ -953,7 +969,7 @@
 		    mutations without variable parameters. Complex content introduces mutation of type "Change content" with such variable 
 		    parameter "Content name".</simpara>
 		<simpara>Not sure the idea is fruitful. Even simple content agents have such kind of mutation. For instance "Change content" has
-		variable parameter "Content value"</simpara>
+		    variable parameter "Content value"</simpara>
 	    </sect3>
 	    <sect3><title>Content as parameters</title>
 		<simpara>The content can be considered as mechanism of parametrization of agent, like it is done in OOP languages. The difference is
@@ -1018,14 +1034,14 @@
 		    <listitem>Why not use mutation of creating child with the option "copy modifs from parent"?
 			<simpara>This would be just mutation, so no problems with its rollback. We need to take into account the 
 			    inheritance mechanism where the chain of inheriting is performed beginning from root parent. To keep this mechanism we
-			would need also to modify relation to parent by adding relation type ("regular inheritance", "inheritance with modifs adopted"</simpara>
+			    would need also to modify relation to parent by adding relation type ("regular inheritance", "inheritance with modifs adopted"</simpara>
 		    </listitem>
 		    <listitem>Why don't disable pheno modifs completely?
 			<simpara>I.e. if the owner wants to change inherited comp it will need to make the comp non-inherited. This would keep the
 			    whole model clear and simple. This approach is discussed in <xref linkend="ds_transf_prntmodif_repl"/>.
 			    The quesion remaining - what to do if we already have such inherited comps with modifs. Anycase we need to do transformation,
 			    but it will be not regular transformation but repairing. The similar repairing is already implemented for repair chromo when 
-			prohibited pheno modif is disabled. Not sure this approach is correct. </simpara>
+			    prohibited pheno modif is disabled. Not sure this approach is correct. </simpara>
 		    </listitem>
 		    <listitem>How to rollback the tansformation?
 			<simpara>The rollback is quite simple because the transformation is implemented via series of mutations. So
@@ -1077,7 +1093,7 @@
 	    <simpara>Currently (260ee587a) the approach is used to propagate notifications from comp to owner without any limit, to the notifications 
 		achieve system root finally. This approach is simple but it causes to system getting not scalable. To have system scalable the principle of 
 		isolating any relations needs to be used. Actually the tree structure itself is good example of such isolating of relations: the 
-	    number of relations is reduced from bottom (comp) to uppper layers.</simpara>
+		number of relations is reduced from bottom (comp) to uppper layers.</simpara>
 	</sect2>
     </sect1>
 
@@ -1089,28 +1105,28 @@
 	</sect2>
 	<sect2><title>Introduction</title>
 	    <simpara>The current implementation of module system is rather limited: it is allowed to use ref to parent within external chromo. Also 
-                it is possible to "move" node from external chromo to the model, this creates not the child of the node but the node itself,
-                the node in model gets unattached. In the scope of current implementation it is not allowed to ref to external 
-                parent if this parent in turn refers to something.</simpara>
+		it is possible to "move" node from external chromo to the model, this creates not the child of the node but the node itself,
+		the node in model gets unattached. In the scope of current implementation it is not allowed to ref to external 
+		parent if this parent in turn refers to something.</simpara>
 	    <simpara>So current approach is as: to move some modules to the model, and then refer to these modules only in scope of the model. The 
-	    problem here is that there is overhead in case of big modules - not all nodes from module are used in the model.</simpara>
+		problem here is that there is overhead in case of big modules - not all nodes from module are used in the model.</simpara>
 	</sect2>
 	<sect2><title>Additional requirements.</title>
 	    <sect3><title>What should be the reference?</title>
-                <simpara>Currently the ref is based on url that includes uri according to RFC 3986,
-                    <xref linkend="ref_rfc_3986"/>: access protocole, authority, path, and
+		<simpara>Currently the ref is based on url that includes uri according to RFC 3986,
+		    <xref linkend="ref_rfc_3986"/>: access protocole, authority, path, and
 		    native path as uri fragment.  The native path is path in the model within native
-                    coordinates. It is not convenient to use such referring approach because of necessity to specify authority and path.
-                    This makes model depending on
-		environment.</simpara>
+		    coordinates. It is not convenient to use such referring approach because of necessity to specify authority and path.
+		    This makes model depending on
+		    environment.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2><title>Using of native uri only.</title>
-            <simpara>Using of of native uri for referring external nodes assumes that native uri allows us to unambiguously specify the node.
-                But currently onwing hier has local model as the root, so cannot be used to specify external node.
-                Inher hier is ambiguous, so needs hint form owning heir to resolve the node.
-                Nevetheless it can be used for referring - in case if system discovers some ambiguous in
-                inher-hier it can extend ref to keep ref correct.</simpara>
+	    <simpara>Using of of native uri for referring external nodes assumes that native uri allows us to unambiguously specify the node.
+		But currently onwing hier has local model as the root, so cannot be used to specify external node.
+		Inher hier is ambiguous, so needs hint form owning heir to resolve the node.
+		Nevetheless it can be used for referring - in case if system discovers some ambiguous in
+		inher-hier it can extend ref to keep ref correct.</simpara>
 	    <simpara>How it works? Assume that there are two modules and referred nodes within them:</simpara>
 	    <itemizedlist>
 		<listitem>Module 1: name "(Elem:)Mod_A", node "Node_R" within it </listitem>
@@ -1122,43 +1138,43 @@
 		<listitem>Module 1: name "(Elem:)Mod_A", node "Node_R" within it </listitem>
 		<listitem>Module 2: name "(Elem:)Mod_A", node "Node_R" within it </listitem>
 	    </itemizedlist>
-            <simpara>This is possible only in case if Module 2 is delivered by some authority independent from that delivers Module 1.
-                So how to extend ref uri?
+	    <simpara>This is possible only in case if Module 2 is delivered by some authority independent from that delivers Module 1.
+		So how to extend ref uri?
 		One way is to extend with base rfc url authority/path, having specific authority/path for Module 2 authority.</simpara>
-            <simpara>In fact the authority/path is nothing but one more coordinate in the system space. 
-                We can achieve the similar result with explicitly
-                adding new specific coordinate, for instance "authority", to strengthen ref safety. To have one more coordinate 
-                we need to introduce new type of 
+	    <simpara>In fact the authority/path is nothing but one more coordinate in the system space. 
+		We can achieve the similar result with explicitly
+		adding new specific coordinate, for instance "authority", to strengthen ref safety. To have one more coordinate 
+		we need to introduce new type of 
 		relations, that generates the coordinate. Of course specific node is required by authority. 
 		Looking at this we can propose simpler approach: system can just extend owning-hier by authority node in case if system
 		discover ref unambiguousness.</simpara>
 	    <itemizedlist>
 		<listitem>Module 1: name "(Elem:)Mod_A", node "Node_R" within it </listitem>
 		<listitem>Module 2: name "(Elem:)Mod_A", node "Node_R" within it </listitem>
-                <listitem>System create module with unambiguous "Module_2_Authority" node and "includes" Module 2 
-                    Mod_A into it. So now we refer to Module 2
+		<listitem>System create module with unambiguous "Module_2_Authority" node and "includes" Module 2 
+		    Mod_A into it. So now we refer to Module 2
 		    Node_R as: Elem:(Module_2_Authority/Mod_A/)Node_R </listitem>
 	    </itemizedlist>
-            <simpara>Looks good, so now we have heir-hier as one "absolute" coordinate, but resolving unambiguousness 
-                with onwining-hier. System searches modules
-                on local file or specified url according to some rules. But we still haven't avoided explicit stating rfc url, 
-                because actually system includes
+	    <simpara>Looks good, so now we have heir-hier as one "absolute" coordinate, but resolving unambiguousness 
+		with onwining-hier. System searches modules
+		on local file or specified url according to some rules. But we still haven't avoided explicit stating rfc url, 
+		because actually system includes
 		Module 2 Mod_A into Module_2_Authority by authority/path. Howewer for our model, we can use only native url.</simpara>
 	</sect2>
 	<sect2><title>How to include nodes from modules in the model</title>
 	    <sect3><title>Intro</title>
-                <simpara>First of all system has to provide the hierarchy of the nodes in modules in order to 
-                    allow user to select the node required.</simpara>
-                <simpara>Then system has to differentiate refs to the models nodes (real nodes) from refs to 
-                    modules nodes (actually not real nodes but nodes chromo).</simpara>
+		<simpara>First of all system has to provide the hierarchy of the nodes in modules in order to 
+		    allow user to select the node required.</simpara>
+		<simpara>Then system has to differentiate refs to the models nodes (real nodes) from refs to 
+		    modules nodes (actually not real nodes but nodes chromo).</simpara>
 	    </sect3>
 	    <sect3><title>Considerations</title>
 		<orderedlist>
 		    <listitem> The main idea for the modules is to support full referencing for modules, i.e. 
 			that standard references from models chromo to any “nodes” in modules are to be allowed, as if it is run-time node. 
 			The rationale of such ajn approach is that it should be simple for implementation because of modules compacted 
-                        chromo native space (inducted by coordinates of native hierarchies) is the same as for runtime generated 
-                        from modules chromo.  </listitem>
+			chromo native space (inducted by coordinates of native hierarchies) is the same as for runtime generated 
+			from modules chromo.  </listitem>
 		    <listitem> To implement this approach we need to re-implement chromo in order to support inheritance hier also.  
 			There is a problem here: actually the chromo itself is not isomorphic to run-time, for instance mutation of adding 
 			not to destination has different owner as generated model.  Solution here would be implementing of “enhanced” chromo, 
@@ -1173,24 +1189,24 @@
 			so any reference is reference to an agent. So even now, referring to the whole module is ambiguous because it’s 
 			the reference to chromo. The differentiation between ref to agent and ref to chromo is performed implicitly, look at 
 			Elem::AddElem(): uri scheme is used to decide what ref is. Some kind of logic presents here: if we ref inside the model 
-                        then scheme (or base part of uri) isn’t needed (internal ref), if we referring to external 
-                        something then it is cpec (chromo) </listitem>
+			then scheme (or base part of uri) isn’t needed (internal ref), if we referring to external 
+			something then it is cpec (chromo) </listitem>
 		    <listitem> Note that referring to chromo is required only for referring to parent or to moving source. So maybe it makes sense 
 			to keep the current implementation with small improvement: A). introduce specific scheme or base part for modules nodes, 
 			for instance fap://modules#....  B). environment to provide the modules tree </listitem>
-                    <listitem> Problem: creating from external parent is ambiguous.
-                       This is because creating two agent from one parent in the same owner 
+		    <listitem> Problem: creating from external parent is ambiguous.
+			This is because creating two agent from one parent in the same owner 
 			will cause an error: second creation parent will filed because of already having such agent in the owner.  
 			Solution here would be to disable external parent, so only moving will be allowed for externals.  </listitem>
 		    <listitem> In some module it is possible that internal node has ref to another node in this module, 
-                        for instance Molule/B can have ref to local 
-                        parent Module/A. In this case moving “B” will cause an error. Solution: consider such nodes as
-                        dependent and disable moving them.  </listitem>
+			for instance Molule/B can have ref to local 
+			parent Module/A. In this case moving “B” will cause an error. Solution: consider such nodes as
+			dependent and disable moving them.  </listitem>
 		    <listitem> One more problem : currently the cyclic resolution of module refs are not supported.
-                        This means that if model uses module_1 and within module_2 there are refs to 
-                        module_2 so just moving module_1 to the model will 
-                        cause the error of refs not resolved. Solution here could be to move dependency to the module.
-                        The disadvantage here is that the deps can be duplicated in many modules. Another solution would be “importing” deps. 
+			This means that if model uses module_1 and within module_2 there are refs to 
+			module_2 so just moving module_1 to the model will 
+			cause the error of refs not resolved. Solution here could be to move dependency to the module.
+			The disadvantage here is that the deps can be duplicated in many modules. Another solution would be “importing” deps. 
 			Importing means that we have specific node for modules in owning hier and move specified dep to this node in case 
 			if it’s not there yet. Such dedicated node is “/Modules” in the current implementation. OR system can do it automatically, 
 			enumerating all deps, checking if dep is already “imported” and import if not. This is actually caching the modules: 
@@ -1202,110 +1218,110 @@
 		</orderedlist>
 	    </sect3>
 	</sect2>
-        <sect2><title>Approach: Explicit importing.</title>
-            <sect3><title>Introduction</title>
-                <simpara>The idea is to implicit import modules required for given model. So each module (so also
-                    each module because any module is model too) should has dedicated node (e.g. /Modules) for 
-                    import. The obvious problem here is that imported agents can be duplicated, especially
-                    generic modules. Also to import comp of some module /Modules has to be imported too that 
-                    created some overhead.</simpara>
-                <simpara>This approach was already used in earlier versions of sysem. Problem of duplication was
-                the reason of refusing to use it.</simpara>
-            </sect3>
-            <sect3><title>How to avoid duplication?</title>
-                <simpara>One approach is module to use inher uri referencing models modules container:
-                    <programlisting> move node="AModCont:Modules" id="some_module"; </programlisting>
-                </simpara>
-                <simpara>Module conatiner agent should handle correctly moving module if this module is 
-                    already moved in. So modules container acts here as the node with global kind of access.
-                    This allows to have "sub-modules" within big module. For that each "sub-module" should include
-                    all its imports (even those in scope of big module) to "global" modules container. 
-                    Also any module should ref to it's deps in safe manner: using predefined node as "root" for 
-                    modules (like /Root/Modules) or inher based uri.</simpara>
-                <simpara>In fact this approach almost implemented now. Modules are using safe refs. The
-                only part missing is importing deps.</simpara>
-            </sect3>
-            <sect3><title>Pros and cons</title>
-                <sect4><title>Cons</title>
-                    <orderedlist>
-                        <listitem>For modules internal sub-modules it is necessary to add owner that includes
-                            import mutation. This causes overheads.</listitem>
+	<sect2><title>Approach: Explicit importing.</title>
+	    <sect3><title>Introduction</title>
+		<simpara>The idea is to implicit import modules required for given model. So each module (so also
+		    each module because any module is model too) should has dedicated node (e.g. /Modules) for 
+		    import. The obvious problem here is that imported agents can be duplicated, especially
+		    generic modules. Also to import comp of some module /Modules has to be imported too that 
+		    created some overhead.</simpara>
+		<simpara>This approach was already used in earlier versions of sysem. Problem of duplication was
+		    the reason of refusing to use it.</simpara>
+	    </sect3>
+	    <sect3><title>How to avoid duplication?</title>
+		<simpara>One approach is module to use inher uri referencing models modules container:
+		    <programlisting> move node="AModCont:Modules" id="some_module"; </programlisting>
+		</simpara>
+		<simpara>Module conatiner agent should handle correctly moving module if this module is 
+		    already moved in. So modules container acts here as the node with global kind of access.
+		    This allows to have "sub-modules" within big module. For that each "sub-module" should include
+		    all its imports (even those in scope of big module) to "global" modules container. 
+		    Also any module should ref to it's deps in safe manner: using predefined node as "root" for 
+		    modules (like /Root/Modules) or inher based uri.</simpara>
+		<simpara>In fact this approach almost implemented now. Modules are using safe refs. The
+		    only part missing is importing deps.</simpara>
+	    </sect3>
+	    <sect3><title>Pros and cons</title>
+		<sect4><title>Cons</title>
+		    <orderedlist>
+			<listitem>For modules internal sub-modules it is necessary to add owner that includes
+			    import mutation. This causes overheads.</listitem>
 			<listitem>Explicit import mutation is not true mutation because it doesn't change the 
 			    node itself but dedicated import agent instead. So it doesn't follow the approach
-			"mutation is unambiguously interpret within run-time model"</listitem>
-                    </orderedlist>
-                </sect4>
-            </sect3>
-        </sect2>
+			    "mutation is unambiguously interpret within run-time model"</listitem>
+		    </orderedlist>
+		</sect4>
+	    </sect3>
+	</sect2>
 	<sect2 id="ds_dyn_res"><title>Approach: Dynamic resolution of the deps via Dedicated Module agent.</title>
-            <sect3><title>Introduction</title>
-                <simpara>The idea is to resolve the deps automatically, without explicit importing. </simpara>
-            </sect3>
+	    <sect3><title>Introduction</title>
+		<simpara>The idea is to resolve the deps automatically, without explicit importing. </simpara>
+	    </sect3>
 	    <sect3><title>Import module APIs</title>
 		<itemizedlist>
 		    <listitem>Get tree of chromo nodes</listitem>
-                    <listitem>Import node by given uri, ref <xref linkend="ds_mod_prb_int"/></listitem>
+		    <listitem>Import node by given uri, ref <xref linkend="ds_mod_prb_int"/></listitem>
 		</itemizedlist>
 	    </sect3>
-            <sect3 id="ds_mod_prb"><title>Problems</title>
-                <sect4 id="ds_mod_prb_int"><title>How to create node in module if the node is requested from 
-                        modiles internal node.</title>
-                    <simpara>This relates to use-case <xref linkend="ds_mod_uc_crn"/>. This approach assumes that upper
-                        owner - module agent is involved in handling request. But it's not true in case of request from 
-                        modules internal comp.</simpara>
-                    <simpara>This problem is because this use-case contradicts to concept: "only module provide creating 
-                        on demand". This request from internal comp actually is not to module but to some regular 
-                        owner within module. This means that only deps to modules can be resolved automatically, 
-                        so it's not possible to create some part of module that has internal dep.</simpara>
-                    <simpara>If we define imported module, or just "import" as the agent which chromo is sourced with 
-                        given external module (chromo) then we can say that any component of import is also import. 
-                        Agent can check if it's import via examining of owners, if some its owner is import. 
-                        We can define specific iface for import module agent.</simpara>
-                    <simpara>Then the mechanism of importin required node can be implemented as:</simpara>
-                    <itemizedlist>
-                        <listitem>Base agent requests some dep (using base agent api GetNode) - GetNode tries 
-                            to get requested dep</listitem>
-                        <listitem>If GetNode cannot find dep requested, then GetNode checks if the dep is contained in 
-                            module via getting nearest owner and requesting its owner - module.</listitem>
-                        <listitem>If there is module for the dep, then GetNode requests the module for importing dep</listitem>
-                        <listitem>Module imports dep and return it to GetNode, that in turn returns it to requestor</listitem>
-                    </itemizedlist>
-                </sect4>
-                <sect4 id="ds_mod_prb_alldeps"><title>What is import module agent? Holder of one chromo or all external chromos?</title>
-                    <simpara>One approach is to create import module agent for each external chromo. 
-                        This is fearly resonable - the agent can be assigned to particular external chromo and manage it.
-                       But how to import some models dep in case when the module itself is not created?</simpara>
-                    <simpara>Alternative way is to create one agent for all imports on model init phase 
-                        (e.g "/Modules").</simpara>
-                    <simpara>The third way is to have two agent: one for imported module, and second for modules containing. In
-                        this case modules container will be responsible to create the module for dep requested.
-                        Container itself can support modules iface but redirect all requests via the 
-                        iface to its components - modules.</simpara>
-                </sect4>
-                <sect4><title>What is difference between module and model?</title>
-                    <simpara>As discussed the model can include imports, to have specific node for modules container.
-                        But what about modules? Do they implement imports in the same manner? </simpara>
-                    <simpara>One approach is to not use the same way for modules. This is because the module is not
-                        independent model but some framework that is to be embedded into the model. So module has to 
-                        resolve its own deps to another modules in the scope of modules of model embedding the module.</simpara>
-                    <simpara>Even this approach seems resonable the question is still remaining: 
-                        "Why they are different?". Potentially it is completelly allowed to create modules container 
-                        within module and import module to it. The only result will be that there will be another instance of
-                        import within models import.</simpara>
-                </sect4>
-                <sect4><title>How to handle missing requested dep?</title>
-                    <simpara>The mechanism described in <xref linkend="ds_mod_prb_int"/> for handling of 
-                        missing requested node event is not generic enough because base agent knows of moudule iface.
-                        It make sense to implement generic way for handling such case. For instance new method in
-                        comp observer iface can be introduced, like OnCompNotResolved. This method implementation is
-                        to help resolving component and returns the comp resolved. Agent can run this handler
-                        in case if it cannot resolve comp for instance in GetNode().</simpara>
-                    <simpara>This is abmiguous actually because not only owning hier can be used in getting node but
-                        inher hier also. There is response argument that only owning hier can be responsible for 
-                        handling such exceptions. How about case when model requests comp from module via pure
-                        inher based uri? In this case the notifications should up to root that has to redirect it 
-                        to modules.</simpara>
-                </sect4>
+	    <sect3 id="ds_mod_prb"><title>Problems</title>
+		<sect4 id="ds_mod_prb_int"><title>How to create node in module if the node is requested from 
+			modiles internal node.</title>
+		    <simpara>This relates to use-case <xref linkend="ds_mod_uc_crn"/>. This approach assumes that upper
+			owner - module agent is involved in handling request. But it's not true in case of request from 
+			modules internal comp.</simpara>
+		    <simpara>This problem is because this use-case contradicts to concept: "only module provide creating 
+			on demand". This request from internal comp actually is not to module but to some regular 
+			owner within module. This means that only deps to modules can be resolved automatically, 
+			so it's not possible to create some part of module that has internal dep.</simpara>
+		    <simpara>If we define imported module, or just "import" as the agent which chromo is sourced with 
+			given external module (chromo) then we can say that any component of import is also import. 
+			Agent can check if it's import via examining of owners, if some its owner is import. 
+			We can define specific iface for import module agent.</simpara>
+		    <simpara>Then the mechanism of importin required node can be implemented as:</simpara>
+		    <itemizedlist>
+			<listitem>Base agent requests some dep (using base agent api GetNode) - GetNode tries 
+			    to get requested dep</listitem>
+			<listitem>If GetNode cannot find dep requested, then GetNode checks if the dep is contained in 
+			    module via getting nearest owner and requesting its owner - module.</listitem>
+			<listitem>If there is module for the dep, then GetNode requests the module for importing dep</listitem>
+			<listitem>Module imports dep and return it to GetNode, that in turn returns it to requestor</listitem>
+		    </itemizedlist>
+		</sect4>
+		<sect4 id="ds_mod_prb_alldeps"><title>What is import module agent? Holder of one chromo or all external chromos?</title>
+		    <simpara>One approach is to create import module agent for each external chromo. 
+			This is fearly resonable - the agent can be assigned to particular external chromo and manage it.
+			But how to import some models dep in case when the module itself is not created?</simpara>
+		    <simpara>Alternative way is to create one agent for all imports on model init phase 
+			(e.g "/Modules").</simpara>
+		    <simpara>The third way is to have two agent: one for imported module, and second for modules containing. In
+			this case modules container will be responsible to create the module for dep requested.
+			Container itself can support modules iface but redirect all requests via the 
+			iface to its components - modules.</simpara>
+		</sect4>
+		<sect4><title>What is difference between module and model?</title>
+		    <simpara>As discussed the model can include imports, to have specific node for modules container.
+			But what about modules? Do they implement imports in the same manner? </simpara>
+		    <simpara>One approach is to not use the same way for modules. This is because the module is not
+			independent model but some framework that is to be embedded into the model. So module has to 
+			resolve its own deps to another modules in the scope of modules of model embedding the module.</simpara>
+		    <simpara>Even this approach seems resonable the question is still remaining: 
+			"Why they are different?". Potentially it is completelly allowed to create modules container 
+			within module and import module to it. The only result will be that there will be another instance of
+			import within models import.</simpara>
+		</sect4>
+		<sect4><title>How to handle missing requested dep?</title>
+		    <simpara>The mechanism described in <xref linkend="ds_mod_prb_int"/> for handling of 
+			missing requested node event is not generic enough because base agent knows of moudule iface.
+			It make sense to implement generic way for handling such case. For instance new method in
+			comp observer iface can be introduced, like OnCompNotResolved. This method implementation is
+			to help resolving component and returns the comp resolved. Agent can run this handler
+			in case if it cannot resolve comp for instance in GetNode().</simpara>
+		    <simpara>This is abmiguous actually because not only owning hier can be used in getting node but
+			inher hier also. There is response argument that only owning hier can be responsible for 
+			handling such exceptions. How about case when model requests comp from module via pure
+			inher based uri? In this case the notifications should up to root that has to redirect it 
+			to modules.</simpara>
+		</sect4>
 		<sect4 id="ds_mod_prb_uri_chromo"><title>In some cases models uri cannot be resolved on models chromo</title>
 		    <simpara>One of the cases is node mut with destination specified. This causes difference between chomo hier and
 			model hier.</simpara>
@@ -1324,7 +1340,7 @@
 		    independent on import owning node. Is it possible to evaluate inher hier in 
 		    modules external chromo? Seems no. So this needs to be restricted: the only those 
 		    uris to be enabled that ref via module node.</simpara>
-            </sect3>
+	    </sect3>
 	    <sect3><title>How to resolve deps from module: specific root in uri ?</title>
 		<simpara>When constructing module via studio the absolute owning hier uri is used, with 
 		    specific root name, i.e. "Root". This uri can be incorrect when we use the module in some
@@ -1350,9 +1366,9 @@
 		    The term "selective mutation with merging" will be used for the mutation desctibed.</simpara>
 	    </sect3>
 	</sect2>
-    <sect2 id="ds_mod_imp"><title>Introducing mutation "import"</title>
-	<sect3><title>Introduction</title>
-	    <simpara>Use-case <xref linkend="ds_mod_uc_explimp"/> required mechanism to import some component from modules chromo.
+	<sect2 id="ds_mod_imp"><title>Introducing mutation "import"</title>
+	    <sect3><title>Introduction</title>
+		<simpara>Use-case <xref linkend="ds_mod_uc_explimp"/> required mechanism to import some component from modules chromo.
 		    It should also create component along with hier as stated by chromo. Currently there is no such mechanism - the
 		    only mutation "move" is used to import modules component, but it doesn't support creating hier. One solution here is to
 		    introduce new mutation "import" similar to move but supporting creating hier. It makes sense also to disable "move"
@@ -1384,7 +1400,7 @@
 	    </sect3>
 	    <sect3><title>Explicit import in agent run-time </title>
 		<simpara>Ref <xref linkend="ds_mod_uc_rm"/> for use-case and discussion. As discussed, one approach to keep explicit imports
-		mutation aligned with models generic principles is to have import representation in agent model.</simpara>
+		    mutation aligned with models generic principles is to have import representation in agent model.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_mod_uc"><title>Use-cases</title>
@@ -1412,20 +1428,20 @@
 	    <sect3 id="ds_mod_uc_crn"><title>Creating requested node from modules chromo if the node still not exists</title>
 		<simpara>USER creates node in model with parent from modules - owning agent requests parent from modules 
 		    - module agent gets involved in resolving request, agent checks if requested comp exists and 
-                    creates it if not.</simpara>
-                <simpara>Ref <xref linkend="ds_mod_prb_int"/> for discussion of problems with this use-case.</simpara>
-            </sect3>
-            <sect3><title>Importing modules comp that deps on other comp within this module.</title>
-                <sect4><title>Discussion</title>
-                    <simpara>Is it really required to import just part of the module but not the whole module? 
-                        Keeping module monolitic would allow simplify importing. The response argument here
-                        is that it causes overhead for big modules. To avoid this we can consider implements
-                        parts of big module also as module.</simpara>
-                </sect4>
-            </sect3>
-            <sect3 id="ds_mod_uc_rec"><title>Importing module, thus importing all modules that are deps for initial module </title>
-                <simpara>This is recursive importing all the modules required for given module.</simpara>
-            </sect3>
+		    creates it if not.</simpara>
+		<simpara>Ref <xref linkend="ds_mod_prb_int"/> for discussion of problems with this use-case.</simpara>
+	    </sect3>
+	    <sect3><title>Importing modules comp that deps on other comp within this module.</title>
+		<sect4><title>Discussion</title>
+		    <simpara>Is it really required to import just part of the module but not the whole module? 
+			Keeping module monolitic would allow simplify importing. The response argument here
+			is that it causes overhead for big modules. To avoid this we can consider implements
+			parts of big module also as module.</simpara>
+		</sect4>
+	    </sect3>
+	    <sect3 id="ds_mod_uc_rec"><title>Importing module, thus importing all modules that are deps for initial module </title>
+		<simpara>This is recursive importing all the modules required for given module.</simpara>
+	    </sect3>
 	    <sect3 id="ds_mod_uc_rm"><title>Removing import</title>
 		<simpara>Precondition: There is explicit import mutation within some AGENT.</simpara>
 		<simpara>Normal: USER decides that the import specified is not required anymore, so USER requested mutation of AGENT
@@ -1442,9 +1458,9 @@
 	    <sect3><title>First implemetation: dynamic resolution plus explicit import to import agent. May-2015</title>
 		<simpara>Dynamic resolution is used as the main mechanism of resolving ref to modules. Explicit import to dedicated agent
 		    is used for initial creating modules model. Potentially even this explicit import can be avoided by generating 
-		correct uri to module within import agent from modules chromo uri.</simpara>
-	    <simpara>Currently dynamic resolution from model is disabled. Only deps from import agent itself are resolved. So combined
-	    approach is implemented.</simpara>
+		    correct uri to module within import agent from modules chromo uri.</simpara>
+		<simpara>Currently dynamic resolution from model is disabled. Only deps from import agent itself are resolved. So combined
+		    approach is implemented.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_mod_uc_sav"><title>Saving model as module</title>

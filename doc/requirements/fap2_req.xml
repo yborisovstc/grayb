@@ -1700,4 +1700,26 @@
 
     </sect1>
 
+    <sect1 id="ps"><title>Proposals</title>
+
+	<sect2 id="ps_001"><title>PS_001 Chromosome branching</title>
+	    <sect3><title>Description</title>
+		<simpara>It should be possible to fork new branch from some given node of chromosome. The branches should be distinguished via identifiers.
+		    This would allow not just to rollback last mutations but also to have different variants of chromosome.</simpara>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+	    </sect3>
+	</sect2>
+
+	<sect2><title>PS_002 Mutation comment</title>
+	    <sect3><title>Description</title>
+		<simpara>There should be mutation that just insert comment regarding mutations group done before. This would allow
+		to simplify discovering of mutations chain.</simpara>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+	    </sect3>
+	</sect2>
+
+    </sect1>
+
 </article>
