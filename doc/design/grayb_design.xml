@@ -431,7 +431,17 @@
 		<simpara>There is alternative approach, ref <xref linkend="ds_mut_cutncopy"/></simpara>
 	    </sect3>
 	</sect2>
-	<sect2><title>Moving of node</title>
+	<sect2 id="ds_mut_rm"><title>Removing of node</title>
+	    <sect3 id="ds_mut_rm_appr"><title>Real deletions vs marking as removed</title>
+		<simpara>There are two approaches considered of how to implement removing mutation:</simpara>
+		<itemizedlist>
+		    <listitem>#1 - to really remove node from model</listitem>
+		    <listitem>#2 - to mark node in model as removed but keep it in model</listitem>
+		</itemizedlist>
+		<simpara>Removing node allows save resources, but there is serious problem with that approach. The matter is
+		    that models node keeps register of dependencies. These registers are required for instanse for squeezing chromo,
+		    ref <xref linkend="ds_mut_sqeezing"/></simpara>
+	    </sect3>
 	</sect2>
 	<sect2 id="ds_transp"><title>Nodes (mutations) transposition (reordering)</title>
 	    <sect3><title>Intro</title>
@@ -497,7 +507,7 @@
 		    <itemizedlist>
 			<listitem>Changing ref: dependencies on the local owner component with the bigger rank.
 			    This problem can be fixed by shifting mutated node root mutation over to dependency mutation. This will
-			    not affect the model because this shifting is local, ref also <xref lindkend="ds_indp_mutord"/></listitem>
+			    not affect the model because this shifting is local, ref also <xref linkend="ds_indp_mutord"/></listitem>
 			<listitem>Renaming subnode that is referenced. No solution here, required change of ref.</listitem>
 		    </itemizedlist>
 		</simpara>
@@ -546,7 +556,7 @@
 		    ref in Edges connpoint. So if some edge was created with low rank and then it became required to make connection
 		    to node with greated rank then it result in critical dependency. There were two approached considered: 
 		    <itemizedlist>
-			<listitem>to move edge locally in order to increase edges rank, ref <xref lindkend="ds_indp_mutord"/></listitem>
+			<listitem>to move edge locally in order to increase edges rank, ref <xref linkend="ds_indp_mutord"/></listitem>
 			<listitem>to introduce the ability to set pheno mode for particular agent.</listitem>
 		    </itemizedlist>
 		</simpara>
@@ -571,10 +581,12 @@
 	</sect2>
 	<sect2 id="ds_mut_sqeezing"><title>Squeezing of mutations</title>
 	    <sect3><title>Intro</title>
-		<simpara>Squeezing of mutation seems at the first glance obvious and simple. Indeed, if there are two adjacent renamings the same node then why we can
-		    remove the first one because its effect is completelly eliminated by the mutation following. So generalizing this particular case to all the mutations we
-		    can go to the simple idea that all mutations can be checked for being excessive and removed or maybe merged. But this simple idea became not realistic on
-		    detailed analysis. </simpara>
+		<simpara>Squeezing of mutation seems at the first glance obvious and simple. 
+		    Indeed, if there are two adjacent renamings the same node then why we can
+		    remove the first one because its effect is completelly eliminated by the mutation following.
+		    So generalizing this particular case to all the mutations we
+		    can go to the simple idea that all mutations can be checked for being excessive and removed or maybe merged.
+		    But this simple idea became not realistic on detailed analysis. </simpara>
 	    </sect3>
 	    <sect3><title>Approaches: reverse engineering</title>
 		<simpara>One of the approach for squeezing the mutaions is: as the result of all mutations is the created system, 

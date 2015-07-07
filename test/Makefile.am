@@ -13,7 +13,8 @@ ut_grayb_lib_SOURCES = \
 		       ut_icache.cpp \
 		       ut_des.cpp
 
-ut_grayb_lib_LDFLAGS=-L../src/.libs/ -lgrayb  -lcppunit -lrt
+#ut_grayb_lib_LDFLAGS=-L../src/.libs/ -lgrayb  -lcppunit -lrt
+ut_grayb_lib_LDFLAGS=-L../src/.libs/ -lgrayb  -lcppunit
 ut_grayb_lib_CXXFLAGS=-I@srcdir@/../src
 
 check: test_grayb_lib

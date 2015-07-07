@@ -6,6 +6,8 @@ configure
 autom4te.cache
 build*
 Makefile.in
+src/Makefile
+test/Makefile
 aclocal.m4
 missing
 install-sh
@@ -13,7 +15,6 @@ install-sh
 *.changes
 *.dsc
 *.tar.gz
-Makefile
 *.ex
 .deps
 .libs
