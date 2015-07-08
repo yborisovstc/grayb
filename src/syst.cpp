@@ -960,7 +960,6 @@ void *Syst::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
 
 void Syst::OnCompDeleting(Elem& aComp)
 {
-    /*
     Elem* eedge = GetCompOwning("Edge", &aComp);
     if (eedge != NULL) {
 	// Reconnect the edge
@@ -968,7 +967,6 @@ void Syst::OnCompDeleting(Elem& aComp)
 	__ASSERT(edge != NULL);
 	edge->Disconnect();
     }
-    */
     Vert::OnCompDeleting(aComp);
 }
 

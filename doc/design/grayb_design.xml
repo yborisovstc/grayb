@@ -442,6 +442,13 @@
 		    that models node keeps register of dependencies. These registers are required for instanse for squeezing chromo,
 		    ref <xref linkend="ds_mut_sqeezing"/></simpara>
 	    </sect3>
+	    <sect3 id="ds_mut_rm_deps"><title>Refusing removing if deps presents</title>
+		<simpara>Node removing mutation has to be refused if there are critical dependencies on this node. Missing the node
+		    in this case will cause model creation errors. The reason of this
+		    policy is that event if the node is not really removed from the model (i.e approach#2 from 
+		    <xref linkend="ds_mut_rm_appr"/> is used) the further chromo squeezing will lead to the node completely removing
+		from the model.</simpara>
+	    </sect3>
 	</sect2>
 	<sect2 id="ds_transp"><title>Nodes (mutations) transposition (reordering)</title>
 	    <sect3><title>Intro</title>
@@ -582,7 +589,7 @@
 	<sect2 id="ds_mut_sqeezing"><title>Squeezing of mutations</title>
 	    <sect3><title>Intro</title>
 		<simpara>Squeezing of mutation seems at the first glance obvious and simple. 
-		    Indeed, if there are two adjacent renamings the same node then why we can
+		    Indeed, if there are two adjacent renamings the same node then we can
 		    remove the first one because its effect is completelly eliminated by the mutation following.
 		    So generalizing this particular case to all the mutations we
 		    can go to the simple idea that all mutations can be checked for being excessive and removed or maybe merged.
@@ -606,7 +613,7 @@
 		    aka "phenotype" are ambuguous, so we cannot say from what they 
 		    were applied. So no possibility to recreate them from the model.</simpara>
 	    </sect3>
-	    <sect3><title>Approaches: Direct merging.</title>
+	    <sect3 id="ds_mut_sqeezing_mrg"><title>Approaches: Direct merging.</title>
 		<simpara>Let's assume that we have all relations between the model and mutaions in chromo. There are relations of two directions: 
 		    rt node to mutations and mutations to node. This allows getting relations quickly from both parts.
 		    The relations includes the reference to muation, and the type, ref <xref linkend="ds_mut_unappr_intro"/> </simpara>
@@ -614,9 +621,27 @@
 		    For clarity aim let's consider the particular mutation, -rn-:</simpara>
 		<orderedlist>
 		    <listitem>Start from the second mutation (remember the first is -node- itself)</listitem>
-		    <listitem>Check if the mutation can be squeezed. For -rn NODE_X- the checking passes be default because there must be mutation -node- with lower rank.</listitem>
-		    <listitem>Go thru all mutations  depending on NODE_X and which rank lies between initial -node- and given -rn-: correct the reference to NODE_X according to -rn- paramenter.</listitem>
+		    <listitem>Check if the mutation can be squeezed. For -rn NODE_X NEW_NAME- the checking passes by default because 
+			there must be mutation -node- with lower rank.</listitem>
+		    <listitem>Rename NODE_X within initial mutation -node NODE_X_name"</listitem>
+		    <listitem>Keep chromo consistent - Go thru all mutations  depending on NODE_X and which rank lies between initial 
+			-node- and given -rn-: correct the reference to NODE_X according to -rn- paramenter.</listitem>
 		</orderedlist>
+	    </sect3>
+	    <sect3><title>How to save chromo "history" on squeezing ?</title>
+		<simpara>All approaches discussed above assume that excessive mutations are to be removed from chromo. This means that
+		    mutations rollback gets not correct because the part of chromos "history" lost.</simpara>
+		<simpara>To keep the history we could use marking excessive mutations as "deleted" instead of them real deleting. This solution looks
+		    simple and obvious but it will not work. This is because any of squeezing approaces assumes that chromo is changed in result of 
+		    squeezing procedure. And these changes are not "regular", i.e. they are not introduced via adding of mutations. 
+		    Instead mutations themselves are being changed, ref to example in <xref linkend="ds_mut_sqeezing_mrg"/>. 
+		    This makes rollback inapplicable for squeezed chromos.  </simpara>
+		<simpara>Is it real limitation for keeping history? Probably not. We can try to avoid changing of mutations themselves. To
+		    be more exact, we can use those changes that can be reverted. For instanse we can use mutation attribure showing that
+		    the mutations is inactive. This attribute can be simply removed if we want to revert squeezing. What about -rn- mutation?
+		    How can we avoid mutations change in this case? This -rename- mutation is quite specific. This is separate subject of 
+		    consideration of it because this mutation changes reference to the renamed node. Some alternative approaches were already 
+		    discussed, e.g using aliases.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_drv_int"><title>How to derive from component of heirs</title>

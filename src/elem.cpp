@@ -164,11 +164,12 @@ Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd): iE
 	else {
 	    if (iId.first.empty() || iExtsrel !=  GUri::KNodeSep || iExt.empty() || iExt == GUri::KTypeAny) {
 		iChildsIter = iChildsRange.first;
+		for (; iChildsIter != iChildsRange.second && iChildsIter->second->IsRemoved(); iChildsIter++); 
 	    }
 	    else {
 		for (iChildsIter = iChildsRange.first; iChildsIter != iChildsRange.second; iChildsIter++) {
 		    Elem* comp = iChildsIter->second;
-		    if (comp->GetMan()->Name() == iExt) {
+		    if (comp->GetMan()->Name() == iExt && !comp->IsRemoved()) {
 			break;
 		    }
 		}
@@ -201,10 +202,12 @@ void Elem::IterImplBase::PostIncr()
 {
     if (SRel() == GUri::KNodeSep) {
 	iCIter++;
+	// Omit removed comps from the look
+	for (; iCIter != iCIterRange.second && iCIter->second->IsRemoved(); iCIter++); 
 	if (!iId.first.empty() && iExtsrel == GUri::KParentSep && !iExt.empty() && iExt != GUri::KTypeAny) {
 	    for (; iCIter != iCIterRange.second; iCIter++) {
 		Elem* comp = iCIter->second;
-		if (comp->GetParent()->Name() == iExt) {
+		if (comp->GetParent()->Name() == iExt && !comp->IsRemoved()) {
 		    break;
 		}
 	    }
@@ -212,10 +215,12 @@ void Elem::IterImplBase::PostIncr()
     }
     else {
 	iChildsIter++;
+	// Omit removed children from the look
+	for (; iChildsIter != iChildsRange.second && iChildsIter->second->IsRemoved(); iChildsIter++); 
 	if (!iId.first.empty() && iExtsrel == GUri::KNodeSep && !iExt.empty() && iExt != GUri::KTypeAny) {
 	    for (;iChildsIter != iChildsRange.second; iChildsIter++) {
 		Elem* comp = iChildsIter->second;
-		if (comp->GetMan()->Name() == iExt) {
+		if (comp->GetMan()->Name() == iExt && !comp->IsRemoved()) {
 		    break;
 		}
 	    }
@@ -285,7 +290,7 @@ void Elem::Delay(long us)
 // Element
 
 Elem::Elem(const string &aName, Elem* aMan, MEnv* aEnv): Base(aName), iMan(aMan), iEnv(aEnv),
-    iObserver(NULL), iParent(NULL)
+    iObserver(NULL), iParent(NULL), isRemoved(EFalse)
 {
     /*
     stringstream ss;
@@ -2386,23 +2391,30 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
 		    delete node;
 		}
 		*/
-		/* Solution 2
-		// Just mark node as removed but not remove actually
-		node->SetRemoved();
-		if (!aRunTime) {
-		    // Adding dependency to object of change
-		    ChromoNode chn = iChromo->Root().AddChild(aSpec);
-		    AddCMDep(chn, ENa_MutNode, node);
-		    mutadded = ETrue;
-		}
-		*/
-		// Solution3: disable removing if here are heirs, needs to unparent them first
+		// Solution 2
+		// Just mark node as removed but not remove actually, ref ds_mut_rm_appr
+		// Refuse removing if here are heirs, needs to unparent them first, ref ds_mut_rm_deps
 		if (!node->HasInherDeps(node)) {
-		    delete node;
+		    node->SetRemoved();
+		    if (!aRunTime) {
+			// Adding dependency to object of change
+			ChromoNode chn = iChromo->Root().AddChild(aSpec);
+			AddCMDep(chn, ENa_MutNode, node);
+			mutadded = ETrue;
+		    }
 		} else {
 		    Logger()->Write(MLogRec::EInfo, this, "Removing node [%s], refused, there are heirs of the node, unparent first", snode.c_str());
 		    node->HasInherDeps(node);
 		}
+		// Solution3: disable removing if here are heirs, needs to unparent them first
+		/*
+		   if (!node->HasInherDeps(node)) {
+		   delete node;
+		   } else {
+		   Logger()->Write(MLogRec::EInfo, this, "Removing node [%s], refused, there are heirs of the node, unparent first", snode.c_str());
+		   node->HasInherDeps(node);
+		   }
+		*/
 		if (IsLogeventCreOn()) {
 		    Logger()->Write(MLogRec::EInfo, this, "Removed elem [%s]", snode.c_str());
 		}
@@ -2489,7 +2501,7 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 			    // If node has children then just mark it as removed but not remove actually
 			    if (snode->HasInherDeps(snode)) {
 				//TODO [YB] Consider to handle correctly
-				//!!snode->SetRemoved();
+				snode->SetRemoved();
 			    }
 			    else {
 				delete snode;
@@ -2965,6 +2977,32 @@ void Elem::OnParentDeleting(Elem* aParent)
 
 ChromoNode Elem::GetChNode(const GUri& aUri) const
 {
+}
+
+TBool Elem::IsRemoved() const
+{
+    return isRemoved;
+}
+
+void Elem::SetRemoved()
+{
+    // Remove node from native hier but keep it in inher hier
+    // Notify the man of deleting
+    if (iMan != NULL) {
+	iMan->OnCompDeleting(*this);
+    }
+    if (iObserver != NULL) {
+	iObserver->OnCompDeleting(*this);
+    }
+    // Mark the comps as removed, using iterator refresh because the map is updated on each comp deletion
+    vector<Elem*>::reverse_iterator it = iComps.rbegin();
+    while (it != iComps.rend()) {
+	Elem* comp = *it;
+	comp->SetRemoved();
+	it = iComps.rbegin();
+    }
+    // Mark node as removed from hative hier
+    isRemoved = ETrue;
 }
 
 TBool Elem::HasChilds() const

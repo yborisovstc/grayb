@@ -146,6 +146,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	Elem(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	Elem* GetNode(const GUri& aUri);
 	virtual ~Elem();
+	TBool IsRemoved() const;
+	virtual void SetRemoved();
 	void SetEType(const string& aPName, const string& aPEType = string());
 	void SetParent(const string& aParent);
 	void SetMan(Elem* aMan);
@@ -378,6 +380,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TMDeps iMDeps;
 	// Mutation to model node relation, required for chromo squeezing, ref ds_mut_sqeezing
 	TCMRelReg iCMRelReg;
+	// Sign of that node is removed
+	TBool isRemoved;
 	static TBool EN_PERF_TRACE;
 	static TBool EN_PERF_METR;
 	static TBool EN_MUT_LIM;
