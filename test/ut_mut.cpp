@@ -30,7 +30,7 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_MutRenameParent);
     CPPUNIT_TEST(test_Compact1);
     CPPUNIT_TEST(test_Compact2);
-//    CPPUNIT_TEST(test_Compact3);
+    CPPUNIT_TEST(test_Compact3);
     CPPUNIT_TEST(test_CompactRef1);
     CPPUNIT_TEST(test_CompactCont);
     CPPUNIT_TEST(test_TransfModif1);

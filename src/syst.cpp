@@ -963,9 +963,12 @@ void Syst::OnCompDeleting(Elem& aComp, TBool aSoft)
     Elem* eedge = GetCompOwning("Edge", &aComp);
     if (eedge != NULL) {
 	// Reconnect the edge
-	Edge* edge = eedge->GetObj(edge);	
-	__ASSERT(edge != NULL);
-	edge->Disconnect();
+	Edge* edge = eedge->GetObj(edge);
+	// TODO [YB] For comp hard removing the edge destructor called first then the notif issued
+	// So iface reolver doesn't work. To consider some solution.
+	if (edge != NULL) {
+	    edge->Disconnect();
+	}
     }
     Vert::OnCompDeleting(aComp, aSoft);
 }

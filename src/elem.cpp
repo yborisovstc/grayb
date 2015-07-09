@@ -1734,7 +1734,7 @@ TBool Elem::RegisterComp(Elem* aComp)
 {
     TBool res = ETrue;
     Elem* node = GetComp(aComp->EType(), aComp->Name());
-    if (node == NULL) {
+    if (node == NULL || node->IsRemoved()) {
 	iMComps.insert(TNMVal(TNMKey(aComp->Name()), aComp));
     } else {
 	Logger()->Write(MLogRec::EErr, this, "Registering component [%s] - already exists", aComp->Name().c_str());
@@ -1943,7 +1943,7 @@ void Elem::OnCompDeleting(Elem& aComp, TBool aSoft)
 	    for (vector<Elem*>::iterator oit = iComps.begin(); oit != iComps.end(); oit++) {
 		if (*oit == &aComp) {
 		    iComps.erase(oit); break;
-		}	
+		}
 	    }
 	}
     }
@@ -3143,7 +3143,11 @@ void Elem::CompactChromo()
 		TMDeps::iterator it = node->GetMDeps().begin();
 		TMDep dep = *it;
 		ChromoNode cmut = iChromo->CreateNode(dep.first.second);
+#if 0
 		cmut.Rm();
+#else
+		cmut.Deactivate();
+#endif
 		/*
 		// Get mutations that depends on this node, and have lower rank
 		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
