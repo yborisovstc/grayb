@@ -32,7 +32,6 @@ enum TNodeAttr
     ENa_MutNode = 10,
     ENa_MutAttr = 11,
     ENa_MutVal = 12,
-    ENa_Pos = 14,	// Target position in reordering
 };
 
 // Node identification can be done by specifying it's "position" within given type of coordinates.

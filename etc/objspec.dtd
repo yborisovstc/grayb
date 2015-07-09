@@ -17,9 +17,6 @@
 <!-- Element of base hier -->
 <!ELEMENT node (node*, rm*, change*, cont*, move*, import*)* >
 
-<!-- Mutation - Set order of node -->
-<!ELEMENT order EMPTY >
-
 <!-- Inherited Object  attributes:
   node - mutated node - DES URI
      id - instance name,
@@ -81,16 +78,6 @@
 <!ATTLIST import
    id CDATA #REQUIRED
    node CDATA #IMPLIED
-    ord CDATA #IMPLIED
->
-
-<!-- Ordering attributes:
-     node - node to reorder
-     pos - position to set node before
-     -->
-<!ATTLIST order
-   node CDATA #REQUIRED
-   pos CDATA #IMPLIED
     ord CDATA #IMPLIED
 >
 
