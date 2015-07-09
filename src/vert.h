@@ -28,7 +28,7 @@ class Vert: public Elem, public MVert
 	virtual set<MVert*>& Pairs();
 	virtual Base* EBase();
 	// From Elem
-	virtual void OnCompDeleting(Elem& aComp);
+	virtual void OnCompDeleting(Elem& aComp, TBool aSoft = ETrue);
 	virtual void OnCompAdding(Elem& aComp);
 	virtual TBool OnCompChanged(Elem& aComp);
 	// Iface cache

@@ -440,7 +440,15 @@
 		</itemizedlist>
 		<simpara>Removing node allows save resources, but there is serious problem with that approach. The matter is
 		    that models node keeps register of dependencies. These registers are required for instanse for squeezing chromo,
-		    ref <xref linkend="ds_mut_sqeezing"/></simpara>
+		    ref <xref linkend="ds_mut_sqeezing"/>. So approach#2 is to be applied. </simpara>
+	    </sect3>
+	    <sect3 id="ds_mut_rm_appr2"><title>Approach#2 details (marking node as deleted, no real removal)</title>
+		<itemizedlist>
+		    <listitem>Owner has to keep removed component in owners register. We can distinguish 
+			bottom-up notification from component in case of mutation of removing (soft removing acc to approach#2),
+			and real removing. This means that in this notification handler the owner should 
+			behave differently: don't de-register component if soft removal, and de-register if real removal.</listitem>
+		</itemizedlist>
 	    </sect3>
 	    <sect3 id="ds_mut_rm_deps"><title>Refusing removing if deps presents</title>
 		<simpara>Node removing mutation has to be refused if there are critical dependencies on this node. Missing the node

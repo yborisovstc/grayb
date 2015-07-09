@@ -226,9 +226,9 @@ void Vert::RemoveFromMap(MEdge* aEdge, const TNMKey& aKey)
 
 }
 
-void Vert::OnCompDeleting(Elem& aComp)
+void Vert::OnCompDeleting(Elem& aComp, TBool aSoft)
 {
-    Elem::OnCompDeleting(aComp);
+    Elem::OnCompDeleting(aComp, aSoft);
 }
 
 void Vert::OnCompAdding(Elem& aComp)

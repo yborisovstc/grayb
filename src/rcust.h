@@ -27,7 +27,7 @@ class RCust: public Elem, public MRCust, public MACompsObserver
 	void MoveComp(Elem* aComp, TDir aDir = EVert, const Elem* aPrevComp);
 	void InsertComp(Elem* aComp, TDir aDir = EVert, const Elem* aPrevComp);
 	// From Elem
-	virtual void OnCompDeleting(Elem& aComp);
+	virtual void OnCompDeleting(Elem& aComp, TBool aSoft = ETrue);
 	virtual void OnCompAdding(Elem& aComp);
 	virtual void DoOnCompChanged(Elem& aComp);
 };

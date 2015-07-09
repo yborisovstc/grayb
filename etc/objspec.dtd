@@ -21,6 +21,7 @@
   node - mutated node - DES URI
      id - instance name,
      parent - parent name, if omitted then id specified the node to be added as is
+     na - inactive
      -->
 <!ATTLIST node 
     node CDATA #IMPLIED
@@ -28,6 +29,7 @@
     parent CDATA #REQUIRED
     ord CDATA #IMPLIED
     tord CDATA #IMPLIED
+    na CDATA #IMPLIED
 >
 
 <!-- Removing node attributes:
@@ -36,6 +38,7 @@
 <!ATTLIST rm 
     node CDATA #IMPLIED
     ord CDATA #IMPLIED
+    na CDATA #IMPLIED
 >
 
 <!-- Change  attributes:
@@ -48,6 +51,7 @@
    attr CDATA #REQUIRED
    val CDATA #REQUIRED
     ord CDATA #IMPLIED
+    na CDATA #IMPLIED
 >
 
 <!-- Change content attributes:
@@ -59,6 +63,7 @@
    val CDATA #IMPLIED
    ref CDATA #IMPLIED
     ord CDATA #IMPLIED
+    na CDATA #IMPLIED
 >
 
 <!-- Moving attributes:
@@ -69,6 +74,7 @@
    id CDATA #REQUIRED
    node CDATA #IMPLIED
     ord CDATA #IMPLIED
+    na CDATA #IMPLIED
 >
 
 <!-- Attributes of import:
@@ -79,5 +85,6 @@
    id CDATA #REQUIRED
    node CDATA #IMPLIED
     ord CDATA #IMPLIED
+    na CDATA #IMPLIED
 >
 

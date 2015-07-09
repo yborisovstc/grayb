@@ -54,10 +54,10 @@ void ImportsMgr::AddImportModulesInfo(const string& aPath)
 	    mModsPaths.insert(pair<string, string>(rname, filepath));
 	    delete spec;
 	}
+	closedir(dp);
     } else {
 	mHost.Logger()->Write(MLogRec::EErr, NULL, "Collecting modules, cannot open imports dir [%s]", dirpath.c_str());
     }
-    closedir(dp);
 }
 
 void ImportsMgr::GetModulesNames(vector<string>& aModules) const

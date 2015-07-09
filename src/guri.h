@@ -32,6 +32,7 @@ enum TNodeAttr
     ENa_MutNode = 10,
     ENa_MutAttr = 11,
     ENa_MutVal = 12,
+    ENa_Inactive = 13, // Sign of mutations being inactive, optimized out for instance
 };
 
 // Node identification can be done by specifying it's "position" within given type of coordinates.

@@ -958,7 +958,7 @@ void *Syst::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
     return res;
 }
 
-void Syst::OnCompDeleting(Elem& aComp)
+void Syst::OnCompDeleting(Elem& aComp, TBool aSoft)
 {
     Elem* eedge = GetCompOwning("Edge", &aComp);
     if (eedge != NULL) {
@@ -967,7 +967,7 @@ void Syst::OnCompDeleting(Elem& aComp)
 	__ASSERT(edge != NULL);
 	edge->Disconnect();
     }
-    Vert::OnCompDeleting(aComp);
+    Vert::OnCompDeleting(aComp, aSoft);
 }
 
 
