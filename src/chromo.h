@@ -161,8 +161,9 @@ class ChromoNode
 	// Be careful while removing node got from iterator. Iterator is not cleaned thus it returns wrong node on ++
 	void RmChild(const ChromoNode& aChild, TBool aDeattachOnly = EFalse) { iMdl.RmChild(iHandle, aChild.iHandle, aDeattachOnly); };
 	void Rm() { iMdl.Rm(iHandle); };
+	TBool IsActive() const { return !AttrExists(ENa_Inactive);};
 	void Deactivate() { SetAttr(ENa_Inactive, ""); };
-	void Activate() { RmAttr(ENa_Inactive); };
+	void Activate();
 	void SetAttr(TNodeAttr aType, const string& aVal) { iMdl.SetAttr(iHandle, aType, aVal.c_str()); };
 	void SetAttr(TNodeAttr aType, TInt aVal) { iMdl.SetAttr(iHandle, aType, aVal);};
 	ChromoNode::Iterator Parent();

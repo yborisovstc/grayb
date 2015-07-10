@@ -31,6 +31,7 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Compact1);
     CPPUNIT_TEST(test_Compact2);
     CPPUNIT_TEST(test_Compact3);
+    CPPUNIT_TEST(test_CompactRmDa);
     CPPUNIT_TEST(test_CompactRef1);
     CPPUNIT_TEST(test_CompactCont);
     CPPUNIT_TEST(test_TransfModif1);
@@ -57,6 +58,7 @@ private:
     void test_Compact1();
     void test_Compact2();
     void test_Compact3();
+    void test_CompactRmDa();
     void test_CompactRef1();
     void test_CompactCont();
     void test_TransfModif1();
@@ -778,18 +780,59 @@ void Ut_mut::test_Compact3()
     ChromoNode::Iterator it = root->Chromos().Root().Begin(); 
     it++; it++;
     ChromoNode mut = *it;
-    TBool is_mut_correct = mut.Type() == ENt_Node && mut.Attr(ENa_Id) == "Edge1";
-    CPPUNIT_ASSERT_MESSAGE("Mut of creation v3 is not squeezed", is_mut_correct);
+    TBool is_mut_correct = mut.Type() == ENt_Node && mut.Attr(ENa_Id) == "v3";
+    TBool is_mut_deact = !mut.IsActive();
+    CPPUNIT_ASSERT_MESSAGE("Mut of creation v3 is not squeezed", is_mut_correct && is_mut_deact);
     // Undo compact of chromo
-    root->CompactChromo();
-    // Save de-compacted chromo and recreate the model
+    root->UndoCompactChromo();
+    // Save de-compacted chromo
     iEnv->Root()->Chromos().Save("ut_compact3_res2.xml_");
     delete iEnv;
 
+    // Verifying if models chromo is de-compacted. Using the following approach:
+    // rollback the mutation of node -v3- removal and check if v3 is created
     iEnv = new Env("Env", "ut_compact3_res2.xml_", "ut_compact3_res2.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to re-create de-compacted system", iEnv != 0);
+    iEnv->ChMgr()->SetLim(1);
     iEnv->ConstructSystem();
+    iEnv->Root()->Chromos().Save("ut_compact3_res3.xml_");
+     // Check that v3 is created
+    root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root after compacting", root != 0);
+    Elem* v3r = root->GetNode("./(Vert:)v3");
+    CPPUNIT_ASSERT_MESSAGE("Chromo is not restored (V3 is not created)", v3r != NULL);
 
+    delete iEnv;
+}
+
+// Compactization of chromo: mut removing deattached node
+void Ut_mut::test_CompactRmDa()
+{
+    printf("\n === Test of compacting of chromo: removing deattached node\n");
+    iEnv = new Env("Env", "ut_compact_rmda.xml", "ut_compact_rmda.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Compact chromo
+    root->CompactChromo();
+    // Save compacted chromo and recreate the model
+    iEnv->Root()->Chromos().Save("ut_compact_rmda_res.xml_");
+    delete iEnv;
+
+    iEnv = new Env("Env", "ut_compact_rmda_res.xml_", "ut_compact_rmda_res.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to re-create compacted system", iEnv != 0);
+    iEnv->ConstructSystem();
+     // Check that -rm- mut is not optimized out
+    root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root after compacting", root != 0);
+    Elem* v3a1 = root->GetNode("./v3_a1");
+    CPPUNIT_ASSERT_MESSAGE("v3_a1 is not created", v3a1 != NULL);
+    ChromoNode::Iterator it = v3a1->Chromos().Root().Begin(); 
+    ChromoNode mut = *it;
+    TBool is_mut_correct = mut.Type() == ENt_Rm;
+    TBool is_mut_act = mut.IsActive();
+    CPPUNIT_ASSERT_MESSAGE("Mut of removing v3_c1 is optimized out", is_mut_correct && is_mut_act);
     delete iEnv;
 }
 
