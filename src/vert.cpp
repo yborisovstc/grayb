@@ -265,5 +265,10 @@ TBool Vert::OnCompChanged(Elem& aComp)
     return hres;
 }
 
+void Vert::SetRemoved()
+{
+    Disconnect();
+    Elem::SetRemoved();
+}
 
 
