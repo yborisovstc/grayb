@@ -2992,7 +2992,8 @@ void Elem::SetRemoved()
 	it = iComps.rbegin();
     }
 #else
-    for (vector<Elem*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
+    // Removing comps in reverce order
+    for (vector<Elem*>::reverse_iterator it = iComps.rbegin(); it != iComps.rend(); it++) {
 	Elem* comp = *it;
 	comp->SetRemoved();
     }
