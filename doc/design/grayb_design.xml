@@ -1526,6 +1526,39 @@
     <sect1 id="ds_prb"><title>Problems</title>
     </sect1>
 
+    <sect1 id="ds_chrcmdl"><title>Model of chromo changing</title>
+	<sect2><title>Introduction</title>
+	    <simpara>The current implementation includes two models: target model (aka run-time model) and chromo (model of target model creation).
+		Chromo is just treeish structure of target model mutation, so the mutation incrementally change the model step by step. This 
+		approach was called "incremental mutations". This approach keeps the "history" of target model creation, so it gets possible to
+		"rollback" to any intermediate point of tagret model creation.
+		The initial idea was that using incremental mutation approach can cover all the use-cases for model creation. But 
+		then some use-cases was discovered that are not covered be this. There are two main use-cases: </simpara>
+	    <itemizedlist>
+		<listitem>Transformation of chromo. It was realized that incremental update of chromo doesn't allow keeping optimal chromo structure.
+		    For instance in many cases it is required to do transformation of chromo, ref <xref linkend="ds_transf"/>. In this case it gets not
+		    possible to rollback to the given point of target model creation because the transformation breaks "history".</listitem>
+		<listitem>Multi-user creation of model. This is the case when more than one user is working on the target model. Traditional
+		    development uses "branching" paradigm for that. Initiall desing assumes that inheritance based model can cover this case: each user
+		    can create own child of models part and use this child as the "branch". But seems that the current approach doesn't cover this case 
+		    fully. One problem is that the history is for the whole model but not for users, so it is not possible for the user to rollback his own 
+		    changes. Another problem is that it's still possible to mutate model "before branching point", i.e. parent of the "branch" user created.</listitem>
+	    </itemizedlist>
+	    <simpara>So one more approach can be taken into consideration. It is to use one more model: model of chromo changes. This is 3rd layer
+	    model. The elements of this model are mutations of chromo.</simpara>
+	</sect2>
+	<sect2><title>Keeping 2 level model</title>
+	    <simpara>It is still possible to cover all use-cases using initial approach (just chromo as 2nd level model) with applying some
+		limitations. The arguments are:</simpara>
+	    <itemizedlist>
+		<listitem>Transformation of chromo. To keep current approach we need to avoid unrecoverable transformation at all. The only
+		    transformation are to be allowed that can be recovered. In many cases it is achievable. For instance the chromo optimization
+		    can be considered as marking chromo in order to help the models assembling machine. This marking can be simpl removed to recover
+	       the chromo. In other words the optimization is just a mode of the machine that is set on or of before assembling.</listitem>
+	    </itemizedlist>
+	</sect2>
+    </sect1>
+
     <sect1 id="ds_tohandle"><title>To handle</title>
 	<orderedlist>
 	    <listitem>Using mut order to ensure original sequence of muts, ref <xref linkend="ds_mut_dis_pheno"/> </listitem>
