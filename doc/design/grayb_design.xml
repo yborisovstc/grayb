@@ -440,7 +440,7 @@
 		</itemizedlist>
 		<simpara>Removing node allows save resources, but there is serious problem with that approach. The matter is
 		    that models node keeps register of dependencies. These registers are required for instanse for squeezing chromo,
-		    ref <xref linkend="ds_mut_sqeezing"/>. So approach#2 is to be applied. </simpara>
+		    ref <xref linkend="ds_mut_squeezing"/>. So approach#2 is to be applied. </simpara>
 	    </sect3>
 	    <sect3 id="ds_mut_rm_appr2"><title>Approach#2 details (marking node as deleted, no real removal)</title>
 		<itemizedlist>
@@ -594,23 +594,24 @@
 		    could set this attribute as enabled.</simpara>
 	    </sect3>
 	</sect2>
-	<sect2 id="ds_mut_sqeezing"><title>Squeezing of mutations</title>
+	<sect2 id="ds_mut_squeezing"><title>Squeezing of mutations (Optimization of chromo).</title>
 	    <sect3><title>Intro</title>
 		<simpara>Squeezing of mutation seems at the first glance obvious and simple. 
 		    Indeed, if there are two adjacent renamings the same node then we can
 		    remove the first one because its effect is completelly eliminated by the mutation following.
 		    So generalizing this particular case to all the mutations we
-		    can go to the simple idea that all mutations can be checked for being excessive and removed or maybe merged.
-		    But this simple idea became not realistic on detailed analysis. </simpara>
+		    can go to the simple idea that all mutations can be checked for being excessive and removed or maybe 
+		    merged.  But this simple idea became not realistic on detailed analysis. </simpara>
 	    </sect3>
 	    <sect3><title>Approaches: reverse engineering</title>
-		<simpara>One of the approach for squeezing the mutaions is: as the result of all mutations is the created system, 
-		    then all what we need is to get the system,
+		<simpara>One of the approach for squeezing the mutaions is: as the result of all mutations is the created 
+		    system, then all what we need is to get the system,
 		    and "regenerate" the mutatation from the system, i.e. to do kind of "reverse engineering". 
 		    The problem here is that is is not possible to do it by using some
-		    simple algorithm. First of all there is no possibility to "eliminate" any mutation applied to part of node 
-		    that comes from parent, so called detached chromo. 
-		    But these mutations can have references to node that then changed by further muatinons. Let's look at the example:</simpara>
+		    simple algorithm. First of all there is no possibility to "eliminate" any mutation applied to part of 
+		    node that comes from parent, so called detached chromo. 
+		    But these mutations can have references to node that then changed by further muatinons.
+		    Let's look at the example:</simpara>
 		<programlisting>
 		    add node="node_1" {
 		    node id=node_1_0 parent="some_node"
@@ -622,34 +623,80 @@
 		    were applied. So no possibility to recreate them from the model.</simpara>
 	    </sect3>
 	    <sect3 id="ds_mut_sqeezing_mrg"><title>Approaches: Direct merging.</title>
-		<simpara>Let's assume that we have all relations between the model and mutaions in chromo. There are relations of two directions: 
+		<simpara>Let's assume that we have all relations between the model and mutaions in chromo. 
+		    There are relations of two directions: 
 		    rt node to mutations and mutations to node. This allows getting relations quickly from both parts.
-		    The relations includes the reference to muation, and the type, ref <xref linkend="ds_mut_unappr_intro"/> </simpara>
+		    The relations includes the reference to muation, and the type, 
+		    ref <xref linkend="ds_mut_unappr_intro"/> </simpara>
 		<simpara>The algorithm of squeezing chromo of the given RT node would be like outlined below. 
 		    For clarity aim let's consider the particular mutation, -rn-:</simpara>
 		<orderedlist>
 		    <listitem>Start from the second mutation (remember the first is -node- itself)</listitem>
-		    <listitem>Check if the mutation can be squeezed. For -rn NODE_X NEW_NAME- the checking passes by default because 
-			there must be mutation -node- with lower rank.</listitem>
+		    <listitem>Check if the mutation can be squeezed. For -rn NODE_X NEW_NAME- the checking passes by 
+			default because there must be mutation -node- with lower rank.</listitem>
 		    <listitem>Rename NODE_X within initial mutation -node NODE_X_name"</listitem>
-		    <listitem>Keep chromo consistent - Go thru all mutations  depending on NODE_X and which rank lies between initial 
-			-node- and given -rn-: correct the reference to NODE_X according to -rn- paramenter.</listitem>
+		    <listitem>Keep chromo consistent - Go thru all mutations  depending on NODE_X and which rank lies 
+			between initial -node- and given -rn-: correct the reference to NODE_X according to -rn- 
+			paramenter.</listitem>
 		</orderedlist>
 	    </sect3>
-	    <sect3><title>How to save chromo "history" on squeezing ?</title>
-		<simpara>All approaches discussed above assume that excessive mutations are to be removed from chromo. This means that
-		    mutations rollback gets not correct because the part of chromos "history" lost.</simpara>
-		<simpara>To keep the history we could use marking excessive mutations as "deleted" instead of them real deleting. This solution looks
-		    simple and obvious but it will not work. This is because any of squeezing approaces assumes that chromo is changed in result of 
-		    squeezing procedure. And these changes are not "regular", i.e. they are not introduced via adding of mutations. 
+	    <sect3 id="ds_mut_unappr_intro_hist"><title>How to save chromo "history" on squeezing ?</title>
+		<simpara>All approaches discussed above assume that excessive mutations are to be removed from chromo. This
+		    means that mutations rollback gets not correct because the part of chromos "history" lost.</simpara>
+		<simpara>To keep the history we could use marking excessive mutations as "deleted" instead of them real 
+		    deleting. This solution looks simple and obvious but it will not work. This is because any of 
+		    squeezing approaces assumes that chromo is changed in result of squeezing procedure. And these changes
+		    are not "regular", i.e. they are not introduced via adding of mutations. 
 		    Instead mutations themselves are being changed, ref to example in <xref linkend="ds_mut_sqeezing_mrg"/>. 
 		    This makes rollback inapplicable for squeezed chromos.  </simpara>
-		<simpara>Is it real limitation for keeping history? Probably not. We can try to avoid changing of mutations themselves. To
-		    be more exact, we can use those changes that can be reverted. For instanse we can use mutation attribure showing that
-		    the mutations is inactive. This attribute can be simply removed if we want to revert squeezing. What about -rn- mutation?
-		    How can we avoid mutations change in this case? This -rename- mutation is quite specific. This is separate subject of 
-		    consideration of it because this mutation changes reference to the renamed node. Some alternative approaches were already 
+		<simpara>Is it real limitation for keeping history? Probably not. We can try to avoid changing of mutations 
+		    themselves. To be more exact, we can use those changes that can be reverted. For instanse we can use 
+		    mutation attribure showing that the mutations is inactive. This attribute can be simply removed if we 
+		    want to revert squeezing. Let's call this approach "soft optimization".
+		    What about -rn- mutation?  How can we avoid mutations change in this case? 
+		    This -rename- mutation is quite specific. This is separate subject of consideration of it because this 
+		    mutation changes reference to the renamed node. Some alternative approaches were already 
 		    discussed, e.g using aliases.</simpara>
+		<simpara>Another approach to keep chromo history is to introduce one more level on model - model of 
+		    changing of chromo, <xref linkend="ds_chrcmdl"/>. This makes chromo itself just intermediate
+		    model being generated from upper layer model. "Chromo of chromo" or chromo2 can include all operations
+		    of changing chromo, not only elementary but also operations like "squeeze chromo" etc.</simpara>
+	    </sect3>
+	    <sect3 id="ds_mut_sqeezing_cont"><title>Soft optimization: -cont- mutaion</title>
+		<simpara>Let's verify the soft optimization approach via considering chromo optimization for
+		    -cont- mutation. The general method of optimization is marking as optimized those mutations that
+		    gets redundant after some futrher mutations introduced. Criteria of mutation getting redundant is
+		    in general that the given mutations is overriden by further mutations and there is no dependencies on
+		    the model from the given mutation (i.e. optimizing mutaion out doesn't affect the model).</simpara>
+		<simpara>So depencencies are the important part of optimization limitations. The picture below illustrates
+		    example of limitation:</simpara>
+		<figure id="fig_chromo_opt_cont">
+		    <imageobject> <imagedata fileref="pics/pic_chromo_opt_cont.png"/> </imageobject></figure>
+		<simpara>First mutation -cont- changes content of run-time node, then next mutation creates new node
+		    using this node as parent. Next mutations again changes content of the node. First -cont- mutation
+		    cannot be optimized out because of critical depencency on mutation -node-: if -cont- is optimized out
+		    then the child creaded via -node- will miss content change done in the first -cont-.</simpara>
+		<simpara>The problem here is that user cannot avoid this limitation even he knows that this dependency is
+		    not really critical, i.e. it is not possible to eliminate this dependency via additional mutations.
+		    In some cases thou there are ways to optimize. In the case above for instance it is possible 
+		    to eliminate dependency: user can remove node creaded via second (-node-) mutation and then
+		    optimize chromo. -node- mutations will be optimized off, so the dependency will be removed and 
+		    the first -cont- mutation can be then optimized off too. This requires at least two passages of 
+		    optimization.
+		</simpara>
+		<sect4><title>Case: removed reference</title>
+		    <programlisting>
+			cont N_1, _REF(N_2)
+			rm N_2
+			cont N_1, _new_value
+		    </programlisting>
+		</sect4>
+		<sect4><title>Taking optimized off muts into account when adding new mut</title>
+		    <simpara>Optimized off mutations are to be taken into account when adding new mutations.
+			The reason of that is that chromo machine can move nodes locally in case the deps are
+			not broken. Optimized off mutations are to be used in deps analsys. Otherwise deps 
+			broken can occurs after optimization undo.</simpara>
+		</sect4>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_drv_int"><title>How to derive from component of heirs</title>
@@ -1528,33 +1575,40 @@
 
     <sect1 id="ds_chrcmdl"><title>Model of chromo changing</title>
 	<sect2><title>Introduction</title>
-	    <simpara>The current implementation includes two models: target model (aka run-time model) and chromo (model of target model creation).
-		Chromo is just treeish structure of target model mutation, so the mutation incrementally change the model step by step. This 
-		approach was called "incremental mutations". This approach keeps the "history" of target model creation, so it gets possible to
+	    <simpara>The current implementation includes two models: target model (aka run-time model) and chromo 
+		(model of target model creation).  Chromo is just treeish structure of target model mutation,
+		so the mutation incrementally change the model step by step. This approach was called 
+		"incremental mutations". This approach keeps the "history" of target model creation, so it gets possible to
 		"rollback" to any intermediate point of tagret model creation.
-		The initial idea was that using incremental mutation approach can cover all the use-cases for model creation. But 
-		then some use-cases was discovered that are not covered be this. There are two main use-cases: </simpara>
+		The initial idea was that using incremental mutation approach can cover all the use-cases for 
+		model creation. But then some use-cases was discovered that are not covered be this.
+		There are two main use-cases: </simpara>
 	    <itemizedlist>
-		<listitem>Transformation of chromo. It was realized that incremental update of chromo doesn't allow keeping optimal chromo structure.
-		    For instance in many cases it is required to do transformation of chromo, ref <xref linkend="ds_transf"/>. In this case it gets not
-		    possible to rollback to the given point of target model creation because the transformation breaks "history".</listitem>
-		<listitem>Multi-user creation of model. This is the case when more than one user is working on the target model. Traditional
-		    development uses "branching" paradigm for that. Initiall desing assumes that inheritance based model can cover this case: each user
-		    can create own child of models part and use this child as the "branch". But seems that the current approach doesn't cover this case 
-		    fully. One problem is that the history is for the whole model but not for users, so it is not possible for the user to rollback his own 
-		    changes. Another problem is that it's still possible to mutate model "before branching point", i.e. parent of the "branch" user created.</listitem>
+		<listitem>Transformation of chromo. It was realized that incremental update of chromo doesn't 
+		    allow keeping optimal chromo structure. For instance in many cases it is required to do 
+		    transformation of chromo, ref <xref linkend="ds_transf"/>. In this case it gets not
+		    possible to rollback to the given point of target model creation because the transformation
+		    breaks "history".</listitem>
+		<listitem>Multi-user creation of model. This is the case when more than one user is working on the 
+		    target model. Traditional development uses "branching" paradigm for that. Initiall desing assumes 
+		    that inheritance based model can cover this case: each user can create own child of models part 
+		    and use this child as the "branch". But seems that the current approach doesn't cover this case 
+		    fully. One problem is that the history is for the whole model but not for users, so it is not 
+		    possible for the user to rollback his own changes. Another problem is that it's still possible 
+		    to mutate model "before branching point", i.e. parent of the "branch" user created.</listitem>
 	    </itemizedlist>
-	    <simpara>So one more approach can be taken into consideration. It is to use one more model: model of chromo changes. This is 3rd layer
-	    model. The elements of this model are mutations of chromo.</simpara>
+	    <simpara>So one more approach can be taken into consideration. It is to use one more model: model of chromo 
+		changes. This is 3rd layer model. The elements of this model are mutations of chromo.</simpara>
 	</sect2>
 	<sect2><title>Keeping 2 level model</title>
-	    <simpara>It is still possible to cover all use-cases using initial approach (just chromo as 2nd level model) with applying some
-		limitations. The arguments are:</simpara>
+	    <simpara>It is still possible to cover many use-cases using initial approach (just chromo as 2nd level model) 
+		with applying some limitations. The arguments are:</simpara>
 	    <itemizedlist>
-		<listitem>Transformation of chromo. To keep current approach we need to avoid unrecoverable transformation at all. The only
-		    transformation are to be allowed that can be recovered. In many cases it is achievable. For instance the chromo optimization
-		    can be considered as marking chromo in order to help the models assembling machine. This marking can be simpl removed to recover
-	       the chromo. In other words the optimization is just a mode of the machine that is set on or of before assembling.</listitem>
+		<listitem>Transformation of chromo. To keep current approach we need to avoid unrecoverable transformation 
+		    at all. The only transformation are to be allowed that can be recovered. In many cases it is achievable.
+		    For instance the chromo optimization can be considered as marking chromo in order to help the models 
+		    assembling machine. This marking can be simply removed to recover the chromo. In other words the 
+		    optimization is just a mode of the machine that is set on or of before assembling.</listitem>
 	    </itemizedlist>
 	</sect2>
     </sect1>

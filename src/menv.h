@@ -35,6 +35,8 @@ class MChromoMgr
 	virtual void SetEnableReposMuts(bool aEnable) = 0;
 	virtual bool EnableCheckSafety() const = 0;
 	virtual void SetEnableCheckSafety(bool aEnable) = 0;
+	virtual bool EnableOptimization() const = 0;
+	virtual void SetEnableOptimization(bool aEnable) = 0;
 };
 
 // Executive environment interface

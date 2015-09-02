@@ -1149,7 +1149,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
     {
 	ChromoNode rno = (*rit);
 	// Omit inactive mutations
-	if (rno.AttrExists(ENa_Inactive)) {
+	if (iEnv->ChMgr()->EnableOptimization() && rno.AttrExists(ENa_Inactive)) {
 	    if (!aRunTime && !aTrialMode) {
 		iChromo->Root().AddChild(rno);
 	    }
@@ -3081,62 +3081,22 @@ void Elem::CompactChromo()
 	    RmCMDep(gmut, ENa_MutNode);
 	    mut_removed = ETrue;
 	}
-	else if (false && muttype == ENt_Cont) {
+	else if (muttype == ENt_Cont) {
 	    // Get node this mutation relates to
 	    TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
 	    if (iCMRelReg.count(key) > 0) {
 		Elem* node = iCMRelReg.at(key);
-		TInt tobecorrected = 0, corrected = 0;
-		TBool isref = gmut.AttrExists(ENa_Ref);
-		if (isref) {
-		    Rank refrank;
-		    // Get dep on ref, rank of it
-		    key = TCMRelFrom(gmut.Handle(), ENa_Ref);
-		    if (iCMRelReg.count(key) > 0) {
-			Elem* ref = iCMRelReg.at(key);
-			ref->GetRank(refrank);
+		// Get -cont- mutations that depends on this node, and have lower rank
+		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
+		    TMDep dep = *it;
+		    ChromoNode mut = iChromo->CreateNode(dep.first.second);
+		    Rank rank;
+		    mut.GetRank(rank);
+		    if (rank >= grank) break;
+		    // Deactivate mutation
+		    if (mut.Type() == ENt_Cont && dep.second == ENa_MutNode) {
+			mut.Deactivate();
 		    }
-		    string new_val = gmut.Attr(ENa_Ref);
-		    // Get mutations that depends on this node, and have lower rank
-		    for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
-			TMDep dep = *it;
-			ChromoNode mut = iChromo->CreateNode(dep.first.second);
-			Rank rank;
-			mut.GetRank(rank);
-			if (rank >= grank) break;
-			// Correct mutation
-			if (mut.Type() == ENt_Cont && mut.AttrExists(ENa_Ref) && dep.second == ENa_MutNode) {
-			    tobecorrected++;
-			    if (rank > refrank) {
-				mut.SetAttr(ENa_Ref, new_val);
-				corrected++;
-			    }
-			}
-		    }
-		}
-		else {
-		    string new_val = gmut.Attr(ENa_MutVal);
-		    // Get mutations that depends on this node, and have lower rank
-		    for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
-			TMDep dep = *it;
-			ChromoNode mut = iChromo->CreateNode(dep.first.second);
-			Rank rank;
-			mut.GetRank(rank);
-			if (rank >= grank) break;
-			// Correct mutation
-			if (mut.Type() == ENt_Cont && mut.AttrExists(ENa_MutVal) && dep.second == ENa_MutNode) {
-			    tobecorrected++;
-			    mut.SetAttr(ENa_MutVal, new_val);
-			    corrected++;
-			}
-		    }
-		}
-		// Remove mutation
-		// Only if the correction has been done. This is because the mutation can be initial content change
-		if (corrected == tobecorrected && corrected > 0) {
-		    gmut.Rm();
-		    RmCMDep(gmut, ENa_MutNode);
-		    mut_removed = ETrue;
 		}
 	    }
 	    else {

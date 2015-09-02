@@ -9,10 +9,14 @@
 <node id="test" parent="Vert">
     <node id="E1" parent="Elem">
 	<node id="P1" parent="Prop"/>
+	<node id="P2" parent="Prop"/>
     </node>
     <node id="E2" parent="./E1">
 	<cont node="./P1" val="P1_orig_content"/> 
+	<cont node="./P2" val="P2_orig_content"/> 
+	<cont node="./P1" ref="/test/E2"/> 
 	<cont node="./P1" val="P1_new_content"/> 
+	<cont node="./P2" val="P2_new_content"/> 
     </node>
 </node>
 

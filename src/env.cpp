@@ -305,6 +305,14 @@ void ChromoMgr::SetEnableCheckSafety(bool aEnable)
     }
 }
 
+void ChromoMgr::SetEnableOptimization(bool aEnable)
+{
+    if (mEnableOptimization != aEnable) {
+	mEnableOptimization = aEnable;
+    }
+}
+
+
 Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileName): Base(aName), iRoot(NULL), iLogger(NULL),
     iSpecChromo(NULL), mEnPerfTrace(EFalse)
 {

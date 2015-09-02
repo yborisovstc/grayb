@@ -895,13 +895,18 @@ void Ut_mut::test_CompactCont()
     p1->GetCont(cp1);
     CPPUNIT_ASSERT_MESSAGE("Incorrect content of P1", cp1 == "P1_new_content");
     ChromoNode rnode = e2->Chromos().Root();
-    ChromoNode::Reverse_Iterator it = rnode.Rbegin(); 
+    ChromoNode::Iterator it = rnode.Begin(); 
     ChromoNode mut = *it;
-    TBool is_cont_ok = mut.Type() == ENt_Cont && mut.Attr(ENa_MutVal) == "P1_new_content";
-    CPPUNIT_ASSERT_MESSAGE("Incorrect cont mutation", is_cont_ok);
+    TBool is_mut_deact = mut.Type() == ENt_Cont && mut.AttrExists(ENa_Inactive);
+    CPPUNIT_ASSERT_MESSAGE("Init cont mutation is not optimized out", is_mut_deact);
     it++;
-    CPPUNIT_ASSERT_MESSAGE("Init cont mutation is not squeezed", it == rnode.Rend());
-
+    mut = *it;
+    is_mut_deact = mut.Type() == ENt_Cont && mut.AttrExists(ENa_Inactive);
+    CPPUNIT_ASSERT_MESSAGE("Cont mutation 2 is not optimized out", is_mut_deact);
+    it++;
+    mut = *it;
+    is_mut_deact = mut.Type() == ENt_Cont && mut.AttrExists(ENa_Inactive);
+    CPPUNIT_ASSERT_MESSAGE("Cont mutation 3 is not optimized out", is_mut_deact);
 
     delete iEnv;
 }

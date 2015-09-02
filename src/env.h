@@ -65,6 +65,8 @@ class ChromoMgr: public Base, public MChromoMgr
 	virtual void SetEnableReposMuts(bool aEnable);
 	virtual bool EnableCheckSafety() const { return mEnableCheckSafety;};
 	virtual void SetEnableCheckSafety(bool aEnable);
+	virtual bool EnableOptimization() const { return mEnableOptimization;};;
+	virtual void SetEnableOptimization(bool aEnable);
     protected:
 	TInt mLim;
 	Env& mHost;
@@ -72,6 +74,7 @@ class ChromoMgr: public Base, public MChromoMgr
 	TBool mEnableFixErrors;
 	TBool mEnableReposMuts;
 	TBool mEnableCheckSafety;
+	TBool mEnableOptimization;
 };
 
 class Env: public Base, public MEnv

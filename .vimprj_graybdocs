@@ -40,6 +40,10 @@ docs=/home/yborisov/projects/fap CD=. filter=".doc" {
    Makefile
    des_magents_trans.xml
   }
+  incr_syst_creation=doc_incr_syst_creation CD=. filter="*" {
+   Makefile
+   doc_incr_syst_creation.xml
+  }
  }
  fapws/doc=fapws/doc CD=. filter="*" {
   requirements=requirements CD=. filter="*.xml Makefile" {
@@ -83,7 +87,4 @@ docs=/home/yborisov/projects/fap CD=. filter=".doc" {
  }
 }
 fap-md=/home/yborisov/projects/fap/fap-md CD=. filter="*" {
- Makefile
- fap_md_yb.xml
- index.html
 }
