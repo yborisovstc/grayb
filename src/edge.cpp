@@ -528,3 +528,10 @@ TBool Edge::OnCompChanged(Elem& aComp)
     }
     return ETrue;
 }
+
+void Edge::SetRemoved()
+{
+    Disconnect();
+    Elem::SetRemoved();
+}
+

@@ -593,3 +593,17 @@ void ChromoNode::GetUri(GUri& aUri, const ChromoNode& aBase) const
 	aUri.PrependElem("", "");
     }
 }
+
+void ChromoNode::Activate()
+{ 
+    if (AttrExists(ENa_Inactive)) {
+	RmAttr(ENa_Inactive);
+    }
+    if (Type() == ENt_Node) {
+	Iterator it = Begin();
+	while (it != End()) {
+	    (*it).Activate();
+	    it++;
+	}
+    }
+};

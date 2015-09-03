@@ -140,6 +140,7 @@ class ChromoNode
 	const string Attr(TNodeAttr aAttr);
 	const string Attr(TNodeAttr aAttr) const;
 	void GetAttr(TNodeAttr aAttr, TInt& aVal) const { iMdl.GetAttr(iHandle, aAttr, aVal);};
+	void RmAttr(TNodeAttr aAttr) const { iMdl.RmAttr(iHandle, aAttr);};
 	const string Content() { return iMdl.GetContent(iHandle);};
 	void  SetContent(const string& aContent) { return iMdl.SetContent(iHandle, aContent);};
 	TInt AttrInt(TNodeAttr aAttr) const;
@@ -160,6 +161,9 @@ class ChromoNode
 	// Be careful while removing node got from iterator. Iterator is not cleaned thus it returns wrong node on ++
 	void RmChild(const ChromoNode& aChild, TBool aDeattachOnly = EFalse) { iMdl.RmChild(iHandle, aChild.iHandle, aDeattachOnly); };
 	void Rm() { iMdl.Rm(iHandle); };
+	TBool IsActive() const { return !AttrExists(ENa_Inactive);};
+	void Deactivate() { SetAttr(ENa_Inactive, ""); };
+	void Activate();
 	void SetAttr(TNodeAttr aType, const string& aVal) { iMdl.SetAttr(iHandle, aType, aVal.c_str()); };
 	void SetAttr(TNodeAttr aType, TInt aVal) { iMdl.SetAttr(iHandle, aType, aVal);};
 	ChromoNode::Iterator Parent();

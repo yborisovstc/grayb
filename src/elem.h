@@ -254,7 +254,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual void OnChildDeleting(Elem* aChild);
 	virtual TBool OnChildRenamed(Elem* aChild, const string& aOldName);
 	// From MCompsObserver
-	virtual void OnCompDeleting(Elem& aComp);
+	virtual void OnCompDeleting(Elem& aComp, TBool aSoft = ETrue);
 	virtual void OnCompAdding(Elem& aComp);
 	virtual TBool OnCompChanged(Elem& aComp);
 	virtual TBool OnCompRenamed(Elem& aComp, const string& aOldName);
@@ -301,6 +301,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	ChromoNode GetChNode(const GUri& aUri) const;
 	void CompactChromo();
 	void CompactChromo(const ChromoNode& aNode);
+	void UndoCompactChromo();
 	inline MLogRec* Logger() const;
 	// Transformations
 	TBool HasParentModifs() const;

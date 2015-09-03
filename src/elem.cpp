@@ -11,7 +11,7 @@
 TBool Elem::EN_PERF_TRACE = EFalse;
 TBool Elem::EN_PERF_METR = EFalse;
 TBool Elem::EN_PERF_DBG1 = ETrue;
-TBool Elem::EN_MUT_LIM = EFalse;
+TBool Elem::EN_MUT_LIM = ETrue;
 
 string Elem::Fmt::mSepContInp = ";";
 string Elem::Fmt::mSepContName = "~";
@@ -141,11 +141,12 @@ Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd): iE
 	else {
 	    if (iId.first.empty() || iExtsrel !=  GUri::KParentSep || iExt.empty() || iExt == GUri::KTypeAny) {
 		iCIter = iCIterRange.first;
+		for (; iCIter != iCIterRange.second && iCIter->second->IsRemoved(); iCIter++); 
 	    } 
 	    else {
 		for (iCIter = iCIterRange.first; iCIter != iCIterRange.second; iCIter++) {
 		    Elem* comp = iCIter->second;
-		    if (comp->GetParent()->Name() == iExt) {
+		    if (comp->GetParent()->Name() == iExt && !comp->IsRemoved()) {
 			break;
 		    }
 		}
@@ -350,10 +351,10 @@ Elem::~Elem()
     // This means that the ovner notified will not be able to understand what agent is deleted
     // To consider to add one more notification - before deletions
     if (iMan != NULL) {
-	iMan->OnCompDeleting(*this);
+	iMan->OnCompDeleting(*this, EFalse);
     }
     if (iObserver != NULL) {
-	iObserver->OnCompDeleting(*this);
+	iObserver->OnCompDeleting(*this, EFalse);
     }
     if (iParent != NULL) {
 	iParent->OnChildDeleting(this);
@@ -1147,10 +1148,20 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
     for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End(); rit++)
     {
 	ChromoNode rno = (*rit);
+	// Omit inactive mutations
+	if (iEnv->ChMgr()->EnableOptimization() && rno.AttrExists(ENa_Inactive)) {
+	    if (!aRunTime && !aTrialMode) {
+		iChromo->Root().AddChild(rno);
+	    }
+	    continue;
+	}
 	Logger()->SetContextMutId(rno.LineId());
 	TInt order = rno.GetOrder();
 	// Avoiding mutations above limit. Taking into account only attached chromos.
 	if (EN_MUT_LIM && isattached && tord > 0 && order > tord - lim) {
+	    if (!aRunTime && !aTrialMode) {
+		iChromo->Root().AddChild(rno);
+	    }
 	    continue;
 	}
 	TNodeType rnotype = rno.Type();
@@ -1731,7 +1742,7 @@ TBool Elem::RegisterComp(Elem* aComp)
 {
     TBool res = ETrue;
     Elem* node = GetComp(aComp->EType(), aComp->Name());
-    if (node == NULL) {
+    if (node == NULL || node->IsRemoved()) {
 	iMComps.insert(TNMVal(TNMKey(aComp->Name()), aComp));
     } else {
 	Logger()->Write(MLogRec::EErr, this, "Registering component [%s] - already exists", aComp->Name().c_str());
@@ -1915,14 +1926,14 @@ Elem* Elem::GetNode(const string& aUri)
     return res;
 }
 
-void Elem::OnCompDeleting(Elem& aComp)
+void Elem::OnCompDeleting(Elem& aComp, TBool aSoft)
 {
     // Translate to hier
     if (iMan != NULL) {
-	iMan->OnCompDeleting(aComp);
+	iMan->OnCompDeleting(aComp, aSoft);
     }
     if (iObserver != NULL) {
-	iObserver->OnCompDeleting(aComp);
+	iObserver->OnCompDeleting(aComp, aSoft);
     }
     // Handle for direct child
     if (aComp.GetMan() == this) {
@@ -1932,13 +1943,16 @@ void Elem::OnCompDeleting(Elem& aComp)
 	// Deattach the comp's chromo
 	iChromo->Root().RmChild(aComp.Chromos().Root(), ETrue);
 	*/
-	// Unregister first
-	UnregisterComp(&aComp);
-	// Then remove from comps
-	for (vector<Elem*>::iterator oit = iComps.begin(); oit != iComps.end(); oit++) {
-	    if (*oit == &aComp) {
-		iComps.erase(oit); break;
-	    }	
+	// Don't unregister comp in case if notif is for "soft" removal, ref ds_mut_rm_appr2
+	if (!aSoft) {
+	    // Unregister first
+	    UnregisterComp(&aComp);
+	    // Then remove from comps
+	    for (vector<Elem*>::iterator oit = iComps.begin(); oit != iComps.end(); oit++) {
+		if (*oit == &aComp) {
+		    iComps.erase(oit); break;
+		}
+	    }
 	}
     }
 }
@@ -2969,6 +2983,7 @@ void Elem::SetRemoved()
     if (iObserver != NULL) {
 	iObserver->OnCompDeleting(*this);
     }
+#if 0 // Regular iteration is to be used because no real removal happens, but just "soft", ref ds_mut_rm_appr2
     // Mark the comps as removed, using iterator refresh because the map is updated on each comp deletion
     vector<Elem*>::reverse_iterator it = iComps.rbegin();
     while (it != iComps.rend()) {
@@ -2976,6 +2991,13 @@ void Elem::SetRemoved()
 	comp->SetRemoved();
 	it = iComps.rbegin();
     }
+#else
+    // Removing comps in reverce order
+    for (vector<Elem*>::reverse_iterator it = iComps.rbegin(); it != iComps.rend(); it++) {
+	Elem* comp = *it;
+	comp->SetRemoved();
+    }
+#endif
     // Mark node as removed from hative hier
     isRemoved = ETrue;
 }
@@ -3029,7 +3051,7 @@ void Elem::CompactChromo()
 		Logger()->Write(MLogRec::EErr, this, "Chromo squeezing: cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
 	    }
 	}
-	else if (muttype == ENt_Change) {
+	else if (false && muttype == ENt_Change) {
 	    // Get node this mutation relates to
 	    TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
 	    if (iCMRelReg.count(key) > 0) {
@@ -3064,57 +3086,17 @@ void Elem::CompactChromo()
 	    TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
 	    if (iCMRelReg.count(key) > 0) {
 		Elem* node = iCMRelReg.at(key);
-		TInt tobecorrected = 0, corrected = 0;
-		TBool isref = gmut.AttrExists(ENa_Ref);
-		if (isref) {
-		    Rank refrank;
-		    // Get dep on ref, rank of it
-		    key = TCMRelFrom(gmut.Handle(), ENa_Ref);
-		    if (iCMRelReg.count(key) > 0) {
-			Elem* ref = iCMRelReg.at(key);
-			ref->GetRank(refrank);
+		// Get -cont- mutations that depends on this node, and have lower rank
+		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
+		    TMDep dep = *it;
+		    ChromoNode mut = iChromo->CreateNode(dep.first.second);
+		    Rank rank;
+		    mut.GetRank(rank);
+		    if (rank >= grank) break;
+		    // Deactivate mutation
+		    if (mut.Type() == ENt_Cont && dep.second == ENa_MutNode) {
+			mut.Deactivate();
 		    }
-		    string new_val = gmut.Attr(ENa_Ref);
-		    // Get mutations that depends on this node, and have lower rank
-		    for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
-			TMDep dep = *it;
-			ChromoNode mut = iChromo->CreateNode(dep.first.second);
-			Rank rank;
-			mut.GetRank(rank);
-			if (rank >= grank) break;
-			// Correct mutation
-			if (mut.Type() == ENt_Cont && mut.AttrExists(ENa_Ref) && dep.second == ENa_MutNode) {
-			    tobecorrected++;
-			    if (rank > refrank) {
-				mut.SetAttr(ENa_Ref, new_val);
-				corrected++;
-			    }
-			}
-		    }
-		}
-		else {
-		    string new_val = gmut.Attr(ENa_MutVal);
-		    // Get mutations that depends on this node, and have lower rank
-		    for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
-			TMDep dep = *it;
-			ChromoNode mut = iChromo->CreateNode(dep.first.second);
-			Rank rank;
-			mut.GetRank(rank);
-			if (rank >= grank) break;
-			// Correct mutation
-			if (mut.Type() == ENt_Cont && mut.AttrExists(ENa_MutVal) && dep.second == ENa_MutNode) {
-			    tobecorrected++;
-			    mut.SetAttr(ENa_MutVal, new_val);
-			    corrected++;
-			}
-		    }
-		}
-		// Remove mutation
-		// Only if the correction has been done. This is because the mutation can be initial content change
-		if (corrected == tobecorrected && corrected > 0) {
-		    gmut.Rm();
-		    RmCMDep(gmut, ENa_MutNode);
-		    mut_removed = ETrue;
 		}
 	    }
 	    else {
@@ -3123,35 +3105,27 @@ void Elem::CompactChromo()
 	}
 	else if (muttype == ENt_Rm) {
 	    // Get node this mutation relates to
+	    TBool corrected = EFalse;
 	    TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
 	    if (iCMRelReg.count(key) > 0) {
-		// Remove mutation of creation of deleted node
+		// Deactivate mutation of creation of deleted node
 		Elem* node = iCMRelReg.at(key);
-		TMDeps::iterator it = node->GetMDeps().begin();
-		TMDep dep = *it;
-		ChromoNode cmut = iChromo->CreateNode(dep.first.second);
-		cmut.Rm();
-		/*
-		// Get mutations that depends on this node, and have lower rank
 		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
-		TMDep dep = *it;
-		ChromoNode mut = iChromo->CreateNode(dep.first.second);
-		Rank rank;
-		mut.GetRank(rank);
-		if (rank >= grank) break;
-		// Correct mutation is not required, the corresponding -node- mut has been already deleted
+		    TMDep dep = *it;
+		    ChromoNode mut = iChromo->CreateNode(dep.first.second);
+		    Rank rank;
+		    mut.GetRank(rank);
+		    if (mut.Type() == ENt_Node && (dep.second == ENa_MutNode) || dep.second == ENa_Id) {
+			mut.Deactivate();
+			corrected = ETrue;
+		    }
 		}
-		*/
-		// Remove mutation
-		gmut.Rm();
-		RmCMDep(gmut, ENa_MutNode);
-		mut_removed = ETrue;
-	    }
-	    else {
-		// No relation found, so the node is removed - just remove mutation
-		gmut.Rm();
-		RmCMDep(gmut, ENa_MutNode);
-		mut_removed = ETrue;
+		// Deativete -rm- mutation only is origin mutation of creating node was deactivated
+		if (corrected) {
+		    gmut.Deactivate();
+		}
+	    } else {
+		gmut.Deactivate();
 	    }
 	}
 
@@ -3315,6 +3289,11 @@ void Elem::CompactChromo(const ChromoNode& aNode)
     }
 }
 
+void Elem::UndoCompactChromo()
+{
+    ChromoNode croot = iChromo->Root();
+    croot.Activate();
+}
 
 void Elem::AddMDep(Elem* aNode, const ChromoNode& aMut, TNodeAttr aAttr)
 {

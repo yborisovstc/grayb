@@ -75,6 +75,7 @@ class Edge: public Elem, public MEdge
 	//virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
 	//virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
 	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);
+	virtual void SetRemoved();
     protected:
 	// Just one-way relation to vert. It does't mean the full point to point relation is established.
 	MVert* iPoint1;

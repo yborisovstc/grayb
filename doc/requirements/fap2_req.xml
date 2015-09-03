@@ -1598,6 +1598,9 @@
 	    <sect3><title>Extended by</title> 
 		<itemizedlist> 
 		    <listitem><xref linkend="uc_052"/></listitem>
+		    <listitem><xref linkend="uc_054"/></listitem>
+		    <listitem><xref linkend="uc_056"/></listitem>
+		    <listitem><xref linkend="uc_057"/></listitem>
 		</itemizedlist> 
 	    </sect3>
 	    <sect3><title>Discussion</title> 
@@ -1698,6 +1701,165 @@
 	    <sect3><title>Clarification</title> </sect3>
 	</sect2>
 
+	<sect2 id="uc_054"><title>UC_054 Compacting of chromosome</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of SYSTEM</listitem>
+		    <listitem> SYSTEM: modelling run-time</listitem>
+		    <listitem> MODEL: a model of system</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<orderedlist>
+		    <listitem>There is MODEL prepared. MODEL is not optimal, e.g. there are mutations overlapped by other mutations.
+		    So overlapped mutations don't affect constructed MODEL and can be omitted.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER request SYSTEM to compact</listitem>
+		    <listitem>SYSTEM compacts MODELs chromo via omitting overlapped mutations.</listitem>
+		    <listitem>USER request SYSTEM to assemblee MODEL from compacted chromo</listitem>
+		    <listitem>SYSTEM assembles model - created model is equivalent to initial MODEL </listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_051"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title> <itemizedlist> </itemizedlist> </sect3>
+	    <sect3><title>Related to</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_042"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title> </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
+	<sect2 id="uc_055"><title>UC_055 Undo of compacting of chromosome</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of SYSTEM</listitem>
+		    <listitem> SYSTEM: modelling run-time</listitem>
+		    <listitem> MODEL: a model of system, compacted from ORIG_MODEL</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<orderedlist>
+		    <listitem>There is MODEL prepared. MODEL is result of compacting ORIG_MODEL </listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER request SYSTEM to undo MODEL compacting</listitem>
+		    <listitem>SYSTEM reverts compacting of  MODEL</listitem>
+		    <listitem>USER request SYSTEM to assemblee model from recovered chromo</listitem>
+		    <listitem>SYSTEM assembles the model - created model is equivalent to ORIG_MODEL</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_054"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_055"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Related to</title> </sect3>
+	    <sect3><title>Discussion</title> </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
+	<sect2 id="uc_056"><title>UC_056 Chromo transformation: reversible transformation</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of SYSTEM</listitem>
+		    <listitem> SYSTEM: modelling run-time</listitem>
+		    <listitem> MODEL: a model of system</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<orderedlist>
+		    <listitem>There is MODEL prepared. MODEL is result of compacting ORIG_MODEL </listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER request SYSTEM to assemble MODEL</listitem>
+		    <listitem>USER request SYSTEM to perform some reversible chromo transformation</listitem>
+		    <listitem>SYSTEM performs transformation and re-assembles transformed model</listitem>
+		    <listitem>USER request SYSTEM to revert the transformation made</listitem>
+		    <listitem>SYSTEM reverts the transformation and re-assemvles reverted model: the model is
+		    identical to original MODEL</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_051"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title> </sect3>
+	    <sect3><title>Related to</title> </sect3>
+	    <sect3><title>Discussion</title> </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
+	<sect2 id="uc_057"><title>UC_057 Chromo transformation: nonreversible transformation</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem> USER: client of SYSTEM</listitem>
+		    <listitem> SYSTEM: modelling run-time</listitem>
+		    <listitem> MODEL: a model of system</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<orderedlist>
+		    <listitem>There is MODEL prepared. MODEL is result of compacting ORIG_MODEL </listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER request SYSTEM to assemble MODEL</listitem>
+		    <listitem>USER request SYSTEM to perform some nonreversible chromo transformation</listitem>
+		    <listitem>SYSTEM performs transformation and re-assembles transformed model</listitem>
+		    <listitem>SYSTEM doesn't provide USER with mechainsm of reverting the transformation made.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_051"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_056"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Related to</title> </sect3>
+	    <sect3><title>Discussion</title> </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
     </sect1>
 
     <sect1 id="ps"><title>Proposals</title>
@@ -1714,7 +1876,7 @@
 	<sect2><title>PS_002 Mutation comment</title>
 	    <sect3><title>Description</title>
 		<simpara>There should be mutation that just insert comment regarding mutations group done before. This would allow
-		to simplify discovering of mutations chain.</simpara>
+		    to simplify discovering of mutations chain.</simpara>
 	    </sect3>
 	    <sect3><title>Discussion</title>
 	    </sect3>

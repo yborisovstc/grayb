@@ -19,7 +19,7 @@ class MCompsObserver
 {
     public:
 	static const char* Type() { return "MCompsObserver";};
-	virtual void OnCompDeleting(Elem& aComp) = 0;
+	virtual void OnCompDeleting(Elem& aComp, TBool aSoft = ETrue) = 0;
 	virtual void OnCompAdding(Elem& aComp) = 0;
 	virtual TBool OnCompChanged(Elem& aComp) = 0;
 	// For run-time only. Use OnCompChanged when the content is changed via mutation

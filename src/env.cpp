@@ -54,10 +54,10 @@ void ImportsMgr::AddImportModulesInfo(const string& aPath)
 	    mModsPaths.insert(pair<string, string>(rname, filepath));
 	    delete spec;
 	}
+	closedir(dp);
     } else {
 	mHost.Logger()->Write(MLogRec::EErr, NULL, "Collecting modules, cannot open imports dir [%s]", dirpath.c_str());
     }
-    closedir(dp);
 }
 
 void ImportsMgr::GetModulesNames(vector<string>& aModules) const
@@ -304,6 +304,14 @@ void ChromoMgr::SetEnableCheckSafety(bool aEnable)
 	mEnableCheckSafety = aEnable;
     }
 }
+
+void ChromoMgr::SetEnableOptimization(bool aEnable)
+{
+    if (mEnableOptimization != aEnable) {
+	mEnableOptimization = aEnable;
+    }
+}
+
 
 Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileName): Base(aName), iRoot(NULL), iLogger(NULL),
     iSpecChromo(NULL), mEnPerfTrace(EFalse)
