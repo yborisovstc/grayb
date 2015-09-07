@@ -244,7 +244,7 @@ Elem* ImportsMgr::OnUriNotResolved(Elem* aNode, const GUri& aUri)
 
 ChromoMgr::ChromoMgr(const string& aName, Env& aHost): Base(aName), mHost(aHost), mLim(0), 
     mEnablePhenoModif(EFalse), mEnableFixErrors(EFalse), mEnableReposMuts(EFalse),
-    mEnableCheckSafety(ETrue)
+    mEnableCheckSafety(ETrue), mEnableOptimization(ETrue) 
 {
 }
 

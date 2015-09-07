@@ -640,7 +640,7 @@
 			paramenter.</listitem>
 		</orderedlist>
 	    </sect3>
-	    <sect3 id="ds_mut_unappr_intro_hist"><title>How to save chromo "history" on squeezing ?</title>
+	    <sect3 id="ds_mut_squeezing_hist"><title>How to save chromo "history" on squeezing ?</title>
 		<simpara>All approaches discussed above assume that excessive mutations are to be removed from chromo. This
 		    means that mutations rollback gets not correct because the part of chromos "history" lost.</simpara>
 		<simpara>To keep the history we could use marking excessive mutations as "deleted" instead of them real 
@@ -661,6 +661,29 @@
 		    changing of chromo, <xref linkend="ds_chrcmdl"/>. This makes chromo itself just intermediate
 		    model being generated from upper layer model. "Chromo of chromo" or chromo2 can include all operations
 		    of changing chromo, not only elementary but also operations like "squeeze chromo" etc.</simpara>
+	    </sect3>
+	    <sect3 id="ds_mut_sqeezing_rm"><title>Soft optimization: -rm- mutation</title>
+		<sect4><title>Procedure of optimization</title>
+		<simpara>Optimization rules are:</simpara>
+		<orderedlist>
+		    <listitem>Optimize out original -node- mutations (that is removed via -rm-) if there
+			are not critical dependencies (-parent- and -ref-). So there will be creator responsibility 
+			to release these deps first. There is alternative approach when deps of some type
+			(e.g. -ref-) are not blocking -rm- so optimized out automatically.</listitem>
+		    <listitem>Optimize out all remaining mutations dependent on removed node
+			(e.g. with -node- dep type)</listitem>
+		</orderedlist>
+		<simpara>Regarding approach of considering some deps not blocking. Does it make sense to 
+		    consider -parent- deps also not blocking. What would be the criteria of not blocking deps?
+		    The criteria would be that optimization out such dependence doesnt cause further propagation of
+		    optimization. For instance optimizing out -parent- dep leads to such propagation (optimizing out
+		    the child node equivalent to removing the node, this causes in turn necessity to optimize out
+		    the child of this node and so on. So -parent- dep doesn't satisfy the criteria of non-propagation.
+		    Probably it make sense to introduce new option "Removal policy: strict/soft" where strict
+		    policy assumes the critical deps are to be resolved by the user first but soft policy allowes
+		    automatically optimize out all the deps.
+		</simpara>
+		</sect4>
 	    </sect3>
 	    <sect3 id="ds_mut_sqeezing_cont"><title>Soft optimization: -cont- mutaion</title>
 		<simpara>Let's verify the soft optimization approach via considering chromo optimization for
@@ -698,21 +721,51 @@
 			broken can occurs after optimization undo.</simpara>
 		</sect4>
 	    </sect3>
-	</sect2>
-	<sect2 id="ds_drv_int"><title>How to derive from component of heirs</title>
-	    <sect3><title>Introduction</title>
-		<simpara>Currently the following mechanism is used for derivation. Node [N] that is adding component [(CP:)C]  gets components parent [CP], requests it to produce the child in its own context,
-		    relocate the created child to nodes hier, and then applies the mutations [CM] to the components. Note that the mutation applied to the component are being done in
-		    node [N] context. It causes the following problem: when some system [S] uses node [N] as parent for derivation new node [N~1] then [N~1] will have another component [C] 
-		    (it is also named [C] but it is not the same [C] as [N] has). This component [C] chromo [CM] is related to node [N] context. </simpara>
-		<simpara>Ref to diagram below.</simpara>
-		<figure id="fig_mut_drv_int1"><imageobject> <imagedata fileref="pics/pic_ds_mut_drv_from_comp.png"/> </imageobject></figure>
-		<simpara>So it happens that CM/C is not suited for derivation because its chromo is for another context. To generalize: the components that were came to child from parent in derivation process are
-		    not sutable for inheritance if the childs context differs from parents context. How to deal with this case?</simpara>
-		<simpara>There could be the following approaches suggested:</simpara>
-		<itemizedlist>
-		    <listitem>To detect if the components is suitable for inheritance, i.e. if some of its owners were moved from original context.</listitem>
-		    <listitem>To modify of creating of new node: to truly relocate the heir, not only change the owner. Ref <xref linkend="ds_drv_int_rel"/> for details</listitem>
+	    <sect3 id="ds_mut_sqeezing_sft_lim"><title>Soft optimization: deficiencies and limitations</title>
+	    </sect3>
+	    <sect3 id="ds_mut_sqeezing_smautm"><title>Soft optimization: automatic optimization</title>
+		<sect4><title>Introduction</title>
+		    <simpara>There was the idea (ref. <xref linkend="ds_mut_sqeezing_rm"/> that the optimization 
+			can be done automatically each time the user adds new mutation. 
+			Then on new mutation being introduced (mutation introduction is 
+			done using "triage" mutation mode) the chromo machine runs optimization procedure.</simpara>
+		</sect4>
+		<sect4><title>Pros and Cons</title>
+		    <simpara>Cons: after each optimization the model reloading is required. This happens not always
+			but in principle we will need to reload the model. This is for instance because mutations to
+		    be optimized out are blocking deps for mutation creator is going to add. Example is:</simpara>
+		<programlisting>
+		    01  node A1 ...
+		    02  cont node=NN ref A1
+		    ...
+		    03  cont node=NN ref NONE
+		    04  rm node A1
+		</programlisting>
+		<simpara>Creator edits initial chromo {01, 02}, then he is going to remove A1. But A1 has 
+		    critical dep 03 of -ref- type, ref <xref linkend="ds_mut_sqeezing_rm"/>.
+		    To remove this dep creator change the ref to NONE. The ref
+		    is removed from the model but there is still mutation in chromo, so chromo machine still
+		    denies removal A1. To continue removing A1 creator needs to optimize the chromo (it will
+		    optimize out 02) first and then reload model. After that the dep 02 will not exist anymore and
+		    chromo machine allow removal A1. Another solution is to analyze optimization attribute of
+		    mutation when analyzing the deps.</simpara>
+	    </sect4>
+	</sect3>
+    </sect2>
+    <sect2 id="ds_drv_int"><title>How to derive from component of heirs</title>
+	<sect3><title>Introduction</title>
+	    <simpara>Currently the following mechanism is used for derivation. Node [N] that is adding component [(CP:)C]  gets components parent [CP], requests it to produce the child in its own context,
+		relocate the created child to nodes hier, and then applies the mutations [CM] to the components. Note that the mutation applied to the component are being done in
+		node [N] context. It causes the following problem: when some system [S] uses node [N] as parent for derivation new node [N~1] then [N~1] will have another component [C] 
+		(it is also named [C] but it is not the same [C] as [N] has). This component [C] chromo [CM] is related to node [N] context. </simpara>
+	    <simpara>Ref to diagram below.</simpara>
+	    <figure id="fig_mut_drv_int1"><imageobject> <imagedata fileref="pics/pic_ds_mut_drv_from_comp.png"/> </imageobject></figure>
+	    <simpara>So it happens that CM/C is not suited for derivation because its chromo is for another context. To generalize: the components that were came to child from parent in derivation process are
+		not sutable for inheritance if the childs context differs from parents context. How to deal with this case?</simpara>
+	    <simpara>There could be the following approaches suggested:</simpara>
+	    <itemizedlist>
+		<listitem>To detect if the components is suitable for inheritance, i.e. if some of its owners were moved from original context.</listitem>
+		<listitem>To modify of creating of new node: to truly relocate the heir, not only change the owner. Ref <xref linkend="ds_drv_int_rel"/> for details</listitem>
 		</itemizedlist>
 	    </sect3>
 	    <sect3 id="ds_drv_int_rel"><title>Approaches: To modify of creating of new node</title>

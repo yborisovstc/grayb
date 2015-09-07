@@ -372,17 +372,41 @@ void Ut_mut::test_MutDepsRmRef()
     Elem* v1 = root->GetNode("./v1");
     ChromoNode mut = v1->Mutation().Root().AddChild(ENt_Rm);
     mut.SetAttr(ENa_MutNode, "./v1_0");
-    v1->Mutate();
-    // Check that the mutation is refused
+    v1->Mutate(EFalse, ETrue, ETrue);
+    // Check that the mutation is refused because not being safe -
+    // there are deps with the rank higher than the rank of this mutatins,
+    // so error will occur if node is deleted
     v1_0 = root->GetNode("./v1/v1_0");
     CPPUNIT_ASSERT_MESSAGE("Mutation -rm- of v1_0 is not refused", v1_0 != NULL);
     // Try to remove elem2 from root - safe mutation
     mut = root->Mutation().Root().AddChild(ENt_Rm);
     mut.SetAttr(ENa_MutNode, "./v1/v1_0");
-    root->Mutate();
-    // Check that the mutation is not refused
+    root->Mutate(EFalse, ETrue, ETrue);
+    // Check that the mutation is refused because there is critical dep on the node being
+    // removed. Even the rank of this dep is lower that the rank of this mutation, the
+    // deps will generate error so the model will be inconsistent 
+    v1_0 = root->GetNode("./v1/v1_0");
+    CPPUNIT_ASSERT_MESSAGE("Mutation -rm- of v1_0 from root is not refused", v1_0 != NULL);
+    // Remove critical dep first, then optimize the chromo, reload and try to remove v1_0 again
+    mut = root->Mutation().Root().AddChild(ENt_Cont);
+    mut.SetAttr(ENa_MutNode, "./edge1/P1");
+    mut.SetAttr(ENa_Ref, "");
+    root->Mutate(EFalse, ETrue, ETrue);
+    root->CompactChromo();
+    iEnv->Root()->Chromos().Save("ut_mut_dep_refs_res1.xml_");
+    delete iEnv;
+    iEnv = new Env("Env", "ut_mut_dep_refs_res1.xml_", "ut_mut_dep_refs_res1.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env for compacted system", iEnv != 0);
+    iEnv->ChMgr()->SetEnablePhenoModif(ETrue);
+    iEnv->ConstructSystem();
+    root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root after compacting", root != 0);
+    ChromoNode mut1 = root->Mutation().Root().AddChild(ENt_Rm);
+    mut1.SetAttr(ENa_MutNode, "./v1/v1_0");
+    root->Mutate(EFalse, ETrue, ETrue);
     v1_0 = root->GetNode("./v1/v1_0");
     CPPUNIT_ASSERT_MESSAGE("Mutation -rm- of v1_0 from root is refused", v1_0 == NULL);
+    delete iEnv;
 }
 
 // Suppotring invariance with respect to mutations position
@@ -783,26 +807,26 @@ void Ut_mut::test_Compact3()
     TBool is_mut_correct = mut.Type() == ENt_Node && mut.Attr(ENa_Id) == "v3";
     TBool is_mut_deact = !mut.IsActive();
     CPPUNIT_ASSERT_MESSAGE("Mut of creation v3 is not squeezed", is_mut_correct && is_mut_deact);
-    // Undo compact of chromo
-    root->UndoCompactChromo();
-    // Save de-compacted chromo
-    iEnv->Root()->Chromos().Save("ut_compact3_res2.xml_");
     delete iEnv;
 
-    // Verifying if models chromo is de-compacted. Using the following approach:
-    // rollback the mutation of node -v3- removal and check if v3 is created
-    iEnv = new Env("Env", "ut_compact3_res2.xml_", "ut_compact3_res2.txt");
-    CPPUNIT_ASSERT_MESSAGE("Fail to re-create de-compacted system", iEnv != 0);
-    iEnv->ChMgr()->SetLim(1);
+    // Verifying disabling of processing of optimization
+    iEnv = new Env("Env", "ut_compact3_res.xml_", "ut_compact3_res.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to re-create compacted system", iEnv != 0);
+    iEnv->ChMgr()->SetEnableOptimization(EFalse);
     iEnv->ConstructSystem();
-    iEnv->Root()->Chromos().Save("ut_compact3_res3.xml_");
-     // Check that v3 is created
+     // Check that v3 is not created
     root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root after compacting", root != 0);
-    Elem* v3r = root->GetNode("./(Vert:)v3");
-    CPPUNIT_ASSERT_MESSAGE("Chromo is not restored (V3 is not created)", v3r != NULL);
-
+    v3 = root->GetNode("./(Vert:)v3");
+    CPPUNIT_ASSERT_MESSAGE("V3 is not removed", v3 == NULL);
+    ChromoNode::Iterator it1 = root->Chromos().Root().Begin(); 
+    it1++; it1++;
+    ChromoNode mut1 = *it1;
+    is_mut_correct = mut1.Type() == ENt_Node && mut1.Attr(ENa_Id) == "v3";
+    is_mut_deact = !mut1.IsActive();
+    CPPUNIT_ASSERT_MESSAGE("Mut of creation v3 is missing in opt disabling mode", is_mut_correct && !is_mut_deact);
     delete iEnv;
+
 }
 
 // Compactization of chromo: mut removing deattached node

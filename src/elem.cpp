@@ -2384,26 +2384,27 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
 		// Just mark node as removed but not remove actually, ref ds_mut_rm_appr
 		// Refuse removing if here are heirs, needs to unparent them first, ref ds_mut_rm_deps
 		if (!node->HasInherDeps(node)) {
-		    node->SetRemoved();
-		    if (!aRunTime) {
-			// Adding dependency to object of change
-			ChromoNode chn = iChromo->Root().AddChild(aSpec);
-			AddCMDep(chn, ENa_MutNode, node);
-			mutadded = ETrue;
+		    // Refuse removing if there are other critical deps (e.g. -ref-)
+		    // TODO [YB] To consider -refs- to be automatically optimized out (ref. ds_mut_sqeezing_rm)
+		    TMDep dep = node->GetMajorDep(ENt_Rm, MChromo::EDl_Critical);
+		    if (dep.first.first == NULL || dep.second == ENa_Id) {
+			node->SetRemoved();
+			if (!aRunTime) {
+			    // Adding dependency to object of change
+			    ChromoNode chn = iChromo->Root().AddChild(aSpec);
+			    AddCMDep(chn, ENa_MutNode, node);
+			    mutadded = ETrue;
+			}
+		    } else {
+			Logger()->Write(MLogRec::EErr, this,
+				"Removing node [%s], refused, there is ref [%s] to the node, release first",
+				snode.c_str(), dep.first.first->GetUri(0, ETrue).c_str());
 		    }
 		} else {
-		    Logger()->Write(MLogRec::EInfo, this, "Removing node [%s], refused, there are heirs of the node, unparent first", snode.c_str());
+		    Logger()->Write(MLogRec::EErr, this,
+			    "Removing node [%s], refused, there are heirs of the node, unparent first", snode.c_str());
 		    node->HasInherDeps(node);
 		}
-		// Solution3: disable removing if here are heirs, needs to unparent them first
-		/*
-		   if (!node->HasInherDeps(node)) {
-		   delete node;
-		   } else {
-		   Logger()->Write(MLogRec::EInfo, this, "Removing node [%s], refused, there are heirs of the node, unparent first", snode.c_str());
-		   node->HasInherDeps(node);
-		   }
-		*/
 		if (IsLogeventCreOn()) {
 		    Logger()->Write(MLogRec::EInfo, this, "Removed elem [%s]", snode.c_str());
 		}
