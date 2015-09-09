@@ -8,16 +8,20 @@
 
 <node id="test" parent="Vert">
     <node id="v1p" parent="Vert">
-	<node id="v1p_1" parent="Vert"/>
-	<node id="v1p_1i" parent="./v1p_1"/>
+	<node id="v1p_1" parent="Vert">
+	    <node id="v1p_1_1" parent="Vert"/>
+	</node>
+    </node>
+    <node id="v2" parent="Vert">
+	<node id="v1p_1_1" parent="Vert"/>
     </node>
     <node id="v1" parent="./v1p">
+	<rm node="./v1p_1"/>
+	<node id="v1p_1" parent="./../v2"/>
     </node>
-    <node id="v2" parent="Vert"/>
     <node id="edge1" parent="Edge">
 	<cont node="./P1" ref="./../../v2" />
+	<cont node="./P2" ref="./../../v1/v1p_1/v1p_1_1" />
     </node>
-    <rm node="./v1"/>
-    <!-- <node id="v1" parent="./v1p"/> -->
 </node>
 

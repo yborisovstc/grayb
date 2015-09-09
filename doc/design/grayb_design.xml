@@ -439,23 +439,24 @@
 		    <listitem>#2 - to mark node in model as removed but keep it in model</listitem>
 		</itemizedlist>
 		<simpara>Removing node allows save resources, but there is serious problem with that approach. The matter is
-		    that models node keeps register of dependencies. These registers are required for instanse for squeezing chromo,
-		    ref <xref linkend="ds_mut_squeezing"/>. So approach#2 is to be applied. </simpara>
+		    that models node keeps register of dependencies. These registers are required for instanse for
+		    squeezing chromo, ref <xref linkend="ds_mut_squeezing"/>. So approach#2 is to be applied. </simpara>
 	    </sect3>
 	    <sect3 id="ds_mut_rm_appr2"><title>Approach#2 details (marking node as deleted, no real removal)</title>
 		<itemizedlist>
 		    <listitem>Owner has to keep removed component in owners register. We can distinguish 
-			bottom-up notification from component in case of mutation of removing (soft removing acc to approach#2),
-			and real removing. This means that in this notification handler the owner should 
-			behave differently: don't de-register component if soft removal, and de-register if real removal.</listitem>
+			bottom-up notification from component in case of mutation of removing (soft removing acc to
+			approach#2), and real removing. This means that in this notification handler the owner should 
+			behave differently: don't de-register component if soft removal, and de-register if real removal.
+		    </listitem>
 		</itemizedlist>
 	    </sect3>
 	    <sect3 id="ds_mut_rm_deps"><title>Refusing removing if deps presents</title>
-		<simpara>Node removing mutation has to be refused if there are critical dependencies on this node. Missing the node
-		    in this case will cause model creation errors. The reason of this
+		<simpara>Node removing mutation has to be refused if there are critical dependencies on this node.
+		    Missing the node in this case will cause model creation errors. The reason of this
 		    policy is that event if the node is not really removed from the model (i.e approach#2 from 
-		    <xref linkend="ds_mut_rm_appr"/> is used) the further chromo squeezing will lead to the node completely removing
-		from the model.</simpara>
+		    <xref linkend="ds_mut_rm_appr"/> is used) the further chromo squeezing will lead to the node
+		    completely removing from the model.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_transp"><title>Nodes (mutations) transposition (reordering)</title>
@@ -730,8 +731,8 @@
 			Then on new mutation being introduced (mutation introduction is 
 			done using "triage" mutation mode) the chromo machine runs optimization procedure.</simpara>
 		</sect4>
-		<sect4><title>Pros and Cons</title>
-		    <simpara>Cons: after each optimization the model reloading is required. This happens not always
+		<sect4><title>Processing mut opt attribute when analyzing deps</title>
+		    <simpara>After each optimization the model reloading would be required. This happens not always
 			but in principle we will need to reload the model. This is for instance because mutations to
 		    be optimized out are blocking deps for mutation creator is going to add. Example is:</simpara>
 		<programlisting>
@@ -747,8 +748,8 @@
 		    is removed from the model but there is still mutation in chromo, so chromo machine still
 		    denies removal A1. To continue removing A1 creator needs to optimize the chromo (it will
 		    optimize out 02) first and then reload model. After that the dep 02 will not exist anymore and
-		    chromo machine allow removal A1. Another solution is to analyze optimization attribute of
-		    mutation when analyzing the deps.</simpara>
+		    chromo machine allow removal A1. To avoid reloading another solution can be used - to analyze 
+		    optimization attribute of mutation when analyzing the deps.</simpara>
 	    </sect4>
 	</sect3>
     </sect2>

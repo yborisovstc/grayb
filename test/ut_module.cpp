@@ -17,6 +17,7 @@ class Ut_mod : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST_SUITE(Ut_mod);
 //    CPPUNIT_TEST(test_ImpsMgr1);
     CPPUNIT_TEST(test_ImpsMgr2);
+    CPPUNIT_TEST(test_ImpsMgrOpt);
 //    CPPUNIT_TEST(test_ModInt1);
     CPPUNIT_TEST_SUITE_END();
 public:
@@ -25,6 +26,7 @@ public:
 private:
     void test_ImpsMgr1();
     void test_ImpsMgr2();
+    void test_ImpsMgrOpt();
     void test_ModInt1();
 private:
     Env* iEnv;
@@ -181,4 +183,35 @@ void Ut_mod::test_ModInt1()
     delete iEnv;
 }
 
+// Enironments imports manager + chromo soft optimization
+// Verifying optimization when there are de-attached chromos
+// ref. ds_mut_sqeezing_so_prnc_att
+void Ut_mod::test_ImpsMgrOpt()
+{
+    printf("\n === Test of imports manager: importing + chromo opt\n");
+
+    iEnv = new Env("Env", "ut_mod_impmgr_opt.xml", "ut_mod_impmgr_opt.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->AddImportsPaths("modules");
+    iEnv->ImpsMgr()->AddImportsPaths("modules2");
+    // Enabling mutation repositioning in order to resolve unsafety
+    iEnv->ChMgr()->SetEnableReposMuts(ETrue);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    // Check creation first
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
+    // Verifying importing Mod5_comp_2
+    Elem* mod2_c2 = root->GetNode("/test/Modules/Mod5_root/Mod5_comp_2");
+    CPPUNIT_ASSERT_MESSAGE("Mod5_comp_2 not imported", mod2_c2 != NULL);
+    // Verifying importing Mod_comp_2
+    Elem* mod_c2 = root->GetNode("/test/Modules/Mod4_root/Mod_comp_2");
+    CPPUNIT_ASSERT_MESSAGE("Mod_comp_2 not imported", mod_c2 != NULL);
+    // Verifying creation from imported node
+    Elem* v4 = root->GetNode("./v4");
+    CPPUNIT_ASSERT_MESSAGE("v4 is not created", v4 != NULL);
+    // Verifying v4/Mod5_comp_2_1/Mod5_comp_2_1_1 is resolved (no mutliple choice)
+    Elem* v4c = v4->GetNode("./Mod5_comp_2_1/Mod5_comp_2_1_1");
+    CPPUNIT_ASSERT_MESSAGE("v4/Mod5_comp_2_1/Mod5_comp_2_1_1 is not acessible", v4c != NULL);
+    delete iEnv;
+}
 

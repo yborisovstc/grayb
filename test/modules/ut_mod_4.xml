@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for importing node and optimizing chromo
+-->
+
+
+<!DOCTYPE node SYSTEM "../../etc/objspec.dtd">
+
+<node id="Mod4_root" parent="Vert">
+    <import id="/Mod5_root/Mod5_comp_2"/>
+    <node id="Mod_comp_2" parent="/*/Modules/Mod5_root/Mod5_comp_2">
+	<rm node="./Mod5_comp_2_1/Mod5_comp_2_1_1"/>
+	<node id="Vert1" parent="Vert"></node>
+	<node node="./Mod5_comp_2_1" id="Mod5_comp_2_1_1" parent="./Vert1"/>
+	<cont node="./Mod5_comp_2_1/Mod5_comp_2_e1/P1" ref="./../../Mod5_comp_2_1_1"/>
+    </node>
+</node>
+

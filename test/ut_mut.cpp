@@ -18,6 +18,7 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_MutSyst);
     CPPUNIT_TEST(test_Move);
     CPPUNIT_TEST(test_MutRmRecr);
+    CPPUNIT_TEST(test_MutRmRecrInh);
     CPPUNIT_TEST(test_MutDepsRm);
     CPPUNIT_TEST(test_MutDepsRm2);
     CPPUNIT_TEST(test_MutDepsChilds1);
@@ -29,6 +30,7 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_MutRmParent);
     CPPUNIT_TEST(test_MutRenameParent);
     CPPUNIT_TEST(test_Compact1);
+    CPPUNIT_TEST(test_OptRmDeps);
     CPPUNIT_TEST(test_Compact2);
     CPPUNIT_TEST(test_Compact3);
     CPPUNIT_TEST(test_CompactRmDa);
@@ -45,6 +47,7 @@ private:
     void test_MutSyst();
     void test_Move();
     void test_MutRmRecr();
+    void test_MutRmRecrInh();
     void test_MutDepsRm();
     void test_MutDepsRm2();
     void test_MutDepsChilds1();
@@ -56,6 +59,7 @@ private:
     void test_MutRmParent();
     void test_MutRenameParent();
     void test_Compact1();
+    void test_OptRmDeps();
     void test_Compact2();
     void test_Compact3();
     void test_CompactRmDa();
@@ -219,6 +223,8 @@ void Ut_mut::test_MutRmRecr()
 
     iEnv = new Env("Env", "ut_mut_rm_recr.xml", "ut_mut_rm_recr.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    // Enabling mutation repositioning in order to resolve unsafety
+    iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
      // Check creation first
@@ -231,6 +237,42 @@ void Ut_mut::test_MutRmRecr()
     CPPUNIT_ASSERT_MESSAGE("Fail to get v1", v1 != 0);
     Elem* v1p_1i = root->GetNode("./v1/v1p_1i");
     CPPUNIT_ASSERT_MESSAGE("Fail to get v1p_1i", v1p_1i != 0);
+    // Try to use ref to v1 and verify the ref is found correctly (no duplication occurs)
+    Elem* e1 = root->GetNode("./edge1");
+    ChromoNode mut1 = e1->Mutation().Root().AddChild(ENt_Cont);
+    mut1.SetAttr(ENa_MutNode, "./P2");
+    mut1.SetAttr(ENa_Ref, "./../../v1");
+    e1->Mutate();
+    Elem* p2 = e1->GetNode("./P2");
+    string p2_cont;
+    p2->GetCont(p2_cont);
+    CPPUNIT_ASSERT_MESSAGE("Fail to set edge1/P2 with ref to v1", p2_cont == "./../../v1");
+    iEnv->Root()->Chromos().Save("ut_mut_rm_recr_res.xml_");
+    delete iEnv;
+}
+
+// Test of removing node and recreation inherited node with the same name
+void Ut_mut::test_MutRmRecrInh()
+{
+    printf("\n === Test of creating node with same name as removed one\n");
+
+    iEnv = new Env("Env", "ut_mut_rm_recrinh.xml", "ut_mut_rm_recrinh.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    // Enabling mutation repositioning in order to resolve unsafety
+    iEnv->ChMgr()->SetEnableReposMuts(ETrue);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+     // Check creation first
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    Elem* v1 = root->GetNode("./v1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get v1", v1 != 0);
+    // Verify the ref to v1/v1p_1 is found correctly (no duplication occurs)
+    Elem* e1 = root->GetNode("./edge1");
+    Elem* p2 = e1->GetNode("./P2");
+    string p2_cont;
+    p2->GetCont(p2_cont);
+    CPPUNIT_ASSERT_MESSAGE("Fail to set edge1/P2 with ref", p2_cont == "./../../v1/v1p_1/v1p_1_1");
+    iEnv->Root()->Chromos().Save("ut_mut_rm_recrinh_res.xml_");
     delete iEnv;
 }
 
@@ -392,6 +434,7 @@ void Ut_mut::test_MutDepsRmRef()
     mut.SetAttr(ENa_MutNode, "./edge1/P1");
     mut.SetAttr(ENa_Ref, "");
     root->Mutate(EFalse, ETrue, ETrue);
+    /*
     root->CompactChromo();
     iEnv->Root()->Chromos().Save("ut_mut_dep_refs_res1.xml_");
     delete iEnv;
@@ -401,11 +444,13 @@ void Ut_mut::test_MutDepsRmRef()
     iEnv->ConstructSystem();
     root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root after compacting", root != 0);
+    */
     ChromoNode mut1 = root->Mutation().Root().AddChild(ENt_Rm);
     mut1.SetAttr(ENa_MutNode, "./v1/v1_0");
     root->Mutate(EFalse, ETrue, ETrue);
     v1_0 = root->GetNode("./v1/v1_0");
     CPPUNIT_ASSERT_MESSAGE("Mutation -rm- of v1_0 from root is refused", v1_0 == NULL);
+    iEnv->Root()->Chromos().Save("ut_mut_dep_refs_res1.xml_");
     delete iEnv;
 }
 
@@ -745,7 +790,47 @@ void Ut_mut::test_Compact1()
     delete iEnv;
 }
 
-// Compactization of chromo
+// Optimization of chromo: -rm- with deps -parent- and -ref-
+// Resolving deps, optimized on fly, checking out that -rm- is optimized
+void Ut_mut::test_OptRmDeps()
+{
+    printf("\n === Test of mutation consistency, mut -rm-, dep - ref to node \n");
+    iEnv = new Env("Env", "ut_opt_rm_deps.xml", "ut_opt_rm_deps.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+     // Check creation first
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    Elem* v1 = root->GetNode("./v1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get v1", v1 != 0);
+    // Try to remove v1_0 from v1 - unsafe mutation
+    ChromoNode mut = root->Mutation().Root().AddChild(ENt_Rm);
+    mut.SetAttr(ENa_MutNode, "./v1");
+    root->Mutate(EFalse, ETrue, ETrue);
+    // Check that the mutation is refused because not being safe -
+    // there are deps with the rank higher than the rank of this mutatins,
+    // so error will occur if node is deleted
+    v1 = root->GetNode("./v1");
+    CPPUNIT_ASSERT_MESSAGE("Mutation -rm- of v1 is not refused", v1 != NULL);
+    // Remove critical deps and try to remove v1_0 again
+    Elem* edge1 = root->GetNode("./edge1");
+    mut = edge1->Mutation().Root().AddChild(ENt_Cont);
+    mut.SetAttr(ENa_MutNode, "./P1");
+    mut.SetAttr(ENa_Ref, "");
+    edge1->Mutate(EFalse, ETrue, ETrue);
+    mut = root->Mutation().Root().AddChild(ENt_Rm);
+    mut.SetAttr(ENa_MutNode, "./v1_0_i1");
+    root->Mutate(EFalse, ETrue, ETrue);
+    ChromoNode mut1 = root->Mutation().Root().AddChild(ENt_Rm);
+    mut1.SetAttr(ENa_MutNode, "./v1");
+    root->Mutate(EFalse, ETrue, ETrue);
+    v1 = root->GetNode("./v1");
+    iEnv->Root()->Chromos().Save("ut_opt_rm_deps_res1.xml_");
+    CPPUNIT_ASSERT_MESSAGE("Mutation -rm- of v1 from root is refused", v1 == NULL);
+    delete iEnv;
+}
+
+// Optimization of chromo
 void Ut_mut::test_Compact2()
 {
     printf("\n === Test of compacting of chromo: renaming\n");
@@ -818,13 +903,9 @@ void Ut_mut::test_Compact3()
     root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root after compacting", root != 0);
     v3 = root->GetNode("./(Vert:)v3");
+    TInt compsnum = root->Comps().size();
     CPPUNIT_ASSERT_MESSAGE("V3 is not removed", v3 == NULL);
-    ChromoNode::Iterator it1 = root->Chromos().Root().Begin(); 
-    it1++; it1++;
-    ChromoNode mut1 = *it1;
-    is_mut_correct = mut1.Type() == ENt_Node && mut1.Attr(ENa_Id) == "v3";
-    is_mut_deact = !mut1.IsActive();
-    CPPUNIT_ASSERT_MESSAGE("Mut of creation v3 is missing in opt disabling mode", is_mut_correct && !is_mut_deact);
+    CPPUNIT_ASSERT_MESSAGE("Mut of creation v3 is missing in opt disabling mode", compsnum == 5);
     delete iEnv;
 
 }
@@ -883,9 +964,11 @@ void Ut_mut::test_CompactRef1()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root after compacting", root != 0);
     ChromoNode rnode = root->Chromos().Root();
     ChromoNode::Reverse_Iterator it = rnode.Rbegin(); 
+    it++; it++;
     ChromoNode mut = *it;
-    TBool is_cont_ref = mut.Type() == ENt_Cont && mut.Attr(ENa_MutNode) == "Edge1/P2";
-    CPPUNIT_ASSERT_MESSAGE("Fail to keep cont ref mut unsqueezed", is_cont_ref);
+    TBool is_cont_ref = mut.Type() == ENt_Cont && mut.Attr(ENa_MutNode) == "./Edge1/P2";
+    TBool is_mut_deact = !mut.IsActive();
+    CPPUNIT_ASSERT_MESSAGE("Fail to optmize mut out", is_cont_ref && is_mut_deact);
 
 
     delete iEnv;

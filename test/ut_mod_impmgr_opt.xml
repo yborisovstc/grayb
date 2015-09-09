@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for env imports manager + soft optimization
+ Verifying optimization when there are de-attached chromos
+ ref. ds_mut_sqeezing_so_prnc_att
+ /test/Modules/Mod4_root/Mod_comp_2 is deattached and in turm 
+ contains deattached node Mod5_comp_2_1. So error occurs when
+ creating v4 with soft opt on-fly mode. Even if Mod_comp_2
+ chromo does exists, the chromo of Mod5_comp_2_1 recreates so
+ opt done in it is missing when v4 creation. 
+-->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd">
+
+<node id="test" parent="Vert">
+    <node id="Modules" parent="Elem"/>
+    <import id="/Mod4_root/Mod_comp_2"/>
+    <node id="v1" parent="Vert"/>
+    <node id="v4" parent="/test/Modules/Mod4_root/Mod_comp_2"/>
+</node>
+

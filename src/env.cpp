@@ -195,7 +195,7 @@ void ImportsMgr::ImportToNode(Elem* aNode, const ChromoNode& aMut, const ChromoN
 	    Chromo* mut = mHost.Provider()->CreateChromo();
 	    mut->Init(ENt_Node);
 	    mut->Root().AddChild(aMut);
-	    aNode->Mutate(mut->Root(), ETrue);
+	    aNode->Mutate(mut->Root(), ETrue, EFalse, EFalse);
 	    delete mut;
 	} else {
 	    // Node already exists, go to lower layer if sel is not achieved yet
@@ -359,7 +359,7 @@ void Env::ConstructSystem()
 	    long int beg_us = tp.tv_sec * 1000000 + tp.tv_usec;
 	    Logger()->Write(MLogRec::EInfo, iRoot, "Started of creating system, spec [%s]", iSystSpec.c_str());
 	    iRoot->SetMutation(root);
-	    iRoot->Mutate();
+	    iRoot->Mutate(EFalse, EFalse, EFalse);
 	    gettimeofday(&tp, NULL);
 	    long int fin_us = tp.tv_sec * 1000000 + tp.tv_usec;
 	    ss << (fin_us - beg_us);

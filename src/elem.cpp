@@ -1150,7 +1150,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	ChromoNode rno = (*rit);
 	// Omit inactive mutations
 	if (iEnv->ChMgr()->EnableOptimization() && rno.AttrExists(ENa_Inactive)) {
-	    if (!aRunTime && !aTrialMode) {
+	    if (!aRunTime) {
 		iChromo->Root().AddChild(rno);
 	    }
 	    continue;
@@ -1362,6 +1362,10 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 			    if (refex) {
 				AddCMDep(chn, ENa_Ref, rnode);
 			    }
+			    // Optimize the chromo for the mutation
+			    if (aTrialMode) {
+				CompactChromo(chn);
+			    }
 			}
 		    }
 		    else {
@@ -1556,7 +1560,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 			    // Mutate object 
 			    long t5; if (ptrace) t5 = GetClock();
 			    elem->SetMutation(aNode);
-			    elem->Mutate(EFalse, ecsaf);
+			    elem->Mutate(EFalse, ecsaf, aTrialMode);
 			    if (ptrace) { long t5_6 = GetClockElapsed(t3); Logger()->Write(MLogRec::EInfo, this, "Adding node, t5-t6: %d", t5_6);}
 			    //Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
 			    /*
@@ -1689,7 +1693,7 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
 	ChromoNode root = iChromo->Root();
 	heir->SetMutation(root);
 	// Mutate run-time only - !! DON'T UPDATE CHROMO, ref UC_019
-	heir->Mutate(ETrue);
+	heir->Mutate(ETrue, ETrue, EFalse);
 	if (EN_PERF_TRACE) Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p3 ");
 	// Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo
 	// Mutated with parent's own chromo - so panent's name is the type now. Set also the parent, but it will be updated further
@@ -2394,6 +2398,10 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
 			    ChromoNode chn = iChromo->Root().AddChild(aSpec);
 			    AddCMDep(chn, ENa_MutNode, node);
 			    mutadded = ETrue;
+			    // Optimize the chromo for the mutation
+			    if (aTrialMode) {
+				CompactChromo(chn);
+			    }
 			}
 		    } else {
 			Logger()->Write(MLogRec::EErr, this,
@@ -2576,6 +2584,11 @@ TBool Elem::IsHeirOf(const string& aParent) const
 TBool Elem::IsChromoAttached() const
 {
     return iChromo->Root().Root() == GetRoot()->iChromo->Root();
+}
+
+TBool Elem::IsMutAttached(const ChromoNode& aMut) const
+{
+    return aMut.Root() == GetRoot()->iChromo->Root();
 }
 
 // Getting owner that is attached. It can differ from owner that attaches the node
@@ -2818,6 +2831,12 @@ void Elem::GetDepRank(const TMDep& aDep, Rank& aRank)
     aDep.first.first->GetRank(aRank, mut);
 }
 
+TBool Elem::IsDepActive(const TMDep& aDep)
+{
+    ChromoNode mut = aDep.first.first->Chromos().CreateNode(aDep.first.second);
+    return mut.IsActive();
+}
+
 void Elem::GetMajorDep(TMDep& aDep, TBool aUp, TBool aDown)
 {
     //Logger()->Write(MLogRec::EInfo, this, "Gmd");
@@ -2837,7 +2856,7 @@ void Elem::GetMajorDep(TMDep& aDep, TBool aUp, TBool aDown)
 	TMDep dep = *it;
 	Rank rd;
 	GetDepRank(dep, rd);
-	if (rd > rc) {
+	if (IsDepActive(dep) && rd > rc) {
 	    rc = rd;
 	    aDep = dep;
 	    // TODO [YB] Do we need it ?
@@ -2898,7 +2917,7 @@ void Elem::GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDPath aDpath, MChr
 	    Rank rd;
 	    ChromoNode dcn = iChromo->CreateNode(dep.first.second);
 	    dep.first.first->GetRank(rd, dcn);
-	    if (rd > rc) {
+	    if (IsDepActive(dep) && rd > rc) {
 		rc = rd;
 		aDep = dep;
 		/*
@@ -3013,138 +3032,32 @@ TBool Elem::HasInherDeps(const Elem* aScope) const
     TBool res = EFalse;
     for (TNMReg::const_iterator it = iChilds.begin(); it != iChilds.end() && !res; it++) {
 	Elem* comp = it->second;
-	res =  !aScope->IsComp(comp);
+	res = !comp->IsRemoved() && !aScope->IsComp(comp);
     }
     for (TNMReg::const_iterator it = iMComps.begin(); it != iMComps.end() && !res; it++) {
 	Elem* comp = it->second;
-	res = comp->HasInherDeps(aScope);
+	res = !comp->IsRemoved() && comp->HasInherDeps(aScope);
     }
     return res;
 }
 
 void Elem::CompactChromo()
 {
-    // First compact the components
-    /*
-    for (vector<Elem*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
-	Elem* comp = *it;
-	comp->CompactChromo();
-    }
-    */
     // Going thru mutations in chromo
     ChromoNode croot = iChromo->Root();
     ChromoNode::Iterator mit = croot.Begin();
     while (mit != croot.End()) {
-	TBool mut_removed = EFalse;
 	ChromoNode gmut = (*mit);
-	Rank grank;
-	gmut.GetRank(grank);
-	TNodeType muttype = gmut.Type();
-	if (muttype == ENt_Node) {
-	    // Get node this mutation relates to
-	    TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_Id);
-	    if (iCMRelReg.count(key) > 0) {
-		Elem* node = iCMRelReg.at(key);
-		// Compact the node
-		node->CompactChromo();
-	    }
-	    else {
-		Logger()->Write(MLogRec::EErr, this, "Chromo squeezing: cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
-	    }
+	// Avoid optimizing out deattached mutations, ref ds_mut_sqeezing_so_prnc_att
+	if (IsMutAttached(gmut)) {
+	    CompactChromo(gmut);
 	}
-	else if (false && muttype == ENt_Change) {
-	    // Get node this mutation relates to
-	    TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
-	    if (iCMRelReg.count(key) > 0) {
-		Elem* node = iCMRelReg.at(key);
-		string new_val(gmut.Attr(ENa_MutVal));
-		// Get mutations that depends on this node, and have lower rank
-		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
-		    TMDep dep = *it;
-		    ChromoNode mut = iChromo->CreateNode(dep.first.second);
-		    Rank rank;
-		    mut.GetRank(rank);
-		    if (rank >= grank) break;
-		    // Correct mutation
-		    if (dep.second == ENa_Id) {
-			mut.SetAttr(dep.second, new_val);
-		    }
-		    else if (dep.second == ENa_Parent) {
-			mut.SetAttr(dep.second, node->GetUri(dep.first.first));
-		    }
-		}
-	    }
-	    else {
-		Logger()->Write(MLogRec::EErr, this, "Chromo squeezing: cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
-	    }
-	    // Remove mutation
-	    gmut.Rm();
-	    RmCMDep(gmut, ENa_MutNode);
-	    mut_removed = ETrue;
-	}
-	else if (muttype == ENt_Cont) {
-	    // Get node this mutation relates to
-	    TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
-	    if (iCMRelReg.count(key) > 0) {
-		Elem* node = iCMRelReg.at(key);
-		// Get -cont- mutations that depends on this node, and have lower rank
-		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
-		    TMDep dep = *it;
-		    ChromoNode mut = iChromo->CreateNode(dep.first.second);
-		    Rank rank;
-		    mut.GetRank(rank);
-		    if (rank >= grank) break;
-		    // Deactivate mutation
-		    if (mut.Type() == ENt_Cont && dep.second == ENa_MutNode) {
-			mut.Deactivate();
-		    }
-		}
-	    }
-	    else {
-		Logger()->Write(MLogRec::EErr, this, "Chromo squeezing: cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
-	    }
-	}
-	else if (muttype == ENt_Rm) {
-	    // Get node this mutation relates to
-	    TBool corrected = EFalse;
-	    TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
-	    if (iCMRelReg.count(key) > 0) {
-		// Deactivate mutation of creation of deleted node
-		Elem* node = iCMRelReg.at(key);
-		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
-		    TMDep dep = *it;
-		    ChromoNode mut = iChromo->CreateNode(dep.first.second);
-		    Rank rank;
-		    mut.GetRank(rank);
-		    if (mut.Type() == ENt_Node && (dep.second == ENa_MutNode) || dep.second == ENa_Id) {
-			mut.Deactivate();
-			corrected = ETrue;
-		    }
-		}
-		// Deativete -rm- mutation only is origin mutation of creating node was deactivated
-		if (corrected) {
-		    gmut.Deactivate();
-		}
-	    } else {
-		gmut.Deactivate();
-	    }
-	}
-
-	if (mut_removed) {
-	    // Start from the beginning to have valid iterator
-	    mit = croot.Begin();
-	}
-	else {
-	    mit++;
-	}
+	mit++;
     }
 }
 
 void Elem::CompactChromo(const ChromoNode& aNode)
 {
-    // Going thru mutations in chromo
-    ChromoNode croot = iChromo->Root();
-    ChromoNode::Iterator mit = croot.Begin();
     TBool mut_removed = EFalse;
     ChromoNode gmut = aNode;
     Rank grank;
@@ -3162,10 +3075,11 @@ void Elem::CompactChromo(const ChromoNode& aNode)
 	    Logger()->Write(MLogRec::EErr, this, "Chromo squeezing: cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
 	}
     }
-    else if (muttype == ENt_Change) {
+    else if (false && muttype == ENt_Change) {
 	// Get node this mutation relates to
-	Elem* node = GetCMDep(gmut, ENa_MutNode);
-	if (node != NULL) {
+	TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
+	if (iCMRelReg.count(key) > 0) {
+	    Elem* node = iCMRelReg.at(key);
 	    string new_val(gmut.Attr(ENa_MutVal));
 	    // Get mutations that depends on this node, and have lower rank
 	    for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
@@ -3196,58 +3110,20 @@ void Elem::CompactChromo(const ChromoNode& aNode)
 	TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
 	if (iCMRelReg.count(key) > 0) {
 	    Elem* node = iCMRelReg.at(key);
-	    TInt tobecorrected = 0, corrected = 0;
-	    TBool isref = gmut.AttrExists(ENa_Ref);
-	    if (isref) {
-		Rank refrank;
-		// Get dep on ref, rank of it
-		key = TCMRelFrom(gmut.Handle(), ENa_Ref);
-		if (iCMRelReg.count(key) > 0) {
-		    Elem* ref = iCMRelReg.at(key);
-		    ref->GetRank(refrank);
-		}
-		string new_val = gmut.Attr(ENa_Ref);
-		// Get mutations that depends on this node, and have lower rank
-		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
-		    TMDep dep = *it;
-		    ChromoNode mut = iChromo->CreateNode(dep.first.second);
-		    Rank rank;
-		    mut.GetRank(rank);
-		    if (rank >= grank) break;
-		    // Correct mutation
-		    if (mut.Type() == ENt_Cont && mut.AttrExists(ENa_Ref) && dep.second == ENa_MutNode) {
-			tobecorrected++;
-			if (rank > refrank) {
-			    mut.SetAttr(ENa_Ref, new_val);
-			    corrected++;
-			}
+	    // Get -cont- mutations that depends on this node, and have lower rank
+	    for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
+		TMDep dep = *it;
+		ChromoNode mut = iChromo->CreateNode(dep.first.second);
+		Rank rank;
+		mut.GetRank(rank);
+		if (rank >= grank) break;
+		// Deactivate mutation
+		if (mut.Type() == ENt_Cont && dep.second == ENa_MutNode) {
+		    // Avoid optimizing out deattached mutations, ref ds_mut_sqeezing_so_prnc_att
+		    if (IsMutAttached(mut)) {
+			mut.Deactivate();
 		    }
 		}
-	    }
-	    else {
-		string new_val = gmut.Attr(ENa_MutVal);
-		// Get mutations that depends on this node, and have lower rank
-		TInt tobecorrected = 0, corrected = 0;
-		for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
-		    TMDep dep = *it;
-		    ChromoNode mut = iChromo->CreateNode(dep.first.second);
-		    Rank rank;
-		    mut.GetRank(rank);
-		    if (rank >= grank) break;
-		    // Correct mutation
-		    if (mut.Type() == ENt_Cont && mut.AttrExists(ENa_MutVal) && dep.second == ENa_MutNode) {
-			tobecorrected++;
-			mut.SetAttr(ENa_MutVal, new_val);
-			corrected++;
-		    }
-		}
-	    }
-	    // Remove mutation
-	    // Only if the correction has been done. This is because the mutation can be initial content change
-	    if (corrected == tobecorrected && corrected > 0) {
-		gmut.Rm();
-		RmCMDep(gmut, ENa_MutNode);
-		mut_removed = ETrue;
 	    }
 	}
 	else {
@@ -3255,37 +3131,31 @@ void Elem::CompactChromo(const ChromoNode& aNode)
 	}
     }
     else if (muttype == ENt_Rm) {
-	// Get node this mutation relates to, using inher hier to get the removed node
-	Elem* node = GetCMDep(gmut, ENa_MutNode);
-	if (node != NULL) {
-	    // Remove mutation of creation of deleted node
-	    TMDeps::iterator it = node->GetMDeps().begin();
-	    TMDep dep = *it;
-	    ChromoNode cmut = iChromo->CreateNode(dep.first.second);
-	    cmut.Rm();
-	    /*
-	    // Get mutations that depends on this node, and have lower rank
+	// Get node this mutation relates to
+	TBool corrected = EFalse;
+	TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
+	if (iCMRelReg.count(key) > 0) {
+	    // Deactivate mutation of creation of deleted node
+	    Elem* node = iCMRelReg.at(key);
 	    for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
-	    TMDep dep = *it;
-	    ChromoNode mut = iChromo->CreateNode(dep.first.second);
-	    Rank rank;
-	    mut.GetRank(rank);
-	    if (rank >= grank) break;
-	    // Correct mutation is not required, the corresponding -node- mut has been already deleted
+		TMDep dep = *it;
+		ChromoNode mut = iChromo->CreateNode(dep.first.second);
+		Rank rank;
+		mut.GetRank(rank);
+		if (mut.Type() == ENt_Node && (dep.second == ENa_MutNode) || dep.second == ENa_Id) {
+		    // Avoid optimizing out deattached mutations, ref ds_mut_sqeezing_so_prnc_att
+		    if (IsMutAttached(mut)) {
+			mut.Deactivate();
+			corrected = ETrue;
+		    }
+		}
 	    }
-	    */
-	    // Remove mutation
-	    gmut.Rm();
-	    TBool res = RmCMDep(gmut, ENa_MutNode);
-	    __ASSERT(res);
-	    mut_removed = ETrue;
-	}
-	else {
-	    // No relation found, so the node is removed - just remove mutation
-	    gmut.Rm();
-	    TBool res = RmCMDep(gmut, ENa_MutNode);
-	    __ASSERT(res);
-	    mut_removed = ETrue;
+	    // Deativete -rm- mutation only is origin mutation of creating node was deactivated
+	    if (corrected) {
+		gmut.Deactivate();
+	    }
+	} else {
+	    gmut.Deactivate();
 	}
     }
 }
@@ -3576,7 +3446,7 @@ void Elem::CopyParentModifsToComp(Elem* aComp)
 		}
 		// No need to rebase refs because it's relative to targ
 		newmut.SetAttr(ENa_MutNode, curi);
-		Mutate(EFalse, ETrue, ETrue);
+		Mutate(EFalse, ETrue, EFalse);
 	    }
 	}
     }
@@ -3666,8 +3536,13 @@ TBool Elem::ImportNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode
     TBool mutadded = EFalse;
     string srcs = aSpec.Attr(ENa_Id);
     res = impmgr->Import(srcs);
-    if (!aRunTime && !mutadded && !aTrialMode) {
+    if (!aRunTime && (res || !res && !aTrialMode)) {
 	iChromo->Root().AddChild(aSpec);
     }
     return ETrue;
+}
+
+Elem* Elem::GetComp(TInt aInd)
+{
+    return iComps.at(aInd);
 }

@@ -89,7 +89,7 @@ TBool AImports::Import(const string& aUri)
 	if (sel.Handle() != NULL) {
 	    // Reduce chromo to target node, mutate and check
 	    iMut->ReduceToSelection(sel);
-	    Mutate();
+	    Mutate(EFalse, ETrue, EFalse);
 	    res = GetNode(aUri);
 	} else {
 	    Logger()->Write(MLogRec::EErr, this, "Importing to module: cannot find chromo node [%s]", aUri.c_str());

@@ -155,8 +155,9 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void SetMutation(const ChromoNode& aMuta);
 	ChromoNode AppendMutation(const ChromoNode& aMuta);
 	TBool AppendMutation(const string& aFileName);
-	void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue, TBool aTrialMode = EFalse);
-	void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue, TBool aTrialMode = EFalse);
+	void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue, TBool aTrialMode = ETrue);
+	void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue,
+		TBool aTrialMode = ETrue);
 	string PName() const;
 	const vector<Elem*>& Comps() const;
 	static void ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct);
@@ -182,6 +183,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool IsAownerOf(const Elem* aElem) const;
 	// Checks if elements chromo is attached. Ref UC_019 for details
 	TBool IsChromoAttached() const;
+	TBool IsMutAttached(const ChromoNode& aMut) const;
 	Elem* GetAttachingMgr();
 	Elem* GetAttachedAowner();
 	Elem* GetAowner();
@@ -285,6 +287,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void RemoveMDep(const TMDep& aDep, const Elem* aContext = NULL);
 	void RmMCDeps();
 	static void GetDepRank(const TMDep& aDep, Rank& aRank);
+	static TBool IsDepActive(const TMDep& aDep);
 	// Adding two directions chromo-model dependencies
 	void AddCMDep(const ChromoNode& aMut, TNodeAttr aAttr, Elem* aNode);
 	TBool RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr, const Elem* aContext = NULL);
@@ -350,6 +353,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	static long GetClockElapsed(const timespec& aStart, timespec& aEnd);
 	static long GetClockElapsed(long aStart);
 	static long GetClock();
+	// Debugging
+	Elem* GetComp(TInt aInd);
     protected:
 	// Element type - parent's chain
 	// TODO [YB] Is it needed now after implementing inheritance chain?
