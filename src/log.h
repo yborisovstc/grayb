@@ -30,6 +30,8 @@ class GLogRec: public Base, public MLogRec
 	TBool iLogFileValid;
 	MLogObserver* iObs;
 	TInt mCtxMutId;
+    public:
+	static const TInt KLogRecBufSize;
 };
 
 #endif

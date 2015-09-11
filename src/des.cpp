@@ -893,8 +893,12 @@ void StateAgent::Update()
     if (eprepu != NULL) {
 	MUpdatable* upd = eprepu->GetObj(upd);
 	if (upd != NULL) {
-	    if (upd->Update()) {
-		SetUpdated();
+	    try {
+		if (upd->Update()) {
+		    SetUpdated();
+		}
+	    } catch (std::exception e) {
+		Logger()->Write(MLogRec::EErr, this, "Unspecified error on update");
 	    }
 	    ResetActive();
 	}
@@ -1015,8 +1019,12 @@ void ADes::Update()
 	    MDesSyncable* msync = eit->GetObj(msync);
 	    if (msync != NULL) {
 		if (msync->IsActive()) {
-		    msync->Update();
-		    SetUpdated();
+		    try {
+			msync->Update();
+			SetUpdated();
+		    } catch (std::exception e) {
+			Logger()->Write(MLogRec::EErr, this, "Error on update [%s]", eit->GetUri().c_str());
+		    }
 		}
 	    }
 	}

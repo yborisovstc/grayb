@@ -3,7 +3,7 @@
 #include "elem.h"
 #include <sys/time.h>
 
-const TInt KLogRecBufSize = 400;
+const TInt GLogRec::KLogRecBufSize = 400;
 
 const char* CtgText[MLogRec::ECtg_Max] = {"ERR", "WARN", "INFO", "DBG"};
 const char* KColSep = "; ";

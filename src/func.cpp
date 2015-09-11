@@ -4,6 +4,7 @@
 #include "prop.h"
 #include "mdata.h"
 #include "func.h"
+#include "log.h"
 #include <stdio.h>
 
 string FuncBase::PEType()
@@ -1259,9 +1260,11 @@ Elem::TIfRange AFunVar::GetInps(TInt aId, TBool aOpt)
 
 void AFunVar::LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...)
 {
+    char buf[GLogRec::KLogRecBufSize];
     va_list list;
     va_start(list,aFmt);
-    Logger()->Write(aCtg, this, aFmt, list);
+    vsprintf(buf, aFmt, list);
+    Logger()->Write(aCtg, this, buf);
     va_end(list);
 }
 
@@ -1356,7 +1359,11 @@ void AFunVar::GetContInp(TInt aInd, string& aName, string& aCont) const
 		// Get name
 		aName = "Inp~ " + GetInpUri(aInd);
 		// Get requested iface
-		aCont.append(mFunc->GetInpExpType(aInd));
+		if (mFunc != NULL) {
+		    aCont.append(mFunc->GetInpExpType(aInd));
+		} else {
+		    aCont.append("??");
+		}
 		// Get value
 		aCont.append("<none>");
 		return;
@@ -2461,8 +2468,6 @@ template<class T> Func* FMplncDt<T>::Create(Host* aHost, const string& aString)
 	// Weak negotiation - just base on input type
 	MDVarGet* vget = aHost->GetInp(EInp1);
 	MDVarGet* vget2 = aHost->GetInp(EInp2);
-	string ss = vget->VarGetIfid();
-	bool ssb = ss == MDtGet<T>::Type();
 	if (vget != NULL && vget->VarGetIfid() == MDtGet<T>::Type() &&
 		vget2 != NULL && vget2->VarGetIfid() == MDtGet<T>::Type()) {
 	    res = new FMplncDt<T>(*aHost);
@@ -2512,6 +2517,8 @@ template<class T> void FMplncDt<T>::DtGet(T& aData)
 	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument");
 	    res = EFalse;
 	}
+    } else {
+	res = EFalse;
     }
     aData.mValid = res;
     if (mRes != aData) {
