@@ -302,8 +302,8 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDPath aDpath, MChromo::TDepsLevel aLevel, TBool aUp = ETrue, TBool aDown = ETrue);
 	// Chromo
 	ChromoNode GetChNode(const GUri& aUri) const;
-	void CompactChromo();
-	void CompactChromo(const ChromoNode& aNode);
+	TBool CompactChromo();
+	TBool CompactChromo(const ChromoNode& aNode);
 	void UndoCompactChromo();
 	inline MLogRec* Logger() const;
 	// Transformations

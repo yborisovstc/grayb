@@ -3041,8 +3041,9 @@ TBool Elem::HasInherDeps(const Elem* aScope) const
     return res;
 }
 
-void Elem::CompactChromo()
+TBool Elem::CompactChromo()
 {
+    TBool corrected = EFalse;
     // Going thru mutations in chromo
     ChromoNode croot = iChromo->Root();
     ChromoNode::Iterator mit = croot.Begin();
@@ -3050,15 +3051,17 @@ void Elem::CompactChromo()
 	ChromoNode gmut = (*mit);
 	// Avoid optimizing out deattached mutations, ref ds_mut_sqeezing_so_prnc_att
 	if (IsMutAttached(gmut)) {
-	    CompactChromo(gmut);
+	    corrected |= CompactChromo(gmut);
 	}
 	mit++;
     }
+    return corrected;
 }
 
-void Elem::CompactChromo(const ChromoNode& aNode)
+TBool Elem::CompactChromo(const ChromoNode& aNode)
 {
     TBool mut_removed = EFalse;
+    TBool corrected = EFalse;
     ChromoNode gmut = aNode;
     Rank grank;
     gmut.GetRank(grank);
@@ -3069,7 +3072,7 @@ void Elem::CompactChromo(const ChromoNode& aNode)
 	if (iCMRelReg.count(key) > 0) {
 	    Elem* node = iCMRelReg.at(key);
 	    // Compact the node
-	    node->CompactChromo();
+	    corrected = node->CompactChromo();
 	}
 	else {
 	    Logger()->Write(MLogRec::EErr, this, "Chromo squeezing: cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
@@ -3122,6 +3125,7 @@ void Elem::CompactChromo(const ChromoNode& aNode)
 		    // Avoid optimizing out deattached mutations, ref ds_mut_sqeezing_so_prnc_att
 		    if (IsMutAttached(mut)) {
 			mut.Deactivate();
+			corrected = ETrue;
 		    }
 		}
 	    }
@@ -3132,8 +3136,8 @@ void Elem::CompactChromo(const ChromoNode& aNode)
     }
     else if (muttype == ENt_Rm) {
 	// Get node this mutation relates to
-	TBool corrected = EFalse;
 	TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
+	// Optimize -rm- out only if there is original -node- mut, ref ds_mut_sqeezing_so_prnc_cnd
 	if (iCMRelReg.count(key) > 0) {
 	    // Deactivate mutation of creation of deleted node
 	    Elem* node = iCMRelReg.at(key);
@@ -3154,10 +3158,9 @@ void Elem::CompactChromo(const ChromoNode& aNode)
 	    if (corrected) {
 		gmut.Deactivate();
 	    }
-	} else {
-	    gmut.Deactivate();
 	}
     }
+    return corrected;
 }
 
 void Elem::UndoCompactChromo()

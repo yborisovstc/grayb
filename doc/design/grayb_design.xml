@@ -663,27 +663,59 @@
 		    model being generated from upper layer model. "Chromo of chromo" or chromo2 can include all operations
 		    of changing chromo, not only elementary but also operations like "squeeze chromo" etc.</simpara>
 	    </sect3>
+	    <sect3 id="ds_mut_sqeezing_so_prnc"><title>Soft optimization: principles</title>
+		<sect4 id="ds_mut_sqeezing_so_prnc_att"><title>To optimize only attached mutations</title>
+		    <simpara>The reasoning of this principle is that optimizing out de-attached mutations is not
+			permanent. There are a lot of use-cases causes to errors if this is not followed. For example
+		    ref to uint test Ut_mod::test_ImpsMgrOpt().</simpara>
+		</sect4>
+		<sect4 id="ds_mut_sqeezing_so_prnc_cnd"><title>To omit optimization if opt conditions aren't met.</title>
+		    <simpara>Example is: </simpara>
+		    <programlisting>
+			00 node A1
+			01 cont some_node ref=A1
+			03 rm A1
+		    </programlisting>
+		    <simpara>Mutation 03 is wrong, it was denied because A1 has dep of type -ref-. Of course
+			in normal surcumstances the mut -rm- couldn't be included to the chromo, but what is it
+			already happened? In this case -rm- mutation will not be applied, so optimization procedure
+			will not find original mut -node-. Let's consider this as not meeting optimization 
+			condition. In other words, we say that only chain of correct mutations has to be 
+			optimized, but not wrong mutations.</simpara>
+		    <simpara>There is another approach. We can say that any mutations that are "ecessive" in
+			chromo are to be optimized out. According to that, wrong mutations are to be optimized out too.
+			There is problem with this approach. If it is applied to the example above we will miss the
+			error messages in the log.
+		    </simpara>
+		    <simpara>Select approach#1 as working.</simpara>
+		</sect4>
+		<sect4 id="ds_mut_sqeezing_so_prnc_mp"><title>Optimization to be multy-pass procedure</title>
+		    <simpara>In result of first pass of optimization some mutations gets optimized out, this change
+			the chromo thus changes the conditions of optimization. So optimization has to be repeated
+			several times until the chromo gets unchanges.</simpara>
+		</sect4>
+	    </sect3>
 	    <sect3 id="ds_mut_sqeezing_rm"><title>Soft optimization: -rm- mutation</title>
 		<sect4><title>Procedure of optimization</title>
-		<simpara>Optimization rules are:</simpara>
-		<orderedlist>
-		    <listitem>Optimize out original -node- mutations (that is removed via -rm-) if there
-			are not critical dependencies (-parent- and -ref-). So there will be creator responsibility 
-			to release these deps first. There is alternative approach when deps of some type
-			(e.g. -ref-) are not blocking -rm- so optimized out automatically.</listitem>
-		    <listitem>Optimize out all remaining mutations dependent on removed node
-			(e.g. with -node- dep type)</listitem>
-		</orderedlist>
-		<simpara>Regarding approach of considering some deps not blocking. Does it make sense to 
-		    consider -parent- deps also not blocking. What would be the criteria of not blocking deps?
-		    The criteria would be that optimization out such dependence doesnt cause further propagation of
-		    optimization. For instance optimizing out -parent- dep leads to such propagation (optimizing out
-		    the child node equivalent to removing the node, this causes in turn necessity to optimize out
-		    the child of this node and so on. So -parent- dep doesn't satisfy the criteria of non-propagation.
-		    Probably it make sense to introduce new option "Removal policy: strict/soft" where strict
-		    policy assumes the critical deps are to be resolved by the user first but soft policy allowes
-		    automatically optimize out all the deps.
-		</simpara>
+		    <simpara>Optimization rules are:</simpara>
+		    <orderedlist>
+			<listitem>Optimize out original -node- mutations (that is removed via -rm-) if there
+			    are not critical dependencies (-parent- and -ref-). So there will be creator responsibility 
+			    to release these deps first. There is alternative approach when deps of some type
+			    (e.g. -ref-) are not blocking -rm- so optimized out automatically.</listitem>
+			<listitem>Optimize out all remaining mutations dependent on removed node
+			    (e.g. with -node- dep type)</listitem>
+		    </orderedlist>
+		    <simpara>Regarding approach of considering some deps not blocking. Does it make sense to 
+			consider -parent- deps also not blocking. What would be the criteria of not blocking deps?
+			The criteria would be that optimization out such dependence doesnt cause further propagation of
+			optimization. For instance optimizing out -parent- dep leads to such propagation (optimizing out
+			the child node equivalent to removing the node, this causes in turn necessity to optimize out
+			the child of this node and so on. So -parent- dep doesn't satisfy the criteria of non-propagation.
+			Probably it make sense to introduce new option "Removal policy: strict/soft" where strict
+			policy assumes the critical deps are to be resolved by the user first but soft policy allowes
+			automatically optimize out all the deps.
+		    </simpara>
 		</sect4>
 	    </sect3>
 	    <sect3 id="ds_mut_sqeezing_cont"><title>Soft optimization: -cont- mutaion</title>
@@ -734,23 +766,23 @@
 		<sect4><title>Processing mut opt attribute when analyzing deps</title>
 		    <simpara>After each optimization the model reloading would be required. This happens not always
 			but in principle we will need to reload the model. This is for instance because mutations to
-		    be optimized out are blocking deps for mutation creator is going to add. Example is:</simpara>
-		<programlisting>
-		    01  node A1 ...
-		    02  cont node=NN ref A1
-		    ...
-		    03  cont node=NN ref NONE
-		    04  rm node A1
-		</programlisting>
-		<simpara>Creator edits initial chromo {01, 02}, then he is going to remove A1. But A1 has 
-		    critical dep 03 of -ref- type, ref <xref linkend="ds_mut_sqeezing_rm"/>.
-		    To remove this dep creator change the ref to NONE. The ref
-		    is removed from the model but there is still mutation in chromo, so chromo machine still
-		    denies removal A1. To continue removing A1 creator needs to optimize the chromo (it will
-		    optimize out 02) first and then reload model. After that the dep 02 will not exist anymore and
-		    chromo machine allow removal A1. To avoid reloading another solution can be used - to analyze 
-		    optimization attribute of mutation when analyzing the deps.</simpara>
-	    </sect4>
+			be optimized out are blocking deps for mutation creator is going to add. Example is:</simpara>
+		    <programlisting>
+			01  node A1 ...
+			02  cont node=NN ref A1
+			...
+			03  cont node=NN ref NONE
+			04  rm node A1
+		    </programlisting>
+		    <simpara>Creator edits initial chromo {01, 02}, then he is going to remove A1. But A1 has 
+			critical dep 03 of -ref- type, ref <xref linkend="ds_mut_sqeezing_rm"/>.
+			To remove this dep creator change the ref to NONE. The ref
+			is removed from the model but there is still mutation in chromo, so chromo machine still
+			denies removal A1. To continue removing A1 creator needs to optimize the chromo (it will
+			optimize out 02) first and then reload model. After that the dep 02 will not exist anymore and
+			chromo machine allow removal A1. To avoid reloading another solution can be used - to analyze 
+			optimization attribute of mutation when analyzing the deps.</simpara>
+		</sect4>
 	</sect3>
     </sect2>
     <sect2 id="ds_drv_int"><title>How to derive from component of heirs</title>
