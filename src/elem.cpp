@@ -3119,7 +3119,7 @@ TBool Elem::CompactChromo(const ChromoNode& aNode)
 		ChromoNode mut = iChromo->CreateNode(dep.first.second);
 		Rank rank;
 		mut.GetRank(rank);
-		if (rank >= grank) break;
+		if (rank >= grank) continue;
 		// Deactivate mutation
 		if (mut.Type() == ENt_Cont && dep.second == ENa_MutNode) {
 		    // Avoid optimizing out deattached mutations, ref ds_mut_sqeezing_so_prnc_att
