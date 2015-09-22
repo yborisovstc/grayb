@@ -177,6 +177,8 @@ Elem* ImportsMgr::DoImport(const string& aUri)
 	    mHost.Logger()->Write(MLogRec::EErr, NULL, "Importing to module: cannot find chromo node [%s]", aUri.c_str());
 	}
 	delete chromo;
+    } else {
+	mHost.Logger()->Write(MLogRec::EErr, NULL, "Importing [%s]: cannot find module [%s]", aUri.c_str(), modname.c_str());
     }
     return res;
 }

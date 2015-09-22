@@ -92,8 +92,10 @@ TBool AImports::Import(const string& aUri)
 	    Mutate(EFalse, ETrue, EFalse);
 	    res = GetNode(aUri);
 	} else {
-	    Logger()->Write(MLogRec::EErr, this, "Importing to module: cannot find chromo node [%s]", aUri.c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Importing module: cannot find chromo node [%s]", aUri.c_str());
 	}
+    } else {
+	Logger()->Write(MLogRec::EErr, this, "Importing [%s]: cannot find module [%s]", aUri.c_str(), modname.c_str());
     }
 
     return res;
