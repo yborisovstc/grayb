@@ -1860,6 +1860,56 @@
 	    <sect3><title>Clarification</title> </sect3>
 	</sect2>
 
+	<sect2 id="uc_058"><title>UC_058 Module modification</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem>USER: client of SYSTEM</listitem>
+		    <listitem>ENV: modelling environment</listitem>
+		    <listitem>SYSTEM: modelling run-time</listitem>
+		    <listitem>MODEL: a model of system</listitem>
+		    <listitem>MODULE: some module imported in MODEL</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<orderedlist>
+		    <listitem>There is MODEL prepared. MODEL include import from MODULE.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>USER found some problem in MODEL. The problem relates to MODULE.</listitem>
+		    <listitem>USER request ENV for modification of MODULE - 
+			ENV provides USER with means of MODULE modification</listitem>
+		    <listitem>USER modifies MODEL properly</listitem>
+		    <listitem>USER request ENV for running MODEL with updated MODULE - ENV provides USER
+			with means of running MODEL with updated MODULE</listitem>
+		    <listitem>USER verifies that the problem is gone, USER request ENV to release MODULE updated - 
+			ENV provides USER with means of releasing MODULE - now updated MODULE is available for 
+			creating models.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_051"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_056"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Related to</title> </sect3>
+	    <sect3><title>Discussion</title>
+		<simpara>The main idea of the use-case is that environment should provide user with the means
+		of convenient modifying, verifying and releasing modules.</simpara>
+	    </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
     </sect1>
 
     <sect1 id="ps"><title>Proposals</title>
