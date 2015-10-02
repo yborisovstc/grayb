@@ -1699,6 +1699,26 @@
 	</sect2>
     </sect1>
 
+    <sect1 id="ds_da"><title>Distributed agents (DA)</title>
+	<sect2><title>Introduction.</title>
+	    <simpara>Creating of agents in separate execution environment should be supported. Ref TBD for use-case.
+		This assumes several kind of separate environment: thread, process, network node. These kinds of 
+		environments differs by interacting agents accessibility level. For separate thread environment the 
+		acess is direct, whereas for separate process there agents are existing in independent memory, so
+		cannot be accessed directly. In case of separate network node, the interaction should be performed
+		via some network protocole.</simpara>
+	</sect2>
+	<sect2><title>Problems to be considered</title>
+	    <sect3><title>How native hierarhy can be implemented for DA?</title>
+		<simpara>Currently the native hier is based on direct access to components - each agent has
+		components register where the direct access pointers to the components are stored.</simpara>
+	    <simpara>In fact the agent-container can store in the register "path" to component instead of
+		direct pointer. The nature of "path" depends on separate exection environment implementation.
+	    </simpara>
+	    </sect3>
+	</sect2>
+    </sect1>
+
     <sect1 id="ds_tohandle"><title>To handle</title>
 	<orderedlist>
 	    <listitem>Using mut order to ensure original sequence of muts, ref <xref linkend="ds_mut_dis_pheno"/> </listitem>
