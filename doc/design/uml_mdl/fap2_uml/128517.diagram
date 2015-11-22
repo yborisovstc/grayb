@@ -1,0 +1,11 @@
+format 74
+
+note 128005 "ICD of creation root in remote env. Approach \"dedicated remote env agent\" is used. It is assumed that the agent is a native one. Scenario is as: agent \"remote env agent\" creates root node in remote env."
+  xyzwh 19.5 11.5 2000 717 51
+classinstance 128133 class_ref 129925 // _daa_renv_agent
+  name ""   xyz 28 116 2000 life_line_z 2000
+classinstance 128261 class_ref 130053 // _daa_des_server
+  name ""   xyz 144 79 2000 life_line_z 2000
+note 128389 "ACTUAL"
+  color verylightorange  xyzwh 748 13 2000 79 49
+end

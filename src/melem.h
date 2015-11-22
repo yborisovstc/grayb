@@ -6,7 +6,7 @@
 #include <set>
 
 class ChromoNode;
-class Base;
+//class Base;
 class Elem;
 
 
@@ -55,8 +55,8 @@ class MElem
     public:
 	virtual const string& EType() const = 0;
 	virtual const set<string>& CompsTypes() = 0;
-	virtual Base* EBase() = 0;
-	virtual const Base* EBase() const = 0;
+//	virtual Base* EBase() = 0;
+//	virtual const Base* EBase() const = 0;
 	virtual MElem* GetMan() = 0;
 	virtual MElem* GetNode(const string& aUri) = 0;
 	virtual MElem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase) = 0;

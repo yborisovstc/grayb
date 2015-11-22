@@ -1,7 +1,7 @@
 format 74
 "fap2_uml"
-  revision 2
-  modified_by 3 "yborisov"
+  revision 3
+  modified_by 5 "yborisov"
 
 
   
@@ -42,4 +42,10 @@ format 74
   package_ref 128003 // fap2
 
   package_ref 128131 // fa2_studio_gtk
+
+  package_ref 128005 // distr_async_agents
+
+  package_ref 128389 // fap_srv
+
+  package_ref 128517 // stl
 end

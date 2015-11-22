@@ -49,6 +49,7 @@ class MChromoMdl
 	//virtual void SetAttr(void* aNode, TNodeAttr aType, TNodeType aVal) = 0;
 	//virtual void SetAttr(void* aNode, TNodeAttr aType, TNodeAttr aVal) = 0;
 	virtual void Dump(void* aNode, MLogRec* aLogRec) = 0;
+	virtual void ToString(void* aNode, string& aString) const = 0;
 	virtual void Save(const string& aFileName) const = 0;
 	virtual void* Find(const void* aHandle, const string& aUri) = 0;
 	virtual TInt GetOrder(void* aHandle, TBool aTree = EFalse) const = 0;
@@ -78,6 +79,7 @@ class MChromo
 	virtual const ChromoNode& Root() const= 0;
 	virtual void Set(const char *aFileName) = 0;
 	virtual TBool Set(const string& aUri) = 0;
+	virtual TBool SetFromSpec(const string& aSpec) = 0;
 	virtual void Set(const ChromoNode& aRoot) = 0;
 	virtual void Init(TNodeType aRootType) = 0;
 	virtual void Reset() = 0;

@@ -82,6 +82,20 @@ void* ChromoMdlX::Set(const char *aFileName)
     return sRoot;
 }
 
+void* ChromoMdlX::SetFromSpec(const string& aSpec)
+{
+    xmlNode *sEnv = NULL; // Node of environment element
+    xmlNode *sRoot = NULL; // Node of root element
+    // Read and parse the CAE spec file
+    Reset();
+    iDoc = xmlReadMemory(aSpec.c_str(), aSpec.size(), "noname.xml", NULL, XML_PARSE_DTDLOAD | XML_PARSE_DTDVALID);
+    __ASSERT(iDoc != NULL);
+    // Get the node 
+    sRoot = (xmlNodePtr) GetFirstChild((void *) iDoc, ENt_Node);
+    iDocOwned = EFalse;
+    return sRoot;
+}
+
 void* ChromoMdlX::Set(const string& aUri)
 {
     xmlNodePtr res = NULL;
@@ -406,6 +420,13 @@ void ChromoMdlX::Dump(void* aNode, MLogRec* aLogRec)
     aLogRec->WriteFormat("%s", xmlBufferContent(bufp));
 }
 
+void ChromoMdlX::ToString(void* aNode, string& aString) const
+{
+    xmlBufferPtr bufp = xmlBufferCreate();	
+    int	res = xmlNodeDump(bufp, iDoc, (xmlNodePtr) aNode, 0, 0);
+    aString.assign((const char*)(xmlBufferContent(bufp)));
+}
+
 void ChromoMdlX::Save(const string& aFileName) const
 {
     int res = xmlSaveFormatFile(aFileName.c_str(), iDoc, 4);
@@ -543,6 +564,18 @@ TBool ChromoX::Set(const string& aUri)
 	res = ETrue;
     }
     return res;
+}
+
+TBool ChromoX::SetFromSpec(const string& aSpec)
+{
+    TBool res = EFalse;
+    void *root = iMdl.SetFromSpec(aSpec);
+    if (root != NULL) {
+	iRootNode = ChromoNode(iMdl, root);
+	res = ETrue;
+    }
+    return res;
+
 }
 
 void ChromoX::Set(const ChromoNode& aRoot)

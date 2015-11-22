@@ -83,6 +83,7 @@ class Env: public Base, public MEnv
 public:
 	static const char* Type() { return "GEnv";};
 	Env(const string& aName, const string& aSpecFile, const string& aLogFileName = string());
+	Env(const string& aName, const string& aSpec, const string& aLogFileName, TBool aOpt);
 	virtual ~Env();
 	// Separated from constructor because constr can be followed by second phase - setting providers etc.
 	void ConstructSystem();
@@ -105,7 +106,8 @@ private:
 	GFactory *iProvider;
 	ChromoMgr* iChMgr;
 	ImportsMgr* iImpMgr;
-	string iSystSpec;
+	string iSpecFile;
+	string iSpec;
 	Chromo* iSpecChromo;
 	TBool mEnPerfTrace;
 };

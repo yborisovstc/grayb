@@ -92,4 +92,4 @@ include_HEADERS = \
 		  incaps.h
 
 
-libgrayb_la_LDFLAGS = -rdynamic -no-undefined
+libgrayb_la_LDFLAGS = -rdynamic -no-undefined -lrt

@@ -124,7 +124,9 @@
 	    <programlisting>
 		n1/n2/n3/p3:p2:p1:node
 	    </programlisting>
-	    <simpara>No need to isolate the branch because the end of inheritance relation branch (p3:p2:p1) can be simply determined by changing of relation separator from ":" to "/"</simpara>
+	    <simpara>No need to isolate the branch because the end of inheritance relation branch (p3:p2:p1) can be simply determined by changing of relation separator
+		from ":" to "/"</simpara>
+	    <simpara>In some cases other relation types are required.</simpara>
 	</sect2>
     </sect1>
 
@@ -1699,23 +1701,442 @@
 	</sect2>
     </sect1>
 
-    <sect1 id="ds_da"><title>Distributed agents (DA)</title>
+    <sect1 id="ds_da"><title>Distributed asyncronous agents (DAA)</title>
 	<sect2><title>Introduction.</title>
 	    <simpara>Creating of agents in separate execution environment should be supported. Ref TBD for use-case.
-		This assumes several kind of separate environment: thread, process, network node. These kinds of 
+		This assumes several kind of separate execution environment: thread, process, network node. These kinds of 
 		environments differs by interacting agents accessibility level. For separate thread environment the 
 		acess is direct, whereas for separate process there agents are existing in independent memory, so
 		cannot be accessed directly. In case of separate network node, the interaction should be performed
 		via some network protocole.</simpara>
 	</sect2>
+	<sect2><title>Refs</title>
+	    <biblioentry id="ref_crm_drds"> <abbrev>CRM_DRDS</abbrev>
+		<productname><ulink url="http://www.sei.cmu.edu/reports/93tr010.pdf"/></productname>
+		<title>Craig Meyers. The Use of ASN.1 and XDR for Data Representation in Real-Time Distributed Systems</title> </biblioentry>
+	</sect2>
 	<sect2><title>Problems to be considered</title>
-	    <sect3><title>How native hierarhy can be implemented for DA?</title>
+	    <sect3><title>How native hierarhy can be implemented for DAA?</title>
 		<simpara>Currently the native hier is based on direct access to components - each agent has
 		components register where the direct access pointers to the components are stored.</simpara>
 	    <simpara>In fact the agent-container can store in the register "path" to component instead of
 		direct pointer. The nature of "path" depends on separate exection environment implementation.
 	    </simpara>
 	    </sect3>
+	</sect2>
+	<sect2><title>Executing environment types.</title>
+	    <simpara>There can be several types of remote environment related to the initial environment:</simpara>
+	    <itemizedlist>
+		<listitem>Separate thread environment</listitem>
+		<listitem>Separate process environment</listitem>
+		<listitem>Separate network node environment</listitem>
+	    </itemizedlist>
+	    <simpara>These types of environments differs by interaction mechanism. For the separate thread envoronment it could be named pipes, for
+		separate process it could be named pipes or sockets, for separate network node it could be sockets, etc.</simpara>
+	    <simpara>There can be some environments on the same nw node. Do we need specific service on nw node that handles request for 
+		creating env and serves as proxy for interacting to envs on this node? Or env itself will be responsible to create other envs on the
+		local node?</simpara>
+	    <simpara>Remote environment identification should be used to specify which env to interact to.</simpara>
+	</sect2>
+	<sect2 id="ds_daa_iact"><title>Distributed agent interactions mechanism overview</title>
+	    <simpara>Currently the agent model is based on direct syncronous communication between agents. 
+		DAA communication should be indirect and asyncronous. So the solution of how to update the model in order to support indirect and async
+		communication is the key part of DAA design. Let's overview the possible approaches for this: </simpara>
+	    <orderedlist>
+		<listitem><emphasis role="bold">Using proxy agent for the interactions:</emphasis>
+		    Ref <xref linkend="ds_daa_proxy"/> for the approach analysis. In <xref linkend="ds_daa_proxy_us_nav"/> there is outline of 
+		    the approach inconsistency, i.e. weakness.
+		</listitem>
+	    </orderedlist>
+	</sect2>
+	<sect2 id="ds_daa_proxy"><title>Interactions approach: Async agent proxy</title>
+	    <sect3><title>Intro</title>
+		<simpara>In <xref linkend="ds_daa_iact"/> the specific proxy was introduced as agent that represents assigned async agent in
+		    remote environment. The idea of proxy is to simplify interacting to the remote agent as much as possible. From this point of 
+		    view it should be an agent. However proxy doesn't implement base agents APIs directly but just redirects all the request
+		    to its proxied agent.  </simpara>
+		    <simpara> The proxy should also be point of interacting to proxied agent, so the proxy should expose specific APIs
+		    for async interaction. Such APIs currently missing in base agent. So there are the following approaches to be considered:
+		    <orderedlist>
+			<listitem><emphasis role="bold">To extend base agent APIs and functionality in order to support async interactions:</emphasis>
+			    Extending APIs seems superfluos because it's not required within single env.  </listitem>
+			<listitem><emphasis role="bold">Introduce new APIs in the proxy for async interactions:</emphasis>
+			    Ref <xref linkend="ds_daa_proxy_sa"/> for the approach analysis.
+			    Using specific APIs for async interactions any case leads to extending behaviour of 
+			    base agent. Base agent should be able to work both with "normal" agents and with specific APIs.  </listitem>
+			<listitem><emphasis role="bold">To keep current APIs by using blocking async communication</emphasis>
+			    This would allow to avoid serios update of base agent behaviour. The real non-blocking interaction in
+			    this case will be provided by specific type of agents, e.g. DES, ref <xref linkend="ds_daa_des"/>
+			    Ref <xref linkend="ds_daa_proxy_bl"/> for the approach analysis.
+			</listitem>
+		    </orderedlist>
+		</simpara>
+	    </sect3>
+	    <sect3><title>Should proxy be specific type of agent</title>
+		<simpara>On the one hand AA proxy is shown as proxied agent itself within the current env. 
+		    So we could assume that it has the same attributes as proxied agent: name, type, etc. On another hand it contradicts to the 
+		    generic design of agents, where the type (i.e. URI in native hier inher projection) of agent is unique. So the name of proxy
+		can be the same as proxied agent but the type has to be specific.</simpara>
+	    </sect3>
+	    <sect3><title>Interaction: customising proxy or env ?</title>
+		<simpara>There are two approached of implementing various kinds of interactions: to implement interactions type specifics on 
+		proxy or environment side.</simpara>
+	    </sect3>
+	    <sect3 id="ds_daa_proxy_sa"><title>Approach: AA proxy specific APIs</title>
+		<sect4><title>Use-case - gettng node</title>
+		    <simpara>Owner requests proxy to get node by native hier URI.</simpara>
+		</sect4>
+	    </sect3>
+	    <sect3 id="ds_daa_proxy_bl"><title>Approach: to keep current APIs by using blocking async communication</title>
+		<simpara></simpara>
+	    </sect3>
+	    <sect3 id="ds_daa_proxy_us_nav"><title> Use-case: Navigating through native hierarchy </title>
+		<simpara>The current sync agents model has the set of APIs for navigating thru native hierarchy:</simpara>
+		<programlisting>
+		    Elem* GetNode(const GUri&amp; aUri);
+		    Elem* GetMan();
+		    Elem* GetParent();
+		</programlisting>
+		<simpara>In sync agents system the navigating results in getting reference to some agent in native hier. This feature
+		    is core and should remaing in DAA. The only difference is that the reference to agent is not simple ref but a proxy dedicated
+		    for communicating to particular agent. It makes sense that such a proxy is persistent and takes place of agent in local native hier. On
+		    the firure below Env_1, Env_2 are executing environment, e.g independent processes on the same machine. Native hier fragment is agent 
+		    "owner" containing components "comp_1" and "comp_2". Agent "comp_2" is the child of the agent "parent".
+		    Because "comp_2" component is in environment separate from that executing "owner",
+		    the agent "owner" places "comp_2" proxy, that communicates to "comp_2" via IPC. On Env_2 side there is proxy "owner" for the agent "comp_2"
+		    that allows the agent to request it's owner for navigatng APIs. Similar proxies are for relation parent-child. The relations are bidirectional,
+		    so the corresponding proxies are required in Env_2 environment to perform interaction from the agent "comp_2" to its owner and parent.</simpara>
+		<figure id="fig_daa_ref"><imageobject> <imagedata fileref="pics/pic_daa_ref.png"/> </imageobject></figure>
+		<simpara>The figure shows that this approach is a bit inconsistent because in reality "parent"s proxy "comp_2" register as the child for the
+		    agent "parent" whereas the proxies parent is native agent "proxy". This inconsistency indicates logical weakens of the approach.</simpara>
+		<simpara>To keep this proxy based model more consistent we could to modify the current base agents implementation so the agents keeps in 
+		    its component and children registers not ref to agent itself but to iface of native hier node (MElem). Thus we could create specific class
+		    for the proxy and put into the registers the ifaces of real agent in case of the same env and ifaces of proxies in case of remote agent.</simpara>
+	    </sect3>
+	    <sect3 id="ds_daa_proxy_crh"><title>Use-case: Creating heir</title>
+		<simpara>The current sync agents model has the  APIs for creating heir:</simpara>
+		<programlisting>
+		    Elem* CreateHeir(const string&amp; aName, Elem* aMan);
+		</programlisting>
+		<simpara>Creating heir is based on some agent (existing in native hier) inheritance, it is performing in the phases:</simpara>
+		<itemizedlist>
+		    <listitem>Getting the parent in native hier</listitem>
+		    <listitem>Requesting the parent to create its hier</listitem>
+		    <listitem>Requesting created hier for mutation with the specified chromo.</listitem>
+		</itemizedlist>
+		<simpara>The first phase is supported in DAA because we keep native hier in the model. So owner gets parent or parents proxy. The second
+		    phase assumes that owner can control creation agent within separate executing environment. Obviously this should be the reponsibility
+		    of owners environment to provide owner with such capability. So, for instance env can be able to fork the process with separate env
+		    ruinning. Actually the second phase is being performed recursivelly: parent searches its own parent and request him to create heir etc. This
+		    recursive process end up with finding lowest level parent, i.e. native agent that actially is created by env (to be exact with envs
+		    native agents factory). Each level parent mutates the child in parents own context (i.e. child remains in parents native hier).
+		    After mutating the parent transit the child to upper layer parent, so the upper layer parent put the child its own context.
+		    Note that parents parent can live in separate env. So initial agent initializing the agent creation should ask env 
+		    for create new env and return ref to the created new env. Initial agent shoud pass this ref to the new agent parent as a context.
+		    So the ref is a context of recursive process of phase two. On the final point of phase two the low level parent finds that its parent
+		    doesn't exists in native hier but is a native agent, so low level parent asks env from the context (i.e. separate env) to create
+		    this native agent. Remote env creates the agent and returns ref to it. The low level parent requests the newly created agent (via ref)
+		    to mutate, so the creation process phase two upstream process starts unwinding.
+		    Ref <xref linkend="ds_daa_proxy_crh_icd"/> for detailed interaction diagram.  </simpara>
+		<simpara>So agents env should have API for creating new remote env, i.e. there should be proxy to remote env supported.</simpara>
+		<simpara>As mentioned above, "initial agent initializing the agent creation should ask env for create new env ...". But how can it be
+		    reflect in syntax. There are the following options:</simpara>
+		<orderedlist>
+		    <listitem id="ds_daa_proxy_crh_stx_attr"><emphasis role="bold">To introduce dedicated attribute "env" for mutation -node-.</emphasis>
+			<para>Ref <xref linkend="ds_daa_proxy_crh_stx_attr_alz"/> for the approach analysis.
+			</para>
+		    </listitem>
+		    <listitem id="ds_daa_proxy_crh_stx_agt"><emphasis role="bold">To use specific native agent type for "remote agent" (remote root).</emphasis>
+			<para> Ref <xref linkend="ds_daa_proxy_crh_stx_agt_alz"/> for the approach analysis.
+			    For instance we can introduce new agent for "separate process remote system", that can cover specifics for "remote". 
+			    Actually this agent should be proxy, that also requests env to create proxied agent, so env creates remote env first.</para></listitem>
+		    <listitem id="ds_daa_proxy_crh_stx_renv"><emphasis role="bold">To use specific native agent for remote env</emphasis>
+			<para> Ref <xref linkend="ds_daa_proxy_crh_stx_renv_alz"/> for the approach analysis.</para>
+			<para>In contrast to approach <xref linkend="ds_daa_proxy_crh_stx_agt"/> this agent represent not remote root but remote env. So 
+			the agent serves as client to remote env.</para>
+		    </listitem>
+		</orderedlist>
+		<sect4 id="ds_daa_proxy_crh_stx_attr_alz"><title>Approach "Using dedicated attribute "env" for mutation -node-": analysis</title>
+		    <simpara>This section is for analysis of approach <xref linkend="ds_daa_proxy_crh_stx_attr"/></simpara>
+		    <orderedlist>
+			<listitem>What if we need to change the remote env for the given agent. How to mutate attribute "env"? Normally there is no problem
+			    to change the attribute. For instance we can simply change attribute "id" (i.e. rename agent). Bun in case of "env" the problem
+			    is that this attr affects agent significantly. So the mutation of changing this will be quite complex operation, that required
+			    re-creation of the agent (and actually reloading the model. Potentially we
+			    can compact the node to melt the mutation to the original -node- mutation. 
+			</listitem>
+		    </orderedlist>
+		</sect4>
+		<sect4 id="ds_daa_proxy_crh_stx_agt_alz"><title>Approach "Using specific agent type for remote root": analysis</title>
+		    <simpara>This section is for analysis of approach <xref linkend="ds_daa_proxy_crh_stx_agt"/></simpara>
+		    <sect5><title>Sports:</title>
+			<orderedlist>
+			    <listitem><emphasis role="bold">How to specify remote env</emphasis>
+				<para> It was stated that this approach is the way of specifying remote env where the remote agent is to be created. But
+				    how particularly can this remote env be specified? We can specify the fact that the agent should be remote: this is 
+				    specifyed by the type of the agent. For instance we can have agent of type of "separate thread agent" or "separate process
+				    agent". What about another nw node? Normally it can be specified by the nodes URL. This is not directly covered by this approach.
+				    A solution would be to specify remote env in specific property of the agent. This will require local env to analyze the chromo
+				    of the agent before the agent creation. Another solution is to have this dedicated agent not as remote root but as local
+				    agent, whose property is specifyed remote env. Then the component (the only one component is allowed) will be the root in
+				    remote env.
+				</para>
+			    </listitem>
+			    <listitem>This approach pecularity is that the remote root is dedicated agent. This agent doesn't need to have relation to 
+				local proxy to communicate to agent's owner. Instead the agent embeds the mechanism of communication to its counterpart -
+				remote root agent master.
+				</listitem>
+			</orderedlist>
+		    </sect5>
+		    <sect5><title>Use-case: creating root node in remote root</title>
+			<itemizedlist><title>Actors:</title>
+			    <listitem>Env_server</listitem>
+			    <listitem>Current_env</listitem>
+			    <listitem>Remote_env</listitem>
+			    <listitem>Current_node - node in current env hier</listitem>
+			    <listitem>Remote_root_agent_master - agent that created in local env and represents Remote_root</listitem>
+			    <listitem>Remote_root_agent_slave - specific agent, counterpart of Remote_root_agent_master root,  node to be created in Remote_env</listitem>
+			</itemizedlist>
+			<orderedlist><title>Interactions:</title>
+			    <listitem>Current_node creates Remote_root_agent_master. Specific property defined in Remote_root_agent chromo specifies remote env the 
+				agent is representing. Created Remote_root_agent_master requests Env_server to connect to specified env, or create the env if not 
+				exists yet and then connect.</listitem>
+			    <listitem>Env_server creates Remote_env and connects Remote_root_agent to Remote_env.</listitem>
+			    <listitem>Remote_root_agent_master requests Remote_env to create Remote_root_agent_slave as remote_root - 
+				the agent that Remote_root_agent_master will be representing in the initial env.</listitem>
+			    <listitem>Remote_env creates Remote_root_agent_slave and mutually connect Remote_root_agent_master and Remote_root_agent_slave. 
+				So Remote_root_agent_slave serves as components APIs handler, but Remote_root_agent_master - as owner APIs.</listitem>
+			</orderedlist>
+			<orderedlist><title>Criticism:</title>
+			    <itemizedlist>Remote_root_agent_master acts as proxy for Remote_root_agent_slave. This means that Remote_root_agent shouldn't contains 
+				any components locally. But it is stated that Remote_env spec is provided as Remote_root_agent property. It is accepted if property is 
+				agents conntent (even that needs to be checked). But property in form of component is not accepted absolutelly.</itemizedlist>
+			</orderedlist>
+		    </sect5>
+		    <sect5><title>Use-case: handling "GetNode" request from remote node</title>
+			<itemizedlist><title>Actors:</title>
+			    <listitem>Current_node - node in current env hier</listitem>
+			    <listitem>Remote_root_agent_slave - root node to be created in Remote_env</listitem>
+			    <listitem>Remote_root_agent_master - agent that created in local env and represents Remote_root_agent_master</listitem>
+			    <listitem>Target_node - node that is target for GetNode request</listitem>
+			    <listitem></listitem>
+			</itemizedlist>
+			<orderedlist><title>Interactions:</title>
+			    <listitem>Current_node requests Remote_root_agent to get node by given URI</listitem>
+			    <listitem>Remote_root_agent_master redirects this request to service - Remote_root_agent_slave.</listitem>
+			    <listitem>Remote_root_agent_slave implemets this request locally, and returns Target_node ID to Remote_root_agent_master</listitem>
+			    <listitem>Remote_root_agent_master get Target_node ID, creates Target_node proxy, register the proxy and returns proxy pointer to
+			    Current_node</listitem>
+			</orderedlist>
+		    </sect5>
+		</sect4>
+		<sect4 id="ds_daa_proxy_crh_icd"><title>Interaction sequence of creating heir.</title>
+		    <simpara>This section describes interaction sequence for approach of using dedicated native agent for remote "root", ref
+			<xref linkend="ds_daa_proxy_crh_stx_agt"/></simpara>
+		    <orderedlist>
+			<listitem>Remote agent proxy requests local env for creating root in remote environment.
+			    <para>Note that the proxy should specify remote env ID in this request.</para>
+			</listitem>
+			<listitem></listitem>
+		    </orderedlist>
+		</sect4>
+	    </sect3>
+	    <sect3 id="ds_daa_proxy_crh_stx_renv_alz"><title>Approach "Using specific native agent for remote env": analysis</title>
+		<sect4><title>Intro</title>
+		    <orderedlist>
+			<listitem>This approach difference from <xref linkend="ds_daa_proxy_crh_stx_agt"/> is that the regular agent is used for
+			    remote root but not specific agent. All specifics of interaction to remote environment is implemented in remote env agent. This 
+			    agent doesn't have its specific counterpart in remote env but proxy only.</listitem>
+		    </orderedlist>
+		</sect4>
+		<sect4><title>Should be symmetric ?</title>
+		    <simpara>We considered remote env agent on side of initially given local env. But on remote env side the situation is similar: 
+			there the local env is "remote" in respect of remote env. So maybe remote env agent is required on both sides ? No, it isn't.
+			Remote env agent is just for initiating creation remote env, in this regard the local env is "master" but the remote "slave".
+			The envs are symmetric in regards of that both have to have upper level proxies one to another: in local env remote env agent have
+		    proxy to its remote component, remote root have proxy to its owner (remote env agent) in local env.</simpara>
+		</sect4>
+		<sect4><title>Will be upper level proxy to local remote env agent root in remote env ?</title>
+		</sect4>
+		<sect4><title>Use-case: creation remote env root</title>
+		    <itemizedlist><title>Actors:</title>
+			<listitem>Env_server</listitem>
+			<listitem>Current_env</listitem>
+			<listitem>Remote_env</listitem>
+			<listitem>Remote_env_agent - special agent representing remote env</listitem>
+			<listitem>Current_node - node in current env hier</listitem>
+			<listitem>Remote_env_root - root node to be created in Remote_env</listitem>
+			<listitem>Remote_env_root_proxy - proxy for Remote_env_root</listitem>
+		    </itemizedlist>
+		    <orderedlist><title>Interactions:</title>
+			<listitem>Current_node creates Remote_env_agent. Specific property defined in Remote_env_agent chromo specifies remote env the 
+			    agent is representing. Remote_env_agent requests Env_server to connect to specified env, 
+			    or create the env if not exists yet and then connect.</listitem>
+			<listitem>Env_server creates Remote_env and Remote_env_agent proxy of owner type.</listitem>
+			<listitem> Remote_env_agent chromo contains node Remote_env_root. Remote_env_agent requests Remote_env to create Remote_env_root with
+			    given Remote_env_root chromo. Remote_env_agent passes its own ID to the request. </listitem>
+			<listitem> Remote_env creates Remote_env_root and returns Remote_env_root ID to Remote_env_agent. Remote_env also set Remote_env "owner" proxy
+			    as owner for Remote_env_root.  Remote_env_agent creates Remote_env_root_proxy as component.</listitem>
+		    </orderedlist>
+		</sect4>
+		<sect4><title>Use-case: creation model in remote env (separate thread)</title>
+		    <itemizedlist><title>Actors:</title>
+			<listitem>Current_env - env containing current model</listitem>
+			<listitem>Remote_env - env separated from Current_env (separated thread)</listitem>
+			<listitem>Current_env_server - server managing current env (and Remote_env also, because Remote_env separated via thread)</listitem>
+			<listitem>Remote_env_agent - special agent representing remote env</listitem>
+			<listitem>Current_node - node in current env hier</listitem>
+			<listitem>Remote_env_root - root node to be created in Remote_env</listitem>
+			<listitem>Remote_env_root_proxy - proxy for Remote_env_root</listitem>
+		    </itemizedlist>
+		    <orderedlist><title>Interactions:</title>
+			<listitem>Current_node creates Remote_env_agent. Remote env property of Remote_env specifies remote env as env in the same
+			    process but in separate thread.</listitem>
+			<listitem>Remote_env_agent requests Current_env to create Remote_env</listitem>
+			<listitem>Current_env requests Current_env_server to create Remote_env in new thread</listitem>
+		    </orderedlist>
+		</sect4>
+		<sect4><title>Pros</title>
+		    <orderedlist>
+			<listitem>The only one specific agent type (Remote env agent) is required. In <xref linkend="ds_daa_proxy_crh_stx_agt"/> 
+			    also one agent is required - Remote_root_agent, but actually there are two agents: one for master role and another for slave.</listitem>
+			<listitem>The identification of remote env can be done using Remote_root_agent components. In case of 
+			    <xref linkend="ds_daa_proxy_crh_stx_agt"/> only agents content is allowed for that.</listitem>
+			<listitem>Moving some node of model to remote env is simple: just cover this node by Remote_env_agent, i.e just add Remote_env_agent
+			    to the model and move the node to this agent.</listitem>
+		    </orderedlist>
+		</sect4>
+		<sect4><title>Use-case: creating proxy when multiple equivalen requests issued</title>
+		    <itemizedlist><title>Actors:</title>
+			<listitem>Env_server</listitem>
+			<listitem>Current_env</listitem>
+			<listitem>Remote_env</listitem>
+			<listitem>Remote_env_agent - special agent representing remote env</listitem>
+			<listitem>Current_node - node in current env hier</listitem>
+			<listitem>Remote_env_node - some Remote_env model</listitem>
+			<listitem>Remote_env_node_proxy - proxy for Remote_env_node</listitem>
+		    </itemizedlist>
+		    <orderedlist><title>Interactions:</title>
+			<listitem>Current_node creates Remote_env_agent that contains internal chromo. Remote_env_agent requests Remote_env to create remote model by
+			   internal chromo - Remote_env creates remote model.</listitem>
+		       <listitem>Current_node request Remote_env_agent for getting internal node Remote_env_node by URI - Remote_env_agent request Remote_env for 
+			   getting node - Remote_env responses with Remote_env_node identifier - Remote_env_agent creates native node proxy Remote_env_node and
+			   set identifier as its cursor.</listitem>
+		       <listitem>Current_node request Remote_env_agent for getting internal node Remote_env_node again - Remote_env_agent request Remote_env for 
+			   getting node - Remote_env responses with Remote_env_node identifier - Remote_env_agent checks if there is already proxy with this
+			   identifier set as a cursor (ref <xref linkend="ds_daa_apc_crs"/>) - Remote_env_agent detects that there is already Remote_env_node_proxy 
+			   with such identifier - Remote_env_agent returns the current Remote_env_node_proxy to Current_node.  </listitem>
+		    </orderedlist>
+		    <orderedlist><title>Discussion</title>
+			<itemizedlist>The problem here relates to implementation of cursor, ref <xref linkend="ds_daa_apc_crs"/>.</itemizedlist>
+		    </orderedlist>
+		</sect4>
+	    </sect3>
+	    <sect3><title>Proxy interacting to the assosiated remote agent.</title>
+		<simpara>Base approach of proxy interacting to the proxied agent is implementing interacting on env level. Proxy is this case just
+		    keeps references (handle) to target env and proxied agent. Local env has also established connections to the remote envs.
+		    Proxy asks local env for sending request to proxied agent passing refs as the context.
+		    Local env contains the register of remote envs including initialized transport for them. Env combines the request packet and sends it thru
+		    the corresponding transport. The remote env also contains the registers of remotes envs and local agents (mapped via handles). Remote 
+		    env receives the message, assosiates it to the corresponsing agent, runs the agent APIs, get the returned data, forms the response and
+		    sends the response back.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_daa_apc"><title>Agent - proxy interacting.</title>
+	    <sect3><title>Intro</title>
+		<simpara>There was approach outlined of using proxies for interacting from local env to remote one, ref <xref linkend="ds_daa_proxy"/>. So proxy 
+		    is just "light" implementation of some interface. "Light" means that it is not true implementation but the client of remote agent, that "truly" 
+		    implements the interface. So the proxy makes remote procedure call (RPC) to its counterpart. The question is how to implements this RPC.
+		    ref <xref linkend="ds_daa_apc_rpc"/> for analysis.</simpara>
+		<simpara>Proxy communicates to its remote counterpart thru some communication session established between remote DES server and its local client.
+		    Normally the local client is dedicated agent in local environment, for instance remote env agent, ref <xref linkend="ds_daa_proxy_crh_stx_renv"/>.
+		    So proxy itself is not a client. It ask assosicate remote env agent to send request to the server. But the server also is not the executor of
+		    RPC, it just redirects the request to target agent in remote env. Specification of target remote agent, also called "cursor" is the property
+		    of the proxy. The question here is how to specify a cursor, and what would be the mechanism of redirecting the request from server to the 
+		    target agent.  </simpara>
+		<simpara>One more design aspect is how to implement RPC that base agents implementation is not affected. This means that RPC "layer" has to
+		    be isolated from base agents engine. Ref <xref linkend="ds_daa_apc_fbp"/> for the consideration.</simpara>
+	    </sect3>
+	    <sect3 id="ds_daa_apc_rpc"><title>RPC</title>
+		<sect4><title>Refs</title>
+		    <biblioentry id="ref_wiki_asn_1"> <abbrev>WIKI_ASN_1</abbrev>
+			<productname><ulink url="https://en.wikipedia.org/wiki/Abstract_Syntax_Notation_One"/></productname>
+			<title>Abstract Syntax Notation One. Wikipedia.</title> </biblioentry>
+		    <biblioentry id="ref_itu_asn_1"> <abbrev>ITU_ASN_1</abbrev>
+			<productname><ulink url="http://www.itu.int/en/ITU-T/asn1/Pages/introduction.aspx"/></productname>
+			<title>ITU. Introduction to ASN.1</title> </biblioentry>
+		    <biblioentry id="ref_cie_rpc"> <abbrev>CIE_RPC</abbrev>
+			<productname><ulink url="http://www.freesoft.org/CIE/Topics/86.htm"/></productname>
+			<title>An Internet Encyclopedia. RPC Protocol Overview</title> </biblioentry>
+		    <biblioentry id="ref_rfc_1831"> <abbrev>RFC_1831</abbrev>
+			<productname><ulink url="http://www.freesoft.org/CIE/RFC/1831/index.htm"/></productname>
+			<title>RFC 1831. RPC: Remote Procedure Call Protocol Specification Version 2</title> </biblioentry>
+		    <biblioentry id="ref_rfc_1832"> <abbrev>RFC_1832</abbrev>
+			<productname><ulink url="http://www.freesoft.org/CIE/RFC/1832/index.htm"/></productname>
+			<title>RFC 1832. XDR: External Data Representation Standard</title> </biblioentry>
+		    <biblioentry id="ref_wiki_dlm"> <abbrev>WIKI_DLM</abbrev>
+			<productname><ulink url="https://en.wikipedia.org/wiki/Delimiter"/></productname>
+			<title>Delimiter. Wikipedia.</title> </biblioentry>
+		</sect4>
+	    </sect3>
+	    <sect3 id="ds_daa_apc_crs"><title>Cursor</title>
+		<sect4><title>Intro</title>
+		    <simpara>Remote env proxy creates and uses client to FAP server. So all other proxies just redirect theirs specific requests to remote env to remote
+			env proxy. These specific requests relate to proxy counterpart in remote env. Proxy has to have unique identifier of this counterpart.
+			This unique identifier can be considered as "cursor" of interactions. Cursor is sent as the argument of proxies specific request.</simpara>
+		    <simpara>What can be this identifier. One option is to use counterpart URI. The problem with URI is that it is not unique. Another option is
+		    to generate UID for each native node and use UID as identifier.</simpara>
+		</sect4>
+	    </sect3>
+	    <sect3 id="ds_daa_apc_fbp"><title>Front and back proxy</title>
+		<simpara>One of the solution is to have two proxy instead of one: front and back. Front proxy represent the given interface and send RPC request
+		    to remote env.  Remote env server analyses the interface id and cursor in the request, obtains the back proxy corresponding to interface, 
+		    resolve cursor and pass the corresponding node pointer to back proxy. Back proxy de-marshals the request and call the proper method from
+		    the node.</simpara>
+	    </sect3>
+	    <sect3><title>Proxies life cycle. Reflecting changes in remote model.</title>
+		<simpara>What if there is proxy of some node of remote model and this node has changed in manner that affects proxies cursor (got renamed for instance) ?
+		</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_daa_px"><title>Proxy design</title>
+	    <sect3><title>Proxy ifaces</title>
+		<simpara>Proxy should acts as base agent because it should be included into model instead of real agent. For instance
+		    it should be included as an owner of the "root" in remote model. So all base agent ifaces should be supported. Not all interfaces
+		are suitable for work in context of proxy. </simpara>
+	    </sect3>
+	</sect2>
+	<sect2><title>Support of DAA</title>
+	    <sect3><title>Intro</title>
+		<simpara>In <xref linkend="ds_daa_iact"/> it was async agent APIs clarified. But there is another side of DAA implementation:
+		    how agent to be modified in order to support this new APIs. This is most complicated part of DAA design because it introduces
+		    many problems for agents model. To be exact it required support of asynchronous operation on agent level.</simpara>
+	    </sect3>
+	    <sect3><title>Outline of approaches</title>
+		<orderedlist>
+		    <listitem>Introducing new agents-level interface for async agent proxy. <programlisting></programlisting>
+			<simpara>We can introduce new iface for the proxy. Base agent is to be modifyed in order to check if the node implements this
+			    iface and if so, use specific behaviour communicating to the node.</simpara>
+		    </listitem>
+		</orderedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_daa_des"><title>DES vs generic agent in DAA.</title>
+	    <sect3><title>Intro</title>
+		<simpara>DAA assume that all interactions between agents are asyncronous. But we designed DES as target model of async system because
+		    multi aganents async model is the problem itself.
+		    Agents model was used just as sutable means to implements DES. Does it make sense to focus on async DA or better to focus on
+		    async DES only? Focusing on DES only seems problematic: DES is agent, so creating DES in separate async context needs that
+		    agent supports at least such operation. It also requires support of generic agents features (native hier etc.) for async case.</simpara>
+	    </sect3>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_chr"><title>Chromo language. Representation, serialization etc.</title>
+	<sect2><title>Refs</title>
+	    <biblioentry id="ref_fi"> <abbrev>FI</abbrev>
+		<productname><ulink url="https://en.wikipedia.org/wiki/Fast_Infoset"/></productname>
+		<title>Fast Infoset</title> </biblioentry>
 	</sect2>
     </sect1>
 
@@ -1724,7 +2145,39 @@
 	    <listitem>Using mut order to ensure original sequence of muts, ref <xref linkend="ds_mut_dis_pheno"/> </listitem>
 	    <listitem>References: rules and limitations, ref <xref linkend="ds_mut_refs"/> </listitem>
 	</orderedlist>
-
+	<sect2><title>Multicontent elem</title>
+	</sect2>
+	<sect2><title>Speed up of model creation</title>
+	    <simpara>To revise the approach of creating child. Currently the full historical creation approach is used: all ancestors are created
+	    subsequently. To consider direct inheritance.</simpara>
+	</sect2>
+	<sect2><title>"Embedded" connections</title>
+	    <simpara>To embed connection to lower layer. This mean that the base layer to be graph but not just set. Native hier to be created with usage of
+	    the base connection mechanism. Multiple content to be used ?</simpara>
+	</sect2>
+	<sect2><title>Simplification: to avoid "Agents" container.</title>
+	    <simpara>To consider all components as agents.</simpara>
+	</sect2>
+	<sect2><title>New chromo language</title>
+	    <itemizedlist>
+		<listitem>Created sect <xref linkend="ds_chr"/></listitem>
+	    </itemizedlist>
+	</sect2>
+	<sect2><title>Support of Multi-content</title>
+	    <simpara>To add support of multi-content: named content. This would simplify many cases where embedded "property" agents are used now.</simpara>
+	</sect2>
+	<sect2><title>Support of connection by agent.</title>
+	    <simpara>The idea is to avoid using separate agenent for the connection. Instead the owner can specify the property in the agent which input are 
+		to be connected to some outputs. The name of property would be the input name, the value of the property would be URI of the output 
+		to be connected to.  </simpara>
+	    <simpara>This approach could simplify creation systems with many interconnected components. Transition functions for instance.</simpara>
+	</sect2>
+	<sect2><title>To avoid explicit connections: use implicit them</title>
+	    <simpara>Using explicit connectins makes the complicated systems (transition functions for instance) very messy, there are a lot of 
+		connection agents. Is it possible to specify connections by another way. For instance we have transition Fa(Fb, Fc) where Fb, Fc are 
+		some functions also. We can just add Fb, Fc as comptents into Fa, naming them with predefinced names (Arg1, Arg2 for instance). So we 
+	    will avoid explicit connections here.</simpara>
+	</sect2>
     </sect1>
 
 </article>

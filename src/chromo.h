@@ -185,7 +185,7 @@ class ChromoNode
 	TInt GetLocalRank();
 	void GetRank(Rank& aRank) const;
 	void GetRank(Rank& aRank, const ChromoNode& aBase) const;
-	TInt GetOrder(TBool aTree = EFalse) const { iMdl.GetOrder(iHandle, aTree);};
+	TInt GetOrder(TBool aTree = EFalse) const { return iMdl.GetOrder(iHandle, aTree);};
 	void SetOrder(TInt aOrder, TBool aTree = EFalse) { iMdl.SetOrder(iHandle, aOrder, aTree);};
 	void DeOrder() { iMdl.DeOrder(iHandle);};
 	// The number of direct childs
@@ -204,6 +204,7 @@ class ChromoNode
 	ChromoNode At(TInt aInd) const;
 	ChromoNode At(TInt aInd, TNodeType aType) const;
 	void ReduceToSelection(const ChromoNode& aSelNode);
+	void ToString(string& aString) const { iMdl.ToString(iHandle, aString);};
     private :
 	ChromoMdl& iMdl;
 	void* iHandle;
@@ -216,7 +217,7 @@ class Chromo: public MChromo
 	struct TDep {TNodeType type; TNodeAttr dep; TDPath path; 
 	    TDep(TNodeType t, TNodeAttr d, TDPath p): type(t), dep(d), path(p) {}
 	    bool operator< (const TDep& r) const { 
-		return type < r.type || type == r.type && dep < r.dep || type == r.type && dep == r.dep && path < r.path;} 
+		return type < r.type || (type == r.type && dep < r.dep) || (type == r.type && dep == r.dep && path < r.path);} 
 	}; 
 	typedef pair<TDep, TDepsLevel> TDepsElm;
 	typedef map<TDep, TDepsLevel> TDeps;

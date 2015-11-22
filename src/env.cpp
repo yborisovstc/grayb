@@ -321,11 +321,25 @@ Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileNam
     iLogger = new GLogRec("Logger", aLogFileName.empty() ? KLogFileName : aLogFileName);
     iProvider = new GFactory("Factory", this);
     iProvider->LoadPlugins();
-    iSystSpec = aSpecFile;
+    iSpecFile = aSpecFile;
     srand(time(NULL));
     iChMgr = new ChromoMgr("ChromoMgr", *this);
     iImpMgr = new ImportsMgr("ImpMgr", *this);
 }
+
+Env::Env(const string& aName, const string& aSpec, const string& aLogFileName, TBool aOpt): Base(aName), iRoot(NULL), iLogger(NULL),
+    iSpecChromo(NULL), mEnPerfTrace(EFalse)
+{
+    iLogger = new GLogRec("Logger", aLogFileName.empty() ? KLogFileName : aLogFileName);
+    iLogger = new GLogRec("Logger", aName + ".log");
+    iProvider = new GFactory("Factory", this);
+    iProvider->LoadPlugins();
+    iSpec= aSpec;
+    srand(time(NULL));
+    iChMgr = new ChromoMgr("ChromoMgr", *this);
+    iImpMgr = new ImportsMgr("ImpMgr", *this);
+}
+
 
 Env::~Env()
 {
@@ -345,11 +359,15 @@ void Env::ConstructSystem()
     // TODO [YB] Potentially the root also can be inherited form parent
     Chromo *spec = iProvider->CreateChromo();
     iSpecChromo = spec;
-    if (iSystSpec.empty()) {
+    if (iSpecFile.empty() && iSpec.empty()) {
 	iRoot = new Elem(KRootName, NULL, this);
     }
     else {
-	spec->Set(iSystSpec.c_str());
+	if (!iSpecFile.empty()) {
+	    spec->Set(iSpecFile.c_str());
+	} else {
+	    spec->SetFromSpec(iSpec);
+	}
 	const ChromoNode& root = spec->Root();
 	string sparent = root.Attr(ENa_Parent);
 	Elem* parent = iProvider->GetNode(sparent);
@@ -359,7 +377,7 @@ void Env::ConstructSystem()
 	    struct timeval tp;
 	    gettimeofday(&tp, NULL);
 	    long int beg_us = tp.tv_sec * 1000000 + tp.tv_usec;
-	    Logger()->Write(MLogRec::EInfo, iRoot, "Started of creating system, spec [%s]", iSystSpec.c_str());
+	    Logger()->Write(MLogRec::EInfo, iRoot, "Started of creating system, spec [%s]", iSpecFile.c_str());
 	    iRoot->SetMutation(root);
 	    iRoot->Mutate(EFalse, EFalse, EFalse);
 	    gettimeofday(&tp, NULL);

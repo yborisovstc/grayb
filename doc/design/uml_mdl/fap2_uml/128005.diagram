@@ -1,0 +1,73 @@
+format 74
+
+classinstance 128005 class_ref 128005 // _daa_rmt_root_agent
+  name "remote_agent"   xyz 387 123 2000 life_line_z 2000
+note 128133 "ICD of creation remote agent. It is assumed that the agent is a native one. Scenario is as: agent \"owner\" creates remote agent. Local env interacts to remote env via env client (isn't present on the diagram)"
+  xyzwh 34 9 2000 733 51
+classinstance 128261 class_ref 128133 // _daa_env
+  name "original_env"   xyz 255 87 2000 life_line_z 2000
+classinstance 128389 class_ref 128261 // _daa_agent
+  name "owner"   xyz 23 87 2000 life_line_z 2000
+classinstance 128901 class_ref 128389 // _daa_rmt_root_agent_proxy
+  name "proxy"   xyz 96 128 2000 life_line_z 2000
+classinstance 129797 class_ref 128133 // _daa_env
+  name "remote_env"   xyz 571 87 2000 life_line_z 2000
+note 130309 "creates in remote context. local env has ref to remote context"
+  xyzwh 441 166 2000 191 51
+durationcanvas 128517 classinstance_ref 128389 // owner:_daa_agent
+  xyzwh 75 177 2010 11 277
+end
+durationcanvas 128645 classinstance_ref 128261 // original_env:_daa_env
+  xyzwh 318 177 2010 11 277
+  overlappingdurationcanvas 129541
+    xyzwh 324 239 2020 11 114
+    overlappingdurationcanvas 130821
+      xyzwh 330 250 2030 11 26
+    end
+  end
+end
+durationcanvas 129029 classinstance_ref 128901 // proxy:_daa_rmt_root_agent_proxy
+  xyzwh 190 212 2010 11 164
+end
+durationcanvas 130053 classinstance_ref 129797 // remote_env:_daa_env
+  xyzwh 633 253 2010 11 133
+end
+msg 128773 synchronous
+  from durationcanvas_ref 128517
+  to durationcanvas_ref 128645
+  yz 190 2015 msg operation_ref 128133 // "create_native_agent()"
+  show_full_operations_definition default drawing_language default show_context_mode default
+  args "remote agent"
+  label_xy 91 170
+msg 129157 synchronous
+  from durationcanvas_ref 128645
+  to durationcanvas_ref 129029
+  yz 212 2015 msg operation_ref 128261 // "create()"
+  show_full_operations_definition default drawing_language default show_context_mode default
+  label_xy 222 196
+msg 129669 synchronous
+  from durationcanvas_ref 129029
+  to durationcanvas_ref 129541
+  yz 239 2025 msg operation_ref 128005 // "create_remote_env()"
+  show_full_operations_definition default drawing_language default show_context_mode default
+  label_xy 204 223
+msg 129925 return
+  from durationcanvas_ref 128645
+  to durationcanvas_ref 128517
+  yz 443 2015 explicitmsg "(created rmt agent proxy)"
+  show_full_operations_definition default drawing_language default show_context_mode default
+  label_xy 133 427
+msg 130181 synchronous
+  from durationcanvas_ref 129541
+  to durationcanvas_ref 130053
+  yz 281 2030 msg operation_ref 128389 // "create()"
+  show_full_operations_definition default drawing_language default show_context_mode default
+  label_xy 461 265
+reflexivemsg 130949 synchronous
+  to durationcanvas_ref 130821
+  yz 250 2035 msg operation_ref 128517 // "create_remote_context()"
+  show_full_operations_definition default drawing_language default show_context_mode default
+  label_xy 343 227
+line 130437 -_-_
+  from ref 130309 z 2031 to ref 130181
+end
