@@ -57,11 +57,12 @@ void Ut_icache::test_Inv1()
     MDVarGet* doutpget = (MDVarGet*) doutp->GetSIfi(MDVarGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     MDFloatGet* fget = doutpget->GetDObj(fget);
+    //MDFloatGet* fget = (MDFloatGet*) doutpget->GetSIfi(MDFloatGet::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Wrong value of data iface", fget->Value() == 0);
     // Sync the state
     Elem* esync = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != 0);
-    MDesSyncable* sync = esync->GetObj(sync);
+    MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
 
     // Do some ticks just to fillout ifaces caches

@@ -11,7 +11,7 @@ class Incaps: public Elem, public MACompsObserver
 	Incaps(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	Incaps(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
     protected:

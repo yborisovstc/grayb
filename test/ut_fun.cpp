@@ -62,7 +62,7 @@ void Ut_func::test_FuncSeq1()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     Elem* doutp = root->GetNode("./test/DataS_Int_1/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
-    MDIntGet* doutpget = doutp->GetObj(doutpget);
+    MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 34);
     MVert* mdoutpv = doutp->GetObj(mdoutpv);
@@ -76,14 +76,14 @@ void Ut_func::test_FuncSeq1()
 
     Elem* foutp = root->GetNode("./test/Incr2/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
-    MDIntGet* foutpget = foutp->GetObj(foutpget);
+    MDIntGet* foutpget = (MDIntGet*) foutp->GetSIfi(MDIntGet::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
     TInt fres = foutpget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result", fres == 36);
 
     Elem* resdata = root->GetNode("./test/ResData/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out", resdata != 0);
-    MDIntGet* rdataget = resdata->GetObj(rdataget);
+    MDIntGet* rdataget = (MDIntGet*) resdata->GetSIfi(MDIntGet::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget != 0);
     TInt rdataval = rdataget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval == 36);
@@ -103,7 +103,7 @@ void Ut_func::test_FuncSeq1()
     // Check the function output
     Elem* foutp1 = root->GetNode("./test/Incr2/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out when inp data changed", foutp1 != 0);
-    MDIntGet* foutpget1 = foutp1->GetObj(foutpget1);
+    MDIntGet* foutpget1 = (MDIntGet*) foutp1->GetSIfi(MDIntGet::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface when input data changed", foutpget1 != 0);
     TInt fres1 = foutpget1->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result after input data change", fres1 == 59);
@@ -130,7 +130,7 @@ void Ut_func::test_FuncSeq2()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     Elem* doutp = root->GetNode("./test/DataS_Int_1/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
-    MDIntGet* doutpget = doutp->GetObj(doutpget);
+    MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 34);
     MVert* mdoutpv = doutp->GetObj(mdoutpv);
@@ -144,14 +144,14 @@ void Ut_func::test_FuncSeq2()
 
     Elem* foutp = root->GetNode("./test/Add/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
-    MDIntGet* foutpget = foutp->GetObj(foutpget);
+    MDIntGet* foutpget = (MDIntGet*) foutp->GetSIfi(MDIntGet::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
     TInt fres = foutpget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result", fres == 60);
 
     Elem* resdata = root->GetNode("./test/ResData/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out", resdata != 0);
-    MDIntGet* rdataget = resdata->GetObj(rdataget);
+    MDIntGet* rdataget = (MDIntGet*) resdata->GetSIfi(MDIntGet::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget != 0);
     TInt rdataval = rdataget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval == 60);
@@ -171,7 +171,7 @@ void Ut_func::test_FuncSeq2()
     // Check the function output
     Elem* foutp1 = root->GetNode("./test/Add/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out when inp data changed", foutp1 != 0);
-    MDIntGet* foutpget1 = foutp1->GetObj(foutpget1);
+    MDIntGet* foutpget1 = (MDIntGet*) foutp1->GetSIfi(MDIntGet::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface when input data changed", foutpget1 != 0);
     TInt fres1 = foutpget1->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result after input data change", fres1 == 83);
@@ -198,7 +198,7 @@ void Ut_func::test_FuncSeq3()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     Elem* doutp = root->GetNode("./test/DataS_Int_1/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
-    MDIntGet* doutpget = doutp->GetObj(doutpget);
+    MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 34);
     MVert* mdoutpv = doutp->GetObj(mdoutpv);
@@ -212,14 +212,14 @@ void Ut_func::test_FuncSeq3()
 
     Elem* foutp = root->GetNode("./test/Add/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
-    MDIntGet* foutpget = foutp->GetObj(foutpget);
+    MDIntGet* foutpget = (MDIntGet*) foutp->GetSIfi(MDIntGet::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
     TInt fres = foutpget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result", fres == 60);
 
     Elem* resdata = root->GetNode("./test/ResData/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out", resdata != 0);
-    MDIntGet* rdataget = resdata->GetObj(rdataget);
+    MDIntGet* rdataget = (MDIntGet*) resdata->GetSIfi(MDIntGet::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget != 0);
     TInt rdataval = rdataget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval == 60);
@@ -239,7 +239,7 @@ void Ut_func::test_FuncSeq3()
     // Check the function output
     Elem* foutp1 = root->GetNode("./test/Add/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out when inp data changed", foutp1 != 0);
-    MDIntGet* foutpget1 = foutp1->GetObj(foutpget1);
+    MDIntGet* foutpget1 = (MDIntGet*) foutp1->GetSIfi(MDIntGet::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface when input data changed", foutpget1 != 0);
     TInt fres1 = foutpget1->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result after input data change", fres1 == 83);
@@ -267,7 +267,7 @@ void Ut_func::test_FuncSeq4()
 
     Elem* resdata = root->GetNode("./test/ResData/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out", resdata != 0);
-    MDIntGet* rdataget = resdata->GetObj(rdataget);
+    MDIntGet* rdataget = (MDIntGet*) resdata->GetSIfi(MDIntGet::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget != 0);
     TInt rdataval = rdataget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval == 1);
@@ -294,7 +294,7 @@ void Ut_func::test_FuncSeq4()
     // Verifying second part of test - division
     Elem* resdata2 = root->GetNode("./test/DivResData/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out", resdata2 != 0);
-    MDIntGet* rdataget2 = resdata2->GetObj(rdataget2);
+    MDIntGet* rdataget2 = (MDIntGet*) resdata2->GetSIfi(MDIntGet::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget2 != 0);
     TInt rdataval2 = rdataget2->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval2 == 4);

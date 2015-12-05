@@ -85,6 +85,16 @@ docs=/home/yborisov/projects/fap CD=. filter=".doc" {
    Makefile
   }
  }
+ fap2-srv/doc=fap2-srv/doc CD=. filter="*" {
+  requirements=requirements CD=. filter="*.xml Makefile" {
+   fap2_srv_req.xml
+   Makefile
+  }
+  design=design CD=. filter="*.xml Makefile" {
+   fap2_srv_design.xml
+   Makefile
+  }
+ }
 }
 fap-md=/home/yborisov/projects/fap/fap-md CD=. filter="*" {
 }

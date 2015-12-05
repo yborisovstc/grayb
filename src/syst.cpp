@@ -25,12 +25,11 @@ ACapsule::ACapsule(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
     SetParent(Elem::PEType());
 }
 
-void *ACapsule::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ACapsule::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
-    RqContext ctx(this, aCtx);
     if (strcmp(aName, Type()) == 0) res = this;
-    else res = Elem::DoGetObj(aName, EFalse, aCtx);
+    else res = Elem::DoGetObj(aName, EFalse);
     return res;
 }
 
@@ -65,10 +64,9 @@ ConnPointBase::ConnPointBase(Elem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
     SetParent(Vert::PEType());
 }
 
-void *ConnPointBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ConnPointBase::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
-    RqContext ctx(this, aCtx);
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
@@ -76,46 +74,7 @@ void *ConnPointBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqConte
 	res = (MCompatChecker*) this;
     }
     else {
-	res = Vert::DoGetObj(aName, EFalse, aCtx);
-    }
-    if (res == NULL) {
-	// Redirect to pairs if iface requiested is provided by this CP
-	//Elem* eprov = GetNode("Prop:Provided");
-	Elem* eprov = GetNode("./(Prop:)Provided");
-	Elem* ereq = GetNode("./(Prop:)Required");
-	if (eprov != NULL) {
-	    MProp* prov = eprov->GetObj(prov);
-	    if (prov != NULL) {
-		if (prov->Value() == aName) {
-		    // Requested provided iface - cannot be obtain via pairs - redirect to host
-		    if (iMan != NULL && !ctx.IsInContext(iMan)) {
-			// TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
-			Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
-			res = mgr->DoGetObj(aName, aIncUpHier, &ctx);
-		    }
-		}
-	    }
-	}
-	if (res == NULL && ereq != NULL) {
-	    MProp* req = ereq->GetObj(req);
-	    if (req != NULL) {
-		if (req->Value() == aName) {
-		    for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end() && res == NULL; it++) {
-			Elem* pe = (*it)->EBase()->GetObj(pe);
-			Elem* peprov = pe != NULL ? pe->GetNode("./(Prop:)Provided"): NULL;
-			MProp* pprov = peprov != NULL ? peprov->GetObj(pprov): NULL;
-			if (pprov != NULL && pprov->Value() == aName && !ctx.IsInContext(pe)) {
-			    res = pe->DoGetObj(aName, aIncUpHier, &ctx);
-			}
-		    }
-		    // Responsible pairs not found, redirect to upper layer
-		    if (res == NULL && iMan != NULL && !ctx.IsInContext(iMan)) {
-			Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
-			res = mgr->DoGetObj(aName, aIncUpHier, &ctx);
-		    }
-		}
-	    }
-	}
+	res = Vert::DoGetObj(aName, EFalse);
     }
     return res;
 }
@@ -136,7 +95,7 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 	res = (MCompatChecker*) this;
     }
     else {
-	res = Vert::DoGetObj(aName.c_str(), EFalse, aCtx);
+	res = Vert::DoGetObj(aName.c_str(), EFalse);
     }
     if (res != NULL) {
 	InsertIfCache(aName, rctx, this, res);
@@ -186,7 +145,7 @@ TBool ConnPointBase::IsCompatible(Elem* aPair, TBool aExt)
     TBool ext = aExt;
     Elem *cp = aPair;
     // Checking if the pair is Extender
-    MCompatChecker* pchkr = aPair->GetObj(pchkr);
+    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type(), this);
     // Consider all pairs not supporting MCompatChecker as not compatible 
     if (pchkr != NULL) {
 	Elem* ecp = pchkr->GetExtd(); 
@@ -261,15 +220,13 @@ ConnPointBaseInp::ConnPointBaseInp(Elem* aMan, MEnv* aEnv): ConnPointBase(Type()
     SetParent(ConnPointBase::PEType());
 }
 
-void *ConnPointBaseInp::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ConnPointBaseInp::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
-    RqContext ctx(this, aCtx);
     if (strcmp(aName, Type()) == 0) {
 	res = this;
-    }
-    else {
-	res = ConnPointBase::DoGetObj(aName, EFalse, aCtx);
+    } else {
+	res = ConnPointBase::DoGetObj(aName, EFalse);
     }
     return res;
 }
@@ -298,15 +255,13 @@ ConnPointBaseOut::ConnPointBaseOut(Elem* aMan, MEnv* aEnv): ConnPointBase(Type()
     SetParent(ConnPointBase::PEType());
 }
 
-void *ConnPointBaseOut::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ConnPointBaseOut::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
-    RqContext ctx(this, aCtx);
     if (strcmp(aName, Type()) == 0) {
 	res = this;
-    }
-    else {
-	res = ConnPointBase::DoGetObj(aName, EFalse, aCtx);
+    } else {
+	res = ConnPointBase::DoGetObj(aName, EFalse);
     }
     return res;
 }
@@ -336,46 +291,15 @@ ExtenderAgent::ExtenderAgent(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
     SetParent(Elem::PEType());
 }
 
-void *ExtenderAgent::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ExtenderAgent::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
-    RqContext ctx(this, aCtx);
     if (strcmp(aName, Type()) == 0) {
 	res = this;
-    }
-    else if (strcmp(aName, MCompatChecker::Type()) == 0) {
+    } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
-    }
-    else {
+    } else {
 	res = Elem::DoGetObj(aName, EFalse);
-    }
-    if (res == NULL) {
-	// Redirect to internal point or pair depending on the requiestor
-	Elem* intcp = GetNode("./../../Int");
-	if (intcp != NULL && !ctx.IsInContext(intcp)) {
-	    res = intcp->DoGetObj(aName, ETrue, &ctx);
-	}
-	else {
-	    Elem* host = iMan->GetMan();
-	    MVert* vhost = host->GetObj(vhost);
-	    if (vhost != NULL) {
-		for (set<MVert*>::const_iterator it = vhost->Pairs().begin(); it != vhost->Pairs().end(); it++) {
-		    Base* ep = (*it)->EBase();
-		    if (ep != NULL && !ctx.IsInContext(ep)) {
-			res = ep->DoGetObj(aName, aIncUpHier, &ctx);
-		    }
-		}
-	    }
-	}
-    }
-    // Responsible pairs not found, redirect to upper layer
-    if (res == NULL && iMan != NULL && !ctx.IsInContext(iMan)) {
-	Elem* host = iMan->GetMan();
-	Elem* hostmgr = host->GetMan();
-	Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
-	if (mgr != NULL && !ctx.IsInContext(mgr)) {
-	    res = mgr->DoGetObj(aName, aIncUpHier, &ctx);
-	}
     }
     return res;
 }
@@ -438,7 +362,7 @@ TBool ExtenderAgent::IsCompatible(Elem* aPair, TBool aExt)
 {
     TBool res = EFalse;
     Elem* intcp = GetNode("./../../Int");
-    MCompatChecker* mint = (intcp != NULL) ? intcp->GetObj(mint) : NULL;
+    MCompatChecker* mint = (intcp != NULL) ? (MCompatChecker*) intcp->GetSIfiC(MCompatChecker::Type(), this) : NULL;
     if (mint != NULL) {
 	res = mint->IsCompatible(aPair, !aExt);
     }
@@ -481,15 +405,13 @@ ExtenderAgentInp::ExtenderAgentInp(Elem* aMan, MEnv* aEnv): ExtenderAgent(Type()
     SetParent(ExtenderAgent::PEType());
 }
 
-void *ExtenderAgentInp::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ExtenderAgentInp::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
-    RqContext ctx(this, aCtx);
     if (strcmp(aName, Type()) == 0) {
 	res = this;
-    }
-    else {
-	res = ExtenderAgent::DoGetObj(aName, EFalse, aCtx);
+    } else {
+	res = ExtenderAgent::DoGetObj(aName, EFalse);
     }
     return res;
 }
@@ -518,15 +440,13 @@ ExtenderAgentOut::ExtenderAgentOut(Elem* aMan, MEnv* aEnv): ExtenderAgent(Type()
     SetParent(ExtenderAgent::PEType());
 }
 
-void *ExtenderAgentOut::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ExtenderAgentOut::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
-    RqContext ctx(this, aCtx);
     if (strcmp(aName, Type()) == 0) {
 	res = this;
-    }
-    else {
-	res = ExtenderAgent::DoGetObj(aName, EFalse, aCtx);
+    } else {
+	res = ExtenderAgent::DoGetObj(aName, EFalse);
     }
     return res;
 }
@@ -556,70 +476,20 @@ ASocket::ASocket(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
     SetParent(Elem::PEType());
 }
 
-void *ASocket::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ASocket::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     // TODO [YB] the current routing model is not optimal. Socket doesn't known itself if
     // it supports iface or not (only pins know). So socket routes to pins first in hope
     // they redirect properly. But what if not? Pin routes back to host, so loop happens, that stops 
     // further routing.
     void* res = NULL;
-    RqContext ctx(this, aCtx);
     if (strcmp(aName, Type()) == 0) {
 	res = this;
-    }
-    else if (strcmp(aName, MCompatChecker::Type()) == 0) {
+    } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
-    }
-    else {
+    } else {
 	res = Elem::DoGetObj(aName, EFalse);
     }
-    /*
-    if (res == NULL && aCtx != NULL) {
-	Base* master = aCtx->Requestor();
-	Elem* emaster = master->GetObj(emaster);
-	Base* rqst = aCtx->Ctx() != NULL ? aCtx->Ctx()->Requestor(): NULL;
-	if (rqst != NULL) {
-	    Elem* erqst = rqst->GetObj(erqst);
-	    TBool iscomp = emaster->IsComp(erqst);
-	    if (iscomp) {
-		// Request comes from internal CP - forward it to upper layer
-		if (iMan != NULL && !ctx.IsInContext(iMan)) {
-		    // TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
-		    Elem* host = iMan->GetMan();
-		    Elem* hostmgr = host->GetMan();
-		    Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
-		    if (mgr != NULL && !ctx.IsInContext(mgr)) {
-			res = mgr->DoGetObj(aName, aIncUpHier, &ctx);
-		    }
-		}
-	    }
-	}
-	if (res == NULL) {
-	    Elem* man = iMan->GetMan();
-	    // Redirect to internal pins. Add host into context, this will prevent internals to redirect
-	    // TODO [YB] To avoid routing directly from agent excluding host. This causes incorrect context
-	    for (vector<Elem*>::const_iterator it = man->Comps().begin(); it != man->Comps().end() && res == NULL; it++) {
-		Elem* eit = (*it);
-		if (!ctx.IsInContext(eit) && eit != iMan) {
-		    res = (*it)->DoGetObj(aName, aIncUpHier, &ctx);
-		}
-	    }
-	}
-	// Redirect to pair. 
-	// TODO [YB] To add checking if requiested iface is supported, ref md "sec_refac_conncomp"
-	// TODO [YB] Probably routing to pair needs to be done first, before the routing to pins
-	if (res == NULL) {
-	    Elem* man = iMan->GetMan();
-	    Vert* vman = man->GetObj(vman);
-	    for (set<MVert*>::iterator it = vman->Pairs().begin(); it != vman->Pairs().end() && res == NULL; it++) {
-		Elem* pe = (*it)->EBase()->GetObj(pe);
-		if (!ctx.IsInContext(pe)) {
-		    res = pe->DoGetObj(aName, aIncUpHier, &ctx);
-		}
-	    }
-	}
-    }
-    */
     return res;
 }
 
@@ -786,7 +656,8 @@ TBool ASocket::IsCompatible(Elem* aPair, TBool aExt)
     TBool res = ETrue;
     TBool ext = aExt;
     Elem *cp = aPair;
-    MCompatChecker* pchkr = aPair->GetObj(pchkr);
+    // Requesing anonymously because can be returned to itself vie extender
+    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type());
     if (pchkr != NULL) {
 	Elem* ecp = pchkr->GetExtd(); 
 	// Checking if the pair is Extender
@@ -799,7 +670,7 @@ TBool ASocket::IsCompatible(Elem* aPair, TBool aExt)
 	    for (vector<Elem*>::const_iterator it = host->Comps().begin(); it != host->Comps().end() && res; it++) {
 		Elem *comp = (*it);
 		if (comp->Name() != "Agents" && comp->Name() != "Logspec") {
-		    MCompatChecker* checker = comp->GetObj(checker);
+		    MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), this);
 		    if (checker != NULL) {
 			GUri uri;
 		//	uri.AppendElem(comp->EType(), comp->Name());
@@ -870,15 +741,13 @@ ASocketInp::ASocketInp(Elem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
     SetParent(ASocket::PEType());
 }
 
-void *ASocketInp::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ASocketInp::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
-    RqContext ctx(this, aCtx);
     if (strcmp(aName, Type()) == 0) {
 	res = this;
-    }
-    else {
-	res = ASocket::DoGetObj(aName, EFalse, aCtx);
+    } else {
+	res = ASocket::DoGetObj(aName, EFalse);
     }
     return res;
 }
@@ -907,15 +776,13 @@ ASocketOut::ASocketOut(Elem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
     SetParent(ASocket::PEType());
 }
 
-void *ASocketOut::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ASocketOut::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
-    RqContext ctx(this, aCtx);
     if (strcmp(aName, Type()) == 0) {
 	res = this;
-    }
-    else {
-	res = ASocket::DoGetObj(aName, EFalse, aCtx);
+    } else {
+	res = ASocket::DoGetObj(aName, EFalse);
     }
     return res;
 }
@@ -946,14 +813,14 @@ Syst::Syst(Elem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
     SetParent(Vert::PEType());
 }
 
-void *Syst::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *Syst::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     if (res == NULL) {
-	res = Vert::DoGetObj(aName, aIncUpHier, aCtx);
+	res = Vert::DoGetObj(aName, aIncUpHier);
     }
     return res;
 }
@@ -1002,8 +869,8 @@ TBool Syst::OnCompChanged(Elem& aComp)
 		    cp1 = edge->Point1();
 		    cp2 = edge->Point2();
 		    // Full connection, compatibility checking is needed
-		    MCompatChecker* pt1checker = pt1->GetObj(pt1checker);
-		    MCompatChecker* pt2checker = pt2->GetObj(pt2checker);
+		    MCompatChecker* pt1checker = (MCompatChecker*) pt1->GetSIfiC(MCompatChecker::Type(), this);
+		    MCompatChecker* pt2checker = (MCompatChecker*) pt2->GetSIfiC(MCompatChecker::Type(), this);
 		    TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
 		    TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
 		    if (ispt1cptb && ispt2cptb) {

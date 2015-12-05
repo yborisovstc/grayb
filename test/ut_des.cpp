@@ -64,7 +64,7 @@ void Ut_des::test_Cre1()
     // Sync the state
     Elem* esync = root->GetNode("./test/State1/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != 0);
-    MDesSyncable* sync = esync->GetObj(sync);
+    MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
     // Do some ticks
     const TInt ticksnum = 5;
@@ -102,7 +102,7 @@ void Ut_des::test_Cre2()
     // Get Sync iface of DES
     Elem* esync = root->GetNode("./TestDes/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get DES's Syncable iface", esync != 0);
-    MDesSyncable* sync = esync->GetObj(sync);
+    MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
     // Do some ticks
     const TInt ticksnum = 5;
@@ -136,7 +136,7 @@ void Ut_des::test_Cre4()
     // Get Sync iface of DES
     Elem* esync = root->GetNode("./TestDes/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get DES's Syncable iface", esync != 0);
-    MDesSyncable* sync = esync->GetObj(sync);
+    MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
     // Do some ticks
     const TInt ticksnum = 11;

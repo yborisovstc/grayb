@@ -56,7 +56,7 @@ class Edge: public Elem, public MEdge
 	TBool Connect(Elem* aCp);
 	void Disconnect(Elem* aCp);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MEdge
 	virtual Base* EBase();
 	virtual const Base* EBase() const;

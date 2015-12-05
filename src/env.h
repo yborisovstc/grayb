@@ -20,7 +20,7 @@ class ImportsMgr: public Base, public MImportMgr
 	ImportsMgr(const string& aName, Env& aHost);
 	virtual ~ImportsMgr();
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
     public:
 	// From MImportMgr
 	virtual void GetModulesNames(vector<string>& aModules) const;
@@ -51,7 +51,7 @@ class ChromoMgr: public Base, public MChromoMgr
 	virtual ~ChromoMgr();
     public:
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// Form MChromoMgr
 	virtual int GetSpecMaxOrder() const;
 	virtual int GetMaxOrder() const;
@@ -91,7 +91,7 @@ public:
 	void RemoveProvider(GProvider* aProv);
 public:
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MEnv
 	virtual MProvider *Provider() const;
 	virtual MLogRec *Logger();
@@ -110,6 +110,7 @@ private:
 	string iSpec;
 	Chromo* iSpecChromo;
 	TBool mEnPerfTrace;
+	TBool mEnIfTrace;
 };
 
 

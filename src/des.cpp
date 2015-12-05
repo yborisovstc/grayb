@@ -23,7 +23,7 @@ string ATrBase::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-void *ATrBase::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ATrBase::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -65,7 +65,7 @@ string ATrInt::PEType()
     return ATrBase::PEType() + GUri::KParentSep + Type();
 }
 
-void *ATrInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ATrInt::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -131,7 +131,7 @@ string ATrIncInt::PEType()
     return ATrInt::PEType() + GUri::KParentSep + Type();
 }
 
-void *ATrIncInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ATrIncInt::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -175,7 +175,7 @@ string ATrSubInt::PEType()
     return ATrInt::PEType() + GUri::KParentSep + Type();
 }
 
-void *ATrSubInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ATrSubInt::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -230,7 +230,7 @@ string ATrMplInt::PEType()
     return ATrInt::PEType() + GUri::KParentSep + Type();
 }
 
-void *ATrMplInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ATrMplInt::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -274,7 +274,7 @@ string ATrDivInt::PEType()
     return ATrInt::PEType() + GUri::KParentSep + Type();
 }
 
-void *ATrDivInt::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ATrDivInt::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -324,7 +324,7 @@ ATrVar::ATrVar(Elem* aMan, MEnv* aEnv): ATrBase(Type(), aMan, aEnv), mFunc(NULL)
     SetParent(ATrBase::PEType());
 }
 
-void *ATrVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ATrVar::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -442,7 +442,7 @@ ATrAddVar::ATrAddVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrAddVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ATrAddVar::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -492,7 +492,7 @@ ATrMplVar::ATrMplVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrMplVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ATrMplVar::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -537,7 +537,7 @@ ATrDivVar::ATrDivVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrDivVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ATrDivVar::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -584,7 +584,7 @@ ATrSwitchVar::ATrSwitchVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrSwitchVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ATrSwitchVar::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -659,7 +659,7 @@ ATrAtVar::ATrAtVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrAtVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ATrAtVar::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -712,7 +712,7 @@ ATrCpsVectVar::ATrCpsVectVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrCpsVectVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ATrCpsVectVar::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -759,7 +759,7 @@ ATrBcmpVar::ATrBcmpVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrBcmpVar::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ATrBcmpVar::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -831,7 +831,7 @@ string StateAgent::PEType()
     return StateAgent::PEType() + GUri::KParentSep + Type();
 }
 
-void *StateAgent::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *StateAgent::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -891,7 +891,7 @@ void StateAgent::Update()
     TBool cdata = GetNode("./../../Data") != NULL;
     Elem* eprepu = GetNode(cdata ? "./../../Data/Prepared/Capsule/Upd" : "./../../Prepared/Capsule/Upd");
     if (eprepu != NULL) {
-	MUpdatable* upd = eprepu->GetObj(upd);
+	MUpdatable* upd = (MUpdatable*) eprepu->GetSIfiC(MUpdatable::Type(), this);
 	if (upd != NULL) {
 	    try {
 		if (upd->Update()) {
@@ -910,7 +910,7 @@ void StateAgent::Confirm()
     TBool cdata = GetNode("./../../Data") != NULL;
     Elem* econfu = GetNode(cdata ? "./../../Data/Confirmed/Capsule/Upd" : "./../../Confirmed/Capsule/Upd");
     if (econfu != NULL) {
-	MUpdatable* upd = econfu->GetObj(upd);
+	MUpdatable* upd = (MUpdatable*) econfu->GetSIfiC(MUpdatable::Type(), this);
 	if (upd != NULL) {
 	    if (upd->Update()) {
 		// Activate dependencies
@@ -918,7 +918,7 @@ void StateAgent::Confirm()
 		RqContext ctx(this);
 		// Request w/o context because of possible redirecting request to itself
 		// TODO [YB] To check if iterator is not damage during the cycle, to cache to vector if so
-		TIfRange range = eobs->GetIfi(MDesObserver::Type());
+		TIfRange range = eobs->GetIfi(MDesObserver::Type(), NULL);
 		for (IfIter it = range.first; it != range.second; it++) {
 		    MDesObserver* mobs = (MDesObserver*) (*it);
 		    if (mobs != NULL) {
@@ -976,7 +976,7 @@ ADes::ADes(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iActive(ETrue)
     SetParent(Elem::PEType());
 }
 
-void *ADes::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ADes::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -1016,7 +1016,7 @@ void ADes::Update()
     for (vector<Elem*>::iterator it = host->Comps().begin(); it != host->Comps().end(); it++) {
 	Elem* eit = (*it);
 	if (eit != iMan && eit->Name() != "Capsule") {
-	    MDesSyncable* msync = eit->GetObj(msync);
+	    MDesSyncable* msync = (MDesSyncable*) eit->GetSIfiC(MDesSyncable::Type(), this);
 	    if (msync != NULL) {
 		if (msync->IsActive()) {
 		    try {
@@ -1037,7 +1037,7 @@ void ADes::Confirm()
     Elem* host = iMan->GetMan();
     for (vector<Elem*>::iterator it = host->Comps().begin(); it != host->Comps().end(); it++) {
 	Elem* eit = (*it);
-	MDesSyncable* msync = eit->GetObj(msync);
+	MDesSyncable* msync = (MDesSyncable*) eit->GetSIfiC(MDesSyncable::Type(), this);
 	if (msync != NULL) {
 	    if (msync->IsUpdated()) {
 		msync->Confirm();

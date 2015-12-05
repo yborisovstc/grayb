@@ -437,10 +437,9 @@ const Elem* Elem::GetMan() const
 }
 
 // TODO [YB] To remove aIncUpHier - it isn't used anymore
-void *Elem::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *Elem::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
-    RqContext ctx(this, aCtx);
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
@@ -454,17 +453,32 @@ Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
 {
     // Get from cache first
     TICacheRCtx req;
-    ToCacheRCtx(aCtx, req);
+    // Add NULL to context in case of anonymous context
+    // This is required to avoid problem with If relations invalidating
+    // The matter is that the initial requestor doesnt cache relation into its cache
+    // So on invalidation provider checks if context is initial (size == 1), if so it ignore relation
+    // But it is possible that size == 1 for second requestor if the initial makes anonimous request
+    // To avoid this inconsistance we need to explicitly register even anonymous requestor
+    RqContext newctx(NULL);
+    const RqContext* ctx(aCtx == NULL ? &newctx: aCtx);
+    ToCacheRCtx(ctx, req);
     IfIter beg(this, aName, req);
     IfIter end(this, aName, req, ETrue);
     if (beg == end) {
+	if (IsIftEnabled()) {
+	    Logger()->Write(MLogRec::EInfo, this, "Iface [%s]: -->", aName.c_str());
+	}
 	// Invalid cache, update cache
 	// Register the request with local provider anycase to create relation. 
 	// This is required for correct invalidation.
 	InsertIfQm(aName, req, this);
-	UpdateIfi(aName, aCtx);
+	UpdateIfi(aName, ctx);
 	beg = IfIter(this, aName, req);
 	end = IfIter(this, aName, req, ETrue);
+    } else {
+	if (IsIftEnabled()) {
+	    Logger()->Write(MLogRec::EInfo, this, "Iface [%s]: resolved from cache", aName.c_str());
+	}
     }
     return TIfRange(beg, end);
 }
@@ -543,8 +557,10 @@ void Elem::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, Elem* aPr
 	Elem* cnde = cnd->GetObj(cnde);
 	if (it->second.second == aProv || aInv) {
 	    // Unregister next requestor
+	    // TODO [YB] Do we need to unregister this in requestor. In fact this
+	    // is not invalidated but caller of UnregIfProv does
 	    const TICacheRCtx& ctx = it->first.second;
-	    if (!ctx.empty()) {
+	    if (ctx.size() > 1) {
 		TICacheRCtx rctx(ctx);
 		rctx.pop_back();
 		Base* reqb = ctx.back();
@@ -569,7 +585,7 @@ void Elem::UnregAllIfRel(TBool aInv)
     for (TICacheQFIter it = iICacheQF.begin(); it != iICacheQF.end(); it++) {
 	// Unregister itself on requestor
 	const TICacheRCtx& ctx = it->first.second;
-	if (!ctx.empty()) {
+	if (ctx.size() > 1) {
 	    TICacheRCtx rctx(ctx);
 	    rctx.pop_back();
 	    Base* reqb = ctx.back();
@@ -622,6 +638,9 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
     TICacheKeyF keyf(aName, aReq);
     TICacheKey key(keyf, aProv);
     if (aVal != NULL) {
+	if (IsIftEnabled()) {
+	    Logger()->Write(MLogRec::EInfo, this, "Iface [%s]: resolved [%x], caching", aName.c_str(), aVal);
+	}
 	pair<TICacheKey, void*> val(key, aVal);
 	TICacheCIter res = iICache.insert(val);
     }
@@ -665,7 +684,7 @@ Elem* Elem::GetIcCtxComp(const TICacheRCtx& aCtx, TInt aInd)
 
 void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
 {
-    void* res = DoGetObj(aName.c_str(), aCtx);
+    void* res = DoGetObj(aName.c_str());
     if (res != NULL) {
 	InsertIfCache(aName, aCtx, this, res);
     }
@@ -673,20 +692,20 @@ void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
 
 void Elem::LogIfReqs()
 {
-    Logger()->Write(MLogRec::EInfo, this, "Ifaces requests: START");
+    Logger()->Write(MLogRec::EInfo, this, "[%x], Ifaces requests: START", this);
     for (TICacheQFIter it = iICacheQF.begin(); it != iICacheQF.end(); it++) {
 	const TICacheRCtx& ctx = it->first.second;
 	Base* provb = it->second.second;
 	Elem* prov = provb->GetObj(prov);
 	if (!ctx.empty()) {
 	    Base* reqb = ctx.back();
-	    Elem* reqe = reqb->GetObj(reqe);
-	    Logger()->Write(MLogRec::EInfo, NULL, "If: [%s], [%x: %s] - [%x: %s]", it->first.first.c_str(),
-		    reqe, reqe->GetUri().c_str(), prov, prov->GetUri().c_str());
+	    Elem* reqe = reqb == NULL ? NULL : reqb->GetObj(reqe);
+	    Logger()->Write(MLogRec::EInfo, NULL, "If: [%s], [%i][%x: %s] - [%x: %s]", it->first.first.c_str(),
+		    ctx.size(), reqe, reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue).c_str(), prov, prov->GetUri(NULL, ETrue).c_str());
 	}
 	else {
 	    Logger()->Write(MLogRec::EInfo, NULL, "If: [%s], [none] - [%x: %s]", it->first.first.c_str(),
-		    prov, prov->GetUri().c_str());
+		    prov, prov->GetUri(NULL, ETrue).c_str());
 	}
     }
     Logger()->Write(MLogRec::EInfo, this, "Ifaces requests: END");

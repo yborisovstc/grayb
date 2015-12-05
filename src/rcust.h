@@ -18,7 +18,7 @@ class RCust: public Elem, public MRCust, public MACompsObserver
 	RCust(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~RCust();
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp) = 0;
 	// From MRCust

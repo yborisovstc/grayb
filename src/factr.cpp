@@ -18,7 +18,7 @@ GFactory::~GFactory()
     }
 }
 
-void *GFactory::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *GFactory::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }

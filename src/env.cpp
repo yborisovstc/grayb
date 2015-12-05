@@ -27,7 +27,7 @@ ImportsMgr::~ImportsMgr()
 {
 }
 
-void *ImportsMgr::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *ImportsMgr::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
@@ -254,7 +254,7 @@ ChromoMgr::~ChromoMgr()
 {
 }
 
-void *ChromoMgr::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx) 
+void *ChromoMgr::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
@@ -316,7 +316,7 @@ void ChromoMgr::SetEnableOptimization(bool aEnable)
 
 
 Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileName): Base(aName), iRoot(NULL), iLogger(NULL),
-    iSpecChromo(NULL), mEnPerfTrace(EFalse)
+    iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse)
 {
     iLogger = new GLogRec("Logger", aLogFileName.empty() ? KLogFileName : aLogFileName);
     iProvider = new GFactory("Factory", this);
@@ -328,7 +328,7 @@ Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileNam
 }
 
 Env::Env(const string& aName, const string& aSpec, const string& aLogFileName, TBool aOpt): Base(aName), iRoot(NULL), iLogger(NULL),
-    iSpecChromo(NULL), mEnPerfTrace(EFalse)
+    iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse)
 {
     iLogger = new GLogRec("Logger", aLogFileName.empty() ? KLogFileName : aLogFileName);
     iLogger = new GLogRec("Logger", aName + ".log");
@@ -431,7 +431,7 @@ void Env::RemoveProvider(GProvider* aProv)
     iProvider->RemoveProvider(aProv);
 }
 
-void *Env::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *Env::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
@@ -440,10 +440,12 @@ TBool Env::GetSBool(TSBool aId) const
 {
     TBool res = EFalse;
     if (aId == ESb_EnPerfTrace) res = mEnPerfTrace;
+    else if (aId == ESb_EnIfTrace) res = mEnIfTrace;
     return res;
 }
 
 void Env::SetSBool(TSBool aId, TBool aVal)
 {
     if (aId == ESb_EnPerfTrace) mEnPerfTrace = aVal;
+    else if (aId == ESb_EnIfTrace) mEnIfTrace = aVal;
 }

@@ -18,7 +18,7 @@ Prop::Prop(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
     SetParent(Elem::PEType());
 }
 
-void *Prop::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *Prop::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -79,7 +79,7 @@ Description::Description(Elem* aMan, MEnv* aEnv): Prop(Type(), aMan, aEnv)
     SetParent(Prop::PEType());
 }
 
-void *Description::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *Description::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -89,7 +89,7 @@ void *Description::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext
 	res = (MProp*) this;
     }
     else {
-	res = Prop::DoGetObj(aName, aIncUpHier, aCtx);
+	res = Prop::DoGetObj(aName, aIncUpHier);
     }
     return res;
 }

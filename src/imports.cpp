@@ -25,7 +25,7 @@ AImports::~AImports()
 }
 
 
-void* AImports::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void* AImports::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {

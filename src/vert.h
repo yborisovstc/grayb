@@ -19,7 +19,7 @@ class Vert: public Elem, public MVert
 	Vert(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~Vert();
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MVert
 	virtual TBool Connect(MVert* aPair);
 	virtual TBool Connect(MEdge* aEdge);
@@ -33,7 +33,7 @@ class Vert: public Elem, public MVert
 	virtual TBool OnCompChanged(Elem& aComp);
 	virtual void SetRemoved();
 	// Iface cache
-	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
+	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
     protected:
 	void Disconnect();
 	void RemoveFromMap(MEdge* aEdge, const TNMKey& aKey);

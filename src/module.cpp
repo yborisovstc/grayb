@@ -28,7 +28,7 @@ AMod::~AMod()
 }
 
 
-void* AMod::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void* AMod::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {

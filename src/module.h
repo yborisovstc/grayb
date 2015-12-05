@@ -16,7 +16,7 @@ class AMod: public Elem, public MMod
 	AMod(Elem* aMan, MEnv* aEnv);
 	virtual ~AMod();
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MMod
 	virtual Elem* Import(const GUri& aUri);
 	// Fom MElem

@@ -15,7 +15,7 @@ class Prop: public Elem, public MProp
 	Prop(Elem* aMan, MEnv* aEnv);
     public:
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MProp
 	virtual const string& Value() const;
 	// From MElem
@@ -36,7 +36,7 @@ class Description: public Prop
 	Description(Elem* aMan, MEnv* aEnv);
     public:
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 };
 
 #endif

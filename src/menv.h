@@ -45,7 +45,8 @@ class MEnv
     public:
 	enum TSBool
 	{
-	    ESb_EnPerfTrace = 1
+	    ESb_EnPerfTrace = 1,
+	    ESb_EnIfTrace = 2 /* Enable tracing of interface providing */
 	};
     public:
 	virtual MProvider *Provider() const = 0;

@@ -165,7 +165,7 @@ void Ut_cre::test_CreData()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     Elem* doutp = root->GetNode("./(Incaps:)test/(DataSInt:)DataS_Int_1/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
-    MDIntGet* doutpget = doutp->GetObj(doutpget);
+    MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 34);
     MVert* mdoutpv = doutp->GetObj(mdoutpv);
@@ -179,7 +179,7 @@ void Ut_cre::test_CreData()
 
     Elem* foutp = root->GetNode("./test/Incr/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
-    MDIntGet* foutpget = foutp->GetObj(doutpget);
+    MDIntGet* foutpget = (MDIntGet*) foutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
     TInt fres = foutpget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result", fres == 35);

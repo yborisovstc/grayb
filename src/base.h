@@ -36,9 +36,9 @@ class Base
 	Base(const string& aName): iName(aName) {};
 	virtual ~Base() {};
 	const string& Name() const { return iName;}
-	template <class T> T* GetObj(T* aInst) {RqContext ctx(this); return aInst = static_cast<T*>(DoGetObj(aInst->Type(), ETrue, &ctx));};
+	template <class T> T* GetObj(T* aInst) {return aInst = static_cast<T*>(DoGetObj(aInst->Type(), ETrue));};
 	void* GetObj(const char *aType) {return DoGetObj(aType); };
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL) = 0;
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue) = 0;
     protected:
 	string iName;
 };

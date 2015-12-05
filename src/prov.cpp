@@ -22,7 +22,7 @@ void GProvider::SetEnv(MEnv* aEnv)
     iEnv = aEnv;
 }
 
-void *GProvider::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *GProvider::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }

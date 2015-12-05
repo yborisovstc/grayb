@@ -44,10 +44,9 @@ Vert::Vert(Elem* aMan, MEnv* aEnv):Elem(Type(), aMan, aEnv)
 
 }
 
-void *Vert::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
+void *Vert::DoGetObj(const char *aName, TBool aIncUpHier)
 {
     void* res = NULL;
-    RqContext ctx(this, aCtx);
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
@@ -56,18 +55,6 @@ void *Vert::DoGetObj(const char *aName, TBool aIncUpHier, const RqContext* aCtx)
     }
     else {
 	res = Elem::DoGetObj(aName, EFalse);
-    }
-    // Support run-time extentions on the base layer, ref md#sec_refac_iface
-    if (res == NULL) {
-	Elem* agents = GetComp("Elem", "Agents");
-	if (agents != NULL) {
-	    for (vector<Elem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && res == NULL; it++) {
-		Elem* eit = (*it);
-		if (!ctx.IsInContext(eit)) {
-		    res = (*it)->DoGetObj(aName, aIncUpHier, &ctx);
-		}
-	    }
-	}
     }
     return res;
 }

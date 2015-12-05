@@ -210,12 +210,12 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
 	virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
 	// Iface provider
-	void* GetSIfiC(const string& aName, Base* aRequestor);
+	void* GetSIfiC(const string& aName, Base* aRequestor = NULL);
 	void* GetSIfi(const string& aName, const RqContext* aCtx = NULL);
 	void* GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert = ETrue);
 	TIfRange GetIfi(const string& aName, const RqContext* aCtx = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue, const RqContext* aCtx = NULL);
+	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
 	// From MElem
 	virtual const string EType(TBool aShort = ETrue) const;
 	virtual Elem* GetMan();
@@ -266,7 +266,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// From MMutable
 	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
 	// Ifaces cache
-	virtual void UpdateIfi(const string& aName, const RqContext* aCtx = NULL);
+	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
 	void RmIfCache(IfIter& aIt);
 	void UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx);
 	void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, Elem* aProv, TBool aInv = EFalse);
@@ -306,6 +306,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TBool CompactChromo(const ChromoNode& aNode);
 	void UndoCompactChromo();
 	inline MLogRec* Logger() const;
+	inline TBool IsIftEnabled() const;
 	// Transformations
 	TBool HasParentModifs() const;
 	void CopyModifsFromParent();
@@ -397,5 +398,6 @@ inline MLogRec* Elem::Logger() const {return iEnv ? iEnv->Logger(): NULL; }
 
 inline MProvider* Elem::Provider() const {return iEnv ? iEnv->Provider(): NULL; }
 
+inline TBool Elem::IsIftEnabled() const { return iEnv ? iEnv->GetSBool(MEnv::ESb_EnIfTrace): EFalse;};
 
 #endif
