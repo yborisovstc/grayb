@@ -18,7 +18,7 @@ class GProvider: public Base, public MProvider
 	virtual ~GProvider();
 	void SetEnv(MEnv* aEnv);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MProvider
 	virtual Elem* CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv);
 	virtual Elem* GetNode(const string& aUri);

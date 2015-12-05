@@ -24,7 +24,7 @@ FuncBase::FuncBase(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
     SetParent(Elem::PEType());
 }
 
-void *FuncBase::DoGetObj(const char *aName, TBool aIncUpHier)
+void *FuncBase::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -37,7 +37,7 @@ void *FuncBase::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDataObserver*) this;
     }
     else {
-	res = Elem::DoGetObj(aName, aIncUpHier);
+	res = Elem::DoGetObj(aName);
     }
     return res;
 }
@@ -103,7 +103,7 @@ AFunInt::AFunInt(Elem* aMan, MEnv* aEnv): FuncBase(Type(), aMan, aEnv), mData(0)
     SetParent(FuncBase::PEType());
 }
 
-void *AFunInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFunInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -113,7 +113,7 @@ void *AFunInt::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDIntGet*) this;
     }
     else {
-	res = FuncBase::DoGetObj(aName, aIncUpHier);
+	res = FuncBase::DoGetObj(aName);
     }
     return res;
 }
@@ -173,14 +173,14 @@ AIncInt::AIncInt(Elem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
     SetParent(AFunInt::PEType());
 }
 
-void *AIncInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AIncInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = AFunInt::DoGetObj(aName, aIncUpHier);
+	res = AFunInt::DoGetObj(aName);
     }
     return res;
 }
@@ -228,14 +228,14 @@ AFunIntRes::AFunIntRes(Elem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
     SetParent(AFunInt::PEType());
 }
 
-void *AFunIntRes::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFunIntRes::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = FuncBase::DoGetObj(aName, aIncUpHier);
+	res = FuncBase::DoGetObj(aName);
     }
     return res;
 }
@@ -316,14 +316,14 @@ AAddInt::AAddInt(Elem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
     SetParent(AFunInt::PEType());
 }
 
-void *AAddInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AAddInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = AFunInt::DoGetObj(aName, aIncUpHier);
+	res = AFunInt::DoGetObj(aName);
     }
     return res;
 }
@@ -376,14 +376,14 @@ ACountCritInt::ACountCritInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunI
     SetParent(Type());
 }
 
-void *ACountCritInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ACountCritInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = AFunInt::DoGetObj(aName, aIncUpHier);
+	res = AFunInt::DoGetObj(aName);
     }
     return res;
 }
@@ -443,7 +443,7 @@ AFunc::AFunc(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
     SetParent(Elem::PEType());
 }
 
-void *AFunc::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFunc::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -456,7 +456,7 @@ void *AFunc::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDataObserver*) this;
     }
     else {
-	res = Elem::DoGetObj(aName, aIncUpHier);
+	res = Elem::DoGetObj(aName);
     }
     return res;
 }
@@ -523,7 +523,7 @@ AFuncInt::AFuncInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv), mData(0)
 }
 
 
-void *AFuncInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFuncInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -533,7 +533,7 @@ void *AFuncInt::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDIntGet*) this;
     }
     else {
-	res = AFunc::DoGetObj(aName, aIncUpHier);
+	res = AFunc::DoGetObj(aName);
     }
     return res;
 }
@@ -579,7 +579,7 @@ AFAddInt::AFAddInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
     SetParent(AFunc::PEType());
 }
 
-void *AFAddInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFAddInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -589,7 +589,7 @@ void *AFAddInt::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDIntGet*) this;
     }
     else {
-	res = AFunc::DoGetObj(aName, aIncUpHier);
+	res = AFunc::DoGetObj(aName);
     }
     return res;
 }
@@ -629,14 +629,14 @@ AFSubInt::AFSubInt(Elem* aMan, MEnv* aEnv): AFuncInt(Type(), aMan, aEnv)
 }
 
 
-void *AFSubInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFSubInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = AFuncInt::DoGetObj(aName, aIncUpHier);
+	res = AFuncInt::DoGetObj(aName);
     }
     return res;
 }
@@ -687,7 +687,7 @@ AFLimInt::AFLimInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
 }
 
 
-void *AFLimInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFLimInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -697,7 +697,7 @@ void *AFLimInt::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDIntGet*) this;
     }
     else {
-	res = AFunc::DoGetObj(aName, aIncUpHier);
+	res = AFunc::DoGetObj(aName);
     }
     return res;
 }
@@ -749,7 +749,7 @@ AFDivInt::AFDivInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
     SetParent(AFunc::PEType());
 }
 
-void *AFDivInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFDivInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -759,7 +759,7 @@ void *AFDivInt::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDIntGet*) this;
     }
     else {
-	res = AFunc::DoGetObj(aName, aIncUpHier);
+	res = AFunc::DoGetObj(aName);
     }
     return res;
 }
@@ -808,7 +808,7 @@ AFIntToVect::AFIntToVect(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aNa
     SetParent(Type());
 }
 
-void *AFIntToVect::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFIntToVect::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -818,7 +818,7 @@ void *AFIntToVect::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MVIntGet*) this;
     }
     else {
-	res = AFunc::DoGetObj(aName, aIncUpHier);
+	res = AFunc::DoGetObj(aName);
     }
     return res;
 }
@@ -862,7 +862,7 @@ AFConvInt::AFConvInt(Elem* aMan, MEnv* aEnv): AFuncInt(Type(), aMan, aEnv)
     iSampleHolder.iHost = this;
 }
 
-void *AFConvInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFConvInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -870,7 +870,7 @@ void *AFConvInt::DoGetObj(const char *aName, TBool aIncUpHier)
     } else if (strcmp(aName, MDIntGet::Type()) == 0) {
 	res = (MDIntGet*) this;
     } else {
-	res = AFuncInt::DoGetObj(aName, aIncUpHier);
+	res = AFuncInt::DoGetObj(aName);
     }
     return res;
 }
@@ -888,7 +888,7 @@ void AFConvInt::UpdateIfi(const string& aName, const RqContext* aCtx)
 	res = (MDIntGet*) this;
     }
     else {
-	res = AFuncInt::DoGetObj(aName.c_str(), EFalse);
+	res = AFuncInt::DoGetObj(aName.c_str());
     }
     if (res != NULL) {
 	InsertIfCache(aName, aCtx, this, res);
@@ -946,7 +946,7 @@ AFuncm::AFuncm(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, a
     SetParent(Type());
 }
 
-void *AFuncm::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFuncm::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -959,7 +959,7 @@ void *AFuncm::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDataObserver*) this;
     }
     else {
-	res = Elem::DoGetObj(aName, aIncUpHier);
+	res = Elem::DoGetObj(aName);
     }
     if (res == NULL) {
 	map<string, Exec*>::iterator ri = mExecs.find(aName);
@@ -1018,14 +1018,14 @@ AFuncmAdd::AFuncmAdd(const string& aName, Elem* aMan, MEnv* aEnv): AFuncm(aName,
     SetParent(Type());
 }
 
-void *AFuncmAdd::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFuncmAdd::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = AFuncm::DoGetObj(aName, aIncUpHier);
+	res = AFuncm::DoGetObj(aName);
     }
    return res;
 }
@@ -1064,7 +1064,7 @@ AFGTInt::AFGTInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
     SetParent(AFunc::PEType());
 }
 
-void *AFGTInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFGTInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -1074,7 +1074,7 @@ void *AFGTInt::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDBoolGet*) this;
     }
     else {
-	res = AFunc::DoGetObj(aName, aIncUpHier);
+	res = AFunc::DoGetObj(aName);
     }
     return res;
 }
@@ -1114,7 +1114,7 @@ AFBoolToInt::AFBoolToInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
     SetParent(AFunc::PEType());
 }
 
-void *AFBoolToInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFBoolToInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -1124,7 +1124,7 @@ void *AFBoolToInt::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDIntGet*) this;
     }
     else {
-	res = AFunc::DoGetObj(aName, aIncUpHier);
+	res = AFunc::DoGetObj(aName);
     }
     return res;
 }
@@ -1162,7 +1162,7 @@ AFunVar::AFunVar(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv), mFunc(NULL)
     SetParent(AFunc::PEType());
 }
 
-void *AFunVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFunVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -1172,7 +1172,7 @@ void *AFunVar::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDVarGet*) this;
     }
     else {
-	res = AFunc::DoGetObj(aName, aIncUpHier);
+	res = AFunc::DoGetObj(aName);
     }
     /* TODO [YB] Avoid init internal data via obj resolver, do we need to keep access at least?
     if (res == NULL) {
@@ -1229,15 +1229,15 @@ void *AFunVar::DoGetDObj(const char *aName)
     if (mFunc == NULL) {
 	Init(aName);
 	if (mFunc != NULL) {
-	    res = mFunc->DoGetObj(aName, EFalse);
+	    res = mFunc->DoGetObj(aName);
 	}
     }
     else {
-	res = mFunc->DoGetObj(aName, EFalse);
+	res = mFunc->DoGetObj(aName);
 	if (res == NULL) {
 	    Init(aName);
 	    if (mFunc != NULL) {
-		res = mFunc->DoGetObj(aName, EFalse);
+		res = mFunc->DoGetObj(aName);
 	    }
 	}
     }
@@ -1463,14 +1463,14 @@ AFAddVar::AFAddVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFAddVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFAddVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = AFunVar::DoGetObj(aName, aIncUpHier);
+	res = AFunVar::DoGetObj(aName);
     }
     return res;
 }
@@ -1519,7 +1519,7 @@ Func* FAddInt::Create(Host* aHost, const string& aString)
     return res;
 }
 
-void *FAddInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *FAddInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDIntGet::Type()) == 0) res = (MDIntGet*) this;
@@ -1551,7 +1551,7 @@ Func* FAddFloat::Create(Host* aHost, const string& aString)
     return res;
 }
 
-void *FAddFloat::DoGetObj(const char *aName, TBool aIncUpHier)
+void *FAddFloat::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDFloatGet::Type()) == 0) res = (MDFloatGet*) this;
@@ -1642,7 +1642,7 @@ template<class T> Func* FAddData<T>::Create(Host* aHost, const string& aString)
     return res;
 }
 
-template<class T> void *FAddData<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *FAddData<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDataGet<T>::Type()) == 0) res = (MDataGet<T>*) this;
@@ -1685,7 +1685,7 @@ template<class T> Func* FAddVect<T>::Create(Host* aHost, const string& aString)
     return res;
 }
 
-template<class T> void *FAddVect<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *FAddVect<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MVectGet<T>::Type()) == 0) res = (MVectGet<T>*) this;
@@ -1751,7 +1751,7 @@ template<class T> Func* FAddMtrd<T>::Create(Host* aHost, const string& aString)
     return res;
 }
 
-template<class T> void *FAddMtrd<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *FAddMtrd<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MMtrdGet<T>::Type()) == 0) res = (MMtrdGet<T>*) this;
@@ -1794,7 +1794,7 @@ template<class T> Func* FAddMtr<T>::Create(Host* aHost, const string& aString)
     return res;
 }
 
-template<class T> void *FAddMtr<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *FAddMtr<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MMtrGet<T>::Type()) == 0) res = (MMtrGet<T>*) this;
@@ -1879,7 +1879,7 @@ template<class T> Func* FAddDt<T>::Create(Host* aHost, const string& aString)
     return res;
 }
 
-template<class T> void *FAddDt<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *FAddDt<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
@@ -1977,14 +1977,14 @@ AFCpsVectVar::AFCpsVectVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFCpsVectVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFCpsVectVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = AFunVar::DoGetObj(aName, aIncUpHier);
+	res = AFunVar::DoGetObj(aName);
     }
     return res;
 }
@@ -2009,7 +2009,7 @@ template<class T> Func* FCpsVect<T>::Create(Host* aHost, const string& aString)
     return res;
 }
 
-template<class T> void *FCpsVect<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *FCpsVect<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDtGet<Mtr<T> >::Type()) == 0) res = (MDtGet<Mtr<T> >*) this;
@@ -2088,14 +2088,14 @@ AFMplVar::AFMplVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFMplVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFMplVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = AFunVar::DoGetObj(aName, aIncUpHier);
+	res = AFunVar::DoGetObj(aName);
     }
     return res;
 }
@@ -2125,7 +2125,7 @@ Func* FMplFloat::Create(Host* aHost, const string& aString)
     return res;
 }
 
-void *FMplFloat::DoGetObj(const char *aName, TBool aIncUpHier)
+void *FMplFloat::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDFloatGet::Type()) == 0) res = (MDFloatGet*) this;
@@ -2171,7 +2171,7 @@ template<class T> Func* FMplDt<T>::Create(Host* aHost, const string& aString)
     return res;
 }
 
-template<class T> void *FMplDt<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *FMplDt<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
@@ -2263,14 +2263,14 @@ AFMplncVar::AFMplncVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFMplncVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFMplncVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = AFunVar::DoGetObj(aName, aIncUpHier);
+	res = AFunVar::DoGetObj(aName);
     }
     return res;
 }
@@ -2305,7 +2305,7 @@ template<class T> Func* FMplMtrdVect<T>::Create(Host* aHost, const string& aStri
     return res;
 }
 
-template<class T> void *FMplMtrdVect<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *FMplMtrdVect<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MVectGet<T>::Type()) == 0) res = (MVectGet<T>*) this;
@@ -2366,7 +2366,7 @@ template<class T> Func* FMplMtr<T>::Create(Host* aHost, const string& aString)
     return res;
 }
 
-template<class T> void *FMplMtr<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *FMplMtr<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MMtrGet<T>::Type()) == 0) res = (MMtrGet<T>*) this;
@@ -2478,7 +2478,7 @@ template<class T> Func* FMplncDt<T>::Create(Host* aHost, const string& aString)
     return res;
 }
 
-template<class T> void *FMplncDt<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *FMplncDt<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
@@ -2560,7 +2560,7 @@ template<class T> Func* FMplncScMtr<T>::Create(Host* aHost, const string& aStrin
     return res;
 }
 
-template<class T> void *FMplncScMtr<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *FMplncScMtr<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDtGet<Mtr<T> >::Type()) == 0) res = (MDtGet<Mtr<T> >*) this;
@@ -2624,14 +2624,14 @@ AFMplinvVar::AFMplinvVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFMplinvVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFMplinvVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = AFunVar::DoGetObj(aName, aIncUpHier);
+	res = AFunVar::DoGetObj(aName);
     }
     return res;
 }
@@ -2664,7 +2664,7 @@ template<class T> Func* FMplinvMtrd<T>::Create(Host* aHost, const string& aOutIi
     return res;
 }
 
-template<class T> void *FMplinvMtrd<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *FMplinvMtrd<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MMtrdGet<T>::Type()) == 0) res = (MMtrdGet<T>*) this;
@@ -2717,7 +2717,7 @@ template<class T> Func* FMplinvMtr<T>::Create(Host* aHost, const string& aString
     return res;
 }
 
-template<class T> void *FMplinvMtr<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *FMplinvMtr<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MMtrGet<T>::Type()) == 0) res = (MMtrGet<T>*) this;
@@ -2789,7 +2789,7 @@ template<class T> Func* FMplinvDt<T>::Create(Host* aHost, const string& aString)
     return res;
 }
 
-template<class T> void *FMplinvDt<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *FMplinvDt<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
@@ -2855,11 +2855,11 @@ AFCastVar::AFCastVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFCastVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFCastVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) { res = this; }
-    else { res = AFunVar::DoGetObj(aName, aIncUpHier); }
+    else { res = AFunVar::DoGetObj(aName); }
     return res;
 }
 
@@ -2905,7 +2905,7 @@ template<class T, class TA> Func* FCastDt<T, TA>::Create(Host* aHost, const stri
     return res;
 }
 
-template<class T, class TA> void *FCastDt<T, TA>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T, class TA> void *FCastDt<T, TA>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
@@ -2966,14 +2966,14 @@ AFCpsMtrdVar::AFCpsMtrdVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFCpsMtrdVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFCpsMtrdVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = AFunVar::DoGetObj(aName, aIncUpHier);
+	res = AFunVar::DoGetObj(aName);
     }
     return res;
 }
@@ -3004,7 +3004,7 @@ template<class T> Func* FCpsMtrdVect<T>::Create(Host* aHost, const string& aStri
     return res;
 }
 
-template<class T> void *FCpsMtrdVect<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *FCpsMtrdVect<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDtGet<Mtr<T> >::Type()) == 0) res = (MDtGet<Mtr<T> >*) this;
@@ -3077,14 +3077,14 @@ AFDivVar::AFDivVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFDivVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFDivVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = AFunVar::DoGetObj(aName, aIncUpHier);
+	res = AFunVar::DoGetObj(aName);
     }
     return res;
 }
@@ -3115,7 +3115,7 @@ Func* FDivFloat::Create(Host* aHost, const string& aString)
     return res;
 }
 
-void *FDivFloat::DoGetObj(const char *aName, TBool aIncUpHier)
+void *FDivFloat::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDFloatGet::Type()) == 0) res = (MDFloatGet*) this;
@@ -3196,7 +3196,7 @@ Func* FBcmpFloat::Create(Host* aHost, const string& aOutIid, MDVarGet* aInp1Var,
     return res;
 }
 
-void *FBcmpFloat::DoGetObj(const char *aName, TBool aIncUpHier)
+void *FBcmpFloat::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDBoolGet::Type()) == 0) res = (MDBoolGet*) this;
@@ -3282,14 +3282,14 @@ AFBcmpVar::AFBcmpVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFBcmpVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFBcmpVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = AFunVar::DoGetObj(aName, aIncUpHier);
+	res = AFunVar::DoGetObj(aName);
     }
     return res;
 }
@@ -3347,14 +3347,14 @@ AFCmpVar::AFCmpVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFCmpVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFCmpVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = AFunVar::DoGetObj(aName, aIncUpHier);
+	res = AFunVar::DoGetObj(aName);
     }
     return res;
 }
@@ -3424,7 +3424,7 @@ void FCmpBase::GetResult(string& aResult) const
     mRes.ToString(aResult);
 }
 
-void *FCmpBase::DoGetObj(const char *aName, TBool aIncUpHier)
+void *FCmpBase::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDtGet<Sdata<bool> >::Type()) == 0) res = (MDtGet<Sdata<bool> >*) this;
@@ -3498,14 +3498,14 @@ AFAtVar::AFAtVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFAtVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFAtVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = AFunVar::DoGetObj(aName, aIncUpHier);
+	res = AFunVar::DoGetObj(aName);
     }
     return res;
 }
@@ -3567,7 +3567,7 @@ template <class T> Func* FAtMVect<T>::Create(Host* aHost, const string& aOutIid,
     return res;
 }
 
-template <class T> void *FAtMVect<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template <class T> void *FAtMVect<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDtGet<Sdata<T> >::Type()) == 0) res = (MDtGet<Sdata<T> >*) this;
@@ -3662,13 +3662,13 @@ void FAtNTuple::Init()
     }
 }
 
-void *FAtNTuple::DoGetObj(const char *aName, TBool aIncUpHier)
+void *FAtNTuple::DoGetObj(const char *aName)
 {
     void *res = NULL;
-    if (mIfProxy == NULL || mIfProxy->DoGetObj(aName, aIncUpHier) == NULL) {
+    if (mIfProxy == NULL || mIfProxy->DoGetObj(aName) == NULL) {
 	Init();
     }
-    return mIfProxy != NULL ? mIfProxy->DoGetObj(aName, aIncUpHier) : NULL;
+    return mIfProxy != NULL ? mIfProxy->DoGetObj(aName) : NULL;
 }
 
 
@@ -3742,7 +3742,7 @@ string FAtNTuple::IfaceGetId() const
     return type;
 }
 
-template <class T> void *FAtNTuple::IfProxy<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template <class T> void *FAtNTuple::IfProxy<T>::DoGetObj(const char *aName)
 {
     return (strcmp(aName, MDtGet<T>::Type()) == 0) ? (MDtGet<T>*) this: NULL;
 }
@@ -3789,44 +3789,13 @@ AFSwitchVar::AFSwitchVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-/*
-   void *AFSwitchVar::DoGetObj(const char *aName, TBool aIncUpHier)
-   {
-   void* res = NULL;
-   if (strcmp(aName, Type()) == 0) {
-   res = this;
-   }
-   else if (strcmp(aName, MDVarGet::Type()) == 0) {
-   if (mFunc == NULL) {
-   Init(aName);
-   if (mFunc != NULL) {
-   res = mFunc->DoGetObj(aName, aIncUpHier);
-   }
-   }
-   else {
-   res = mFunc->DoGetObj(aName, aIncUpHier);
-   if (res == NULL) {
-   Init(aName);
-   if (mFunc != NULL) {
-   res = mFunc->DoGetObj(aName, aIncUpHier);
-   }
-   }
-   }
-   }
-   else {
-   res = AFunVar::DoGetObj(aName, aIncUpHier);
-   }
-   return res;
-   }
-   */
-
-void *AFSwitchVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFSwitchVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     } else {
-	res = AFunVar::DoGetObj(aName, aIncUpHier);
+	res = AFunVar::DoGetObj(aName);
     }
     return res;
 }
@@ -3901,7 +3870,7 @@ Func* FSwitchBool::Create(Host* aHost, const string& aOutIid, const string& aInp
     return res;
 }
 
-void *FSwitchBool::DoGetObj(const char *aName, TBool aIncUpHier)
+void *FSwitchBool::DoGetObj(const char *aName)
 {
     void* res = NULL;
     // There are two approach of commutation. The first one is to commutate MDVarGet ifase, i.e.
@@ -3987,13 +3956,13 @@ AFBoolNegVar::AFBoolNegVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFBoolNegVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *AFBoolNegVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     } else {
-	res = AFunVar::DoGetObj(aName, aIncUpHier);
+	res = AFunVar::DoGetObj(aName);
     }
     return res;
 }
@@ -4017,7 +3986,7 @@ Func* FBnegDt::Create(Host* aHost)
     return new FBnegDt(*aHost);
 }
 
-void *FBnegDt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *FBnegDt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDtGet<Sdata<bool> >::Type()) == 0) res = (MDtGet<Sdata<bool> >*) this;

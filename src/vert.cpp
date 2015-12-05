@@ -44,7 +44,7 @@ Vert::Vert(Elem* aMan, MEnv* aEnv):Elem(Type(), aMan, aEnv)
 
 }
 
-void *Vert::DoGetObj(const char *aName, TBool aIncUpHier)
+void *Vert::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -54,7 +54,7 @@ void *Vert::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MVert*) this;
     }
     else {
-	res = Elem::DoGetObj(aName, EFalse);
+	res = Elem::DoGetObj(aName);
     }
     return res;
 }
@@ -73,7 +73,7 @@ void Vert::UpdateIfi(const string& aName, const RqContext* aCtx)
 	res = (MVert*) this;
     }
     else {
-	res = Elem::DoGetObj(aName.c_str(), EFalse);
+	res = Elem::DoGetObj(aName.c_str());
     }
     if (res != NULL) {
 	InsertIfCache(aName, rctx, this, res);

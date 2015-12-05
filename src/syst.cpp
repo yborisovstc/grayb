@@ -25,11 +25,11 @@ ACapsule::ACapsule(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
     SetParent(Elem::PEType());
 }
 
-void *ACapsule::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ACapsule::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) res = this;
-    else res = Elem::DoGetObj(aName, EFalse);
+    else res = Elem::DoGetObj(aName);
     return res;
 }
 
@@ -64,7 +64,7 @@ ConnPointBase::ConnPointBase(Elem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
     SetParent(Vert::PEType());
 }
 
-void *ConnPointBase::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ConnPointBase::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -74,7 +74,7 @@ void *ConnPointBase::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MCompatChecker*) this;
     }
     else {
-	res = Vert::DoGetObj(aName, EFalse);
+	res = Vert::DoGetObj(aName);
     }
     return res;
 }
@@ -95,7 +95,7 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 	res = (MCompatChecker*) this;
     }
     else {
-	res = Vert::DoGetObj(aName.c_str(), EFalse);
+	res = Vert::DoGetObj(aName.c_str());
     }
     if (res != NULL) {
 	InsertIfCache(aName, rctx, this, res);
@@ -220,13 +220,13 @@ ConnPointBaseInp::ConnPointBaseInp(Elem* aMan, MEnv* aEnv): ConnPointBase(Type()
     SetParent(ConnPointBase::PEType());
 }
 
-void *ConnPointBaseInp::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ConnPointBaseInp::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     } else {
-	res = ConnPointBase::DoGetObj(aName, EFalse);
+	res = ConnPointBase::DoGetObj(aName);
     }
     return res;
 }
@@ -255,13 +255,13 @@ ConnPointBaseOut::ConnPointBaseOut(Elem* aMan, MEnv* aEnv): ConnPointBase(Type()
     SetParent(ConnPointBase::PEType());
 }
 
-void *ConnPointBaseOut::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ConnPointBaseOut::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     } else {
-	res = ConnPointBase::DoGetObj(aName, EFalse);
+	res = ConnPointBase::DoGetObj(aName);
     }
     return res;
 }
@@ -291,7 +291,7 @@ ExtenderAgent::ExtenderAgent(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
     SetParent(Elem::PEType());
 }
 
-void *ExtenderAgent::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ExtenderAgent::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -299,7 +299,7 @@ void *ExtenderAgent::DoGetObj(const char *aName, TBool aIncUpHier)
     } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
     } else {
-	res = Elem::DoGetObj(aName, EFalse);
+	res = Elem::DoGetObj(aName);
     }
     return res;
 }
@@ -319,7 +319,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 	res = (MCompatChecker*) this;
     }
     else {
-	res = Elem::DoGetObj(aName.c_str(), EFalse);
+	res = Elem::DoGetObj(aName.c_str());
     }
     if (res != NULL) {
 	InsertIfCache(aName, rctx, this, res);
@@ -405,13 +405,13 @@ ExtenderAgentInp::ExtenderAgentInp(Elem* aMan, MEnv* aEnv): ExtenderAgent(Type()
     SetParent(ExtenderAgent::PEType());
 }
 
-void *ExtenderAgentInp::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ExtenderAgentInp::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     } else {
-	res = ExtenderAgent::DoGetObj(aName, EFalse);
+	res = ExtenderAgent::DoGetObj(aName);
     }
     return res;
 }
@@ -440,13 +440,13 @@ ExtenderAgentOut::ExtenderAgentOut(Elem* aMan, MEnv* aEnv): ExtenderAgent(Type()
     SetParent(ExtenderAgent::PEType());
 }
 
-void *ExtenderAgentOut::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ExtenderAgentOut::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     } else {
-	res = ExtenderAgent::DoGetObj(aName, EFalse);
+	res = ExtenderAgent::DoGetObj(aName);
     }
     return res;
 }
@@ -476,25 +476,25 @@ ASocket::ASocket(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
     SetParent(Elem::PEType());
 }
 
-void *ASocket::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ASocket::DoGetObj(const char *aName)
 {
-    // TODO [YB] the current routing model is not optimal. Socket doesn't known itself if
-    // it supports iface or not (only pins know). So socket routes to pins first in hope
-    // they redirect properly. But what if not? Pin routes back to host, so loop happens, that stops 
-    // further routing.
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
     } else {
-	res = Elem::DoGetObj(aName, EFalse);
+	res = Elem::DoGetObj(aName);
     }
     return res;
 }
 
 void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 {
+    // TODO [YB] the current routing model is not optimal. Socket doesn't known itself if
+    // it supports iface or not (only pins know). So socket routes to pins first in hope
+    // they redirect properly. But what if not? Pin routes back to host, so loop happens, that stops 
+    // further routing.
     void* res = NULL;
     TIfRange rr;
     TBool resok = EFalse;
@@ -508,7 +508,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	res = (MCompatChecker*) this;
     }
     else {
-	res = Elem::DoGetObj(aName.c_str(), EFalse);
+	res = Elem::DoGetObj(aName.c_str());
     }
     if (res != NULL) {
 	InsertIfCache(aName, rctx, this, res);
@@ -741,13 +741,13 @@ ASocketInp::ASocketInp(Elem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
     SetParent(ASocket::PEType());
 }
 
-void *ASocketInp::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ASocketInp::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     } else {
-	res = ASocket::DoGetObj(aName, EFalse);
+	res = ASocket::DoGetObj(aName);
     }
     return res;
 }
@@ -776,13 +776,13 @@ ASocketOut::ASocketOut(Elem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
     SetParent(ASocket::PEType());
 }
 
-void *ASocketOut::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ASocketOut::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     } else {
-	res = ASocket::DoGetObj(aName, EFalse);
+	res = ASocket::DoGetObj(aName);
     }
     return res;
 }
@@ -813,14 +813,14 @@ Syst::Syst(Elem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
     SetParent(Vert::PEType());
 }
 
-void *Syst::DoGetObj(const char *aName, TBool aIncUpHier)
+void *Syst::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     if (res == NULL) {
-	res = Vert::DoGetObj(aName, aIncUpHier);
+	res = Vert::DoGetObj(aName);
     }
     return res;
 }

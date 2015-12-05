@@ -159,7 +159,7 @@ Edge::~Edge()
     Disconnect();
 }
 
-void* Edge::DoGetObj(const char *aName, TBool aIncUpHier)
+void* Edge::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -169,7 +169,7 @@ void* Edge::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MEdge*) this;
     }
     else {
-	res = Elem::DoGetObj(aName, aIncUpHier);
+	res = Elem::DoGetObj(aName);
     }
     return res;
 }

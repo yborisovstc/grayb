@@ -33,7 +33,7 @@ GLogRec::~GLogRec()
 	fclose(iLogFile);
 }
 
-void *GLogRec::DoGetObj(const char *aName, TBool aIncUpHier)
+void *GLogRec::DoGetObj(const char *aName)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }

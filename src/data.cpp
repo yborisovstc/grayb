@@ -91,7 +91,7 @@ void DataBase::NotifyUpdate()
     }
 }
 
-void *DataBase::DoGetObj(const char *aName, TBool aIncUpHier)
+void *DataBase::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -107,7 +107,7 @@ void *DataBase::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MACompsObserver*) this;
     }
     else {
-	res = Elem::DoGetObj(aName, aIncUpHier);
+	res = Elem::DoGetObj(aName);
     }
     return res;
 }
@@ -195,7 +195,7 @@ DInt::DInt(Elem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(0)
     SetParent(DataBase::PEType());
 }
 
-void *DInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *DInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -211,7 +211,7 @@ void *DInt::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDIntSet*) this;
     }
     else {
-	res = DataBase::DoGetObj(aName, aIncUpHier);
+	res = DataBase::DoGetObj(aName);
     }
     return res;
 }
@@ -234,7 +234,7 @@ void DInt::UpdateIfi(const string& aName, const RqContext* aCtx)
 	res = (MDIntSet*) this;
     }
     else {
-	res = DataBase::DoGetObj(aName.c_str(), EFalse);
+	res = DataBase::DoGetObj(aName.c_str());
     }
     if (res != NULL) {
 	InsertIfCache(aName, aCtx, this, res);
@@ -328,14 +328,14 @@ DNInt::DNInt(Elem* aMan, MEnv* aEnv): DInt(Type(), aMan, aEnv)
     SetParent(DInt::PEType());
 }
 
-void *DNInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *DNInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = DInt::DoGetObj(aName, aIncUpHier);
+	res = DInt::DoGetObj(aName);
     }
     return res;
 }
@@ -349,7 +349,7 @@ void DNInt::UpdateIfi(const string& aName, const RqContext* aCtx)
 	res = this;
     }
     else {
-	res = DInt::DoGetObj(aName.c_str(), EFalse);
+	res = DInt::DoGetObj(aName.c_str());
     }
     if (res != NULL) {
 	InsertIfCache(aName, aCtx, this, res);
@@ -384,7 +384,7 @@ DVar::DVar(Elem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(NULL)
     SetParent(DataBase::PEType());
 }
 
-void *DVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *DVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -400,7 +400,7 @@ void *DVar::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDVarSet*) this;
     }
     else {
-	res = DataBase::DoGetObj(aName, aIncUpHier);
+	res = DataBase::DoGetObj(aName);
     }
     /* TODO [YB] Avoid init internal data via obj resolver, do we need to keep access at least?
     if (res == NULL) {
@@ -427,7 +427,7 @@ void *DVar::DoGetDObj(const char *aName)
 	Init(aName);
     }
     if (mData != NULL) {
-	res = mData->DoGetObj(aName, EFalse);
+	res = mData->DoGetObj(aName);
     }
     return res;
 }
@@ -564,7 +564,7 @@ TBool DVar::HandleCompChanged(Elem& aContext, Elem& aComp)
 }
 
 // Bool data
-void *DVar::HBool::DoGetObj(const char *aName, TBool aIncUpHier)
+void *DVar::HBool::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDBoolGet::Type()) == 0) res = (MDBoolGet*) this;
@@ -634,7 +634,7 @@ TBool DVar::HBool::Value()
 
 
 // Int data
-void *DVar::HInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *DVar::HInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDInt::Type()) == 0) res = (MDInt*) this;
@@ -714,7 +714,7 @@ void DVar::HInt::SetValue(TInt aData)
 }
 
 // Float data
-void *DVar::HFloat::DoGetObj(const char *aName, TBool aIncUpHier)
+void *DVar::HFloat::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDFloat::Type()) == 0) res = (MDFloat*) this;
@@ -801,7 +801,7 @@ template<> const char* MDataGet<float>::TypeSig() { return "DF";};
 
 template<> string DVar::HData<float>::mId = "DF";
 
-template<class T> void *DVar::HData<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *DVar::HData<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDataGet<T>::Type()) == 0) res = (MDataGet<T>*) this;
@@ -881,7 +881,7 @@ template<class T> DVar::HVect<T>::HVect(DVar* aHost): HBase(aHost), mValid(EFals
 {
 };
 
-template<class T> void *DVar::HVect<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *DVar::HVect<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MVectGet<T>::Type()) == 0) res = (MVectGet<T>*) this;
@@ -983,7 +983,7 @@ template<> const char* MMtrdGet<float>::TypeSig() { return  "MDF";};
 
 template<> string DVar::HMtrd<float>::mId = "MDF";
 
-template<class T> void *DVar::HMtrd<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *DVar::HMtrd<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MMtrdGet<T>::Type()) == 0) res = (MMtrdGet<T>*) this;
@@ -1087,7 +1087,7 @@ template<> const char* MMtrGet<float>::Type() { return "MMtrGet_float";};
 
 template<> const char* MMtrGet<float>::TypeSig() { return  Mtr<float>::TypeSig();};
 
-template<class T> void *DVar::HMtr<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *DVar::HMtr<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MMtrGet<T>::Type()) == 0) res = (MMtrGet<T>*) this;
@@ -1156,7 +1156,7 @@ template<class T> void DVar::HMtr<T>::MtrGet(Mtr<T>& aData)
 //template<class T> const string MDtGet<T>::mType = string("MDtGet_") + T::TypeSig();
 
 
-template<class T> void *DVar::HDt<T>::DoGetObj(const char *aName, TBool aIncUpHier)
+template<class T> void *DVar::HDt<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;

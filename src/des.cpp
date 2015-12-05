@@ -23,7 +23,7 @@ string ATrBase::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-void *ATrBase::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ATrBase::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -33,7 +33,7 @@ void *ATrBase::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MACompsObserver*) this;
     }
     else {
-	res = Elem::DoGetObj(aName, aIncUpHier);
+	res = Elem::DoGetObj(aName);
     }
     return res;
 }
@@ -65,7 +65,7 @@ string ATrInt::PEType()
     return ATrBase::PEType() + GUri::KParentSep + Type();
 }
 
-void *ATrInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ATrInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -75,7 +75,7 @@ void *ATrInt::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDIntGet*) this;
     }
     else {
-	res = ATrBase::DoGetObj(aName, aIncUpHier);
+	res = ATrBase::DoGetObj(aName);
     }
     return res;
 }
@@ -131,14 +131,14 @@ string ATrIncInt::PEType()
     return ATrInt::PEType() + GUri::KParentSep + Type();
 }
 
-void *ATrIncInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ATrIncInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = ATrInt::DoGetObj(aName, aIncUpHier);
+	res = ATrInt::DoGetObj(aName);
     }
     return res;
 }
@@ -175,14 +175,14 @@ string ATrSubInt::PEType()
     return ATrInt::PEType() + GUri::KParentSep + Type();
 }
 
-void *ATrSubInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ATrSubInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = ATrInt::DoGetObj(aName, aIncUpHier);
+	res = ATrInt::DoGetObj(aName);
     }
     return res;
 }
@@ -230,14 +230,14 @@ string ATrMplInt::PEType()
     return ATrInt::PEType() + GUri::KParentSep + Type();
 }
 
-void *ATrMplInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ATrMplInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = ATrInt::DoGetObj(aName, aIncUpHier);
+	res = ATrInt::DoGetObj(aName);
     }
     return res;
 }
@@ -274,14 +274,14 @@ string ATrDivInt::PEType()
     return ATrInt::PEType() + GUri::KParentSep + Type();
 }
 
-void *ATrDivInt::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ATrDivInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = ATrInt::DoGetObj(aName, aIncUpHier);
+	res = ATrInt::DoGetObj(aName);
     }
     return res;
 }
@@ -324,7 +324,7 @@ ATrVar::ATrVar(Elem* aMan, MEnv* aEnv): ATrBase(Type(), aMan, aEnv), mFunc(NULL)
     SetParent(ATrBase::PEType());
 }
 
-void *ATrVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ATrVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -334,21 +334,21 @@ void *ATrVar::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDVarGet*) this;
     }
     else {
-	res = ATrBase::DoGetObj(aName, aIncUpHier);
+	res = ATrBase::DoGetObj(aName);
     }
     if (res == NULL) {
 	if (mFunc == NULL) {
 	    Init(aName);
 	    if (mFunc != NULL) {
-		res = mFunc->DoGetObj(aName, aIncUpHier);
+		res = mFunc->DoGetObj(aName);
 	    }
 	}
 	else {
-	    res = mFunc->DoGetObj(aName, aIncUpHier);
+	    res = mFunc->DoGetObj(aName);
 	    if (res == NULL) {
 		Init(aName);
 		if (mFunc != NULL) {
-		    res = mFunc->DoGetObj(aName, aIncUpHier);
+		    res = mFunc->DoGetObj(aName);
 		}
 	    }
 	}
@@ -367,15 +367,15 @@ void *ATrVar::DoGetDObj(const char *aName)
     if (mFunc == NULL) {
 	Init(aName);
 	if (mFunc != NULL) {
-	    res = mFunc->DoGetObj(aName, EFalse);
+	    res = mFunc->DoGetObj(aName);
 	}
     }
     else {
-	res = mFunc->DoGetObj(aName, EFalse);
+	res = mFunc->DoGetObj(aName);
 	if (res == NULL) {
 	    Init(aName);
 	    if (mFunc != NULL) {
-		res = mFunc->DoGetObj(aName, EFalse);
+		res = mFunc->DoGetObj(aName);
 	    }
 	}
     }
@@ -442,14 +442,14 @@ ATrAddVar::ATrAddVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrAddVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ATrAddVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = ATrVar::DoGetObj(aName, aIncUpHier);
+	res = ATrVar::DoGetObj(aName);
     }
     return res;
 }
@@ -492,14 +492,14 @@ ATrMplVar::ATrMplVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrMplVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ATrMplVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = ATrVar::DoGetObj(aName, aIncUpHier);
+	res = ATrVar::DoGetObj(aName);
     }
     return res;
 }
@@ -537,14 +537,14 @@ ATrDivVar::ATrDivVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrDivVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ATrDivVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = ATrVar::DoGetObj(aName, aIncUpHier);
+	res = ATrVar::DoGetObj(aName);
     }
     return res;
 }
@@ -584,7 +584,7 @@ ATrSwitchVar::ATrSwitchVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrSwitchVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ATrSwitchVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -595,21 +595,21 @@ void *ATrSwitchVar::DoGetObj(const char *aName, TBool aIncUpHier)
 	if (mFunc == NULL) {
 	    Init(aName);
 	    if (mFunc != NULL) {
-		res = mFunc->DoGetObj(aName, aIncUpHier);
+		res = mFunc->DoGetObj(aName);
 	    }
 	}
 	else {
-	    res = mFunc->DoGetObj(aName, aIncUpHier);
+	    res = mFunc->DoGetObj(aName);
 	    if (res == NULL) {
 		Init(aName);
 		if (mFunc != NULL) {
-		    res = mFunc->DoGetObj(aName, aIncUpHier);
+		    res = mFunc->DoGetObj(aName);
 		}
 	    }
 	}
     }
     else {
-	res = ATrVar::DoGetObj(aName, aIncUpHier);
+	res = ATrVar::DoGetObj(aName);
     }
     return res;
 }
@@ -659,14 +659,14 @@ ATrAtVar::ATrAtVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrAtVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ATrAtVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
      }
      else {
-	res = ATrVar::DoGetObj(aName, aIncUpHier);
+	res = ATrVar::DoGetObj(aName);
     }
     return res;
 } 
@@ -712,14 +712,14 @@ ATrCpsVectVar::ATrCpsVectVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrCpsVectVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ATrCpsVectVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = ATrVar::DoGetObj(aName, aIncUpHier);
+	res = ATrVar::DoGetObj(aName);
     }
     return res;
 }
@@ -759,14 +759,14 @@ ATrBcmpVar::ATrBcmpVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrBcmpVar::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ATrBcmpVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
     else {
-	res = ATrVar::DoGetObj(aName, aIncUpHier);
+	res = ATrVar::DoGetObj(aName);
     }
     return res;
 }
@@ -831,7 +831,7 @@ string StateAgent::PEType()
     return StateAgent::PEType() + GUri::KParentSep + Type();
 }
 
-void *StateAgent::DoGetObj(const char *aName, TBool aIncUpHier)
+void *StateAgent::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -844,7 +844,7 @@ void *StateAgent::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDesObserver*) this;
     }
     else {
-	res = Elem::DoGetObj(aName, aIncUpHier);
+	res = Elem::DoGetObj(aName);
     }
     return res;
 }
@@ -864,7 +864,7 @@ void StateAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 	res = (MDesSyncable*) this;
     }
     else {
-	res = Elem::DoGetObj(aName.c_str(), EFalse);
+	res = Elem::DoGetObj(aName.c_str());
     }
     if (res != NULL) {
 	InsertIfCache(aName, aCtx, this, res);
@@ -976,7 +976,7 @@ ADes::ADes(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iActive(ETrue)
     SetParent(Elem::PEType());
 }
 
-void *ADes::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ADes::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -989,7 +989,7 @@ void *ADes::DoGetObj(const char *aName, TBool aIncUpHier)
 	res = (MDesObserver*) this;
     }
     else {
-	res = Elem::DoGetObj(aName, aIncUpHier);
+	res = Elem::DoGetObj(aName);
     }
     return res;
 }

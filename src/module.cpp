@@ -28,7 +28,7 @@ AMod::~AMod()
 }
 
 
-void* AMod::DoGetObj(const char *aName, TBool aIncUpHier)
+void* AMod::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -36,7 +36,7 @@ void* AMod::DoGetObj(const char *aName, TBool aIncUpHier)
     } else if (strcmp(aName, MMod::Type()) == 0) {
 	res = (MMod*) this;
     } else {
-	res = Elem::DoGetObj(aName, aIncUpHier);
+	res = Elem::DoGetObj(aName);
     }
     return res;
 }

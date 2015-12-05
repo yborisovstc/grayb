@@ -15,7 +15,7 @@ class ATrBase: public Elem, public MACompsObserver
 	ATrBase(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrBase(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
 };
@@ -29,7 +29,7 @@ class ATrInt: public ATrBase, public MDIntGet
 	ATrInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrInt(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MDIntGet
 	virtual TInt Value();
     protected:
@@ -49,7 +49,7 @@ class ATrIncInt: public ATrInt
 	ATrIncInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrIncInt(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MDIntGet
 	virtual TInt Value();
 };
@@ -63,7 +63,7 @@ class ATrSubInt: public ATrInt
 	ATrSubInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrSubInt(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MDIntGet
 	virtual TInt Value();
 };
@@ -77,7 +77,7 @@ class ATrMplInt: public ATrInt
 	ATrMplInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrMplInt(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MDIntGet
 	virtual TInt Value();
 };
@@ -91,7 +91,7 @@ class ATrDivInt: public ATrInt
 	ATrDivInt(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrDivInt(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MDIntGet
 	virtual TInt Value();
 };
@@ -106,7 +106,7 @@ class ATrVar: public ATrBase, public MDVarGet, public Func::Host
 	ATrVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MDVarGet
 	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
@@ -135,7 +135,7 @@ class ATrAddVar: public ATrVar
 	ATrAddVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrAddVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
 	virtual string GetInpUri(TInt aId) const;
@@ -152,7 +152,7 @@ class ATrMplVar: public ATrVar
 	ATrMplVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrMplVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
 	virtual string GetInpUri(TInt aId) const;
@@ -169,7 +169,7 @@ class ATrDivVar: public ATrVar
 	ATrDivVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrDivVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
 	virtual string GetInpUri(TInt aId) const;
@@ -186,7 +186,7 @@ class ATrSwitchVar: public ATrVar
 	ATrSwitchVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrSwitchVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
 	virtual string GetInpUri(TInt aId) const;
@@ -203,7 +203,7 @@ class ATrAtVar: public ATrVar
 	ATrAtVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrAtVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
 	virtual string GetInpUri(TInt aId) const;
@@ -220,7 +220,7 @@ class ATrCpsVectVar: public ATrVar
 	ATrCpsVectVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrCpsVectVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
 	virtual string GetInpUri(TInt aId) const;
@@ -237,7 +237,7 @@ class ATrBcmpVar: public ATrVar
 	ATrBcmpVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrBcmpVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MDVarGet
 	virtual string VarGetIfid();
 	// From ATrVar
@@ -259,7 +259,7 @@ class StateAgent: public Elem, public MDesSyncable, public MDesObserver
 	StateAgent(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	StateAgent(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From Elem
 	//virtual void OnCompChanged(Elem& aComp);
 	// From MDesSyncable
@@ -290,7 +290,7 @@ class ADes: public Elem, public MDesSyncable, public MDesObserver
 	ADes(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ADes(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From Elem
 	//virtual void OnCompChanged(Elem& aComp);
 	// From MDesSyncable

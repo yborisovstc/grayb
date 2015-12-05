@@ -19,7 +19,7 @@ class Vert: public Elem, public MVert
 	Vert(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~Vert();
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MVert
 	virtual TBool Connect(MVert* aPair);
 	virtual TBool Connect(MEdge* aEdge);

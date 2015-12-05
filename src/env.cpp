@@ -27,7 +27,7 @@ ImportsMgr::~ImportsMgr()
 {
 }
 
-void *ImportsMgr::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ImportsMgr::DoGetObj(const char *aName)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
@@ -254,7 +254,7 @@ ChromoMgr::~ChromoMgr()
 {
 }
 
-void *ChromoMgr::DoGetObj(const char *aName, TBool aIncUpHier)
+void *ChromoMgr::DoGetObj(const char *aName)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
@@ -431,7 +431,7 @@ void Env::RemoveProvider(GProvider* aProv)
     iProvider->RemoveProvider(aProv);
 }
 
-void *Env::DoGetObj(const char *aName, TBool aIncUpHier)
+void *Env::DoGetObj(const char *aName)
 {
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }

@@ -16,7 +16,7 @@ class AImports: public Elem, public MImports
 	AImports(Elem* aMan, MEnv* aEnv);
 	virtual ~AImports();
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MMod
 	virtual TBool Import(const string& aUri);
 };

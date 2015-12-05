@@ -13,7 +13,7 @@ class ACapsule: public Elem
 	ACapsule(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ACapsule(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MCompsObserver
 	virtual TBool OnCompChanged(Elem& aComp);
 };
@@ -30,7 +30,7 @@ class ConnPointBase: public Vert, public MCompatChecker
 	// Iface provider
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
 	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse);
 	virtual Elem* GetExtd();
@@ -48,7 +48,7 @@ class ConnPointBaseInp: public ConnPointBase
 	ConnPointBaseInp(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ConnPointBaseInp(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
 	virtual TDir GetDir() const;
 };
@@ -62,7 +62,7 @@ class ConnPointBaseOut: public ConnPointBase
 	ConnPointBaseOut(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ConnPointBaseOut(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
 	virtual TDir GetDir() const;
 };
@@ -76,7 +76,7 @@ class ExtenderAgent: public Elem, public MCompatChecker
 	ExtenderAgent(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ExtenderAgent(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
 	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse);
 	virtual Elem* GetExtd();
@@ -94,7 +94,7 @@ class ExtenderAgentInp: public ExtenderAgent
 	static string PEType();
 	ExtenderAgentInp(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ExtenderAgentInp(Elem* aMan = NULL, MEnv* aEnv = NULL);
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	virtual TDir GetDir() const;
 };
 
@@ -106,7 +106,7 @@ class ExtenderAgentOut: public ExtenderAgent
 	static string PEType();
 	ExtenderAgentOut(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ExtenderAgentOut(Elem* aMan = NULL, MEnv* aEnv = NULL);
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	virtual TDir GetDir() const;
 };
 
@@ -122,7 +122,7 @@ class ASocket: public Elem, public MCompatChecker
 	// Get pin existing in context
 	Elem* GetPin(const RqContext* aCtx);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
 	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse);
 	virtual Elem* GetExtd();
@@ -140,7 +140,7 @@ class ASocketInp: public ASocket
 	static string PEType();
 	ASocketInp(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ASocketInp(Elem* aMan = NULL, MEnv* aEnv = NULL);
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	virtual TDir GetDir() const;
 };
 
@@ -152,7 +152,7 @@ class ASocketOut: public ASocket
 	static string PEType();
 	ASocketOut(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	ASocketOut(Elem* aMan = NULL, MEnv* aEnv = NULL);
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	virtual TDir GetDir() const;
 };
 
@@ -165,7 +165,7 @@ class Syst: public Vert
 	Syst(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	Syst(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MCompsObserver
 	virtual void OnCompDeleting(Elem& aComp, TBool aSoft = ETrue);
 	virtual TBool OnCompChanged(Elem& aComp);

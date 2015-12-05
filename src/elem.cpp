@@ -436,8 +436,7 @@ const Elem* Elem::GetMan() const
     return iMan;
 }
 
-// TODO [YB] To remove aIncUpHier - it isn't used anymore
-void *Elem::DoGetObj(const char *aName, TBool aIncUpHier)
+void *Elem::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {

@@ -25,7 +25,7 @@ AImports::~AImports()
 }
 
 
-void* AImports::DoGetObj(const char *aName, TBool aIncUpHier)
+void* AImports::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
@@ -33,7 +33,7 @@ void* AImports::DoGetObj(const char *aName, TBool aIncUpHier)
     } else if (strcmp(aName, MImports::Type()) == 0) {
 	res = (MImports*) this;
     } else {
-	res = Elem::DoGetObj(aName, aIncUpHier);
+	res = Elem::DoGetObj(aName);
     }
     return res;
 }

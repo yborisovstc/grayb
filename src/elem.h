@@ -215,7 +215,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void* GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert = ETrue);
 	TIfRange GetIfi(const string& aName, const RqContext* aCtx = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName, TBool aIncUpHier = ETrue);
+	virtual void *DoGetObj(const char *aName);
 	// From MElem
 	virtual const string EType(TBool aShort = ETrue) const;
 	virtual Elem* GetMan();
