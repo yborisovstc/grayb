@@ -31,7 +31,7 @@ void *ACapsule::DoGetObj(const char *aName)
     return res;
 }
 
-TBool ACapsule::OnCompChanged(Elem& aComp)
+TBool ACapsule::OnCompChanged(MElem& aComp)
 {
     Elem::OnCompChanged(aComp);
     if (iMan != NULL) {
@@ -823,7 +823,7 @@ TBool Syst::IsPtOk(Elem* aPt) {
     return ETrue;
 }
 
-TBool Syst::OnCompChanged(Elem& aComp)
+TBool Syst::OnCompChanged(MElem& aComp)
 {
     TBool res = Elem::OnCompChanged(aComp);
     if (res) return res;
@@ -858,14 +858,14 @@ TBool Syst::OnCompChanged(Elem& aComp)
 			if (res && cp2 == NULL) res = edge->ConnectP2(ref2);
 			if (!res) {
 			    Elem* host = ToElem(iMan->GetMan());
-			    Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
+			    Logger()->Write(MLogRec::EErr, ToElem(&aComp), "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
 			}
 		    }
 		    else {
 			TBool c1 = pt1checker->IsCompatible(pt2);
 			TBool c2 = pt2checker->IsCompatible(pt1);
 			Elem* host = this;
-			Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
+			Logger()->Write(MLogRec::EErr, ToElem(&aComp), "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
 		    }
 
 		} else {
@@ -876,7 +876,7 @@ TBool Syst::OnCompChanged(Elem& aComp)
 	    } else {
 		Elem* pt = isptok1 ? pt2 : pt1;
 		Elem* host = this;
-		Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
+		Logger()->Write(MLogRec::EErr, ToElem(&aComp), "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
 	    }
 	}
     }

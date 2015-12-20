@@ -32,6 +32,8 @@ class MOwner
 // Interface of parent in native hierarchy
 class MParent
 {
+    public:
+	static const char* Type() { return "MParent";};
     public: 
 	virtual void OnChildDeleting(MElem* aChild) = 0;
 	virtual TBool OnChildRenamed(MElem* aComp, const string& aOldName) = 0;
@@ -41,6 +43,8 @@ class MParent
 
 class MChild
 {
+    public:
+	static const char* Type() { return "MChild";};
     public:
 	virtual MElem* GetParent() = 0;
 	virtual const MElem* GetParent() const = 0;
@@ -53,14 +57,37 @@ class MChild
 class MIfProv
 {
     public:
-	class TIfIter : public iterator<input_iterator_tag, void*> {
+	static const char* Type() { return "MIfProv";};
+    public:
+	// Iface of Cooperative Ifaces provider iterator
+	class MIfIter : public iterator<input_iterator_tag, void*> {
 	    public:
-		virtual TIfIter& operator++() {};
-		TIfIter operator++(int) { TIfIter tmp(*this); operator++(); return tmp; };
-		virtual TBool operator==(const TIfIter& aIt) { return EFalse;};
-		TBool operator!=(const TIfIter& aIt) { return !operator==(aIt);};
+		virtual ~MIfIter() {};
+		virtual MIfIter* Clone() const { return NULL;};
+		virtual MIfIter& operator=(const MIfIter& aIt) {};
+		virtual MIfIter& operator++() {};
+		virtual TBool operator==(const MIfIter& aIt) { return EFalse;};
 		virtual void*  operator*() {return NULL;};
 	};
+
+	// Envelop of Cooperative Ifaces provider iterator 
+	class TIfIter : public iterator<input_iterator_tag, void*> {
+	    public:
+		TIfIter(): mImpl(NULL), mCloned(EFalse) {};
+		TIfIter(MIfIter& aImpl): mImpl(&aImpl), mCloned(EFalse) {};
+		TIfIter(const TIfIter& aIt): mCloned(ETrue) { mImpl = aIt.mImpl->Clone(); };
+		~TIfIter() { if (mCloned) delete mImpl; mImpl = NULL;};
+		TIfIter& operator=(const TIfIter& aIt) { if (mImpl == NULL) mImpl = aIt.mImpl->Clone(); else mImpl->operator=(*(aIt.mImpl)); return *this;};
+		TIfIter& operator++() { mImpl->operator++(); return *this;};
+		TIfIter operator++(int) { TIfIter tmp(*this); operator++(); return tmp; };
+		TBool operator==(const TIfIter& aIt) { return (mImpl != NULL && aIt.mImpl != NULL) ? mImpl->operator==((*aIt.mImpl)) : mImpl == aIt.mImpl;};
+		TBool operator!=(const TIfIter& aIt) { return !operator==(aIt);};
+		virtual void*  operator*() { return mImpl->operator*();};
+	    protected:
+		MIfIter* mImpl;
+		TBool mCloned;
+	};
+
 	typedef pair<TIfIter, TIfIter> TIfRange;
     public:
 	virtual void* GetSIfiC(const string& aName, Base* aRequestor = NULL) = 0;
@@ -81,6 +108,8 @@ class MACompsObserver
 // TODO [YB] Do we need MComp also ?
 class MElem : public Base, public MMutable, public MOwner, public MParent, public MChild, public MIfProv
 {
+    public:
+	static const char* Type() { return "MElem";};
     public:
 	virtual const string EType(TBool aShort = ETrue) const = 0;
 	virtual const string& Name() const = 0;

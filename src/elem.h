@@ -53,16 +53,17 @@ class Elem: public MElem
 
 
     public:
-	class IfIter: public TIfIter
+	class IfIter: public MIfIter
     {
 	friend class Elem;
 	public:
 	IfIter(): iHost(NULL) {};
 	IfIter(Elem* aHost, const string& aIName, const TICacheRCtx& aReq, TBool aToEnd = EFalse);
 	IfIter(const IfIter& aIt);
-	IfIter& operator=(const IfIter& aIt);
-	virtual TIfIter& operator++();
-	virtual TBool operator==(const TIfIter& aIt);
+	virtual MIfIter* Clone() const;
+	virtual MIfIter& operator=(const MIfIter& aIt);
+	virtual MIfIter& operator++();
+	virtual TBool operator==(const MIfIter& aIt);
 	virtual void*  operator*();
 	public:
 	Elem* iHost;

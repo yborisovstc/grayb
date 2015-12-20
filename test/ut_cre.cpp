@@ -70,7 +70,7 @@ void Ut_cre::test_Cre()
     Rank rk_e2;
     e2->GetRank(rk_e2, e2->Chromos().Root());
     string srk_e2 = rk_e2.ToString();
-    CPPUNIT_ASSERT_MESSAGE("Wrong rank of e4 or e2", srk_e4 == "2.2" && srk_e2 == "1.0");
+    CPPUNIT_ASSERT_MESSAGE("Wrong rank of e4 or e2", srk_e4 == "2.1" && srk_e2 == "1.0");
     TBool cmp1 = rk_e2 < rk_e4;
     TBool cmp2 = rk_e4 > rk_e2;
     TBool cmp3 = rk_e4 == rk_e4;

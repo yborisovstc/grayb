@@ -25,14 +25,13 @@ DataBase::DataBase(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 TBool DataBase::HandleCompChanged(MElem& aContext, MElem& aComp)
 {
     TBool res = ETrue;
-    const string& name = aComp.Name();
-    if ((name == "Value" || name == "Type") && name == "Prop") {
+    if ((aComp.Name() == "Value" || aComp.Name() == "Type") && aComp.EType() == "Prop") {
 	MElem* etype = aContext.GetNode("./Type");
 	MElem* eval = aContext.GetNode("./Value");
 	__ASSERT(eval != NULL);
 	MProp* prop = eval->GetObj(prop);
 	if (prop == NULL) {
-	    Logger()->Write(MLogRec::EErr, this, "Missing MProp iface in property [%s]", name.c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Missing MProp iface in property [%s]", aComp.Name().c_str());
 	    res = EFalse;
 	}
 	else {

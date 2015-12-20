@@ -53,11 +53,12 @@ void Ut_icache::test_Inv1()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
     MElem* doutp = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Out/Int/PinData");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get state out", doutp != 0);
+    CPPUNIT_ASSERT_MESSAGE("Failed to get state out", doutp != 0);
     MDVarGet* doutpget = (MDVarGet*) doutp->GetSIfi(MDVarGet::Type());
-    CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
+    CPPUNIT_ASSERT_MESSAGE("Failed to get data out Get iface", doutpget != 0);
     MDFloatGet* fget = doutpget->GetDObj(fget);
     //MDFloatGet* fget = (MDFloatGet*) doutpget->GetSIfi(MDFloatGet::Type(), NULL);
+    CPPUNIT_ASSERT_MESSAGE("Failed to get data iface", fget != 0);
     CPPUNIT_ASSERT_MESSAGE("Wrong value of data iface", fget->Value() == 0);
     // Sync the state
     MElem* esync = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Sync");

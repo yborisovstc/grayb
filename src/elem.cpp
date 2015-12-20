@@ -7,7 +7,6 @@
 #include <sys/time.h>
 #include "mmod.h"
 
-
 TBool Elem::EN_PERF_TRACE = EFalse;
 TBool Elem::EN_PERF_METR = EFalse;
 TBool Elem::EN_PERF_DBG1 = ETrue;
@@ -70,18 +69,24 @@ Elem::IfIter::IfIter(const IfIter& aIt): iHost(aIt.iHost), iIName(aIt.iIName), i
 {
 }
 
-Elem::IfIter& Elem::IfIter::operator=(const IfIter& aIt)
+Elem::MIfIter& Elem::IfIter::operator=(const MIfIter& aIt)
 {
-    iHost = aIt.iHost; 
-    iIName = aIt.iIName; iReq = aIt.iReq;
-    iQFRange = aIt.iQFRange;
-    iQFIter = aIt.iQFIter;
-    iCacheRange = aIt.iCacheRange;
-    iCacheIter = aIt.iCacheIter;
+    const IfIter& it = (const IfIter&) aIt;
+    iHost = it.iHost; 
+    iIName = it.iIName; iReq = it.iReq;
+    iQFRange = it.iQFRange;
+    iQFIter = it.iQFIter;
+    iCacheRange = it.iCacheRange;
+    iCacheIter = it.iCacheIter;
     return *this;
 }
 
-Elem::TIfIter& Elem::IfIter::operator++()
+Elem::MIfIter* Elem::IfIter::Clone() const
+{
+    return new IfIter(*this);
+}
+
+Elem::MIfIter& Elem::IfIter::operator++()
 {
     if (++iCacheIter != iCacheRange.second) {
     }
@@ -99,7 +104,7 @@ Elem::TIfIter& Elem::IfIter::operator++()
     return *this;
 }
 
-TBool Elem::IfIter::operator==(const TIfIter& aIt)
+TBool Elem::IfIter::operator==(const MIfIter& aIt)
 {
     const IfIter& it = (const IfIter&) aIt;
     TBool res = (iHost == it.iHost && iIName == it.iIName && iReq == it.iReq && iQFRange == it.iQFRange 

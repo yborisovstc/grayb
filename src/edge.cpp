@@ -356,7 +356,7 @@ const Base* Edge::EBase() const
     return (const Base*) this;
 }
 
-TBool Edge::OnCompChanged(Elem& aComp)
+TBool Edge::OnCompChanged(MElem& aComp)
 {
     Elem::OnCompChanged(aComp);
     // Propagate notification to upper level

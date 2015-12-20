@@ -47,7 +47,7 @@ class Edge: public Elem, public MEdge
 	virtual MVert* Ref1() const; // Proposed refs point1
 	virtual MVert* Ref2() const; // Proposed refs point2
 	// From MOwner
-	virtual TBool OnCompChanged(Elem& aComp);
+	virtual TBool OnCompChanged(MElem& aComp);
 	// From Elem
 	virtual void SetRemoved();
     protected:
