@@ -9,14 +9,14 @@ class GLogRec: public Base, public MLogRec
 {
     public:
 	static const char* Type() { return "GLogRec";};
-	GLogRec(const string& aName, const string& aLogFileName);
+	GLogRec(const string& aLogFileName);
 	virtual ~GLogRec();
     public:
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MLogRec
 	virtual void WriteFormat(const char* aFmt,...);
-	virtual void Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...);
+	virtual void Write(TLogRecCtg aCtg, const Elem* aNode, const char* aFmt,...);
 	virtual void Write(TLogRecCtg aCtg, Elem* aNode, const ChromoNode& aMut, const char* aFmt,...);
 	virtual void Flush();
 	virtual void SetContextMutId(TInt aMutId = -1);

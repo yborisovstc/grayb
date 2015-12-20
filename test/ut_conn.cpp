@@ -49,14 +49,14 @@ void Ut_conn::test_Sock()
 {
     printf("\n === Test of connecting of sockets\n");
 
-    iEnv = new Env("Env", "ut_conn_sock.xml", "ut_conn_sock.txt");
+    iEnv = new Env("ut_conn_sock.xml", "ut_conn_sock.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    Elem* doutp = root->GetNode("./test/L1/Cp1");
+    MElem* doutp = root->GetNode("./test/L1/Cp1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get L1 Cp1", doutp != 0);
     //MDIntGet* doutpget = doutp->GetObj(doutpget);
     MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
@@ -83,7 +83,7 @@ void Ut_conn::test_Sock2()
 {
     printf("\n === Test of extending of sockets\n");
 
-    iEnv = new Env("Env", "ut_conn_sock2.xml", "ut_conn_sock2.txt");
+    iEnv = new Env("ut_conn_sock2.xml", "ut_conn_sock2.txt");
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
@@ -91,7 +91,7 @@ void Ut_conn::test_Sock2()
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
-    Elem* doutp = root->GetNode("./test/L1/Cp1");
+    MElem* doutp = root->GetNode("./test/L1/Cp1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get L1 Cp1", doutp != 0);
     MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface for Cp1", doutpget != 0);
@@ -124,7 +124,7 @@ void Ut_conn::test_Reconn()
 {
     printf("\n === Test of reconnecting edge\n");
 
-    iEnv = new Env("Env", "ut_conn_1.xml", "ut_conn_1.txt");
+    iEnv = new Env("ut_conn_1.xml", "ut_conn_1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
@@ -136,13 +136,13 @@ void Ut_conn::test_Reconn()
     mutn.SetAttr(ENa_MutNode, "./v1");
     root->Mutate();
     // Verify the connection pair is disconnected
-    Elem* ev2 = root->GetNode("./v2");
+    MElem* ev2 = root->GetNode("./v2");
     MVert* mv2 = ev2->GetObj(mv2);
     set<MVert*>& pairs = mv2-> Pairs();
     int pnum = pairs.size();
     CPPUNIT_ASSERT_MESSAGE("Wrong number of v2 pairs after disconnection", pnum == 0);
     // Verify edges point previously connected to v1 is disconnected
-    Elem* ee1 = root->GetNode("./e1");
+    MElem* ee1 = root->GetNode("./e1");
     MEdge* me1 = ee1->GetObj(me1);
     MVert* p1 = me1->Point1();
     CPPUNIT_ASSERT_MESSAGE("Edges Point1 is not disconnected", p1 == 0);
@@ -152,13 +152,13 @@ void Ut_conn::test_Reconn()
     mutn.SetAttr(ENa_MutNode, "./v3");
     root->Mutate();
     // Verify the connection pair is disconnected
-    Elem* ev5 = root->GetNode("./v5");
+    MElem* ev5 = root->GetNode("./v5");
     MVert* mv5 = ev5->GetObj(mv5);
     set<MVert*>& pairs5 = mv5-> Pairs();
     int pnum5 = pairs5.size();
     CPPUNIT_ASSERT_MESSAGE("Wrong number of v5 pairs after disconnection", pnum5 == 0);
     // Verify edges point previously connected to v1 is disconnected
-    Elem* ee2 = root->GetNode("./e2");
+    MElem* ee2 = root->GetNode("./e2");
     MEdge* me2 = ee2->GetObj(me2);
     MVert* p2_2 = me2->Point2();
     CPPUNIT_ASSERT_MESSAGE("Edges Point2 is not disconnected within e2", p2_2 == 0);
@@ -169,21 +169,21 @@ void Ut_conn::test_Conn2()
 {
     printf("\n === Test of reconnecting edge\n");
 
-    iEnv = new Env("Env", "ut_conn_2.xml", "ut_conn_2.txt");
+    iEnv = new Env("ut_conn_2.xml", "ut_conn_2.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
  
    // Disconnect one point of edge e2
-    Elem* e2 = root->GetNode("./e2");
+    MElem* e2 = root->GetNode("./e2");
     ChromoNode smutr = e2->Mutation().Root();
     ChromoNode mutn = smutr.AddChild(ENt_Cont);
     mutn.SetAttr(ENa_MutNode, "./P1");
     mutn.SetAttr(ENa_Ref, "");
     e2->Mutate();
     // Verify that v1 and v2 are still connected
-    Elem* ev1 = root->GetNode("./v1");
+    MElem* ev1 = root->GetNode("./v1");
     MVert* mv1 = ev1->GetObj(mv1);
     set<MVert*>& pairs1 = mv1-> Pairs();
     int pnum1 = pairs1.size();

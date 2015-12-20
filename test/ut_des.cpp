@@ -47,7 +47,7 @@ void Ut_des::test_Cre1()
 {
     printf("\n === Test of creation of simple des\n");
 
-    iEnv = new Env("Env", "ut_des_cre1.xml", "ut_des_cre1.txt");
+    iEnv = new Env("ut_des_cre1.xml", "ut_des_cre1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
@@ -55,14 +55,14 @@ void Ut_des::test_Cre1()
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
-    Elem* doutp = root->GetNode("./test/State1/Capsule/Out/Int/PinData");
+    MElem* doutp = root->GetNode("./test/State1/Capsule/Out/Int/PinData");
     CPPUNIT_ASSERT_MESSAGE("Fail to get state out", doutp != 0);
 //    MDIntGet* doutpget = doutp->GetObj(doutpget);
     MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 0);
     // Sync the state
-    Elem* esync = root->GetNode("./test/State1/Capsule/Sync");
+    MElem* esync = root->GetNode("./test/State1/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != 0);
     MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
@@ -85,7 +85,7 @@ void Ut_des::test_Cre2()
 {
     printf("\n === Test of hier des and multiple connections\n");
 
-    iEnv = new Env("Env", "ut_des_cre2.xml", "ut_des_cre2.txt");
+    iEnv = new Env("ut_des_cre2.xml", "ut_des_cre2.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
@@ -93,14 +93,14 @@ void Ut_des::test_Cre2()
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
-    Elem* doutp = root->GetNode("./TestDes/Capsule/Out/Int/PinData");
+    MElem* doutp = root->GetNode("./TestDes/Capsule/Out/Int/PinData");
     CPPUNIT_ASSERT_MESSAGE("Fail to get DES out", doutp != 0);
     //MDIntGet* doutpget = doutp->GetObj(doutpget);
     MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get initial value of data iface", doutpget->Value() == 0);
     // Get Sync iface of DES
-    Elem* esync = root->GetNode("./TestDes/Capsule/Sync");
+    MElem* esync = root->GetNode("./TestDes/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get DES's Syncable iface", esync != 0);
     MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
@@ -123,7 +123,7 @@ void Ut_des::test_Cre4()
 {
     printf("\n === Test of Snails racing\n");
 
-    iEnv = new Env("Env", "ut_des_cre4.xml", "ut_des_cre4.txt");
+    iEnv = new Env("ut_des_cre4.xml", "ut_des_cre4.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
@@ -134,7 +134,7 @@ void Ut_des::test_Cre4()
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get initial value of data iface", doutpget->Value() == 1);
     // Get Sync iface of DES
-    Elem* esync = root->GetNode("./TestDes/Capsule/Sync");
+    MElem* esync = root->GetNode("./TestDes/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get DES's Syncable iface", esync != 0);
     MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);

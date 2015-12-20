@@ -26,7 +26,7 @@ class Rank: public vector<TInt>
 class ChromoMdl: public Base, public MChromoMdl
 {
     public:
-	ChromoMdl(const string &aName): Base(aName) {}
+	ChromoMdl() {}
 };
 
 // Node of chromo

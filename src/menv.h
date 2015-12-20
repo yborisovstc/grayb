@@ -1,6 +1,7 @@
 #ifndef __GRAYB_MENV_H
 #define __GRAYB_MENV_H
 class MProvider; class MLogRec;
+class MElem;
 class Elem;
 class MChromo;
 class GUri;
@@ -15,7 +16,7 @@ class MImportMgr
 	virtual void AddImportsPaths(const string& aPaths) = 0;
 	virtual string GetModulePath(const string& aModName) const = 0;
 	virtual TBool Import(const string& aUri) = 0;
-	virtual Elem* OnUriNotResolved(Elem* aNode, const GUri& aUri) = 0;
+	virtual MElem* OnUriNotResolved(MElem* aNode, const GUri& aUri) = 0;
 };
 
 // Chromo manager

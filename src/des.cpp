@@ -8,13 +8,11 @@
 
 ATrBase::ATrBase(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 
 ATrBase::ATrBase(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
-    SetEType(Elem::PEType());
     SetParent(Elem::PEType());
 }
 
@@ -38,7 +36,7 @@ void *ATrBase::DoGetObj(const char *aName)
     return res;
 }
 
-TBool ATrBase::HandleCompChanged(Elem& aContext, Elem& aComp)
+TBool ATrBase::HandleCompChanged(MElem& aContext, MElem& aComp)
 {
     TBool res = ETrue;
     return res;
@@ -50,13 +48,11 @@ TBool ATrBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 
 ATrInt::ATrInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrBase(aName, aMan, aEnv), mData(0)
 {
-    SetEType(Type(), ATrBase::PEType());
     SetParent(Type());
 }
 
 ATrInt::ATrInt(Elem* aMan, MEnv* aEnv): ATrBase(Type(), aMan, aEnv), mData(0)
 {
-    SetEType(ATrBase::PEType());
     SetParent(ATrBase::PEType());
 }
 
@@ -94,7 +90,7 @@ Elem::TIfRange ATrInt::GetInpRg(const string& aInpName)
 {
     TIfRange res;
     string uri = "./../../" + aInpName;
-    Elem* einp = GetNode(uri);
+    MElem* einp = GetNode(uri);
     if (einp != NULL) {
 	RqContext cont(this);
 	res = einp->GetIfi(MDIntGet::Type(), &cont);
@@ -116,13 +112,11 @@ TInt ATrInt::Value()
 
 ATrIncInt::ATrIncInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
-    SetEType(Type(), ATrInt::PEType());
     SetParent(Type());
 }
 
 ATrIncInt::ATrIncInt(Elem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
 {
-    SetEType(ATrInt::PEType());
     SetParent(ATrInt::PEType());
 }
 
@@ -160,13 +154,11 @@ TInt ATrIncInt::Value()
 
 ATrSubInt::ATrSubInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
-    SetEType(Type(), ATrInt::PEType());
     SetParent(Type());
 }
 
 ATrSubInt::ATrSubInt(Elem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
 {
-    SetEType(ATrInt::PEType());
     SetParent(ATrInt::PEType());
 }
 
@@ -191,14 +183,14 @@ TInt ATrSubInt::Value()
 {
     TInt res = 0;
     TIfRange range = GetInpRg("Inp");
-    for (IfIter it = range.first; it != range.second; it++) {
+    for (TIfIter it = range.first; it != range.second; it++) {
 	MDIntGet* dget = (MDIntGet*) (*it);
 	if (dget != NULL) {
 	    res += dget->Value();
 	}
     }
     range = GetInpRg("Inp_Sub");
-    for (IfIter it = range.first; it != range.second; it++) {
+    for (TIfIter it = range.first; it != range.second; it++) {
 	MDIntGet* dget = (MDIntGet*) (*it);
 	if (dget != NULL) {
 	    res -= dget->Value();
@@ -215,13 +207,11 @@ TInt ATrSubInt::Value()
 
 ATrMplInt::ATrMplInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
-    SetEType(Type(), ATrInt::PEType());
     SetParent(Type());
 }
 
 ATrMplInt::ATrMplInt(Elem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
 {
-    SetEType(ATrInt::PEType());
     SetParent(ATrInt::PEType());
 }
 
@@ -246,7 +236,7 @@ TInt ATrMplInt::Value()
 {
     TInt res = 1;
     TIfRange range = GetInpRg("Inp");
-    for (IfIter it = range.first; it != range.second; it++) {
+    for (TIfIter it = range.first; it != range.second; it++) {
 	MDIntGet* dget = (MDIntGet*) (*it);
 	if (dget != NULL) {
 	    res *= dget->Value();
@@ -259,13 +249,11 @@ TInt ATrMplInt::Value()
 
 ATrDivInt::ATrDivInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
-    SetEType(Type(), ATrInt::PEType());
     SetParent(Type());
 }
 
 ATrDivInt::ATrDivInt(Elem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
 {
-    SetEType(ATrInt::PEType());
     SetParent(ATrInt::PEType());
 }
 
@@ -314,13 +302,11 @@ string ATrVar::PEType()
 
 ATrVar::ATrVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrBase(aName, aMan, aEnv), mFunc(NULL)
 {
-    SetEType(Type(), ATrBase::PEType());
     SetParent(Type());
 }
 
 ATrVar::ATrVar(Elem* aMan, MEnv* aEnv): ATrBase(Type(), aMan, aEnv), mFunc(NULL)
 {
-    SetEType(ATrBase::PEType());
     SetParent(ATrBase::PEType());
 }
 
@@ -394,7 +380,7 @@ string ATrVar::GetInpUri(TInt aId) const
 Elem::TIfRange ATrVar::GetInps(TInt aId, TBool aOpt)
 {
     TIfRange res;
-    Elem* inp = GetNode("./../../" + GetInpUri(aId));
+    MElem* inp = GetNode("./../../" + GetInpUri(aId));
     if (inp != NULL) {
 	RqContext cont(this);
 	res =  inp->GetIfi(MDVarGet::Type(), &cont);
@@ -432,13 +418,11 @@ string ATrAddVar::PEType()
 
 ATrAddVar::ATrAddVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
-    SetEType(Type(), ATrVar::PEType());
     SetParent(Type());
 }
 
 ATrAddVar::ATrAddVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 {
-    SetEType(ATrVar::PEType());
     SetParent(ATrVar::PEType());
 }
 
@@ -482,13 +466,11 @@ string ATrMplVar::PEType()
 
 ATrMplVar::ATrMplVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
-    SetEType(Type(), ATrVar::PEType());
     SetParent(Type());
 }
 
 ATrMplVar::ATrMplVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 {
-    SetEType(ATrVar::PEType());
     SetParent(ATrVar::PEType());
 }
 
@@ -527,13 +509,11 @@ string ATrDivVar::PEType()
 
 ATrDivVar::ATrDivVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
-    SetEType(Type(), ATrVar::PEType());
     SetParent(Type());
 }
 
 ATrDivVar::ATrDivVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 {
-    SetEType(ATrVar::PEType());
     SetParent(ATrVar::PEType());
 }
 
@@ -574,13 +554,11 @@ string ATrSwitchVar::PEType()
 
 ATrSwitchVar::ATrSwitchVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
-    SetEType(Type(), ATrVar::PEType());
     SetParent(Type());
 }
 
 ATrSwitchVar::ATrSwitchVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 {
-    SetEType(ATrVar::PEType());
     SetParent(ATrVar::PEType());
 }
 
@@ -649,13 +627,11 @@ string ATrAtVar::PEType()
 
 ATrAtVar::ATrAtVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
-    SetEType(Type(), ATrVar::PEType());
     SetParent(Type());
 } 
 
 ATrAtVar::ATrAtVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 { 
-    SetEType(ATrVar::PEType());
     SetParent(ATrVar::PEType());
 }
 
@@ -702,13 +678,11 @@ string ATrCpsVectVar::PEType()
 
 ATrCpsVectVar::ATrCpsVectVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
-    SetEType(Type(), ATrVar::PEType());
     SetParent(Type());
 }
 
 ATrCpsVectVar::ATrCpsVectVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 {
-    SetEType(ATrVar::PEType());
     SetParent(ATrVar::PEType());
 }
 
@@ -749,13 +723,11 @@ string ATrBcmpVar::PEType()
 
 ATrBcmpVar::ATrBcmpVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
-    SetEType(Type(), ATrVar::PEType());
     SetParent(Type());
 }
 
 ATrBcmpVar::ATrBcmpVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 {
-    SetEType(ATrVar::PEType());
     SetParent(ATrVar::PEType());
 }
 
@@ -816,13 +788,11 @@ FBcmpBase::TFType ATrBcmpVar::GetFType()
 
 StateAgent::StateAgent(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
 {
-    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 
 StateAgent::StateAgent(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iActive(ETrue)
 {
-    SetEType(Elem::PEType());
     SetParent(Elem::PEType());
 }
 
@@ -889,7 +859,7 @@ void StateAgent::ResetActive()
 void StateAgent::Update()
 {
     TBool cdata = GetNode("./../../Data") != NULL;
-    Elem* eprepu = GetNode(cdata ? "./../../Data/Prepared/Capsule/Upd" : "./../../Prepared/Capsule/Upd");
+    MElem* eprepu = GetNode(cdata ? "./../../Data/Prepared/Capsule/Upd" : "./../../Prepared/Capsule/Upd");
     if (eprepu != NULL) {
 	MUpdatable* upd = (MUpdatable*) eprepu->GetSIfiC(MUpdatable::Type(), this);
 	if (upd != NULL) {
@@ -908,18 +878,18 @@ void StateAgent::Update()
 void StateAgent::Confirm()
 {
     TBool cdata = GetNode("./../../Data") != NULL;
-    Elem* econfu = GetNode(cdata ? "./../../Data/Confirmed/Capsule/Upd" : "./../../Confirmed/Capsule/Upd");
+    MElem* econfu = GetNode(cdata ? "./../../Data/Confirmed/Capsule/Upd" : "./../../Confirmed/Capsule/Upd");
     if (econfu != NULL) {
 	MUpdatable* upd = (MUpdatable*) econfu->GetSIfiC(MUpdatable::Type(), this);
 	if (upd != NULL) {
 	    if (upd->Update()) {
 		// Activate dependencies
-		Elem* eobs = GetNode("./../../Capsule/Out/Int/PinObs");
+		MElem* eobs = GetNode("./../../Capsule/Out/Int/PinObs");
 		RqContext ctx(this);
 		// Request w/o context because of possible redirecting request to itself
 		// TODO [YB] To check if iterator is not damage during the cycle, to cache to vector if so
 		TIfRange range = eobs->GetIfi(MDesObserver::Type(), NULL);
-		for (IfIter it = range.first; it != range.second; it++) {
+		for (TIfIter it = range.first; it != range.second; it++) {
 		    MDesObserver* mobs = (MDesObserver*) (*it);
 		    if (mobs != NULL) {
 			mobs->OnUpdated();
@@ -966,13 +936,11 @@ string ADes::PEType()
 
 ADes::ADes(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
 {
-    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 
 ADes::ADes(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iActive(ETrue)
 {
-    SetEType(Elem::PEType());
     SetParent(Elem::PEType());
 }
 
@@ -1012,9 +980,9 @@ void ADes::ResetActive()
 void ADes::Update()
 {
     // Update all the DES components avoiding agents and capsule
-    Elem* host = iMan->GetMan();
-    for (vector<Elem*>::iterator it = host->Comps().begin(); it != host->Comps().end(); it++) {
-	Elem* eit = (*it);
+    MElem* host = iMan->GetMan();
+    for (vector<MElem*>::iterator it = host->Comps().begin(); it != host->Comps().end(); it++) {
+	MElem* eit = (*it);
 	if (eit != iMan && eit->Name() != "Capsule") {
 	    MDesSyncable* msync = (MDesSyncable*) eit->GetSIfiC(MDesSyncable::Type(), this);
 	    if (msync != NULL) {
@@ -1034,9 +1002,9 @@ void ADes::Update()
 void ADes::Confirm()
 {
     // Confirm all the DES components
-    Elem* host = iMan->GetMan();
-    for (vector<Elem*>::iterator it = host->Comps().begin(); it != host->Comps().end(); it++) {
-	Elem* eit = (*it);
+    MElem* host = iMan->GetMan();
+    for (vector<MElem*>::iterator it = host->Comps().begin(); it != host->Comps().end(); it++) {
+	MElem* eit = (*it);
 	MDesSyncable* msync = (MDesSyncable*) eit->GetSIfiC(MDesSyncable::Type(), this);
 	if (msync != NULL) {
 	    if (msync->IsUpdated()) {

@@ -33,14 +33,12 @@ class RqContext
 class Base
 {
     public:
-	Base(const string& aName): iName(aName) {};
-	virtual ~Base() {};
-	const string& Name() const { return iName;}
+	virtual ~Base() = 0;
 	template <class T> T* GetObj(T* aInst) {return aInst = static_cast<T*>(DoGetObj(aInst->Type()));};
 	void* GetObj(const char *aType) {return DoGetObj(aType); };
 	virtual void *DoGetObj(const char *aName) = 0;
-    protected:
-	string iName;
 };
+
+inline Base::~Base() {};
 
 #endif

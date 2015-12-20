@@ -18,7 +18,7 @@ const string ImportsMgr::KDefImportPath = "/usr/share/grayb/modules";
 const string ImportsMgr::KImportsContainerUri = "./Modules";
 
 
-ImportsMgr::ImportsMgr(const string& aName, Env& aHost): Base(aName), mHost(aHost)
+ImportsMgr::ImportsMgr(Env& aHost): Base(), mHost(aHost)
 {
     AddImportsPaths(KDefImportPath);
 }
@@ -88,7 +88,7 @@ string ImportsMgr::GetModulePath(const string& aModName) const
     return res;
 }
 
-Elem* ImportsMgr::GetImportsContainer() const
+MElem* ImportsMgr::GetImportsContainer() const
 {
     return mHost.Root()->GetNode(KImportsContainerUri);
 }
@@ -135,14 +135,14 @@ TBool ImportsMgr::Import(const string& aUri)
 
 TBool ImportsMgr::Import(const string& aUri)
 {
-    Elem* res = DoImport(aUri);
+    MElem* res = DoImport(aUri);
     return res != NULL;
 }
 
 // aUri - model hier uri
-Elem* ImportsMgr::DoImport(const string& aUri)
+MElem* ImportsMgr::DoImport(const string& aUri)
 {
-    Elem* res = NULL;
+    MElem* res = NULL;
     GUri moduri(aUri);
     GUri::const_elem_iter it = moduri.Elems().begin();
     it++;
@@ -152,7 +152,7 @@ Elem* ImportsMgr::DoImport(const string& aUri)
     if (!modpath.empty()) {
 	// Explicit chromo uri
 	// Get the whole external chromo
-	Elem* icontr = GetImportsContainer();
+	MElem* icontr = GetImportsContainer();
 	__ASSERT(icontr != NULL);
 	Chromo* chromo = mHost.Provider()->CreateChromo();
 	TBool res1 = chromo->Set(modpath);
@@ -183,13 +183,13 @@ Elem* ImportsMgr::DoImport(const string& aUri)
     return res;
 }
 
-void ImportsMgr::ImportToNode(Elem* aNode, const ChromoNode& aMut, const ChromoNode& aSel)
+void ImportsMgr::ImportToNode(MElem* aNode, const ChromoNode& aMut, const ChromoNode& aSel)
 {
     if (aMut.Type() == ENt_Import) {
     } else if (aMut.Type() == ENt_Node) {
 	GUri uri(".");
 	uri.AppendElem(string(), aMut.Name());
-	Elem* comp = aNode->GetNode(uri);
+	MElem* comp = aNode->GetNode(uri);
 	if (comp == NULL) {
 	    // Node doesn't exist yet, to mutate
 	    // Using external mut instead of nodes mut to avoid mut update
@@ -210,10 +210,10 @@ void ImportsMgr::ImportToNode(Elem* aNode, const ChromoNode& aMut, const ChromoN
     }
 }
 
-Elem* ImportsMgr::OnUriNotResolved(Elem* aNode, const GUri& aUri)
+MElem* ImportsMgr::OnUriNotResolved(MElem* aNode, const GUri& aUri)
 {
-    Elem* res = NULL;
-    Elem* icontr = GetImportsContainer();
+    MElem* res = NULL;
+    MElem* icontr = GetImportsContainer();
     if (icontr != NULL && icontr->IsComp(aNode)) {
 	GUri buri;
 	buri.AppendElem("", "");
@@ -228,10 +228,6 @@ Elem* ImportsMgr::OnUriNotResolved(Elem* aNode, const GUri& aUri)
 	    aNode->GetUri(nuri, icontr);
 	    buri.Append(nuri);
 	    buri.Append(aUri);
-	    /*
-	    aNode->Chromos().Root().GetUri(nuri, icontr->Chromos().Root());
-	    buri.Append(nuri);
-	    */
 	    rebased = ETrue;
 	}
 	if (rebased) {
@@ -244,7 +240,7 @@ Elem* ImportsMgr::OnUriNotResolved(Elem* aNode, const GUri& aUri)
 
 
 
-ChromoMgr::ChromoMgr(const string& aName, Env& aHost): Base(aName), mHost(aHost), mLim(0), 
+ChromoMgr::ChromoMgr(Env& aHost): Base(), mHost(aHost), mLim(0), 
     mEnablePhenoModif(EFalse), mEnableFixErrors(EFalse), mEnableReposMuts(EFalse),
     mEnableCheckSafety(ETrue), mEnableOptimization(ETrue) 
 {
@@ -315,29 +311,29 @@ void ChromoMgr::SetEnableOptimization(bool aEnable)
 }
 
 
-Env::Env(const string& aName, const string& aSpecFile, const string& aLogFileName): Base(aName), iRoot(NULL), iLogger(NULL),
+Env::Env(const string& aSpecFile, const string& aLogFileName): Base(), iRoot(NULL), iLogger(NULL),
     iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse)
 {
-    iLogger = new GLogRec("Logger", aLogFileName.empty() ? KLogFileName : aLogFileName);
-    iProvider = new GFactory("Factory", this);
+    iLogger = new GLogRec(aLogFileName.empty() ? KLogFileName : aLogFileName);
+    iProvider = new GFactory(string(), this);
     iProvider->LoadPlugins();
     iSpecFile = aSpecFile;
     srand(time(NULL));
-    iChMgr = new ChromoMgr("ChromoMgr", *this);
-    iImpMgr = new ImportsMgr("ImpMgr", *this);
+    iChMgr = new ChromoMgr(*this);
+    iImpMgr = new ImportsMgr(*this);
 }
 
-Env::Env(const string& aName, const string& aSpec, const string& aLogFileName, TBool aOpt): Base(aName), iRoot(NULL), iLogger(NULL),
+Env::Env(const string& aSpec, const string& aLogFileName, TBool aOpt): Base(), iRoot(NULL), iLogger(NULL),
     iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse)
 {
-    iLogger = new GLogRec("Logger", aLogFileName.empty() ? KLogFileName : aLogFileName);
-    iLogger = new GLogRec("Logger", aName + ".log");
-    iProvider = new GFactory("Factory", this);
+    iLogger = new GLogRec(aLogFileName.empty() ? KLogFileName : aLogFileName);
+    //iLogger = new GLogRec("Logger", aName + ".log");
+    iProvider = new GFactory(string(), this);
     iProvider->LoadPlugins();
     iSpec= aSpec;
     srand(time(NULL));
-    iChMgr = new ChromoMgr("ChromoMgr", *this);
-    iImpMgr = new ImportsMgr("ImpMgr", *this);
+    iChMgr = new ChromoMgr(*this);
+    iImpMgr = new ImportsMgr(*this);
 }
 
 

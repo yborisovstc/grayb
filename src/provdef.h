@@ -8,7 +8,7 @@ class Vert;
 class ProvDef: public GProvider
 {
     public:
-	ProvDef(const string &aName, MEnv* aEnv);
+	ProvDef(const string& aName, MEnv* aEnv);
 	virtual ~ProvDef();
 	// From MProvider
 	virtual Elem* CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv);

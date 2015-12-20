@@ -18,7 +18,7 @@ class AMod: public Elem, public MMod
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MMod
-	virtual Elem* Import(const GUri& aUri);
+	virtual MElem* Import(const GUri& aUri);
 	// Fom MElem
 	virtual void GetCont(string& aCont, const string& aName = string());
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string());

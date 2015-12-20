@@ -8,7 +8,7 @@ const TInt GLogRec::KLogRecBufSize = 400;
 const char* CtgText[MLogRec::ECtg_Max] = {"ERR", "WARN", "INFO", "DBG"};
 const char* KColSep = "; ";
 
-GLogRec::GLogRec(const string& aName, const string& aLogFileName): Base(aName), iLogFileName(aLogFileName), iLogFileValid(EFalse),
+GLogRec::GLogRec(const string& aLogFileName): Base(), iLogFileName(aLogFileName), iLogFileValid(EFalse),
     iObs(NULL), mCtxMutId(-1)
 {
     //remove(iLogFileName.c_str()); 
@@ -59,7 +59,7 @@ void GLogRec::WriteFormat(const char* aFmt,...)
     va_end(list);
 }
 
-void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const char* aFmt,...)
+void GLogRec::Write(TLogRecCtg aCtg, const Elem* aNode, const char* aFmt,...)
 {
     char buf1[KLogRecBufSize] = "";
     stringstream ss;

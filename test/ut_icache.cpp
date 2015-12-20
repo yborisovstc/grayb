@@ -44,7 +44,7 @@ void Ut_icache::test_Inv1()
 {
     printf("\n === Tests invalidation of function add inputs ifaces cache after feedback edge has been connected\n");
 
-    iEnv = new Env("Env", "ut_icache_inv1.xml", "ut_icache_inv1.txt");
+    iEnv = new Env("ut_icache_inv1.xml", "ut_icache_inv1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
@@ -52,7 +52,7 @@ void Ut_icache::test_Inv1()
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
-    Elem* doutp = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Out/Int/PinData");
+    MElem* doutp = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Out/Int/PinData");
     CPPUNIT_ASSERT_MESSAGE("Fail to get state out", doutp != 0);
     MDVarGet* doutpget = (MDVarGet*) doutp->GetSIfi(MDVarGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
@@ -60,7 +60,7 @@ void Ut_icache::test_Inv1()
     //MDFloatGet* fget = (MDFloatGet*) doutpget->GetSIfi(MDFloatGet::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Wrong value of data iface", fget->Value() == 0);
     // Sync the state
-    Elem* esync = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Sync");
+    MElem* esync = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != 0);
     MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type(), NULL);
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
@@ -77,7 +77,7 @@ void Ut_icache::test_Inv1()
     }
 
     // Connect feedback edge
-    Elem* mnode = root->GetNode("/Root/IncapsRoot/DesRoot/E_back");
+    MElem* mnode = root->GetNode("/Root/IncapsRoot/DesRoot/E_back");
     ChromoNode mut = mnode->Mutation().Root().AddChild(ENt_Cont);
     mut.SetAttr(ENa_MutNode, "./P1");
     mut.SetAttr(ENa_Ref, "/Root/IncapsRoot/DesRoot/st/Capsule/Inp");

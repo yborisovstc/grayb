@@ -11,7 +11,7 @@ class MMod
 {
     public:
 	static const char* Type() { return "MMod";};
-	virtual Elem* Import(const GUri& aUri) = 0;
+	virtual MElem* Import(const GUri& aUri) = 0;
 };
 
 // Importing modules container

@@ -17,7 +17,7 @@ class ImportsMgr: public Base, public MImportMgr
     friend class Env;
     public:
 	static const char* Type() { return "ImportsMgr";};
-	ImportsMgr(const string& aName, Env& aHost);
+	ImportsMgr(Env& aHost);
 	virtual ~ImportsMgr();
 	// From Base
 	virtual void *DoGetObj(const char *aName);
@@ -28,12 +28,12 @@ class ImportsMgr: public Base, public MImportMgr
 	virtual void AddImportsPaths(const string& aPaths);
 	virtual string GetModulePath(const string& aModName) const;
 	virtual TBool Import(const string& aUri);
-	virtual Elem* OnUriNotResolved(Elem* aNode, const GUri& aUri);
+	virtual MElem* OnUriNotResolved(MElem* aNode, const GUri& aUri);
     private:
 	void AddImportModulesInfo(const string& aPath);
-	Elem* GetImportsContainer() const;
-	void ImportToNode(Elem* aNode, const ChromoNode& aMut, const ChromoNode& aSel);
-	Elem* DoImport(const string& aUri);
+	MElem* GetImportsContainer() const;
+	void ImportToNode(MElem* aNode, const ChromoNode& aMut, const ChromoNode& aSel);
+	MElem* DoImport(const string& aUri);
     private:
 	Env& mHost;
 	vector<string> mImportsPaths;
@@ -47,7 +47,7 @@ class ChromoMgr: public Base, public MChromoMgr
     friend class Env;
     public:
 	static const char* Type() { return "ChromoMgr";};
-	ChromoMgr(const string& aName, Env& aHost);
+	ChromoMgr(Env& aHost);
 	virtual ~ChromoMgr();
     public:
 	// From Base
@@ -82,8 +82,8 @@ class Env: public Base, public MEnv
     friend class ChromoMgr;
 public:
 	static const char* Type() { return "GEnv";};
-	Env(const string& aName, const string& aSpecFile, const string& aLogFileName = string());
-	Env(const string& aName, const string& aSpec, const string& aLogFileName, TBool aOpt);
+	Env(const string& aSpecFile, const string& aLogFileName = string());
+	Env(const string& aSpec, const string& aLogFileName, TBool aOpt);
 	virtual ~Env();
 	// Separated from constructor because constr can be followed by second phase - setting providers etc.
 	void ConstructSystem();

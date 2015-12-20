@@ -2,7 +2,7 @@
 #include "factr.h"
 #include "provdef.h"
 
-GFactory::GFactory(const string& aName, MEnv* aEnv): Base(aName), iEnv(aEnv)
+GFactory::GFactory(const string& aName, MEnv* aEnv): Base(), iName(aName), iEnv(aEnv)
 {
     GProvider* baseprov = new ProvDef("ProvDef", iEnv);
     __ASSERT(baseprov != NULL);
@@ -66,6 +66,7 @@ void GFactory::LoadPlugins()
 
 void GFactory::AddProvider(GProvider* aProv)
 {
+    // TODO To support name
     map<string, GProvider*>::const_iterator res = iProviders.find(aProv->Name());
     __ASSERT(res == iProviders.end());
     iProviders.insert(pair<string, GProvider*>(aProv->Name(), aProv));

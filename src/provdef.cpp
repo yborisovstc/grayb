@@ -14,7 +14,7 @@
 // TODO [YB] To import from build variable
 const string KModulesPath = "/usr/share/grayb/modules/";
 
-ProvDef::ProvDef(const string &aName, MEnv* aEnv): GProvider(aName, aEnv)
+ProvDef::ProvDef(const string& aName, MEnv* aEnv): GProvider(aName, aEnv)
 {
 }
 

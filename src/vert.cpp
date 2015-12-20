@@ -1,6 +1,6 @@
-#include "vert.h"
 #include "mprov.h"
 #include "edge.h"
+#include "vert.h"
 
 // Vertex
 
@@ -11,7 +11,6 @@ string Vert::PEType()
 
 Vert::Vert(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetEType(Type(), Elem::PEType());
     SetParent(Type());
     // Create component for run-time extentions
     //Elem* parent = Provider()->GetNode("Elem");
@@ -28,7 +27,6 @@ Vert::Vert(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 
 Vert::Vert(Elem* aMan, MEnv* aEnv):Elem(Type(), aMan, aEnv)
 {
-    SetEType(Elem::PEType());
     SetParent(Elem::PEType());
     // Create component for run-time extentions
     //Elem* parent = Provider()->GetNode("Elem");
@@ -80,10 +78,10 @@ void Vert::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
     // Support run-time extentions on the base layer, ref md#sec_refac_iface
     if (res == NULL) {
-	Elem* agents = GetComp("Elem", "Agents");
+	MElem* agents = GetComp("Elem", "Agents");
 	if (agents != NULL) {
-	    for (vector<Elem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && res == NULL; it++) {
-		Elem* eit = (*it);
+	    for (vector<MElem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && res == NULL; it++) {
+		Elem* eit = ToElem(*it);
 		if (!ctx.IsInContext(eit)) {
 		    rr = eit->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, eit, rr);
@@ -213,17 +211,7 @@ void Vert::RemoveFromMap(MEdge* aEdge, const TNMKey& aKey)
 
 }
 
-void Vert::OnCompDeleting(Elem& aComp, TBool aSoft)
-{
-    Elem::OnCompDeleting(aComp, aSoft);
-}
-
-void Vert::OnCompAdding(Elem& aComp)
-{
-    Elem::OnCompAdding(aComp);
-}
-
-TBool Vert::OnCompChanged(Elem& aComp)
+TBool Vert::OnCompChanged(MElem& aComp)
 {
     TBool hres = Elem::OnCompChanged(aComp);
     if (hres) return ETrue;
@@ -245,7 +233,7 @@ TBool Vert::OnCompChanged(Elem& aComp)
 	    if (cp1 == NULL && ref1 != NULL) res = edge->ConnectP1(ref1);
 	    else if (cp2 == NULL && ref2 != NULL) res = edge->ConnectP2(ref2);
 	    if (!res) {
-		Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri().c_str(), pt2->GetUri().c_str());
+		Logger()->Write(MLogRec::EErr, ToElem(&aComp), "Connecting [%s - %s] failed", pt1->GetUri().c_str(), pt2->GetUri().c_str());
 	    }
 	}
     }

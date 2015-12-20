@@ -13,23 +13,21 @@
 class Chromo;
 class MProvider;
 
-// Element of native hier - mutable
-class Elem: public Base, public MMutable, public MCompsObserver, public MChildsObserver, public MChild
+// Standard element of native hier
+class Elem: public MElem
 {
     public:
 
 	// Regiser keyed by name, multimap
 	typedef string TNMKey;
-	typedef pair<TNMKey, Elem*> TNMVal;
-	typedef multimap<string, Elem*> TNMReg;
+	typedef pair<TNMKey, MElem*> TNMVal;
+	typedef multimap<string, MElem*> TNMReg;
 	typedef pair<TNMReg::iterator, TNMReg::iterator> TNMRegItRange;
 	// Relation chromo to model
-	typedef pair<Elem*, TNodeAttr> TCMRelTo;
+	typedef pair<MElem*, TNodeAttr> TCMRelTo;
 	typedef pair<void*, TNodeAttr> TCMRelFrom;
-	typedef pair<TCMRelFrom, Elem*> TCMRel;
-	typedef map<TCMRelFrom, Elem*> TCMRelReg;
-	// Deps muts on run-time agent node
-	typedef vector<TMDep> TMDeps;
+	typedef pair<TCMRelFrom, MElem*> TCMRel;
+	typedef map<TCMRelFrom, MElem*> TCMRelReg;
 
     public:
 	// Request context
@@ -53,8 +51,9 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	typedef pair<TICacheCIter, TICacheCIter> TICacheCRange;
 	typedef pair<TICacheQFIter, TICacheQFIter> TICacheQFRange;
 
+
     public:
-	class IfIter: public iterator<input_iterator_tag, void*>
+	class IfIter: public TIfIter
     {
 	friend class Elem;
 	public:
@@ -62,11 +61,9 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	IfIter(Elem* aHost, const string& aIName, const TICacheRCtx& aReq, TBool aToEnd = EFalse);
 	IfIter(const IfIter& aIt);
 	IfIter& operator=(const IfIter& aIt);
-	IfIter& operator++();
-	IfIter operator++(int) { IfIter tmp(*this); operator++(); return tmp; };
-	TBool operator==(const IfIter& aIt);
-	TBool operator!=(const IfIter& aIt) { return !operator==(aIt);};
-	void*  operator*();
+	virtual TIfIter& operator++();
+	virtual TBool operator==(const TIfIter& aIt);
+	virtual void*  operator*();
 	public:
 	Elem* iHost;
 	string iIName; // Iface name
@@ -75,11 +72,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	TICacheQFIter iQFIter; // Query result current iterator
 	TICacheRange iCacheRange;
 	TICacheIter iCacheIter; // Cache current iterator
-
     };
-
-	typedef pair<IfIter, IfIter> TIfRange;
-
 
     public:
 	class IterImplBase
@@ -95,7 +88,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	    virtual void PostIncr();
 	    virtual TBool IsEqual(const IterImplBase& aImpl) const;
 	    virtual TBool IsCompatible(const IterImplBase& aImpl) const;
-	    virtual Elem*  GetElem();
+	    virtual MElem*  GetElem();
 	    virtual void* DoGetObj(const char *aName);
 	    virtual const void* DoGetObj(const char *aName) const;
 	    public:
@@ -122,7 +115,7 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	Iterator operator++(int) { Iterator tmp(*this); operator++(); return tmp; };
 	TBool operator==(const Iterator& aIt) { return iImpl->IsEqual((*aIt.iImpl));};
 	TBool operator!=(const Iterator& aIt) { return !operator==(aIt);};
-	Elem*  operator*() { return iImpl->GetElem();};
+	MElem*  operator*() { return iImpl->GetElem();};
 	public:
 	IterImplBase* iImpl;
     };
@@ -140,131 +133,130 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 
     public:
 	static const char* Type() { return "Elem";};
+	virtual const string& Name() const { return iName;}
 	// Predefined extended type, for core elements only
 	static string PEType();
 	Elem(const string &aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	Elem(Elem* aMan = NULL, MEnv* aEnv = NULL);
-	Elem* GetNode(const GUri& aUri);
 	virtual ~Elem();
-	TBool IsRemoved() const;
-	virtual void SetRemoved();
-	void SetEType(const string& aPName, const string& aPEType = string());
-	void SetParent(const string& aParent);
-	void SetMan(Elem* aMan);
-	void SetObserver(MCompsObserver* aObserver);
-	void SetMutation(const ChromoNode& aMuta);
+	virtual void SetParent(const string& aParent);
+	virtual void SetParent(MElem* aParent);
+	virtual void SetMan(MElem* aMan);
+	void SetObserver(MOwner* aObserver);
+	virtual void SetMutation(const ChromoNode& aMuta);
 	ChromoNode AppendMutation(const ChromoNode& aMuta);
 	TBool AppendMutation(const string& aFileName);
-	void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue, TBool aTrialMode = ETrue);
-	void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue,
-		TBool aTrialMode = ETrue);
 	string PName() const;
-	const vector<Elem*>& Comps() const;
 	static void ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct);
     public:
-	// aInitCont - the uri of initial context of element, this is requires to element "understand" that it is
-	// in new context now and corrected uris related to initial context
-	Elem* CreateHeir(const string& aName, Elem* aMan/*, const GUri& aInitCont*/);
-	const MChromo& Chromos() const { return *iChromo;};
-	MChromo& Chromos() { return *iChromo;};
-	MChromo& Mutation() { return *iMut;};
+	virtual MElem* CreateHeir(const string& aName, MElem* aMan);
+	virtual const MChromo& Chromos() const { return *iChromo;};
+	virtual MChromo& Chromos() { return *iChromo;};
+	virtual MChromo& Mutation() { return *iMut;};
 	// Gets the comp with given type and owning given element
-	Elem* GetCompOwning(const string& aParent, Elem* aElem);
-	Elem* GetCompOwning(Elem* aElem);
-	// Gets the comp with given name and owning given element
-	Elem* GetCompOwningN(const string& aParent, Elem* aElem);
+	virtual MElem* GetCompOwning(const string& aParent, MElem* aElem);
+	virtual MElem* GetCompOwning(MElem* aElem);
 	// Gets acomp that attaches the given node or node itself if this is attaching it
-	Elem* GetAcompAttaching(Elem* aElem);
-	Elem* GetRoot() const;
-	Elem* GetInhRoot() const;
-	TBool IsComp(const Elem* aElem) const;
-	Elem* GetCommonOwner(Elem* aElem);
-	Elem* GetCommonAowner(Elem* aElem);
-	TBool IsAownerOf(const Elem* aElem) const;
+	MElem* GetAcompAttaching(MElem* aElem);
+	virtual MElem* GetRoot() const;
+	virtual MElem* GetInhRoot() const;
+	MElem* GetCommonOwner(MElem* aElem);
+	MElem* GetCommonAowner(MElem* aElem);
+	virtual TBool IsAownerOf(const MElem* aElem) const;
 	// Checks if elements chromo is attached. Ref UC_019 for details
-	TBool IsChromoAttached() const;
+	virtual TBool IsChromoAttached() const;
 	TBool IsMutAttached(const ChromoNode& aMut) const;
-	Elem* GetAttachingMgr();
-	Elem* GetAttachedAowner();
-	Elem* GetAowner();
-	const Elem* GetAowner() const;
-	Elem* GetUpperAowner();
-	const Elem* GetAttachingMgr() const;
-	Elem* GetAcompOwning(Elem* aComp);
-	Elem* GetOwnerWithIface(const string& aType);
-	// Checks if the node is originated vis phenotypical modification
+	virtual MElem* GetAttachingMgr();
+	virtual const MElem* GetAttachingMgr() const;
+	virtual MElem* GetAowner();
+	virtual const MElem* GetAowner() const;
+	virtual MElem* GetAcompOwning(MElem* aComp);
+	// Checks if the node is originated via phenotypical modification
 	TBool IsPhenoModif() const;
-	TBool IsInheritedComp(const Elem* aNode) const;
-	TBool IsDirectInheritedComp(const Elem* aNode) const;
-	TBool IsCompOfInheritedComp(const Elem* aNode) const;
+	virtual TBool IsInheritedComp(const MElem* aNode) const;
+	TBool IsDirectInheritedComp(const MElem* aNode) const;
+	TBool IsCompOfInheritedComp(const MElem* aNode) const;
 	// Debug helpers
 	Elem* GetNodeS(const char* aUri);
 	TBool IsName(const char* aName);
 	TBool IsHeirOf(const string& aParent) const;
-	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
-	void GetUri(GUri& aUri, Elem* aTop = NULL);
-	void GetRUri(GUri& aUri, Elem* aTop = NULL);
-	string GetUri(Elem* aTop = NULL, TBool aShort = EFalse);
-	string GetRUri(Elem* aTop = NULL);
-	void RebaseUriToOuterNode(Elem* aOldBase, const GUri& aUri, GUri& aResult);
+	void RebaseUriToOuterNode(MElem* aOldBase, const GUri& aUri, GUri& aResult);
 	virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
 	virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
-	// Iface provider
-	void* GetSIfiC(const string& aName, Base* aRequestor = NULL);
-	void* GetSIfi(const string& aName, const RqContext* aCtx = NULL);
-	void* GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert = ETrue);
-	TIfRange GetIfi(const string& aName, const RqContext* aCtx = NULL);
+	// From MIfProv Iface provider
+	virtual void* GetSIfiC(const string& aName, Base* aRequestor = NULL);
+	virtual void* GetSIfi(const string& aName, const RqContext* aCtx = NULL);
+	virtual void* GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert = ETrue);
+	virtual TIfRange GetIfi(const string& aName, const RqContext* aCtx = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MElem
 	virtual const string EType(TBool aShort = ETrue) const;
-	virtual Elem* GetMan();
-	virtual const Elem* GetMan() const;
-	Elem* GetParent();
-	void GetRank(Rank& aRank, const Elem* aBase = NULL) const;
-	void GetRank(Rank& aRank, const ChromoNode& aMut) const;
-	void GetLRank(Rank& aRank, TBool aCur = EFalse) const; 
+	virtual const string& EName() const { return Name();};
+	virtual MElem* GetMan();
+	virtual const MElem* GetMan() const;
+	virtual void GetRank(Rank& aRank, const ChromoNode& aMut) const;
+	virtual void GetLRank(Rank& aRank, TBool aCur = EFalse) const; 
 	TInt GetLocalRank() const;
-	const Elem* GetParent() const;
-	void SetParent(Elem* aParent);
-	virtual Elem* GetNode(const string& aUri);
-	virtual Elem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere = EFalse);
-	virtual Elem* GetNodeLoc(const GUri::TElem& aElem);
-	TBool RebaseUri(const GUri& aUri, const Elem* aBase, GUri& aRes);
-	TBool RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere, const Elem* aBase, GUri& aRes);
+	virtual MElem* GetNode(const string& aUri);
+	virtual MElem* GetNode(const GUri& aUri);
+	virtual MElem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere = EFalse);
+	virtual void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue, TBool aTrialMode = ETrue);
+	virtual void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue, TBool aTrialMode = ETrue);
+	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
+	virtual void GetUri(GUri& aUri, MElem* aTop = NULL) const;
+	virtual void GetRUri(GUri& aUri, MElem* aTop = NULL);
+	virtual string GetUri(MElem* aTop = NULL, TBool aShort = EFalse);
+	virtual string GetRUri(MElem* aTop = NULL);
+	virtual TBool RebaseUri(const GUri& aUri, const MElem* aBase, GUri& aRes);
+	virtual TBool RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere, const MElem* aBase, GUri& aRes);
 	// TODO [YB] The only attr allowed for change is name. To consider replacing of ChangeAttr to Rename 
 	virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal);
+	virtual void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
 	virtual void GetCont(string& aCont, const string& aName = string()); 
 	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()); 
 	virtual TBool IsContChangeable(const string& aName = string()) const; 
 	virtual TInt GetContCount() const;
+	virtual MElem* GetUpperAowner();
+	virtual TBool IsRemoved() const;
+	virtual void SetRemoved();
 	// Debugging
 	virtual void GetContactsData(vector<string, string>& aData) const;
-	TInt GetCapacity() const;
+	virtual TInt GetCapacity() const;
 	// Nodes
-	virtual TBool AddNode(const ChromoNode& aSpec, TBool aRunTime);
-	TBool AppendChild(Elem* aChild);
-	void RemoveChild(Elem* aChild);
+	virtual TBool AppendChild(MElem* aChild);
+	virtual void RemoveChild(MElem* aChild);
 	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
 	virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse);
 	virtual TBool ImportNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse);
-	vector<Elem*>& Comps();
+	virtual vector<MElem*>& Comps();
+	virtual const vector<MElem*>& Comps() const;
 	// From MChild
-	virtual void OnParentDeleting(Elem* aParent);
-	// From MChildsObserver
-	virtual void OnChildDeleting(Elem* aChild);
-	virtual TBool OnChildRenamed(Elem* aChild, const string& aOldName);
-	// From MCompsObserver
-	virtual void OnCompDeleting(Elem& aComp, TBool aSoft = ETrue);
-	virtual void OnCompAdding(Elem& aComp);
-	virtual TBool OnCompChanged(Elem& aComp);
-	virtual TBool OnCompRenamed(Elem& aComp, const string& aOldName);
-	virtual TBool OnContentChanged(Elem& aComp);
+	virtual MElem* GetParent();
+	virtual const MElem* GetParent() const;
+	virtual void OnParentDeleting(MElem* aParent);
+	// From MParent
+	virtual void OnChildDeleting(MElem* aChild);
+	virtual TBool OnChildRenamed(MElem* aChild, const string& aOldName);
+	// From MOwner
+	virtual TBool IsComp(const MElem* aElem) const;
+	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue);
+	virtual void OnCompAdding(MElem& aComp);
+	virtual TBool OnCompChanged(MElem& aComp);
+	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName);
+	virtual TBool OnContentChanged(MElem& aComp);
+	virtual TBool MoveComp(MElem* aComp, MElem* aDest);
+	virtual TBool MoveComp(MElem* aComp, const ChromoNode& aDest);
 	// Gets major dep for referenced node, ref ds_indp_mutord_impl
-	virtual void GetImplicitDep(TMDep& aDep, Elem* aObj, Elem* aRef);
+	virtual void GetImplicitDep(TMDep& aDep, MElem* aObj, MElem* aRef);
 	// From MMutable
 	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
+	virtual TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
+	virtual MElem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, TBool aTrialMode = EFalse);
+	// Resolve owned mutation unsafety via changing mutation position
+	virtual TBool ResolveMutUnsafety(MElem* aMutated, const TMDep& aDep);
+	virtual TBool ResolveMutsUnsafety();
 	// Ifaces cache
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
 	void RmIfCache(IfIter& aIt);
@@ -276,102 +268,92 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg);
 	void InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv, TIfRange aRg);
 	// Deps
-	Elem* GetMajorChild(Rank& rr);
-	void GetMajorChild(Elem*& aElem, Rank& rr);
-	TBool IsMutSafe(Elem* aRef);
-	TMDep GetRefDep(Elem* aRef, TNodeAttr aReftype, Elem* aObj = NULL);
-	TBool IsRefSafe(Elem* aRef, TNodeAttr aReftype, Elem* aObj = NULL, TMDep* aDep = NULL);
-	TBool IsForwardRef(Elem* aRef);
-	TMDeps& GetMDeps() { return iMDeps;};
-	void AddMDep(Elem* aNode, const ChromoNode& aMut, TNodeAttr aAttr);
-	void RemoveMDep(const TMDep& aDep, const Elem* aContext = NULL);
+	TBool IsMutSafe(MElem* aRef);
+	TMDep GetRefDep(MElem* aRef, TNodeAttr aReftype, MElem* aObj = NULL);
+	virtual TBool IsRefSafe(MElem* aRef, TNodeAttr aReftype, MElem* aObj = NULL, TMDep* aDep = NULL);
+	TBool IsForwardRef(MElem* aRef);
+	virtual TMDeps& GetMDeps() { return iMDeps;};
+	virtual void AddMDep(MElem* aNode, const ChromoNode& aMut, TNodeAttr aAttr);
+	virtual void RemoveMDep(const TMDep& aDep, const MElem* aContext = NULL);
 	void RmMCDeps();
 	static void GetDepRank(const TMDep& aDep, Rank& aRank);
 	static TBool IsDepActive(const TMDep& aDep);
 	// Adding two directions chromo-model dependencies
-	void AddCMDep(const ChromoNode& aMut, TNodeAttr aAttr, Elem* aNode);
-	TBool RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr, const Elem* aContext = NULL);
+	virtual void AddCMDep(const ChromoNode& aMut, TNodeAttr aAttr, MElem* aNode);
+	virtual TBool RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr, const MElem* aContext = NULL);
 	void RmCMDep(const ChromoNode& aMut);
 	void RmCMDeps();
-	Elem* GetCMDep(const ChromoNode& aMut, TNodeAttr aAttr) const;
-	void GetDep(TMDep& aDep, TNodeAttr aAttr, TBool aLocalOnly = EFalse, TBool aAnyType = EFalse) const;
+	virtual void GetDep(TMDep& aDep, TNodeAttr aAttr, TBool aLocalOnly = EFalse, TBool aAnyType = EFalse) const;
 	void GetDepRank(Rank& aRank, TNodeAttr aAttr);
-	TMDep GetMajorDep();
-	void GetMajorDep(TMDep& aDep, TBool aUp = EFalse, TBool aDown = ETrue);
-	TMDep GetMajorDep(TNodeType aMut, MChromo::TDepsLevel aLevel);
-	void GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDPath aDpath, MChromo::TDepsLevel aLevel, TBool aUp = ETrue, TBool aDown = ETrue);
+	virtual TMDep GetMajorDep();
+	virtual void GetMajorDep(TMDep& aDep, TBool aUp = EFalse, TBool aDown = ETrue);
+	virtual TMDep GetMajorDep(TNodeType aMut, MChromo::TDepsLevel aLevel);
+	virtual void GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDPath aDpath, MChromo::TDepsLevel aLevel, TBool aUp = ETrue, TBool aDown = ETrue);
 	// Chromo
 	ChromoNode GetChNode(const GUri& aUri) const;
-	TBool CompactChromo();
-	TBool CompactChromo(const ChromoNode& aNode);
+	virtual TBool CompactChromo();
+	virtual TBool CompactChromo(const ChromoNode& aNode);
 	void UndoCompactChromo();
 	inline MLogRec* Logger() const;
 	inline TBool IsIftEnabled() const;
 	// Transformations
-	TBool HasParentModifs() const;
-	void CopyModifsFromParent();
-	TBool HasModifs(const Elem* aOwner) const;
-	void CopyParentModifsToComp(Elem* aComp);
+	virtual TBool HasParentModifs() const;
+	virtual void CopyModifsFromParent();
+	virtual TBool HasModifs(const MElem* aOwner) const;
+	virtual void CopyParentModifsToComp(MElem* aComp);
+	virtual TBool RebaseUriToIntNode(const GUri& aUri, const MElem* aComp, GUri& aResult);
 	// Utils
 	void LogComps() const;
+	Elem* GetNodeE(const string& aUri) {return ToElem(GetNode(aUri));};
+	Elem* GetNodeE(const GUri& aUri) {return ToElem(GetNode(aUri));};
     protected:
-	Elem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, TBool aTrialMode = EFalse);
+	Elem* ToElem(MElem* aMelem) { Elem* res = (aMelem == NULL) ? NULL: aMelem->GetObj(res); return res;};
+	Elem* ToElem(MElem* aMelem) const { Elem* res = (aMelem == NULL) ? NULL: aMelem->GetObj(res); return res;};
 	inline MProvider* Provider() const;
-	TBool AppendComp(Elem* aComp);
-	TBool RegisterComp(Elem* aComp);
-	TBool RegisterChild(Elem* aChild);
-	TBool MoveComp(Elem* aComp, Elem* aDest);
-	TBool MoveComp(Elem* aComp, const ChromoNode& aDest);
-	TBool IsCompRegistered(Elem* aComp);
-	TBool RebaseUriToIntNode(const GUri& aUri, const Elem* aComp, GUri& aResult);
+	virtual TBool AppendComp(MElem* aComp);
+	TBool RegisterComp(MElem* aComp);
+	TBool RegisterChild(MElem* aChild);
+	TBool IsCompRegistered(MElem* aComp);
 	// aName is required because the comp can be renamed already. This is the case of 
 	// comp renaming: comp is renamed first, then the renaming is handled
-	TBool UnregisterComp(Elem* aComp, const string& aName = string());
-	TBool UnregisterChild(Elem* aChild, const string& aName = string());
-	Elem* GetComp(const string& aParent, const string& aName);
-	TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
+	TBool UnregisterComp(MElem* aComp, const string& aName = string());
+	TBool UnregisterChild(MElem* aChild, const string& aName = string());
+	MElem* GetComp(const string& aParent, const string& aName);
 	TBool MergeMutation(const ChromoNode& aSpec);
 	TBool MergeMutMove(const ChromoNode& aSpec);
 	virtual void DoOnCompChanged(Elem& aComp);
 	TBool IsLogeventCreOn();
-	void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
 	TBool HasChilds() const;
-	TBool HasInherDeps(const Elem* aScope) const;
+	virtual TBool HasInherDeps(const MElem* aScope) const;
 	void InsertIfQm(const string& aName, const TICacheRCtx& aReq, Base* aProv);
 	void UnregAllIfRel(TBool aInv = EFalse);
 	// ICache helpers, for debug only
 	Elem* GetIcCtxComp(const TICacheRCtx& aCtx, TInt aInd);
 	void LogIfReqs();
 	// Chromo modification/repairing utilities
-	TBool ShiftComp(Elem* aComp, Elem* aDest = NULL);
-	TBool ShiftCompOverDep(Elem* aComp, const TMDep& aDep);
-	// Resolve owned mutation unsafety via changing mutation position
-	TBool ResolveMutUnsafety(Elem* aMutated, const TMDep& aDep);
-	TBool ResolveMutsUnsafety();
-	ChromoNode GetLocalForwardCCDep(Elem* aOwner, const ChromoNode& aMut = ChromoNode()) const;
+	TBool ShiftComp(MElem* aComp, MElem* aDest = NULL);
+	TBool ShiftCompOverDep(MElem* aComp, const TMDep& aDep);
+	virtual ChromoNode GetLocalForwardCCDep(MElem* aOwner, const ChromoNode& aMut) const;
 	// Profiling
 	static void Delay(long us);
 	static long GetClockElapsed(const timespec& aStart, timespec& aEnd);
 	static long GetClockElapsed(long aStart);
 	static long GetClock();
 	// Debugging
-	Elem* GetComp(TInt aInd);
+	MElem* GetComp(TInt aInd);
     protected:
-	// Element type - parent's chain
-	// TODO [YB] Is it needed now after implementing inheritance chain?
-	string iEType;
 	// Environment
 	MEnv* iEnv;
 	// Managing (higher) element of hier
-	Elem* iMan;
+	MElem* iMan;
 	// Observer, mostly for root - normally elem notifies to Mgr
-	MCompsObserver* iObserver;
+	MOwner* iObserver;
 	// Chromo
 	Chromo* iChromo;
 	// Mutation
 	Chromo* iMut;
 	// Components, owninig container
-	vector<Elem*> iComps;
+	vector<MElem*> iComps;
 	// Components map, not owning
 	TNMReg iMComps;
 	// Ifaces cache
@@ -381,13 +363,14 @@ class Elem: public Base, public MMutable, public MCompsObserver, public MChildsO
 	// Children register
 	TNMReg iChilds;
 	// Parent
-	Elem* iParent;
+	MElem* iParent;
 	// Dependent nodes, relations to keep model consistent on mutations, ref uc_028, ds_mut
 	TMDeps iMDeps;
 	// Mutation to model node relation, required for chromo squeezing, ref ds_mut_sqeezing
 	TCMRelReg iCMRelReg;
 	// Sign of that node is removed
 	TBool isRemoved;
+	string iName;
 	static TBool EN_PERF_TRACE;
 	static TBool EN_PERF_METR;
 	static TBool EN_MUT_LIM;

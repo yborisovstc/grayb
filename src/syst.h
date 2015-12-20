@@ -14,7 +14,7 @@ class ACapsule: public Elem
 	ACapsule(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
-	// From MCompsObserver
+	// From MOwner
 	virtual TBool OnCompChanged(Elem& aComp);
 };
 
@@ -166,11 +166,11 @@ class Syst: public Vert
 	Syst(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
-	// From MCompsObserver
-	virtual void OnCompDeleting(Elem& aComp, TBool aSoft = ETrue);
+	// From MOwner
+	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue);
 	virtual TBool OnCompChanged(Elem& aComp);
 	// Gets major dep for referenced node, ref ds_indp_mutord_impl
-	virtual void GetImplicitDep(TMDep& aDep, Elem* aObj, Elem* aRef);
+	virtual void GetImplicitDep(TMDep& aDep, MElem* aObj, MElem* aRef);
     protected:
 	TBool IsPtOk(Elem* aPt);
 };

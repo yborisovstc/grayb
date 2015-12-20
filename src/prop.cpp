@@ -8,13 +8,11 @@ string Prop::PEType()
 
 Prop::Prop(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 
 Prop::Prop(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
-    SetEType(Elem::PEType());
     SetParent(Elem::PEType());
 }
 
@@ -23,9 +21,10 @@ void *Prop::DoGetObj(const char *aName)
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
-    }
-    else if (strcmp(aName, MProp::Type()) == 0) {
+    } else if (strcmp(aName, MProp::Type()) == 0) {
 	res = (MProp*) this;
+    } else {
+	res = Elem::DoGetObj(aName);
     }
     return res;
 }
@@ -69,13 +68,11 @@ string Description::PEType()
 
 Description::Description(const string& aName, Elem* aMan, MEnv* aEnv): Prop(aName, aMan, aEnv)
 {
-    SetEType(Type(), Prop::PEType());
     SetParent(Type());
 }
 
 Description::Description(Elem* aMan, MEnv* aEnv): Prop(Type(), aMan, aEnv)
 {
-    SetEType(Prop::PEType());
     SetParent(Prop::PEType());
 }
 
@@ -84,11 +81,9 @@ void *Description::DoGetObj(const char *aName)
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
-    }
-    else if (strcmp(aName, MProp::Type()) == 0) {
+    } else if (strcmp(aName, MProp::Type()) == 0) {
 	res = (MProp*) this;
-    }
-    else {
+    } else {
 	res = Prop::DoGetObj(aName);
     }
     return res;

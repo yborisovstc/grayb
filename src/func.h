@@ -14,11 +14,11 @@ class FuncBase: public Elem, public MACompsObserver, public MDataObserver
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
+	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp);
 	// From MDataObserver
 	virtual void OnDataChanged();
     protected:
-	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
+	virtual TBool HandleIoChanged(MElem& aContext, MElem* aCp);
 	void NotifyUpdate();
 };
 
@@ -52,7 +52,7 @@ class AIncInt: public AFunInt
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From FuncBase
-	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
+	virtual TBool HandleIoChanged(MElem& aContext, MElem* aCp);
 	// From MDataObserver
 	virtual void OnDataChanged();
 };
@@ -68,7 +68,7 @@ class AFunIntRes: public AFunInt
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From FuncBase
-	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
+	virtual TBool HandleIoChanged(MElem& aContext, MElem* aCp);
 	// From MDataObserver
 	virtual void OnDataChanged();
     protected:
@@ -86,7 +86,7 @@ class AAddInt: public AFunInt
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From FuncBase
-	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
+	virtual TBool HandleIoChanged(MElem& aContext, MElem* aCp);
 	// From MDataObserver
 	virtual void OnDataChanged();
 };
@@ -101,7 +101,7 @@ class ACountCritInt: public AFunInt
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From FuncBase
-	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
+	virtual TBool HandleIoChanged(MElem& aContext, MElem* aCp);
 	// From MDataObserver
 	virtual void OnDataChanged();
 };
@@ -119,7 +119,7 @@ class AFunc: public Elem, public MACompsObserver, public MDataObserver
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
+	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp);
 	// From MDataObserver
 	virtual void OnDataChanged();
     protected:
@@ -130,7 +130,7 @@ class AFunc: public Elem, public MACompsObserver, public MDataObserver
 	static const string KDiagErr;
 };
 
-inline Elem* AFunc::Host() { return iMan->GetMan();};
+inline Elem* AFunc::Host() { return ToElem(iMan->GetMan());};
 
 class AFuncInt: public AFunc, public MDIntGet
 {
@@ -266,7 +266,7 @@ class AFuncm: public Elem, public MACompsObserver, public MDataObserver, public 
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
+	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp);
 	// From MDataObserver
 	virtual void OnDataChanged();
     protected:
@@ -338,7 +338,7 @@ class Func: public Base {
 	    virtual Elem* GetAgent() = 0;
 	};
     public:
-    Func(Host& aHost): Base(string()), mHost(aHost) {};
+    Func(Host& aHost): Base(), mHost(aHost) {};
     virtual string IfaceGetId() const = 0;
     virtual void GetResult(string& aResult) const { aResult = "<?>";};
     virtual string GetInpExpType(TInt aId) const { return "<?>";};
@@ -363,9 +363,9 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
+	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp);
 	// From Func::Host
-	virtual Elem::TIfRange GetInps(TInt aId, TBool aOpt = EFalse);
+	virtual TIfRange GetInps(TInt aId, TBool aOpt = EFalse);
 	virtual void OnFuncContentChanged();
 	virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...);
 	virtual Elem* GetAgent() {return this;};
@@ -908,7 +908,7 @@ class FAtNTuple: public FAtBase  {
     public:
 	class IfProxyBase: public Base {
 	    public:
-	    IfProxyBase(FAtNTuple* aHost): Base(string()), mHost(aHost) {};
+	    IfProxyBase(FAtNTuple* aHost): Base(), mHost(aHost) {};
 	    virtual ~IfProxyBase();
 	    virtual void GetIfaceId(string& aId) const = 0;
 	    FAtNTuple* mHost;

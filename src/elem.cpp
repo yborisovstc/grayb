@@ -69,6 +69,7 @@ Elem::IfIter::IfIter(const IfIter& aIt): iHost(aIt.iHost), iIName(aIt.iIName), i
     iQFIter(aIt.iQFIter), iCacheRange(aIt.iCacheRange), iCacheIter(aIt.iCacheIter)
 {
 }
+
 Elem::IfIter& Elem::IfIter::operator=(const IfIter& aIt)
 {
     iHost = aIt.iHost; 
@@ -80,19 +81,11 @@ Elem::IfIter& Elem::IfIter::operator=(const IfIter& aIt)
     return *this;
 }
 
-Elem::IfIter& Elem::IfIter::operator++()
+Elem::TIfIter& Elem::IfIter::operator++()
 {
     if (++iCacheIter != iCacheRange.second) {
     }
     else {
-	/*
-	TICacheQFIter tmp(iQFIter);
-	if (++tmp != iQFRange.second) {
-	    iQFIter++;
-	    iCacheRange = iHost->iICache.equal_range(iQFIter->second);
-	    iCacheIter = iCacheRange.first;
-	}
-	*/
 	TICacheQFIter it = iQFIter;
 	for (++it; it != iQFRange.second; it++) {
 	    iQFIter = it;
@@ -106,10 +99,11 @@ Elem::IfIter& Elem::IfIter::operator++()
     return *this;
 }
 
-TBool Elem::IfIter::operator==(const IfIter& aIt)
+TBool Elem::IfIter::operator==(const TIfIter& aIt)
 {
-    TBool res = (iHost == aIt.iHost && iIName == aIt.iIName && iReq == aIt.iReq && iQFRange == aIt.iQFRange 
-	    && iQFIter == aIt.iQFIter && iCacheRange == aIt.iCacheRange && iCacheIter == aIt.iCacheIter);
+    const IfIter& it = (const IfIter&) aIt;
+    TBool res = (iHost == it.iHost && iIName == it.iIName && iReq == it.iReq && iQFRange == it.iQFRange 
+	    && iQFIter == it.iQFIter && iCacheRange == it.iCacheRange && iCacheIter == it.iCacheIter);
     return res;
 }
 
@@ -145,7 +139,7 @@ Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd): iE
 	    } 
 	    else {
 		for (iCIter = iCIterRange.first; iCIter != iCIterRange.second; iCIter++) {
-		    Elem* comp = iCIter->second;
+		    MElem* comp = iCIter->second;
 		    if (comp->GetParent()->Name() == iExt && !comp->IsRemoved()) {
 			break;
 		    }
@@ -169,8 +163,9 @@ Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd): iE
 	    }
 	    else {
 		for (iChildsIter = iChildsRange.first; iChildsIter != iChildsRange.second; iChildsIter++) {
-		    Elem* comp = iChildsIter->second;
-		    if (comp->GetMan()->Name() == iExt && !comp->IsRemoved()) {
+		    MElem* comp = iChildsIter->second;
+		    MElem* cowner = comp->GetMan()->GetObj(cowner);
+		    if (cowner->Name() == iExt && !comp->IsRemoved()) {
 			break;
 		    }
 		}
@@ -207,7 +202,7 @@ void Elem::IterImplBase::PostIncr()
 	for (; iCIter != iCIterRange.second && iCIter->second->IsRemoved(); iCIter++); 
 	if (!iId.first.empty() && iExtsrel == GUri::KParentSep && !iExt.empty() && iExt != GUri::KTypeAny) {
 	    for (; iCIter != iCIterRange.second; iCIter++) {
-		Elem* comp = iCIter->second;
+		MElem* comp = iCIter->second;
 		if (comp->GetParent()->Name() == iExt && !comp->IsRemoved()) {
 		    break;
 		}
@@ -220,8 +215,9 @@ void Elem::IterImplBase::PostIncr()
 	for (; iChildsIter != iChildsRange.second && iChildsIter->second->IsRemoved(); iChildsIter++); 
 	if (!iId.first.empty() && iExtsrel == GUri::KNodeSep && !iExt.empty() && iExt != GUri::KTypeAny) {
 	    for (;iChildsIter != iChildsRange.second; iChildsIter++) {
-		Elem* comp = iChildsIter->second;
-		if (comp->GetMan()->Name() == iExt && !comp->IsRemoved()) {
+		MElem* comp = iChildsIter->second;
+		MElem* cowner = comp->GetMan()->GetObj(cowner);
+		if (cowner->Name() == iExt && !comp->IsRemoved()) {
 		    break;
 		}
 	    }
@@ -261,9 +257,9 @@ const void *Elem::IterImplBase::DoGetObj(const char *aName) const
     return res;
 }
 
-Elem*  Elem::IterImplBase::GetElem()
+MElem*  Elem::IterImplBase::GetElem()
 {
-    Elem* res = NULL;
+    MElem* res = NULL;
     if (SRel() == GUri::KNodeSep) {
 	if (iCIter != iCIterRange.second) {
 	    res = iCIter->second;
@@ -274,7 +270,6 @@ Elem*  Elem::IterImplBase::GetElem()
     }
     return res;
 }
-
 
 void Elem::Delay(long us)
 {
@@ -290,7 +285,7 @@ void Elem::Delay(long us)
 
 // Element
 
-Elem::Elem(const string &aName, Elem* aMan, MEnv* aEnv): Base(aName), iMan(aMan), iEnv(aEnv),
+Elem::Elem(const string &aName, Elem* aMan, MEnv* aEnv): iName(aName), iMan(aMan), iEnv(aEnv),
     iObserver(NULL), iParent(NULL), isRemoved(EFalse)
 {
     /*
@@ -299,8 +294,6 @@ Elem::Elem(const string &aName, Elem* aMan, MEnv* aEnv): Base(aName), iMan(aMan)
     ss << prt << ";Constr";
     Logger()->Write(MLogRec::EInfo, this, ss.str().c_str());
     */
-    // Set elem type (parent) by default
-    //    iEType = Type();
     //Logger()->Write(MLogRec::EInfo, this, "Elem constr p0");
     //Delay(100);
     //Logger()->Write(MLogRec::EInfo, this, "Elem constr p1");
@@ -313,12 +306,11 @@ Elem::Elem(const string &aName, Elem* aMan, MEnv* aEnv): Base(aName), iMan(aMan)
     //Logger()->Write(MLogRec::EInfo, this, "Elem constr p4");
     ChromoNode croot = iChromo->Root();
     croot.SetAttr(ENa_Id, iName);
-    SetEType(Type());
     SetParent(Type());
     iComps.reserve(100);
 }
 
-Elem::Elem(Elem* aMan, MEnv* aEnv): Base(Type()), iMan(aMan), iEnv(aEnv),
+Elem::Elem(Elem* aMan, MEnv* aEnv): iName(Type()), iMan(aMan), iEnv(aEnv),
     iObserver(NULL), iParent(NULL)
 {
     /*
@@ -333,7 +325,6 @@ Elem::Elem(Elem* aMan, MEnv* aEnv): Base(Type()), iMan(aMan), iEnv(aEnv),
     iChromo->Init(ENt_Node);
     ChromoNode croot = iChromo->Root();
     croot.SetAttr(ENa_Id, iName);
-    SetEType(string());
     SetParent(string());
 }
 
@@ -362,7 +353,7 @@ Elem::~Elem()
     // Unregigster ifaces providers
     UnregAllIfRel();
     // Remove the comps, using iterator refresh because the map is updated on each comp deletion
-    vector<Elem*>::reverse_iterator it = iComps.rbegin();
+    vector<MElem*>::reverse_iterator it = iComps.rbegin();
     while (it != iComps.rend()) {
 	delete *it;
 	it = iComps.rbegin();
@@ -371,7 +362,7 @@ Elem::~Elem()
     iMComps.clear();
     // Disconnect from the childs
     for (TNMReg::iterator it = iChilds.begin(); it != iChilds.end(); it++) {
-	Elem* child = it->second;
+	MElem* child = it->second;
 	child->OnParentDeleting(this);
 	//child->SetParent(NULL);
     }
@@ -402,7 +393,7 @@ string Elem::PName() const
     return croot.Attr(ENa_Parent);
 }
 
-const vector<Elem*>& Elem::Comps() const
+const vector<MElem*>& Elem::Comps() const
 {
     return iComps;
 }
@@ -413,25 +404,25 @@ void Elem::SetParent(const string& aParent)
     croot.SetAttr(ENa_Parent, aParent);
 }
 
-void Elem::SetMan(Elem* aMan)
+void Elem::SetMan(MElem* aMan)
 {
     __ASSERT(iMan == NULL && aMan != NULL || aMan == NULL);
     // TODO [YB] To add notifications here
     iMan = aMan;
 }
 
-void Elem::SetObserver(MCompsObserver* aObserver)
+void Elem::SetObserver(MOwner* aObserver)
 {
     __ASSERT(iObserver == NULL && aObserver != NULL || iObserver != NULL && aObserver == NULL);
     iObserver = aObserver;
 }
 
-Elem* Elem::GetMan()
+MElem* Elem::GetMan()
 {
     return iMan;
 }
 
-const Elem* Elem::GetMan() const
+const MElem* Elem::GetMan() const
 {
     return iMan;
 }
@@ -441,9 +432,10 @@ void *Elem::DoGetObj(const char *aName)
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
-    }
-    else if (strcmp(aName, MCompsObserver::Type()) == 0) {
-	res = (MCompsObserver*) this;
+    } else if (strcmp(aName, MOwner::Type()) == 0) {
+	res = (MOwner*) this;
+    } else if (strcmp(aName, MElem::Type()) == 0) {
+	res = (MElem*) this;
     }
     return res;
 }
@@ -502,7 +494,7 @@ void* Elem::GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert
 {
     void* res = NULL;
     RqContext ctx(this);
-    Elem* req = GetNode(aReqUri);
+    MElem* req = GetNode(aReqUri);
     __ASSERT(aReqAssert || (req != NULL));
     if (req != NULL) {
 	TIfRange rg = req->GetIfi(aName, &ctx);
@@ -655,7 +647,7 @@ void Elem::InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv
 
 void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg)
 {
-    for (IfIter it = aRg.first; it != aRg.second; it++) {
+    for (TIfIter it = aRg.first; it != aRg.second; it++) {
 	InsertIfCache(aName, aReq, aProv, *it);
     }
     // Register the request in the map even if result is empty
@@ -723,66 +715,12 @@ const string Elem::EType(TBool aShort) const
     }
 }
 
-void Elem::SetEType(const string& aPName, const string& aPEType)
+MElem* Elem::GetComp(const string& aParent, const string& aName)
 {
-    iEType = aPEType + GUri::KParentSep + aPName;
-}
-
-// TODO [YB] Not used anymore, to remove ?
-TBool Elem::AddNode(const ChromoNode& aSpec, TBool aRunTime)
-{
-    TBool res = ETrue;
-    string snode = aSpec.Attr(ENa_MutNode);
-    GUri unode(snode);
-    Elem* node = GetNode(unode);
-    if (node != NULL) {
-	if (IsMutSafe(node)) {
-	    ChromoNode::Iterator itn = iChromo->Root().Begin();
-	    if (!aRunTime) {
-		ChromoNode chn = iChromo->Root().AddChild(aSpec);
-		//node->AddMDep(this, chn, ENa_MutNode);
-		AddCMDep(chn, ENa_MutNode, node);
-		itn = chn.Begin();
-	    }
-	    for (ChromoNode::Const_Iterator mit = aSpec.Begin(); mit != aSpec.End() && res; mit++) {
-		const ChromoNode& mno = (*mit);
-		//Elem* rnode = node->AddElem(mno, aRunTime);
-		Elem* rnode = node->AddElem(mno, ETrue);
-		if (rnode == NULL) {
-		    Logger()->Write(MLogRec::EErr, this, "Adding node into [%s] - failure", snode.c_str());
-		}
-		else {
-		    // Adding dependency to object of change
-		    if (!aRunTime) {
-			const ChromoNode& chno = (*itn);
-			//rnode->AddMDep(this, chno, ENa_Id);
-			AddCMDep(chno, ENa_Id, rnode);
-		    }
-		    if (IsLogeventCreOn()) {
-			Logger()->Write(MLogRec::EInfo, this, "Added node [%s] into [%s]", mno.Name().c_str(), snode.c_str());
-		    }
-		}
-		if (!aRunTime) {
-		    itn++;
-		}
-	    }
-	}
-	else {
-	    Logger()->Write(MLogRec::EErr, this, "Adding comp to node [%s] - unsafe, used in: [%s]", snode.c_str(), node->GetMajorDep().first.first->GetUri().c_str());
-	}
-    }
-    else {
-	Logger()->Write(MLogRec::EErr, this, "Adding comp to node: cannot find [%s]", snode.c_str());
-    }
-    return res;
-}
-
-Elem* Elem::GetComp(const string& aParent, const string& aName)
-{
-    Elem* res = NULL;
+    MElem* res = NULL;
     pair<TNMReg::iterator, TNMReg::iterator> range = iMComps.equal_range(TNMKey(aName));
     for (TNMReg::iterator it = range.first; it != range.second && res == NULL; it++) {
-	Elem* node = it->second;
+	MElem* node = it->second;
 	if (node->EType() == aParent) {
 	    res = node;
 	}
@@ -790,7 +728,7 @@ Elem* Elem::GetComp(const string& aParent, const string& aName)
     return res;
 }
 
-TBool Elem::RebaseUri(const GUri& aUri, const Elem* aBase, GUri& aRes)
+TBool Elem::RebaseUri(const GUri& aUri, const MElem* aBase, GUri& aRes)
 {
     __ASSERT(aUri.IsAbsolute());
     TBool res = EFalse;
@@ -799,7 +737,7 @@ TBool Elem::RebaseUri(const GUri& aUri, const Elem* aBase, GUri& aRes)
     if (it != aUri.Elems().end()) {
 	TBool anywhere = (*it).second.second == GUri::KTypeAnywhere;
 	if (it->second.second.empty() || anywhere) {
-	    Elem* root = NULL;
+	    MElem* root = NULL;
 	    if (it->second.first == GUri::KNodeSep) {
 		root = GetRoot();
 	    } else if (it->second.first == GUri::KParentSep) {
@@ -828,7 +766,7 @@ TBool Elem::RebaseUri(const GUri& aUri, const Elem* aBase, GUri& aRes)
     return res;
 }
 
-TBool Elem::RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere, const Elem* aBase, GUri& aRes)
+TBool Elem::RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere, const MElem* aBase, GUri& aRes)
 {
     TBool res = EFalse;
     GUri::const_elem_iter uripos = aPathBase;
@@ -873,7 +811,7 @@ TBool Elem::RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool 
 		uripos++;
 		if (uripos != aUri.Elems().end()) {
 		    for (; it != itend && !res; it++) {
-			Elem* node = *it;
+			MElem* node = *it;
 			if (node == aBase) {
 			    aRes.AppendTail(aUri, uripos);
 			    return ETrue;
@@ -889,7 +827,7 @@ TBool Elem::RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool 
 	    Iterator it = NodesLoc_Begin(elem);
 	    Iterator itend = NodesLoc_End(elem);
 	    for (; it != itend && !res; it++) {
-		Elem* node = *it;
+		MElem* node = *it;
 		if (node == aBase) {
 		    aRes.AppendTail(aUri, uripos);
 		    return ETrue;
@@ -901,15 +839,15 @@ TBool Elem::RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool 
     return res;
 }
 
-Elem* Elem::GetNode(const GUri& aUri) 
+MElem* Elem::GetNode(const GUri& aUri) 
 { 
     if (aUri.IsErr()) return NULL;
-    Elem* res = NULL;
+    MElem* res = NULL;
     GUri::const_elem_iter it = aUri.Elems().begin(); 
     if (it != aUri.Elems().end()) {
 	TBool anywhere = (*it).second.second == GUri::KTypeAnywhere; 
 	if (it->second.second.empty() || anywhere) {
-	    Elem* root = NULL;
+	    MElem* root = NULL;
 	    if (it->second.first == GUri::KNodeSep) {
 		root = GetRoot();
 	    }
@@ -944,12 +882,9 @@ Elem* Elem::GetNode(const GUri& aUri)
 
 Elem* Elem::GetNodeS(const char* aUri)
 {
-    return GetNode(aUri);
-}
-
-Elem* Elem::GetNodeLoc(const GUri::TElem& aElem)
-{
-    return GetComp(aElem.first, aElem.second.second);
+    MElem* mel = GetNode(aUri);
+    Elem* res = (mel == NULL) ? NULL: mel->GetObj(res);
+    return res;
 }
 
 Elem::Iterator Elem::NodesLoc_Begin(const GUri::TElem& aId)
@@ -962,9 +897,9 @@ Elem::Iterator Elem::NodesLoc_End(const GUri::TElem& aId)
     return Iterator(new IterImplBase(*this, aId, ETrue));
 }
 
-Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere) 
+MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere) 
 {
-    Elem* res = NULL;
+    MElem* res = NULL;
     GUri::const_elem_iter uripos = aPathBase;
     GUri::TElem elem = *uripos;
     TBool anywhere = aAnywhere;
@@ -1008,8 +943,8 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aA
 		uripos++;
 		if (uripos != aUri.Elems().end()) {
 		    for (; it != itend; it++) {
-			Elem* node = *it;
-			Elem* res1 = node->GetNode(aUri, uripos);
+			MElem* node = *it;
+			MElem* res1 = node->GetNode(aUri, uripos);
 			if (res1 != NULL) {
 			    if (res == NULL) {
 				res = res1;
@@ -1025,7 +960,7 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aA
 		else {
 		    res = *it;
 		    if (++it != itend) {
-			Elem* dup = *it;
+			MElem* dup = *it;
 			Logger()->Write(MLogRec::EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
 			res = NULL;
 		    }
@@ -1038,8 +973,8 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aA
 	    Iterator it = NodesLoc_Begin(elem);
 	    Iterator itend = NodesLoc_End(elem);
 	    for (; it != itend; it++) {
-		Elem* node = *it;
-		Elem* res1 = node->GetNode(aUri, uripos, anywhere);
+		MElem* node = *it;
+		MElem* res1 = node->GetNode(aUri, uripos, anywhere);
 		if (res1 != NULL) {
 		    if (res == NULL) {
 			res = res1;
@@ -1056,7 +991,7 @@ Elem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aA
     return res;
 }
 
-vector<Elem*>& Elem::Comps()
+vector<MElem*>& Elem::Comps()
 {
     return iComps;
 }
@@ -1184,16 +1119,11 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	}
 	TNodeType rnotype = rno.Type();
 	if (rnotype == ENt_Node) {
-	    Elem* node = AddElem(rno, aRunTime, aTrialMode);
+	    MElem* node = AddElem(rno, aRunTime, aTrialMode);
 	    if (node == NULL) {
 		string pname = rno.Attr(ENa_Parent);
 		Logger()->Write(MLogRec::EErr, this, "Adding node with parent [%s] failed", pname.c_str());
 	    }
-	}
-	// TODO [YB] ENt_Add isn't used anymore, to remove
-	else if (rnotype == ENt_Add) {
-	    __ASSERT(false);
-	    //AddNode(rno, aRunTime);
 	}
 	else if (rnotype == ENt_Change) {
 	    ChangeAttr(rno, aRunTime, aCheckSafety, aTrialMode);
@@ -1247,12 +1177,13 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafet
     string snode = aSpec.Attr(ENa_MutNode);
     string mattrs = aSpec.Attr(ENa_MutAttr);
     string mval = aSpec.Attr(ENa_MutVal);
-    Elem* node = GetNode(snode);
+    MElem* node = GetNode(snode);
     TBool mutadded = EFalse;
     if (node != NULL && IsComp(node)) {
 	if (epheno || node->GetAowner() == this  || IsDirectInheritedComp(node)) {
 	    if (!aCheckSafety || IsMutSafe(node)) {
-		TBool res = node->ChangeAttr(GUri::NodeAttr(mattrs), mval);
+		Elem* enode = ToElem(node);
+		TBool res = enode->ChangeAttr(GUri::NodeAttr(mattrs), mval);
 		if (!res) {
 		    Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - failure", snode.c_str());
 		}
@@ -1261,20 +1192,22 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafet
 		    if (!aRunTime) {
 			ChromoNode chn = iChromo->Root().AddChild(aSpec);
 			mutadded = ETrue;
-			AddCMDep(chn, ENa_MutNode, node);
+			AddCMDep(chn, ENa_MutNode, enode);
 		    }
 		}
 	    }
 	    else {
+		Elem* enode = ToElem(node);
 		Logger()->Write(MLogRec::EErr, this, "Renaming elem [%s] - unsafe, used in: [%s]", 
-			snode.c_str(), node->GetMajorDep().first.first->GetUri().c_str());
+			snode.c_str(), enode->GetMajorDep().first.first->GetUri().c_str());
 	    }
 	}
 	else {
 	    TBool efix = iEnv->ChMgr()->EnableFixErrors();
 	    if (efix) {
 		// Trying to repair chromo by transforming pheno to mut
-		Elem* mnode = node->GetMan()->GetAttachingMgr();
+		MElem* nowner = node->GetMan();
+		MElem* mnode = nowner->GetAttachingMgr();
 		ChromoNode mut(aSpec);
 		if (mnode == node) {
 		    mut.SetAttr(ENa_MutNode, "");
@@ -1328,8 +1261,8 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
     string snode = aSpec.Attr(ENa_MutNode);
     TBool refex = aSpec.AttrExists(ENa_Ref);
     string mval = aSpec.Attr(refex ? ENa_Ref :ENa_MutVal);
-    Elem* node = NULL;
-    Elem* rnode = NULL;
+    MElem* node = NULL;
+    MElem* rnode = NULL;
     TBool mutadded = EFalse;
     if (snode.length() == 0) {
 	node = this; 
@@ -1344,10 +1277,10 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 	    if (!aCheckSafety || IsMutSafe(node)) {
 		if (refex) {
 		    // For -ref- attr the value is the ref relative to mutated node context
-		    rnode = node->GetNode(mval);
+		    rnode = ToElem(node->GetNode(mval));
 		    //mval = rnode->GetRUri(node);
 		    if (rnode == NULL) {
-			rnode = node->GetNode(mval);
+			rnode = ToElem(node->GetNode(mval));
 			Logger()->Write(MLogRec::EErr, this, aSpec,
 				"Changing content of node [%s] to ref [%s] - cannot find ref", snode.c_str(), mval.c_str());
 			res = EFalse;
@@ -1400,11 +1333,11 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 	else  {
 	    if (efix) {
 		// Trying to repair chromo by transforming pheno to mut
-		Elem* mnode = node->GetAttachingMgr();
+		MElem* mnode = node->GetAttachingMgr();
 		ChromoNode mut(aSpec);
 		TBool fixok = ETrue;
 		if (refex) {
-		    rnode = node->GetNode(mval);
+		    rnode = ToElem(node->GetNode(mval));
 		    if (rnode != NULL) {
 			if (!mnode->IsRefSafe(rnode, ENa_Ref, node)) {
 			    // Trying to move mutnode to the last position
@@ -1456,7 +1389,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
     return res;
 }
 
-Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
+MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 {
     string snode = aNode.Attr(ENa_MutNode);
     string sparent = aNode.Attr(ENa_Parent);
@@ -1493,11 +1426,12 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
     }
     */
     //Logger()->Write(MLogRec::EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
-    Elem* elem = NULL;
-    Elem* node = snode.empty() ? this: GetNode(snode); 
-    if (node != NULL) {
+    MElem* elem = NULL;
+    MElem* mnode = snode.empty() ? this: GetNode(snode); 
+    if (mnode != NULL) {
+	Elem* node = ToElem(mnode);
 	// Obtain parent first
-	Elem *parent = NULL;
+	MElem *parent = NULL;
 	// Check if the parent is specified
 	if (!sparent.empty()) {
 	    // Check the parent scheme
@@ -1510,7 +1444,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 		    // Probably external node not imported yet - ask env for resolving uri
 		    GUri pruri(prnturi);
 		    MImportMgr* impmgr = iEnv->ImpsMgr();
-		    parent = impmgr->OnUriNotResolved(this, pruri);
+		    parent = ToElem(impmgr->OnUriNotResolved(this, pruri));
 		}
 		ext_parent = EFalse;
 	    }
@@ -1545,7 +1479,6 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 		    if (ptrace) { long t3_4 = GetClockElapsed(t3); Logger()->Write(MLogRec::EInfo, this, "Adding node, t3-t4: %d", t3_4);}
 		    // TODO [YB] Seems to be just temporal solution. To consider using context instead.
 		    // Make heir based on the parent: re-parent the heir (currently it's of grandparent's parent) and clean the chromo
-		    //elem->SetEType(sparent); // The type is set when creating heir
 		    ChromoNode hroot = elem->Chromos().Root();
 		    hroot.SetAttr(ENa_Parent, sparent);
 		    if (!snode.empty()) {
@@ -1563,12 +1496,11 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 				ChromoNode chn = iChromo->Root();
 				if (node == this) {
 				    // True mutation
-				    chn = iChromo->Root().AddChild(elem->iChromo->Root(), EFalse);
+				    chn = iChromo->Root().AddChild(elem->Chromos().Root(), EFalse);
 				}
 				else {
 				    // Fenothypic modification
-				    //chn = iChromo->Root().AddChild(aNode);
-				    chn = iChromo->Root().AddChild(elem->iChromo->Root(), EFalse);
+				    chn = iChromo->Root().AddChild(elem->Chromos().Root(), EFalse);
 				    AddCMDep(chn, ENa_MutNode, node);
 				}
 				AddCMDep(chn, ENa_Id, elem);
@@ -1601,7 +1533,7 @@ Elem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 		    TBool efix = iEnv->ChMgr()->EnableFixErrors();
 		    if (efix) {
 			// Trying to repair chromo by transforming pheno to mut
-			Elem* mnode = node->GetAttachingMgr();
+			MElem* mnode = node->GetAttachingMgr();
 			ChromoNode mut(aNode);
 			TBool fixok = ETrue;
 			if (!mnode->IsRefSafe(parent, ENa_Parent)) {
@@ -1690,18 +1622,18 @@ long Elem::GetClockElapsed(long aStart)
 
 // Reimplemented to keep system consistency. New version is based on run-time model only
 // Ref uc_031, ds_rn_prnt
-Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont */)
+MElem* Elem::CreateHeir(const string& aName, MElem* aMan)
 {
-    Elem* heir = NULL;
+    MElem* heir = NULL;
     //Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p1 ");
     if (Provider()->IsProvided(this)) {
-	heir = Provider()->CreateNode(Name(), aName, aMan, iEnv);
+	heir = Provider()->CreateNode(Name(), aName, ToElem(aMan), iEnv);
     }
     else {
 	__ASSERT(iParent != NULL);
-	if (Provider()->IsProvided(iParent)) {
+	if (Provider()->IsProvided(ToElem(iParent))) {
 	    // Parent is Agent - native element. Create via provider
-	    heir = Provider()->CreateNode(EType(), aName, iMan, iEnv);
+	    heir = Provider()->CreateNode(EType(), aName, ToElem(iMan), iEnv);
 	}
 	else {
 	    heir = iParent->CreateHeir(aName, iMan);
@@ -1715,7 +1647,6 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
 	if (EN_PERF_TRACE) Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p3 ");
 	// Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo
 	// Mutated with parent's own chromo - so panent's name is the type now. Set also the parent, but it will be updated further
-	heir->SetEType(Name(), EType(EFalse));
 	heir->SetParent(Name());
 	// Relocate heir to hier from which the request of creating heir came
 	heir->SetMan(NULL);
@@ -1728,7 +1659,7 @@ Elem* Elem::CreateHeir(const string& aName, Elem* aMan /*, const GUri& aInitCont
     return heir;
 }
 
-TBool Elem::AppendChild(Elem* aChild)
+TBool Elem::AppendChild(MElem* aChild)
 {
     TBool res = RegisterChild(aChild);
     if (res)
@@ -1738,13 +1669,13 @@ TBool Elem::AppendChild(Elem* aChild)
     return res;
 }
 
-void Elem::RemoveChild(Elem* aChild)
+void Elem::RemoveChild(MElem* aChild)
 {
     UnregisterChild(aChild);
     aChild->SetParent(NULL);
 }
 
-TBool Elem::AppendComp(Elem* aComp)
+TBool Elem::AppendComp(MElem* aComp)
 {
     TBool res = RegisterComp(aComp);
     if (res)
@@ -1760,10 +1691,10 @@ TBool Elem::AppendComp(Elem* aComp)
     return res;
 }
 
-TBool Elem::RegisterComp(Elem* aComp)
+TBool Elem::RegisterComp(MElem* aComp)
 {
     TBool res = ETrue;
-    Elem* node = GetComp(aComp->EType(), aComp->Name());
+    MElem* node = GetComp(aComp->EType(), aComp->Name());
     if (node == NULL || node->IsRemoved()) {
 	iMComps.insert(TNMVal(TNMKey(aComp->Name()), aComp));
     } else {
@@ -1773,14 +1704,14 @@ TBool Elem::RegisterComp(Elem* aComp)
     return res;
 }
 
-TBool Elem::RegisterChild(Elem* aChild)
+TBool Elem::RegisterChild(MElem* aChild)
 {
     TBool res = ETrue;
     iChilds.insert(TNMVal(aChild->Name(), aChild));
     return res;
 }
 
-TBool Elem::UnregisterChild(Elem* aChild, const string& aName)
+TBool Elem::UnregisterChild(MElem* aChild, const string& aName)
 {
     TBool res = EFalse;
     const string& name = aName.empty() ? aChild->Name() : aName;
@@ -1798,21 +1729,21 @@ TBool Elem::UnregisterChild(Elem* aChild, const string& aName)
     return res;
 }
 
-TBool Elem::IsCompRegistered(Elem* aComp)
+TBool Elem::IsCompRegistered(MElem* aComp)
 {
-    Elem* comp = aComp;
-    Elem* man = comp->GetMan();
+    MElem* comp = aComp;
+    MElem* man = comp->GetMan();
     while (man != this) {
 	comp = man;
 	man = comp->GetMan();	
     }
-    return (GetComp(comp->EType(), comp->Name()) != NULL);
+    return (GetComp(comp->EType(), comp->EName()) != NULL);
 }
 
-TBool Elem::UnregisterComp(Elem* aComp, const string& aName)
+TBool Elem::UnregisterComp(MElem* aComp, const string& aName)
 {
     TBool res = EFalse;
-    const string& name = aName.empty() ? aComp->Name() : aName;
+    const string& name = aName.empty() ? aComp->EName() : aName;
     assert (GetComp(aComp->EType(), name) != NULL); 
     // Removing old name related records in register
     TBool found = EFalse;
@@ -1828,10 +1759,10 @@ TBool Elem::UnregisterComp(Elem* aComp, const string& aName)
     return res;
 }
 
-TBool Elem::MoveComp(Elem* aComp, Elem* aDest)
+TBool Elem::MoveComp(MElem* aComp, MElem* aDest)
 {
     TBool res = EFalse;
-    vector<Elem*>::iterator it;
+    vector<MElem*>::iterator it;
     for (it = iComps.begin(); it != iComps.end() && *it != aComp; it++);
     __ASSERT(it != iComps.end());
     iComps.erase(it);
@@ -1846,21 +1777,27 @@ TBool Elem::MoveComp(Elem* aComp, Elem* aDest)
     return res;
 }
 
-TBool Elem::MoveComp(Elem* aComp, const ChromoNode& aDest)
+TBool Elem::MoveComp(MElem* aComp, const ChromoNode& aDest)
 {
     TBool res = EFalse;
-    vector<Elem*>::iterator it;
+    vector<MElem*>::iterator it;
     for (it = iComps.begin(); it != iComps.end() && *it != aComp; it++);
     __ASSERT(it != iComps.end());
     if (aDest.Handle() != NULL) {
 	// Check first if dest exists 
-	vector<Elem*>::iterator dit;
-	for (dit = iComps.begin(); dit != iComps.end() && (*dit)->Chromos().Root().Handle() != aDest.Handle(); dit++);
+	vector<MElem*>::iterator dit;
+	for (dit = iComps.begin(); dit != iComps.end(); dit++) {
+	    Elem* ee = ToElem(*dit);
+	    if (ee->Chromos().Root().Handle() == aDest.Handle()) break;
+	}
 	__ASSERT(dit != iComps.end());
     }
     iComps.erase(it);
     if (aDest.Handle() != NULL) {
-	for (it = iComps.begin(); it != iComps.end() && (*it)->Chromos().Root().Handle() != aDest.Handle(); it++);
+	for (it = iComps.begin(); it != iComps.end(); it++) {
+	    Elem* ee = ToElem(*it);
+	    if (ee->Chromos().Root().Handle() == aDest.Handle()) break;
+	}
 	__ASSERT(it != iComps.end());
 	iComps.insert(it, aComp);
     }
@@ -1871,31 +1808,15 @@ TBool Elem::MoveComp(Elem* aComp, const ChromoNode& aDest)
     return res;
 }
 
-TBool Elem::ShiftCompOverDep(Elem* aComp, const TMDep& aDep)
+TBool Elem::ShiftCompOverDep(MElem* aComp, const TMDep& aDep)
 {
-    /*
-    TBool res = EFalse;
-    Elem* owner = aComp->GetMan();
-    if (aComp->GetMan() == aDep.first.first) {
-	ChromoNode mch = owner->Chromos().Root();
-	ChromoNode cch = aComp->Chromos().Root();
-	ChromoNode::Iterator depit(mch.Mdl(), aDep.first.second);
-	ChromoNode depmut = (*depit);
-	ChromoNode::Iterator nextit = depmut.FindNextSibling(ENt_Node);
-	cch.MoveNextTo(depit);
-	ChromoNode nextmut = *nextit;
-	res = owner->MoveComp(aComp, nextmut);
-    }
-    return res;
-    */
     TBool res = ETrue;
-    //Elem* owner = aComp->GetMan();
-    Elem* owner = aComp->GetAowner();
-    Elem* comp = owner->GetCompOwning(aComp);
+    MElem* owner = aComp->GetAowner();
+    MElem* comp = owner->GetCompOwning(aComp);
     ChromoNode mch = owner->Chromos().Root();
     ChromoNode cch = aComp->Chromos().Root();
     ChromoNode::Iterator depit(mch.Mdl(), aDep.first.second);
-    Elem* depcomp = owner->GetCompOwning(aDep.first.first);
+    MElem* depcomp = owner->GetCompOwning(aDep.first.first);
     if (aDep.first.first == owner) { }
     else if (depcomp != NULL) {
 	depit = ChromoNode::Iterator(depcomp->Chromos().Root());
@@ -1914,7 +1835,7 @@ TBool Elem::ShiftCompOverDep(Elem* aComp, const TMDep& aDep)
 }
 
 // TODO [YB] This method seems doesn't make sense, consider to remove
-TBool Elem::ShiftComp(Elem* aComp, Elem* aDest)
+TBool Elem::ShiftComp(MElem* aComp, MElem* aDest)
 {
     TBool res = EFalse;
     ChromoNode cch = aComp->Chromos().Root();
@@ -1935,9 +1856,9 @@ TBool Elem::ShiftComp(Elem* aComp, Elem* aDest)
     return res;
 }
 
-Elem* Elem::GetNode(const string& aUri)
+MElem* Elem::GetNode(const string& aUri)
 {
-    Elem* res = NULL;
+    MElem* res = NULL;
     GUri uri(aUri);
     if (!uri.IsErr()) {
 	res = GetNode(uri);
@@ -1948,7 +1869,7 @@ Elem* Elem::GetNode(const string& aUri)
     return res;
 }
 
-void Elem::OnCompDeleting(Elem& aComp, TBool aSoft)
+void Elem::OnCompDeleting(MElem& aComp, TBool aSoft)
 {
     // Translate to hier
     if (iMan != NULL) {
@@ -1970,7 +1891,7 @@ void Elem::OnCompDeleting(Elem& aComp, TBool aSoft)
 	    // Unregister first
 	    UnregisterComp(&aComp);
 	    // Then remove from comps
-	    for (vector<Elem*>::iterator oit = iComps.begin(); oit != iComps.end(); oit++) {
+	    for (vector<MElem*>::iterator oit = iComps.begin(); oit != iComps.end(); oit++) {
 		if (*oit == &aComp) {
 		    iComps.erase(oit); break;
 		}
@@ -1981,7 +1902,7 @@ void Elem::OnCompDeleting(Elem& aComp, TBool aSoft)
 
 // TODO [YB] To avoid propagation thru the whole model. It is temporarily remaining because of
 // missing proper mechanism of the whole model observer.
-void Elem::OnCompAdding(Elem& aComp)
+void Elem::OnCompAdding(MElem& aComp)
 {
     // If the comp is already registered then propagate the event
     if (IsCompRegistered(&aComp)) {
@@ -1996,29 +1917,24 @@ void Elem::OnCompAdding(Elem& aComp)
 
 // TODO [YB] To include agents as member of elem. This will be more effective
 // TODO [YB] The current scheme doesn't allow element to get notification of related node change.
-// The only notification thry hier can be get via MCompsObserver, but not relation thru edges.
-// Thus is node A is related to node B via the chain of edges, the change of B or even the change
+// The only notification thru hier can be get via MOwner, but not relation thru edges.
+// Thus if node A is related to node B via the chain of edges, the change of B or even the change
 // of the relation chain cannot be observed by node A. This is the serious lack. This is because the 
 // If providing mechanism is used instead of full relations tracking in Vert. So node A has Ifaces cache
 // that includes ifaces from node B but there is no mechanism of the changes in the cache. To consider
 // to implement cache update notification. Ref UC_010 
-TBool Elem::OnCompChanged(Elem& aComp)
+TBool Elem::OnCompChanged(MElem& aComp)
 {
-    Elem* agents = GetComp("Elem", "Agents");
+    MElem* agents = GetComp("Elem", "Agents");
     TBool res = EFalse;
     if (agents != NULL) {
-	for (vector<Elem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && !res; it++) {
+	for (vector<MElem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && !res; it++) {
 	    MACompsObserver* iagent = (*it)->GetObj(iagent);
 	    if (iagent != NULL) {
 		res = iagent->HandleCompChanged(*this, aComp);
 	    }
 	}
     }
-    /*
-    if (!handled_by_agents) {
-	DoOnCompChanged(aComp);
-    }
-    */
     // Propagate notification to upper level
     if (res && iMan != NULL) {
 	res = iMan->OnCompChanged(aComp);
@@ -2029,10 +1945,10 @@ TBool Elem::OnCompChanged(Elem& aComp)
     return res;
 }
 
-TBool Elem::OnCompRenamed(Elem& aComp, const string& aOldName)
+TBool Elem::OnCompRenamed(MElem& aComp, const string& aOldName)
 {
     TBool res = EFalse;
-    if (aComp.iMan == this) {
+    if (aComp.GetMan() == this) {
 	// Unregister the comp with its old name
 	res = UnregisterComp(&aComp, aOldName);
 	if (res) {
@@ -2050,7 +1966,7 @@ TBool Elem::OnCompRenamed(Elem& aComp, const string& aOldName)
     return res;
 }
 
-TBool Elem::OnContentChanged(Elem& aComp)
+TBool Elem::OnContentChanged(MElem& aComp)
 {
     TBool res = EFalse, res1 = EFalse;
     if (iMan != NULL) {
@@ -2066,23 +1982,10 @@ void Elem::DoOnCompChanged(Elem& aComp)
 {
 }
 
-Elem* Elem::GetOwnerWithIface(const string& aType)
+MElem* Elem::GetCompOwning(const string& aParent, MElem* aElem)
 {
-    Elem* res = NULL;
-    Elem* node = this;
-    while (node != NULL && node->DoGetObj(aType.c_str()) == NULL) {
-	node = node->GetMan();
-    }
-    if (node != NULL) {
-	res = node;
-    }
-    return res;
-}
-
-Elem* Elem::GetCompOwning(const string& aParent, Elem* aElem)
-{
-    Elem* res = NULL;
-    Elem* node = aElem;
+    MElem* res = NULL;
+    MElem* node = aElem;
     while (node->GetMan() != NULL && !(node->GetMan() == this && node->EType() == aParent)) {
 	node = node->GetMan();	
     }
@@ -2092,24 +1995,10 @@ Elem* Elem::GetCompOwning(const string& aParent, Elem* aElem)
     return res;
 }
 
-// TODO [YB] to use the generic method that uses uri instead of having specific func for type and name
-Elem* Elem::GetCompOwningN(const string& aName, Elem* aElem)
+MElem* Elem::GetCompOwning(MElem* aElem)
 {
-    Elem* res = NULL;
-    Elem* node = aElem;
-    while (node->GetMan() != NULL && !(node->GetMan() == this && node->Name() == aName)) {
-	node = node->GetMan();	
-    }
-    if (node->GetMan() != NULL) {
-	res = node;
-    }
-    return res;
-}
-
-Elem* Elem::GetCompOwning(Elem* aElem)
-{
-    Elem* res = NULL;
-    Elem* node = aElem;
+    MElem* res = NULL;
+    MElem* node = aElem;
     while (node->GetMan() != NULL && !(node->GetMan() == this)) {
 	node = node->GetMan();	
     }
@@ -2121,11 +2010,11 @@ Elem* Elem::GetCompOwning(Elem* aElem)
 
 // Gets acomp that attaches the given node or node itself if this is attaching it
 // !! Returns only 1st level acomp or this
-Elem* Elem::GetAcompAttaching(Elem* aElem)
+MElem* Elem::GetAcompAttaching(MElem* aElem)
 {
-    Elem* res = NULL;
-    Elem* node = aElem;
-    Elem* aowner = node->GetAowner();
+    MElem* res = NULL;
+    MElem* node = aElem;
+    MElem* aowner = node->GetAowner();
     while (aowner != NULL && aowner != this) {
 	node = aowner;	
 	aowner = node->GetAowner();
@@ -2136,23 +2025,9 @@ Elem* Elem::GetAcompAttaching(Elem* aElem)
     return res;
 }
 
-// TODO [YB] Do we need it?
-Elem* Elem::GetAttachedAowner() {
-    Elem* res = NULL;
-    Elem* cand = this;
-    while (res == NULL && cand != NULL) {
-	if (cand->IsChromoAttached()) {
-	    res = cand;
-	} else {
-	    cand = cand->GetAowner();
-	}
-    }
-    return res;
-}
-
-Elem* Elem::GetUpperAowner() {
-    Elem* cand = GetAowner();
-    Elem* res = NULL;
+MElem* Elem::GetUpperAowner() {
+    MElem* cand = GetAowner();
+    MElem* res = NULL;
     while (cand != NULL) {
 	res = cand;
 	cand = cand->GetAowner();
@@ -2160,28 +2035,28 @@ Elem* Elem::GetUpperAowner() {
     return res;
 }
 
-TBool Elem::IsComp(const Elem* aElem) const
+TBool Elem::IsComp(const MElem* aElem) const
 {
-    const Elem* man = aElem->GetMan();
+    const MElem* man = aElem->GetMan();
     while (man != NULL && man != this) {
 	man = man->GetMan();	
     }
     return man == this;
 }
 
-TBool Elem::IsAownerOf(const Elem* aElem) const
+TBool Elem::IsAownerOf(const MElem* aElem) const
 {
-    const Elem* aowner = aElem->GetAowner();
+    const MElem* aowner = aElem->GetAowner();
     while (aowner != NULL && aowner != this) {
 	aowner = aowner->GetAowner();	
     }
     return aowner == this;
 }
 
-Elem* Elem::GetCommonOwner(Elem* aElem)
+MElem* Elem::GetCommonOwner(MElem* aElem)
 {
-    Elem* res = NULL;
-    Elem* owner = this;
+    MElem* res = NULL;
+    MElem* owner = this;
     while (owner != NULL && res == NULL) 
     {
 	if (owner->IsComp(aElem) || owner == aElem) {
@@ -2192,10 +2067,10 @@ Elem* Elem::GetCommonOwner(Elem* aElem)
     return res;
 }
 
-Elem* Elem::GetCommonAowner(Elem* aElem)
+MElem* Elem::GetCommonAowner(MElem* aElem)
 {
-    Elem* res = NULL;
-    Elem* owner = this;
+    MElem* res = NULL;
+    MElem* owner = this;
     while (owner != NULL && res == NULL) 
     {
 	if (owner->IsAownerOf(aElem) || owner == aElem) {
@@ -2206,25 +2081,13 @@ Elem* Elem::GetCommonAowner(Elem* aElem)
     return res;
 }
 
-// TODO [YB] Seems to obsolete, consider removing
-void Elem::GetRank(Rank& aRank, const Elem* aBase) const
-{
-    if (iMan != (aBase == NULL ? NULL : aBase->GetMan())) {
-	TInt res = 0;
-	for (vector<Elem*>::const_iterator it = iMan->Comps().begin(); it != iMan->Comps().end() && *it != this; it++, res++);
-	//aRank.push_back(res);
-	aRank.insert(aRank.begin(), res);
-	iMan->GetRank(aRank, aBase);
-    }
-}
-
 // TODO [YB] After the change in AddElem to attach chromo before mutating the case of deattached non-trivial 
 // chromo is not possible. This simplifies calculating rank: actually rank is calculated as chromo node rank
 // Run-time rank doesn't make sense now. Probably the node in dep record is also not neede.
 // So to consider: 1. removing run-time rank calculation, 2. removing node from dep record
 void Elem::GetRank(Rank& aRank, const ChromoNode& aMut) const
 {
-    const Elem* att = GetAttachingMgr();
+    const MElem* att = GetAttachingMgr();
     if (att == this) {
 	aMut.GetRank(aRank);
     }
@@ -2250,30 +2113,30 @@ TInt Elem::GetLocalRank() const
     TInt res = -1;
     if (iMan != NULL) {
 	res = 0;
-	for (vector<Elem*>::const_iterator it = iMan->Comps().begin(); it != iMan->Comps().end() && *it != this; it++, res++);
+	for (vector<MElem*>::const_iterator it = iMan->Comps().begin(); it != iMan->Comps().end() && *it != this; it++, res++);
     }
     return res;
 }
 
-void Elem::GetRUri(GUri& aUri, Elem* aTop)
+void Elem::GetRUri(GUri& aUri, MElem* aTop)
 {
-    Elem* cowner = GetCommonOwner(aTop);
+    MElem* cowner = GetCommonOwner(aTop);
     GetUri(aUri, cowner);
-    Elem* owner = aTop;
+    MElem* owner = aTop;
     while (owner != cowner) {
 	aUri.PrependElem("", GUri::KUpperLevel);
 	owner = owner->GetMan();
     }
 }
 
-string Elem::GetRUri(Elem* aTop)
+string Elem::GetRUri(MElem* aTop)
 {
     GUri uri;
     GetRUri(uri, aTop);
     return uri.GetUri();
 }
 
-void Elem::GetUri(GUri& aUri, Elem* aTop)
+void Elem::GetUri(GUri& aUri, MElem* aTop) const
 {
     if (aTop != this) {
 	string ext(EType());
@@ -2298,25 +2161,25 @@ void Elem::GetUri(GUri& aUri, Elem* aTop)
     }
 }
 
-string Elem::GetUri(Elem* aTop, TBool aShort)
+string Elem::GetUri(MElem* aTop, TBool aShort)
 {
     GUri uri;
     GetUri(uri, aTop);
     return uri.GetUri(aShort);
 }
 
-Elem* Elem::GetRoot() const
+MElem* Elem::GetRoot() const
 {
-    Elem* res = (Elem*) this;
+    MElem* res = (MElem*) this;
     if (iMan != NULL) {
 	res = iMan->GetRoot();
     }
     return res;
 }
 
-Elem* Elem::GetInhRoot() const
+MElem* Elem::GetInhRoot() const
 {
-    Elem* res = (Elem*) this;
+    MElem* res = (MElem*) this;
     if (iParent != NULL) {
 	res = iParent->GetInhRoot();
     }
@@ -2324,14 +2187,14 @@ Elem* Elem::GetInhRoot() const
 
 }
 
-TBool Elem::IsRefSafe(Elem* aRef, TNodeAttr aReftype, Elem* aObj, TMDep* aDep)
+TBool Elem::IsRefSafe(MElem* aRef, TNodeAttr aReftype, MElem* aObj, TMDep* aDep)
 {
     TBool res = ETrue;
     Rank rank;
     GetRank(rank, iChromo->Root());
     Rank deprank;
     TMDep dep = GetRefDep(aRef, aReftype, aObj);
-    Elem* depnode = dep.first.first;
+    MElem* depnode = dep.first.first;
     if (depnode != NULL) {
 	ChromoNode depmut = iChromo->CreateNode(dep.first.second);
 	depnode->GetRank(deprank, depmut);
@@ -2345,7 +2208,7 @@ TBool Elem::IsRefSafe(Elem* aRef, TNodeAttr aReftype, Elem* aObj, TMDep* aDep)
     return res;
 }
 
-TBool Elem::IsMutSafe(Elem* aRef)
+TBool Elem::IsMutSafe(MElem* aRef)
 {
     TBool safemut = ETrue;
     TMDep dep = aRef->GetMajorDep();
@@ -2363,7 +2226,7 @@ TBool Elem::IsMutSafe(Elem* aRef)
     return safemut;
 }
 
-TBool Elem::IsForwardRef(Elem* aRef)
+TBool Elem::IsForwardRef(MElem* aRef)
 {
     TBool res = EFalse;
     Rank crank;
@@ -2381,28 +2244,13 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
     TBool res = EFalse;
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
     string snode = aSpec.Attr(ENa_MutNode);
-    Elem* node = GetNode(snode);
+    MElem* node = GetNode(snode);
     TBool mutadded = EFalse;
     if (node != NULL && IsComp(node)) {
 	if (epheno || node->GetMan() == this || IsCompOfInheritedComp(node)) {
 	    // Check dependent mutations
 	    if (!aCheckSafety || IsMutSafe(node)) {
 		res = ETrue;
-		/* Solution 1
-		// If node has children then just mark it as removed but not remove actually
-		if (node->HasInherDeps()) {
-		    node->SetRemoved();
-		    if (!aRunTime) {
-			// Adding dependency to object of change
-			ChromoNode chn = iChromo->Root().AddChild(aSpec);
-			AddCMDep(chn, ENa_MutNode, node);
-			mutadded = ETrue;
-		    }
-		} else {
-		    delete node;
-		}
-		*/
-		// Solution 2
 		// Just mark node as removed but not remove actually, ref ds_mut_rm_appr
 		// Refuse removing if here are heirs, needs to unparent them first, ref ds_mut_rm_deps
 		if (!node->HasInherDeps(node)) {
@@ -2444,7 +2292,7 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
 	    TBool efix = iEnv->ChMgr()->EnableFixErrors();
 	    if (efix) {
 		// Trying to repair chromo by transforming pheno to mut
-		Elem* mnode = node->GetMan()->GetAttachingMgr();
+		MElem* mnode = node->GetMan()->GetAttachingMgr();
 		ChromoNode mut(aSpec);
 		if (mnode == node) {
 		    mut.SetAttr(ENa_MutNode, "");
@@ -2478,14 +2326,14 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
     string srcs = aSpec.Attr(ENa_Id);
     TBool dest_spec = aSpec.AttrExists(ENa_MutNode);
     string dests = dest_spec ? aSpec.Attr(ENa_MutNode): string();
-    Elem* dnode = dest_spec ? GetNode(dests) : this;
+    MElem* dnode = dest_spec ? GetNode(dests) : this;
     TBool mutadded = EFalse;
     if (dnode != NULL) {
 	GUri srcsuri(srcs);
 	if (srcsuri.Scheme().empty()) {
 	    // Local node
-	    Elem* snode = GetNode(srcs);
-	    Elem* sowner = snode->GetMan();
+	    MElem* snode = GetNode(srcs);
+	    MElem* sowner = snode->GetMan();
 	    if (snode != NULL) {
 		if (sowner != NULL && dnode == sowner) {
 		    // Attempt of moving node to the current contect 
@@ -2507,7 +2355,7 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 			// It is rather complicated to re-create snode in new context because all snode
 			// mutation are related to original snode context, so use trick, ref "ds_mv_local"
 			// Create heir of source node in destination context
-			Elem* heir = snode->CreateHeir(snode->Name(), dnode);
+			MElem* heir = snode->CreateHeir(snode->Name(), dnode);
 			// Re-adopt back to source parent
 			snode->RemoveChild(heir);
 			snode->GetParent()->AppendChild(heir);
@@ -2544,7 +2392,7 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 	    TBool res1 = spec->Set(srcs);
 	    if (res1) {
 		const ChromoNode& root = spec->Root();
-		Elem* nnode = NULL;
+		MElem* nnode = NULL;
 		if (dnode != NULL) {
 		    nnode= dnode->AddElem(root, ETrue);
 		}
@@ -2584,7 +2432,7 @@ TBool Elem::IsName(const char* aName)
 
 TBool Elem::IsLogeventCreOn() 
 {
-    Elem* node = GetNode("./Elem:Logspec/Elem:Creation");
+    MElem* node = GetNode("./Elem:Logspec/Elem:Creation");
     return node != NULL;
 }
 
@@ -2601,50 +2449,48 @@ TBool Elem::IsHeirOf(const string& aParent) const
 // Using chromo based calculation, ref ds_mut_attach_calc
 TBool Elem::IsChromoAttached() const
 {
-    return iChromo->Root().Root() == GetRoot()->iChromo->Root();
+    return iChromo->Root().Root() == GetRoot()->Chromos().Root();
 }
 
 TBool Elem::IsMutAttached(const ChromoNode& aMut) const
 {
-    return aMut.Root() == GetRoot()->iChromo->Root();
+    return aMut.Root() == GetRoot()->Chromos().Root();
 }
 
 // Getting owner that is attached. It can differ from owner that attaches the node
 // For owner attaching the node, use
-Elem* Elem::GetAttachingMgr() 
+MElem* Elem::GetAttachingMgr() 
 {
-    Elem* res = NULL;
-    Elem* cand = this;
+    MElem* res = NULL;
+    MElem* cand = this;
     while (res == NULL && cand != NULL) {
 	if (cand->IsChromoAttached()) {
 	    res = cand;
-	}
-	else {
+	} else {
 	    cand = cand->GetMan();
 	}
     }
     return res;
 }
 
-const Elem* Elem::GetAttachingMgr() const
+const MElem* Elem::GetAttachingMgr() const
 {
-    const Elem* res = NULL;
-    const Elem* cand = this;
+    const MElem* res = NULL;
+    const MElem* cand = this;
     while (res == NULL && cand != NULL) {
 	if (cand->IsChromoAttached()) {
 	    res = cand;
-	}
-	else {
+	} else {
 	    cand = cand->GetMan();
 	}
     }
     return res;
 }
 
-Elem* Elem::GetAcompOwning(Elem* aComp)
+MElem* Elem::GetAcompOwning(MElem* aComp)
 {
-    Elem* res = NULL;
-    Elem* cand = aComp;
+    MElem* res = NULL;
+    MElem* cand = aComp;
     while (res == NULL && cand != NULL) {
 	if (IsAownerOf(cand)) {
 	    res = cand;
@@ -2658,14 +2504,14 @@ Elem* Elem::GetAcompOwning(Elem* aComp)
 
 // Get the node that attaches this node. Don't confuse with the nearest attached
 // owner, for that ref to GetAttachingMgr
-Elem* Elem::GetAowner()
+MElem* Elem::GetAowner()
 {
-    Elem* res = NULL;
+    MElem* res = NULL;
     ChromoNode::Iterator prnt = iChromo->Root().Parent();
     if (prnt != iChromo->Root().End()) {
-	Elem* cand = GetMan();
+	MElem* cand = GetMan();
 	while (res == NULL && cand != NULL) {
-	    if (cand->iChromo->Root() == *prnt) {
+	    if (cand->Chromos().Root() == *prnt) {
 		res = cand;
 	    }
 	    else {
@@ -2676,14 +2522,14 @@ Elem* Elem::GetAowner()
     return res;
 }
 
-const Elem* Elem::GetAowner() const
+const MElem* Elem::GetAowner() const
 {
-    const Elem* res = NULL;
+    const MElem* res = NULL;
     ChromoNode::Iterator prnt = iChromo->Root().Parent();
     if (prnt != iChromo->Root().End()) {
-	const Elem* cand = GetMan();
+	const MElem* cand = GetMan();
 	while (res == NULL && cand != NULL) {
-	    if (cand->iChromo->Root() == *prnt) {
+	    if (cand->Chromos().Root() == *prnt) {
 		res = cand;
 	    }
 	    else {
@@ -2700,34 +2546,33 @@ TBool Elem::IsPhenoModif() const
     if (res) {
 	TMDep dep;
 	GetDep(dep, ENa_Id, ETrue);
-	Elem* depnode = dep.first.first;
+	MElem* depnode = dep.first.first;
 	res = depnode != NULL && depnode->IsChromoAttached();
     }
     return res;
 }
 
-TBool Elem::IsInheritedComp(const Elem* aNode) const
+TBool Elem::IsInheritedComp(const MElem* aNode) const
 {
-    Elem* uaowner = ((Elem*) aNode)->GetUpperAowner();
+    MElem* uaowner = ((MElem*) aNode)->GetUpperAowner();
     TBool res = uaowner == NULL || IsComp(uaowner) && !uaowner->IsComp(this);
     return res;
 }
 
-TBool Elem::IsDirectInheritedComp(const Elem* aNode) const
+TBool Elem::IsDirectInheritedComp(const MElem* aNode) const
 {
-    //Elem* aaowner = ((Elem*) aNode)->GetAttachedAowner();
-    Elem* uaowner = ((Elem*) aNode)->GetUpperAowner();
-    Elem* acompo = ((Elem*) this)->GetAcompOwning((Elem*) aNode);
+    MElem* uaowner = ((MElem*) aNode)->GetUpperAowner();
+    MElem* acompo = ((MElem*) this)->GetAcompOwning((Elem*) aNode);
     TBool isinher = uaowner == NULL || IsComp(uaowner) && !uaowner->IsComp(this);
     TBool res = isinher && acompo == NULL;
     return res;
 }
 
-TBool Elem::IsCompOfInheritedComp(const Elem* aNode) const
+TBool Elem::IsCompOfInheritedComp(const MElem* aNode) const
 {
     TBool res = IsInheritedComp(aNode);
     if (!res) {
-	const Elem* owner = aNode->GetMan();
+	const MElem* owner = aNode->GetMan();
 	while (owner != this && !res) {
 	    res = IsInheritedComp(owner);
 	    owner = owner->GetMan();
@@ -2736,29 +2581,29 @@ TBool Elem::IsCompOfInheritedComp(const Elem* aNode) const
     return res;
 }
 
-Elem* Elem::GetParent()
+MElem* Elem::GetParent()
 {
     return iParent;
 }
 
-const Elem* Elem::GetParent() const
+const MElem* Elem::GetParent() const
 {
     return iParent;
 }
 
-void Elem::SetParent(Elem* aParent)
+void Elem::SetParent(MElem* aParent)
 {
     __ASSERT(aParent != NULL && iParent == NULL || aParent == NULL && iParent != NULL);
     iParent = aParent;
 }
 
-void Elem::OnChildDeleting(Elem* aChild)
+void Elem::OnChildDeleting(MElem* aChild)
 {
     // Unregister the child
     UnregisterChild(aChild);
 }
 
-TBool Elem::OnChildRenamed(Elem* aChild, const string& aOldName)
+TBool Elem::OnChildRenamed(MElem* aChild, const string& aOldName)
 {
     TBool res = EFalse;
     // Unregister the child with its old name
@@ -2768,51 +2613,6 @@ TBool Elem::OnChildRenamed(Elem* aChild, const string& aOldName)
 	res = RegisterChild(aChild);
     }
     return res;
-}
-
-Elem* Elem::GetMajorChild(Rank& rr)
-{
-    Elem* res = NULL;
-    // Child theyself
-    for (TNMReg::iterator it = iChilds.begin(); it != iChilds.end(); it++) {
-	Elem* child = it->second;
-	Rank rd;
-	child->GetRank(rd, child->Chromos().Root());
-	if (rd > rr) {
-	    rr = rd;
-	    res = child;
-	}
-    }
-    // Childs of childs
-    for (TNMReg::iterator it = iChilds.begin(); it != iChilds.end(); it++) {
-	Elem* res1 = it->second->GetMajorChild(rr);
-	if (res1 != NULL) {
-	    res = res1;
-	}
-    }
-    return res;
-}
-
-
-void Elem::GetMajorChild(Elem*& aElem, Rank& rr)
-{
-    // Child theyself
-    for (TNMReg::iterator it = iChilds.begin(); it != iChilds.end(); it++) {
-	Elem* child = it->second;
-	Rank rd;
-	child->GetRank(rd, child->Chromos().Root());
-	if (rd > rr) {
-	    rr = rd;
-	    aElem = child;
-	}
-    }
-    // Childs of childs
-    for (TNMReg::iterator it = iChilds.begin(); it != iChilds.end(); it++) {
-	Elem* res1 = it->second->GetMajorChild(rr);
-	if (res1 != NULL) {
-	    aElem = res1;
-	}
-    }
 }
 
 void Elem::GetDep(TMDep& aDep, TNodeAttr aAttr, TBool aLocalOnly, TBool aAnyType) const 
@@ -2877,15 +2677,6 @@ void Elem::GetMajorDep(TMDep& aDep, TBool aUp, TBool aDown)
 	if (IsDepActive(dep) && rd > rc) {
 	    rc = rd;
 	    aDep = dep;
-	    // TODO [YB] Do we need it ?
-	    /*
-	    // Dependence childs
-	    Elem* dc = dep.first.first->GetMajorChild(rc);
-	    if (dc != NULL) {
-		aDep.first.first = dc;
-		aDep.first.second = dc->Chromos().Root().Handle();
-	    }
-	    */
 	}
     }
     // Owner, ref ds_mut_unappr_rt_ths2
@@ -2895,12 +2686,12 @@ void Elem::GetMajorDep(TMDep& aDep, TBool aUp, TBool aDown)
     if (aDown) {
 	// Childs
 	for (TNMReg::const_iterator it = iChilds.begin(); it != iChilds.end(); it++) {
-	    Elem* child = it->second;
+	    MElem* child = it->second;
 	    child->GetMajorDep(aDep, EFalse, ETrue);
 	}
 	// Components
-	for (vector<Elem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
-	    Elem* comp = *it;
+	for (vector<MElem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
+	    MElem* comp = *it;
 	    comp->GetMajorDep(aDep, EFalse, ETrue);
 	}
     }
@@ -2938,14 +2729,6 @@ void Elem::GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDPath aDpath, MChr
 	    if (IsDepActive(dep) && rd > rc) {
 		rc = rd;
 		aDep = dep;
-		/*
-		// Dependence childs
-		Elem* dc = dep.first.first->GetMajorChild(rc);
-		if (dc != NULL) {
-		    aDep.first.first = dc;
-		    aDep.first.second = dc->Chromos().Root().Handle();
-		}
-		*/
 	    }
 	}
     }
@@ -2956,12 +2739,12 @@ void Elem::GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDPath aDpath, MChr
     if (aDown) {
 	// Childs
 	for (TNMReg::const_iterator it = iChilds.begin(); it != iChilds.end(); it++) {
-	    Elem* child = it->second;
+	    MElem* child = it->second;
 	    child->GetMajorDep(aDep, aMut, MChromo::EDp_Child, aLevel, EFalse, ETrue);
 	}
 	// Components
-	for (vector<Elem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
-	    Elem* comp = *it;
+	for (vector<MElem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
+	    MElem* comp = *it;
 	    comp->GetMajorDep(aDep, aMut, MChromo::EDp_Comps, aLevel, EFalse, ETrue);
 	}
     }
@@ -2971,7 +2754,7 @@ void Elem::GetDepRank(Rank& aRank, TNodeAttr aAttr)
 {
     TMDep dep(TMutRef(NULL, NULL), ENa_Unknown);
     GetDep(dep, aAttr);
-    Elem* depnode = dep.first.first;
+    MElem* depnode = dep.first.first;
     if (depnode != NULL) {
 	ChromoNode depmut = iChromo->CreateNode(dep.first.second);
 	// Using combined calc of rank because of possibility that mut can be deattached
@@ -2980,7 +2763,7 @@ void Elem::GetDepRank(Rank& aRank, TNodeAttr aAttr)
 }
 
 // Handles parent deleting, ref uc_029
-void Elem::OnParentDeleting(Elem* aParent)
+void Elem::OnParentDeleting(MElem* aParent)
 {
     iParent = NULL;
     /* TODO [YB] this solution contradicts to principles of incrementing creations
@@ -3031,8 +2814,8 @@ void Elem::SetRemoved()
     }
 #else
     // Removing comps in reverce order
-    for (vector<Elem*>::reverse_iterator it = iComps.rbegin(); it != iComps.rend(); it++) {
-	Elem* comp = *it;
+    for (vector<MElem*>::reverse_iterator it = iComps.rbegin(); it != iComps.rend(); it++) {
+	MElem* comp = *it;
 	comp->SetRemoved();
     }
 #endif
@@ -3045,15 +2828,15 @@ TBool Elem::HasChilds() const
     return !iChilds.empty();
 }
 
-TBool Elem::HasInherDeps(const Elem* aScope) const
+TBool Elem::HasInherDeps(const MElem* aScope) const
 {
     TBool res = EFalse;
     for (TNMReg::const_iterator it = iChilds.begin(); it != iChilds.end() && !res; it++) {
-	Elem* comp = it->second;
+	MElem* comp = it->second;
 	res = !comp->IsRemoved() && !aScope->IsComp(comp);
     }
     for (TNMReg::const_iterator it = iMComps.begin(); it != iMComps.end() && !res; it++) {
-	Elem* comp = it->second;
+	MElem* comp = it->second;
 	res = !comp->IsRemoved() && comp->HasInherDeps(aScope);
     }
     return res;
@@ -3088,7 +2871,7 @@ TBool Elem::CompactChromo(const ChromoNode& aNode)
 	// Get node this mutation relates to
 	TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_Id);
 	if (iCMRelReg.count(key) > 0) {
-	    Elem* node = iCMRelReg.at(key);
+	    MElem* node = iCMRelReg.at(key);
 	    // Compact the node
 	    corrected = node->CompactChromo();
 	}
@@ -3100,7 +2883,7 @@ TBool Elem::CompactChromo(const ChromoNode& aNode)
 	// Get node this mutation relates to
 	TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
 	if (iCMRelReg.count(key) > 0) {
-	    Elem* node = iCMRelReg.at(key);
+	    MElem* node = iCMRelReg.at(key);
 	    string new_val(gmut.Attr(ENa_MutVal));
 	    // Get mutations that depends on this node, and have lower rank
 	    for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
@@ -3130,7 +2913,7 @@ TBool Elem::CompactChromo(const ChromoNode& aNode)
 	// Get node this mutation relates to
 	TCMRelFrom key = TCMRelFrom(gmut.Handle(), ENa_MutNode);
 	if (iCMRelReg.count(key) > 0) {
-	    Elem* node = iCMRelReg.at(key);
+	    MElem* node = iCMRelReg.at(key);
 	    // Get -cont- mutations that depends on this node, and have lower rank
 	    for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
 		TMDep dep = *it;
@@ -3158,7 +2941,7 @@ TBool Elem::CompactChromo(const ChromoNode& aNode)
 	// Optimize -rm- out only if there is original -node- mut, ref ds_mut_sqeezing_so_prnc_cnd
 	if (iCMRelReg.count(key) > 0) {
 	    // Deactivate mutation of creation of deleted node
-	    Elem* node = iCMRelReg.at(key);
+	    MElem* node = iCMRelReg.at(key);
 	    for (TMDeps::iterator it = node->GetMDeps().begin(); it != node->GetMDeps().end(); it++) {
 		TMDep dep = *it;
 		ChromoNode mut = iChromo->CreateNode(dep.first.second);
@@ -3187,17 +2970,17 @@ void Elem::UndoCompactChromo()
     croot.Activate();
 }
 
-void Elem::AddMDep(Elem* aNode, const ChromoNode& aMut, TNodeAttr aAttr)
+void Elem::AddMDep(MElem* aNode, const ChromoNode& aMut, TNodeAttr aAttr)
 {
     iMDeps.push_back(TMDep(TMutRef(aNode, (void*) aMut.Handle()), aAttr));
 }
 
-void Elem::RemoveMDep(const TMDep& aDep, const Elem* aContext)
+void Elem::RemoveMDep(const TMDep& aDep, const MElem* aContext)
 {
     if (aContext == this) return;
     for (TMDeps::iterator it = iMDeps.begin(); it != iMDeps.end(); it++) {
 	if (*it == aDep) {
-	    Elem* node = aDep.first.first;
+	    MElem* node = aDep.first.first;
 	    ChromoNode mut = iChromo->CreateNode(aDep.first.second);
 	    node->RmCMDep(mut, aDep.second, aContext != NULL ? aContext: this);
 	    iMDeps.erase(it);
@@ -3210,14 +2993,14 @@ void Elem::RmMCDeps()
 {
     while (iMDeps.begin() != iMDeps.end()) {
 	TMDep dep = *(iMDeps.begin());
-	Elem* node = dep.first.first;
+	MElem* node = dep.first.first;
 	ChromoNode mut = iChromo->CreateNode(dep.first.second);
 	node->RmCMDep(mut, dep.second, this);
 	iMDeps.erase(iMDeps.begin());
     }
 }
 
-void Elem::AddCMDep(const ChromoNode& aMut, TNodeAttr aAttr, Elem* aNode)
+void Elem::AddCMDep(const ChromoNode& aMut, TNodeAttr aAttr, MElem* aNode)
 {
     // Node to chromo
     aNode->AddMDep(this, aMut, aAttr);
@@ -3234,43 +3017,27 @@ void Elem::RmCMDeps()
     }
 }
 
-TBool Elem::RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr, const Elem* aContext)
+TBool Elem::RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr, const MElem* aContext)
 {
     TBool res = EFalse;
     if (aContext == this) return res;
     TCMRelFrom key((void*) aMut.Handle(), aAttr);
     if (iCMRelReg.count(key) > 0) {
-	Elem* node = iCMRelReg.at(key);
+	MElem* node = iCMRelReg.at(key);
 	iCMRelReg.erase(key);
 	node->RemoveMDep(TMDep(TMutRef(this, (void*) aMut.Handle()), aAttr), aContext != NULL ? aContext: this);
 	res = ETrue;
     }
     else {
-	for (vector<Elem*>::const_iterator it = iComps.begin(); it != iComps.end() && !res; it++) {
-	    Elem* comp = *it;
+	for (vector<MElem*>::const_iterator it = iComps.begin(); it != iComps.end() && !res; it++) {
+	    MElem* comp = *it;
 	    res = comp->RmCMDep(aMut, aAttr);
 	}
     }
     return res;
 }
 
-Elem* Elem::GetCMDep(const ChromoNode& aMut, TNodeAttr aAttr) const
-{
-    Elem* res = NULL;
-    TCMRelFrom key((void*) aMut.Handle(), aAttr);
-    if (iCMRelReg.count(key) > 0) {
-	res = iCMRelReg.at(key);
-    }
-    else {
-	for (vector<Elem*>::const_iterator it = iComps.begin(); it != iComps.end() && res == NULL; it++) {
-	    Elem* comp = *it;
-	    res = comp->GetCMDep(aMut, aAttr);
-	}
-    }
-    return res;
-}
-
-ChromoNode Elem::GetLocalForwardCCDep(Elem* aOwner, const ChromoNode& aMut) const
+ChromoNode Elem::GetLocalForwardCCDep(MElem* aOwner, const ChromoNode& aMut) const
 {
     ChromoNode res(Chromos().Root().Mdl(), NULL);
     TBool smut = aMut.Handle() != NULL;
@@ -3286,12 +3053,12 @@ ChromoNode Elem::GetLocalForwardCCDep(Elem* aOwner, const ChromoNode& aMut) cons
 	    TNodeAttr attr = it->first;
 	    TCMRelFrom key((void*) mut.Handle(), attr);
 	    if (iCMRelReg.count(key) > 0) {
-		Elem* mnode = iCMRelReg.at(key);
+		MElem* mnode = iCMRelReg.at(key);
 		// Check if this is forward dep, i.e. model node rank is greater that mut rank
 		Rank mdeprank;
 		mnode->GetRank(mdeprank, mnode->Chromos().Root());
 		if (mdeprank > mutrank) {
-		    Elem* comp = aOwner->GetCompOwning(mnode);
+		    MElem* comp = aOwner->GetCompOwning(mnode);
 		    if (comp != NULL) {
 			res = comp->Chromos().Root();
 			break;
@@ -3303,8 +3070,8 @@ ChromoNode Elem::GetLocalForwardCCDep(Elem* aOwner, const ChromoNode& aMut) cons
 	if (res.Handle() == NULL && mut.Type() == ENt_Node) {
 	    TCMRelFrom key((void*) mut.Handle(), ENa_Id);
 	    __ASSERT(iCMRelReg.count(key) != 0);
-	    Elem* mnode = iCMRelReg.at(key);
-	    res = mnode->GetLocalForwardCCDep(aOwner);
+	    MElem* mnode = iCMRelReg.at(key);
+	    res = mnode->GetLocalForwardCCDep(aOwner, ChromoNode());
 	    if (res.Handle() != NULL) break;
 	}
 	if (res.Handle() != NULL) break;
@@ -3315,7 +3082,7 @@ ChromoNode Elem::GetLocalForwardCCDep(Elem* aOwner, const ChromoNode& aMut) cons
 
 // TODO [YB] To consider reimplementation using GetCommonAowner instead of
 // searching common Aowner here
-TBool Elem::ResolveMutUnsafety(Elem* aMutated, const TMDep& aDep)
+TBool Elem::ResolveMutUnsafety(MElem* aMutated, const TMDep& aDep)
 {
     TBool res = EFalse;
     // Get dependency on dependent node
@@ -3323,10 +3090,10 @@ TBool Elem::ResolveMutUnsafety(Elem* aMutated, const TMDep& aDep)
     // sense to pass it to aDepOn->GetMajorDep
 //    TMDep dep = aRef->GetMajorDep(aMutType, MChromo::EDl_Critical);
     // Check if both mutated and dependency are owned
-    Elem* mcomp = GetAcompAttaching(aMutated);
+    MElem* mcomp = GetAcompAttaching(aMutated);
     if (mcomp != NULL) {
 	// Target point for shifting is dep mutation if dcomp is this and dcomp creation mut if not
-	Elem* dcomp = this;
+	MElem* dcomp = this;
 	ChromoNode targmut(iChromo->CreateNode(aDep.first.second));
 	if (aDep.first.first != this) {
 	    //dcomp = GetAcompAttaching(aDep.first.first);
@@ -3372,11 +3139,11 @@ TBool Elem::ResolveMutsUnsafety()
     }
 }
 
-void Elem::GetImplicitDep(TMDep& aDep, Elem* aObj, Elem* aRef)
+void Elem::GetImplicitDep(TMDep& aDep, MElem* aObj, MElem* aRef)
 {
 }
 
-TMDep Elem::GetRefDep(Elem* aRef, TNodeAttr aReftype, Elem* aObj)
+TMDep Elem::GetRefDep(MElem* aRef, TNodeAttr aReftype, MElem* aObj)
 {
     // Get regular dep first
     // TODO [YB] Using ENt_Cont at the moment, because it seems to be nearest
@@ -3400,18 +3167,18 @@ TBool Elem::HasParentModifs() const
 
 void Elem::CopyModifsFromParent()
 {
-    Elem* aowner = GetAowner();
+    MElem* aowner = GetAowner();
     if (aowner != NULL) {
 	aowner->CopyParentModifsToComp(this);
     }
 }
 
 // Checking if agent has modifs made outside of owner/self aBase
-TBool Elem::HasModifs(const Elem* aBase) const
+TBool Elem::HasModifs(const MElem* aBase) const
 {
     TBool res = false;
-    for (vector<Elem*>::const_iterator it = iComps.begin(); it != iComps.end() && !res; it++) {
-	Elem* comp = *it;
+    for (vector<MElem*>::const_iterator it = iComps.begin(); it != iComps.end() && !res; it++) {
+	MElem* comp = *it;
 	res = comp->HasModifs(aBase);
     }
     for (TMDeps::const_iterator it = iMDeps.begin(); it != iMDeps.end() && !res; it++) {
@@ -3435,12 +3202,12 @@ TBool Elem::HasModifs(const Elem* aBase) const
  * aBase - parents_owner
  * aMut - mut of aBase
  */
-void Elem::CopyParentModifsToComp(Elem* aComp)
+void Elem::CopyParentModifsToComp(MElem* aComp)
 {
     TBool efix = iEnv->ChMgr()->EnableFixErrors();
     iEnv->ChMgr()->SetEnableFixErrors(ETrue);
-    Elem* cparent = aComp->GetParent();
-    Elem* paowner = cparent->GetAttachingMgr();
+    MElem* cparent = aComp->GetParent();
+    MElem* paowner = cparent->GetAttachingMgr();
     // Go thru muts in chromo, select comps parents related and copy
     ChromoNode& chrroot = paowner->Chromos().Root();
     for (ChromoNode::Iterator it = chrroot.Begin(); it != chrroot.End(); it++) {
@@ -3479,16 +3246,16 @@ void Elem::CopyParentModifsToComp(Elem* aComp)
  * aComp - new base, the comp of base of input uri
  * aResult - relult uri
  */
-TBool Elem::RebaseUriToIntNode(const GUri& aUri, const Elem* aComp, GUri& aResult)
+TBool Elem::RebaseUriToIntNode(const GUri& aUri, const MElem* aComp, GUri& aResult)
 {
     TBool res = EFalse;
-    const Elem* node = GetNode(aUri);
+    const MElem* node = GetNode(aUri);
     if (node == aComp) {
 	res = ETrue;
     } else {
 	for (GUriBase::const_elem_iter it = aUri.Elems().begin(); it != aUri.Elems().end(); it++) {
 	    string uri = aUri.GetUriBody(it);
-	    const Elem* node = GetNode(uri);
+	    const MElem* node = GetNode(uri);
 	    if (node == aComp) {
 		res = ETrue;
 		aResult.AppendTail(aUri, it);
@@ -3503,7 +3270,7 @@ TBool Elem::RebaseUriToIntNode(const GUri& aUri, const Elem* aComp, GUri& aResul
  * aBase - old base
  * aResult - result node
  */
-void Elem::RebaseUriToOuterNode(Elem* aOldBase, const GUri& aUri, GUri& aResult)
+void Elem::RebaseUriToOuterNode(MElem* aOldBase, const GUri& aUri, GUri& aResult)
 {
     aOldBase->GetRUri(aResult, this);
     aResult.Append(aUri);
@@ -3512,9 +3279,9 @@ void Elem::RebaseUriToOuterNode(Elem* aOldBase, const GUri& aUri, GUri& aResult)
 TInt Elem::GetCapacity() const
 {
     TInt res = 0;
-    for (vector<Elem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
+    for (vector<MElem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
 	res++;
-	Elem* comp = *it;
+	MElem* comp = *it;
 	res += comp->GetCapacity();
     }
     return res;
@@ -3522,31 +3289,12 @@ TInt Elem::GetCapacity() const
 
 void Elem::LogComps() const
 {
-    for (vector<Elem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
-	Elem* comp = *it;
+    for (vector<MElem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
+	Elem* comp = ToElem(*it);
 	Logger()->Write(MLogRec::EInfo, comp, ">");
 	comp->LogComps();
     }
 }
-
-#if 0
-// This variant is for using dedicated agent for import
-TBool Elem::ImportNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
-{
-    Elem* impe = iEnv->Provider()->GetNode("AImports");
-    __ASSERT(impe != NULL);
-    MImports* imp = impe->GetObj(imp);
-    __ASSERT(imp != NULL);
-    TBool res = EFalse;
-    TBool mutadded = EFalse;
-    string srcs = aSpec.Attr(ENa_Id);
-    res = imp->Import(srcs);
-    if (!aRunTime && !mutadded && !aTrialMode) {
-	iChromo->Root().AddChild(aSpec);
-    }
-    return ETrue;
-}
-#endif
 
 // This variant is for using env imports manager
 TBool Elem::ImportNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
@@ -3563,7 +3311,7 @@ TBool Elem::ImportNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode
     return ETrue;
 }
 
-Elem* Elem::GetComp(TInt aInd)
+MElem* Elem::GetComp(TInt aInd)
 {
     return iComps.at(aInd);
 }

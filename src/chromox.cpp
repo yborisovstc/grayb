@@ -5,7 +5,7 @@
 
 const char* KChromoSystemId = "/usr/share/grayb/conf/objspec.dtd";
 
-ChromoMdlX::ChromoMdlX(): ChromoMdl("ChromoMdlX"), iDoc(NULL), iDocOwned(EFalse)
+ChromoMdlX::ChromoMdlX(): ChromoMdl(), iDoc(NULL), iDocOwned(EFalse)
 {
 };
 

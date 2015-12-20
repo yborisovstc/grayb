@@ -15,13 +15,11 @@ string ACapsule::PEType()
 
 ACapsule::ACapsule(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 
 ACapsule::ACapsule(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
-    SetEType(Elem::PEType());
     SetParent(Elem::PEType());
 }
 
@@ -54,13 +52,11 @@ string ConnPointBase::PEType()
 
 ConnPointBase::ConnPointBase(const string& aName, Elem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
 {
-    SetEType(Type(), Vert::PEType());
     SetParent(Type());
 }
 
 ConnPointBase::ConnPointBase(Elem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
 {
-    SetEType(Vert::PEType());
     SetParent(Vert::PEType());
 }
 
@@ -102,15 +98,15 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
     else {
 	// Redirect to pairs if iface requiested is provided by this CP
-	Elem* eprov = GetNode("./(Prop:)Provided");
-	Elem* ereq = GetNode("./(Prop:)Required");
+	Elem* eprov = ToElem(GetNode("./(Prop:)Provided"));
+	Elem* ereq = ToElem(GetNode("./(Prop:)Required"));
 	if (eprov != NULL) {
 	    MProp* prov = eprov->GetObj(prov);
 	    if (prov != NULL && prov->Value() == aName) {
 		// Requested provided iface - cannot be obtain via pairs - redirect to host
 		if (iMan != NULL && !ctx.IsInContext(iMan)) {
 		    // TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
-		    Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
+		    Elem* mgr = ToElem(iMan->Name() == "Capsule" ? iMan->GetMan() : iMan);
 		    rr = mgr->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, mgr, rr);
 		    resg = ETrue;
@@ -129,7 +125,7 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 		}
 		// Responsible pairs not found, redirect to upper layer
 		if ((rr.first == rr.second) && iMan != NULL && !ctx.IsInContext(iMan)) {
-		    Elem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
+		    Elem* mgr = ToElem(iMan->Name() == "Capsule" ? iMan->GetMan() : iMan);
 		    rr = mgr->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, mgr, rr);
 		}
@@ -155,10 +151,10 @@ TBool ConnPointBase::IsCompatible(Elem* aPair, TBool aExt)
 	}
 	if (cp != NULL) {
 	    // Check roles conformance
-	    Elem* ept1prov = GetNode("./(Prop:)Provided");
-	    Elem* ept2req = cp->GetNode("./(Prop:)Required");
-	    Elem* ept2prov = cp->GetNode("./(Prop:)Provided");
-	    Elem* ept1req = GetNode("./(Prop:)Required");
+	    Elem* ept1prov = ToElem(GetNode("./(Prop:)Provided"));
+	    Elem* ept2req = ToElem(cp->GetNode("./(Prop:)Required"));
+	    Elem* ept2prov = ToElem(cp->GetNode("./(Prop:)Provided"));
+	    Elem* ept1req = GetNodeE("./(Prop:)Required");
 	    if (ept1prov && ept2req && ept2prov && ept1req) {
 		// Point#1 provided
 		MProp* ppt1prov = ept1prov->GetObj(ppt1prov);
@@ -195,8 +191,8 @@ MCompatChecker::TDir ConnPointBase::GetDir() const
 
 void ConnPointBase::GetMajorIdep(TMDep& aDep)
 {
-    Elem* eprov = GetNode("./(Prop:)Provided");
-    Elem* ereq = GetNode("./(Prop:)Required");
+    Elem* eprov = GetNodeE("./(Prop:)Provided");
+    Elem* ereq = GetNodeE("./(Prop:)Required");
     eprov->GetMajorDep(aDep, ENt_Change, MChromo::EDp_Direct, MChromo::EDl_Critical);
     ereq->GetMajorDep(aDep, ENt_Change, MChromo::EDp_Direct, MChromo::EDl_Critical);
 }
@@ -210,13 +206,11 @@ string ConnPointBaseInp::PEType()
 
 ConnPointBaseInp::ConnPointBaseInp(const string& aName, Elem* aMan, MEnv* aEnv): ConnPointBase(aName, aMan, aEnv)
 {
-    SetEType(Type(), ConnPointBase::PEType());
     SetParent(Type());
 }
 
 ConnPointBaseInp::ConnPointBaseInp(Elem* aMan, MEnv* aEnv): ConnPointBase(Type(), aMan, aEnv)
 {
-    SetEType(ConnPointBase::PEType());
     SetParent(ConnPointBase::PEType());
 }
 
@@ -245,13 +239,11 @@ string ConnPointBaseOut::PEType()
 
 ConnPointBaseOut::ConnPointBaseOut(const string& aName, Elem* aMan, MEnv* aEnv): ConnPointBase(aName, aMan, aEnv)
 {
-    SetEType(Type(), ConnPointBase::PEType());
     SetParent(Type());
 }
 
 ConnPointBaseOut::ConnPointBaseOut(Elem* aMan, MEnv* aEnv): ConnPointBase(Type(), aMan, aEnv)
 {
-    SetEType(ConnPointBase::PEType());
     SetParent(ConnPointBase::PEType());
 }
 
@@ -281,13 +273,11 @@ string ExtenderAgent::PEType()
 
 ExtenderAgent::ExtenderAgent(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 
 ExtenderAgent::ExtenderAgent(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
-    SetEType(Elem::PEType());
     SetParent(Elem::PEType());
 }
 
@@ -309,7 +299,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
     void* res = NULL;
     TIfRange rr;
     RqContext ctx(this, aCtx);
-    Elem* host = iMan->GetMan();
+    MElem* host = iMan->GetMan();
     TICacheRCtx rctx;
     ToCacheRCtx(aCtx, rctx);
     if (strcmp(aName.c_str(), Type()) == 0) {
@@ -326,13 +316,13 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
     if (res == NULL) {
 	// Redirect to internal point or pair depending on the requiestor
-	Elem* intcp = GetNode("./../../Int");
+	Elem* intcp = GetNodeE("./../../Int");
 	if (intcp != NULL && !ctx.IsInContext(intcp)) {
 	    rr = intcp->GetIfi(aName, &ctx);
 	    InsertIfCache(aName, rctx, intcp, rr);
 	}
 	else {
-	    Elem* host = iMan->GetMan();
+	    MElem* host = iMan->GetMan();
 	    MVert* vhost = host->GetObj(vhost);
 	    if (vhost != NULL) {
 		for (set<MVert*>::const_iterator it = vhost->Pairs().begin(); it != vhost->Pairs().end(); it++) {
@@ -347,9 +337,9 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
     // Responsible pairs not found, redirect to upper layer
     if (rr.first == rr.second && iMan != NULL) {
-	Elem* host = iMan->GetMan();
-	Elem* hostmgr = host->GetMan();
-	Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
+	Elem* host = ToElem(iMan->GetMan());
+	Elem* hostmgr = ToElem(host->GetMan());
+	Elem* mgr = hostmgr->Name() == "Capsule" ? ToElem(hostmgr->GetMan()) : hostmgr;
 	if (mgr != NULL && !ctx.IsInContext(mgr)) {
 	    rr = mgr->GetIfi(aName, &ctx);
 	    InsertIfCache(aName, rctx, mgr, rr);
@@ -361,7 +351,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 TBool ExtenderAgent::IsCompatible(Elem* aPair, TBool aExt)
 {
     TBool res = EFalse;
-    Elem* intcp = GetNode("./../../Int");
+    Elem* intcp = GetNodeE("./../../Int");
     MCompatChecker* mint = (intcp != NULL) ? (MCompatChecker*) intcp->GetSIfiC(MCompatChecker::Type(), this) : NULL;
     if (mint != NULL) {
 	res = mint->IsCompatible(aPair, !aExt);
@@ -371,7 +361,7 @@ TBool ExtenderAgent::IsCompatible(Elem* aPair, TBool aExt)
 
 Elem* ExtenderAgent::GetExtd()
 {
-    return GetNode("./../../Int");
+    return GetNodeE("./../../Int");
 }
 
 MCompatChecker::TDir ExtenderAgent::GetDir() const
@@ -395,13 +385,11 @@ string ExtenderAgentInp::PEType()
 
 ExtenderAgentInp::ExtenderAgentInp(const string& aName, Elem* aMan, MEnv* aEnv): ExtenderAgent(aName, aMan, aEnv)
 {
-    SetEType(Type(), ExtenderAgent::PEType());
     SetParent(Type());
 }
 
 ExtenderAgentInp::ExtenderAgentInp(Elem* aMan, MEnv* aEnv): ExtenderAgent(Type(), aMan, aEnv)
 {
-    SetEType(ExtenderAgent::PEType());
     SetParent(ExtenderAgent::PEType());
 }
 
@@ -430,13 +418,11 @@ string ExtenderAgentOut::PEType()
 
 ExtenderAgentOut::ExtenderAgentOut(const string& aName, Elem* aMan, MEnv* aEnv): ExtenderAgent(aName, aMan, aEnv)
 {
-    SetEType(Type(), ExtenderAgent::PEType());
     SetParent(Type());
 }
 
 ExtenderAgentOut::ExtenderAgentOut(Elem* aMan, MEnv* aEnv): ExtenderAgent(Type(), aMan, aEnv)
 {
-    SetEType(ExtenderAgent::PEType());
     SetParent(ExtenderAgent::PEType());
 }
 
@@ -466,13 +452,11 @@ string ASocket::PEType()
 
 ASocket::ASocket(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 
 ASocket::ASocket(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
-    SetEType(Elem::PEType());
     SetParent(Elem::PEType());
 }
 
@@ -525,7 +509,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    if (iscomp) {
 		// Request comes from internal CP - forward it to upper layer
 		if (iMan != NULL && !ctx.IsInContext(iMan)) {
-		    Elem* mgr =  iMan->GetMan()->GetMan();
+		    Elem* mgr =  ToElem(iMan->GetMan()->GetMan());
 		    if (mgr != NULL && !ctx.IsInContext(mgr)) {
 			rr = mgr->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, mgr, rr);
@@ -540,7 +524,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		Elem* pcomp = NULL;
 		Base* ctxe = rqst;
 		const RqContext* cct = aCtx->Ctx();
-		Elem* host =  iMan->GetMan();
+		Elem* host =  ToElem(iMan->GetMan());
 		TBool isextd = EFalse;
 		// TODO [YB] To cleanup
 		while (ctxe != NULL && pcomp == NULL) {
@@ -570,7 +554,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 				GUri uri;
 				// Using only name as signature of socket pin. This is because even the compatible types can differ
 				uri.AppendElem("*", pereq->Name());
-				pcomp = host->GetNode(uri);
+				pcomp = host->GetNodeE(uri);
 			    }
 			}
 		    }
@@ -585,7 +569,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    // TODO [YB] To add checking if requiested iface is supported, ref md "sec_refac_conncomp"
 	    // TODO [YB] Probably routing to pair needs to be done first, before the routing to pins
 	    if (rr.first == rr.second) {
-		Elem* man = iMan->GetMan();
+		Elem* man = ToElem(iMan->GetMan());
 		Vert* vman = man->GetObj(vman);
 		for (set<MVert*>::iterator it = vman->Pairs().begin(); it != vman->Pairs().end() && res == NULL; it++) {
 		    Elem* pe = (*it)->EBase()->GetObj(pe);
@@ -597,9 +581,9 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    }
 	    // Redirect to upper layer
 	    if (rr.first == rr.second && iMan != NULL) {
-		Elem* host = iMan->GetMan();
-		Elem* hostmgr = host->GetMan();
-		Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
+		Elem* host = ToElem(iMan->GetMan());
+		Elem* hostmgr = ToElem(host->GetMan());
+		Elem* mgr = hostmgr->Name() == "Capsule" ? ToElem(hostmgr->GetMan()) : hostmgr;
 		if (mgr != NULL && !ctx.IsInContext(mgr)) {
 		    rr = mgr->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, mgr, rr);
@@ -609,11 +593,11 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	else {
 	    // Requestor not specified, anonymous request
 	    if (!resok) {
-		Elem* man = iMan->GetMan();
+		Elem* man = ToElem(iMan->GetMan());
 		// Redirect to internal pins. Add host into context, this will prevent internals to redirect
 		// TODO [YB] To avoid routing directly from agent excluding host. This causes incorrect context
-		for (vector<Elem*>::const_iterator it = man->Comps().begin(); it != man->Comps().end() && res == NULL; it++) {
-		    Elem* eit = (*it);
+		for (vector<MElem*>::const_iterator it = man->Comps().begin(); it != man->Comps().end() && res == NULL; it++) {
+		    Elem* eit = ToElem(*it);
 		    if (!ctx.IsInContext(eit) && eit != iMan) {
 			rr = eit->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, eit, rr);
@@ -624,7 +608,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    // TODO [YB] To add checking if requiested iface is supported, ref md "sec_refac_conncomp"
 	    // TODO [YB] Probably routing to pair needs to be done first, before the routing to pins
 	    if (rr.first == rr.second) {
-		Elem* man = iMan->GetMan();
+		Elem* man = ToElem(iMan->GetMan());
 		Vert* vman = man->GetObj(vman);
 		for (set<MVert*>::iterator it = vman->Pairs().begin(); it != vman->Pairs().end() && res == NULL; it++) {
 		    Elem* pe = (*it)->EBase()->GetObj(pe);
@@ -636,9 +620,9 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    }
 	    // Redirect to upper layer
 	    if (rr.first == rr.second && iMan != NULL && !ctx.IsInContext(iMan)) {
-		Elem* host = iMan->GetMan();
-		Elem* hostmgr = host->GetMan();
-		Elem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
+		Elem* host = ToElem(iMan->GetMan());
+		Elem* hostmgr = ToElem(host->GetMan());
+		Elem* mgr = hostmgr->Name() == "Capsule" ? ToElem(hostmgr->GetMan()) : hostmgr;
 		if (mgr != NULL && !ctx.IsInContext(mgr)) {
 		    rr = mgr->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, mgr, rr);
@@ -666,16 +650,16 @@ TBool ASocket::IsCompatible(Elem* aPair, TBool aExt)
 	    cp = ecp;
 	}
 	if (cp != NULL) {
-	    Elem* host = iMan->GetMan();
-	    for (vector<Elem*>::const_iterator it = host->Comps().begin(); it != host->Comps().end() && res; it++) {
-		Elem *comp = (*it);
+	    Elem* host = ToElem(iMan->GetMan());
+	    for (vector<MElem*>::const_iterator it = host->Comps().begin(); it != host->Comps().end() && res; it++) {
+		Elem *comp = ToElem(*it);
 		if (comp->Name() != "Agents" && comp->Name() != "Logspec") {
 		    MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), this);
 		    if (checker != NULL) {
 			GUri uri;
 		//	uri.AppendElem(comp->EType(), comp->Name());
 			uri.AppendElem("*", comp->Name());
-			Elem *pcomp = cp->GetNode(uri);
+			Elem *pcomp = cp->GetNodeE(uri);
 			if (pcomp != NULL) {
 			    res = checker->IsCompatible(pcomp, ext);
 			}
@@ -701,9 +685,9 @@ Elem* ASocket::GetExtd()
 Elem* ASocket::GetPin(const RqContext* aCtx)
 {
     Elem* res = NULL;
-    Elem* host = iMan->GetMan();
-    for (vector<Elem*>::const_iterator it = host->Comps().begin(); it != host->Comps().end() && res == NULL; it++) {
-	Elem *comp = (*it);
+    Elem* host = ToElem(iMan->GetMan());
+    for (vector<MElem*>::const_iterator it = host->Comps().begin(); it != host->Comps().end() && res == NULL; it++) {
+	Elem *comp = ToElem(*it);
 	if (comp->Name() != "Agents" && comp->Name() != "Logspec") {
 	    if (aCtx->IsInContext(comp)) {
 		res = comp;
@@ -731,13 +715,11 @@ string ASocketInp::PEType()
 
 ASocketInp::ASocketInp(const string& aName, Elem* aMan, MEnv* aEnv): ASocket(aName, aMan, aEnv)
 {
-    SetEType(Type(), ASocket::PEType());
     SetParent(Type());
 }
 
 ASocketInp::ASocketInp(Elem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
 {
-    SetEType(ASocket::PEType());
     SetParent(ASocket::PEType());
 }
 
@@ -766,13 +748,11 @@ string ASocketOut::PEType()
 
 ASocketOut::ASocketOut(const string& aName, Elem* aMan, MEnv* aEnv): ASocket(aName, aMan, aEnv)
 {
-    SetEType(Type(), ASocket::PEType());
     SetParent(Type());
 }
 
 ASocketOut::ASocketOut(Elem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
 {
-    SetEType(ASocket::PEType());
     SetParent(ASocket::PEType());
 }
 
@@ -803,13 +783,11 @@ string Syst::PEType()
 
 Syst::Syst(const string& aName, Elem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
 {
-    SetEType(Type(), Vert::PEType());
     SetParent(Type());
 }
 
 Syst::Syst(Elem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
 {
-    SetEType(Vert::PEType());
     SetParent(Vert::PEType());
 }
 
@@ -825,9 +803,9 @@ void *Syst::DoGetObj(const char *aName)
     return res;
 }
 
-void Syst::OnCompDeleting(Elem& aComp, TBool aSoft)
+void Syst::OnCompDeleting(MElem& aComp, TBool aSoft)
 {
-    Elem* eedge = GetCompOwning("Edge", &aComp);
+    Elem* eedge = ToElem(GetCompOwning("Edge", &aComp));
     if (eedge != NULL) {
 	// Reconnect the edge
 	Edge* edge = eedge->GetObj(edge);
@@ -879,7 +857,7 @@ TBool Syst::OnCompChanged(Elem& aComp)
 			if (cp1 == NULL) res = edge->ConnectP1(ref1);
 			if (res && cp2 == NULL) res = edge->ConnectP2(ref2);
 			if (!res) {
-			    Elem* host = iMan->GetMan();
+			    Elem* host = ToElem(iMan->GetMan());
 			    Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
 			}
 		    }
@@ -905,9 +883,9 @@ TBool Syst::OnCompChanged(Elem& aComp)
     return hres;
 }
 
-void Syst::GetImplicitDep(TMDep& aDep, Elem* aObj, Elem* aRef)
+void Syst::GetImplicitDep(TMDep& aDep, MElem* aObj, MElem* aRef)
 {
-    Elem* eedge = GetCompOwning("Edge", aObj);
+    MElem* eedge = GetCompOwning("Edge", aObj);
     if (eedge != NULL) {
 	MCompatChecker* conn = aRef->GetObj(conn);
 	if (conn != NULL) {

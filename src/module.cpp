@@ -10,13 +10,11 @@ string AMod::PEType()
 
 AMod::AMod(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), mSpec(NULL)
 {
-    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 
 AMod::AMod(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), mSpec(NULL)
 {
-    SetEType(Elem::PEType());
     SetParent(Elem::PEType());
 }
 
@@ -41,9 +39,9 @@ void* AMod::DoGetObj(const char *aName)
     return res;
 }
 
-Elem* AMod::Import(const GUri& aUri)
+MElem* AMod::Import(const GUri& aUri)
 {
-    Elem* res = NULL;
+    MElem* res = NULL;
     //TBool res1 = iMut->Set(mCont);
     TBool res1 = AppendMutation(mCont);
     ChromoNode sel = iMut->Root().GetNodeByMhUri(aUri);

@@ -14,26 +14,25 @@ string DataBase::PEType()
 
 DataBase::DataBase(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetEType(Type(), Elem::PEType());
     SetParent(Type());
 }
 
 DataBase::DataBase(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
-    SetEType(Elem::PEType());
     SetParent(Elem::PEType());
 }
 
-TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
+TBool DataBase::HandleCompChanged(MElem& aContext, MElem& aComp)
 {
     TBool res = ETrue;
-    if ((aComp.Name() == "Value" || aComp.Name() == "Type") && aComp.EType() == "Prop") {
-	Elem* etype = aContext.GetNode("./Type");
-	Elem* eval = aContext.GetNode("./Value");
+    const string& name = aComp.Name();
+    if ((name == "Value" || name == "Type") && name == "Prop") {
+	MElem* etype = aContext.GetNode("./Type");
+	MElem* eval = aContext.GetNode("./Value");
 	__ASSERT(eval != NULL);
 	MProp* prop = eval->GetObj(prop);
 	if (prop == NULL) {
-	    Logger()->Write(MLogRec::EErr, this, "Missing MProp iface in property [%s]", aComp.Name().c_str());
+	    Logger()->Write(MLogRec::EErr, this, "Missing MProp iface in property [%s]", name.c_str());
 	    res = EFalse;
 	}
 	else {
@@ -48,14 +47,15 @@ TBool DataBase::HandleCompChanged(Elem& aContext, Elem& aComp)
 	}
     }
     else {
-	Elem* caps = aContext.GetNode("./Capsule");
+	MElem* caps = aContext.GetNode("./Capsule");
 	if (caps != NULL) {
-	    Elem* cp = caps->GetCompOwning("ConnPointInp", &aComp);
+	    MElem* cp = caps->GetCompOwning("ConnPointInp", &aComp);
 	    if (cp == NULL) {
 		cp = caps->GetCompOwning("ConnPointOut", &aComp);
 	    }
 	    if (cp != NULL) {
-		res = HandleIoChanged(aContext, cp);
+		Elem& context = *ToElem(&aContext);
+		res = HandleIoChanged(context, ToElem(cp));
 	    }
 	}
     }
@@ -69,12 +69,12 @@ TBool DataBase::HandleIoChanged(Elem& aContext, Elem* aCp)
 
 void DataBase::NotifyUpdate()
 {
-    Elem* eout = GetNode("./../../Capsule/out");
+    Elem* eout = ToElem(GetNode("./../../Capsule/out"));
     // TODO [YB] Scheme of getting iface should be enough to get MDataObserver directly from eout. Seems the chunk below is redundant.
     if (eout != NULL) {
 	RqContext ctx(this);
 	TIfRange rg = eout->GetIfi(MDataObserver::Type(), &ctx);
-	for (IfIter it = rg.first; it != rg.second; it++) {
+	for (TIfIter it = rg.first; it != rg.second; it++) {
 	    MDataObserver* obsr = (MDataObserver*) (*it);
 	    obsr->OnDataChanged();
 	}
@@ -114,9 +114,9 @@ void *DataBase::DoGetObj(const char *aName)
 
 void DataBase::UpdateProp()
 {
-    Elem* eprop = GetNode("./../../Value");
+    Elem* eprop = ToElem(GetNode("./../../Value"));
     if (eprop != NULL) {
-	Elem* etype = GetNode("./../../Type");
+	Elem* etype = ToElem(GetNode("./../../Type"));
 	if (etype == NULL) {
 	    string res;
 	    ToString(res);
@@ -133,7 +133,7 @@ void DataBase::UpdateProp()
 	
 TBool DataBase::IsLogeventUpdate() 
 {
-    Elem* node = GetNode("./../../Logspec/Update");
+    Elem* node = ToElem(GetNode("./../../Logspec/Update"));
     return node != NULL;
 }
 
@@ -185,13 +185,11 @@ string DInt::PEType()
 
 DInt::DInt(const string& aName, Elem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(0)
 {
-    SetEType(Type(), DataBase::PEType());
     SetParent(Type());
 }
 
 DInt::DInt(Elem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(0)
 {
-    SetEType(DataBase::PEType());
     SetParent(DataBase::PEType());
 }
 
@@ -284,9 +282,9 @@ TBool DInt::Update()
 {
     TBool res = EFalse;
     MDIntGet* inp = NULL;
-    Elem* einp = GetNode("./../../Capsule/inp");
+    Elem* einp = ToElem(GetNode("./../../Capsule/inp"));
     if (einp == NULL) {
-	einp = GetNode("./../../Capsule/Inp");
+	einp = ToElem(GetNode("./../../Capsule/Inp"));
     }
     if (einp != NULL) {
 	Vert* vert = einp->GetObj(vert);
@@ -318,13 +316,11 @@ string DNInt::PEType()
 
 DNInt::DNInt(const string& aName, Elem* aMan, MEnv* aEnv): DInt(aName, aMan, aEnv)
 {
-    SetEType(Type(), DInt::PEType());
     SetParent(Type());
 }
 
 DNInt::DNInt(Elem* aMan, MEnv* aEnv): DInt(Type(), aMan, aEnv)
 {
-    SetEType(DInt::PEType());
     SetParent(DInt::PEType());
 }
 
@@ -374,13 +370,11 @@ string DVar::PEType()
 
 DVar::DVar(const string& aName, Elem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(NULL)
 {
-    SetEType(Type(), DataBase::PEType());
     SetParent(Type());
 }
 
 DVar::DVar(Elem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(NULL)
 {
-    SetEType(DataBase::PEType());
     SetParent(DataBase::PEType());
 }
 
@@ -551,14 +545,14 @@ TBool DVar::Update()
 
 Elem* DVar::GetInp()
 {
-    Elem* einp = GetNode("./../../Capsule/inp");
+    Elem* einp = ToElem(GetNode("./../../Capsule/inp"));
     if (einp == NULL) {
-	einp = GetNode("./../../Capsule/Inp");
+	einp = ToElem(GetNode("./../../Capsule/Inp"));
     }
     return einp;
 }
 
-TBool DVar::HandleCompChanged(Elem& aContext, Elem& aComp)
+TBool DVar::HandleCompChanged(MElem& aContext, MElem& aComp)
 {
     return DataBase::HandleCompChanged(aContext, aComp);
 }

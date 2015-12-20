@@ -18,6 +18,7 @@ class GFactory: public Base, public MProvider
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MProvider
+	virtual const string& Name() const { return iName;};
 	virtual Elem* CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv);
 	virtual Elem* GetNode(const string& aUri);
 	virtual TBool IsProvided(Elem* aElem) const;
@@ -27,6 +28,7 @@ class GFactory: public Base, public MProvider
     protected:
 	map<string, GProvider*> iProviders;
 	MEnv* iEnv;
+	string iName;
 };
 
 

@@ -20,7 +20,7 @@ class RCust: public Elem, public MRCust, public MACompsObserver
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp) = 0;
+	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp) = 0;
 	// From MRCust
 	Elem* GetNextComp(const Elem* aPrevComp, TDir aDir = EVert);
 	Elem* GetPrevComp(const Elem* aNextComp, TDir aDir = EVert);

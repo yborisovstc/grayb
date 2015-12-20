@@ -20,7 +20,7 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable, public M
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
+	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp);
 	// From MDataObserver
 	virtual void OnDataChanged();
 	// From MUpdatable
@@ -86,7 +86,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	// Data handler base
 	class HBase: public Base {
 	    public:
-		HBase(DVar* aHost): Base(string()), mHost(*aHost) {};
+		HBase(DVar* aHost): Base(), mHost(*aHost) {};
 		virtual TBool FromString(const string& aString) = 0;
 		virtual void ToString(string& aString) = 0;
 		virtual TBool Set(MDVarGet* aInp) = 0;
@@ -229,7 +229,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	DVar(const string& aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
 	DVar(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~DVar();
-	virtual TBool HandleCompChanged(Elem& aContext, Elem& aComp);
+	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp);
 	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
 	// From Base
 	virtual void *DoGetObj(const char *aName);

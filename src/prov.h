@@ -14,8 +14,9 @@ class GProvider: public Base, public MProvider
 	typedef map<string, Elem*> TReg;
     public:
 	static const char* Type() { return "GProvider";};
-	GProvider(const string &aName, MEnv* aEnv);
+	GProvider(const string& aName, MEnv* aEnv);
 	virtual ~GProvider();
+	virtual const string& Name() const { return iName;}
 	void SetEnv(MEnv* aEnv);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
@@ -29,6 +30,7 @@ class GProvider: public Base, public MProvider
     protected:
 	MEnv* iEnv;
 	TReg iReg;
+	string iName;
 };
 
 #endif
