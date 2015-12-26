@@ -22,7 +22,7 @@ class MCompatChecker
     public:
 	static const char* Type() { return "MCompatChecker";};
 	// Checking
-	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse) = 0;
+	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse) = 0;
 	// Checked
 	// In case if checked is extender, to get extended part
 	virtual Elem* GetExtd() = 0;

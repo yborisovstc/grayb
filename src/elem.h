@@ -137,16 +137,16 @@ class Elem: public MElem
 	virtual const string& Name() const { return iName;}
 	// Predefined extended type, for core elements only
 	static string PEType();
-	Elem(const string &aName = string(), Elem* aMan = NULL, MEnv* aEnv = NULL);
+	Elem(const string &aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	Elem(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~Elem();
 	virtual void SetParent(const string& aParent);
 	virtual void SetParent(MElem* aParent);
 	virtual void SetMan(MElem* aMan);
-	void SetObserver(MOwner* aObserver);
+	virtual void SetObserver(MCompsObserver* aObserver);
 	virtual void SetMutation(const ChromoNode& aMuta);
-	ChromoNode AppendMutation(const ChromoNode& aMuta);
-	TBool AppendMutation(const string& aFileName);
+	virtual ChromoNode AppendMutation(const ChromoNode& aMuta);
+	virtual TBool AppendMutation(const string& aFileName);
 	string PName() const;
 	static void ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct);
     public:
@@ -161,7 +161,7 @@ class Elem: public MElem
 	MElem* GetAcompAttaching(MElem* aElem);
 	virtual MElem* GetRoot() const;
 	virtual MElem* GetInhRoot() const;
-	MElem* GetCommonOwner(MElem* aElem);
+	virtual MElem* GetCommonOwner(MElem* aElem);
 	MElem* GetCommonAowner(MElem* aElem);
 	virtual TBool IsAownerOf(const MElem* aElem) const;
 	// Checks if elements chromo is attached. Ref UC_019 for details
@@ -173,14 +173,14 @@ class Elem: public MElem
 	virtual const MElem* GetAowner() const;
 	virtual MElem* GetAcompOwning(MElem* aComp);
 	// Checks if the node is originated via phenotypical modification
-	TBool IsPhenoModif() const;
+	virtual TBool IsPhenoModif() const;
 	virtual TBool IsInheritedComp(const MElem* aNode) const;
 	TBool IsDirectInheritedComp(const MElem* aNode) const;
 	TBool IsCompOfInheritedComp(const MElem* aNode) const;
 	// Debug helpers
 	Elem* GetNodeS(const char* aUri);
 	TBool IsName(const char* aName);
-	TBool IsHeirOf(const string& aParent) const;
+	virtual TBool IsHeirOf(const string& aParent) const;
 	void RebaseUriToOuterNode(MElem* aOldBase, const GUri& aUri, GUri& aResult);
 	virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem);
 	virtual Iterator NodesLoc_End(const GUri::TElem& aElem);
@@ -308,8 +308,7 @@ class Elem: public MElem
 	Elem* GetNodeE(const string& aUri) {return ToElem(GetNode(aUri));};
 	Elem* GetNodeE(const GUri& aUri) {return ToElem(GetNode(aUri));};
     protected:
-	Elem* ToElem(MElem* aMelem) { Elem* res = (aMelem == NULL) ? NULL: aMelem->GetObj(res); return res;};
-	Elem* ToElem(MElem* aMelem) const { Elem* res = (aMelem == NULL) ? NULL: aMelem->GetObj(res); return res;};
+	static Elem* ToElem(MElem* aMelem) { Elem* res = (aMelem == NULL) ? NULL: aMelem->GetObj(res); return res;};
 	inline MProvider* Provider() const;
 	virtual TBool AppendComp(MElem* aComp);
 	TBool RegisterComp(MElem* aComp);
@@ -348,7 +347,7 @@ class Elem: public MElem
 	// Managing (higher) element of hier
 	MElem* iMan;
 	// Observer, mostly for root - normally elem notifies to Mgr
-	MOwner* iObserver;
+	MCompsObserver* iObserver;
 	// Chromo
 	Chromo* iChromo;
 	// Mutation

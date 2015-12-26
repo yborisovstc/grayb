@@ -135,11 +135,11 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 }
 
 
-TBool ConnPointBase::IsCompatible(Elem* aPair, TBool aExt)
+TBool ConnPointBase::IsCompatible(MElem* aPair, TBool aExt)
 {
     TBool res = EFalse;
     TBool ext = aExt;
-    Elem *cp = aPair;
+    MElem *cp = aPair;
     // Checking if the pair is Extender
     MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type(), this);
     // Consider all pairs not supporting MCompatChecker as not compatible 
@@ -348,7 +348,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 
 }
 
-TBool ExtenderAgent::IsCompatible(Elem* aPair, TBool aExt)
+TBool ExtenderAgent::IsCompatible(MElem* aPair, TBool aExt)
 {
     TBool res = EFalse;
     Elem* intcp = GetNodeE("./../../Int");
@@ -633,13 +633,13 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 }
 
 
-TBool ASocket::IsCompatible(Elem* aPair, TBool aExt)
+TBool ASocket::IsCompatible(MElem* aPair, TBool aExt)
 {
     // Going thru non-trivial components and check their compatibility
     // TODO [YB] Needs to clean up this chunk
     TBool res = ETrue;
     TBool ext = aExt;
-    Elem *cp = aPair;
+    MElem *cp = aPair;
     // Requesing anonymously because can be returned to itself vie extender
     MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type());
     if (pchkr != NULL) {
@@ -659,7 +659,7 @@ TBool ASocket::IsCompatible(Elem* aPair, TBool aExt)
 			GUri uri;
 		//	uri.AppendElem(comp->EType(), comp->Name());
 			uri.AppendElem("*", comp->Name());
-			Elem *pcomp = cp->GetNodeE(uri);
+			MElem *pcomp = cp->GetNode(uri);
 			if (pcomp != NULL) {
 			    res = checker->IsCompatible(pcomp, ext);
 			}

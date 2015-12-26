@@ -32,7 +32,7 @@ class ConnPointBase: public Vert, public MCompatChecker
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
-	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse);
+	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
 	virtual Elem* GetExtd();
 	virtual TDir GetDir() const;
 	virtual void GetMajorIdep(TMDep& aDep);
@@ -78,7 +78,7 @@ class ExtenderAgent: public Elem, public MCompatChecker
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
-	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse);
+	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
 	virtual Elem* GetExtd();
 	virtual TDir GetDir() const;
 	virtual void GetMajorIdep(TMDep& aDep);
@@ -124,7 +124,7 @@ class ASocket: public Elem, public MCompatChecker
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
-	virtual TBool IsCompatible(Elem* aPair, TBool aExt = EFalse);
+	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
 	virtual Elem* GetExtd();
 	virtual TDir GetDir() const;
 	virtual void GetMajorIdep(TMDep& aDep);

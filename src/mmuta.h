@@ -27,6 +27,8 @@ class MMutable
 	virtual MChromo& Chromos() = 0;
 	virtual MChromo& Mutation() = 0;
 	virtual void SetMutation(const ChromoNode& aMuta) = 0;
+	virtual TBool AppendMutation(const string& aFileName) = 0;
+	virtual ChromoNode AppendMutation(const ChromoNode& aMuta) = 0;
 	virtual TMDeps& GetMDeps() = 0;
 	virtual void AddMDep(MElem* aNode, const ChromoNode& aMut, TNodeAttr aAttr) = 0;
 	virtual void AddCMDep(const ChromoNode& aMut, TNodeAttr aAttr, MElem* aNode) = 0;

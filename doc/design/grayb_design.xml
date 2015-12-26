@@ -2130,6 +2130,24 @@
 		    agent supports at least such operation. It also requires support of generic agents features (native hier etc.) for async case.</simpara>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_daa_md"><title>Implementation problem: mutations dependencies</title>
+	    <sect3><title>Intro</title>
+		<simpara>There is mutations safety mechanism implementation, ref <xref linkend="ds_mut"/> that uses dependent chromo nodes registries
+		    iMDeps, iCMRelReg	in base agent. It keeps pointers to chromo nodes. But in DAA this will not work.</simpara>
+		<simpara>Possible solutions would be:</simpara>
+		<itemizedlist>
+		    <listitem>To use thread safe chromo node identification, not pointer.</listitem>
+		    <listitem>To use chromo independent validation procedure
+			<para>Ref also <xref linkend="ds_th_mv"/></para>
+		    </listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_daa_iss"><title>Design issues to be considered</title>
+	    <orderedlist>
+		<listitem><xref linkend="ds_daa_md"/></listitem>
+	    </orderedlist>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_chr"><title>Chromo language. Representation, serialization etc.</title>
@@ -2140,7 +2158,7 @@
 	</sect2>
     </sect1>
 
-    <sect1 id="ds_tohandle"><title>To handle</title>
+    <sect1 id="ds_th"><title>To handle</title>
 	<orderedlist>
 	    <listitem>Using mut order to ensure original sequence of muts, ref <xref linkend="ds_mut_dis_pheno"/> </listitem>
 	    <listitem>References: rules and limitations, ref <xref linkend="ds_mut_refs"/> </listitem>
@@ -2177,6 +2195,12 @@
 		connection agents. Is it possible to specify connections by another way. For instance we have transition Fa(Fb, Fc) where Fb, Fc are 
 		some functions also. We can just add Fb, Fc as comptents into Fa, naming them with predefinced names (Arg1, Arg2 for instance). So we 
 	    will avoid explicit connections here.</simpara>
+	</sect2>
+	<sect2 id="ds_th_mv"><title>To revise mutation validation mechanism.</title>
+	    <simpara>Currently the complicate mechanism is used to ensure mutation safety. To consider other mutation model that allows avoid this 
+		complication and simplify the mutation scheme.</simpara>
+	    <simpara>On of the solution here is to use native safety mechanism: all deps should be registered as run-time deps, mutated node notifies all deps
+	    about particular mutation, so the deps can adapt to the mutation or refuse it.</simpara>
 	</sect2>
     </sect1>
 

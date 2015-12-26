@@ -290,7 +290,7 @@ void Elem::Delay(long us)
 
 // Element
 
-Elem::Elem(const string &aName, Elem* aMan, MEnv* aEnv): iName(aName), iMan(aMan), iEnv(aEnv),
+Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMan), iEnv(aEnv),
     iObserver(NULL), iParent(NULL), isRemoved(EFalse)
 {
     /*
@@ -416,7 +416,7 @@ void Elem::SetMan(MElem* aMan)
     iMan = aMan;
 }
 
-void Elem::SetObserver(MOwner* aObserver)
+void Elem::SetObserver(MCompsObserver* aObserver)
 {
     __ASSERT(iObserver == NULL && aObserver != NULL || iObserver != NULL && aObserver == NULL);
     iObserver = aObserver;
