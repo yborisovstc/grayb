@@ -1,10 +1,19 @@
 #ifndef __GRAYB_MENV_H
 #define __GRAYB_MENV_H
+
+#include <plat.h>
+#include <miface.h>
+#include <vector>
+#include <string>
+
 class MProvider; class MLogRec;
 class MElem;
 class Elem;
 class MChromo;
 class GUri;
+
+
+using namespace std;
 
 // Import manager
 
@@ -41,8 +50,10 @@ class MChromoMgr
 };
 
 // Executive environment interface
-class MEnv
+class MEnv: public MIface
 {
+    public:
+	static const char* Type() { return "MEnv";};
     public:
 	enum TSBool
 	{
@@ -57,6 +68,12 @@ class MEnv
 	virtual MImportMgr* ImpsMgr() = 0;
 	virtual TBool GetSBool(TSBool aId) const = 0;
 	virtual void SetSBool(TSBool aId, TBool aVal) = 0;
+	virtual void SetEVar(const string& aName, const string& aValue) = 0;
+	virtual TBool GetEVar(const string& aName, string& aValue) const = 0;
+	virtual void ConstructSystem() = 0;
+    public:
+	// From MIface
+	virtual MIface* Call(const string& aSpec, string& aRes) = 0;
 };
 
 

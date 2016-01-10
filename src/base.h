@@ -33,12 +33,11 @@ class RqContext
 class Base
 {
     public:
-	virtual ~Base() = 0;
+	virtual ~Base() {};
 	template <class T> T* GetObj(T* aInst) {return aInst = static_cast<T*>(DoGetObj(aInst->Type()));};
 	void* GetObj(const char *aType) {return DoGetObj(aType); };
 	virtual void *DoGetObj(const char *aName) = 0;
 };
 
-inline Base::~Base() {};
 
 #endif

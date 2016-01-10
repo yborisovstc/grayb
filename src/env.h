@@ -3,6 +3,7 @@
 
 #include "base.h"
 #include "menv.h"
+#include "ifu.h"
 
 class GProvider;
 class GFactory;
@@ -80,37 +81,51 @@ class ChromoMgr: public Base, public MChromoMgr
 class Env: public Base, public MEnv
 {
     friend class ChromoMgr;
-public:
-	static const char* Type() { return "GEnv";};
-	Env(const string& aSpecFile, const string& aLogFileName = string());
-	Env(const string& aSpec, const string& aLogFileName, TBool aOpt);
-	virtual ~Env();
-	// Separated from constructor because constr can be followed by second phase - setting providers etc.
-	void ConstructSystem();
-	void AddProvider(GProvider* aProv);
-	void RemoveProvider(GProvider* aProv);
-public:
-	// From Base
-	virtual void *DoGetObj(const char *aName);
-	// From MEnv
-	virtual MProvider *Provider() const;
-	virtual MLogRec *Logger();
-	virtual Elem* Root();
-	virtual MChromoMgr* ChMgr();
-	virtual MImportMgr* ImpsMgr();
-	virtual TBool GetSBool(TSBool aId) const;
-	virtual void SetSBool(TSBool aId, TBool aVal);
-private:
-	GLogRec* iLogger; 
-	Elem* iRoot;
-	GFactory *iProvider;
-	ChromoMgr* iChMgr;
-	ImportsMgr* iImpMgr;
-	string iSpecFile;
-	string iSpec;
-	Chromo* iSpecChromo;
-	TBool mEnPerfTrace;
-	TBool mEnIfTrace;
+    public:
+    static const char* Type() { return "GEnv";};
+    Env(const string& aSpecFile, const string& aLogFileName = string());
+    Env(const string& aSpec, const string& aLogFileName, TBool aOpt);
+    virtual ~Env();
+    // Separated from constructor because constr can be followed by second phase - setting providers etc.
+    void AddProvider(GProvider* aProv);
+    void RemoveProvider(GProvider* aProv);
+    public:
+    // From Base
+    virtual void *DoGetObj(const char *aName);
+    // From MEnv
+    virtual MProvider *Provider() const;
+    virtual MLogRec *Logger();
+    virtual Elem* Root();
+    virtual MChromoMgr* ChMgr();
+    virtual MImportMgr* ImpsMgr();
+    virtual TBool GetSBool(TSBool aId) const;
+    virtual void SetSBool(TSBool aId, TBool aVal);
+    virtual void SetEVar(const string& aName, const string& aValue);
+    virtual TBool GetEVar(const string& aName, string& aValue) const;
+    virtual void ConstructSystem();
+    // From MIface
+    virtual MIface* Call(const string& aSpec, string& aRes);
+    virtual string Uid() const;
+
+    protected:
+    class EIfu: public Ifu {
+	public:
+	    EIfu();
+    };
+
+    private:
+    GLogRec* iLogger; 
+    Elem* iRoot;
+    GFactory *iProvider;
+    ChromoMgr* iChMgr;
+    ImportsMgr* iImpMgr;
+    string iSpecFile;
+    string iSpec;
+    Chromo* iSpecChromo;
+    TBool mEnPerfTrace;
+    TBool mEnIfTrace;
+    map<string, string> mEVars;
+    static EIfu mIfu;
 };
 
 

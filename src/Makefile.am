@@ -23,6 +23,8 @@ libgrayb_la_SOURCES = \
 		       log.cpp \
 		       log.h \
 		       menv.h \
+		       ifu.cpp \
+		       ifu.h \
 		       env.cpp \
 		       env.h \
 		       mprov.h \
@@ -57,6 +59,7 @@ libgrayb_la_SOURCES = \
 		       des.cpp \
 		       rdata.h \
 		       rdata.cpp \
+		       miface.h \
 		       mmuta.h \
 		       mmod.h \
 		       mconn.h
@@ -70,6 +73,7 @@ include_HEADERS = \
 		  mchromo.h \
 		  medge.h \
 		  mlog.h \
+		  miface.h \
 		  mmuta.h \
 		  mmod.h \
 		  mprop.h \
@@ -89,6 +93,7 @@ include_HEADERS = \
 		  vert.h \
 		  edge.h \
 		  rdata.h \
+		  ifu.h \
 		  incaps.h
 
 

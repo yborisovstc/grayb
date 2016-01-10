@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for ceation of graph 
+     -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Vert">
+    <node id="v1" parent="Vert"/>
+    <node id="v2" parent="Vert"/>
+    <node id="e1" parent="Edge"> <cont node="./P1" ref="./../../v1"/> <cont node="./P2" ref="./../../v2"/> </node>
+    <node id="Prop1" parent="Prop">
+	<cont val="Prop1_content"/>
+    </node>
+</node>
+

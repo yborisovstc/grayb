@@ -18,6 +18,8 @@ const string GUriBase::KUpperLevel = "..";
 
 const string KSchemeSep = ":";
 const char GUriBase::KBaseSep = '#';
+const char GUriBase::KIfaceSep = '%';
+const string GUriBase::KIfaceSepS = "%";
 const char GUriBase::KParentSep = ':';
 const char GUriBase::KSepNone = ' ';
 const char GUriBase::KNodeSep = '/';

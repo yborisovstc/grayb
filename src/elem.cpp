@@ -5,7 +5,9 @@
 #include <stdlib.h>
 #include <sstream>
 #include <sys/time.h>
+#include <stdexcept> 
 #include "mmod.h"
+#include "ifu.h"
 
 TBool Elem::EN_PERF_TRACE = EFalse;
 TBool Elem::EN_PERF_METR = EFalse;
@@ -14,6 +16,23 @@ TBool Elem::EN_MUT_LIM = ETrue;
 
 string Elem::Fmt::mSepContInp = ";";
 string Elem::Fmt::mSepContName = "~";
+// TODO [YB] Alternative method via static Ifu derived is used, remaining for info only
+//string IfuPars = "Name,0,GetNode,1,Mutate,4";
+//Ifu Elem::mIfu(IfuPars);
+
+MElem::EIfu MElem::mIfu;
+
+// Ifu static initialisation
+MElem::EIfu::EIfu()
+{
+    RegMethod("Name", 0);
+    RegMethod("GetMan", 0);
+    RegMethod("GetAttachingMgr", 0);
+    RegMethod("GetRoot", 0);
+    RegMethod("GetNode", 1);
+    RegMethod("GetCont", 1);
+    RegMethod("Mutate", 4);
+}
 
 string Elem::PEType()
 {
@@ -185,13 +204,19 @@ Elem::IterImplBase::IterImplBase(const IterImplBase& aIt):
 {
 };
 
-void Elem::IterImplBase::Set(const IterImplBase& aImpl)
+Elem::MIterImpl* Elem::IterImplBase::Clone()
 {
-    iElem = aImpl.iElem;
-    iId = aImpl.iId;
-    iCIterRange = aImpl.iCIterRange;
-    iCIter = aImpl.iCIter; 
-    iChildsIter = aImpl.iChildsIter;
+    return new IterImplBase(*this);
+}
+
+void Elem::IterImplBase::Set(const MIterImpl& aImpl)
+{
+    const IterImplBase& impl = dynamic_cast<const IterImplBase&>(aImpl);
+    iElem = impl.iElem;
+    iId = impl.iId;
+    iCIterRange = impl.iCIterRange;
+    iCIter = impl.iCIter; 
+    iChildsIter = impl.iChildsIter;
 }
 
 char Elem::IterImplBase::SRel() const
@@ -230,34 +255,17 @@ void Elem::IterImplBase::PostIncr()
     }
 }
 
-TBool Elem::IterImplBase::IsCompatible(const IterImplBase& aImpl) const
+TBool Elem::IterImplBase::IsCompatible(const MIterImpl& aImpl) const
 {
     return ETrue;
 }
 
-TBool Elem::IterImplBase::IsEqual(const IterImplBase& aImpl) const
+TBool Elem::IterImplBase::IsEqual(const MIterImpl& aImplm) const
 {
+    const IterImplBase& aImpl = dynamic_cast<const IterImplBase&>(aImplm);
     TBool res = EFalse;
     if (IsCompatible(aImpl) && aImpl.IsCompatible(*this)) {
 	res = &iElem == &(aImpl.iElem) && iId == aImpl.iId && iCIter == aImpl.iCIter && iChildsIter == aImpl.iChildsIter;
-    }
-    return res;
-}
-
-void *Elem::IterImplBase::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    return res;
-}
-
-const void *Elem::IterImplBase::DoGetObj(const char *aName) const
-{
-    const void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
     }
     return res;
 }
@@ -1006,6 +1014,11 @@ void Elem::SetMutation(const ChromoNode& aMuta)
     iMut->Set(aMuta);
 }
 
+void Elem::SetMutation(const string& aMutSpec)
+{
+    iMut->SetFromSpec(aMutSpec);
+}
+
 ChromoNode Elem::AppendMutation(const ChromoNode& aMuta)
 {
     return iMut->Root().AddChild(aMuta);
@@ -1734,21 +1747,10 @@ TBool Elem::UnregisterChild(MElem* aChild, const string& aName)
     return res;
 }
 
-TBool Elem::IsCompRegistered(MElem* aComp)
-{
-    MElem* comp = aComp;
-    MElem* man = comp->GetMan();
-    while (man != this) {
-	comp = man;
-	man = comp->GetMan();	
-    }
-    return (GetComp(comp->EType(), comp->EName()) != NULL);
-}
-
 TBool Elem::UnregisterComp(MElem* aComp, const string& aName)
 {
     TBool res = EFalse;
-    const string& name = aName.empty() ? aComp->EName() : aName;
+    const string& name = aName.empty() ? aComp->Name() : aName;
     assert (GetComp(aComp->EType(), name) != NULL); 
     // Removing old name related records in register
     TBool found = EFalse;
@@ -1909,14 +1911,12 @@ void Elem::OnCompDeleting(MElem& aComp, TBool aSoft)
 // missing proper mechanism of the whole model observer.
 void Elem::OnCompAdding(MElem& aComp)
 {
-    // If the comp is already registered then propagate the event
-    if (IsCompRegistered(&aComp)) {
-	if (iMan != NULL) {
-	    iMan->OnCompAdding(aComp);
-	}
-	if (iObserver != NULL) {
-	    iObserver->OnCompAdding(aComp);
-	}
+    // Propagate the event
+    if (iMan != NULL) {
+	iMan->OnCompAdding(aComp);
+    }
+    if (iObserver != NULL) {
+	iObserver->OnCompAdding(aComp);
     }
 }
 
@@ -1957,7 +1957,7 @@ TBool Elem::OnCompRenamed(MElem& aComp, const string& aOldName)
 	// Unregister the comp with its old name
 	res = UnregisterComp(&aComp, aOldName);
 	if (res) {
-	    // Register the comp againg with its current name
+	    // Register the comp again with its current name
 	    res = RegisterComp(&aComp);
 	}
     }
@@ -2166,13 +2166,30 @@ void Elem::GetUri(GUri& aUri, MElem* aTop) const
     }
 }
 
-string Elem::GetUri(MElem* aTop, TBool aShort)
+string Elem::GetUri(MElem* aTop, TBool aShort) const
 {
     GUri uri;
     GetUri(uri, aTop);
     return uri.GetUri(aShort);
 }
 
+// TODO [YB] To consider if GetRoot can be moved from MElem to Elem
+// Actually it is using for Elem impl only and can be replaced by
+// sequentual steps to owners, see example below. The problem is
+// that seq steps approach is not optimal in distributed async models
+// because it requires intermodels exchange for each step
+/*
+MElem* Elem::GetRoot() const
+{
+    MElem* res = (MElem*) this;
+    MElem* owner = res->GetMan();
+    while (owner != NULL) {
+	res = owner;
+	owner = res->GetMan();
+    }
+    return res;
+}
+*/
 MElem* Elem::GetRoot() const
 {
     MElem* res = (MElem*) this;
@@ -3319,4 +3336,48 @@ TBool Elem::ImportNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode
 MElem* Elem::GetComp(TInt aInd)
 {
     return iComps.at(aInd);
+}
+
+string Elem::Uid() const
+{
+    return GetUri() + GUriBase::KIfaceSepS + MElem::Type();
+}
+
+MIface* Elem::Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = mIfu.CheckMname(name);
+    if (!name_ok) 
+	    throw (runtime_error("Wrong method name"));
+    TBool args_ok = mIfu.CheckMpars(name, args.size());
+    if (!args_ok) 
+	    throw (runtime_error("Wrong arguments number"));
+    if (name == "Name") {
+	aRes = Name();
+    } else if (name == "GetMan") {
+	res = GetMan();
+    } else if (name == "GetRoot") {
+	res = GetRoot();
+    } else if (name == "GetNode") {
+	res = GetNode(args.at(0));
+    } else if (name == "GetCont") {
+	GetCont(aRes, args.at(0));
+    } else if (name == "Mutate") {
+	TBool rtonly, checksafety, trialmode;
+	rtonly = Ifu::ToBool(args.at(1));
+	checksafety = Ifu::ToBool(args.at(2));
+	trialmode = Ifu::ToBool(args.at(3));
+	SetMutation(args.at(0));
+	Mutate(rtonly, checksafety, trialmode);
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return res;
+}
+
+void Elem::Init()
+{
 }

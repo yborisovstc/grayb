@@ -6,10 +6,12 @@
 #include "elem.h"
 #include "prov.h"
 #include "chromo.h"
+#include "ifu.h"
 #include <stdlib.h>
 #include <sys/time.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <stdexcept> 
 
 const string KLogFileName = "faplog.txt";
 const char* KRootName = "Root";
@@ -17,6 +19,16 @@ const char* KRootName = "Root";
 const string ImportsMgr::KDefImportPath = "/usr/share/grayb/modules";
 const string ImportsMgr::KImportsContainerUri = "./Modules";
 
+Env::EIfu Env::mIfu;
+
+// Ifu static initialisation
+Env::EIfu::EIfu()
+{
+    RegMethod("Root", 0);
+    RegMethod("ConstructSystem", 0);
+    RegMethod("SetEVar", 2);
+    RegMethod("GetEVar", 1);
+}
 
 ImportsMgr::ImportsMgr(Env& aHost): Base(), mHost(aHost)
 {
@@ -429,7 +441,10 @@ void Env::RemoveProvider(GProvider* aProv)
 
 void *Env::DoGetObj(const char *aName)
 {
-    return (strcmp(aName, Type()) == 0) ? this : NULL;
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) res = this;
+    else if (strcmp(aName, MEnv::Type()) == 0) res = (MEnv*) this;
+    return res;
 }
 
 TBool Env::GetSBool(TSBool aId) const
@@ -445,3 +460,54 @@ void Env::SetSBool(TSBool aId, TBool aVal)
     if (aId == ESb_EnPerfTrace) mEnPerfTrace = aVal;
     else if (aId == ESb_EnIfTrace) mEnIfTrace = aVal;
 }
+
+MIface* Env::Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = mIfu.CheckMname(name);
+    if (!name_ok) 
+	    throw (runtime_error("Wrong method name"));
+    TBool args_ok = mIfu.CheckMpars(name, args.size());
+    if (!args_ok) 
+	    throw (runtime_error("Wrong arguments number"));
+    if (name == "Root") {
+	res = Root();
+	if (res == NULL) 
+	    throw (runtime_error("Cannot find root node"));
+    } else if (name == "ConstructSystem") {
+	ConstructSystem();
+    } else if (name == "SetEVar") {
+	SetEVar(args.at(0), args.at(1));
+    } else if (name == "GetEVar") {
+	TBool rres = GetEVar(args.at(0), aRes);
+	if (!rres) 
+	    throw (runtime_error("Cannot find variable"));
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return res;
+}
+
+string Env::Uid() const
+{
+    return GUriBase::KIfaceSepS + MEnv::Type();
+}
+
+void Env::SetEVar(const string& aName, const string& aValue)
+{
+    mEVars.insert(pair<string, string>(aName, aValue));
+}
+
+TBool Env::GetEVar(const string& aName, string& aValue) const
+{
+    TBool res = EFalse;
+    if (mEVars.count(aName) > 0) {
+	aValue = mEVars.at(aName);
+	res = ETrue;
+    }
+    return res;
+}
+

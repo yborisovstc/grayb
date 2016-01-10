@@ -65,7 +65,8 @@ class GUriBase
     public:
 	// Realation: relation type symbol, name
 	typedef pair<char, string> TRel;
-	// Element of chain: location, relation
+	// Element of chain: extenstion, relation
+	// Example /(Elem:)Mynode here Elem: - extention, Mynode - name, / - relation symbol
 	typedef pair<string, TRel> TElem;
 	typedef pair<TNodeAttr, string> TQueryCnd;
 	typedef pair<TQueryOpr, TQueryCnd> TQueryElem;
@@ -121,6 +122,8 @@ class GUriBase
 	static const char KNodeSep;
 	static const char KSepNone;
 	static const char KBaseSep;
+	static const char KIfaceSep;
+	static const string KIfaceSepS;
 	static const char KCurUnit;
 	static map<TNodeAttr, string> KNodeAttrsNames;
 };

@@ -4,6 +4,8 @@
 #include "plat.h"
 #include "guri.h"
 #include "mmuta.h"
+#include "miface.h"
+#include "ifu.h"
 #include <set>
 
 class ChromoNode;
@@ -70,8 +72,8 @@ class MIfProv
 	    public:
 		virtual ~MIfIter() {};
 		virtual MIfIter* Clone() const { return NULL;};
-		virtual MIfIter& operator=(const MIfIter& aIt) {};
-		virtual MIfIter& operator++() {};
+		virtual MIfIter& operator=(const MIfIter& aIt) { return *this;};
+		virtual MIfIter& operator++() { return *this;};
 		virtual TBool operator==(const MIfIter& aIt) { return EFalse;};
 		virtual void*  operator*() {return NULL;};
 	};
@@ -113,14 +115,13 @@ class MACompsObserver
 
 // Composite interface of Element (node) of native graph hierarchy
 // TODO [YB] Do we need MComp also ?
-class MElem : public Base, public MMutable, public MOwner, public MParent, public MChild, public MIfProv
+class MElem : public Base, public MMutable, public MOwner, public MParent, public MChild, public MIfProv, public MIface
 {
     public:
 	static const char* Type() { return "MElem";};
     public:
 	virtual const string EType(TBool aShort = ETrue) const = 0;
 	virtual const string& Name() const = 0;
-	virtual const string& EName() const = 0;
 	virtual MElem* GetMan() = 0;
 	virtual const MElem* GetMan() const = 0;
 	virtual void SetMan(MElem* aMan) = 0;
@@ -143,7 +144,7 @@ class MElem : public Base, public MMutable, public MOwner, public MParent, publi
 	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
 	virtual void GetUri(GUri& aUri, MElem* aTop = NULL) const = 0;
 	virtual void GetRUri(GUri& aUri, MElem* aTop = NULL) = 0;
-	virtual string GetUri(MElem* aTop = NULL, TBool aShort = EFalse) = 0;
+	virtual string GetUri(MElem* aTop = NULL, TBool aShort = EFalse) const = 0;
 	virtual string GetRUri(MElem* aTop = NULL) = 0;
 	virtual TBool RebaseUri(const GUri& aUri, const MElem* aBase, GUri& aRes) = 0;
 	virtual TBool RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere, const MElem* aBase, GUri& aRes) = 0;
@@ -170,6 +171,16 @@ class MElem : public Base, public MMutable, public MOwner, public MParent, publi
 	// Debugging
 	virtual TInt GetCapacity() const = 0;
 	virtual TBool IsHeirOf(const string& aParent) const = 0;
+    public:
+	// From MIface
+	virtual MIface* Call(const string& aSpec, string& aRes) = 0;
+    protected:
+	class EIfu: public Ifu {
+	    public:
+		EIfu();
+	};
+	// Interface methods utility
+	static EIfu mIfu;
 };
 
 #endif

@@ -8,6 +8,7 @@
 #include "mmuta.h"
 #include "base.h"
 #include "chromo.h"
+#include "ifu.h"
 #include <time.h>
 
 class Chromo;
@@ -76,22 +77,31 @@ class Elem: public MElem
     };
 
     public:
-	class IterImplBase
-	{
+	// TODO [YB] Do we need polymorphic comps iterator ?
+	// Components iterator interface
+	class MIterImpl {
+	    public:
+		virtual MIterImpl* Clone() = 0;
+		virtual void Set(const MIterImpl& aImpl) = 0;
+		virtual void PostIncr() = 0;
+		virtual TBool IsEqual(const MIterImpl& aImpl) const = 0;
+		virtual TBool IsCompatible(const MIterImpl& aImpl) const = 0;
+		virtual MElem*  GetElem() = 0;
+	};
+
+	class IterImplBase: public MIterImpl {
 	    friend class Elem;
 	    public:
-	    static const char* Type() { return "IterImplBase";};
 	    IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd = EFalse);
 	    IterImplBase(Elem& aElem);
 	    IterImplBase(const IterImplBase& aImpl);
 	    char SRel() const;
-	    virtual void Set(const IterImplBase& aImpl);
+	    virtual MIterImpl* Clone();
+	    virtual void Set(const MIterImpl& aImpl);
 	    virtual void PostIncr();
-	    virtual TBool IsEqual(const IterImplBase& aImpl) const;
-	    virtual TBool IsCompatible(const IterImplBase& aImpl) const;
+	    virtual TBool IsEqual(const MIterImpl& aImpl) const;
+	    virtual TBool IsCompatible(const MIterImpl& aImpl) const;
 	    virtual MElem*  GetElem();
-	    virtual void* DoGetObj(const char *aName);
-	    virtual const void* DoGetObj(const char *aName) const;
 	    public:
 	    Elem& iElem;
 	    GUri::TElem iId;
@@ -103,33 +113,32 @@ class Elem: public MElem
 	    pair<TNMReg::iterator, TNMReg::iterator> iChildsRange;
 	};
 
-	class Iterator: public iterator<input_iterator_tag, Elem*>
-    {
-	friend class Elem;
-	public:
-	Iterator(): iImpl(NULL) {};
-	Iterator(IterImplBase* aImpl): iImpl(aImpl) {};
-	~Iterator() { delete iImpl;};
-	Iterator(const Iterator& aIt) { iImpl = new IterImplBase(*(aIt.iImpl));};
-	Iterator& operator=(const Iterator& aIt) { iImpl->Set(*(aIt.iImpl)); return *this;};
-	Iterator& operator++() { iImpl->PostIncr(); return *this;};
-	Iterator operator++(int) { Iterator tmp(*this); operator++(); return tmp; };
-	TBool operator==(const Iterator& aIt) { return iImpl->IsEqual((*aIt.iImpl));};
-	TBool operator!=(const Iterator& aIt) { return !operator==(aIt);};
-	MElem*  operator*() { return iImpl->GetElem();};
-	public:
-	IterImplBase* iImpl;
-    };
+	class Iterator: public iterator<input_iterator_tag, Elem*> {
+	    friend class Elem;
+	    public:
+	    Iterator(): iImpl(NULL) {};
+	    Iterator(MIterImpl* aImpl): iImpl(aImpl) {};
+	    ~Iterator() { delete iImpl; iImpl = NULL;};
+	    Iterator(const Iterator& aIt): iImpl(NULL) { if (aIt.iImpl != NULL) iImpl = aIt.iImpl->Clone(); };
+	    Iterator& operator=(const Iterator& aIt) { iImpl->Set(*(aIt.iImpl)); return *this;};
+	    Iterator& operator++() { iImpl->PostIncr(); return *this;};
+	    Iterator operator++(int) { Iterator tmp(*this); operator++(); return tmp; };
+	    TBool operator==(const Iterator& aIt) { return iImpl->IsEqual((*aIt.iImpl));};
+	    TBool operator!=(const Iterator& aIt) { return !operator==(aIt);};
+	    MElem*  operator*() { return iImpl->GetElem();};
+	    public:
+	    MIterImpl* iImpl;
+	};
 
     public:
 	// Formatter
 	class Fmt 
 	{
 	    public:
-	    // Separator of content inputs info
-	    static string mSepContInp;
-	    // Separator of parts of content name
-	    static string mSepContName;
+		// Separator of content inputs info
+		static string mSepContInp;
+		// Separator of parts of content name
+		static string mSepContName;
 	};
 
     public:
@@ -145,6 +154,7 @@ class Elem: public MElem
 	virtual void SetMan(MElem* aMan);
 	virtual void SetObserver(MCompsObserver* aObserver);
 	virtual void SetMutation(const ChromoNode& aMuta);
+	virtual void SetMutation(const string& aMutSpec);
 	virtual ChromoNode AppendMutation(const ChromoNode& aMuta);
 	virtual TBool AppendMutation(const string& aFileName);
 	string PName() const;
@@ -193,7 +203,6 @@ class Elem: public MElem
 	virtual void *DoGetObj(const char *aName);
 	// From MElem
 	virtual const string EType(TBool aShort = ETrue) const;
-	virtual const string& EName() const { return Name();};
 	virtual MElem* GetMan();
 	virtual const MElem* GetMan() const;
 	virtual void GetRank(Rank& aRank, const ChromoNode& aMut) const;
@@ -207,7 +216,7 @@ class Elem: public MElem
 	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
 	virtual void GetUri(GUri& aUri, MElem* aTop = NULL) const;
 	virtual void GetRUri(GUri& aUri, MElem* aTop = NULL);
-	virtual string GetUri(MElem* aTop = NULL, TBool aShort = EFalse);
+	virtual string GetUri(MElem* aTop = NULL, TBool aShort = EFalse) const;
 	virtual string GetRUri(MElem* aTop = NULL);
 	virtual TBool RebaseUri(const GUri& aUri, const MElem* aBase, GUri& aRes);
 	virtual TBool RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere, const MElem* aBase, GUri& aRes);
@@ -303,6 +312,9 @@ class Elem: public MElem
 	virtual TBool HasModifs(const MElem* aOwner) const;
 	virtual void CopyParentModifsToComp(MElem* aComp);
 	virtual TBool RebaseUriToIntNode(const GUri& aUri, const MElem* aComp, GUri& aResult);
+	// From MIface
+	virtual MIface* Call(const string& aSpec, string& aRes);
+	virtual string Uid() const;
 	// Utils
 	void LogComps() const;
 	Elem* GetNodeE(const string& aUri) {return ToElem(GetNode(aUri));};
@@ -313,7 +325,6 @@ class Elem: public MElem
 	virtual TBool AppendComp(MElem* aComp);
 	TBool RegisterComp(MElem* aComp);
 	TBool RegisterChild(MElem* aChild);
-	TBool IsCompRegistered(MElem* aComp);
 	// aName is required because the comp can be renamed already. This is the case of 
 	// comp renaming: comp is renamed first, then the renaming is handled
 	TBool UnregisterComp(MElem* aComp, const string& aName = string());
@@ -341,6 +352,8 @@ class Elem: public MElem
 	static long GetClock();
 	// Debugging
 	MElem* GetComp(TInt aInd);
+	// Static init
+	static void Init();
     protected:
 	// Environment
 	MEnv* iEnv;
@@ -375,6 +388,15 @@ class Elem: public MElem
 	static TBool EN_PERF_METR;
 	static TBool EN_MUT_LIM;
 	static TBool EN_PERF_DBG1;
+	/*
+    protected:
+	class EIfu: public Ifu {
+	    public:
+		EIfu();
+	};
+	// Interface methods utility
+	static EIfu mIfu;
+	*/
 };
 
 inline MLogRec* Elem::Logger() const {return iEnv ? iEnv->Logger(): NULL; }

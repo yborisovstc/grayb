@@ -97,36 +97,52 @@
 		</sect4>
 	    </sect3>
 	</sect2>
-	<sect2 id="ds_base_03"><title>DS_BASE_03 Syntax of URI</title>
-	    <simpara>The unified URI can be considered as node(s) determination request. The general form is as:</simpara>
-	    <programlisting>
-		uri = {"(" id_node_base_rel rel_sep ")"} node_name
-	    </programlisting>
-	    <simpara>Example is as:</simpara>
-	    <programlisting>
-		(hier_predecessor/)(inheritance_predecessor:)(vertex_pair~) name
-
-		where:
-		hier_predecessor - owner in base hierarchy
-		/ - base hier separator - sign of base hier relation
-		inheritance_predecessor - parent
-		: - inheritance separator - sign of inheritance relation
-		vertex_pair
-		~ - vertex relation separator - sign of vertexes relations
-	    </programlisting>
-	    <simpara>So the uri is hierarchical (tree form) of relation specifying. This spec should be full enough to specify one node or set of nodes.</simpara> 
-	    <simpara>The parentheseses are required to separate the branch of URI hierarchical tree. Having several layers in this tree causes the nested parentheseses that makes 
-		this syntax rather incovenient even complete.
-		The syntax of URI can be simplified in order to avoid parentheseses
-		(they are very inconvenience indeed) by applying some restrictions to relations. For instance the currently used form of URI - GUri can be considered as
-		the variant of generic form if we apply the restriction "chain of relation of some type can include only relation of this type". In this case the branches can 
-		be resolved simply by relation type separator:</simpara>
-	    <programlisting>
-		n1/n2/n3/p3:p2:p1:node
-	    </programlisting>
-	    <simpara>No need to isolate the branch because the end of inheritance relation branch (p3:p2:p1) can be simply determined by changing of relation separator
-		from ":" to "/"</simpara>
-	    <simpara>In some cases other relation types are required.</simpara>
+	<sect2 id="ds_base_03"><title>DS_BASE_03 URI</title>
+	    <sect3><title>Intro</title>
+		<simpara>URI is a node or node primary interface identification via its path in the models native hierarchy.</simpara>
+	    </sect3>
+	    <sect3><title>Syntax</title>
+		<simpara>The node unified URI can be considered as path to node from the given node in hierarchy. The path is the sequence of nodes, where
+		    node is specified relatively to the previous node in the path.
+		    The general form is as:</simpara>
+		<programlisting>
+		    uri = node_uri | iface_uri
+		    iface_uri = node_uri,iface
+		    iface = implementation_relation,iface_name
+		    implementation_relation = "%"
+		    iface_name = name
+		    node_uri = {node}
+		    node = [relation_to_predecessor]["(",extra_relation,")"],node_name
+		    node_name = name | current_node | upper_level
+		    current_node = "."
+		    upper_level = ".."
+		    parent
+		    relation_to_predecessor = owning_relation | inheritance_relation
+		    owning_relation = "/"
+		    inheritance_relation = ":"
+		    extra_relation = 
+		</programlisting>
+		<simpara>Notes:</simpara>
+		<itemizedlist>
+		    <listitem>If relation_to_predecessor is missing it means that the node is native one.
+		    </listitem>
+		</itemizedlist>
+		<simpara>Examples:</simpara>
+		<itemizedlist>
+		    <listitem>Models root
+			<programlisting> /root </programlisting>
+		    </listitem>
+		    <listitem>Native node
+			<programlisting>Prop</programlisting>
+		    </listitem>
+		    <listitem>Simple owning path
+			<programlisting> /Root/Node_1/Node_1_1 </programlisting>
+		    </listitem>
+		    <listitem>Nodes iface
+			<programlisting> /Root/Node_1/Node_1_1%MElem </programlisting>
+		    </listitem>
+		</itemizedlist>
+	    </sect3>
 	</sect2>
     </sect1>
 
@@ -2143,9 +2159,38 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_daa_chrc"><title>Design issue: chromosome continuity</title>
+	    <sect3><title>Intro</title>
+		<simpara>In current implementation the models chromo is hierarchical structure where the owned nodes are attached to owning node. This 
+		    looks like that models nodes have its own chromo, and nodes chromo is attached to the chromo of models nodes owner. So the
+		    chromo is continuos. This simplifies saving the chromo and navigating thru it. But in distributed model this doesn't work directly.
+		    The problem is that currently there is not mechanism provided for chromo nodes seamless communication as it is done for models 
+		    nodes.</simpara>
+		<simpara>In model there are thwo interrelated trees: chromo tree and model tree.</simpara>
+		<simpara>The possible solutions here are:</simpara>
+		<itemizedlist>
+		    <listitem>To provide mechanism of chromo nodes communication.</listitem>
+		    <listitem>To modify the approach of chromo parts attachment: to avoid attaching chromo nodes but use models nodes attachments
+			to keep continuity of chromo, i.e use "virtual" attaching.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>"Virtual attaching: to avoid attaching chromo nodes but use models nodes attachments.</title>
+		<simpara>In what cases the nodes chromo isn't attached to owners chromo ? This happens for instance if the node is "inherited" from 
+		    parent of owner, look at Elem::CreateHeir. It uses run-time mutation that doesn't attach the chromo. This "not attaching" fact
+		    is used within the model to distinguish such nodes from nodes that created via "true" mutation. This means that to keep the 
+		    current logic that uses this indication we need to have dedicated sign in models node of chromo isn't attached
+		</simpara>
+		<simpara>How to save the whole chromo ? Currently is saves by chromo utility. With virtual attaching this will not work. Possible
+		    solution here is to create whole chromo from chromo parts in models nodes and then save it.</simpara>
+		<simpara>In many cases the nodes chromo is requested and used assuming that the chromo is "whole" chromo. This is for instance when heir is
+		    created from the node. But with vitrual approach is will not work. The solution here is to add method "GetChromo" to MElem that
+		    creates chromo object and combines it from model owned nodes chromos.</simpara>
+	    </sect3>
+	</sect2>
 	<sect2 id="ds_daa_iss"><title>Design issues to be considered</title>
 	    <orderedlist>
 		<listitem><xref linkend="ds_daa_md"/></listitem>
+		<listitem><xref linkend="ds_daa_chrc"/></listitem>
 	    </orderedlist>
 	</sect2>
     </sect1>
@@ -2201,6 +2246,11 @@
 		complication and simplify the mutation scheme.</simpara>
 	    <simpara>On of the solution here is to use native safety mechanism: all deps should be registered as run-time deps, mutated node notifies all deps
 	    about particular mutation, so the deps can adapt to the mutation or refuse it.</simpara>
+	</sect2>
+	<sect2><title>To improve navigation policy</title>
+	    <simpara>Currently there are not restriction navigating thru model using MElem method GetNode. But this is wrong behavior. The access policies are
+		to be introduced. Namelly, the access to upper layers has to be denied, the only exception would be access from embedded agent to the container agent.
+		But here dedecated mechanism could be used.</simpara>
 	</sect2>
     </sect1>
 
