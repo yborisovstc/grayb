@@ -116,6 +116,7 @@ class ChromoNode
 	TBool operator==(const ChromoNode& aNode);
 	TBool operator==(const ChromoNode& aNode) const;
 	TBool operator!=(const ChromoNode& aNode) { return !this->operator==(aNode);};
+	TBool operator!=(const ChromoNode& aNode) const { return !this->operator==(aNode);};
 	Iterator Begin() { return Iterator(iMdl, iMdl.GetFirstChild(iHandle)); };
 	TIter TBegin(TNodeType aType) const { return TIter(iMdl, iMdl.GetFirstChild(iHandle, aType), aType); };
 	Const_Iterator Begin() const { return Const_Iterator(iMdl, iMdl.GetFirstChild(iHandle)); };
@@ -150,7 +151,7 @@ class ChromoNode
 	const void* Handle() const { return iHandle;};
 	ChromoMdl& Mdl() const { return iMdl;};
 	ChromoNode AddChild(TNodeType aType);
-	ChromoNode AddChild(const ChromoNode& aNode, TBool aCopy = ETrue);
+	ChromoNode AddChild(const ChromoNode& aNode, TBool aCopy = ETrue, TBool aRecursively = ETrue);
 	ChromoNode AddChildDef(const ChromoNode& aNode, TBool aCopy = ETrue) { return 
 	    ChromoNode(iMdl, iMdl.AddChildDef(iHandle, aNode.Handle(), aCopy)); };
 	ChromoNode AddNext(const ChromoNode& aPrev, const ChromoNode& aNode, TBool aCopy = ETrue) { return 
@@ -182,7 +183,7 @@ class ChromoNode
 	void MovePrevTo(Iterator& aDest) { iMdl.MovePrevTo(iHandle, aDest.iHandle);};
 	void MovePrevTo(ChromoNode& aDest) { iMdl.MovePrevTo(iHandle, aDest.iHandle);};
 	void MoveToEnd() { iMdl.MoveToEnd(iHandle);};
-	TInt GetLocalRank();
+	TInt GetLocalRank() const;
 	void GetRank(Rank& aRank) const;
 	void GetRank(Rank& aRank, const ChromoNode& aBase) const;
 	TInt GetOrder(TBool aTree = EFalse) const { return iMdl.GetOrder(iHandle, aTree);};

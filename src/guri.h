@@ -63,7 +63,7 @@ class GUriBase
 	    EQop_And
 	};
     public:
-	// Realation: relation type symbol, name
+	// Relation: relation type symbol, name
 	typedef pair<char, string> TRel;
 	// Element of chain: extenstion, relation
 	// Example /(Elem:)Mynode here Elem: - extention, Mynode - name, / - relation symbol

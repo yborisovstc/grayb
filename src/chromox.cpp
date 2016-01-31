@@ -323,7 +323,7 @@ void* ChromoMdlX::AddChild(void* aParent, TNodeType aNode)
     return xmlAddChild((xmlNodePtr) aParent, node);
 }
 
-void* ChromoMdlX::AddChild(void* aParent, const void* aHandle, TBool aCopy)
+void* ChromoMdlX::AddChild(void* aParent, const void* aHandle, TBool aCopy, TBool aRecursively)
 {
     void* root = Root(aParent);
     TInt rorder = GetOrder(root, ETrue);
@@ -335,10 +335,11 @@ void* ChromoMdlX::AddChild(void* aParent, const void* aHandle, TBool aCopy)
     if (order > rorder) {
 	SetOrder(root, order, ETrue);
     }
-    xmlNodePtr node = aCopy ? xmlCopyNode((xmlNodePtr) aHandle, 1) : (xmlNodePtr) aHandle;
+    xmlNodePtr node = aCopy ? xmlCopyNode((xmlNodePtr) aHandle, aRecursively ? 1:2) : (xmlNodePtr) aHandle;
     return xmlAddChild((xmlNodePtr) aParent, node);
 }
 
+// TODO [YB] Seeps to be not used. To remove ?
 void* ChromoMdlX::AddChildDef(void* aParent, const void* aHandle, TBool aCopy)
 {
     xmlNodePtr res = NULL;

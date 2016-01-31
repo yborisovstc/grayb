@@ -34,8 +34,7 @@
     </node>
 
     <!-- System Contants Input -->
-    <node id="SysConstInp" parent="./Modules/SysComps/Extender"> 
-	<rm node="./Int"/>
+    <node id="SysConstInp" parent="./Modules/SysComps/ExtenderBase"> 
 	<node id="Int" parent="./../SysConstInpSocket"/> 
     </node>
 
@@ -47,8 +46,7 @@
     </node>
 
     <!-- System Contants Output -->
-    <node id="SysConstOut" parent="./Modules/SysComps/Extender"> 
-	<rm node="./Int"/>
+    <node id="SysConstOut" parent="./Modules/SysComps/ExtenderBase"> 
 	<node id="Int" parent="./../SysConstOutSocket"/> 
     </node>
 

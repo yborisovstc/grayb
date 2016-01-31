@@ -41,7 +41,7 @@
     <!-- Data with separate input for setting and output for getting. Integer -->
     <node id="DataSInt"  parent="./DataS"> 
 	<cont node="./D_1" val="Integer Data with separate input for setting and output for getting"/>
-    	<node node="./Agents" id="MACompsObserver" parent="DInt"/>
+    	<node node="./Agents" id="ADInt" parent="DInt"/>
 	<cont node="./Capsule/inp/Provided" val="MDIntSet"/>
 	<cont node="./Capsule/out/Provided" val="MDIntGet"/>
     </node>
@@ -49,7 +49,7 @@
     <!-- Data with separate input for setting and output for getting. Variant -->
     <node id="DataSVar"  parent="./DataS"> 
 	<cont node="./D_1" val="Variant Data with separate input for setting and output for getting"/>
-	<node node="./Agents" id="MACompsObserver" parent="DVar"/>
+	<node node="./Agents" id="ADVar" parent="DVar"/>
 	<cont node="./Capsule/inp/Provided" val="MDVarSet"/>
 	<cont node="./Capsule/out/Provided" val="MDVarGet"/>
     </node>
@@ -57,7 +57,7 @@
     <!-- Data with separate input for setting and output for getting. Variant. Separate type prop -->
     <node id="DataSTVar"  parent="./DataST"> 
 	<cont node="./D_1" val="Variant Data with separate input for setting and output for getting. Separate Type property."/>
-	<node node="./Agents" id="MACompsObserver" parent="DVar"/>
+	<node node="./Agents" id="ADVar" parent="DVar"/>
 	<cont node="./Capsule/inp/Provided" val="MDVarSet"/>
 	<cont node="./Capsule/out/Provided" val="MDVarGet"/>
     </node>
@@ -77,13 +77,13 @@
     </node>
 
     <node id="DataSUInt"  parent="./DataSU"> 
-    	<node node="./Agents" id="MACompsObserver" parent="DInt"/>
+    	<node node="./Agents" id="ADInt" parent="DInt"/>
 	<cont node="./Capsule/inp/Provided" val="MDIntSet"/>
 	<cont node="./Capsule/out/Provided" val="MDIntGet"/>
     </node>
 
     <node id="DataSUVar"  parent="./DataSU"> 
-    	<node node="./Agents" id="MACompsObserver" parent="DVar"/>
+    	<node node="./Agents" id="ADVar" parent="DVar"/>
 	<cont node="./Capsule/inp/Provided" val="MDVarSet"/>
 	<cont node="./Capsule/out/Provided" val="MDVarGet"/>
     </node>
@@ -144,7 +144,7 @@
 
     <!-- Data Int -->
     <node id="DataSCInt"  parent="./DataSC"> 
-	<node node="./Agents" id="MACompsObserver" parent="DInt"/> 
+	<node node="./Agents" id="ADInt" parent="DInt"/> 
 	<cont node="./Capsule/Inp/Required" val="MDIntGet"/>
 	<cont node="./Capsule/Out/Provided" val="MDIntGet"/>
 	<cont node="./Capsule/Upd/Provided" val="MUpdatable"/>
@@ -152,7 +152,7 @@
 
     <!-- Data Var -->
     <node id="DataSCVar"  parent="./DataSC"> 
-	<node node="./Agents" id="MACompsObserver" parent="DVar"/> 
+	<node node="./Agents" id="ADVar" parent="DVar"/> 
 	<cont node="./Capsule/Inp/Required" val="MDVarGet"/>
 	<cont node="./Capsule/Out/Provided" val="MDVarGet"/>
 	<cont node="./Capsule/Upd/Provided" val="MUpdatable"/>
@@ -160,7 +160,7 @@
 
     <!-- Data Var with separate type -->
     <node id="DataSCTVar"  parent="./DataSCT"> 
-	<node node="./Agents" id="MACompsObserver" parent="DVar"/> 
+	<node node="./Agents" id="ADVar" parent="DVar"/> 
 	<cont node="./Capsule/Inp/Required" val="MDVarGet"/>
 	<cont node="./Capsule/Out/Provided" val="MDVarGet"/>
 	<cont node="./Capsule/Upd/Provided" val="MUpdatable"/>

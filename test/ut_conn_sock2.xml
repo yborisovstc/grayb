@@ -24,8 +24,7 @@
     </node>
 
     <!-- Test Input -->
-    <node id="TInp" parent="/*/Modules/SysComps/Extender"> 
-	<rm node="./Int"/>
+    <node id="TInp" parent="/*/Modules/SysComps/ExtenderBase"> 
 	<node id="Int" parent="./../InpSocket"/> 
     </node>
 
@@ -37,8 +36,7 @@
     </node>
 
     <!-- Test Output -->
-    <node id="TOut" parent="/*/Modules/SysComps/Extender"> 
-	<rm node="./Int"/>
+    <node id="TOut" parent="/*/Modules/SysComps/ExtenderBase"> 
 	<node id="Int" parent="./../OutSocket"/> 
     </node>
 

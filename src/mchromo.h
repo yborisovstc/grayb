@@ -33,7 +33,7 @@ class MChromoMdl
 	virtual void  SetContent(const void* aHandle, const string& aContent) = 0;
 	virtual TBool AttrExists(const void* aHandle, TNodeAttr aAttr) const  = 0;
 	virtual void* AddChild(void* aParent, TNodeType aType) = 0;
-	virtual void* AddChild(void* aParent, const void* aHandle, TBool aCopy = ETrue) = 0;
+	virtual void* AddChild(void* aParent, const void* aHandle, TBool aCopy = ETrue, TBool aRecursively = ETrue) = 0;
 	virtual void* AddChildDef(void* aParent, const void* aHandle, TBool aCopy = ETrue) = 0;
 	virtual void* AddNext(const void* aPrev, const void* aHandle, TBool aCopy = ETrue) = 0;
 	virtual void* AddNext(const void* aPrev, TNodeType aNode) = 0;

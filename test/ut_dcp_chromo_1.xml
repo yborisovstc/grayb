@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test #1 for decoupled chromo
+     -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Elem">
+    <node id="elem1" parent="Elem">
+	<node id="elem2" parent="Elem">
+	    <node id="elem2_1" parent="Elem"/>
+	</node>
+    </node>
+    <node id="elem3" parent="./elem1">
+	<node node="./elem2" id="elem2_2" parent="Elem">
+	    <node id="elem2_2_1" parent="Elem"/>
+	</node>
+	<node id="elem4" parent="./../elem1/elem2">
+	    <node id="elem4_1" parent="Elem"/>
+	</node>
+    </node>
+    <node id="elem5" parent="./elem1/elem2"/>
+    <node id="elem4_1i" parent="./elem3/elem4/elem4_1"/>
+
+</node>
+

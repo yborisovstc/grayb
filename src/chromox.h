@@ -30,7 +30,7 @@ class ChromoMdlX: public ChromoMdl
 	virtual void  SetContent(const void* aHandle, const string& aContent);
 	virtual TBool AttrExists(const void* aHandle, TNodeAttr aAttr) const;
 	virtual void* AddChild(void* aParent, TNodeType aNode);
-	virtual void* AddChild(void* aParent, const void* aHandle, TBool aCopy = ETrue);
+	virtual void* AddChild(void* aParent, const void* aHandle, TBool aCopy = ETrue, TBool aRecursively = ETrue);
 	virtual void* AddChildDef(void* aParent, const void* aHandle, TBool aCopy = ETrue);
 	virtual void* AddNext(const void* aPrev, const void* aHandle, TBool aCopy = ETrue);
 	virtual void* AddNext(const void* aPrev, TNodeType aNode);

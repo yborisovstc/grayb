@@ -17,7 +17,7 @@ class Ut_uri : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST_SUITE(Ut_uri);
     CPPUNIT_TEST(test_UriOpr);
     CPPUNIT_TEST(test_UriBase);
-    CPPUNIT_TEST(test_UriChromo_1);
+    //CPPUNIT_TEST(test_UriChromo_1);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -32,6 +32,7 @@ private:
 
 CPPUNIT_TEST_SUITE_REGISTRATION( Ut_uri );
 
+const string KModulesPath = "../modules/";
 
 void Ut_uri::setUp()
 {
@@ -62,6 +63,8 @@ void Ut_uri::test_UriBase()
 
     iEnv = new Env("ut_uri_base.xml", "ut_uri_base.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths(KModulesPath);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);

@@ -283,14 +283,17 @@ ChromoNode::Iterator ChromoNode::FindNodeInMhUri(const GUri& aMhUri, const GUri:
 
 }
 
-TInt ChromoNode::GetLocalRank()
+TInt ChromoNode::GetLocalRank() const
 {
-    TInt res = 0;
+    TInt res = -1;
     TBool found = false;
     ChromoNode prnt = *Parent();
-    for (Iterator it = prnt.Begin(); it != prnt.End() && !found; it++, res++) {
-	if (*it == *this) {
-	    found = ETrue;
+    if (prnt.iHandle != NULL) {
+	for (Iterator it = prnt.Begin(); it != prnt.End() && !found; it++, res++) {
+	    ChromoNode nit = *it;
+	    if (nit == *this) {
+		found = ETrue;
+	    }
 	}
     }
     return res;
@@ -530,9 +533,9 @@ ChromoNode ChromoNode::AddChild(TNodeType aType)
     return ChromoNode(iMdl, iMdl.AddChild(iHandle, aType)); 
 }
 
-ChromoNode ChromoNode::AddChild(const ChromoNode& aNode, TBool aCopy) 
+ChromoNode ChromoNode::AddChild(const ChromoNode& aNode, TBool aCopy, TBool aRecursively) 
 { 
-    return ChromoNode(iMdl, iMdl.AddChild(iHandle, aNode.Handle(), aCopy)); 
+    return ChromoNode(iMdl, iMdl.AddChild(iHandle, aNode.Handle(), aCopy, aRecursively)); 
 }
 
 ChromoNode::Iterator ChromoNode::GetChildOwning(const ChromoNode& aNode) const

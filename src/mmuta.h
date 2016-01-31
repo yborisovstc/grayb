@@ -3,6 +3,7 @@
 
 #include "plat.h"
 #include "mchromo.h"
+#include <memory>
 
 class ChromoNode;
 class MElem;
@@ -23,6 +24,7 @@ class MMutable
 	virtual MElem* CreateHeir(const string& aName, MElem* aMan) = 0;
 	virtual MElem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, TBool aTrialMode = EFalse) = 0;
 	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse) = 0;
+	virtual auto_ptr<MChromo> GetFullChromo() const = 0;
 	virtual const MChromo& Chromos() const = 0;
 	virtual MChromo& Chromos() = 0;
 	virtual MChromo& Mutation() = 0;
@@ -54,6 +56,9 @@ class MMutable
 	virtual TBool HasModifs(const MElem* aOwner) const = 0;
 	virtual void CopyParentModifsToComp(MElem* aComp) = 0;
 	virtual TBool RebaseUriToIntNode(const GUri& aUri, const MElem* aComp, GUri& aResult) = 0;
+	// Debug
+	virtual void DumpMcDeps() const = 0;
+	virtual void DumpCmDeps() const = 0;
 };
 
 #endif

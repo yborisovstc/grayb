@@ -252,6 +252,17 @@
     </sect1>
 
     <sect1 id="ds_mut"><title>Mutations</title>
+	<sect2><title>Mutations identification, UID</title>
+	    <sect3 id="ds_mut_uid"><title>Intro</title>
+		<simpara>In the DES engine mutations are considered as object of change so needs to be identified. The identification is used in many use-cases,
+		    for instance:</simpara>
+		<itemizedlist>
+		    <listitem>In mutations rollback to identify the last mutation to be applied
+		    </listitem>
+		    <listitem>In decoupled chromo to link the chromos part, ref <xref linkend="ds_daa_chrc_rm"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
 	<sect2 id="ds_mut_unappr"><title>Avoidng unappropriate mutations</title>
 	    <sect3><title>Rank</title>
 		<simpara>We define rank as a vector the i-th element of which is the order of elements owner of i-th level.</simpara>
@@ -685,7 +696,7 @@
 		<sect4 id="ds_mut_sqeezing_so_prnc_att"><title>To optimize only attached mutations</title>
 		    <simpara>The reasoning of this principle is that optimizing out de-attached mutations is not
 			permanent. There are a lot of use-cases causes to errors if this is not followed. For example
-		    ref to uint test Ut_mod::test_ImpsMgrOpt().</simpara>
+			ref to uint test Ut_mod::test_ImpsMgrOpt().</simpara>
 		</sect4>
 		<sect4 id="ds_mut_sqeezing_so_prnc_cnd"><title>To omit optimization if opt conditions aren't met.</title>
 		    <simpara>Example is: </simpara>
@@ -801,22 +812,22 @@
 			chromo machine allow removal A1. To avoid reloading another solution can be used - to analyze 
 			optimization attribute of mutation when analyzing the deps.</simpara>
 		</sect4>
-	</sect3>
-    </sect2>
-    <sect2 id="ds_drv_int"><title>How to derive from component of heirs</title>
-	<sect3><title>Introduction</title>
-	    <simpara>Currently the following mechanism is used for derivation. Node [N] that is adding component [(CP:)C]  gets components parent [CP], requests it to produce the child in its own context,
-		relocate the created child to nodes hier, and then applies the mutations [CM] to the components. Note that the mutation applied to the component are being done in
-		node [N] context. It causes the following problem: when some system [S] uses node [N] as parent for derivation new node [N~1] then [N~1] will have another component [C] 
-		(it is also named [C] but it is not the same [C] as [N] has). This component [C] chromo [CM] is related to node [N] context. </simpara>
-	    <simpara>Ref to diagram below.</simpara>
-	    <figure id="fig_mut_drv_int1"><imageobject> <imagedata fileref="pics/pic_ds_mut_drv_from_comp.png"/> </imageobject></figure>
-	    <simpara>So it happens that CM/C is not suited for derivation because its chromo is for another context. To generalize: the components that were came to child from parent in derivation process are
-		not sutable for inheritance if the childs context differs from parents context. How to deal with this case?</simpara>
-	    <simpara>There could be the following approaches suggested:</simpara>
-	    <itemizedlist>
-		<listitem>To detect if the components is suitable for inheritance, i.e. if some of its owners were moved from original context.</listitem>
-		<listitem>To modify of creating of new node: to truly relocate the heir, not only change the owner. Ref <xref linkend="ds_drv_int_rel"/> for details</listitem>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_drv_int"><title>How to derive from component of heirs</title>
+	    <sect3><title>Introduction</title>
+		<simpara>Currently the following mechanism is used for derivation. Node [N] that is adding component [(CP:)C]  gets components parent [CP], requests it to produce the child in its own context,
+		    relocate the created child to nodes hier, and then applies the mutations [CM] to the components. Note that the mutation applied to the component are being done in
+		    node [N] context. It causes the following problem: when some system [S] uses node [N] as parent for derivation new node [N~1] then [N~1] will have another component [C] 
+		    (it is also named [C] but it is not the same [C] as [N] has). This component [C] chromo [CM] is related to node [N] context. </simpara>
+		<simpara>Ref to diagram below.</simpara>
+		<figure id="fig_mut_drv_int1"><imageobject> <imagedata fileref="pics/pic_ds_mut_drv_from_comp.png"/> </imageobject></figure>
+		<simpara>So it happens that CM/C is not suited for derivation because its chromo is for another context. To generalize: the components that were came to child from parent in derivation process are
+		    not sutable for inheritance if the childs context differs from parents context. How to deal with this case?</simpara>
+		<simpara>There could be the following approaches suggested:</simpara>
+		<itemizedlist>
+		    <listitem>To detect if the components is suitable for inheritance, i.e. if some of its owners were moved from original context.</listitem>
+		    <listitem>To modify of creating of new node: to truly relocate the heir, not only change the owner. Ref <xref linkend="ds_drv_int_rel"/> for details</listitem>
 		</itemizedlist>
 	    </sect3>
 	    <sect3 id="ds_drv_int_rel"><title>Approaches: To modify of creating of new node</title>
@@ -923,6 +934,81 @@
 	    <simpara>References are important part of relation in systems native topology (hier + inher). Establishing rules and limitations for
 		referencing can significantly affects the topology. Currently the only limitation is that rank of referenced node has to be less than the 
 		referencing one. What rules and llimitation can be applied?</simpara>
+	</sect2>
+	<sect2 id="ds_mut_pmf"><title>Mechanism for polimorphism in model</title>
+	    <sect3><title>Intro</title>
+		<simpara>One of important mechanism on creation of model is polimorphism. This means that it is possible to use different implementation
+		    of interface for some agent. For instance agent A in model has component A_1 that expose some interface, i.e connection points. In polimorphic
+		    model it should be possible to change the implementation of A_1 by A_2 (implemented same interface) in the manner that owner A "doesn't note" this
+		    change. Currently there is possibility of mutation A_1 keeping the interface unchanged. But there is no possibility at the moment to 
+		    seamlessly replace A_1 by A_2.</simpara>
+		<simpara>Actually this replacement could be implemented vis re-parenting A_1. This means that creator prepares implementation AI_1 and then
+		    "light" (i.e. without mutations) child (clone) A_1 of AI_1. Then the creator can create alternative implementation AI_2. To "replace" A_1 creator
+		    just needs to re-parent A_1 from AI_1 to AI_2. This also could be achieved by removing AI_1:A_1 and create AI_2:A_1 instead, this will
+		    work only if "not unique naming" feature is enabled, ref <xref linkend="ds_mut_nm"/>.</simpara>
+		<simpara>Two kind of polimorphism can be considered:</simpara>
+		<orderedlist>
+		    <listitem>"Cold-switching", when the implementation is replaced before connecting within the owner.</listitem>
+		    <listitem>"Hot-plug" where replacement is performed after all connections are established.</listitem>
+		</orderedlist>
+		<simpara>Currently the only cold-switching polymorphism is supported with usage of the feature that the same name can be applied for 
+		    different compoents, ref <xref linkend="ds_mut_nm_sn"/>. So single reference (for instance from edge) can point to different agents.</simpara>
+	    </sect3>
+	    <sect3><title>Cold-switching</title>
+		<simpara>Cold-switching polymorphism approach is activelly using at the moment</simpara>
+	    </sect3>
+	    <sect3><title>Hot-plug</title>
+		<simpara>Even the idea of hot-plugging is clear the design approaches are not obvious. The possible approach would be to support automatic
+		    connecting/disconnecting to components. Owner doesn't modify connection to the component being removed but the connections are going to 
+		    state "invalid" or "incative", then the owner monitors of creation new component and if it happens initiates refreshing of connections state.
+		    Some kind of this mechanism was used on earlier version of DES engine, but not in the latest.
+		</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mut_nm"><title>Components name uniquiness</title>
+	    <sect3><title>Intro</title>
+		<simpara>Current implementation of DES engine allows for agent to have components with the same name. The only limitation is to have 
+		    a pair (parents_name, name) unique. But even this restriction is not applied in case if component (parents_name, name) pair is the same as this
+		    in some removed component. Removed component is considered as invisivle via navigation so this lack of uniquiness doesn't trouble selecting
+		    component by parents and name. Howewer this approach causes problems with navigation when we enable removed components lookup during navigation.
+		    This mode is required for decoupled chromo approach, ref <xref linkend="ds_daa_chrc_rm"/>.</simpara>
+		<simpara>So the question is if we can request strong restriction of components name to be unique?</simpara>
+		<simpara>Actually the ability of components to have the same name is activelly used to support cold-switching polymorphism, ref 
+		    <xref linkend="ds_mut_pmf"/>. For instance in [syst] module Extender agent has component "Connpoint:Int" for internal connection point.
+		In many cases it is removed and re-created with the same name but another parent. This keeps interface but change implementation.</simpara>
+	    </sect3>
+	    <sect3><title>Unique name: how to check uniqueness in case of chromo optimization.</title>
+		<simpara>The use-case is: node A has component A_1, that is removed then, chromo is optimized further, i.e. A_1 is not created in mode.
+		    How to ensure the name uniqueness if A_1 doesn't present in model. The potential threat is that another node with name A_1 can be created, so
+		    after de-optimization the model will get broken.</simpara>
+		<simpara>The solution would be to check not only components name in model but also in optimized [node] mutation.</simpara>
+	    </sect3>
+	    <sect3 id="ds_mut_nm_sn"><title>Same name component as potential approach of polimorphism in model</title>
+		<simpara>Initially there wan an idea to use the feature of name not-uniqueness as part of mechanism of polymorphism in model, ref
+		    <xref linkend="ds_mut_pmf"/>, by removing some component A_1 and creating new implementation with same name A_1 instead. But the 
+		    latest DES engine implementation requires full "disconnecting" of component before deleting. Earlier engine variant supported kind of 
+		    "hot-plug" replacement via automatic disconnection/reconnection, but it was not implemented completelly.
+		    Now it makes sense to use re-parenting mechanism instead.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mut_rn"><title>Renaming of node</title>
+	    <sect3><title>Intro</title>
+		<simpara>Renaming is one of sensitive parts of model mutating. There are some reasons of this sensitivity.</simpara>
+		<itemizedlist>
+		    <listitem> One of them is that renaming brakes relation between chromo [node] mutation and corresponding model node, 
+			ref <xref linkend="ds_daa_chrc_rn"/>.
+		    </listitem>
+		    <listitem>Another area of sensitivity is dependency that this mutation creates. Disabling of regular pheno modif minimised
+			the amount of dependencies. Now the only refs and renaming are deps causes. </listitem>
+		</itemizedlist>
+		<simpara>Currently the direct renaming approach is implemented: component is re-registered with new name in its owner. Alternative
+		    approach is to use additional name (pseudo-name) instead.</simpara>
+	    </sect3>
+	    <sect3><title>Node renaming: pseudo-names approach</title>
+		<simpara>The idea of this approach is to allow models node to have more then one name. All the names are equivalent: any of names
+		    can be used for locating node. The rationale of this approach is that the name is just compact designation of nodes functionality and can
+		    have more that one meaning.</simpara>
+	    </sect3>
 	</sect2>
     </sect1>
 
@@ -1717,7 +1803,7 @@
 	</sect2>
     </sect1>
 
-    <sect1 id="ds_da"><title>Distributed asyncronous agents (DAA)</title>
+    <sect1 id="ds_daa"><title>Distributed asyncronous agents (DAA)</title>
 	<sect2><title>Introduction.</title>
 	    <simpara>Creating of agents in separate execution environment should be supported. Ref TBD for use-case.
 		This assumes several kind of separate execution environment: thread, process, network node. These kinds of 
@@ -1734,10 +1820,10 @@
 	<sect2><title>Problems to be considered</title>
 	    <sect3><title>How native hierarhy can be implemented for DAA?</title>
 		<simpara>Currently the native hier is based on direct access to components - each agent has
-		components register where the direct access pointers to the components are stored.</simpara>
-	    <simpara>In fact the agent-container can store in the register "path" to component instead of
-		direct pointer. The nature of "path" depends on separate exection environment implementation.
-	    </simpara>
+		    components register where the direct access pointers to the components are stored.</simpara>
+		<simpara>In fact the agent-container can store in the register "path" to component instead of
+		    direct pointer. The nature of "path" depends on separate exection environment implementation.
+		</simpara>
 	    </sect3>
 	</sect2>
 	<sect2><title>Executing environment types.</title>
@@ -1771,7 +1857,7 @@
 		    remote environment. The idea of proxy is to simplify interacting to the remote agent as much as possible. From this point of 
 		    view it should be an agent. However proxy doesn't implement base agents APIs directly but just redirects all the request
 		    to its proxied agent.  </simpara>
-		    <simpara> The proxy should also be point of interacting to proxied agent, so the proxy should expose specific APIs
+		<simpara> The proxy should also be point of interacting to proxied agent, so the proxy should expose specific APIs
 		    for async interaction. Such APIs currently missing in base agent. So there are the following approaches to be considered:
 		    <orderedlist>
 			<listitem><emphasis role="bold">To extend base agent APIs and functionality in order to support async interactions:</emphasis>
@@ -1792,11 +1878,11 @@
 		<simpara>On the one hand AA proxy is shown as proxied agent itself within the current env. 
 		    So we could assume that it has the same attributes as proxied agent: name, type, etc. On another hand it contradicts to the 
 		    generic design of agents, where the type (i.e. URI in native hier inher projection) of agent is unique. So the name of proxy
-		can be the same as proxied agent but the type has to be specific.</simpara>
+		    can be the same as proxied agent but the type has to be specific.</simpara>
 	    </sect3>
 	    <sect3><title>Interaction: customising proxy or env ?</title>
 		<simpara>There are two approached of implementing various kinds of interactions: to implement interactions type specifics on 
-		proxy or environment side.</simpara>
+		    proxy or environment side.</simpara>
 	    </sect3>
 	    <sect3 id="ds_daa_proxy_sa"><title>Approach: AA proxy specific APIs</title>
 		<sect4><title>Use-case - gettng node</title>
@@ -1869,7 +1955,7 @@
 		    <listitem id="ds_daa_proxy_crh_stx_renv"><emphasis role="bold">To use specific native agent for remote env</emphasis>
 			<para> Ref <xref linkend="ds_daa_proxy_crh_stx_renv_alz"/> for the approach analysis.</para>
 			<para>In contrast to approach <xref linkend="ds_daa_proxy_crh_stx_agt"/> this agent represent not remote root but remote env. So 
-			the agent serves as client to remote env.</para>
+			    the agent serves as client to remote env.</para>
 		    </listitem>
 		</orderedlist>
 		<sect4 id="ds_daa_proxy_crh_stx_attr_alz"><title>Approach "Using dedicated attribute "env" for mutation -node-": analysis</title>
@@ -1901,7 +1987,7 @@
 			    <listitem>This approach pecularity is that the remote root is dedicated agent. This agent doesn't need to have relation to 
 				local proxy to communicate to agent's owner. Instead the agent embeds the mechanism of communication to its counterpart -
 				remote root agent master.
-				</listitem>
+			    </listitem>
 			</orderedlist>
 		    </sect5>
 		    <sect5><title>Use-case: creating root node in remote root</title>
@@ -1942,7 +2028,7 @@
 			    <listitem>Remote_root_agent_master redirects this request to service - Remote_root_agent_slave.</listitem>
 			    <listitem>Remote_root_agent_slave implemets this request locally, and returns Target_node ID to Remote_root_agent_master</listitem>
 			    <listitem>Remote_root_agent_master get Target_node ID, creates Target_node proxy, register the proxy and returns proxy pointer to
-			    Current_node</listitem>
+				Current_node</listitem>
 			</orderedlist>
 		    </sect5>
 		</sect4>
@@ -1970,7 +2056,7 @@
 			there the local env is "remote" in respect of remote env. So maybe remote env agent is required on both sides ? No, it isn't.
 			Remote env agent is just for initiating creation remote env, in this regard the local env is "master" but the remote "slave".
 			The envs are symmetric in regards of that both have to have upper level proxies one to another: in local env remote env agent have
-		    proxy to its remote component, remote root have proxy to its owner (remote env agent) in local env.</simpara>
+			proxy to its remote component, remote root have proxy to its owner (remote env agent) in local env.</simpara>
 		</sect4>
 		<sect4><title>Will be upper level proxy to local remote env agent root in remote env ?</title>
 		</sect4>
@@ -2034,14 +2120,14 @@
 		    </itemizedlist>
 		    <orderedlist><title>Interactions:</title>
 			<listitem>Current_node creates Remote_env_agent that contains internal chromo. Remote_env_agent requests Remote_env to create remote model by
-			   internal chromo - Remote_env creates remote model.</listitem>
-		       <listitem>Current_node request Remote_env_agent for getting internal node Remote_env_node by URI - Remote_env_agent request Remote_env for 
-			   getting node - Remote_env responses with Remote_env_node identifier - Remote_env_agent creates native node proxy Remote_env_node and
-			   set identifier as its cursor.</listitem>
-		       <listitem>Current_node request Remote_env_agent for getting internal node Remote_env_node again - Remote_env_agent request Remote_env for 
-			   getting node - Remote_env responses with Remote_env_node identifier - Remote_env_agent checks if there is already proxy with this
-			   identifier set as a cursor (ref <xref linkend="ds_daa_apc_crs"/>) - Remote_env_agent detects that there is already Remote_env_node_proxy 
-			   with such identifier - Remote_env_agent returns the current Remote_env_node_proxy to Current_node.  </listitem>
+			    internal chromo - Remote_env creates remote model.</listitem>
+			<listitem>Current_node request Remote_env_agent for getting internal node Remote_env_node by URI - Remote_env_agent request Remote_env for 
+			    getting node - Remote_env responses with Remote_env_node identifier - Remote_env_agent creates native node proxy Remote_env_node and
+			    set identifier as its cursor.</listitem>
+			<listitem>Current_node request Remote_env_agent for getting internal node Remote_env_node again - Remote_env_agent request Remote_env for 
+			    getting node - Remote_env responses with Remote_env_node identifier - Remote_env_agent checks if there is already proxy with this
+			    identifier set as a cursor (ref <xref linkend="ds_daa_apc_crs"/>) - Remote_env_agent detects that there is already Remote_env_node_proxy 
+			    with such identifier - Remote_env_agent returns the current Remote_env_node_proxy to Current_node.  </listitem>
 		    </orderedlist>
 		    <orderedlist><title>Discussion</title>
 			<itemizedlist>The problem here relates to implementation of cursor, ref <xref linkend="ds_daa_apc_crs"/>.</itemizedlist>
@@ -2101,7 +2187,7 @@
 			env proxy. These specific requests relate to proxy counterpart in remote env. Proxy has to have unique identifier of this counterpart.
 			This unique identifier can be considered as "cursor" of interactions. Cursor is sent as the argument of proxies specific request.</simpara>
 		    <simpara>What can be this identifier. One option is to use counterpart URI. The problem with URI is that it is not unique. Another option is
-		    to generate UID for each native node and use UID as identifier.</simpara>
+			to generate UID for each native node and use UID as identifier.</simpara>
 		</sect4>
 	    </sect3>
 	    <sect3 id="ds_daa_apc_fbp"><title>Front and back proxy</title>
@@ -2119,7 +2205,7 @@
 	    <sect3><title>Proxy ifaces</title>
 		<simpara>Proxy should acts as base agent because it should be included into model instead of real agent. For instance
 		    it should be included as an owner of the "root" in remote model. So all base agent ifaces should be supported. Not all interfaces
-		are suitable for work in context of proxy. </simpara>
+		    are suitable for work in context of proxy. </simpara>
 	    </sect3>
 	</sect2>
 	<sect2><title>Support of DAA</title>
@@ -2171,10 +2257,15 @@
 		<itemizedlist>
 		    <listitem>To provide mechanism of chromo nodes communication.</listitem>
 		    <listitem>To modify the approach of chromo parts attachment: to avoid attaching chromo nodes but use models nodes attachments
-			to keep continuity of chromo, i.e use "virtual" attaching.</listitem>
+			to keep continuity of chromo, i.e use "virtual" attaching. We also will call this "decoupled" chromo approach.</listitem>
 		</itemizedlist>
 	    </sect3>
-	    <sect3><title>"Virtual attaching: to avoid attaching chromo nodes but use models nodes attachments.</title>
+	    <sect3 id="ds_daa_chrc_va"><title>"Virtual attaching (decoupled chromo): to avoid attaching chromo nodes but use models nodes attachments.</title>
+		<simpara>How this approach can be implemeted. We need to keep mutation order in owner to keep supporting dependencies analyis
+		    mechanism. So in Elem::AddElem we need to attach the "node" mutation. But it doesn't make sense to attach all the componet
+		    tree because in any case we need to assemble chromo from the root. This is because the mutation of local model node causes
+		    change on just this node chromo but doesn't affect owners chromo. So in Elem::AddElem we need to attach the "node" mutation
+		    (i.e. components chromo) but not recursivelly: only to keep mutations order and supports dependencies.</simpara>
 		<simpara>In what cases the nodes chromo isn't attached to owners chromo ? This happens for instance if the node is "inherited" from 
 		    parent of owner, look at Elem::CreateHeir. It uses run-time mutation that doesn't attach the chromo. This "not attaching" fact
 		    is used within the model to distinguish such nodes from nodes that created via "true" mutation. This means that to keep the 
@@ -2185,6 +2276,38 @@
 		<simpara>In many cases the nodes chromo is requested and used assuming that the chromo is "whole" chromo. This is for instance when heir is
 		    created from the node. But with vitrual approach is will not work. The solution here is to add method "GetChromo" to MElem that
 		    creates chromo object and combines it from model owned nodes chromos.</simpara>
+		<simpara>The procedure of combinign whole chromo is based on the relation between owners chromo [node] mutation and corresponding owners component.
+		    This means that for each [node] mutation the owner can find the corresponding component, request the components chromo, and attach it to
+		    [node] mutation.</simpara>
+
+	    </sect3>
+	    <sect3 id="ds_daa_chrc_re"><title>Vitrual attaching: is model node rank equivalent to chromo node "node" rank ?</title>
+		<simpara>Model tree includes not only nodes created explicitl by the corresponding "node" mutation of chromo but also nodes inherited 
+		    from parent. So models rank is not equivalent to chromo rank. We can make it equivalent if we take in account only attached models node.
+		</simpara>
+	    </sect3>
+	    <sect3 id="ds_daa_chrc_rm"><title>Decoupled chromo: attaching chromo of removed component</title>
+		<simpara>The whole agents chromo is combined from chromos of attached components, including not direct component in case of 
+		    pheno modification. So the procedure is as: the agent iterates thru all its chromo mutation, in case if mutation is [node] then
+		    gets the component, requests component full chromo and attaches it to the [node] mutation. This works ok in most cases but not
+		    in case of removed node. Agent is not able to get removed comp in this case.</simpara>
+		<simpara>The solution here could be improving agent navigation methos GetNode by adding filter to include/exclude removed comps from
+		    the lookup. However there is a problem with this solution: multiple choice in case of removing node and create new node with same name.
+		</simpara>
+		<simpara>The possible solutions are:</simpara>
+		<orderedlist>
+		    <listitem>To allow multiple choice (i.e. GetNode to return a set of nodes)  and add GetNode method variant that returns iterator.
+			<para>Resolving of rigt component can be done via analysis of nodes chromo root UID, ref <xref linkend="ds_mut_uid"/>.</para>
+		    </listitem>
+		    <listitem>To state the restriction: components name is to be unique, ref <xref linkend="ds_mut_nm"/>.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3 id="ds_daa_chrc_rn"><title>Decoupled chromo: how to get chromo for renamed node ?</title>
+		<simpara>There is the problem with implemeting of decoupled chromo in case of renaming node. The problem occurs with combining the 
+		    full chromo. As was mentioned above (ref <xref linkend="ds_daa_chrc_va"/> the procedure of combining full chromo is based on relation
+		between owners [node] mutation and corresponding owners component. But this relation gets broken when the component is renamed.</simpara>
+	    </sect3>
+	    <sect3><title id="ds_daa_chrc_rln">Decoupled chromo: how to relate from owner [node] mut to corresponding model node chromo root</title>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_daa_iss"><title>Design issues to be considered</title>
@@ -2212,11 +2335,11 @@
 	</sect2>
 	<sect2><title>Speed up of model creation</title>
 	    <simpara>To revise the approach of creating child. Currently the full historical creation approach is used: all ancestors are created
-	    subsequently. To consider direct inheritance.</simpara>
+		subsequently. To consider direct inheritance.</simpara>
 	</sect2>
 	<sect2><title>"Embedded" connections</title>
 	    <simpara>To embed connection to lower layer. This mean that the base layer to be graph but not just set. Native hier to be created with usage of
-	    the base connection mechanism. Multiple content to be used ?</simpara>
+		the base connection mechanism. Multiple content to be used ?</simpara>
 	</sect2>
 	<sect2><title>Simplification: to avoid "Agents" container.</title>
 	    <simpara>To consider all components as agents.</simpara>
@@ -2239,18 +2362,21 @@
 	    <simpara>Using explicit connectins makes the complicated systems (transition functions for instance) very messy, there are a lot of 
 		connection agents. Is it possible to specify connections by another way. For instance we have transition Fa(Fb, Fc) where Fb, Fc are 
 		some functions also. We can just add Fb, Fc as comptents into Fa, naming them with predefinced names (Arg1, Arg2 for instance). So we 
-	    will avoid explicit connections here.</simpara>
+		will avoid explicit connections here.</simpara>
 	</sect2>
 	<sect2 id="ds_th_mv"><title>To revise mutation validation mechanism.</title>
 	    <simpara>Currently the complicate mechanism is used to ensure mutation safety. To consider other mutation model that allows avoid this 
 		complication and simplify the mutation scheme.</simpara>
 	    <simpara>On of the solution here is to use native safety mechanism: all deps should be registered as run-time deps, mutated node notifies all deps
-	    about particular mutation, so the deps can adapt to the mutation or refuse it.</simpara>
+		about particular mutation, so the deps can adapt to the mutation or refuse it.</simpara>
 	</sect2>
 	<sect2><title>To improve navigation policy</title>
 	    <simpara>Currently there are not restriction navigating thru model using MElem method GetNode. But this is wrong behavior. The access policies are
 		to be introduced. Namelly, the access to upper layers has to be denied, the only exception would be access from embedded agent to the container agent.
 		But here dedecated mechanism could be used.</simpara>
+	</sect2>
+	<sect2><title>Mutation for re-parent</title>
+	    <simpara>Ref <xref linkend="ds_mut_pmf"/></simpara>
 	</sect2>
     </sect1>
 

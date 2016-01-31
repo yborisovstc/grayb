@@ -9,8 +9,7 @@
     <cont node="./Required" val="MVisContainer" />
     <cont node="./Provided" val="MVisChild" />
   </node>
-  <node id="ChildE" parent="/*/Modules/SysComps/Extender" >
-    <rm node="./Int" />
+  <node id="ChildE" parent="/*/Modules/SysComps/ExtenderBase" >
     <node id="Int" parent="./../Parent" />
   </node>
   <node id="DIntProv" parent="/*/Modules/SysComps/ConnPoint" >
@@ -45,18 +44,18 @@
       <cont node="./Value" val="Normal" />
     </node>
     <node id="WidgetState_State" parent="/Root/Modules/(Elem:)DesComps/(State:)StateVarC" >
+      <cont node="./Data/E_Inp_Prep/P2" val="" />
+      <cont node="./Data/E_Conf_Out/P1" val="" />
+      <cont node="./Data/E_Prep_Conf/P1" val="" />
+      <cont node="./Data/E_Prep_Conf/P2" val="" />
       <rm node="./Data/Prepared" />
       <rm node="./Data/Confirmed" />
-      <node id="Prepared" parent="/Root/Modules/(Elem:)VisComps/(Vert:)Widget_common/(DataSTVar:)WidgetState_Data" node="./Data" />
-      <cont node="./Data/E_Inp_Prep/P2" val="" />
-      <cont node="./Data/E_Inp_Prep/P2" val="" />
-      <rm node="./(Incaps:)Data/(WidgetState_Data:)Prepared" />
-      <node id="Prepared" parent="/Root/Modules/(Elem:)VisComps/(Vert:)Widget_common/(DataSCTVar:)WidgetState_DataSCT" node="./Data" />
-      <cont node="./Data/E_Inp_Prep/P2" ref="./../../Prepared/Capsule/Inp" />
-      <node id="Confirmed" parent="/Root/Modules/(Elem:)VisComps/(Vert:)Widget_common/(DataSCTVar:)WidgetState_DataSCT" node="./Data" />
-      <cont node="./Data/E_Conf_Out/P1" ref="./../../Confirmed/Capsule/Out" />
-      <cont node="./Data/E_Prep_Conf/P1" ref="./../../Prepared/Capsule/Out" />
-      <cont node="./Data/E_Prep_Conf/P2" ref="./../../Confirmed/Capsule/Inp" />
+      <node id="Prepared2" parent="/Root/Modules/(Elem:)VisComps/(Vert:)Widget_common/(DataSCTVar:)WidgetState_DataSCT" node="./Data" />
+      <cont node="./Data/E_Inp_Prep/P2" ref="./../../Prepared2/Capsule/Inp" />
+      <node id="Confirmed2" parent="/Root/Modules/(Elem:)VisComps/(Vert:)Widget_common/(DataSCTVar:)WidgetState_DataSCT" node="./Data" />
+      <cont node="./Data/E_Conf_Out/P1" ref="./../../Confirmed2/Capsule/Out" />
+      <cont node="./Data/E_Prep_Conf/P1" ref="./../../Prepared2/Capsule/Out" />
+      <cont node="./Data/E_Prep_Conf/P2" ref="./../../Confirmed2/Capsule/Inp" />
     </node>
     <node id="WidgetButtonPressEvent" parent="/Root/Modules/(Elem:)DataComps/(DataSCT:)DataSCTVar" >
       <cont node="./Type" val="TPL,SI:Type,SI:State,SI:Button,SI:X,SI:Y 0 0 0 0 0" />
@@ -158,7 +157,7 @@
         <cont node="./P2" ref="./../../Data/Capsule/Inp" />
       </node>
     </node>
-    <node id="Child" parent="./../(Extender:)ChildE" node="./Capsule" />
+    <node id="Child" parent="./../(ExtenderBase:)ChildE" node="./Capsule" />
     <node id="Drw" parent="./../DrawingV" />
     <node id="Inp_XY" parent="/*/Modules/DesComps/StVarInp" node="./Capsule" />
     <node id="Inp_WH" parent="/*/Modules/DesComps/StVarInp" node="./Capsule" />

@@ -28,14 +28,29 @@
 	 Extender is fitted by simple CP as default. In case of enhanced extender is required this 
 	 CP needs to be replaced by the enhanced conn point. 
 	 -->
+    <node id="ExtenderBase" parent="Vert"> 
+	<!--node id="Int" -->
+	<node node="./(Elem:)Agents" id="MAExteder" parent="ExtenderAgent"/> 
+    </node>
+
     <node id="Extender" parent="Vert"> 
 	<node id="Int" parent="./../ConnPoint"/>
 	<node node="./(Elem:)Agents" id="MAExteder" parent="ExtenderAgent"/> 
     </node>
 
+    <node id="ExtenderInpBase" parent="Vert"> 
+	<!--node id="Int"-->
+	<node node="./(Elem:)Agents" id="MAExteder" parent="ExtenderAgentInp"/> 
+    </node>
+
     <node id="ExtenderInp" parent="Vert"> 
 	<node id="Int" parent="./../ConnPoint"/>
 	<node node="./(Elem:)Agents" id="MAExteder" parent="ExtenderAgentInp"/> 
+    </node>
+
+    <node id="ExtenderOutBase" parent="Vert"> 
+	<!--node id="Int"-->
+	<node node="./(Elem:)Agents" id="MAExteder" parent="ExtenderAgentOut"/> 
     </node>
 
     <node id="ExtenderOut" parent="Vert"> 

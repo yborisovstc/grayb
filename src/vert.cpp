@@ -13,13 +13,7 @@ Vert::Vert(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
     // Create component for run-time extentions
-    //Elem* parent = Provider()->GetNode("Elem");
     Elem* agents = Provider()->CreateNode("Elem", "Agents", this, iEnv);
-    /*
-    if (parent != NULL) {
-	parent->AppendChild(agents);
-    }
-    */
     __ASSERT(agents != NULL);
     TBool res = AppendComp(agents);
     __ASSERT(res);

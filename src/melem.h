@@ -128,14 +128,15 @@ class MElem : public Base, public MMutable, public MOwner, public MParent, publi
 	virtual void SetObserver(MCompsObserver* aObserver) = 0;
 	virtual vector<MElem*>& Comps() = 0;
 	virtual const vector<MElem*>& Comps() const = 0;
-	virtual MElem* GetNode(const string& aUri) = 0;
-	virtual MElem* GetNode(const GUri& aUri) = 0;
-	virtual MElem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere = EFalse) = 0;
+	virtual MElem* GetNode(const string& aUri, TBool aInclRm = EFalse) = 0;
+	virtual MElem* GetNode(const GUri& aUri, TBool aInclRm = EFalse) = 0;
+	virtual MElem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere = EFalse, TBool aInclRm = EFalse) = 0;
 	virtual MElem* GetRoot() const = 0;
 	virtual MElem* GetInhRoot() const = 0;
 	virtual TInt GetContCount() const = 0;
 	virtual TBool IsContChangeable(const string& aName = string()) const = 0; 
 	virtual void GetCont(string& aCont, const string& aName=string()) = 0; 
+	virtual string GetContent(const string& aName=string()) const = 0; 
 	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const = 0;
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()) = 0; 
 	virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse) = 0;
@@ -150,6 +151,8 @@ class MElem : public Base, public MMutable, public MOwner, public MParent, publi
 	virtual TBool RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere, const MElem* aBase, GUri& aRes) = 0;
 	virtual MElem* GetAowner() = 0;
 	virtual const MElem* GetAowner() const = 0;
+	virtual MElem* GetCompAowner(const MElem* aComp) = 0;
+	virtual const MElem* GetCompAowner(const MElem* aComp) const = 0;
 	virtual MElem* GetAcompOwning(MElem* aComp) = 0;
 	virtual MElem* GetUpperAowner() = 0;
 	virtual MElem* GetCommonOwner(MElem* aElem) = 0;
@@ -161,16 +164,25 @@ class MElem : public Base, public MMutable, public MOwner, public MParent, publi
 	virtual TBool IsAownerOf(const MElem* aElem) const = 0;
 	virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal) = 0;
 	virtual void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse) = 0;
+	virtual void GetRank(Rank& aRank) const = 0; 
 	virtual void GetRank(Rank& aRank, const ChromoNode& aMut) const = 0;
 	virtual void GetLRank(Rank& aRank, TBool aCur = EFalse) const = 0; 
+	virtual void GetCompRank(Rank& aRank, const MElem* aComp) const = 0;
+	virtual TInt GetCompLrank(const MElem* aComp) const = 0;
+	virtual ChromoNode GetCompNmut(const MElem* aComp) const = 0;
+	virtual MElem* GetComp(const string& aParent, const string& aName) = 0;
+	virtual MElem* GetComp(const string& aParent, const string& aName) const = 0;
 	// Gets the comp with given type and owning given element
 	virtual MElem* GetCompOwning(const string& aParent, MElem* aElem) = 0;
 	virtual MElem* GetCompOwning(MElem* aElem) = 0;
+	virtual const MElem* GetCompOwning(const MElem* aElem) const = 0;
 	virtual TBool IsInheritedComp(const MElem* aNode) const = 0;
 	virtual TBool HasInherDeps(const MElem* aScope) const = 0;
 	// Debugging
 	virtual TInt GetCapacity() const = 0;
 	virtual TBool IsHeirOf(const string& aParent) const = 0;
+	virtual MElem* GetNodeS(const char* aUri) = 0;
+	virtual MElem* GetComp(TInt aInd) = 0;
     public:
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes) = 0;

@@ -17,11 +17,11 @@
     </node>
     <node id="v1" parent="./v1p">
 	<rm node="./v1p_1"/>
-	<node id="v1p_1" parent="./../v2"/>
+	<node id="v1p_1_new" parent="./../v2"/>
     </node>
     <node id="edge1" parent="Edge">
 	<cont node="./P1" ref="./../../v2" />
-	<cont node="./P2" ref="./../../v1/v1p_1/v1p_1_1" />
+	<cont node="./P2" ref="./../../v1/v1p_1_new/v1p_1_1" />
     </node>
 </node>
 

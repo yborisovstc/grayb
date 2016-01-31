@@ -33,16 +33,14 @@
     </node>
 
     <!-- Input of standard Int State -->
-    <node id="StIntInp" parent="/*/Modules/SysComps/ExtenderInp"> 
-	<rm node="./Int"/>
+    <node id="StIntInp" parent="/*/Modules/SysComps/ExtenderInpBase"> 
 	<node id="Int" parent="./../StInpSocket"> 
 	    <cont node="./PinData/Provided" val="MDIntGet"/>
 	</node>
     </node>
 
     <!-- Output of standard Int State -->
-    <node id="StIntOut" parent="/*/Modules/SysComps/ExtenderOut"> 
-	<rm node="./Int"/>
+    <node id="StIntOut" parent="/*/Modules/SysComps/ExtenderOutBase"> 
 	<node id="Int" parent="./../StOutSocket"> 
 	    <cont node="./PinData/Required" val="MDIntGet"/>
 	</node>
@@ -219,13 +217,11 @@
 	    <cont node="./Provided" val="MDesSyncable"/>
 	</node>
 	<!-- Input -->
-	<node node="./Capsule" id="Inp" parent="/*/Modules/SysComps/ExtenderInp"> 
-	    <rm node="./Int"/>
+	<node node="./Capsule" id="Inp" parent="/*/Modules/SysComps/ExtenderInpBase"> 
 	    <node id="Int" parent="./../../../StInpSocket"/> 
 	</node>
 	<!-- Output -->
-	<node node="./Capsule" id="Out" parent="/*/Modules/SysComps/ExtenderOut"> 
-	    <rm node="./Int"/>
+	<node node="./Capsule" id="Out" parent="/*/Modules/SysComps/ExtenderOutBase"> 
 	    <node id="Int" parent="./../../../StOutSocket"/> 
 	</node>
     </node>
