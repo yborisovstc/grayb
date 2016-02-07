@@ -24,6 +24,7 @@
      na - inactive
      -->
 <!ATTLIST node 
+    targ CDATA #IMPLIED
     node CDATA #IMPLIED
     id CDATA #REQUIRED
     parent CDATA #REQUIRED
@@ -36,6 +37,7 @@
   node - mutated node - DES URI
   -->
 <!ATTLIST rm 
+    targ CDATA #IMPLIED
     node CDATA #IMPLIED
     ord CDATA #IMPLIED
     na CDATA #IMPLIED
@@ -47,9 +49,10 @@
      val - attr value,
      -->
 <!ATTLIST change
-   node CDATA #REQUIRED
-   attr CDATA #REQUIRED
-   val CDATA #REQUIRED
+    targ CDATA #IMPLIED
+    node CDATA #REQUIRED
+    attr CDATA #REQUIRED
+    val CDATA #REQUIRED
     ord CDATA #IMPLIED
     na CDATA #IMPLIED
 >
@@ -59,9 +62,10 @@
      val - new value OR ref - new value - ref to node,
      -->
 <!ATTLIST cont
-   node CDATA #IMPLIED
-   val CDATA #IMPLIED
-   ref CDATA #IMPLIED
+    targ CDATA #IMPLIED
+    node CDATA #IMPLIED
+    val CDATA #IMPLIED
+    ref CDATA #IMPLIED
     ord CDATA #IMPLIED
     na CDATA #IMPLIED
 >
@@ -71,8 +75,9 @@
      node - destination node
      -->
 <!ATTLIST move
-   id CDATA #REQUIRED
-   node CDATA #IMPLIED
+    targ CDATA #IMPLIED
+    id CDATA #REQUIRED
+    node CDATA #IMPLIED
     ord CDATA #IMPLIED
     na CDATA #IMPLIED
 >
@@ -82,8 +87,9 @@
      node - destination node
      -->
 <!ATTLIST import
-   id CDATA #REQUIRED
-   node CDATA #IMPLIED
+    targ CDATA #IMPLIED
+    id CDATA #REQUIRED
+    node CDATA #IMPLIED
     ord CDATA #IMPLIED
     na CDATA #IMPLIED
 >

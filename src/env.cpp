@@ -254,7 +254,7 @@ MElem* ImportsMgr::OnUriNotResolved(MElem* aNode, const GUri& aUri)
 
 ChromoMgr::ChromoMgr(Env& aHost): Base(), mHost(aHost), mLim(0), 
     mEnablePhenoModif(EFalse), mEnableFixErrors(EFalse), mEnableReposMuts(EFalse),
-    mEnableCheckSafety(ETrue), mEnableOptimization(ETrue) 
+    mEnableCheckSafety(EFalse), mEnableOptimization(ETrue) 
 {
 }
 

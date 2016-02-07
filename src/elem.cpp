@@ -1197,33 +1197,92 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    }
 	    continue;
 	}
-	TNodeType rnotype = rno.Type();
-	if (rnotype == ENt_Node) {
-	    MElem* node = AddElem(rno, aRunTime, aTrialMode);
-	    if (node == NULL) {
-		string pname = rno.Attr(ENa_Parent);
-		Logger()->Write(MLogRec::EErr, this, "Adding node with parent [%s] failed", pname.c_str());
+#if 0
+	if (this == GetRoot() && rno.AttrExists(ENa_MutNode)) {
+	    // Targeted mutation, redirect to target
+	    MElem* targ = GetNode(rno.Attr(ENa_MutNode));
+	    TBool rres = ETrue;
+	    if (targ != NULL) {
+		ChromoNode& troot = targ->Mutation().Root();
+		ChromoNode madd = troot.AddChild(rno, ETrue, EFalse);
+		madd.RmAttr(ENa_MutNode);
+		if (rno.AttrExists(ENa_Ref)) {
+		    MElem* ref = GetNode(rno.Attr(ENa_Ref));
+		    if (ref != NULL) {
+			string ruri = ref->GetRUri(targ);
+			madd.SetAttr(ENa_Ref, ruri);
+		    } else {
+			Logger()->Write(MLogRec::EErr, this, "Cannot find ref [%s]", rno.Attr(ENa_Ref).c_str());
+			rres = EFalse;
+		    }
+		}
+		if (rno.AttrExists(ENa_Parent)) {
+		    MElem* prn = GetNode(rno.Attr(ENa_Parent));
+		    if (prn != NULL) {
+			string puri = prn->GetRUri(targ);
+			madd.SetAttr(ENa_Parent, puri);
+		    } else {
+			Logger()->Write(MLogRec::EErr, this, "Cannot find parent [%s]", rno.Attr(ENa_Parent).c_str());
+			rres = EFalse;
+		    }
+		}
+		if (rres && targ != this) {
+		    targ->Mutate(aRunTime, aCheckSafety, aTrialMode);
+		    if (!aRunTime) {
+			iChromo->Root().AddChild(rno);
+		    }
+		}
+	    } else {
+		Logger()->Write(MLogRec::EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_MutNode).c_str());
 	    }
+	} else {
+#endif
+	if (this == GetRoot() && rno.AttrExists(ENa_Targ)) {
+	    // Targeted mutation, redirect to target
+	    MElem* targ = GetNode(rno.Attr(ENa_Targ));
+	    if (targ != NULL) {
+		ChromoNode& troot = targ->Mutation().Root();
+		ChromoNode madd = troot.AddChild(rno, ETrue, EFalse);
+		madd.RmAttr(ENa_Targ);
+		targ->Mutate(aRunTime, aCheckSafety, aTrialMode);
+		/*
+		if (!aRunTime) {
+		    iChromo->Root().AddChild(rno);
+		}
+		*/
+	    } else {
+		Logger()->Write(MLogRec::EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_Targ).c_str());
+	    }
+	} else {
+	    // Local mutation
+	    TNodeType rnotype = rno.Type();
+	    if (rnotype == ENt_Node) {
+		MElem* node = AddElem(rno, aRunTime, aTrialMode);
+		if (node == NULL) {
+		    string pname = rno.Attr(ENa_Parent);
+		    Logger()->Write(MLogRec::EErr, this, "Adding node with parent [%s] failed", pname.c_str());
+		}
+	    }
+	    else if (rnotype == ENt_Change) {
+		ChangeAttr(rno, aRunTime, aCheckSafety, aTrialMode);
+	    }
+	    else if (rnotype == ENt_Cont) {
+		DoMutChangeCont(rno, aRunTime, aCheckSafety, aTrialMode);
+	    }
+	    else if (rnotype == ENt_Move) {
+		MoveNode(rno, aRunTime, aTrialMode);
+	    }
+	    else if (rnotype == ENt_Import) {
+		ImportNode(rno, aRunTime, aTrialMode);
+	    }
+	    else if (rnotype == ENt_Rm) {
+		RmNode(rno, aRunTime, aCheckSafety, aTrialMode);
+	    }
+	    else {
+		Logger()->Write(MLogRec::EErr, this, "Mutating - unknown mutation type [%d]", rnotype);
+	    }
+	    Logger()->SetContextMutId();
 	}
-	else if (rnotype == ENt_Change) {
-	    ChangeAttr(rno, aRunTime, aCheckSafety, aTrialMode);
-	}
-	else if (rnotype == ENt_Cont) {
-	    DoMutChangeCont(rno, aRunTime, aCheckSafety, aTrialMode);
-	}
-	else if (rnotype == ENt_Move) {
-	    MoveNode(rno, aRunTime, aTrialMode);
-	}
-	else if (rnotype == ENt_Import) {
-	    ImportNode(rno, aRunTime, aTrialMode);
-	}
-	else if (rnotype == ENt_Rm) {
-	    RmNode(rno, aRunTime, aCheckSafety, aTrialMode);
-	}
-	else {
-	    Logger()->Write(MLogRec::EErr, this, "Mutating - unknown mutation type [%d]", rnotype);
-	}
-	Logger()->SetContextMutId();
     }
 }
 
@@ -1264,10 +1323,10 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafet
     string snode = aSpec.Attr(ENa_MutNode);
     string mattrs = aSpec.Attr(ENa_MutAttr);
     string mval = aSpec.Attr(ENa_MutVal);
-    MElem* node = GetNode(snode);
+    MElem* node = aSpec.AttrExists(ENa_MutNode) ? GetNode(snode) : this;
     TBool mutadded = EFalse;
-    if (node != NULL && IsComp(node)) {
-	if (epheno || node->GetAowner() == this  || IsDirectInheritedComp(node)) {
+    if (node != NULL) {
+	if (node != this && (epheno || node->GetAowner() == this  || IsDirectInheritedComp(node))) {
 	    if (!aCheckSafety || IsMutSafe(node)) {
 		Elem* enode = ToElem(node);
 		TBool res = enode->ChangeAttr(GUri::NodeAttr(mattrs), mval);
@@ -1278,6 +1337,7 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafet
 		    // Adding dependency to object of change
 		    if (!aRunTime) {
 			ChromoNode chn = iChromo->Root().AddChild(aSpec);
+			NotifyNodeMutated(aSpec);
 			mutadded = ETrue;
 			AddCMDep(chn, ENa_MutNode, enode);
 		    }
@@ -1318,6 +1378,7 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafet
     // Append mutation to chromo anytype, ref uc_043
     if (!aRunTime && !mutadded && !aTrialMode) {
 	iChromo->Root().AddChild(aSpec);
+	NotifyNodeMutated(aSpec);
     }
 }
 
@@ -1395,6 +1456,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 		    if (res) {
 			if (!aRunTime) {
 			    ChromoNode chn = iChromo->Root().AddChild(aSpec);
+			    NotifyNodeMutated(aSpec);
 			    mutadded = ETrue;
 			    AddCMDep(chn, ENa_MutNode, node);
 			    if (refex) {
@@ -1472,6 +1534,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
     // Append mutation to chromo anytype, ref uc_043
     if (!aRunTime && !mutadded && !aTrialMode) {
 	ChromoNode mut = iChromo->Root().AddChild(aSpec);
+	NotifyNodeMutated(aSpec);
 	TInt mutid = mut.LineId();
     }
     return res;
@@ -1498,10 +1561,10 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 	ptevent = ETrue;
     }
     /* Profiling using wall-clock. It doesn't shows time interval within given thread, other threads are affecting
-    struct timeval tp;
-    gettimeofday(&tp, NULL);
-    long int t1 = tp.tv_sec * 1000000 + tp.tv_usec;
-    */
+       struct timeval tp;
+       gettimeofday(&tp, NULL);
+       long int t1 = tp.tv_sec * 1000000 + tp.tv_usec;
+       */
     //timespec t1;
     //clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t1);
     if (ptrace) Logger()->Write(MLogRec::EInfo, this, "Adding node [%s], t1", sname.c_str());
@@ -1509,10 +1572,10 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 
     __ASSERT(!sname.empty());
     /*
-    if (IsLogeventCreOn()) {
-	Logger()->Write(MLogRec::EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
-    }
-    */
+       if (IsLogeventCreOn()) {
+       Logger()->Write(MLogRec::EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
+       }
+       */
     //Logger()->Write(MLogRec::EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
     MElem* elem = NULL;
     MElem* mnode = snode.empty() ? this: GetNode(snode); 
@@ -1583,7 +1646,9 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 			if (res) {
 			    if (!aRunTime) {
 				// Copy just top node, not recursivelly, ref ds_daa_chrc_va
-				ChromoNode chn = iChromo->Root().AddChild(elem->Chromos().Root(), ETrue, EFalse);
+				ChromoNode ech = elem->Chromos().Root();
+				ChromoNode chn = iChromo->Root().AddChild(ech, ETrue, EFalse);
+				NotifyNodeMutated(ech);
 				if (node == this) {
 				} else {
 				    // Fenothypic modification
@@ -1602,10 +1667,10 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
 			    if (ptrace) { long t5_6 = GetClockElapsed(t3); Logger()->Write(MLogRec::EInfo, this, "Adding node, t5-t6: %d", t5_6);}
 			    //Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
 			    /*
-			    if (IsLogeventCreOn()) {
-				Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
-			    }
-			    */
+			       if (IsLogeventCreOn()) {
+			       Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
+			       }
+			       */
 			}
 			else {
 			    Logger()->Write(MLogRec::EErr, this, "Adding node [%s:%s] failed", elem->EType().c_str(), elem->Name().c_str());
@@ -1664,16 +1729,17 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode)
     }
     if (!aRunTime && !mutadded && !aTrialMode) {
 	iChromo->Root().AddChild(aNode);
+	NotifyNodeMutated(aNode);
     }
     if (EN_PERF_METR && elem != NULL) {
 	/* Profiling using wall-clock. It doesn't shows time interval within given thread, other threads are affecting
-	gettimeofday(&tp, NULL);
-	long int t2 = tp.tv_sec * 1000000 + tp.tv_usec;
-	int nodes = elem->GetCapacity();
-	long tspan = t2-t1;
-	long tspan_n = tspan/(nodes + 1);
-	Logger()->Write(MLogRec::EInfo, this, "Created comp [%s] in node [%s];%d;%d", sname.c_str(), snode.c_str(), tspan, tspan_n);
-	*/
+	   gettimeofday(&tp, NULL);
+	   long int t2 = tp.tv_sec * 1000000 + tp.tv_usec;
+	   int nodes = elem->GetCapacity();
+	   long tspan = t2-t1;
+	   long tspan_n = tspan/(nodes + 1);
+	   Logger()->Write(MLogRec::EInfo, this, "Created comp [%s] in node [%s];%d;%d", sname.c_str(), snode.c_str(), tspan, tspan_n);
+	   */
 	timespec te;
 	//long tspan = GetClockElapsed(t1, te);
 	long tspan = GetClockElapsed(t1);
@@ -2306,12 +2372,18 @@ TInt Elem::GetLocalRank() const
 
 void Elem::GetRUri(GUri& aUri, MElem* aTop)
 {
-    MElem* cowner = GetCommonOwner(aTop);
-    GetUri(aUri, cowner);
-    MElem* owner = aTop;
-    while (owner != cowner) {
-	aUri.PrependElem("", GUri::KUpperLevel);
-	owner = owner->GetMan();
+    if (Provider()->IsProvided(this)) {
+	// Native agent
+	aUri.PrependElem(EType(), Name(), GUri::KSepNone);
+    } else {
+	// Not native agent, process
+	MElem* cowner = GetCommonOwner(aTop);
+	GetUri(aUri, cowner);
+	MElem* owner = aTop;
+	while (owner != cowner) {
+	    aUri.PrependElem("", GUri::KUpperLevel);
+	    owner = owner->GetMan();
+	}
     }
 }
 
@@ -2360,17 +2432,17 @@ string Elem::GetUri(MElem* aTop, TBool aShort) const
 // that seq steps approach is not optimal in distributed async models
 // because it requires intermodels exchange for each step
 /*
-MElem* Elem::GetRoot() const
-{
-    MElem* res = (MElem*) this;
-    MElem* owner = res->GetMan();
-    while (owner != NULL) {
-	res = owner;
-	owner = res->GetMan();
-    }
-    return res;
-}
-*/
+   MElem* Elem::GetRoot() const
+   {
+   MElem* res = (MElem*) this;
+   MElem* owner = res->GetMan();
+   while (owner != NULL) {
+   res = owner;
+   owner = res->GetMan();
+   }
+   return res;
+   }
+   */
 MElem* Elem::GetRoot() const
 {
     MElem* res = (MElem*) this;
@@ -2447,10 +2519,10 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
     TBool res = EFalse;
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
     string snode = aSpec.Attr(ENa_MutNode);
-    MElem* node = GetNode(snode);
+    MElem* node = aSpec.AttrExists(ENa_MutNode) ? GetNode(snode) : this;
     TBool mutadded = EFalse;
-    if (node != NULL && IsComp(node)) {
-	if (epheno || node->GetMan() == this || IsCompOfInheritedComp(node)) {
+    if (node != NULL) {
+	if ((node != this) && (epheno || node->GetMan() == this || IsCompOfInheritedComp(node))) {
 	    // Check dependent mutations
 	    if (!aCheckSafety || IsMutSafe(node)) {
 		res = ETrue;
@@ -2465,6 +2537,7 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
 			if (!aRunTime) {
 			    // Adding dependency to object of change
 			    ChromoNode chn = iChromo->Root().AddChild(aSpec);
+			    NotifyNodeMutated(aSpec);
 			    AddCMDep(chn, ENa_MutNode, node);
 			    mutadded = ETrue;
 			    // Optimize the chromo for the mutation
@@ -2519,6 +2592,7 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
     // Append mutation to chromo anytype, ref uc_043
     if (!aRunTime && !mutadded && !aTrialMode) {
 	iChromo->Root().AddChild(aSpec);
+	NotifyNodeMutated(aSpec);
     }
     return res;
 }
@@ -2612,6 +2686,7 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 	if (!aRunTime && res) {
 	    // Adding dependency to object of change
 	    ChromoNode chn = iChromo->Root().AddChild(aSpec);
+	    NotifyNodeMutated(aSpec);
 	    if (dnode != this) {
 		AddCMDep(chn, ENa_MutNode, dnode);
 	    }
@@ -2624,6 +2699,7 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
     // Append mutation to chromo anytype, ref uc_043
     if (!aRunTime && !mutadded && !aTrialMode) {
 	iChromo->Root().AddChild(aSpec);
+	NotifyNodeMutated(aSpec);
     }
     return res;
 }
@@ -3028,8 +3104,8 @@ void Elem::OnParentDeleting(MElem* aParent)
     ChromoNode hroot = iChromo->Root();
     ChromoNode fchild = *(hroot.Begin());
     for (ChromoNode::Iterator it = phroot.Begin(); it != phroot.End(); it++) {
-	ChromoNode cn = *it;
-	hroot.AddPrev(fchild, cn);
+    ChromoNode cn = *it;
+    hroot.AddPrev(fchild, cn);
     }
     hroot.SetAttr(ENa_Parent, phroot.Attr(ENa_Parent));
     Elem* gparent = iParent->GetParent();
@@ -3344,7 +3420,7 @@ TBool Elem::ResolveMutUnsafety(MElem* aMutated, const TMDep& aDep)
     // Get dependency on dependent node
     // TODO [YB] Mut type is used incorrectly here! It is not mut of aDepOn, so there is no
     // sense to pass it to aDepOn->GetMajorDep
-//    TMDep dep = aRef->GetMajorDep(aMutType, MChromo::EDl_Critical);
+    //    TMDep dep = aRef->GetMajorDep(aMutType, MChromo::EDl_Critical);
     // Check if both mutated and dependency are owned
     MElem* mcomp = GetAcompAttaching(aMutated);
     if (mcomp != NULL) {
@@ -3566,6 +3642,7 @@ TBool Elem::ImportNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode
     res = impmgr->Import(srcs);
     if (!aRunTime && (res || !res && !aTrialMode)) {
 	iChromo->Root().AddChild(aSpec);
+	NotifyNodeMutated(aSpec);
     }
     return ETrue;
 }
@@ -3588,10 +3665,10 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
     Ifu::ParseIcSpec(aSpec, name, sig, args);
     TBool name_ok = mIfu.CheckMname(name);
     if (!name_ok) 
-	    throw (runtime_error("Wrong method name"));
+	throw (runtime_error("Wrong method name"));
     TBool args_ok = mIfu.CheckMpars(name, args.size());
     if (!args_ok) 
-	    throw (runtime_error("Wrong arguments number"));
+	throw (runtime_error("Wrong arguments number"));
     if (name == "Name") {
 	aRes = Name();
     } else if (name == "GetMan") {
@@ -3630,4 +3707,21 @@ void Elem::DumpCmDeps() const
 	cout << "mut: " << dep.first.first << ", attr: " << dep.first.second << ", node: " << dep.second << " - " << dep.second->GetUri(NULL, ETrue) << endl;
     }	
 }
+
+void Elem::NotifyNodeMutated(const ChromoNode& aMut)
+{
+    MElem* root = GetRoot();
+    if (this != root && IsChromoAttached()) {
+	root->OnNodeMutated(this, aMut);
+    } 
+}
+
+void Elem::OnNodeMutated(const MElem* aNode, const ChromoNode& aMut)
+{
+    __ASSERT(this == GetRoot());
+    string nuri = aNode->GetUri(this, ETrue);
+    ChromoNode anode = iChromo->Root().AddChild(aMut);
+    anode.SetAttr(ENa_Targ, nuri);
+}
+
 

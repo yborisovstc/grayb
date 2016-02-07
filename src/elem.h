@@ -220,8 +220,8 @@ class Elem: public MElem
 	virtual MElem* GetNode(const string& aUri, TBool aInclRm = EFalse);
 	virtual MElem* GetNode(const GUri& aUri, TBool aInclRm = EFalse);
 	virtual MElem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere = EFalse, TBool aInclRm = EFalse);
-	virtual void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue, TBool aTrialMode = ETrue);
-	virtual void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue, TBool aTrialMode = ETrue);
+	virtual void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue);
+	virtual void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue);
 	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
 	virtual void GetUri(GUri& aUri, MElem* aTop = NULL) const;
 	virtual void GetRUri(GUri& aUri, MElem* aTop = NULL);
@@ -274,6 +274,7 @@ class Elem: public MElem
 	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
 	virtual TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse);
 	virtual MElem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, TBool aTrialMode = EFalse);
+	virtual void OnNodeMutated(const MElem* aNode, const ChromoNode& aMut);
 	// Resolve owned mutation unsafety via changing mutation position
 	virtual TBool ResolveMutUnsafety(MElem* aMutated, const TMDep& aDep);
 	virtual TBool ResolveMutsUnsafety();
@@ -335,6 +336,7 @@ class Elem: public MElem
 	virtual TBool AppendComp(MElem* aComp);
 	TBool RegisterComp(MElem* aComp);
 	TBool RegisterChild(MElem* aChild);
+	void NotifyNodeMutated(const ChromoNode& aMut);
 	// aName is required because the comp can be renamed already. This is the case of
 	// comp renaming: comp is renamed first, then the renaming is handled
 	TBool UnregisterComp(MElem* aComp, const string& aName = string());

@@ -117,6 +117,8 @@ class MACompsObserver
 // TODO [YB] Do we need MComp also ?
 class MElem : public Base, public MMutable, public MOwner, public MParent, public MChild, public MIfProv, public MIface
 {
+    friend class Elem;
+    friend class ImportsMgr;
     public:
 	static const char* Type() { return "MElem";};
     public:
@@ -140,8 +142,8 @@ class MElem : public Base, public MMutable, public MOwner, public MParent, publi
 	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const = 0;
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()) = 0; 
 	virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse) = 0;
-	virtual void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue, TBool aTrialMode = ETrue) = 0;
-	virtual void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = ETrue, TBool aTrialMode = ETrue) = 0;
+	virtual void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue) = 0;
+	virtual void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue) = 0;
 	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
 	virtual void GetUri(GUri& aUri, MElem* aTop = NULL) const = 0;
 	virtual void GetRUri(GUri& aUri, MElem* aTop = NULL) = 0;
@@ -172,6 +174,7 @@ class MElem : public Base, public MMutable, public MOwner, public MParent, publi
 	virtual ChromoNode GetCompNmut(const MElem* aComp) const = 0;
 	virtual MElem* GetComp(const string& aParent, const string& aName) = 0;
 	virtual MElem* GetComp(const string& aParent, const string& aName) const = 0;
+	virtual void OnNodeMutated(const MElem* aNode, const ChromoNode& aMut) = 0;
 	// Gets the comp with given type and owning given element
 	virtual MElem* GetCompOwning(const string& aParent, MElem* aElem) = 0;
 	virtual MElem* GetCompOwning(MElem* aElem) = 0;

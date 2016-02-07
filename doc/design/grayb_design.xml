@@ -64,6 +64,12 @@
 	    <glossdef> <para>Connection Point</para> <para>
 		    Element that is used as endpoint of connections between systems.  
 		    </para></glossdef> </glossentry>
+	<glossentry id="gls_osm"><glossterm>OSM</glossterm> <acronym>OSM</acronym>
+	    <glossdef> <para>Original Sequence of Mutations - 
+		    The approach of models creation where the same mutation order is
+		    used for model creation as on construction phase, ref
+		    <xref linkend="ds_mut_osm"/>
+		    </para></glossdef> </glossentry>
 
     </glossary>
     
@@ -1008,6 +1014,106 @@
 		<simpara>The idea of this approach is to allow models node to have more then one name. All the names are equivalent: any of names
 		    can be used for locating node. The rationale of this approach is that the name is just compact designation of nodes functionality and can
 		    have more that one meaning.</simpara>
+	    </sect3>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_mut_osm"><title>Original Sequence Mutation (<xref linkend="gls_osm"/>) approach</title>
+	<sect2 id="ds_mut_osm_intro"><title>Intro</title>
+	    <simpara>The current implementation of DES multiagent environment is based on the approach where the chromo structure reflects the structure
+		of model, i.e is hierarchical. Each model tree node has it's own chromosome, so the root node chromosome (i.e. chromo of the system) is 
+		combined from the nodes chromos. Normally the chromo is created on construction phase and then model is assembled from the chromo.
+		The mutations order on assembling phase differs from the order on creation phase. It was discussed in <xref linkend="ds_mut"/> that this
+		cause many problems with the model consistency. So to ensure the final model consistency the specific verification has to be done on
+		construction phase. This makes the implementation cumbersome and slow.</simpara>
+	    <simpara>Howewer there is alternative approach: to use the same sequence for model assembling as on creation phase. There are some variants
+	    of implementation of this approach.</simpara>
+	</sect2>
+	<sect2><title>How to import external modules?</title>
+	</sect2>
+	<sect2><title>Migration options</title>
+	    <orderedlist>
+		<listitem>Using mutation order attributes, ref <xref linkend="ds_mut_osm_iop_ord"/></listitem>
+		<listitem>Using linear chromo in root agent, ref <xref linkend="ds_mut_osm_linchr"/></listitem>
+	    </orderedlist>
+	</sect2>
+	<sect2 id="ds_mut_osm_iop_ord"><title>Implementation option: using mutation order attributes</title>
+	    <simpara>Currently there is attribute "ord" that keeps the original order of mutation. So to follow <xref linkend="gls_osm"/> approach
+		we just need to apply the mutations according this order data. The problem here is that we need to perform mutation search on each step of
+		assembling. This causes significant overhead.</simpara>
+	    <simpara>Can additional linear list of mutations be used in order to have quick access to the next mutation? Not actually, because the 
+		current implementation does full mutation with all the mutations of nodes chromo. It cannot stop on the given mutation and then return 
+		to continue.</simpara>
+	</sect2>
+	<sect2 id="ds_mut_osm_linchr"><title>Implementation option: linear chromo of root agent</title>
+	    <sect3 id="ds_mut_osm_linchr_bc"><title>The base concept</title>
+		<orderedlist>
+		    <listitem>Only root of system is the agent that contains system chromo.</listitem>
+		    <listitem>Only root of system applies mutations</listitem>
+		    <listitem>All other (non-root) agents are "passive" in terms of mutations.</listitem>
+		    <listitem>The chromo is linear, the ref to model nodes is stated via mutation attribute using URI</listitem>
+		    <listitem>Updating the model on creation phase is done via appending mutation to the chromo</listitem>
+		    <listitem>Applying mutation on assembling phase is node by applying mutations from start of chromo till the end, i.e. in the
+			same order as on creation phase.</listitem>
+		    <listitem>To keep inheritance mechanism, the mutation to parent is propagated to all children.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3 id="ds_mut_osm_linchr_inh"><title>How to implement creating heir ?</title>
+		<simpara>To follow the base concept the root should create heir of the given node. This is because the node doesn't keep
+		    its mutation but the root keeps. Howewer this cause overhead because root has to search the mutations related to the node's
+		    inheritance chain elements. Also the algorithm is not distributed. Is it possible to perform creation of heir by the node itself?
+		    This can be done by collecting node mutation within the node itself. These mutations are just copy of root mutations. They are 
+		    not included into the root chromo but are used for creating heir only. So, summarising, there are the following options:
+		</simpara>
+		<orderedlist>
+		    <listitem>Base concept: creation heir by the root</listitem>
+		    <listitem>Base concept: creation heir by the parent</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3 id="ds_mut_osm_linchr_cmpt"><title>Implementng OSM with full compatibility to hierarchical chromo approach.</title>
+		<simpara>Discussion in <xref linkend="ds_mut_osm_linchr_inh"/> shows that OSM with keeping root components muations is very
+		    similar to the current implementation (hierarchical chromo). OSM root linear chromo can be implemented compatible to the 
+		current implementation. We need to:</simpara>
+	    <orderedlist>
+		<listitem>Introduce new muts attribure "target", that is the reference to the node this mutations related to. So, any mutation
+		    in the hierarchical chrmoo node A will be equivalent root chromo mutation with [target=uri_to_A]. We will call such mutations as
+		    "targered".</listitem>
+		<listitem>Keep the current mechansm of creating node, where mutating node creates mutated node via inheriting parent,
+		    sets the mutated node chromo (i.e. hierarchical chromo) and then mutate it. So both hierarchical chromo and targeted chromo
+		    will be supported. This allow to use "old" hierarchical chromo to be used for assembling model by OSM env. This also guarantee
+		    that current inheritance mechanism works properly.</listitem>
+		<listitem>Implement mechanism of transforming any hierarchical mut into root linear chromo mut. This can be done via notifying
+		    root on applying new mutation to chromo of internal node: root needs to add corresponding mut with the proper target to the roots chromo.
+		    This allows simple transforming heirarchical chromo to OSM linear chromo - we just need to "load" hier chromo and then save it.</listitem>
+	    </orderedlist>
+	    </sect3>
+	    <sect3 id="ds_mut_osm_linchr_es"><title>Breaking chromo consistency in case of embedded subsystem</title>
+		<simpara>Embedded subsystem, or subsystem with independent chromo are useful way of reusing the chromos. One of the examples of
+		    such subsystems are modules. Howewer using independent subsystems contradicts to the "linear chromo of root" option. This is
+		    because the independent subsystems is mutated separately, but not via the linear root chromo. So all the problems pecular to 
+		    "hierarchical chromo" are here, ref <xref linkend="ds_mut_osm_intro"/>. So the only "pure" linear chromo needs to be used
+		    to secure chromo consistently. This fact makes the option less usable for systems development.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mut_osm_mrk"><title>Implementation option: hierarchical chromo with markers</title>
+	    <sect3><title>Intro</title>
+		<simpara>As was discussed in <xref linkend="ds_mut_osm_linchr_es"/> linear chromo doesn't allow using of independent subsystem. There 
+		    is another option that combines the benefits of "linear chromo" and "mutations order" options. To explain the new option let's 
+		    consider the use-case:</simpara>
+		<orderedlist>
+		    <listitem>Sysem A get created, some initial portion m_1 of mutations added</listitem>
+		    <listitem>Mutation is applied to insert independent subsystem S (for instance from external chromo)</listitem>
+		    <listitem>Next portion m_2 of mutations are added to A chromo</listitem>
+		    <listitem id="ds_mut_osm_mrk_i_p1">Mutation ms_1 is applied to S chromo</listitem>
+		    <listitem>Next portion m_3 of mutation are added to A chromo</listitem>
+		</orderedlist>
+		<simpara>Note that step <xref linkend="ds_mut_osm_mrk_i_p1"/> breaks consistency of A chromo. Let's look at of how this is 
+		    resolved with "markers" option. On step <xref linkend="ds_mut_osm_mrk_i_p1"/> we mark mutation ms_1 with specific marker _MS_V2_ (V2 means
+		    verstion#2), also we add the same marker to so called "dependence mark" of the first mut of m_3 portion. On applying phase we apply  not whole
+		    subsystem S mutation but till the mark only, then return to the "mainstream" chromo, apply m_2, then before applying m_3 we
+		    note that m_3 depends on mark _MS_V2_, so return to S and apply _MS_V2_ and then return to m_3.</simpara>
+		<simpara>We can see that this schema keeps chromo applying sequence equal to construction sequence. Same time we still able to 
+		    save subsystem S whole chromo (including mutations related to version#2).</simpara>
 	    </sect3>
 	</sect2>
     </sect1>

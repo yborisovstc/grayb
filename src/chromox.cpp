@@ -326,6 +326,7 @@ void* ChromoMdlX::AddChild(void* aParent, TNodeType aNode)
 void* ChromoMdlX::AddChild(void* aParent, const void* aHandle, TBool aCopy, TBool aRecursively)
 {
     void* root = Root(aParent);
+    /*
     TInt rorder = GetOrder(root, ETrue);
     TInt order = GetOrder((void*) aHandle);
     if (order == 0) {
@@ -335,6 +336,7 @@ void* ChromoMdlX::AddChild(void* aParent, const void* aHandle, TBool aCopy, TBoo
     if (order > rorder) {
 	SetOrder(root, order, ETrue);
     }
+    */
     xmlNodePtr node = aCopy ? xmlCopyNode((xmlNodePtr) aHandle, aRecursively ? 1:2) : (xmlNodePtr) aHandle;
     return xmlAddChild((xmlNodePtr) aParent, node);
 }
