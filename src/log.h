@@ -22,6 +22,7 @@ class GLogRec: public Base, public MLogRec
 	virtual void SetContextMutId(TInt aMutId = -1);
 	virtual TBool AddLogObserver(MLogObserver* aObs);
 	virtual void RemoveLogObserver(MLogObserver* aObs);
+	virtual TInt GetStat(TLogRecCtg aCtg) const;
     protected:
 	void WriteRecord(const char* aText);
     protected:
@@ -30,6 +31,7 @@ class GLogRec: public Base, public MLogRec
 	TBool iLogFileValid;
 	MLogObserver* iObs;
 	TInt mCtxMutId;
+	TInt mStat[ECtg_Max];
     public:
 	static const TInt KLogRecBufSize;
 };

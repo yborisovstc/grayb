@@ -13,12 +13,12 @@ string ACapsule::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-ACapsule::ACapsule(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+ACapsule::ACapsule(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ACapsule::ACapsule(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+ACapsule::ACapsule(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
     SetParent(Elem::PEType());
 }
@@ -50,12 +50,12 @@ string ConnPointBase::PEType()
     return Vert::PEType() + GUri::KParentSep + Type();
 }
 
-ConnPointBase::ConnPointBase(const string& aName, Elem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
+ConnPointBase::ConnPointBase(const string& aName, MElem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ConnPointBase::ConnPointBase(Elem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
+ConnPointBase::ConnPointBase(MElem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
 {
     SetParent(Vert::PEType());
 }
@@ -189,14 +189,6 @@ MCompatChecker::TDir ConnPointBase::GetDir() const
     return ERegular;
 }
 
-void ConnPointBase::GetMajorIdep(TMDep& aDep)
-{
-    Elem* eprov = GetNodeE("./(Prop:)Provided");
-    Elem* ereq = GetNodeE("./(Prop:)Required");
-    eprov->GetMajorDep(aDep, ENt_Change, MChromo::EDp_Direct, MChromo::EDl_Critical);
-    ereq->GetMajorDep(aDep, ENt_Change, MChromo::EDp_Direct, MChromo::EDl_Critical);
-}
-
 
 // Input ConnPoint base
 string ConnPointBaseInp::PEType()
@@ -204,12 +196,12 @@ string ConnPointBaseInp::PEType()
     return Vert::PEType() + GUri::KParentSep + Type();
 }
 
-ConnPointBaseInp::ConnPointBaseInp(const string& aName, Elem* aMan, MEnv* aEnv): ConnPointBase(aName, aMan, aEnv)
+ConnPointBaseInp::ConnPointBaseInp(const string& aName, MElem* aMan, MEnv* aEnv): ConnPointBase(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ConnPointBaseInp::ConnPointBaseInp(Elem* aMan, MEnv* aEnv): ConnPointBase(Type(), aMan, aEnv)
+ConnPointBaseInp::ConnPointBaseInp(MElem* aMan, MEnv* aEnv): ConnPointBase(Type(), aMan, aEnv)
 {
     SetParent(ConnPointBase::PEType());
 }
@@ -237,12 +229,12 @@ string ConnPointBaseOut::PEType()
     return Vert::PEType() + GUri::KParentSep + Type();
 }
 
-ConnPointBaseOut::ConnPointBaseOut(const string& aName, Elem* aMan, MEnv* aEnv): ConnPointBase(aName, aMan, aEnv)
+ConnPointBaseOut::ConnPointBaseOut(const string& aName, MElem* aMan, MEnv* aEnv): ConnPointBase(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ConnPointBaseOut::ConnPointBaseOut(Elem* aMan, MEnv* aEnv): ConnPointBase(Type(), aMan, aEnv)
+ConnPointBaseOut::ConnPointBaseOut(MElem* aMan, MEnv* aEnv): ConnPointBase(Type(), aMan, aEnv)
 {
     SetParent(ConnPointBase::PEType());
 }
@@ -271,12 +263,12 @@ string ExtenderAgent::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-ExtenderAgent::ExtenderAgent(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+ExtenderAgent::ExtenderAgent(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ExtenderAgent::ExtenderAgent(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+ExtenderAgent::ExtenderAgent(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
     SetParent(Elem::PEType());
 }
@@ -369,13 +361,6 @@ MCompatChecker::TDir ExtenderAgent::GetDir() const
     return ERegular;
 }
 
-void ExtenderAgent::GetMajorIdep(TMDep& aDep)
-{
-    Elem* extd = GetExtd();
-    MCompatChecker* conn = extd->GetObj(conn);
-    conn->GetMajorIdep(aDep);
-}
-
 
 // Input Extender Agent
 string ExtenderAgentInp::PEType()
@@ -383,12 +368,12 @@ string ExtenderAgentInp::PEType()
     return Vert::PEType() + GUri::KParentSep + Type();
 }
 
-ExtenderAgentInp::ExtenderAgentInp(const string& aName, Elem* aMan, MEnv* aEnv): ExtenderAgent(aName, aMan, aEnv)
+ExtenderAgentInp::ExtenderAgentInp(const string& aName, MElem* aMan, MEnv* aEnv): ExtenderAgent(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ExtenderAgentInp::ExtenderAgentInp(Elem* aMan, MEnv* aEnv): ExtenderAgent(Type(), aMan, aEnv)
+ExtenderAgentInp::ExtenderAgentInp(MElem* aMan, MEnv* aEnv): ExtenderAgent(Type(), aMan, aEnv)
 {
     SetParent(ExtenderAgent::PEType());
 }
@@ -416,12 +401,12 @@ string ExtenderAgentOut::PEType()
     return Vert::PEType() + GUri::KParentSep + Type();
 }
 
-ExtenderAgentOut::ExtenderAgentOut(const string& aName, Elem* aMan, MEnv* aEnv): ExtenderAgent(aName, aMan, aEnv)
+ExtenderAgentOut::ExtenderAgentOut(const string& aName, MElem* aMan, MEnv* aEnv): ExtenderAgent(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ExtenderAgentOut::ExtenderAgentOut(Elem* aMan, MEnv* aEnv): ExtenderAgent(Type(), aMan, aEnv)
+ExtenderAgentOut::ExtenderAgentOut(MElem* aMan, MEnv* aEnv): ExtenderAgent(Type(), aMan, aEnv)
 {
     SetParent(ExtenderAgent::PEType());
 }
@@ -450,12 +435,12 @@ string ASocket::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-ASocket::ASocket(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+ASocket::ASocket(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ASocket::ASocket(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+ASocket::ASocket(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
     SetParent(Elem::PEType());
 }
@@ -702,10 +687,6 @@ MCompatChecker::TDir ASocket::GetDir() const
     return ERegular;
 }
 
-void ASocket::GetMajorIdep(TMDep& aDep)
-{
-}
-
 
 // Input Socket Agent
 string ASocketInp::PEType()
@@ -713,12 +694,12 @@ string ASocketInp::PEType()
     return ASocket::PEType() + GUri::KParentSep + Type();
 }
 
-ASocketInp::ASocketInp(const string& aName, Elem* aMan, MEnv* aEnv): ASocket(aName, aMan, aEnv)
+ASocketInp::ASocketInp(const string& aName, MElem* aMan, MEnv* aEnv): ASocket(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ASocketInp::ASocketInp(Elem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
+ASocketInp::ASocketInp(MElem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
 {
     SetParent(ASocket::PEType());
 }
@@ -746,12 +727,12 @@ string ASocketOut::PEType()
     return ASocket::PEType() + GUri::KParentSep + Type();
 }
 
-ASocketOut::ASocketOut(const string& aName, Elem* aMan, MEnv* aEnv): ASocket(aName, aMan, aEnv)
+ASocketOut::ASocketOut(const string& aName, MElem* aMan, MEnv* aEnv): ASocket(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ASocketOut::ASocketOut(Elem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
+ASocketOut::ASocketOut(MElem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
 {
     SetParent(ASocket::PEType());
 }
@@ -781,12 +762,12 @@ string Syst::PEType()
     return Vert::PEType() + GUri::KParentSep + Type();
 }
 
-Syst::Syst(const string& aName, Elem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
+Syst::Syst(const string& aName, MElem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-Syst::Syst(Elem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
+Syst::Syst(MElem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
 {
     SetParent(Vert::PEType());
 }
@@ -881,15 +862,4 @@ TBool Syst::OnCompChanged(MElem& aComp)
 	}
     }
     return hres;
-}
-
-void Syst::GetImplicitDep(TMDep& aDep, MElem* aObj, MElem* aRef)
-{
-    MElem* eedge = GetCompOwning("Edge", aObj);
-    if (eedge != NULL) {
-	MCompatChecker* conn = aRef->GetObj(conn);
-	if (conn != NULL) {
-	    conn->GetMajorIdep(aDep);
-	}
-    }
 }

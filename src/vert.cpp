@@ -9,7 +9,7 @@ string Vert::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-Vert::Vert(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+Vert::Vert(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
     // Create component for run-time extentions
@@ -19,7 +19,7 @@ Vert::Vert(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
     __ASSERT(res);
 }
 
-Vert::Vert(Elem* aMan, MEnv* aEnv):Elem(Type(), aMan, aEnv)
+Vert::Vert(MElem* aMan, MEnv* aEnv):Elem(Type(), aMan, aEnv)
 {
     SetParent(Elem::PEType());
     // Create component for run-time extentions

@@ -21,9 +21,9 @@ class GProvider: public Base, public MProvider
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MProvider
-	virtual Elem* CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv);
+	virtual Elem* CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv);
 	virtual Elem* GetNode(const string& aUri);
-	virtual TBool IsProvided(Elem* aElem) const;
+	virtual TBool IsProvided(MElem* aElem) const;
 	virtual Chromo* CreateChromo();
 	virtual void AppendNodesInfo(vector<string>& aInfo);
 	virtual const string& ModulesPath() const;

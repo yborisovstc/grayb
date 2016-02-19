@@ -270,6 +270,10 @@ TBool GUriBase::Compare(const_elem_iter aStart, const GUriBase& aUri, const_elem
     return res;
 }
 
+GUriBase::const_elem_iter GUriBase::Begin() const
+{
+    return iElems.begin();
+}
 
 void GUri::Parse()
 {

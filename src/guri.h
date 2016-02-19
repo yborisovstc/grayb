@@ -84,6 +84,7 @@ class GUriBase
 	const string& Scheme() const;
 	string GetName() const;
 	const string& GetBase() const;
+	const_elem_iter Begin() const;
 	void Append(const GUriBase& aUri);
 	void AppendTail(const GUriBase& aUri, const_elem_iter aIter);
 	void AppendElem(const string& aType, const string& aName, char aRelType = KNodeSep);

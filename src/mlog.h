@@ -29,6 +29,7 @@ class MLogRec
 	virtual void Flush() = 0;
 	virtual TBool AddLogObserver(MLogObserver* aObs) = 0;
 	virtual void RemoveLogObserver(MLogObserver* aObs) = 0;
+	virtual TInt GetStat(TLogRecCtg aCtg) const = 0;
 };
 
 // Log observer

@@ -12,8 +12,8 @@ class AMod: public Elem, public MMod
     public:
 	static const char* Type() { return "AMod";};
 	static string PEType();
-	AMod(const string& aName, Elem* aMan, MEnv* aEnv);
-	AMod(Elem* aMan, MEnv* aEnv);
+	AMod(const string& aName, MElem* aMan, MEnv* aEnv);
+	AMod(MElem* aMan, MEnv* aEnv);
 	virtual ~AMod();
 	// From Base
 	virtual void *DoGetObj(const char *aName);

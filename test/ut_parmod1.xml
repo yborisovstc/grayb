@@ -1,21 +1,36 @@
 <?xml version="1.0" ?>
 
 <!-- Unit test for squeezing of chromo: reference
-     -->
+  VB/VA_1/VP_1 is deattached, so mutation
+  [node targ="./VB/VA_1/VP_1" id="VA_1_1_B1" parent="Vert"]
+  isn't normally contained in VA_1 chromo, so is missing in
+  VA_1 heir VB_1. Using approach of mutation copying from 
+  inherited nodes till attached owner solves the problem,
+  ref ds_mut_osm_linchr_comdp
+-->
 
 
 <!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
 
 <node id="test" parent="Vert">
-    <node id="VA" parent="Vert">
-	<node id="VA_1" parent="Vert">
+    <node id="VM" parent="Vert">
+	<node id="VM_1" parent="Vert">
 	</node>
     </node>
-    <node id="VB" parent="./VA">
-	<node node="./VA_1" id="VA_1_B1" parent="Vert"></node>
-	<node node="./VA_1" id="VA_1_B2" parent="Vert"></node>
-	<rm node="./VA_1/VA_1_B2"/>
-	<node id="VB_1" parent="./VA_1"/>
+    <node id="VP" parent="Vert">
+	<node id="VP_1" parent="./../VM">
+	</node>
     </node>
+    <node id="VA" parent="Vert">
+	<node id="VA_1" parent="./../VP">
+	    <node id="VA_1_1" parent="Vert">
+	    </node>
+	</node>
+    </node>
+    <node id="VB" parent="./VA"/>
+    <node targ="./VB/VA_1/VP_1/VM_1" id="VA_1_1_B1" parent="Vert"></node>
+    <node targ="./VB/VA_1" id="VA_1_B2" parent="Vert"></node>
+    <rm targ="./VB/VA_1" node="./VA_1_B2"/>
+    <node targ="./VB" id="VB_1" parent="./VA_1"/>
 </node>
 

@@ -8,7 +8,7 @@ string Edge::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-Edge::Edge(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
+Edge::Edge(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
 {
     SetParent(Type());
     // Adding properties "Points"
@@ -21,7 +21,7 @@ Edge::Edge(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
     __ASSERT(res);
 }
 
-Edge::Edge(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
+Edge::Edge(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
 {
     SetParent(Elem::PEType());
     // Adding properties "Points"

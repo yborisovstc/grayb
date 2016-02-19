@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<!-- Unit test for propagating parent's mutation to the children
+-->
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="Root" parent="Elem">
+  <node id="A1" parent="Vert"/>
+  <node id="B1" parent="./A1"/>
+  <node id="A_1" parent="Vert" targ="./A1"/>
+  <node id="C1" parent="./B1"/>
+</node>

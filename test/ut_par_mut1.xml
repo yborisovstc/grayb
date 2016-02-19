@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for propagating parent's mutation to the children
+-->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Vert">
+    <node id="VR" parent="Vert">
+	<node id="VR_1" parent="Vert">
+	</node>
+    </node>
+    <node id="VP" parent="Vert">
+	<node id="VP_1" parent="Vert">
+	    <node id="VP_1_1" parent="Vert">
+	    </node>
+	</node>
+    </node>
+    <node id="VA" parent="Vert">
+	<node id="VA_1" parent="./../VP">
+	    <node id="VA_1_1" parent="./../../VR">
+	    </node>
+	</node>
+    </node>
+    <node id="VV" parent="Vert">
+	<node id="VB" parent="./../VA"/>
+    </node>
+</node>
+

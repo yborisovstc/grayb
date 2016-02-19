@@ -23,7 +23,7 @@ void *GFactory::DoGetObj(const char *aName)
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
 
-Elem* GFactory::CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv)
+Elem* GFactory::CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv)
 {
     Elem* res = NULL;
     for (map<string, GProvider*>::iterator it = iProviders.begin(); it != iProviders.end() && res == NULL; it++) {
@@ -41,7 +41,7 @@ Elem* GFactory::GetNode(const string& aUri)
     return res;
 }
 
-TBool GFactory::IsProvided(Elem* aElem) const
+TBool GFactory::IsProvided(MElem* aElem) const
 {
     TBool res = EFalse;
     for (map<string, GProvider*>::const_iterator it = iProviders.begin(); it != iProviders.end() && !res; it++) {

@@ -6,12 +6,12 @@
 #include "vert.h"
 #include "mprop.h"
 
-ATrBase::ATrBase(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+ATrBase::ATrBase(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ATrBase::ATrBase(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+ATrBase::ATrBase(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
     SetParent(Elem::PEType());
 }
@@ -46,12 +46,12 @@ TBool ATrBase::HandleCompChanged(MElem& aContext, MElem& aComp)
 
 // Agent base of Int function
 
-ATrInt::ATrInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrBase(aName, aMan, aEnv), mData(0)
+ATrInt::ATrInt(const string& aName, MElem* aMan, MEnv* aEnv): ATrBase(aName, aMan, aEnv), mData(0)
 {
     SetParent(Type());
 }
 
-ATrInt::ATrInt(Elem* aMan, MEnv* aEnv): ATrBase(Type(), aMan, aEnv), mData(0)
+ATrInt::ATrInt(MElem* aMan, MEnv* aEnv): ATrBase(Type(), aMan, aEnv), mData(0)
 {
     SetParent(ATrBase::PEType());
 }
@@ -110,12 +110,12 @@ TInt ATrInt::Value()
 
 // Agent of function "Increment of Int data"
 
-ATrIncInt::ATrIncInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
+ATrIncInt::ATrIncInt(const string& aName, MElem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ATrIncInt::ATrIncInt(Elem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
+ATrIncInt::ATrIncInt(MElem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
 {
     SetParent(ATrInt::PEType());
 }
@@ -152,12 +152,12 @@ TInt ATrIncInt::Value()
 
 // Agent of function "Subtraction of Int data"
 
-ATrSubInt::ATrSubInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
+ATrSubInt::ATrSubInt(const string& aName, MElem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ATrSubInt::ATrSubInt(Elem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
+ATrSubInt::ATrSubInt(MElem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
 {
     SetParent(ATrInt::PEType());
 }
@@ -205,12 +205,12 @@ TInt ATrSubInt::Value()
 
 // Agent function "Multiplying of Int data"
 
-ATrMplInt::ATrMplInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
+ATrMplInt::ATrMplInt(const string& aName, MElem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ATrMplInt::ATrMplInt(Elem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
+ATrMplInt::ATrMplInt(MElem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
 {
     SetParent(ATrInt::PEType());
 }
@@ -247,12 +247,12 @@ TInt ATrMplInt::Value()
 
 // Agent function "Dividing of Int data"
 
-ATrDivInt::ATrDivInt(const string& aName, Elem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
+ATrDivInt::ATrDivInt(const string& aName, MElem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ATrDivInt::ATrDivInt(Elem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
+ATrDivInt::ATrDivInt(MElem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
 {
     SetParent(ATrInt::PEType());
 }
@@ -300,12 +300,12 @@ string ATrVar::PEType()
     return ATrBase::PEType() + GUri::KParentSep + Type();
 }
 
-ATrVar::ATrVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrBase(aName, aMan, aEnv), mFunc(NULL)
+ATrVar::ATrVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrBase(aName, aMan, aEnv), mFunc(NULL)
 {
     SetParent(Type());
 }
 
-ATrVar::ATrVar(Elem* aMan, MEnv* aEnv): ATrBase(Type(), aMan, aEnv), mFunc(NULL)
+ATrVar::ATrVar(MElem* aMan, MEnv* aEnv): ATrBase(Type(), aMan, aEnv), mFunc(NULL)
 {
     SetParent(ATrBase::PEType());
 }
@@ -416,12 +416,12 @@ string ATrAddVar::PEType()
     return ATrVar::PEType() + GUri::KParentSep + Type();
 } 
 
-ATrAddVar::ATrAddVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+ATrAddVar::ATrAddVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ATrAddVar::ATrAddVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
+ATrAddVar::ATrAddVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 {
     SetParent(ATrVar::PEType());
 }
@@ -464,12 +464,12 @@ string ATrMplVar::PEType()
     return ATrVar::PEType() + GUri::KParentSep + Type();
 } 
 
-ATrMplVar::ATrMplVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+ATrMplVar::ATrMplVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ATrMplVar::ATrMplVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
+ATrMplVar::ATrMplVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 {
     SetParent(ATrVar::PEType());
 }
@@ -507,12 +507,12 @@ string ATrDivVar::PEType()
     return ATrVar::PEType() + GUri::KParentSep + Type();
 } 
 
-ATrDivVar::ATrDivVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+ATrDivVar::ATrDivVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ATrDivVar::ATrDivVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
+ATrDivVar::ATrDivVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 {
     SetParent(ATrVar::PEType());
 }
@@ -552,12 +552,12 @@ string ATrSwitchVar::PEType()
     return ATrVar::PEType() + GUri::KParentSep + Type();
 }
 
-ATrSwitchVar::ATrSwitchVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+ATrSwitchVar::ATrSwitchVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ATrSwitchVar::ATrSwitchVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
+ATrSwitchVar::ATrSwitchVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 {
     SetParent(ATrVar::PEType());
 }
@@ -625,12 +625,12 @@ string ATrAtVar::PEType()
     return ATrVar::PEType() + GUri::KParentSep + Type();
 } 
 
-ATrAtVar::ATrAtVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+ATrAtVar::ATrAtVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 } 
 
-ATrAtVar::ATrAtVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
+ATrAtVar::ATrAtVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 { 
     SetParent(ATrVar::PEType());
 }
@@ -676,12 +676,12 @@ string ATrCpsVectVar::PEType()
     return ATrVar::PEType() + GUri::KParentSep + Type();
 } 
 
-ATrCpsVectVar::ATrCpsVectVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+ATrCpsVectVar::ATrCpsVectVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ATrCpsVectVar::ATrCpsVectVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
+ATrCpsVectVar::ATrCpsVectVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 {
     SetParent(ATrVar::PEType());
 }
@@ -721,12 +721,12 @@ string ATrBcmpVar::PEType()
     return ATrVar::PEType() + GUri::KParentSep + Type();
 } 
 
-ATrBcmpVar::ATrBcmpVar(const string& aName, Elem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+ATrBcmpVar::ATrBcmpVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-ATrBcmpVar::ATrBcmpVar(Elem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
+ATrBcmpVar::ATrBcmpVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 {
     SetParent(ATrVar::PEType());
 }
@@ -786,12 +786,12 @@ FBcmpBase::TFType ATrBcmpVar::GetFType()
 
 /* State base agent */
 
-StateAgent::StateAgent(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
+StateAgent::StateAgent(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
 {
     SetParent(Type());
 }
 
-StateAgent::StateAgent(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iActive(ETrue)
+StateAgent::StateAgent(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iActive(ETrue)
 {
     SetParent(Elem::PEType());
 }
@@ -934,12 +934,12 @@ string ADes::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-ADes::ADes(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
+ADes::ADes(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
 {
     SetParent(Type());
 }
 
-ADes::ADes(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iActive(ETrue)
+ADes::ADes(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iActive(ETrue)
 {
     SetParent(Elem::PEType());
 }

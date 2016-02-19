@@ -11,8 +11,8 @@ class Prop: public Elem, public MProp
     public:
 	static const char* Type() { return "Prop";};
 	static string PEType();
-	Prop(const string& aName, Elem* aMan, MEnv* aEnv);
-	Prop(Elem* aMan, MEnv* aEnv);
+	Prop(const string& aName, MElem* aMan, MEnv* aEnv);
+	Prop(MElem* aMan, MEnv* aEnv);
     public:
 	// From Base
 	virtual void *DoGetObj(const char *aName);
@@ -32,8 +32,8 @@ class Description: public Prop
     public:
 	static const char* Type() { return "Description";};
 	static string PEType();
-	Description(const string& aName, Elem* aMan, MEnv* aEnv);
-	Description(Elem* aMan, MEnv* aEnv);
+	Description(const string& aName, MElem* aMan, MEnv* aEnv);
+	Description(MElem* aMan, MEnv* aEnv);
     public:
 	// From Base
 	virtual void *DoGetObj(const char *aName);

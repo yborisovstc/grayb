@@ -12,8 +12,8 @@ class AImports: public Elem, public MImports
     public:
 	static const char* Type() { return "AImports";};
 	static string PEType();
-	AImports(const string& aName, Elem* aMan, MEnv* aEnv);
-	AImports(Elem* aMan, MEnv* aEnv);
+	AImports(const string& aName, MElem* aMan, MEnv* aEnv);
+	AImports(MElem* aMan, MEnv* aEnv);
 	virtual ~AImports();
 	// From Base
 	virtual void *DoGetObj(const char *aName);

@@ -8,12 +8,12 @@ string AMod::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-AMod::AMod(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), mSpec(NULL)
+AMod::AMod(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), mSpec(NULL)
 {
     SetParent(Type());
 }
 
-AMod::AMod(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), mSpec(NULL)
+AMod::AMod(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), mSpec(NULL)
 {
     SetParent(Elem::PEType());
 }

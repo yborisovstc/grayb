@@ -8,12 +8,12 @@ string AImports::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-AImports::AImports(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+AImports::AImports(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AImports::AImports(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+AImports::AImports(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
     SetParent(Elem::PEType());
 }

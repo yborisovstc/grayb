@@ -11,6 +11,9 @@ const char* KColSep = "; ";
 GLogRec::GLogRec(const string& aLogFileName): Base(), iLogFileName(aLogFileName), iLogFileValid(EFalse),
     iObs(NULL), mCtxMutId(-1)
 {
+    for (TInt ct = 0; ct < ECtg_Max; ct++) {
+	mStat[ct] = 0;
+    }
     //remove(iLogFileName.c_str()); 
     rename(iLogFileName.c_str(), (iLogFileName + "~old").c_str()); 
     iLogFile = fopen(iLogFileName.c_str(), "w+");
@@ -109,6 +112,7 @@ void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const ChromoNode& aMut, const 
     vsprintf(buf1, aFmt, list);
     ss << buf1;
     WriteRecord(ss.str().c_str());
+    mStat[aCtg]++;
     if (iObs != NULL) {
 	iObs->OnLogAdded(0, aCtg, aNode, buf1, lineid);
     }
@@ -144,4 +148,9 @@ void GLogRec::SetContextMutId(TInt aMutId)
     if (mCtxMutId != aMutId) {
 	mCtxMutId = aMutId;
     }
+}
+
+TInt GLogRec::GetStat(TLogRecCtg aCtg) const
+{
+    return mStat[aCtg];
 }

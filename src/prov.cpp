@@ -27,7 +27,7 @@ void *GProvider::DoGetObj(const char *aName)
     return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
 
-Elem* GProvider::CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv)
+Elem* GProvider::CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv)
 {
     return NULL;
 }
@@ -37,7 +37,7 @@ Elem* GProvider::GetNode(const string& aUri)
     return NULL;
 }
 
-TBool GProvider::IsProvided(Elem* aElem) const
+TBool GProvider::IsProvided(MElem* aElem) const
 {
     TBool res = false;
     for (TReg::const_iterator it = iReg.begin(); it != iReg.end() && !res; it++) {

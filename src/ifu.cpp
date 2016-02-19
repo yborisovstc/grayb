@@ -69,6 +69,11 @@ TBool Ifu::ToBool(const string& aString)
     return res;
 }
 
+string Ifu::FromBool(TBool aBool)
+{
+    return aBool ? "true" : "false";
+}
+
 void Ifu::RegMethod(const string& aName, TInt aArgsNum)
 {
     __ASSERT(mMpars.count(aName) == 0);

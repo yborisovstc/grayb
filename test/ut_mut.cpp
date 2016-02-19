@@ -39,6 +39,8 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_CompactCont);
     CPPUNIT_TEST(test_TransfModif1);
     CPPUNIT_TEST(test_GetParentModifs);
+    CPPUNIT_TEST(test_ParentMut);
+    CPPUNIT_TEST(test_ParentMut2);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -69,6 +71,8 @@ private:
     void test_CompactCont();
     void test_TransfModif1();
     void test_GetParentModifs();
+    void test_ParentMut();
+    void test_ParentMut2();
 private:
     Env* iEnv;
 };
@@ -169,7 +173,7 @@ void Ut_mut::test_DcpChromo1()
     iEnv = new Env("ut_dcp_chromo_1.xml", "ut_dcp_chromo_1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     // TODO Temporarily, to remove
-    iEnv->ChMgr()->SetEnableCheckSafety(EFalse);
+    //iEnv->ChMgr()->SetEnableCheckSafety(EFalse);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     // Check creation first
@@ -350,7 +354,7 @@ void Ut_mut::test_MutDepsRm()
     iEnv = new Env("ut_mut_dep_1.xml", "ut_mut_dep_1.txt");
     // Enabling pheno, because of model is basing on pheno
     iEnv->ChMgr()->SetEnablePhenoModif(ETrue);
-    iEnv->ChMgr()->SetEnableCheckSafety(ETrue);
+    //iEnv->ChMgr()->SetEnableCheckSafety(ETrue);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
@@ -362,10 +366,12 @@ void Ut_mut::test_MutDepsRm()
     CPPUNIT_ASSERT_MESSAGE("Fail to get elem3", e3 != 0);
     // Get major dep
     //Elem::TDep mdep = e2->GetMajorDep();
+    /*
     TMDep mdep = e2->GetMajorDep();
     ChromoNode depmut = e2->Chromos().CreateNode(mdep.first.second);
     TBool e2dep_ok = mdep.first.first == root && depmut.Name() == e3->Name() && mdep.second == ENa_Parent;
     CPPUNIT_ASSERT_MESSAGE("Fail to get elem2 major dep", e2dep_ok);
+    */
     // Try to remove elem2 from elem1 - unsafe mutation
     MElem* e1 = root->GetNode("./elem1");
     ChromoNode mut = e1->Mutation().Root().AddChild(ENt_Rm);
@@ -468,7 +474,7 @@ void Ut_mut::test_MutDepsRmRef()
     MElem* v1 = root->GetNode("./v1");
     ChromoNode mut = v1->Mutation().Root().AddChild(ENt_Rm);
     mut.SetAttr(ENa_MutNode, "./v1_0");
-    v1->Mutate(EFalse, ETrue, ETrue);
+    v1->Mutate(EFalse, EFalse, ETrue);
     // Check that the mutation is refused because not being safe -
     // there are deps with the rank higher than the rank of this mutatins,
     // so error will occur if node is deleted
@@ -477,7 +483,7 @@ void Ut_mut::test_MutDepsRmRef()
     // Try to remove elem2 from root - safe mutation
     mut = root->Mutation().Root().AddChild(ENt_Rm);
     mut.SetAttr(ENa_MutNode, "./v1/v1_0");
-    root->Mutate(EFalse, ETrue, ETrue);
+    root->Mutate(EFalse, EFalse, ETrue);
     // Check that the mutation is refused because there is critical dep on the node being
     // removed. Even the rank of this dep is lower that the rank of this mutation, the
     // deps will generate error so the model will be inconsistent 
@@ -487,7 +493,7 @@ void Ut_mut::test_MutDepsRmRef()
     mut = root->Mutation().Root().AddChild(ENt_Cont);
     mut.SetAttr(ENa_MutNode, "./edge1/P1");
     mut.SetAttr(ENa_Ref, "");
-    root->Mutate(EFalse, ETrue, ETrue);
+    root->Mutate(EFalse, EFalse, ETrue);
     /*
     root->CompactChromo();
     iEnv->Root()->Chromos().Save("ut_mut_dep_refs_res1.xml_");
@@ -501,7 +507,7 @@ void Ut_mut::test_MutDepsRmRef()
     */
     ChromoNode mut1 = root->Mutation().Root().AddChild(ENt_Rm);
     mut1.SetAttr(ENa_MutNode, "./v1/v1_0");
-    root->Mutate(EFalse, ETrue, ETrue);
+    root->Mutate(EFalse, EFalse, ETrue);
     v1_0 = root->GetNode("./v1/v1_0");
     CPPUNIT_ASSERT_MESSAGE("Mutation -rm- of v1_0 from root is refused", v1_0 == NULL);
     auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
@@ -870,7 +876,7 @@ void Ut_mut::test_OptRmDeps()
     // Try to remove v1_0 from v1 - unsafe mutation
     ChromoNode mut = root->Mutation().Root().AddChild(ENt_Rm);
     mut.SetAttr(ENa_MutNode, "./v1");
-    root->Mutate(EFalse, ETrue, ETrue);
+    root->Mutate(EFalse, EFalse, ETrue);
     // Check that the mutation is refused because not being safe -
     // there are deps with the rank higher than the rank of this mutatins,
     // so error will occur if node is deleted
@@ -881,13 +887,13 @@ void Ut_mut::test_OptRmDeps()
     mut = edge1->Mutation().Root().AddChild(ENt_Cont);
     mut.SetAttr(ENa_MutNode, "./P1");
     mut.SetAttr(ENa_Ref, "");
-    edge1->Mutate(EFalse, ETrue, ETrue);
+    edge1->Mutate(EFalse, EFalse, ETrue);
     mut = root->Mutation().Root().AddChild(ENt_Rm);
     mut.SetAttr(ENa_MutNode, "./v1_0_i1");
-    root->Mutate(EFalse, ETrue, ETrue);
+    root->Mutate(EFalse, EFalse, ETrue);
     ChromoNode mut1 = root->Mutation().Root().AddChild(ENt_Rm);
     mut1.SetAttr(ENa_MutNode, "./v1");
-    root->Mutate(EFalse, ETrue, ETrue);
+    root->Mutate(EFalse, EFalse, ETrue);
     v1 = root->GetNode("./v1");
     auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_opt_rm_deps_res1.xml_");
@@ -1088,7 +1094,10 @@ void Ut_mut::test_CompactCont()
     delete iEnv;
 }
 
-// Getting parents modifs
+// Getting parents modifs, ref ds_mut_osm_linchr_comdp
+// TODO [YB] Seems this use-case is not complete. To consider use-case
+// where A-B--C-D (- attached, -- deattached) and D is mutated. 
+// Currently mutation from D will be copied to C, that is wrong
 void Ut_mut::test_GetParentModifs()
 {
     printf("\n === Test of getting parent modifs\n");
@@ -1097,26 +1106,71 @@ void Ut_mut::test_GetParentModifs()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    // Make the transformation
     MElem* vb1 = root->GetNode("./VB/VB_1");
-    TBool hasModifs = vb1->HasParentModifs();
-    vb1->CopyModifsFromParent();
-    // Save transformed chromo and recreate the model
-    auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
-    chromo->Save("ut_parmod1_res.xml_");
+    root->Chromos().Save("ut_parmod1_res.xml_");
     delete iEnv;
 
     iEnv = new Env("ut_parmod1_res.xml_", "ut_parmod1_res.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to re-create system after gettin parent modifs", iEnv != 0);
     iEnv->ConstructSystem();
-     // Check if edge is set correctly
     root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root after transforming", root != 0);
-    MElem* va1b1 = root->GetNode("./VB/VB_1/VA_1_B1");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get ./VB/VB_1/VA_1_B1", va1b1 != 0);
+    MElem* va1b1 = root->GetNode("./VB/VB_1/VP_1/VM_1/VA_1_1_B1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get ./VB/VB_1/VP_1/VM_1/VA_1_1_B1", va1b1 != 0);
+    MElem* vb1a1 = root->GetNode("./VB/VA_1");
+    vb1a1->Chromos().Save("ut_parmod1_res_vb1a1.xml_");
 
     delete iEnv;
 
+}
+
+void Ut_mut::test_ParentMut()
+{
+    printf("\n === Test of mutating of parent\n");
+    iEnv = new Env("ut_par_mut1.xml", "ut_par_mut1.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != NULL);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
+    MElem* va = root->GetNode("./VA");
+    /*
+    ChromoNode madd = va->Mutation().Root().AddChild(ENt_Node);
+    madd.SetAttr(ENa_Id, "VA_New");
+    madd.SetAttr(ENa_Parent, "./../VP");
+    va->Mutate();
+    */
+    // Check propagation of mutation to VR_1
+    // R-VV-VB--VA_1-VA_1_1--VR_1
+    MElem* vr1 = root->GetNode("./VA/VA_1/VA_1_1/VR_1");
+    ChromoNode m2 = vr1->Mutation().Root().AddChild(ENt_Node);
+    m2.SetAttr(ENa_Id, "VR_1_1_New");
+    m2.SetAttr(ENa_Parent, "Vert");
+    vr1->Mutate();
+    root->Chromos().Save("ut_par_mut1_res.xml_");
+    //MElem* van = root->GetNode("./VV/VB/VA_New");
+    //CPPUNIT_ASSERT_MESSAGE("Fail to get ./VB/VA_New", van != NULL);
+    MElem* vr11n = root->GetNode("./VV/VB/VA_1/VA_1_1/VR_1/VR_1_1_New");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get ./VV/VB/VA_1/VA_1_1/VR_1/VR_1_1_New", vr11n != NULL);
+    delete iEnv;
+}
+
+// Verified that parent's mutation are propageted as run-time modifications, ref ds_mut_osmlc_pm
+// TODO [YB] To verify error on model assembling phase
+void Ut_mut::test_ParentMut2()
+{
+    printf("\n === Test of mutating of parent\n");
+    iEnv = new Env("ut_par_mut2.xml", "ut_par_mut2.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != NULL);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
+    root->Chromos().Save("ut_par_mut2_res.xml_");
+    MElem* b1 = root->GetNode("./B1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get B1", b1 != NULL);
+    b1->Chromos().Save("ut_par_mut2_res_b1.xml_");
+    MElem* c1 = root->GetNode("./C1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get C1", c1 != NULL);
+    delete iEnv;
 }
 
 // Transform modif to mutation

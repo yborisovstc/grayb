@@ -15,7 +15,7 @@ string Incaps::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-Incaps::Incaps(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+Incaps::Incaps(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
     /*
@@ -28,7 +28,7 @@ Incaps::Incaps(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, a
     */
 }
 
-Incaps::Incaps(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+Incaps::Incaps(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
     SetParent(Elem::PEType());
 }

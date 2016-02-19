@@ -19,11 +19,11 @@ typedef vector<TMDep> TMDeps;
 class MMutable
 {
     public:
-	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse) = 0;
-	virtual TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse) = 0;
+	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, TBool aAttach = ETrue) = 0;
+	virtual TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, TBool aAttach = ETrue) = 0;
 	virtual MElem* CreateHeir(const string& aName, MElem* aMan) = 0;
-	virtual MElem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, TBool aTrialMode = EFalse) = 0;
-	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse) = 0;
+	virtual MElem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, TBool aTrialMode = EFalse, TBool aAttach = ETrue) = 0;
+	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, TBool aAttach = ETrue) = 0;
 	virtual auto_ptr<MChromo> GetFullChromo() const = 0;
 	virtual const MChromo& Chromos() const = 0;
 	virtual MChromo& Chromos() = 0;
@@ -42,20 +42,8 @@ class MMutable
 	virtual void GetMajorDep(TMDep& aDep, TBool aUp = EFalse, TBool aDown = ETrue) = 0;
 	virtual TMDep GetMajorDep(TNodeType aMut, MChromo::TDepsLevel aLevel) = 0;
 	virtual void GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDPath aDpath, MChromo::TDepsLevel aLevel, TBool aUp = ETrue, TBool aDown = ETrue) = 0;
-	virtual ChromoNode GetLocalForwardCCDep(MElem* aOwner, const ChromoNode& aMut) const = 0;
-	virtual void GetImplicitDep(TMDep& aDep, MElem* aObj, MElem* aRef) = 0;
-	virtual TBool IsRefSafe(MElem* aRef, TNodeAttr aReftype, MElem* aObj = NULL, TMDep* aDep = NULL) = 0;
-	// Resolve owned mutation unsafety via changing mutation position
-	virtual TBool ResolveMutUnsafety(MElem* aMutated, const TMDep& aDep) = 0;
-	virtual TBool ResolveMutsUnsafety() = 0;
 	virtual TBool CompactChromo() = 0;
 	virtual TBool CompactChromo(const ChromoNode& aNode) = 0;
-	// Transformations
-	virtual TBool HasParentModifs() const = 0;
-	virtual void CopyModifsFromParent() = 0;
-	virtual TBool HasModifs(const MElem* aOwner) const = 0;
-	virtual void CopyParentModifsToComp(MElem* aComp) = 0;
-	virtual TBool RebaseUriToIntNode(const GUri& aUri, const MElem* aComp, GUri& aResult) = 0;
 	// Debug
 	virtual void DumpMcDeps() const = 0;
 	virtual void DumpCmDeps() const = 0;

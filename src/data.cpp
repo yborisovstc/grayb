@@ -12,12 +12,12 @@ string DataBase::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-DataBase::DataBase(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+DataBase::DataBase(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-DataBase::DataBase(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+DataBase::DataBase(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
     SetParent(Elem::PEType());
 }
@@ -182,12 +182,12 @@ string DInt::PEType()
     return DataBase::PEType() + GUri::KParentSep + Type();
 }
 
-DInt::DInt(const string& aName, Elem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(0)
+DInt::DInt(const string& aName, MElem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(0)
 {
     SetParent(Type());
 }
 
-DInt::DInt(Elem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(0)
+DInt::DInt(MElem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(0)
 {
     SetParent(DataBase::PEType());
 }
@@ -313,12 +313,12 @@ string DNInt::PEType()
     return DInt::PEType() + GUri::KParentSep + Type();
 }
 
-DNInt::DNInt(const string& aName, Elem* aMan, MEnv* aEnv): DInt(aName, aMan, aEnv)
+DNInt::DNInt(const string& aName, MElem* aMan, MEnv* aEnv): DInt(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-DNInt::DNInt(Elem* aMan, MEnv* aEnv): DInt(Type(), aMan, aEnv)
+DNInt::DNInt(MElem* aMan, MEnv* aEnv): DInt(Type(), aMan, aEnv)
 {
     SetParent(DInt::PEType());
 }
@@ -367,12 +367,12 @@ string DVar::PEType()
     return DataBase::PEType() + GUri::KParentSep + Type();
 }
 
-DVar::DVar(const string& aName, Elem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(NULL)
+DVar::DVar(const string& aName, MElem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(NULL)
 {
     SetParent(Type());
 }
 
-DVar::DVar(Elem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(NULL)
+DVar::DVar(MElem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(NULL)
 {
     SetParent(DataBase::PEType());
 }

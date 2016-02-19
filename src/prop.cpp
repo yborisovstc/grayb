@@ -6,12 +6,12 @@ string Prop::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-Prop::Prop(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+Prop::Prop(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-Prop::Prop(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+Prop::Prop(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
     SetParent(Elem::PEType());
 }
@@ -66,12 +66,12 @@ string Description::PEType()
     return Prop::PEType() + GUri::KParentSep + Type();
 }
 
-Description::Description(const string& aName, Elem* aMan, MEnv* aEnv): Prop(aName, aMan, aEnv)
+Description::Description(const string& aName, MElem* aMan, MEnv* aEnv): Prop(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-Description::Description(Elem* aMan, MEnv* aEnv): Prop(Type(), aMan, aEnv)
+Description::Description(MElem* aMan, MEnv* aEnv): Prop(Type(), aMan, aEnv)
 {
     SetParent(Prop::PEType());
 }

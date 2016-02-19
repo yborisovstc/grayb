@@ -22,7 +22,7 @@ ProvDef::~ProvDef()
 {
 }
 
-Elem* ProvDef::CreateNode(const string& aType, const string& aName, Elem* aMan, MEnv* aEnv)
+Elem* ProvDef::CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv)
 {
     Elem* res = NULL;
     if (aType.compare(Vert::Type()) == 0) {

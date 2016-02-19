@@ -12,12 +12,12 @@ string FuncBase::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-FuncBase::FuncBase(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+FuncBase::FuncBase(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-FuncBase::FuncBase(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+FuncBase::FuncBase(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
     SetParent(Elem::PEType());
 }
@@ -89,12 +89,12 @@ string AFunInt::PEType()
     return FuncBase::PEType() + GUri::KParentSep + Type();
 }
 
-AFunInt::AFunInt(const string& aName, Elem* aMan, MEnv* aEnv): FuncBase(aName, aMan, aEnv), mData(0)
+AFunInt::AFunInt(const string& aName, MElem* aMan, MEnv* aEnv): FuncBase(aName, aMan, aEnv), mData(0)
 {
     SetParent(Type());
 }
 
-AFunInt::AFunInt(Elem* aMan, MEnv* aEnv): FuncBase(Type(), aMan, aEnv), mData(0)
+AFunInt::AFunInt(MElem* aMan, MEnv* aEnv): FuncBase(Type(), aMan, aEnv), mData(0)
 {
     SetParent(FuncBase::PEType());
 }
@@ -157,12 +157,12 @@ string AIncInt::PEType()
     return AFunInt::PEType() + GUri::KParentSep + Type();
 }
 
-AIncInt::AIncInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
+AIncInt::AIncInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AIncInt::AIncInt(Elem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
+AIncInt::AIncInt(MElem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
 {
     SetParent(AFunInt::PEType());
 }
@@ -210,12 +210,12 @@ string AFunIntRes::PEType()
     return AFunInt::PEType() + GUri::KParentSep + Type();
 }
 
-AFunIntRes::AFunIntRes(const string& aName, Elem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
+AFunIntRes::AFunIntRes(const string& aName, MElem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFunIntRes::AFunIntRes(Elem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
+AFunIntRes::AFunIntRes(MElem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
 {
     SetParent(AFunInt::PEType());
 }
@@ -296,12 +296,12 @@ string AAddInt::PEType()
     return AFunInt::PEType() + GUri::KParentSep + Type();
 }
 
-AAddInt::AAddInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
+AAddInt::AAddInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AAddInt::AAddInt(Elem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
+AAddInt::AAddInt(MElem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
 {
     SetParent(AFunInt::PEType());
 }
@@ -360,7 +360,7 @@ string ACountCritInt::PEType()
     return AFunInt::PEType() + GUri::KParentSep + Type();
 }
 
-ACountCritInt::ACountCritInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
+ACountCritInt::ACountCritInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
@@ -420,12 +420,12 @@ string AFunc::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-AFunc::AFunc(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+AFunc::AFunc(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFunc::AFunc(Elem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+AFunc::AFunc(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
     SetParent(Elem::PEType());
 }
@@ -497,12 +497,12 @@ string AFuncInt::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFuncInt::AFuncInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv), mData(0)
+AFuncInt::AFuncInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv), mData(0)
 {
     SetParent(Type());
 }
 
-AFuncInt::AFuncInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv), mData(0)
+AFuncInt::AFuncInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv), mData(0)
 {
     SetParent(AFunc::PEType());
 }
@@ -552,12 +552,12 @@ string AFAddInt::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFAddInt::AFAddInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+AFAddInt::AFAddInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFAddInt::AFAddInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
+AFAddInt::AFAddInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
 {
     SetParent(AFunc::PEType());
 }
@@ -599,12 +599,12 @@ string AFSubInt::PEType()
     return AFuncInt::PEType() + GUri::KParentSep + Type();
 }
 
-AFSubInt::AFSubInt(const string& aName, Elem* aMan, MEnv* aEnv): AFuncInt(aName, aMan, aEnv)
+AFSubInt::AFSubInt(const string& aName, MElem* aMan, MEnv* aEnv): AFuncInt(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFSubInt::AFSubInt(Elem* aMan, MEnv* aEnv): AFuncInt(Type(), aMan, aEnv)
+AFSubInt::AFSubInt(MElem* aMan, MEnv* aEnv): AFuncInt(Type(), aMan, aEnv)
 {
     SetParent(AFuncInt::PEType());
 }
@@ -655,12 +655,12 @@ string AFLimInt::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFLimInt::AFLimInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+AFLimInt::AFLimInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFLimInt::AFLimInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
+AFLimInt::AFLimInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
 {
     SetParent(AFunc::PEType());
 }
@@ -716,12 +716,12 @@ string AFDivInt::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFDivInt::AFDivInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+AFDivInt::AFDivInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFDivInt::AFDivInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
+AFDivInt::AFDivInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
 {
     SetParent(AFunc::PEType());
 }
@@ -779,7 +779,7 @@ string AFIntToVect::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFIntToVect::AFIntToVect(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+AFIntToVect::AFIntToVect(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
@@ -824,13 +824,13 @@ string AFConvInt::PEType()
     return AFuncInt::PEType() + GUri::KParentSep + Type();
 }
 
-AFConvInt::AFConvInt(const string& aName, Elem* aMan, MEnv* aEnv): AFuncInt(aName, aMan, aEnv)
+AFConvInt::AFConvInt(const string& aName, MElem* aMan, MEnv* aEnv): AFuncInt(aName, aMan, aEnv)
 {
     SetParent(Type());
     iSampleHolder.iHost = this;
 }
 
-AFConvInt::AFConvInt(Elem* aMan, MEnv* aEnv): AFuncInt(Type(), aMan, aEnv)
+AFConvInt::AFConvInt(MElem* aMan, MEnv* aEnv): AFuncInt(Type(), aMan, aEnv)
 {
     SetParent(AFuncInt::PEType());
     iSampleHolder.iHost = this;
@@ -914,7 +914,7 @@ string AFuncm::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-AFuncm::AFuncm(const string& aName, Elem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+AFuncm::AFuncm(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
@@ -985,7 +985,7 @@ string AFuncmAdd::PEType()
     return AFuncm::PEType() + GUri::KParentSep + Type();
 }
 
-AFuncmAdd::AFuncmAdd(const string& aName, Elem* aMan, MEnv* aEnv): AFuncm(aName, aMan, aEnv)
+AFuncmAdd::AFuncmAdd(const string& aName, MElem* aMan, MEnv* aEnv): AFuncm(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
@@ -1024,12 +1024,12 @@ string AFGTInt::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFGTInt::AFGTInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+AFGTInt::AFGTInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFGTInt::AFGTInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
+AFGTInt::AFGTInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
 {
     SetParent(AFunc::PEType());
 }
@@ -1072,12 +1072,12 @@ string AFBoolToInt::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFBoolToInt::AFBoolToInt(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+AFBoolToInt::AFBoolToInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFBoolToInt::AFBoolToInt(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
+AFBoolToInt::AFBoolToInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
 {
     SetParent(AFunc::PEType());
 }
@@ -1118,12 +1118,12 @@ string AFunVar::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFunVar::AFunVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv), mFunc(NULL)
+AFunVar::AFunVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv), mFunc(NULL)
 {
     SetParent(Type());
 }
 
-AFunVar::AFunVar(Elem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv), mFunc(NULL)
+AFunVar::AFunVar(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv), mFunc(NULL)
 {
     SetParent(AFunc::PEType());
 }
@@ -1417,12 +1417,12 @@ string AFAddVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFAddVar::AFAddVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFAddVar::AFAddVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFAddVar::AFAddVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+AFAddVar::AFAddVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
 }
@@ -1929,12 +1929,12 @@ string AFCpsVectVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFCpsVectVar::AFCpsVectVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFCpsVectVar::AFCpsVectVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFCpsVectVar::AFCpsVectVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+AFCpsVectVar::AFCpsVectVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
 }
@@ -2038,12 +2038,12 @@ string AFMplVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFMplVar::AFMplVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFMplVar::AFMplVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFMplVar::AFMplVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+AFMplVar::AFMplVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
 }
@@ -2211,12 +2211,12 @@ string AFMplncVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFMplncVar::AFMplncVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFMplncVar::AFMplncVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFMplncVar::AFMplncVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+AFMplncVar::AFMplncVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
 }
@@ -2570,12 +2570,12 @@ string AFMplinvVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFMplinvVar::AFMplinvVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFMplinvVar::AFMplinvVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFMplinvVar::AFMplinvVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+AFMplinvVar::AFMplinvVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
 }
@@ -2799,12 +2799,12 @@ string AFCastVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFCastVar::AFCastVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFCastVar::AFCastVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFCastVar::AFCastVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+AFCastVar::AFCastVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
 }
@@ -2908,12 +2908,12 @@ string AFCpsMtrdVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFCpsMtrdVar::AFCpsMtrdVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFCpsMtrdVar::AFCpsMtrdVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFCpsMtrdVar::AFCpsMtrdVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+AFCpsMtrdVar::AFCpsMtrdVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
 }
@@ -3017,12 +3017,12 @@ string AFDivVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFDivVar::AFDivVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFDivVar::AFDivVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFDivVar::AFDivVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+AFDivVar::AFDivVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
 }
@@ -3220,12 +3220,12 @@ string AFBcmpVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFBcmpVar::AFBcmpVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFBcmpVar::AFBcmpVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFBcmpVar::AFBcmpVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+AFBcmpVar::AFBcmpVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
 }
@@ -3283,12 +3283,12 @@ string AFCmpVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFCmpVar::AFCmpVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFCmpVar::AFCmpVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFCmpVar::AFCmpVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+AFCmpVar::AFCmpVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
 }
@@ -3432,12 +3432,12 @@ string AFAtVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFAtVar::AFAtVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFAtVar::AFAtVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFAtVar::AFAtVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+AFAtVar::AFAtVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
 }
@@ -3721,12 +3721,12 @@ string AFSwitchVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFSwitchVar::AFSwitchVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFSwitchVar::AFSwitchVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFSwitchVar::AFSwitchVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+AFSwitchVar::AFSwitchVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
 }
@@ -3886,12 +3886,12 @@ string AFBoolNegVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFBoolNegVar::AFBoolNegVar(const string& aName, Elem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFBoolNegVar::AFBoolNegVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
-AFBoolNegVar::AFBoolNegVar(Elem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
+AFBoolNegVar::AFBoolNegVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
 }

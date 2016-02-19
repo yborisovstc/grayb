@@ -1031,8 +1031,13 @@
 	</sect2>
 	<sect2><title>How to import external modules?</title>
 	</sect2>
-	<sect2><title>Migration options</title>
+	<sect2><title>What mutation scheme can we considered</title>
 	    <orderedlist>
+		<listitem>Hierarchical chromo, mutation in hierarchy order
+		    <para>This is what is implemented currently. This scheme doesn't natively secure the assembling order equivalent to constructing order.
+			Model's consistency is secured by the series of mechanism. The key mechanism is detection of order breaking and then correction of
+			chromo.</para>
+		</listitem>
 		<listitem>Using mutation order attributes, ref <xref linkend="ds_mut_osm_iop_ord"/></listitem>
 		<listitem>Using linear chromo in root agent, ref <xref linkend="ds_mut_osm_linchr"/></listitem>
 	    </orderedlist>
@@ -1073,19 +1078,23 @@
 	    <sect3 id="ds_mut_osm_linchr_cmpt"><title>Implementng OSM with full compatibility to hierarchical chromo approach.</title>
 		<simpara>Discussion in <xref linkend="ds_mut_osm_linchr_inh"/> shows that OSM with keeping root components muations is very
 		    similar to the current implementation (hierarchical chromo). OSM root linear chromo can be implemented compatible to the 
-		current implementation. We need to:</simpara>
-	    <orderedlist>
-		<listitem>Introduce new muts attribure "target", that is the reference to the node this mutations related to. So, any mutation
-		    in the hierarchical chrmoo node A will be equivalent root chromo mutation with [target=uri_to_A]. We will call such mutations as
-		    "targered".</listitem>
-		<listitem>Keep the current mechansm of creating node, where mutating node creates mutated node via inheriting parent,
-		    sets the mutated node chromo (i.e. hierarchical chromo) and then mutate it. So both hierarchical chromo and targeted chromo
-		    will be supported. This allow to use "old" hierarchical chromo to be used for assembling model by OSM env. This also guarantee
-		    that current inheritance mechanism works properly.</listitem>
-		<listitem>Implement mechanism of transforming any hierarchical mut into root linear chromo mut. This can be done via notifying
-		    root on applying new mutation to chromo of internal node: root needs to add corresponding mut with the proper target to the roots chromo.
-		    This allows simple transforming heirarchical chromo to OSM linear chromo - we just need to "load" hier chromo and then save it.</listitem>
-	    </orderedlist>
+		    current implementation. We need to:</simpara>
+		<orderedlist>
+		    <listitem>Introduce new muts attribure "target", that is the reference to the node this mutations related to. So, any mutation
+			in the hierarchical chrmoo node A will be equivalent root chromo mutation with [target=uri_to_A]. We will call such mutations as
+			"targered".</listitem>
+		    <listitem>Keep the current mechansm of creating node, where mutating node creates mutated node via inheriting parent,
+			sets the mutated node chromo (i.e. hierarchical chromo) and then mutate it. So both hierarchical chromo and targeted chromo
+			will be supported. This allow to use "old" hierarchical chromo to be used for assembling model by OSM env. This also guarantee
+			that current inheritance mechanism works properly.</listitem>
+		    <listitem>Implement mechanism of transforming any hierarchical mut into root linear chromo mut. This can be done via notifying
+			root on applying new mutation to chromo of internal node: root needs to add corresponding mut with the proper target to the roots chromo.
+			This allows simple transforming heirarchical chromo to OSM linear chromo - we just need to "load" hier chromo and then save it.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3 id="ds_mut_osm_linchr_lce"><title>Linear chromo on each model's level of hierarcy</title>
+		<simpara>In fact, the linear chromo is required not only on root level, but on each level. This is because we need to have chromo with
+		right mutations order even for some "internal" node to ensure the node can be inherited correctly. </simpara>
 	    </sect3>
 	    <sect3 id="ds_mut_osm_linchr_es"><title>Breaking chromo consistency in case of embedded subsystem</title>
 		<simpara>Embedded subsystem, or subsystem with independent chromo are useful way of reusing the chromos. One of the examples of
@@ -1093,6 +1102,116 @@
 		    because the independent subsystems is mutated separately, but not via the linear root chromo. So all the problems pecular to 
 		    "hierarchical chromo" are here, ref <xref linkend="ds_mut_osm_intro"/>. So the only "pure" linear chromo needs to be used
 		    to secure chromo consistently. This fact makes the option less usable for systems development.</simpara>
+	    </sect3>
+	    <sect3 id="ds_mut_osm_linchr_comdp"><title>Copying modification from the parent</title>
+		<sect4><title>Intro</title>
+		    <simpara>The current implementation (hier chromo) supports the feature to copy modification from the parent. The idea is to provide
+			the models creator with the ability of inherit all changes from parent in case if the parent is inherited component. The matter is
+			that the current implementation doens't mutate the inherited component but uses pheno modif instead. This is because with heir chromo
+			it is not possible to attach chromo of inherited component, so to save the change in some inherited component we need to apply
+			the mutation in the component attached owner (i.e owner which chromo is attached).</simpara>
+		    <simpara>OSM linear root chromo allows stores all the mutations irrespectivelly of whether mutated comp is inherited or not. So
+			potentially the feature "Copying modification from the parent" is not needed anymore. But the question is if the model with
+			direct mutation of inherited comps be equivalent the model of currently implemented? NO, they are not. The problem here is that actually
+			OSM approach doesn't solves the problem with incomplete chromo of inherited node. This is because even includeing chromo to mutated
+			inherited node doesn't mean that the chromo of node's owner also includes this mutation. In fact it's not because inherited node's chromo
+			is deattached from the owner's chromo.</simpara>
+		</sect4>
+		<sect4 id="ds_mut_osm_linchr_comdp_mp"><title>Solution: to propagate the mutation</title>
+		    <para>One solution here is to propagate the mutation to some the mutated inherited node owners.
+			The algorithm of propagation has to consider mutation attaching. Let's consider the following model ("-" designates component chromo attached,
+			while "--" deattached) with component A5 mutated:
+			<programlisting> A0-A1--A2-A3--A4-A5 </programlisting>
+			Apparently we don't need to propagate mutation to A4 because A4 attaches A5 so A5 mutation "exists" in A4 chromo. We need to propagate the
+			mutation to A3 because A3 doesn't attach A5 so A5 mutation is not "available" in A3 chromo. According to this logic: A2 - no propagation,
+			A1- to propagate. As for A0, A0 is root so even it attaches A1 but it newer uses this attachment (because it doesn't collect full chromo
+			from its components) but uses its own chromo instead (its chromo is complete linear chromo of the model).
+			This approach seems consistent to the main OSM approach where mutation into some node is copied to 
+			root chromo.</para>
+		    <simpara>To implement mutations included to the inherited node chromo we need to modify the options of mutation. Currently there is
+			only one option "Runtime" that means that if option is true the mutation shall not be included to the node's chromo i.e. that the
+			mutation is acutally modificaton on runtime. Now we need to add one more option "Attach" that enables attaching the mutation to the 
+			whole system's chromo. So the combinations of these two options are as:</simpara>
+		    <table frame="all">
+			<tgroup cols='3' align='left' colsep='1' rowsep='1'> <colspec colname="c1" /> <colspec colname="c2" />
+			    <thead> <row> <entry>Runtime</entry> <entry>Attach</entry> <entry>Use-case</entry> </row> </thead>
+			    <tbody>
+				<row> <entry>False</entry> <entry>False</entry> <entry>Mutation of inherited part, included into the inherited node's chromo but not attached to 
+					the system's chromo. The inherited node's chromo is neede to supportd inheritance from such a nodes.</entry> </row>
+				<row> <entry>False</entry> <entry>True</entry> <entry>Regular mutation that included to node's chromo and attached to system's chromo</entry>
+				</row>
+				<row> <entry>True</entry> <entry>Any</entry> <entry>Modification</entry> </row>
+			    </tbody>
+			</tgroup>
+		    </table>
+		</sect4>
+	    </sect3>
+	    <sect3><title>Parent's mutations</title>
+		<simpara>Ref <xref linkend="ds_mut_osmlc_pm"/> for the material</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mut_osmlc_pm"><title>OSM linear chromo: parent's mutation</title>
+	    <sect3><title>Intro</title>
+		<simpara>Mutating of parent and propagating parent's mutation to the children is one of key part of OSM approach. The following use-cases need
+		    to be considered:</simpara>
+		<orderedlist>
+		    <listitem>Parent is mutating directly</listitem>
+		    <listitem>Component of parent is mutating directly</listitem>
+		</orderedlist>
+		<simpara> Note that we need to propagate mutation as run-time modification. This is because the changes are included to the parent's chromo.
+		</simpara>
+	    </sect3>
+	    <sect3><title>Parent's component mutating</title>
+		<simpara>In order to propagate the mutation of parent's component we need to notify the owner's chain, so that each owner then propagates the 
+		    mutation to its children.</simpara>
+	    </sect3>
+	    <sect3 id="ds_mut_osmlc_pm_vpf"><title>Verifying that the propagation fulfilled OK.</title>
+		<simpara>There is the possibility that the propagation of parent's mutation fails. This could happen for instance when the mutation 
+		    introduces ref to some parent's component that is removed from child. To avoid such failures we need to verify the propagation in the
+		    scope of parent's mutation. If the propagation fails the mutation has to be considered as incorrect. In this case the creator can
+		    modify childs properly and makes new attempt of mutation.</simpara>
+		<simpara>The key problem here is that we need to roll-back the mutation in case of failure. Currently the engine itself doesn't support
+		    rollback. The only way at the moment to roll-back is to set mutations limit to env and re-assemble the model. We need to 
+		    consider solid design for such mutation roll-back.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mut_osmlc_cmp"><title>OSM linear chromo: chromo compacting</title>
+	</sect2>
+	<sect2 id="ds_mut_osmlc_rns"><title>OSM linear chromo: References native support</title>
+	    <sect3><title>Intro</title>
+		<simpara>OSMLH doesn't require to collect model-chromo an chromo-model dependencies, so they will be removed from the engine when
+		    migrating to OSM. But this dependencies are used also to keep consistency of references. Currently there is no references support on
+		    the level of native hierarchy, so it's not possible to check if the mutation will break references without extra means (deps for instance).</simpara>
+		<simpara>Do we need to support refs consistency at all in this case. On earlier implementations there was no such verification.</simpara>
+		<simpara>Currently the relation support is implemented via specific agents (Vert, Edge). Introducing refs support on native level will
+		    change this approach. On the other hand there is some obvious discordance in the current approach: there is [ref] attribute of mutation,
+		    that assumes this "ref" in the native agent to which the mutation is applied. But as we mentioned there is no "ref" supported
+		    natively. Actually currently [ref] mutation attribute is just kind of content. It is assumed that specific agents interpret this
+		    content properly when implementing relations: for instance Edge keeps refs to related vertexes. That is ok but it is possble to apply
+		    mutation [cont ref=...] to any agent, not specific only.</simpara>
+	    </sect3>
+	    <sect3><title>Use-cases outline</title>
+	    </sect3>
+	    <sect3><title>Native support of refs: Cons</title>
+		<orderedlist>
+		    <listitem>The relation "ref" on native level does make sense only in case if there is some functionality of this relation. 
+			For instance parent-child relation is used to construct model via inheritance - there are specific handling of this relation. But
+			what handling would be for "ref"? Seems there is no such specific handling on native level.
+			<pare>The argument is that agent's content is also not supported by all native agent but base agent has API for content. Same way
+			    we can have APIs for ref (interfaces Referring and Referred).</pare>
+		    </listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Native support of refs: Pros</title>
+		<orderedlist>
+		    <listitem>Currently there are no mechanism of node removing consistency verification on native layer. Native support of refs can
+			provide base of such mechanism.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Points</title>
+		<orderedlist>
+		    <listitem>It has to be avoided to ref to agent that is not "referrable".</listitem>
+		</orderedlist>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_mut_osm_mrk"><title>Implementation option: hierarchical chromo with markers</title>
@@ -2411,7 +2530,7 @@
 	    <sect3 id="ds_daa_chrc_rn"><title>Decoupled chromo: how to get chromo for renamed node ?</title>
 		<simpara>There is the problem with implemeting of decoupled chromo in case of renaming node. The problem occurs with combining the 
 		    full chromo. As was mentioned above (ref <xref linkend="ds_daa_chrc_va"/> the procedure of combining full chromo is based on relation
-		between owners [node] mutation and corresponding owners component. But this relation gets broken when the component is renamed.</simpara>
+		    between owners [node] mutation and corresponding owners component. But this relation gets broken when the component is renamed.</simpara>
 	    </sect3>
 	    <sect3><title id="ds_daa_chrc_rln">Decoupled chromo: how to relate from owner [node] mut to corresponding model node chromo root</title>
 	    </sect3>
@@ -2483,6 +2602,12 @@
 	</sect2>
 	<sect2><title>Mutation for re-parent</title>
 	    <simpara>Ref <xref linkend="ds_mut_pmf"/></simpara>
+	</sect2>
+	<sect2><title>To create solid design for roll-back of propagated mutations.</title>
+	    <simpara>Ref <xref likend="ds_mut_osmlc_pm_vpf"/></simpara>
+	</sect2>
+	<sect2><title>OSM linear chromo: chromo compacting</title>
+	    <simpara>Ref <xref linkend="ds_mut_osmlc_cmp"/></simpara>
 	</sect2>
     </sect1>
 
