@@ -105,8 +105,6 @@ void Ut_mut::test_Add()
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Check getting chromo 
-    //auto_ptr<MChromo> chromo = root->GetFullChromo();
-    //chromo->Save("ut_mutadd_1_saved.xml_");
     root->Chromos().Save("ut_mutadd_1_saved.xml_");
     MElem* e2 = root->GetNode("./elem1/elem2");
     CPPUNIT_ASSERT_MESSAGE("Fail to get e2", e2 != 0);
@@ -116,9 +114,9 @@ void Ut_mut::test_Add()
     CPPUNIT_ASSERT_MESSAGE("Fail to get elem3/elem2/elem2_1", e3_2_1 != 0);
     MElem* e3 = root->GetNode("./elem3");
     CPPUNIT_ASSERT_MESSAGE("Fail to get e3", e3 != 0);
-    MElem* e4_ao = e4->GetAttachingMgr();
+    MElem* e4_ao = e4->GetAttachedMgr();
     CPPUNIT_ASSERT_MESSAGE("Wrong attached owner of e4", e4_ao == e4);
-    MElem* e3_2_1_ao = e3_2_1->GetAttachingMgr();
+    MElem* e3_2_1_ao = e3_2_1->GetAttachedMgr();
     CPPUNIT_ASSERT_MESSAGE("Wrong attached owner of elem3/elem2/elem2_1", e3_2_1_ao == e3);
     MElem* e4_ato = e4->GetAowner();
     CPPUNIT_ASSERT_MESSAGE("Wrong attaching owner of e4", e4_ato == e3);

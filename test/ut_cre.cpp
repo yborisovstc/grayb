@@ -150,6 +150,8 @@ void Ut_cre::test_CreIncaps()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    MElem* cp = root->GetNode("./sysmod/ConnPoint");
+    cp->Chromos().Save("ut_cre_incaps_cp_.xml_");
     MElem* ep1 = root->GetNode("./test/Ics1/Capsule/ep");
     CPPUNIT_ASSERT_MESSAGE("Fail to get ep1", ep1 != 0);
     MVert* mep1 = ep1->GetObj(mep1);

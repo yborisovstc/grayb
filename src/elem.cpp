@@ -28,7 +28,7 @@ MElem::EIfu::EIfu()
 {
     RegMethod("Name", 0);
     RegMethod("GetMan", 0);
-    RegMethod("GetAttachingMgr", 0);
+    RegMethod("GetAttachedMgr", 0);
     RegMethod("GetRoot", 0);
     RegMethod("GetNode", 1);
     RegMethod("GetNode#2", 3);
@@ -1154,13 +1154,29 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	}
 	//if (this == GetRoot() && rno.AttrExists(ENa_Targ)) {
 	if (rno.AttrExists(ENa_Targ)) {
-	    // Targeted mutation, redirect to target
-	    MElem* targ = GetNode(rno.Attr(ENa_Targ));
+	    // Targeted mutation, propagate downward, i.e redirect to comp owning the target
+	    // ref ds_mut_osm_linchr_lce
+	    MElem* ftarg = GetNode(rno.Attr(ENa_Targ));
+	    MElem* targ = ftarg == NULL ? NULL : GetCompOwning(ftarg);
 	    if (targ != NULL) {
 		ChromoNode& troot = targ->Mutation().Root();
 		ChromoNode madd = troot.AddChild(rno, ETrue, EFalse);
-		madd.RmAttr(ENa_Targ);
-		targ->Mutate(aRunTime, aCheckSafety, aTrialMode, aAttach);
+		if (ftarg != targ) {
+		    string sturi = ftarg->GetUri(targ, ETrue);
+		    madd.SetAttr(ENa_Targ, sturi);
+		} else {
+		    madd.RmAttr(ENa_Targ);
+		}
+		// Propagate the mut downward, reset runtime to keep the mut in lower owners
+		// disable upward propagation, ref ds_mut_osm_linchr_lce
+		targ->Mutate(EFalse, aCheckSafety, aTrialMode, EFalse);
+		if (!aRunTime) {
+		    iChromo->Root().AddChild(rno, ETrue, EFalse);
+		    if (aAttach) {
+			// Propagate upward
+			NotifyNodeMutated(rno);
+		    }
+		}
 	    } else {
 		Logger()->Write(MLogRec::EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_Targ).c_str());
 	    }
@@ -1168,11 +1184,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    // Local mutation
 	    TNodeType rnotype = rno.Type();
 	    if (rnotype == ENt_Node) {
-		MElem* node = AddElem(rno, aRunTime, aTrialMode, aAttach);
-		if (node == NULL) {
-		    string pname = rno.Attr(ENa_Parent);
-		    Logger()->Write(MLogRec::EErr, this, "Adding node with parent [%s] failed", pname.c_str());
-		}
+		AddElem(rno, aRunTime, aTrialMode, aAttach);
 	    }
 	    else if (rnotype == ENt_Change) {
 		ChangeAttr(rno, aRunTime, aCheckSafety, aTrialMode, aAttach);
@@ -1426,19 +1438,19 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 		    long t3; if (ptrace) t3 = GetClock();
 		    elem = parent->CreateHeir(sname, node);
 		    if (ptrace) { long t3_4 = GetClockElapsed(t3); Logger()->Write(MLogRec::EInfo, this, "Adding node, t3-t4: %d", t3_4);}
-		    // TODO [YB] Seems to be just temporal solution. To consider using context instead.
-		    // Make heir based on the parent: re-parent the heir (currently it's of grandparent's parent) and clean the chromo
-		    ChromoNode hroot = elem->Chromos().Root();
-		    hroot.SetAttr(ENa_Parent, sparent);
-		    if (!snode.empty()) {
-			hroot.SetAttr(ENa_MutNode, snode);
-		    }
 		    // Remove external parent from system
 		    // [YB] DON'T remove parent, otherwise the inheritance chain will be broken
 		    if (ext_parent) {
 			// delete parent;
 		    }
 		    if (elem != NULL) {
+			// TODO [YB] Seems to be just temporal solution. To consider using context instead.
+			// Make heir based on the parent: re-parent the heir (currently it's of grandparent's parent) and clean the chromo
+			ChromoNode hroot = elem->Chromos().Root();
+			hroot.SetAttr(ENa_Parent, sparent);
+			if (!snode.empty()) {
+			    hroot.SetAttr(ENa_MutNode, snode);
+			}
 			res = node->AppendComp(elem);
 			if (res) {
 			    if (!aRunTime) {
@@ -1479,7 +1491,7 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 			}
 		    }
 		    else {
-			Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] - failed", sname.c_str());
+			Logger()->Write(MLogRec::EErr, this, "Creating heir [%s] from parent [%s] - failed", sname.c_str(), sparent.c_str());
 		    }
 		}
 		else  {
@@ -1563,9 +1575,8 @@ MElem* Elem::CreateHeir(const string& aName, MElem* aMan)
 	}
 	if (EN_PERF_TRACE) Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p2 ");
 	// Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo
-	auto_ptr<MChromo> chr = GetFullChromo();
-	ChromoNode& root = chr->Root();
-	heir->SetMutation(root);
+	ChromoNode croot = iChromo->Root();
+	heir->SetMutation(croot);
 	// Mutate run-time only - !! DON'T UPDATE CHROMO, ref UC_019
 	heir->Mutate(ETrue, EFalse, EFalse, EFalse);
 	if (EN_PERF_TRACE) Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p3 ");
@@ -1963,7 +1974,7 @@ MElem* Elem::GetCommonAowner(MElem* aElem)
 // Using combined model/chromo calculation, ref ds_daa_chrc_va
 void Elem::GetRank(Rank& aRank, const ChromoNode& aMut) const
 {
-    const MElem* att = GetAttachingMgr();
+    const MElem* att = GetAttachedMgr();
     if (att == this) {
 	// Get models node rank first
 	GetRank(aRank);
@@ -2002,7 +2013,14 @@ TInt Elem::GetCompLrank(const MElem* aComp) const
     for (ChromoNode::Const_Iterator it = croot.Begin(); it != croot.End() && !found; it++, res++) {
 	ChromoNode mut = *it;
 	//found = (mut.Type() == ENt_Node) && (mut.Attr(ENa_Parent) == parent) && (mut.Name() == name && mut.IsActive() == ia);
-	found = (mut.Type() == ENt_Node) && mut.IsActive() == ia && (mut.Name() == name);
+	found = (mut.Type() == ENt_Node) && mut.IsActive() == ia && (mut.Name() == name)/* && (aComp->GetMan() == targ)*/;
+	if (found) {
+	    const MElem* targ = mut.AttrExists(ENa_Targ) ? ((MElem*) this)->GetNode(mut.Attr(ENa_Targ), ETrue) : this;
+	    targ = mut.AttrExists(ENa_MutNode) ? ((MElem*) targ)->GetNode(mut.Attr(ENa_MutNode), ETrue) : targ;
+	    if (aComp->GetMan() != targ) {
+		found = EFalse;
+	    }
+	}
     }
     if (!found)  {
 	res = -1;
@@ -2198,6 +2216,7 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
 	}
 	else  {
 	    Logger()->Write(MLogRec::EErr, this, "Removing node [%s] - attempt of phenotypic modification - disabled", snode.c_str());
+	    IsCompOfInheritedComp(node);
 	}
     }
     else {
@@ -2337,7 +2356,7 @@ TBool Elem::IsHeirOf(const string& aParent) const
 // Using model based calculation, ref ds_daa_chrc_va
 TBool Elem::IsChromoAttached() const
 {
-    const MElem* atm = GetAttachingMgr();
+    const MElem* atm = GetAttachedMgr();
     return atm == this;
 }
 
@@ -2349,7 +2368,7 @@ TBool Elem::IsMutAttached(const ChromoNode& aMut) const
 // Getting owner that is attached. It can differ from owner that attaches the node
 // For owner attaching the node, use
 #if 0
-MElem* Elem::GetAttachingMgr() 
+MElem* Elem::GetAttachedMgr() 
 {
     MElem* res = NULL;
     MElem* cand = this;
@@ -2363,7 +2382,7 @@ MElem* Elem::GetAttachingMgr()
     return res;
 }
 
-const MElem* Elem::GetAttachingMgr() const
+const MElem* Elem::GetAttachedMgr() const
 {
     const MElem* res = NULL;
     const MElem* cand = this;
@@ -2379,7 +2398,7 @@ const MElem* Elem::GetAttachingMgr() const
 }
 #endif
 
-MElem* Elem::GetAttachingMgr() 
+MElem* Elem::GetAttachedMgr() 
 {
     MElem* res = GetRoot();
     if (this != res) {
@@ -2392,7 +2411,7 @@ MElem* Elem::GetAttachingMgr()
     return res;
 }
 
-const MElem* Elem::GetAttachingMgr() const
+const MElem* Elem::GetAttachedMgr() const
 {
     const MElem* res = GetRoot();
     if (this != res) {
@@ -2421,7 +2440,7 @@ MElem* Elem::GetAcompOwning(MElem* aComp)
 
 
 // Get the node that attaches this node. Don't confuse with the nearest attached
-// owner, for that ref to GetAttachingMgr
+// owner, for that ref to GetAttachedMgr
 #if 0
 MElem* Elem::GetAowner()
 {
@@ -3097,7 +3116,11 @@ void Elem::OnNodeMutated(const MElem* aNode, const ChromoNode& aMut)
 void Elem::NotifyNodeMutated(const ChromoNode& aMut)
 {
     if (this != GetRoot()) {
-	GetMan()->OnNodeMutated(this, aMut);
+	MElem* owner = GetMan();
+	MElem* aowner = GetAowner();
+	if (aowner != NULL && (owner == aowner || aowner->IsComp(owner))) {
+	    owner->OnNodeMutated(this, aMut);
+	}
 	if (HasChilds()) {
 	    NotifyParentMutated(aMut);
 	}
@@ -3109,14 +3132,21 @@ void Elem::OnNodeMutated(const MElem* aNode, const ChromoNode& aMut)
     MElem* root = GetRoot();
     // Copy mutation to the chromo in case of root or first non-attached owner in he owners chain
     // ref ds_mut_osm_linchr_comdp_mp
-    if (this == root || !IsCompAttached(GetCompOwning(aNode))) {
+    //if (this == root || !IsCompAttached(GetCompOwning(aNode))) {
+    // Accept propagation from attached comp only
+    if (true) {
 	string nuri = aNode->GetUri(this, ETrue);
 	ChromoNode anode = iChromo->Root().AddChild(aMut);
 	anode.SetAttr(ENa_Targ, nuri);
     }
-    // Propagate mutation to owner
     if (this != root) {
-	GetMan()->OnNodeMutated(aNode, aMut);
+	// Propagate till upper node of attaching chain, ref ds_mut_osm_linchr_lce
+	// i.e to the owner if owner is attaching owner or is under mutated node attaching owner
+	MElem* owner = GetMan();
+	const MElem* aowner = aNode->GetAowner();
+	if ((aowner != NULL && (owner == aowner || aowner->IsComp(owner))) || owner->IsCompAttached(this)) {
+	    owner->OnNodeMutated(aNode, aMut);
+	}
 	if (HasChilds()) {
 	    string nuri = aNode->GetUri(this, ETrue);
 	    ChromoNode mut(aMut);
@@ -3171,3 +3201,7 @@ TBool Elem::IsCompAttached(const MElem* aComp) const
     return (GetCompLrank(aComp) != -1);
 }
 
+void Elem::SaveChromo(const char* aPath) const
+{
+    iChromo->Save(aPath);
+}

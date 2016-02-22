@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 
-<!-- Unit test for squeezing of chromo: reference
-  VB/VA_1/VP_1 is deattached, so mutation
+<!-- Unit test for collecting all muts in attaching owners
+  VB/VA_1/VP_1/VM_1 is deattached, so mutation
   [node targ="./VB/VA_1/VP_1" id="VA_1_1_B1" parent="Vert"]
   isn't normally contained in VA_1 chromo, so is missing in
-  VA_1 heir VB_1. Using approach of mutation copying from 
-  inherited nodes till attached owner solves the problem,
+  VA_1 heir VB_1. Using approach of mutation propagation
+  solves the problem,
   ref ds_mut_osm_linchr_comdp
 -->
 

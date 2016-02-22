@@ -209,7 +209,7 @@ void ImportsMgr::ImportToNode(MElem* aNode, const ChromoNode& aMut, const Chromo
 	    Chromo* mut = mHost.Provider()->CreateChromo();
 	    mut->Init(ENt_Node);
 	    mut->Root().AddChild(aMut);
-	    aNode->Mutate(mut->Root(), ETrue, EFalse, EFalse, EFalse);
+	    aNode->Mutate(mut->Root(), ETrue, EFalse, EFalse, ETrue);
 	    delete mut;
 	} else {
 	    // Node already exists, go to lower layer if sel is not achieved yet

@@ -179,12 +179,12 @@ class Elem: public MElem
 	virtual MElem* GetCompAowner(const MElem* aComp);
 	virtual const MElem* GetCompAowner(const MElem* aComp) const;
 	virtual TBool IsAownerOf(const MElem* aElem) const;
-	TBool IsCompAttached(const MElem* aComp) const;
+	virtual TBool IsCompAttached(const MElem* aComp) const;
 	// Checks if elements chromo is attached. Ref UC_019 for details
 	virtual TBool IsChromoAttached() const;
 	TBool IsMutAttached(const ChromoNode& aMut) const;
-	virtual MElem* GetAttachingMgr();
-	virtual const MElem* GetAttachingMgr() const;
+	virtual MElem* GetAttachedMgr();
+	virtual const MElem* GetAttachedMgr() const;
 	virtual MElem* GetAowner();
 	virtual const MElem* GetAowner() const;
 	virtual MElem* GetAcompOwning(MElem* aComp);
@@ -344,6 +344,7 @@ class Elem: public MElem
 	virtual MElem* GetComp(TInt aInd);
 	virtual void DumpMcDeps() const;
 	virtual void DumpCmDeps() const;
+	virtual void SaveChromo(const char* aPath) const;
     protected:
 	// Environment
 	MEnv* iEnv;

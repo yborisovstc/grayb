@@ -64,6 +64,10 @@
 	    <glossdef> <para>Connection Point</para> <para>
 		    Element that is used as endpoint of connections between systems.  
 		    </para></glossdef> </glossentry>
+	<glossentry id="gls_dhc"><glossterm>DHC</glossterm> <acronym>CP</acronym>
+	    <glossdef> <para>Direct Hierarchical Chromosome</para> <para>
+		    Approach of multi-agent system definition that describes the model's structure directly. 
+		    Ref <xref linkend="ds_smc"/> </para></glossdef> </glossentry>
 	<glossentry id="gls_osm"><glossterm>OSM</glossterm> <acronym>OSM</acronym>
 	    <glossdef> <para>Original Sequence of Mutations - 
 		    The approach of models creation where the same mutation order is
@@ -1018,6 +1022,32 @@
 	</sect2>
     </sect1>
 
+    <sect1 id="ds_smc"><title>Securing of model consistency</title>
+	<sect2><title>Intro</title>
+	    <simpara>Model's consistency is the key part of multi-agent systems creation. There are many approaches and technique of achieving it.
+		Initially this aspect of modelling was not be considered as key one, so the one most evident approach was applied, so called direct hierarchical
+		chromosome (<xref linkend="gls_dhc"/>). This approach design is described (a bit chaotic) in <xref linkend="ds_mut"/>. Many troubles
+		with keeping model consistent impel to analysis and consideration this aspect more thoroughly. In result the design of alternative approaches
+		was introdused. This chapter is mostly dedicated for outlining and comprition of approaches. The genaralization of this aspect of 
+		mutli-agents systems is also the aim of the chapter.</simpara>
+	</sect2>
+	<sect2><title>Outlne of approaches</title>
+	</sect2>
+	<sect2><title>Direct Hiearchical Chromosome (<xref linkend="gls_dhc"/>)</title>
+	    <sect3><title>Intro</title>
+		<simpara>This is direct approach of defining the system - the chomo structure just reflect the structure of the model. Initial 
+		    sequence of mutations are not kept and is not considered as means of keeping systems consistensy. Instead, the model's internal
+		    dependencies are analyzing and the chromo is corrected to keep the dependencies correct. Also some mutations are rejected in result as 
+		    "inconsistent". In fact this approach is a standard one. The same approach is used in object oriented languages like C++ - 
+		    the model's creator doesn't bother regarding the sequence of changes he is introducing - the compiler verifies the dependencies and
+		    shows the errors in case of model's definition dependencies get incorrect. The creator then corrects the definition.</simpara>
+	    </sect3>
+	    <orderedlist>
+		<listitem></listitem>
+	    </orderedlist>
+	</sect2>
+    </sect1>
+
     <sect1 id="ds_mut_osm"><title>Original Sequence Mutation (<xref linkend="gls_osm"/>) approach</title>
 	<sect2 id="ds_mut_osm_intro"><title>Intro</title>
 	    <simpara>The current implementation of DES multiagent environment is based on the approach where the chromo structure reflects the structure
@@ -1094,7 +1124,65 @@
 	    </sect3>
 	    <sect3 id="ds_mut_osm_linchr_lce"><title>Linear chromo on each model's level of hierarcy</title>
 		<simpara>In fact, the linear chromo is required not only on root level, but on each level. This is because we need to have chromo with
-		right mutations order even for some "internal" node to ensure the node can be inherited correctly. </simpara>
+		    right mutations order even for some "internal" node to ensure the node can be inherited correctly. </simpara>
+		<simpara>There was false idea that we can get the chromo of internal node just as traditional hierarchical chromo. Yes, we could, but
+		    the problem is that such chromo doesn't secure correct order of mutations.</simpara>
+		<simpara>So the mutation of the comp has to be propagated to owners chromo, so that all owners keep the mutation and can be inherited
+		    properly. Ref <xref linkend="ds_mut_osm_linchr_comdp_mp"/> for some materials of mutations propagation. It has to be higilighted that
+		    even mutations from parent applied on creating heir have to be propagated in order to make nodes came from parent ability of 
+		    inheritance. This propagation needs to be limited only by nodes came from parent and has to not affect the created child chromo.
+		    Looking at the current implementatin we can see that the current mechanism of managing mutation doesn't meet this use-case.
+		    This is because parent uses mutation method "runtime" option to control such "inherited" mutations. This option is active on the 
+		    first step of mutation, it instructs heir to avoid storing the mutation in it's chromo. Then the "runtime" option is disabled on
+		    the next step so "internal" nodes stores the muts in their chromos. The problem here is that for linear chromo approach the parent's 
+		    chromo mutations relate to all internal node and still applies with run-time mode. But "runtime" means that it is
+		    not mutation actually, just modification, so it doesn't need to save this modification at all. So parent's mutations are not
+		    propagated at all.</simpara>
+		<simpara>Again, using "runtime" option for inheritance seems to be wrong way. So we need to introduce specific mutation option for
+		    that, e.g "attach": if the option is set then the mutation has to go to initially mutated node's chromo. In this case the parent
+		    creating heir unset this option when applying parent's chromo the heir. The heir in turn sets this option when propagate the 
+		    mutations to target. The only question is how to implement back propagation muts upward. The mechanism of such propagation was introduced
+		    in order to support OSM linear chromo approach to the initial hier chromo approach, ref <xref linkend="ds_mut_osm_linchr_cmpt"/>.
+		    Unfortunatelly back propagation mechanism is not quite suitable for implementing the approach with "attach" option scheme 
+		    described above.  For this approach it would be more convenient to use direct propagation from initially mutated node downward to 
+		    target and upward from initially mutated node to root.
+		    The problem with back propagation is that we need to make decistion of handling the propagation notification 
+		    directly in propagation notification handler, but there is no context in the handler for such analysis. 
+		</simpara>
+		<simpara>There is another solution for the design: to use two way propagation. The idea is than initially mutated node propagates
+		    the mutation down to the target via all target's owner's chain (of course if target is defined) and then upward to the root. This solution
+		    avoids the loop where initially mutated node first redirect mutation to target and then get propagation notification from the target. The only
+		    complication with this approach is that we need to pass to mutation method one more attribute- the sign of propagation downward. If this 
+		    attr is set than the node doesn't propagate mutation upward but continue redirect the mutation to the target. Initial mutation resets this
+		    attr, so initially mutated node is free to propagate mutation upward.</simpara>
+		<simpara>Also the key aspect of design here is to propagate mutations even within deattached node but only till the deattached node, not upper.
+		    This is required to be compatible with DHC chromo, ref <xref linkend="ds_mut_osm_linchr_cmpt"/>.</simpara>
+		<simpara>Use-cases to be considered:</simpara>
+		<orderedlist>
+		    <listitem id="ds_mut_osm_linchr_lce_uc1">Importing node
+			<para>Import manages selects the required node in remote chromo and mutate the proper Modules node. Mutation's options should
+			    runtime because we don't need to attach the node's chromo. But we need to propagate bottom nodes mutations to the 
+			    impotring node chromo in order to have full chromo of imported node.</para>
+		    </listitem>
+		    <listitem id="ds_mut_osm_linchr_lce_uc2">DHC chromo, pheno modif of inherited node
+			<para>This mutation needs to be transformed in OSM linear mutation</para>
+		    </listitem>
+		    <listitem id="ds_mut_osm_linchr_lce_uc3">Manually mutating some deattached node, i.e inherited
+			<para>We need to propagate the mutation till the root. The idea was (ref. <xref linkend="ds_mut_osm_linchr_comdp_mp"/>) to
+			    use options combination [runtime=false, attach=true] for this case.</para>
+		    </listitem>
+		</orderedlist>
+		<simpara>So the use-cases can be classified as:</simpara>
+		<orderedlist>
+		    <listitem>DHC No-RT Mutation of attached node</listitem>
+		    <listitem>DHC Mutation of deattached node from attached node</listitem>
+		    <listitem>DHC Mutation of deattached node from deattached node</listitem>
+		</orderedlist>
+		<simpara>What would be the rules of propagating to cover all the use-cases? They are:</simpara>
+		<orderedlist>
+		    <listitem>If it is No-RT mutation and not propagation to downward then to propagate upward till upper node in attaching chain.</listitem>
+		</orderedlist>
+		<simpara>This rule is not covering the case <xref linkend="ds_mut_osm_linchr_lce_uc3"/></simpara>
 	    </sect3>
 	    <sect3 id="ds_mut_osm_linchr_es"><title>Breaking chromo consistency in case of embedded subsystem</title>
 		<simpara>Embedded subsystem, or subsystem with independent chromo are useful way of reusing the chromos. One of the examples of
@@ -1144,6 +1232,8 @@
 			    </tbody>
 			</tgroup>
 		    </table>
+		    <simpara>NOTE: The propagation rules described above were revised in consideration of generic rules of propagation. So ref  
+			<xref linkend="ds_mut_osm_linchr_lce"/> for the final solution</simpara>
 		</sect4>
 	    </sect3>
 	    <sect3><title>Parent's mutations</title>
@@ -1197,8 +1287,8 @@
 		    <listitem>The relation "ref" on native level does make sense only in case if there is some functionality of this relation. 
 			For instance parent-child relation is used to construct model via inheritance - there are specific handling of this relation. But
 			what handling would be for "ref"? Seems there is no such specific handling on native level.
-			<pare>The argument is that agent's content is also not supported by all native agent but base agent has API for content. Same way
-			    we can have APIs for ref (interfaces Referring and Referred).</pare>
+			<para>The argument is that agent's content is also not supported by all native agent but base agent has API for content. Same way
+			    we can have APIs for ref (interfaces Referring and Referred).</para>
 		    </listitem>
 		</orderedlist>
 	    </sect3>
@@ -2604,7 +2694,7 @@
 	    <simpara>Ref <xref linkend="ds_mut_pmf"/></simpara>
 	</sect2>
 	<sect2><title>To create solid design for roll-back of propagated mutations.</title>
-	    <simpara>Ref <xref likend="ds_mut_osmlc_pm_vpf"/></simpara>
+	    <simpara>Ref <xref linkend="ds_mut_osmlc_pm_vpf"/></simpara>
 	</sect2>
 	<sect2><title>OSM linear chromo: chromo compacting</title>
 	    <simpara>Ref <xref linkend="ds_mut_osmlc_cmp"/></simpara>

@@ -160,8 +160,9 @@ class MElem : public Base, public MMutable, public MOwner, public MParent, publi
 	virtual MElem* GetCommonOwner(MElem* aElem) = 0;
 	virtual TBool IsRemoved() const = 0;
 	virtual void SetRemoved() = 0;
-	virtual MElem* GetAttachingMgr() = 0;
-	virtual const MElem* GetAttachingMgr() const = 0;
+	virtual MElem* GetAttachedMgr() = 0;
+	virtual TBool IsCompAttached(const MElem* aComp) const = 0;
+	virtual const MElem* GetAttachedMgr() const = 0;
 	virtual TBool IsAownerOf(const MElem* aElem) const = 0;
 	virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal) = 0;
 	virtual void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, TBool aAttach = ETrue) = 0;
@@ -184,6 +185,7 @@ class MElem : public Base, public MMutable, public MOwner, public MParent, publi
 	virtual TBool IsHeirOf(const string& aParent) const = 0;
 	virtual MElem* GetNodeS(const char* aUri) = 0;
 	virtual MElem* GetComp(TInt aInd) = 0;
+	virtual void SaveChromo(const char* aPath) const = 0;
     public:
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes) = 0;
