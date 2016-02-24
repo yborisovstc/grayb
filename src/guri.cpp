@@ -73,7 +73,6 @@ void GUriBase::Construct()
 	KNodeAttrsNames[ENa_Order] = "ord";
 	KNodeAttrsNames[ENa_TOrder] = "tord";
 	KNodeAttrsNames[ENa_Inactive] = "na";
-	KNodeAttrsNames[ENa_Targ] = "targ";
 
 	for (map<TNodeAttr, string>::const_iterator it = KNodeAttrsNames.begin(); it != KNodeAttrsNames.end(); it++) {
 	    KNodeAttrs[it->second] = it->first;

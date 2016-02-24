@@ -1152,35 +1152,49 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		continue;
 	    }
 	}
-	//if (this == GetRoot() && rno.AttrExists(ENa_Targ)) {
-	if (rno.AttrExists(ENa_Targ)) {
+	TBool lmut = ETrue;
+	if (rno.AttrExists(ENa_MutNode)) {
 	    // Targeted mutation, propagate downward, i.e redirect to comp owning the target
 	    // ref ds_mut_osm_linchr_lce
-	    MElem* ftarg = GetNode(rno.Attr(ENa_Targ));
-	    MElem* targ = ftarg == NULL ? NULL : GetCompOwning(ftarg);
-	    if (targ != NULL) {
-		ChromoNode& troot = targ->Mutation().Root();
-		ChromoNode madd = troot.AddChild(rno, ETrue, EFalse);
-		if (ftarg != targ) {
-		    string sturi = ftarg->GetUri(targ, ETrue);
-		    madd.SetAttr(ENa_Targ, sturi);
-		} else {
-		    madd.RmAttr(ENa_Targ);
-		}
-		// Propagate the mut downward, reset runtime to keep the mut in lower owners
-		// disable upward propagation, ref ds_mut_osm_linchr_lce
-		targ->Mutate(EFalse, aCheckSafety, aTrialMode, EFalse);
-		if (!aRunTime) {
-		    iChromo->Root().AddChild(rno, ETrue, EFalse);
-		    if (aAttach) {
-			// Propagate upward
-			NotifyNodeMutated(rno);
-		    }
-		}
-	    } else {
-		Logger()->Write(MLogRec::EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_Targ).c_str());
+	    MElem* iftarg = GetNode(rno.Attr(ENa_MutNode));
+	    TNodeType mtype = rno.Type();
+	    MElem* ftarg = iftarg;
+	    if (iftarg != NULL && (mtype == ENt_Rm || mtype == ENt_Change)) {
+		// For components related muts correct targ to owner
+		ftarg = ftarg->GetMan();
 	    }
-	} else {
+	    if (ftarg != this) {
+		// Mutation is not local, propagate downward
+		lmut = EFalse;
+		MElem* targ = ftarg == NULL ? NULL : GetCompOwning(ftarg);
+		if (targ != NULL) {
+		    ChromoNode& troot = targ->Mutation().Root();
+		    ChromoNode madd = troot.AddChild(rno, ETrue, EFalse);
+		    if ((ftarg != targ) || (mtype == ENt_Rm || mtype == ENt_Change)) {
+			string sturi = iftarg->GetUri(targ, ETrue);
+			madd.SetAttr(ENa_MutNode, sturi);
+		    } else {
+			madd.RmAttr(ENa_MutNode);
+		    }
+		    // Propagate the mut downward, reset runtime to keep the mut in lower owners
+		    // disable upward propagation, ref ds_mut_osm_linchr_lce
+		    targ->Mutate(EFalse, aCheckSafety, aTrialMode, EFalse);
+		    if (!aRunTime) {
+			iChromo->Root().AddChild(rno, ETrue, EFalse);
+			if (aAttach) {
+			    // Propagate upward
+			    NotifyNodeMutated(rno);
+			} else if (HasChilds()) {
+			    // Notify children only
+			    NotifyParentMutated(rno);
+			}
+		    }
+		} else {
+		    Logger()->Write(MLogRec::EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_MutNode).c_str());
+		}
+	    }
+	}
+	if (lmut) {
 	    // Local mutation
 	    TNodeType rnotype = rno.Type();
 	    if (rnotype == ENt_Node) {
@@ -2015,8 +2029,7 @@ TInt Elem::GetCompLrank(const MElem* aComp) const
 	//found = (mut.Type() == ENt_Node) && (mut.Attr(ENa_Parent) == parent) && (mut.Name() == name && mut.IsActive() == ia);
 	found = (mut.Type() == ENt_Node) && mut.IsActive() == ia && (mut.Name() == name)/* && (aComp->GetMan() == targ)*/;
 	if (found) {
-	    const MElem* targ = mut.AttrExists(ENa_Targ) ? ((MElem*) this)->GetNode(mut.Attr(ENa_Targ), ETrue) : this;
-	    targ = mut.AttrExists(ENa_MutNode) ? ((MElem*) targ)->GetNode(mut.Attr(ENa_MutNode), ETrue) : targ;
+	    const MElem* targ = mut.AttrExists(ENa_MutNode) ? ((MElem*) this)->GetNode(mut.Attr(ENa_MutNode), ETrue) : this;
 	    if (aComp->GetMan() != targ) {
 		found = EFalse;
 	    }
@@ -2244,8 +2257,8 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 	if (srcsuri.Scheme().empty()) {
 	    // Local node
 	    MElem* snode = GetNode(srcs);
-	    MElem* sowner = snode->GetMan();
 	    if (snode != NULL) {
+		MElem* sowner = snode->GetMan();
 		if (sowner != NULL && dnode == sowner) {
 		    // Attempt of moving node to the current contect 
 		    Logger()->Write(MLogRec::EErr, this, "Moving node [%s] to it's current owner - disabled", snode->GetUri().c_str());
@@ -2254,9 +2267,8 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 		    // Attempt of moving node to itself
 		    Logger()->Write(MLogRec::EErr, this, "Moving node [%s] into itself - disabled", snode->GetUri().c_str());
 		}
-		else if (!((dnode == this || IsComp(dnode)) && (snode == this || IsComp(snode)))) {
-		    // Incremantal mutation approach rule - mut refs shall be comps
-		    Logger()->Write(MLogRec::EErr, this, "Moving node - refs are not comps");
+		else if (dnode != this) {
+		    Logger()->Write(MLogRec::EErr, this, "Moving to another destination");
 		}
 		else {
 		    // Inter-nodes movement
@@ -3086,33 +3098,6 @@ void Elem::DumpCmDeps() const
     }	
 }
 
-#if 0
-void Elem::NotifyNodeMutated(const ChromoNode& aMut)
-{
-    MElem* root = GetRoot();
-    //if (this != root && IsChromoAttached()) {
-    if (this != root) {
-	root->OnNodeMutated(this, aMut);
-	if (!IsChromoAttached()) {
-	    // Copy mutation till attached owner, ref ds_mut_osm_linchr_comdp
-	    GetMan()->OnNodeMutated(this, aMut);
-	}
-    } 
-}
-
-void Elem::OnNodeMutated(const MElem* aNode, const ChromoNode& aMut)
-{
-    //__ASSERT(this == GetRoot());
-    string nuri = aNode->GetUri(this, ETrue);
-    ChromoNode anode = iChromo->Root().AddChild(aMut);
-    anode.SetAttr(ENa_Targ, nuri);
-    if (!IsChromoAttached()) {
-	// Propagate mutation till attached owner, ref ds_mut_osm_linchr_comdp
-	GetMan()->OnNodeMutated(aNode, aMut);
-    }
-}
-#endif
-
 void Elem::NotifyNodeMutated(const ChromoNode& aMut)
 {
     if (this != GetRoot()) {
@@ -3137,7 +3122,7 @@ void Elem::OnNodeMutated(const MElem* aNode, const ChromoNode& aMut)
     if (true) {
 	string nuri = aNode->GetUri(this, ETrue);
 	ChromoNode anode = iChromo->Root().AddChild(aMut);
-	anode.SetAttr(ENa_Targ, nuri);
+	anode.SetAttr(ENa_MutNode, nuri);
     }
     if (this != root) {
 	// Propagate till upper node of attaching chain, ref ds_mut_osm_linchr_lce
@@ -3150,7 +3135,7 @@ void Elem::OnNodeMutated(const MElem* aNode, const ChromoNode& aMut)
 	if (HasChilds()) {
 	    string nuri = aNode->GetUri(this, ETrue);
 	    ChromoNode mut(aMut);
-	    mut.SetAttr(ENa_Targ, nuri);
+	    mut.SetAttr(ENa_MutNode, nuri);
 	    NotifyParentMutated(mut);
 	}
     }
