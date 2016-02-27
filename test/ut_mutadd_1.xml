@@ -8,11 +8,11 @@
 
 <node id="test" parent="Elem">
     <node id="elem1" parent="Elem"/>
-    <node node="./elem1" id="elem2" parent="Elem"/>
-    <node node="./elem1/elem2" id="elem2_1" parent="Elem"/>
+    <node targ="./elem1" id="elem2" parent="Elem"/>
+    <node targ="./elem1/elem2" id="elem2_1" parent="Elem"/>
     <node id="elem3" parent="./elem1"/>
-    <node node="./elem3" id="elem4" parent="./../elem1/elem2"/>
-    <node node="./elem3/elem4" id="elem4_1" parent="Elem"/>
+    <node targ="./elem3" id="elem4" parent="./../elem1/elem2"/>
+    <node targ="./elem3/elem4" id="elem4_1" parent="Elem"/>
     <node id="elem5" parent="./elem1/elem2"/>
     <node id="elem4_1i" parent="./elem3/elem4/elem4_1"/>
 </node>

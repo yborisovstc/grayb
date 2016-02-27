@@ -1140,7 +1140,7 @@
 		    propagated at all.</simpara>
 		<simpara>Again, using "runtime" option for inheritance seems to be wrong way. So we need to introduce specific mutation option for
 		    that, e.g "attach": if the option is set then the mutation has to go to initially mutated node's chromo. In this case the parent
-		    creating heir unset this option when applying parent's chromo the heir. The heir in turn sets this option when propagate the 
+		    creating heir unsets this option when applies parent's chromo the heir. The heir in turn sets this option when propagate the 
 		    mutations to target. The only question is how to implement back propagation muts upward. The mechanism of such propagation was introduced
 		    in order to support OSM linear chromo approach to the initial hier chromo approach, ref <xref linkend="ds_mut_osm_linchr_cmpt"/>.
 		    Unfortunatelly back propagation mechanism is not quite suitable for implementing the approach with "attach" option scheme 
@@ -1174,15 +1174,31 @@
 		</orderedlist>
 		<simpara>So the use-cases can be classified as:</simpara>
 		<orderedlist>
+		    <listitem>OMS mutation</listitem>
 		    <listitem>DHC No-RT Mutation of attached node</listitem>
 		    <listitem>DHC Mutation of deattached node from attached node</listitem>
-		    <listitem>DHC Mutation of deattached node from deattached node</listitem>
+		    <listitem id="ds_mut_osm_linchr_lce_ucdd">DHC Mutation of deattached node from deattached node
+			<para>The scheme is as (- attached, -- deattached): M0--M1-M2-M3--M4. M2 is mutated with target set as M4. Mutation needs to be 
+			    propagated from M4 upward to M2 (this is because M2 is mutated in DHC) and then from M2 till M1 (this is because the mut is to
+			    be propagated upward to the deattached node).</para>
+		    </listitem>
 		</orderedlist>
 		<simpara>What would be the rules of propagating to cover all the use-cases? They are:</simpara>
 		<orderedlist>
 		    <listitem>If it is No-RT mutation and not propagation to downward then to propagate upward till upper node in attaching chain.</listitem>
 		</orderedlist>
 		<simpara>This rule is not covering the case <xref linkend="ds_mut_osm_linchr_lce_uc3"/></simpara>
+		<simpara>[ATTENTION]. Two way propagation design actually has a fault. It assumes that upward propagation is performed in DoMutation
+		    after mutation redirection to target. But in this case the order of propagated mutation gets incorrect - nodes internal mutations goes
+		    first, then the node mut itself. Potentially we could to add mut to bottom nodes chromo before mutation is done, but the important principle
+		    will be broken then: first try to mutate then add the mut to the chromo in case of success.</simpara>
+		<sect4 id="ds_mut_osm_linchr_lce_upmc"><title>Returning to upward propagation: using mutation context</title>
+		    <simpara>As two way propagation approach becomes wrong way, it makes sense to return to propagation upward. We need just 
+			modify the algorithm of propagation: to solve the problem when the base algorithm in case of targeted mutation is whthin deattached node
+			and target is in this deattached node deattached comp, ref <xref linkend="ds_mut_osm_linchr_lce_ucdd"/>. The modification
+			is that we pass the pointer to mutated node as attr of mutation method. Targeted node in turn passes this attr to propagation 
+			method. To in the propagation method it gets possible to propagate to mutated node mandatory. </simpara>
+		</sect4>
 	    </sect3>
 	    <sect3 id="ds_mut_osm_linchr_es"><title>Breaking chromo consistency in case of embedded subsystem</title>
 		<simpara>Embedded subsystem, or subsystem with independent chromo are useful way of reusing the chromos. One of the examples of

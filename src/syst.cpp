@@ -843,8 +843,8 @@ TBool Syst::OnCompChanged(MElem& aComp)
 			}
 		    }
 		    else {
-			TBool c1 = pt1checker->IsCompatible(pt2);
-			TBool c2 = pt2checker->IsCompatible(pt1);
+			TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
+			TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
 			Elem* host = this;
 			Logger()->Write(MLogRec::EErr, ToElem(&aComp), "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
 		    }

@@ -12,7 +12,7 @@
     <node id="v3" parent="Vert"/>
     <node node="v3" id="v4" parent="Vert"/>
     <node id="v5" parent="Vert"/>
-    <node id="e1" parent="Edge"> <cont node="P1" val="v1"/> <cont node="P2" val="v2"/> </node>
-    <node id="e2" parent="Edge"> <cont node="P1" val="v5"/> <cont node="P2" val="v3/v4"/> </node>
+    <node id="e1" parent="Edge"> <cont node="P1" ref="./../../v1"/> <cont node="P2" ref="./../../v2"/> </node>
+    <node id="e2" parent="Edge"> <cont node="P1" ref="./../../v5"/> <cont node="P2" val="./../../v3/v4"/> </node>
 </node>
 

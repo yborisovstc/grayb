@@ -6,39 +6,39 @@
      -->
 
 
-<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd">
 
 <node id="test" parent="Syst">
     <!-- Module containing components of system layer -->
     <node id="sysmod" parent="file:../modules/syst.xml#SysComps" />
 
     <node id="Syst1" parent="Syst"/>
-    <node node="./Syst1" id="cp" parent="./../sysmod/ConnPoint"/> 
-    <cont node="./Syst1/cp/Provided" val="Role1"/>
-    <cont node="./Syst1/cp/Required" val="Role2"/>
-    <node node="./Syst1" id="ep" parent="./../sysmod/Extender"/> 
-    <cont node="./Syst1/ep/Int/Provided" val="Role3"/>
-    <cont node="./Syst1/ep/Int/Required" val="Role4"/>
+    <node targ="./Syst1" id="cp" parent="./../sysmod/ConnPoint"/>
+    <cont targ="./Syst1/cp/Provided" val="Role1"/>
+    <cont targ="./Syst1/cp/Required" val="Role2"/>
+    <node targ="./Syst1" id="ep" parent="./../sysmod/Extender"/>
+    <cont targ="./Syst1/ep/Int/Provided" val="Role3"/>
+    <cont targ="./Syst1/ep/Int/Required" val="Role4"/>
 
-    <node id="cp1" parent="./sysmod/ConnPoint"/> 
-    <cont node="./cp1/Provided" val="Role1"/>
-    <cont node="./cp1/Required" val="Role2"/>
-    <node id="cp2" parent="./sysmod/ConnPoint"/> 
-    <cont node="./cp2/Provided" val="Role2"/>
-    <cont node="./cp2/Required" val="Role1"/>
-    <node id="cp3" parent="./sysmod/ConnPoint"/> 
-    <cont node="./cp3/Provided" val="Role4"/>
-    <cont node="./cp3/Required" val="Role3"/>
+    <node id="cp1" parent="./sysmod/ConnPoint"/>
+    <cont targ="./cp1/Provided" val="Role1"/>
+    <cont targ="./cp1/Required" val="Role2"/>
+    <node id="cp2" parent="./sysmod/ConnPoint"/>
+    <cont targ="./cp2/Provided" val="Role2"/>
+    <cont targ="./cp2/Required" val="Role1"/>
+    <node id="cp3" parent="./sysmod/ConnPoint"/>
+    <cont targ="./cp3/Provided" val="Role4"/>
+    <cont targ="./cp3/Required" val="Role3"/>
     <node id="E1" parent="Edge"/>
-    <cont node="./E1/P1" ref="./../../cp1"/>
-    <cont node="./E1/P2" ref="./../../cp2"/>
+    <cont targ="./E1/P1" ref="./../../cp1"/>
+    <cont targ="./E1/P2" ref="./../../cp2"/>
 
     <node id="edge1" parent="Edge"/>
-    <cont node="./edge1/P1" ref="./../../Syst1/cp"/>
-    <cont node="./edge1/P2" ref="./../../cp2"/>
+    <cont targ="./edge1/P1" ref="./../../Syst1/cp"/>
+    <cont targ="./edge1/P2" ref="./../../cp2"/>
     <node id="E2" parent="Edge"/>
-    <cont node="./E2/P1" ref="./../../Syst1/ep/Int"/>
-    <cont node="./E2/P2" ref="./../../cp3"/>
+    <cont targ="./E2/P1" ref="./../../Syst1/ep/Int"/>
+    <cont targ="./E2/P2" ref="./../../cp3"/>
 
 </node>
 

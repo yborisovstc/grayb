@@ -1153,10 +1153,54 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    }
 	}
 	TBool lmut = ETrue;
+	string aid = rno.Attr(ENa_Id);
+	string val = rno.Attr(ENa_MutVal);
+	string apar = rno.Attr(ENa_Parent);
 	if (rno.AttrExists(ENa_MutNode)) {
+	    // Transrom DHC mutation to OSM mutation
+	    // Transform ENa_Targ: enlarge to ENa_MutNode
+	    MElem* targ = rno.AttrExists(ENa_Targ) ? GetNode(rno.Attr(ENa_Targ)) : this;
+	    if (targ == NULL) {
+		Logger()->Write(MLogRec::EErr, this, "Cannot find node [%s]", rno.Attr(ENa_Targ).c_str());
+		continue;
+	    }
+	    MElem* ftarg = targ->GetNode(rno.Attr(ENa_MutNode));
+	    if (ftarg == NULL) {
+		Logger()->Write(MLogRec::EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_MutNode).c_str());
+		continue;
+	    }
+	    string sturi = ftarg->GetUri(this, ETrue);
+	    rno.SetAttr(ENa_Targ, sturi);
+	    rno.RmAttr(ENa_MutNode);
+	    // Transform refs
+	    /*
+	       if (rno.AttrExists(ENa_Ref)) {
+	       MElem* ref = targ->GetNode(rno.Attr(ENa_Ref));
+	       string sruri = ref->GetUri(ftarg, ETrue);
+	       rno.SetAttr(ENa_Ref, sruri);
+	       }
+	       */
+	    if (rno.AttrExists(ENa_Parent)) {
+		string prnturi = rno.Attr(ENa_Parent);
+		MElem* parent = targ->GetNode(prnturi);
+		if (parent == NULL) {
+		    // Probably external node not imported yet - ask env for resolving uri
+		    GUri pruri(prnturi);
+		    MImportMgr* impmgr = iEnv->ImpsMgr();
+		    parent = impmgr->OnUriNotResolved(this, pruri);
+		}
+		if (parent == NULL) {
+		    Logger()->Write(MLogRec::EErr, this, "Cannot find parent [%s]", prnturi.c_str());
+		    continue;
+		}
+		string spuri = parent->GetUri(ftarg, ETrue);
+		rno.SetAttr(ENa_Parent, spuri);
+	    }
+	}
+	if (rno.AttrExists(ENa_Targ)) {
 	    // Targeted mutation, propagate downward, i.e redirect to comp owning the target
 	    // ref ds_mut_osm_linchr_lce
-	    MElem* iftarg = GetNode(rno.Attr(ENa_MutNode));
+	    MElem* iftarg = GetNode(rno.Attr(ENa_Targ));
 	    TNodeType mtype = rno.Type();
 	    MElem* ftarg = iftarg;
 	    if (iftarg != NULL && (mtype == ENt_Rm || mtype == ENt_Change)) {
@@ -1169,12 +1213,12 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		MElem* targ = ftarg == NULL ? NULL : GetCompOwning(ftarg);
 		if (targ != NULL) {
 		    ChromoNode& troot = targ->Mutation().Root();
-		    ChromoNode madd = troot.AddChild(rno, ETrue, EFalse);
+		    ChromoNode madd = troot.AddChild(rno, ETrue, ETrue);
 		    if ((ftarg != targ) || (mtype == ENt_Rm || mtype == ENt_Change)) {
 			string sturi = iftarg->GetUri(targ, ETrue);
-			madd.SetAttr(ENa_MutNode, sturi);
+			madd.SetAttr(ENa_Targ, sturi);
 		    } else {
-			madd.RmAttr(ENa_MutNode);
+			madd.RmAttr(ENa_Targ);
 		    }
 		    // Propagate the mut downward, reset runtime to keep the mut in lower owners
 		    // disable upward propagation, ref ds_mut_osm_linchr_lce
@@ -1190,7 +1234,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 			}
 		    }
 		} else {
-		    Logger()->Write(MLogRec::EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_MutNode).c_str());
+		    Logger()->Write(MLogRec::EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_Targ).c_str());
 		}
 	    }
 	}
@@ -1257,10 +1301,10 @@ TInt Elem::GetContCount() const
 void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, TBool aAttach)
 {
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
-    string snode = aSpec.Attr(ENa_MutNode);
+    string snode = aSpec.Attr(ENa_Targ);
     string mattrs = aSpec.Attr(ENa_MutAttr);
     string mval = aSpec.Attr(ENa_MutVal);
-    MElem* node = aSpec.AttrExists(ENa_MutNode) ? GetNode(snode) : this;
+    MElem* node = aSpec.AttrExists(ENa_Targ) ? GetNode(snode) : this;
     TBool mutadded = EFalse;
     if (node != NULL) {
 	if (node != this && (epheno || node->GetAowner() == this  || IsDirectInheritedComp(node))) {
@@ -1313,6 +1357,7 @@ TBool Elem::ChangeAttr(TNodeAttr aAttr, const string& aVal)
 
 TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, TBool aAttach)
 {
+    __ASSERT(!aSpec.AttrExists(ENa_MutNode));
     TBool res = ETrue;
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
     TBool efix = iEnv->ChMgr()->EnableFixErrors();
@@ -1378,6 +1423,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 
 MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, TBool aAttach)
 {
+    __ASSERT(!aNode.AttrExists(ENa_MutNode));
     string snode = aNode.Attr(ENa_MutNode);
     string sparent = aNode.Attr(ENa_Parent);
     string sname = aNode.Name();
@@ -1489,7 +1535,7 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 			    // To avoid this inherited nodes chromo being attached we just don't attach inherited nodes chromo
 			    long t5; if (ptrace) t5 = GetClock();
 			    elem->SetMutation(aNode);
-			    elem->Mutate(EFalse, ecsaf, aTrialMode, aAttach);
+			    elem->Mutate(EFalse, ecsaf, aTrialMode, ETrue);
 			    if (ptrace) { long t5_6 = GetClockElapsed(t3); Logger()->Write(MLogRec::EInfo, this, "Adding node, t5-t6: %d", t5_6);}
 			    //Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
 			    /*
@@ -2029,7 +2075,12 @@ TInt Elem::GetCompLrank(const MElem* aComp) const
 	//found = (mut.Type() == ENt_Node) && (mut.Attr(ENa_Parent) == parent) && (mut.Name() == name && mut.IsActive() == ia);
 	found = (mut.Type() == ENt_Node) && mut.IsActive() == ia && (mut.Name() == name)/* && (aComp->GetMan() == targ)*/;
 	if (found) {
-	    const MElem* targ = mut.AttrExists(ENa_MutNode) ? ((MElem*) this)->GetNode(mut.Attr(ENa_MutNode), ETrue) : this;
+	    const MElem* targ = this;
+	    if (mut.AttrExists(ENa_MutNode)) {
+	       	targ = ((MElem*) this)->GetNode(mut.Attr(ENa_MutNode), ETrue);
+	    } else if (mut.AttrExists(ENa_Targ)) {
+	       	targ = ((MElem*) this)->GetNode(mut.Attr(ENa_Targ), ETrue);
+	    }
 	    if (aComp->GetMan() != targ) {
 		found = EFalse;
 	    }
@@ -2187,8 +2238,8 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
 {
     TBool res = EFalse;
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
-    string snode = aSpec.Attr(ENa_MutNode);
-    MElem* node = aSpec.AttrExists(ENa_MutNode) ? GetNode(snode) : this;
+    string snode = aSpec.Attr(ENa_Targ);
+    MElem* node = aSpec.AttrExists(ENa_Targ) ? GetNode(snode) : this;
     TBool mutadded = EFalse;
     if (node != NULL) {
 	if ((node != this) && (epheno || node->GetMan() == this || IsCompOfInheritedComp(node))) {
@@ -3122,20 +3173,22 @@ void Elem::OnNodeMutated(const MElem* aNode, const ChromoNode& aMut)
     if (true) {
 	string nuri = aNode->GetUri(this, ETrue);
 	ChromoNode anode = iChromo->Root().AddChild(aMut);
-	anode.SetAttr(ENa_MutNode, nuri);
+	anode.SetAttr(ENa_Targ, nuri);
     }
     if (this != root) {
 	// Propagate till upper node of attaching chain, ref ds_mut_osm_linchr_lce
 	// i.e to the owner if owner is attaching owner or is under mutated node attaching owner
 	MElem* owner = GetMan();
-	const MElem* aowner = aNode->GetAowner();
-	if ((aowner != NULL && (owner == aowner || aowner->IsComp(owner))) || owner->IsCompAttached(this)) {
+	//const MElem* aowner = aNode->GetAowner();
+	const MElem* aowner = ((MElem*) aNode)->GetUpperAowner();
+	//if ((aowner != NULL && (owner == aowner || aowner->IsComp(owner))) || owner->IsCompAttached(this)) {
+	if (owner->IsCompAttached(aNode)) {
 	    owner->OnNodeMutated(aNode, aMut);
 	}
 	if (HasChilds()) {
 	    string nuri = aNode->GetUri(this, ETrue);
 	    ChromoNode mut(aMut);
-	    mut.SetAttr(ENa_MutNode, nuri);
+	    mut.SetAttr(ENa_Targ, nuri);
 	    NotifyParentMutated(mut);
 	}
     }
