@@ -142,8 +142,8 @@ class MElem : public Base, public MMutable, public MOwner, public MParent, publi
 	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const = 0;
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()) = 0; 
 	virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse) = 0;
-	virtual void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, TBool aAttach = ETrue) = 0;
-	virtual void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, TBool aAttach = ETrue) = 0;
+	virtual void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MElem* aCtx = NULL) = 0;
+	virtual void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MElem* aCtx = NULL) = 0;
 	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
 	virtual void GetUri(GUri& aUri, MElem* aTop = NULL) const = 0;
 	virtual void GetRUri(GUri& aUri, MElem* aTop = NULL) = 0;
@@ -165,14 +165,14 @@ class MElem : public Base, public MMutable, public MOwner, public MParent, publi
 	virtual const MElem* GetAttachedMgr() const = 0;
 	virtual TBool IsAownerOf(const MElem* aElem) const = 0;
 	virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal) = 0;
-	virtual void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, TBool aAttach = ETrue) = 0;
+	virtual void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL) = 0;
 	virtual void GetRank(Rank& aRank) const = 0; 
 	virtual void GetRank(Rank& aRank, const ChromoNode& aMut) const = 0;
 	virtual void GetCompRank(Rank& aRank, const MElem* aComp) const = 0;
 	virtual TInt GetCompLrank(const MElem* aComp) const = 0;
 	virtual MElem* GetComp(const string& aParent, const string& aName) = 0;
 	virtual MElem* GetComp(const string& aParent, const string& aName) const = 0;
-	virtual void OnNodeMutated(const MElem* aNode, const ChromoNode& aMut) = 0;
+	virtual void OnNodeMutated(const MElem* aNode, const ChromoNode& aMut, const MElem* aCtx = NULL) = 0;
 	virtual void OnParentMutated(MElem* aParent, const ChromoNode& aMut) = 0;
 	// Gets the comp with given type and owning given element
 	virtual MElem* GetCompOwning(const string& aParent, MElem* aElem) = 0;

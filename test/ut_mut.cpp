@@ -1113,6 +1113,8 @@ void Ut_mut::test_GetParentModifs()
     iEnv->ConstructSystem();
     root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root after transforming", root != 0);
+    vb1 = root->GetNode("./VB/VB_1");
+    vb1->Chromos().Save("ut_parmod1_res_vb1.xml_");
     MElem* va1b1 = root->GetNode("./VB/VB_1/VP_1/VM_1/VA_1_1_B1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get ./VB/VB_1/VP_1/VM_1/VA_1_1_B1", va1b1 != 0);
     MElem* vb1a1 = root->GetNode("./VB/VA_1");
@@ -1141,7 +1143,7 @@ void Ut_mut::test_ParentMut()
     // R-VV-VB--VA_1-VA_1_1--VR_1
     MElem* vr1 = root->GetNode("./VA/VA_1/VA_1_1/VR_1");
     ChromoNode m2 = root->Mutation().Root().AddChild(ENt_Node);
-    m2.SetAttr(ENa_MutNode, "./VA/VA_1/VA_1_1/VR_1");
+    m2.SetAttr(ENa_Targ, "./VA/VA_1/VA_1_1/VR_1");
     m2.SetAttr(ENa_Id, "VR_1_1_New");
     m2.SetAttr(ENa_Parent, "Vert");
     root->Mutate();

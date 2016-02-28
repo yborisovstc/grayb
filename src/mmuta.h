@@ -19,11 +19,11 @@ typedef vector<TMDep> TMDeps;
 class MMutable
 {
     public:
-	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, TBool aAttach = ETrue) = 0;
-	virtual TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, TBool aAttach = ETrue) = 0;
+	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL) = 0;
+	virtual TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL) = 0;
 	virtual MElem* CreateHeir(const string& aName, MElem* aMan) = 0;
-	virtual MElem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, TBool aTrialMode = EFalse, TBool aAttach = ETrue) = 0;
-	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, TBool aAttach = ETrue) = 0;
+	virtual MElem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, TBool aTrialMode = EFalse, const MElem* aCtx = NULL) = 0;
+	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL) = 0;
 	virtual auto_ptr<MChromo> GetFullChromo() const = 0;
 	virtual const MChromo& Chromos() const = 0;
 	virtual MChromo& Chromos() = 0;
