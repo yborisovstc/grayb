@@ -150,6 +150,7 @@ class Elem: public MElem
 	Elem(const string &aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	Elem(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~Elem();
+	virtual TBool IsProvided() const;
 	virtual void SetParent(const string& aParent);
 	virtual void SetParent(MElem* aParent);
 	virtual void SetMan(MElem* aMan);
@@ -163,6 +164,7 @@ class Elem: public MElem
     public:
 	virtual MElem* CreateHeir(const string& aName, MElem* aMan);
 	virtual auto_ptr<MChromo> GetFullChromo() const;
+	virtual string GetChromoSpec() const;
 	virtual const MChromo& Chromos() const { return *iChromo;};
 	virtual MChromo& Chromos() { return *iChromo;};
 	virtual MChromo& Mutation() { return *iMut;};
@@ -242,6 +244,7 @@ class Elem: public MElem
 	virtual TInt GetCapacity() const;
 	// Nodes
 	virtual TBool AppendChild(MElem* aChild);
+	virtual TBool RegisterChild(const string& aChildUri);
 	virtual void RemoveChild(MElem* aChild);
 	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL);
 	virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse);

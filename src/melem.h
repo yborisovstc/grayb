@@ -46,6 +46,7 @@ class MParent
 	virtual void OnChildDeleting(MElem* aChild) = 0;
 	virtual TBool OnChildRenamed(MElem* aComp, const string& aOldName) = 0;
 	virtual TBool AppendChild(MElem* aChild) = 0;
+	virtual TBool RegisterChild(const string& aChildUri) = 0;
 	virtual void RemoveChild(MElem* aChild) = 0;
 };
 
@@ -124,6 +125,7 @@ class MElem : public Base, public MMutable, public MOwner, public MParent, publi
     public:
 	virtual const string EType(TBool aShort = ETrue) const = 0;
 	virtual const string& Name() const = 0;
+	virtual TBool IsProvided() const = 0;
 	virtual MElem* GetMan() = 0;
 	virtual const MElem* GetMan() const = 0;
 	virtual void SetMan(MElem* aMan) = 0;

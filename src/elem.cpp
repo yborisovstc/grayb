@@ -34,6 +34,10 @@ MElem::EIfu::EIfu()
     RegMethod("GetNode#2", 3);
     RegMethod("GetCont", 1);
     RegMethod("Mutate", 4);
+    RegMethod("IsProvided", 0);
+    RegMethod("GetParent", 0);
+    RegMethod("GetChromoSpec", 0);
+    RegMethod("EType", 1);
 }
 
 string Elem::PEType()
@@ -1152,10 +1156,6 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		continue;
 	    }
 	}
-	TBool lmut = ETrue;
-	string aid = rno.Attr(ENa_Id);
-	string val = rno.Attr(ENa_MutVal);
-	string apar = rno.Attr(ENa_Parent);
 	if (rno.AttrExists(ENa_MutNode)) {
 	    // Transrom DHC mutation to OSM mutation
 	    // Transform ENa_Targ: enlarge to ENa_MutNode
@@ -1184,13 +1184,6 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    }
 	    rno.RmAttr(ENa_MutNode);
 	    // Transform refs
-	    /*
-	       if (rno.AttrExists(ENa_Ref)) {
-	       MElem* ref = targ->GetNode(rno.Attr(ENa_Ref));
-	       string sruri = ref->GetUri(ftarg, ETrue);
-	       rno.SetAttr(ENa_Ref, sruri);
-	       }
-	       */
 	    if (rno.AttrExists(ENa_Parent)) {
 		string prnturi = rno.Attr(ENa_Parent);
 		MElem* parent = targ->GetNode(prnturi);
@@ -1213,7 +1206,6 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    // ref ds_mut_osm_linchr_lce
 	    MElem* ftarg = GetNode(rno.Attr(ENa_Targ));
 	    // Mutation is not local, propagate downward
-	    lmut = EFalse;
 	    if (ftarg != NULL) {
 		ChromoNode& troot = ftarg->Mutation().Root();
 		ChromoNode madd = troot.AddChild(rno, ETrue, ETrue);
@@ -1605,12 +1597,11 @@ MElem* Elem::CreateHeir(const string& aName, MElem* aMan)
 {
     MElem* heir = NULL;
     //Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p1 ");
-    if (Provider()->IsProvided(this)) {
+    if (IsProvided()) {
 	heir = Provider()->CreateNode(Name(), aName, ToElem(aMan), iEnv);
-    }
-    else {
+    } else {
 	__ASSERT(iParent != NULL);
-	if (Provider()->IsProvided(iParent)) {
+	if (iParent->IsProvided()) {
 	    // Parent is Agent - native element. Create via provider
 	    heir = Provider()->CreateNode(EType(), aName, iMan, iEnv);
 	}
@@ -2050,19 +2041,15 @@ TInt Elem::GetCompLrank(const MElem* aComp) const
     TInt res = -1;
     const ChromoNode& croot = Chromos().Root();
     const ChromoNode& comproot = aComp->Chromos().Root();
-    string parent = comproot.Attr(ENa_Parent);
     string name = comproot.Name();
     TBool ia = comproot.IsActive();
     TBool found = EFalse;
     for (ChromoNode::Const_Iterator it = croot.Begin(); it != croot.End() && !found; it++, res++) {
 	ChromoNode mut = *it;
-	//found = (mut.Type() == ENt_Node) && (mut.Attr(ENa_Parent) == parent) && (mut.Name() == name && mut.IsActive() == ia);
-	found = (mut.Type() == ENt_Node) && mut.IsActive() == ia && (mut.Name() == name)/* && (aComp->GetMan() == targ)*/;
+	found = (mut.Type() == ENt_Node) && mut.IsActive() == ia && (mut.Name() == name);
 	if (found) {
 	    const MElem* targ = this;
-	    if (mut.AttrExists(ENa_MutNode)) {
-	       	targ = ((MElem*) this)->GetNode(mut.Attr(ENa_MutNode), ETrue);
-	    } else if (mut.AttrExists(ENa_Targ)) {
+	    if (mut.AttrExists(ENa_Targ)) {
 	       	targ = ((MElem*) this)->GetNode(mut.Attr(ENa_Targ), ETrue);
 	    }
 	    if (aComp->GetMan() != targ) {
@@ -2128,7 +2115,7 @@ TInt Elem::GetLocalRank() const
 
 void Elem::GetRUri(GUri& aUri, MElem* aTop)
 {
-    if (Provider()->IsProvided(this)) {
+    if (IsProvided()) {
 	// Native agent
 	aUri.PrependElem(EType(), Name(), GUri::KSepNone);
     } else {
@@ -3094,6 +3081,11 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	res = GetMan();
     } else if (name == "GetRoot") {
 	res = GetRoot();
+    } else if (name == "GetParent") {
+	res = GetParent();
+    } else if (name == "IsProvided") {
+	TBool rr = IsProvided();
+	aRes = Ifu::FromBool(rr);
     } else if (name == "GetNode") {
 	res = GetNode(args.at(0));
     } else if (name == "GetNode#2") {
@@ -3111,6 +3103,10 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	trialmode = Ifu::ToBool(args.at(3));
 	SetMutation(args.at(0));
 	Mutate(rtonly, checksafety, trialmode);
+    } else if (name == "GetChromoSpec") {
+	aRes = GetChromoSpec();
+    } else if (name == "EType") {
+	aRes = EType(Ifu::ToBool(args.at(0)));
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }
@@ -3222,4 +3218,29 @@ TBool Elem::IsCompAttached(const MElem* aComp) const
 void Elem::SaveChromo(const char* aPath) const
 {
     iChromo->Save(aPath);
+}
+
+TBool Elem::IsProvided() const
+{
+    return Provider()->IsProvided(this);
+}
+
+string Elem::GetChromoSpec() const
+{
+    string res;
+    iChromo->GetSpec(res);
+    return res;
+}
+
+TBool Elem::RegisterChild(const string& aChildUri)
+{
+    TBool res = ETrue;
+    MElem* child = GetNode(aChildUri);
+    if (child != NULL) {
+	RegisterChild(child);
+    } else  {
+	res = EFalse;
+    }
+
+    return res;
 }

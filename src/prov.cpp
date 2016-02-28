@@ -37,7 +37,7 @@ Elem* GProvider::GetNode(const string& aUri)
     return NULL;
 }
 
-TBool GProvider::IsProvided(MElem* aElem) const
+TBool GProvider::IsProvided(const MElem* aElem) const
 {
     TBool res = false;
     for (TReg::const_iterator it = iReg.begin(); it != iReg.end() && !res; it++) {

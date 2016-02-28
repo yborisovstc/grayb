@@ -41,7 +41,7 @@ Elem* GFactory::GetNode(const string& aUri)
     return res;
 }
 
-TBool GFactory::IsProvided(MElem* aElem) const
+TBool GFactory::IsProvided(const MElem* aElem) const
 {
     TBool res = EFalse;
     for (map<string, GProvider*>::const_iterator it = iProviders.begin(); it != iProviders.end() && !res; it++) {

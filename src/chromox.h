@@ -44,7 +44,7 @@ class ChromoMdlX: public ChromoMdl
 	virtual void SetAttr(void* aHandle, TNodeAttr aAttr, TInt aVal);
 	virtual void RmAttr(void* aNode, TNodeAttr aType);
 	virtual void Dump(void* aNode, MLogRec* aLogRec);
-	virtual void ToString(void* aNode, string& aString) const;
+	virtual TBool ToString(void* aNode, string& aString) const;
 	virtual void Save(const string& aFileName) const;
 	virtual void* Find(const void* aHandle, const string& aUri);
 	virtual TInt GetOrder(void* aHandle, TBool aTree = EFalse) const;
@@ -90,6 +90,7 @@ class ChromoX: public Chromo
 	virtual void Set(const char *aFileName);
 	virtual TBool Set(const string& aUri);
 	virtual TBool SetFromSpec(const string& aSpec);
+	virtual TBool GetSpec(string& aSpec);
 	virtual void Set(const ChromoNode& aRoot);
 	virtual void Init(TNodeType aRootType);
 	virtual void Reset();

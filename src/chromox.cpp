@@ -423,11 +423,12 @@ void ChromoMdlX::Dump(void* aNode, MLogRec* aLogRec)
     aLogRec->WriteFormat("%s", xmlBufferContent(bufp));
 }
 
-void ChromoMdlX::ToString(void* aNode, string& aString) const
+TBool ChromoMdlX::ToString(void* aNode, string& aString) const
 {
     xmlBufferPtr bufp = xmlBufferCreate();	
     int	res = xmlNodeDump(bufp, iDoc, (xmlNodePtr) aNode, 0, 0);
     aString.assign((const char*)(xmlBufferContent(bufp)));
+    return (res != 0);
 }
 
 void ChromoMdlX::Save(const string& aFileName) const
@@ -637,3 +638,9 @@ void ChromoX::ReduceToSelection(const ChromoNode& aSelNode)
 	prnt = *sel.Parent();
     }
 }
+
+TBool ChromoX::GetSpec(string& aSpec)
+{
+    return iMdl.ToString(iRootNode.Handle(), aSpec);
+}
+
