@@ -13,6 +13,7 @@ class MIface
 	virtual MIface* Call(const string& aSpec, string& aRes) = 0;
 	// Getting UID
 	virtual string Uid() const { return string();};
+	virtual string Mid() const = 0;
 };
 
 #endif

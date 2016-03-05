@@ -3,6 +3,7 @@
 
 #include "plat.h"
 #include "melem.h"
+#include "ifu.h"
 #include <set>
 
 using namespace std;
@@ -33,7 +34,7 @@ class MCompatChecker
 };
 
 // Graph vertex interface
-class MVert
+class MVert: public MIface
 {
     public:
 	static const char* Type() { return "MVert";};
@@ -43,6 +44,15 @@ class MVert
 	virtual void Disconnect(MEdge* aEdge) = 0;
 	virtual set<MVert*>& Pairs() = 0;
 	virtual Base* EBase() = 0;
+	// From MIface
+	virtual string Uid() const { return Mid() + "%" + Type();};
+    protected:
+	class EIfu: public Ifu {
+	    public:
+		EIfu();
+	};
+	// Interface methods utility
+	static EIfu mIfu;
 };
 
 #endif

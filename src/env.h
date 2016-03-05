@@ -105,7 +105,7 @@ class Env: public Base, public MEnv
     virtual void ConstructSystem();
     // From MIface
     virtual MIface* Call(const string& aSpec, string& aRes);
-    virtual string Uid() const;
+    virtual string Mid() const;
 
     protected:
     class EIfu: public Ifu {

@@ -310,7 +310,7 @@ class Elem: public MElem
 	inline TBool IsIftEnabled() const;
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);
-	virtual string Uid() const;
+	virtual string Mid() const;
 	// Utils
 	void LogComps() const;
 	Elem* GetNodeE(const string& aUri) {return ToElem(GetNode(aUri));};

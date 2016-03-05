@@ -136,6 +136,13 @@ void GUriBase::Append(const GUriBase& aUri)
     }
 }
 
+void GUriBase::Prepend(const GUriBase& aUri)
+{
+    for (vector<TElem>::const_reverse_iterator it = aUri.Elems().rbegin(); it != aUri.Elems().rend(); it++) {
+	PrependElem(*it);
+    }
+}
+
 void GUriBase::AppendTail(const GUriBase& aUri, const_elem_iter aIter)
 {
     for (const_elem_iter it = aIter; it != aUri.Elems().end(); it++) {
@@ -157,6 +164,11 @@ void GUriBase::AppendElem(const string& aExt, const char aExtRel, const string& 
 void GUriBase::AppendElem(const TElem& aElem)
 {
     iElems.push_back(aElem);
+}
+
+void GUriBase::PrependElem(const TElem& aElem)
+{
+    iElems.insert(iElems.begin(), aElem);
 }
 
 void GUriBase::PrependElem(const string& aType, const string& aName, char aRelType)

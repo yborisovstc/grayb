@@ -32,6 +32,9 @@ class Vert: public Elem, public MVert
 	virtual void SetRemoved();
 	// Iface cache
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
+	// From MIface
+	virtual MIface* Call(const string& aSpec, string& aRes);
+	virtual string Mid() const;
     protected:
 	void Disconnect();
 	void RemoveFromMap(MEdge* aEdge, const TNMKey& aKey);

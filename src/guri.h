@@ -87,10 +87,12 @@ class GUriBase
 	const string& GetBase() const;
 	const_elem_iter Begin() const;
 	void Append(const GUriBase& aUri);
+	void Prepend(const GUriBase& aUri);
 	void AppendTail(const GUriBase& aUri, const_elem_iter aIter);
 	void AppendElem(const string& aType, const string& aName, char aRelType = KNodeSep);
 	void AppendElem(const string& aExt, const char aExtRel, const string& aName, char aRelType = KNodeSep);
 	void AppendElem(const TElem& aElem);
+	void PrependElem(const TElem& aElem);
 	void PrependElem(const string& aType, const string& aName, char aRelType = KNodeSep);
 	void AppendQueryElem(TQueryOpr aOpr, TNodeAttr aAttr, const string& aValue);
 	static const string& NodeAttrName(TNodeAttr aAttr);

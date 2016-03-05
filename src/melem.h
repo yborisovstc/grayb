@@ -188,9 +188,8 @@ class MElem : public Base, public MMutable, public MOwner, public MParent, publi
 	virtual MElem* GetNodeS(const char* aUri) = 0;
 	virtual MElem* GetComp(TInt aInd) = 0;
 	virtual void SaveChromo(const char* aPath) const = 0;
-    public:
 	// From MIface
-	virtual MIface* Call(const string& aSpec, string& aRes) = 0;
+	virtual string Uid() const { return Mid() + "%" + Type();};
     protected:
 	class EIfu: public Ifu {
 	    public:

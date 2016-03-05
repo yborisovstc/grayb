@@ -351,9 +351,9 @@ Env::Env(const string& aSpec, const string& aLogFileName, TBool aOpt): Base(), i
 
 Env::~Env()
 {
-    Logger()->Write(MLogRec::EInfo, iRoot, "Starting deleting system");
+    //Logger()->Write(MLogRec::EInfo, iRoot, "Starting deleting system");
     delete iRoot;
-    Logger()->Write(MLogRec::EInfo, NULL, "Finished deleting system");
+    //Logger()->Write(MLogRec::EInfo, NULL, "Finished deleting system");
     delete iChMgr;
     delete iImpMgr;
     delete iProvider;
@@ -491,9 +491,9 @@ MIface* Env::Call(const string& aSpec, string& aRes)
     return res;
 }
 
-string Env::Uid() const
+string Env::Mid() const
 {
-    return GUriBase::KIfaceSepS + MEnv::Type();
+    return string();
 }
 
 void Env::SetEVar(const string& aName, const string& aValue)

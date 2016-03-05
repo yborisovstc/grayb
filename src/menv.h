@@ -74,6 +74,7 @@ class MEnv: public MIface
     public:
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes) = 0;
+	virtual string Uid() const { return Mid() + "%" + Type();};
 };
 
 

@@ -1,8 +1,17 @@
 #include "mprov.h"
 #include "edge.h"
 #include "vert.h"
+#include <stdexcept> 
 
 // Vertex
+
+MVert::EIfu MVert::mIfu;
+
+// Ifu static initialisation
+MVert::EIfu::EIfu()
+{
+    RegMethod("Connect#1", 1);
+}
 
 string Vert::PEType()
 {
@@ -240,4 +249,38 @@ void Vert::SetRemoved()
     Elem::SetRemoved();
 }
 
+MIface* Vert::Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MVert::mIfu.CheckMname(name);
+    if (!name_ok) {
+	return Elem::Call(aSpec, aRes);
+    }
+    TBool args_ok = MVert::mIfu.CheckMpars(name, args.size());
+    if (!args_ok) 
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "Connect#1") {
+	MElem* pair = GetNode(args.at(0));
+	if (pair != NULL) {
+	    throw (runtime_error("Cannot get pair: " + args.at(0)));
+	}
+	MVert* vpair = pair->GetObj(vpair);
+	if (vpair != NULL) {
+	    throw (runtime_error("Pair isn't vertex: " + args.at(0)));
+	}
+	TBool rr = Connect(vpair);
+	aRes = Ifu::FromBool(rr);
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return res;
+}
+
+string Vert::Mid() const
+{
+    return Elem::Mid();
+}
 

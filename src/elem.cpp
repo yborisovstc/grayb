@@ -38,6 +38,9 @@ MElem::EIfu::EIfu()
     RegMethod("GetParent", 0);
     RegMethod("GetChromoSpec", 0);
     RegMethod("EType", 1);
+    RegMethod("RegisterChild", 1);
+    RegMethod("GetUri", 0);
+    RegMethod("DoGetObj", 1);
 }
 
 string Elem::PEType()
@@ -1358,10 +1361,10 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 	if (epheno || node == this || (!aCheckSafety || IsDirectInheritedComp(node))) {
 	    if (refex) {
 		// For -ref- attr the value is the ref relative to mutated node context
-		rnode = ToElem(node->GetNode(mval));
+		rnode = node->GetNode(mval);
 		//mval = rnode->GetRUri(node);
 		if (rnode == NULL) {
-		    rnode = ToElem(node->GetNode(mval));
+		    rnode = node->GetNode(mval);
 		    Logger()->Write(MLogRec::EErr, this, aSpec,
 			    "Changing content of node [%s] to ref [%s] - cannot find ref", snode.c_str(), mval.c_str());
 		    res = EFalse;
@@ -1632,8 +1635,7 @@ MElem* Elem::CreateHeir(const string& aName, MElem* aMan)
 TBool Elem::AppendChild(MElem* aChild)
 {
     TBool res = RegisterChild(aChild);
-    if (res)
-    {
+    if (res) {
 	aChild->SetParent(this);
     }
     return res;
@@ -3058,9 +3060,11 @@ MElem* Elem::GetComp(TInt aInd)
     return iComps.at(aInd);
 }
 
-string Elem::Uid() const
+string Elem::Mid() const
 {
-    return GetUri() + GUriBase::KIfaceSepS + MElem::Type();
+    // Using local root insteat of true root
+//    return GetUri(iEnv->Root(), ETrue) + GUriBase::KIfaceSepS + MElem::Type();
+    return GetUri(iEnv->Root(), ETrue);
 }
 
 MIface* Elem::Call(const string& aSpec, string& aRes)
@@ -3107,6 +3111,13 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	aRes = GetChromoSpec();
     } else if (name == "EType") {
 	aRes = EType(Ifu::ToBool(args.at(0)));
+    } else if (name == "RegisterChild") {
+	TBool rr = RegisterChild(args.at(0));
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "GetUri") {
+	aRes = GetUri(NULL, ETrue);
+    } else if (name == "DoGetObj") {
+	res = (MIface*) DoGetObj(args.at(0).c_str());
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }
