@@ -11,6 +11,8 @@ MVert::EIfu MVert::mIfu;
 MVert::EIfu::EIfu()
 {
     RegMethod("Connect#1", 1);
+    RegMethod("Connect#2", 1);
+    RegMethod("MVert_DoGetObj", 1);
 }
 
 string Vert::PEType()
@@ -43,6 +45,11 @@ Vert::Vert(MElem* aMan, MEnv* aEnv):Elem(Type(), aMan, aEnv)
     TBool res = AppendComp(agents);
     __ASSERT(res);
 
+}
+
+void *Vert::MVert_DoGetObj(const char *aName)
+{
+    return DoGetObj(aName);
 }
 
 void *Vert::DoGetObj(const char *aName)
@@ -122,8 +129,7 @@ TBool Vert::Connect(MVert* aPair)
 	}
 	else {
 	    // TODO [YB] Seems this happens constantly. To analyze why
-	    Base* bp = aPair->EBase();
-	    Elem* ep = bp->GetObj(ep);
+	    MElem* ep = aPair->GetObj(ep);
 	    Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - already connected, failed", ep->GetUri().c_str());
 	    res = EFalse;
 	}
@@ -134,20 +140,14 @@ TBool Vert::Connect(MVert* aPair)
 TBool Vert::Connect(MEdge* aEdge)
 {
     TBool res = ETrue;
-    Edge* ee = aEdge->EBase()->GetObj(ee);
-    __ASSERT(iMEdges.find(TNMKey(ee->Name())) == iMEdges.end());
+    __ASSERT(iMEdges.find(TNMKey(aEdge->EdgeName())) == iMEdges.end());
     if (aEdge->Pair(this) != NULL) {
 	res = Connect(aEdge->Pair(this));
     }
     if (res) {
-	iMEdges.insert(pair<TNMKey, MEdge*>(TNMKey(ee->Name()), aEdge));
+	iMEdges.insert(pair<TNMKey, MEdge*>(TNMKey(aEdge->EdgeName()), aEdge));
     }
     return res;
-}
-
-Base* Vert::EBase()
-{
-    return (Base*) this;
 }
 
 set<MVert*>& Vert::Pairs()
@@ -187,11 +187,10 @@ void Vert::Disconnect()
 
 void Vert::Disconnect(MEdge* aEdge)
 {
-    Edge* ee = aEdge->EBase()->GetObj(ee);
-    TEdgesMap::iterator found = iMEdges.find(TNMKey(ee->Name()));
+    TEdgesMap::iterator found = iMEdges.find(TNMKey(aEdge->EdgeName()));
     //__ASSERT(found != iMEdges.end());
     if (found != iMEdges.end()) {
-	RemoveFromMap(aEdge, TNMKey(ee->Name()));
+	RemoveFromMap(aEdge, TNMKey(aEdge->EdgeName()));
 	//__ASSERT(aEdge->Pair(this) != NULL);
 	if (aEdge->Pair(this) != NULL) {
 	    Disconnect(aEdge->Pair(this));
@@ -226,16 +225,19 @@ TBool Vert::OnCompChanged(MElem& aComp)
 	MVert* cp1 = edge->Point1();
 	MVert* cp2 = edge->Point2();
 	if (cp1 != ref1 || cp2 != ref2) {
-	    Elem* pt1 = ref1 == NULL ? NULL : ref1->EBase()->GetObj(pt1);
-	    Elem* pt2 = ref2 == NULL ? NULL : ref2->EBase()->GetObj(pt2);
 	    if (cp1 != NULL && ref1 != cp1) edge->Disconnect(cp1);
 	    if (cp2 != NULL && ref2 != cp2) edge->Disconnect(cp2);
 	    cp1 = edge->Point1();
 	    cp2 = edge->Point2();
 	    TBool res = ETrue;
-	    if (cp1 == NULL && ref1 != NULL) res = edge->ConnectP1(ref1);
-	    else if (cp2 == NULL && ref2 != NULL) res = edge->ConnectP2(ref2);
+	    if (cp1 == NULL && ref1 != NULL) {
+		res = edge->ConnectP1(ref1);
+	    } else if (cp2 == NULL && ref2 != NULL) {
+		res = edge->ConnectP2(ref2);
+	    }
 	    if (!res) {
+		MElem* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
+		MElem* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
 		Logger()->Write(MLogRec::EErr, ToElem(&aComp), "Connecting [%s - %s] failed", pt1->GetUri().c_str(), pt2->GetUri().c_str());
 	    }
 	}
@@ -264,15 +266,36 @@ MIface* Vert::Call(const string& aSpec, string& aRes)
 	throw (runtime_error("Wrong arguments number"));
     if (name == "Connect#1") {
 	MElem* pair = GetNode(args.at(0));
-	if (pair != NULL) {
+	if (pair == NULL) {
 	    throw (runtime_error("Cannot get pair: " + args.at(0)));
 	}
 	MVert* vpair = pair->GetObj(vpair);
-	if (vpair != NULL) {
+	if (vpair == NULL) {
 	    throw (runtime_error("Pair isn't vertex: " + args.at(0)));
 	}
 	TBool rr = Connect(vpair);
 	aRes = Ifu::FromBool(rr);
+    } else if (name == "Connect#2") {
+	MElem* eedge = GetNode(args.at(0));
+	if (eedge == NULL) {
+	    throw (runtime_error("Cannot get edge: " + args.at(0)));
+	}
+	MEdge* medge = eedge->GetObj(medge);
+	if (medge == NULL) {
+	    throw (runtime_error("Cannot get edge iface: " + args.at(0)));
+	}
+	TBool rr = Connect(medge);
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "MVert_DoGetObj") {
+	void* obj = MVert_DoGetObj(args.at(0).c_str());
+	string itype = args.at(0);
+	if (itype == MElem::Type()) {
+	    res = (MElem*) obj;
+	} else if (itype == MVert::Type()) {
+	    res = (MVert*) obj;
+	} else {
+	    __ASSERT(false);
+	}
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }

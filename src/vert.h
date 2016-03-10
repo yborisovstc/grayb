@@ -26,7 +26,7 @@ class Vert: public Elem, public MVert
 	virtual void Disconnect(MVert* aPair);
 	virtual void Disconnect(MEdge* aEdge);
 	virtual set<MVert*>& Pairs();
-	virtual Base* EBase();
+	virtual void *MVert_DoGetObj(const char *aName);
 	// From Elem
 	virtual TBool OnCompChanged(MElem& aComp);
 	virtual void SetRemoved();

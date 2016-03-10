@@ -207,7 +207,7 @@ void Ut_mut::test_MutSyst()
     CPPUNIT_ASSERT_MESSAGE("Fail to get mcp1", mcp1 != 0);
     MVert* pair = *(mcp1->Pairs().begin());
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    MElem* epair = pair->EBase()->GetObj(epair);
+    MElem* epair = pair->GetObj(epair);
     const string pname = epair->Name();
     CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pname == "cp2");
     // Delete edge
@@ -238,7 +238,7 @@ void Ut_mut::test_MutSyst()
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syst1/cp MVert", mcp_1 != 0);
     MVert* pair_1 = *(mcp_1->Pairs().begin());
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair of Syst1/cp", pair_1 != 0);
-    MElem* epair_1 = pair_1->EBase()->GetObj(epair_1);
+    MElem* epair_1 = pair_1->GetObj(epair_1);
     const string pname_1 = epair_1->Name();
     CPPUNIT_ASSERT_MESSAGE("Wrong name of pair of Syst1/cp", pname_1 == "cp2");
  
@@ -704,7 +704,8 @@ void Ut_mut::test_MutInvImplicit()
     MVert* sbcpv = sbcp->GetObj(sbcpv);
     MVert* pair = *(sacpv->Pairs().begin());
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair of Syst_A Cp", pair != 0);
-    CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pair->EBase() == sbcp);
+    MElem* pmelem = pair->GetObj(pmelem);
+    CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pmelem == sbcp);
     
     // Save upated chromo 
     auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
@@ -724,7 +725,8 @@ void Ut_mut::test_MutInvImplicit()
     sbcpv = sbcp->GetObj(sbcpv);
     pair = *(sacpv->Pairs().begin());
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair of Syst_A Cp", pair != 0);
-    CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pair->EBase() == sbcp);
+    pmelem = pair->GetObj(pmelem);
+    CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pmelem== sbcp);
     // Save upated chromo 
     auto_ptr<MChromo> chromo2 = iEnv->Root()->GetFullChromo();
     chromo2->Save("ut_mut_inv_impl_res2.xml_");
@@ -928,7 +930,8 @@ void Ut_mut::test_Compact2()
     MVert* pair = *(mv1->Pairs().begin());
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
     MElem* v3 = root->GetNode("./(Vert:)v3");
-    CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pair->EBase() == v3);
+    MElem* pmelem = pair->GetObj(pmelem);
+    CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pmelem == v3);
 
     delete iEnv;
 }

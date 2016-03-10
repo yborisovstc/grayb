@@ -66,7 +66,7 @@ void FuncBase::NotifyUpdate()
 	MVert* mvout = eout->GetObj(mvout);
 	MVert* mpair = *(mvout->Pairs().begin());
 	if (mpair != NULL) {
-	    Elem* epair = mpair->EBase()->GetObj(epair);
+	    Elem* epair = mpair->GetObj(epair);
 	    if (epair != NULL) {
 		MDataObserver* obsr = (MDataObserver*) epair->GetSIfiC(MDataObserver::Type(), this);
 		if (obsr != NULL) {
@@ -142,7 +142,7 @@ MDIntGet* AFunInt::GetInp(const string& aInpName)
 	Vert* vert = einp->GetObj(vert);
 	MVert* pair = *(vert->Pairs().begin());
 	if (pair != NULL) {
-	    Elem* epair = pair->EBase()->GetObj(epair);
+	    Elem* epair = pair->GetObj(epair);
 	    if (epair != NULL) {
 		res = (MDIntGet*) epair->GetSIfiC(MDIntGet::Type(), this);
 	    }
@@ -238,7 +238,7 @@ TBool AFunIntRes::HandleIoChanged(MElem& aContext, MElem* aCp)
     Vert* vert = aCp->GetObj(vert);
     MVert* pair = *(vert->Pairs().begin());
     if (pair != NULL) {
-	Vert* vpair = pair->EBase()->GetObj(vpair);
+	Vert* vpair = pair->GetObj(vpair);
 	if (aCp->Name() == "inp") {
 	    // Check input change
 	    MDIntGet* dget = (MDIntGet*) vpair->GetSIfiC(MDIntGet::Type(), this);
@@ -265,7 +265,7 @@ void AFunIntRes::UpdateOutp()
 	Vert* vert = out->GetObj(vert);
 	MVert* pair = *(vert->Pairs().begin());
 	if (pair != NULL) {
-	    Vert* vpair = pair->EBase()->GetObj(vpair);
+	    Vert* vpair = pair->GetObj(vpair);
 	    MDIntSet* dset = (MDIntSet*) vpair->GetSIfiC(MDIntSet::Type(), this);
 	    if (dset != NULL) {
 		dset->SetValue(mData);
@@ -468,7 +468,7 @@ void AFunc::NotifyUpdate()
     MVert* mvout = eout->GetObj(mvout);
     MVert* mpair = *(mvout->Pairs().begin());
     if (mpair != NULL) {
-	Elem* epair = mpair->EBase()->GetObj(epair);
+	Elem* epair = mpair->GetObj(epair);
 	if (epair != NULL) {
 	    MDataObserver* obsr = (MDataObserver*) epair->GetSIfiC(MDataObserver::Type(), this);
 	    if (obsr != NULL) {
@@ -963,7 +963,7 @@ void AFuncm::NotifyUpdate()
 	MVert* mvout = eout->GetObj(mvout);
 	MVert* mpair = *(mvout->Pairs().begin());
 	if (mpair != NULL) {
-	    Elem* epair = mpair->EBase()->GetObj(epair);
+	    Elem* epair = mpair->GetObj(epair);
 	    if (epair != NULL) {
 		MDataObserver* obsr = (MDataObserver*) epair->GetSIfiC(MDataObserver::Type(), this);
 		if (obsr != NULL) {

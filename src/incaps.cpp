@@ -83,8 +83,8 @@ TBool Incaps::HandleCompChanged(MElem& aContext, MElem& aComp)
 	MVert* cp1 = edge->Point1();
 	MVert* cp2 = edge->Point2();
 	if (cp1 != ref1 || cp2 != ref2) {
-	    Elem* pt1 = ref1 == NULL ? NULL : ref1->EBase()->GetObj(pt1);
-	    Elem* pt2 = ref2 == NULL ? NULL : ref2->EBase()->GetObj(pt2);
+	    Elem* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
+	    Elem* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
 	    TBool isptok1 = (ref1 == NULL || IsPtOk(*ToElem(&aContext), pt1));
 	    TBool isptok2 = (ref2 == NULL || IsPtOk(*ToElem(&aContext), pt2));
 	    if (isptok1 && isptok2) {

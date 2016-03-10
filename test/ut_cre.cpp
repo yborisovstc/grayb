@@ -108,7 +108,7 @@ void Ut_cre::test_CreGr()
     CPPUNIT_ASSERT_MESSAGE("Fail to get mv1", mv1 != 0);
     MVert* pair = *(mv1->Pairs().begin());
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    MElem* epair = pair->EBase()->GetObj(epair);
+    MElem* epair = pair->GetObj(epair);
     const string pname = epair->Name();
     CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pname == "v2");
 
@@ -132,7 +132,7 @@ void Ut_cre::test_CreSyst()
     CPPUNIT_ASSERT_MESSAGE("Fail to get mcp1", mcp1 != 0);
     MVert* pair = *(mcp1->Pairs().begin());
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    MElem* epair = pair->EBase()->GetObj(epair);
+    MElem* epair = pair->GetObj(epair);
     const string pname = epair->Name();
     CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pname == "cp2");
 

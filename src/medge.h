@@ -2,17 +2,21 @@
 #define __GRAYB_MEDGE_H
 
 #include "plat.h"
+#include <string>
+#include "ifu.h"
+#include "miface.h"
 
 class MVert;
-class Base;
+
+using namespace std;
 
 // Element of native graph hier
-class MEdge
+class MEdge: public MIface
 {
     public:
 	static const char* Type() { return "MEdge";};
-	virtual Base* EBase()= 0;
-	virtual const Base* EBase() const = 0;
+	virtual string EdgeName() const = 0;
+	virtual string EdgeUri() const = 0;
 	virtual TBool ConnectP1(MVert* aPoint) = 0;
 	virtual TBool ConnectP2(MVert* aPoint) = 0;
 	// TODO [YB] Do we need disconnect from point? To clarify the concept of connection, ref uc_015
@@ -23,6 +27,15 @@ class MEdge
 	virtual MVert* Point2() const = 0;
 	virtual MVert* Ref1() const = 0;
 	virtual MVert* Ref2() const = 0;
+	// From MIface
+	virtual string Uid() const { return Mid() + "%" + Type();};
+    protected:
+	class EIfu: public Ifu {
+	    public:
+		EIfu();
+	};
+	// Interface methods utility
+	static EIfu mIfu;
 };
 
 #endif

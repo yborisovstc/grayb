@@ -493,6 +493,11 @@ void *Elem::DoGetObj(const char *aName)
     } else if (strcmp(aName, MOwner::Type()) == 0) {
 	res = (MOwner*) this;
     } else if (strcmp(aName, MElem::Type()) == 0) {
+	void* vv = (MElem*) this;
+	MElem* me = (MElem*) this;
+	MIface* mei = (MIface*) me;
+	MElem* mev = (MElem*) vv;
+	MIface* meiv = (MIface*) vv;
 	res = (MElem*) this;
     }
     return res;

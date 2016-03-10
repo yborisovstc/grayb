@@ -2,6 +2,22 @@
 #include "mvert.h"
 #include "mprov.h"
 #include "mprop.h"
+#include <stdexcept> 
+
+MEdge::EIfu MEdge::mIfu;
+
+// Ifu static initialisation
+MEdge::EIfu::EIfu()
+{
+    RegMethod("EdgeName", 0);
+    RegMethod("EdgeUri", 0);
+    RegMethod("ConnectP1", 1);
+    RegMethod("ConnectP2", 1);
+    RegMethod("Disconnect", 1);
+    RegMethod("Disconnect#2", 0);
+    RegMethod("Pair", 1);
+}
+
 
 string Edge::PEType()
 {
@@ -199,7 +215,7 @@ MElem* Edge::Point1rc()
 {
     MElem* res = NULL;
     if (iPoint1 != NULL) {
-	res = iPoint1->EBase()->GetObj(res);
+	res = iPoint1->GetObj(res);
     }
     else {
 	res = Point1r();
@@ -211,7 +227,7 @@ MElem* Edge::Point2rc()
 {
     MElem* res = NULL;
     if (iPoint2 != NULL) {
-	res = iPoint2->EBase()->GetObj(res);
+	res = iPoint2->GetObj(res);
     }
     else {
 	res = Point2r();
@@ -346,16 +362,6 @@ MElem* Edge::Point2p()
     return GetNode("./P2");
 }
 
-Base* Edge::EBase()
-{
-    return (Base*) this;
-}
-
-const Base* Edge::EBase() const
-{
-    return (const Base*) this;
-}
-
 TBool Edge::OnCompChanged(MElem& aComp)
 {
     Elem::OnCompChanged(aComp);
@@ -373,5 +379,69 @@ void Edge::SetRemoved()
 {
     Disconnect();
     Elem::SetRemoved();
+}
+
+string Edge::EdgeName() const
+{
+    return Name();
+}
+
+string Edge::EdgeUri() const
+{
+    return GetUri(NULL, ETrue);
+}
+
+MIface* Edge::Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MEdge::mIfu.CheckMname(name);
+    if (!name_ok) {
+	return Elem::Call(aSpec, aRes);
+    }
+    TBool args_ok = MEdge::mIfu.CheckMpars(name, args.size());
+    if (!args_ok) 
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "ConnectP1") {
+	MElem* pair = GetNode(args.at(0));
+	if (pair != NULL) {
+	    throw (runtime_error("Cannot get pair: " + args.at(0)));
+	}
+	MVert* vpair = pair->GetObj(vpair);
+	if (vpair != NULL) {
+	    throw (runtime_error("Pair isn't vertex: " + args.at(0)));
+	}
+	TBool rr = ConnectP1(vpair);
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "ConnectP2") {
+	MElem* pair = GetNode(args.at(0));
+	if (pair != NULL) {
+	    throw (runtime_error("Cannot get pair: " + args.at(0)));
+	}
+	MVert* vpair = pair->GetObj(vpair);
+	if (vpair != NULL) {
+	    throw (runtime_error("Pair isn't vertex: " + args.at(0)));
+	}
+	TBool rr = ConnectP2(vpair);
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "EdgeName") {
+	aRes = EdgeName();
+    } else if (name == "EdgeUri") {
+	aRes = EdgeUri();
+    } else if (name == "Pair") {
+	MElem* ve = GetNode(args.at(0));
+	MVert* vv = ve->GetObj(vv);
+	res = Pair(vv);
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return res;
+}
+
+string Edge::Mid() const
+{
+    return Elem::Mid();
 }
 

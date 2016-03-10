@@ -117,7 +117,7 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    MProp* req = ereq->GetObj(req);
 	    if (req != NULL && req->Value() == aName) {
 		for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
-		    Elem* pe = (*it)->EBase()->GetObj(pe);
+		    Elem* pe = (*it)->GetObj(pe);
 		    if (!ctx.IsInContext(pe)) {
 			rr = pe->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, pe, rr);
@@ -318,7 +318,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    MVert* vhost = host->GetObj(vhost);
 	    if (vhost != NULL) {
 		for (set<MVert*>::const_iterator it = vhost->Pairs().begin(); it != vhost->Pairs().end(); it++) {
-		    Elem* ep = (*it)->EBase()->GetObj(ep);
+		    Elem* ep = (*it)->GetObj(ep);
 		    if (ep != NULL && !ctx.IsInContext(ep)) {
 			rr = ep->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, ep, rr);
@@ -557,7 +557,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		Elem* man = ToElem(iMan->GetMan());
 		Vert* vman = man->GetObj(vman);
 		for (set<MVert*>::iterator it = vman->Pairs().begin(); it != vman->Pairs().end() && res == NULL; it++) {
-		    Elem* pe = (*it)->EBase()->GetObj(pe);
+		    Elem* pe = (*it)->GetObj(pe);
 		    if (!ctx.IsInContext(pe)) {
 			rr = pe->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, pe, rr);
@@ -596,7 +596,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		Elem* man = ToElem(iMan->GetMan());
 		Vert* vman = man->GetObj(vman);
 		for (set<MVert*>::iterator it = vman->Pairs().begin(); it != vman->Pairs().end() && res == NULL; it++) {
-		    Elem* pe = (*it)->EBase()->GetObj(pe);
+		    Elem* pe = (*it)->GetObj(pe);
 		    if (!ctx.IsInContext(pe)) {
 			rr = pe->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, pe, rr);
@@ -817,8 +817,8 @@ TBool Syst::OnCompChanged(MElem& aComp)
 	MVert* cp1 = edge->Point1();
 	MVert* cp2 = edge->Point2();
 	if (cp1 != ref1 || cp2 != ref2) {
-	    Elem* pt1 = ref1 == NULL ? NULL : ref1->EBase()->GetObj(pt1);
-	    Elem* pt2 = ref2 == NULL ? NULL : ref2->EBase()->GetObj(pt2);
+	    Elem* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
+	    Elem* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
 	    TBool isptok1 = (ref1 == NULL || IsPtOk(pt1));
 	    TBool isptok2 = (ref2 == NULL || IsPtOk(pt2));
 	    if (isptok1 && isptok2) {

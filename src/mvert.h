@@ -43,7 +43,8 @@ class MVert: public MIface
 	virtual void Disconnect(MVert* aPair) = 0;
 	virtual void Disconnect(MEdge* aEdge) = 0;
 	virtual set<MVert*>& Pairs() = 0;
-	virtual Base* EBase() = 0;
+	virtual void *MVert_DoGetObj(const char *aName) = 0;
+	template <class T> T* GetObj(T* aInst) {return aInst = static_cast<T*>(MVert_DoGetObj(aInst->Type()));};
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};
     protected:

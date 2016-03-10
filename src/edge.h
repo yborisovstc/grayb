@@ -35,8 +35,8 @@ class Edge: public Elem, public MEdge
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MEdge
-	virtual Base* EBase();
-	virtual const Base* EBase() const;
+	virtual string EdgeName() const;
+	virtual string EdgeUri() const;
 	virtual TBool ConnectP1(MVert* aPoint);
 	virtual TBool ConnectP2(MVert* aPoint);
 	virtual void Disconnect(MVert* aPoint);
@@ -50,6 +50,9 @@ class Edge: public Elem, public MEdge
 	virtual TBool OnCompChanged(MElem& aComp);
 	// From Elem
 	virtual void SetRemoved();
+	// From MIface
+	virtual MIface* Call(const string& aSpec, string& aRes);
+	virtual string Mid() const;
     protected:
 	// Just one-way relation to vert. It does't mean the full point to point relation is established.
 	MVert* iPoint1;
