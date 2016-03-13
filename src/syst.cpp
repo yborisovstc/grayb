@@ -317,8 +317,10 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    MElem* host = iMan->GetMan();
 	    MVert* vhost = host->GetObj(vhost);
 	    if (vhost != NULL) {
-		for (set<MVert*>::const_iterator it = vhost->Pairs().begin(); it != vhost->Pairs().end(); it++) {
-		    Elem* ep = (*it)->GetObj(ep);
+		TInt count = vhost->PairsCount();
+		for (TInt ct = 0; ct < count; ct++) {
+		    MVert* pair = vhost->GetPair(ct);
+		    Elem* ep = pair->GetObj(ep);
 		    if (ep != NULL && !ctx.IsInContext(ep)) {
 			rr = ep->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, ep, rr);
@@ -555,12 +557,16 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    // TODO [YB] Probably routing to pair needs to be done first, before the routing to pins
 	    if (rr.first == rr.second) {
 		Elem* man = ToElem(iMan->GetMan());
-		Vert* vman = man->GetObj(vman);
-		for (set<MVert*>::iterator it = vman->Pairs().begin(); it != vman->Pairs().end() && res == NULL; it++) {
-		    Elem* pe = (*it)->GetObj(pe);
-		    if (!ctx.IsInContext(pe)) {
-			rr = pe->GetIfi(aName, &ctx);
-			InsertIfCache(aName, rctx, pe, rr);
+		MVert* vman = man->GetObj(vman);
+		if (vman != NULL) {
+		    TInt pcount = vman->PairsCount();
+		    for (TInt ct = 0; ct < pcount && res == NULL; ct++) {
+			MVert* pair = vman->GetPair(ct);
+			Elem* pe = pair->GetObj(pe);
+			if (!ctx.IsInContext(pe)) {
+			    rr = pe->GetIfi(aName, &ctx);
+			    InsertIfCache(aName, rctx, pe, rr);
+			}
 		    }
 		}
 	    }
@@ -594,12 +600,16 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    // TODO [YB] Probably routing to pair needs to be done first, before the routing to pins
 	    if (rr.first == rr.second) {
 		Elem* man = ToElem(iMan->GetMan());
-		Vert* vman = man->GetObj(vman);
-		for (set<MVert*>::iterator it = vman->Pairs().begin(); it != vman->Pairs().end() && res == NULL; it++) {
-		    Elem* pe = (*it)->GetObj(pe);
-		    if (!ctx.IsInContext(pe)) {
-			rr = pe->GetIfi(aName, &ctx);
-			InsertIfCache(aName, rctx, pe, rr);
+		MVert* vman = man->GetObj(vman);
+		if (vman != NULL) {
+		    TInt pcount = vman->PairsCount();
+		    for (TInt ct = 0; ct < pcount && res == NULL; ct++) {
+			MVert* pair = vman->GetPair(ct);
+			Elem* pe = pair->GetObj(pe);
+			if (!ctx.IsInContext(pe)) {
+			    rr = pe->GetIfi(aName, &ctx);
+			    InsertIfCache(aName, rctx, pe, rr);
+			}
 		    }
 		}
 	    }

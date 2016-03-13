@@ -1519,7 +1519,7 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 			    // To avoid this inherited nodes chromo being attached we just don't attach inherited nodes chromo
 			    long t5; if (ptrace) t5 = GetClock();
 			    elem->SetMutation(aNode);
-			    elem->Mutate(EFalse, ecsaf, aTrialMode, aCtx);
+			    elem->Mutate(EFalse, ecsaf, aTrialMode, aRunTime ? elem : aCtx);
 			    if (ptrace) { long t5_6 = GetClockElapsed(t3); Logger()->Write(MLogRec::EInfo, this, "Adding node, t5-t6: %d", t5_6);}
 			    //Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
 			    /*

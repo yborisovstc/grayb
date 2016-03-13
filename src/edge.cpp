@@ -15,7 +15,6 @@ MEdge::EIfu::EIfu()
     RegMethod("ConnectP2", 1);
     RegMethod("Disconnect", 1);
     RegMethod("Disconnect#2", 0);
-    RegMethod("Pair", 1);
 }
 
 
@@ -84,18 +83,16 @@ TBool Edge::ConnectP1(MVert* aPoint)
 {
     TBool res = EFalse;
     __ASSERT(iPoint1 == NULL);
-    iPoint1 = aPoint; // Set first to make Pair() working
-    res = aPoint->Connect(this);
-    if (res) {
-	// Connect pair to the point
-	/*
-	if (iPoint2 != NULL) {
-	    iPoint2->Connect(iPoint1);
+    if (iPoint2 != NULL) {
+	// Try full connection
+	res = aPoint->Connect(iPoint2);
+       	if (res) {
+	    iPoint1 = aPoint;
 	}
-	*/
-    }
-    else {
-	iPoint1 = NULL;
+    } else {
+	// Just set one part connection
+	iPoint1 = aPoint;
+	res = ETrue;
     }
     return res;
 }
@@ -104,18 +101,16 @@ TBool Edge::ConnectP2(MVert* aPoint)
 {
     TBool res = EFalse;
     __ASSERT(iPoint2 == NULL);
-    iPoint2 = aPoint; // Set first to make Pair() working
-    res = aPoint->Connect(this);
-    if (res) {
-	/*
-	// Connect pair to the point
-	if (iPoint1 != NULL) {
-	    iPoint1->Connect(iPoint2);
+    if (iPoint1 != NULL) {
+	// Try full connection
+	res = aPoint->Connect(iPoint1);
+       	if (res) {
+	    iPoint2 = aPoint;
 	}
-	*/
-    }
-    else {
-	iPoint2 = NULL;
+    } else {
+	// Just set one part connection
+	iPoint2 = aPoint;
+	res = ETrue;
     }
     return res;
 }
@@ -145,15 +140,15 @@ void Edge::Disconnect(MVert* aPoint)
 {
     if (aPoint != NULL) {
 	if (aPoint == iPoint1) {
-	    iPoint1->Disconnect(this);
 	    if (iPoint2 != NULL) {
+		iPoint1->Disconnect(iPoint2);
 		iPoint2->Disconnect(iPoint1);
 	    }
 	    iPoint1 = NULL;
 	}
 	if (aPoint == iPoint2) {
-	    iPoint2->Disconnect(this);
 	    if (iPoint1 != NULL) {
+		iPoint2->Disconnect(iPoint1);
 		iPoint1->Disconnect(iPoint2);
 	    }
 	    iPoint2 = NULL;
@@ -179,11 +174,6 @@ void Edge::Disconnect(MElem* aCp)
     else if (aCp == Point2p()) {
 	Disconnect(iPoint2);
     }
-}
-
-MVert* Edge::Pair(const MVert* aPoint)
-{
-    return aPoint == iPoint1 ? iPoint2 : iPoint1;
 }
 
 const string& Edge::Point1u()
@@ -430,10 +420,6 @@ MIface* Edge::Call(const string& aSpec, string& aRes)
 	aRes = EdgeName();
     } else if (name == "EdgeUri") {
 	aRes = EdgeUri();
-    } else if (name == "Pair") {
-	MElem* ve = GetNode(args.at(0));
-	MVert* vv = ve->GetObj(vv);
-	res = Pair(vv);
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }

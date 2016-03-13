@@ -138,8 +138,7 @@ void Ut_conn::test_Reconn()
     // Verify the connection pair is disconnected
     MElem* ev2 = root->GetNode("./v2");
     MVert* mv2 = ev2->GetObj(mv2);
-    set<MVert*>& pairs = mv2-> Pairs();
-    int pnum = pairs.size();
+    int pnum = mv2->PairsCount();
     CPPUNIT_ASSERT_MESSAGE("Wrong number of v2 pairs after disconnection", pnum == 0);
     // Verify edges point previously connected to v1 is disconnected
     MElem* ee1 = root->GetNode("./e1");
@@ -154,8 +153,7 @@ void Ut_conn::test_Reconn()
     // Verify the connection pair is disconnected
     MElem* ev5 = root->GetNode("./v5");
     MVert* mv5 = ev5->GetObj(mv5);
-    set<MVert*>& pairs5 = mv5-> Pairs();
-    int pnum5 = pairs5.size();
+    int pnum5 = mv5->PairsCount();
     CPPUNIT_ASSERT_MESSAGE("Wrong number of v5 pairs after disconnection", pnum5 == 0);
     // Verify edges point previously connected to v1 is disconnected
     MElem* ee2 = root->GetNode("./e2");
@@ -185,7 +183,6 @@ void Ut_conn::test_Conn2()
     // Verify that v1 and v2 are still connected
     MElem* ev1 = root->GetNode("./v1");
     MVert* mv1 = ev1->GetObj(mv1);
-    set<MVert*>& pairs1 = mv1-> Pairs();
-    int pnum1 = pairs1.size();
+    int pnum1 = mv1->PairsCount();
     CPPUNIT_ASSERT_MESSAGE("Wrong number of v1 pairs after e2 disconnection", pnum1 == 1);
 }

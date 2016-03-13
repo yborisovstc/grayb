@@ -10,9 +10,11 @@ MVert::EIfu MVert::mIfu;
 // Ifu static initialisation
 MVert::EIfu::EIfu()
 {
-    RegMethod("Connect#1", 1);
-    RegMethod("Connect#2", 1);
+    RegMethod("Connect", 1);
     RegMethod("MVert_DoGetObj", 1);
+    RegMethod("PairsCount", 0);
+    RegMethod("IsPair", 1);
+    RegMethod("GetPair", 1);
 }
 
 string Vert::PEType()
@@ -103,10 +105,7 @@ void Vert::UpdateIfi(const string& aName, const RqContext* aCtx)
 
 Vert::~Vert()
 {
-    // Solution for UC_015: vertex "locally" (w/o involving upper vertex) disconnects from edges, 
-    // not affecting edges chromo but only runtime data. This is aligned with common concept that disables internal mutations.
-    // So edge still will be pointing to deleted vertex causing error.
-    Disconnect();
+    iPairs.clear();
 }
 
 TBool Vert::Connect(MVert* aPair)
@@ -114,14 +113,14 @@ TBool Vert::Connect(MVert* aPair)
     TBool res = ETrue;
 //    __ASSERT(aPair != NULL && iPairs.count(aPair) == 0);
     if(aPair != NULL) {
-	if(iPairs.count(aPair) == 0) {
+	if(!IsPair(aPair)) {
 	    // Invalidate ifaces cache
 	    InvalidateIfCache();
 	    iPairs.insert(aPair);
 	    // We need to two part connection here. Otherwise CompChanged handling will be incorrect
 	    // owner can notify the pair and get back request for iface, so need to have full connection
 	    // So request pair connection if not connected yet
-	    if(aPair->Pairs().count(this) == 0) {
+	    if(!aPair->IsPair(this)) {
 		aPair->Connect(this);
 	    }
 	    __ASSERT(iMan != NULL);
@@ -137,23 +136,42 @@ TBool Vert::Connect(MVert* aPair)
     return res;
 }
 
-TBool Vert::Connect(MEdge* aEdge)
+TInt Vert::PairsCount() const
 {
-    TBool res = ETrue;
-    __ASSERT(iMEdges.find(TNMKey(aEdge->EdgeName())) == iMEdges.end());
-    if (aEdge->Pair(this) != NULL) {
-	res = Connect(aEdge->Pair(this));
-    }
-    if (res) {
-	iMEdges.insert(pair<TNMKey, MEdge*>(TNMKey(aEdge->EdgeName()), aEdge));
+    return iPairs.size();
+}
+
+MVert* Vert::GetPair(TInt aInd) const
+{
+    MVert* res = NULL;
+    if (aInd < PairsCount()) {
+	set<MVert*>::iterator it = iPairs.begin(); 
+	for (; it != iPairs.end() && aInd != 0; it++, aInd--) {
+	}
+	res = *it;
     }
     return res;
 }
 
+TBool Vert::IsPair(const MVert* aPair) const
+{
+    return iPairs.count((MVert*) aPair) > 0;
+    /*
+       TBool res = EFalse;
+       for (vector<MVert*>::const_iterator it = iPairs.begin(); it != iPairs.end() && !res; it++) {
+       const MVert* pair = *it;
+       res = (pair == aPair);
+       }
+       return res;
+       */ 
+}
+
+/*
 set<MVert*>& Vert::Pairs()
 {
     return iPairs;
 }
+*/
 
 void Vert::Disconnect(MVert* aPair)
 {
@@ -166,51 +184,6 @@ void Vert::Disconnect(MVert* aPair)
 	__ASSERT(iMan != NULL);
 	iMan->OnCompChanged(*this);
     }
-}
-
-void Vert::Disconnect()
-{
-    // Cache edges first because disconnecting will affect iMEdges
-    vector<MEdge*> edges;
-    for (TEdgesMap::iterator it = iMEdges.begin(); it != iMEdges.end(); it++) {
-	edges.push_back(it->second);
-    }
-    // Disconnect edges
-    for (vector<MEdge*>::iterator ite = edges.begin(); ite != edges.end(); ite++) {
-	MEdge* edge = *ite;
-	edge->Disconnect(this);
-    }
-    // TODO [YB] To add notif of edge about deleting
-    iMEdges.clear();
-    iPairs.clear();
-}
-
-void Vert::Disconnect(MEdge* aEdge)
-{
-    TEdgesMap::iterator found = iMEdges.find(TNMKey(aEdge->EdgeName()));
-    //__ASSERT(found != iMEdges.end());
-    if (found != iMEdges.end()) {
-	RemoveFromMap(aEdge, TNMKey(aEdge->EdgeName()));
-	//__ASSERT(aEdge->Pair(this) != NULL);
-	if (aEdge->Pair(this) != NULL) {
-	    Disconnect(aEdge->Pair(this));
-	}
-    }
-}
-
-void Vert::RemoveFromMap(MEdge* aEdge, const TNMKey& aKey)
-{
-    __ASSERT(aEdge != NULL);
-    TBool found = EFalse;
-    TEdgesMap::iterator lb = iMEdges.lower_bound(aKey);
-    TEdgesMap::iterator ub = iMEdges.upper_bound(aKey);
-    for (TEdgesMap::iterator it = lb; it != ub && !found; it++) {
-	if (it->second == aEdge) {
-	    iMEdges.erase(it); found = true;
-	}
-    }
-    __ASSERT(found);
-
 }
 
 TBool Vert::OnCompChanged(MElem& aComp)
@@ -247,7 +220,6 @@ TBool Vert::OnCompChanged(MElem& aComp)
 
 void Vert::SetRemoved()
 {
-    Disconnect();
     Elem::SetRemoved();
 }
 
@@ -264,9 +236,10 @@ MIface* Vert::Call(const string& aSpec, string& aRes)
     TBool args_ok = MVert::mIfu.CheckMpars(name, args.size());
     if (!args_ok) 
 	throw (runtime_error("Wrong arguments number"));
-    if (name == "Connect#1") {
+    if (name == "Connect") {
 	MElem* pair = GetNode(args.at(0));
 	if (pair == NULL) {
+	    Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot get pair, failed", args.at(0).c_str());
 	    throw (runtime_error("Cannot get pair: " + args.at(0)));
 	}
 	MVert* vpair = pair->GetObj(vpair);
@@ -274,17 +247,6 @@ MIface* Vert::Call(const string& aSpec, string& aRes)
 	    throw (runtime_error("Pair isn't vertex: " + args.at(0)));
 	}
 	TBool rr = Connect(vpair);
-	aRes = Ifu::FromBool(rr);
-    } else if (name == "Connect#2") {
-	MElem* eedge = GetNode(args.at(0));
-	if (eedge == NULL) {
-	    throw (runtime_error("Cannot get edge: " + args.at(0)));
-	}
-	MEdge* medge = eedge->GetObj(medge);
-	if (medge == NULL) {
-	    throw (runtime_error("Cannot get edge iface: " + args.at(0)));
-	}
-	TBool rr = Connect(medge);
 	aRes = Ifu::FromBool(rr);
     } else if (name == "MVert_DoGetObj") {
 	void* obj = MVert_DoGetObj(args.at(0).c_str());
@@ -296,6 +258,23 @@ MIface* Vert::Call(const string& aSpec, string& aRes)
 	} else {
 	    __ASSERT(false);
 	}
+    } else if (name == "PairsCount") {
+	TInt pc = PairsCount();
+	aRes = Ifu::FromInt(pc);
+    } else if (name == "IsPair") {
+	MElem* earg = GetNode(args.at(0));
+	if (earg == NULL) {
+	    throw (runtime_error("Cannot get arg: " + args.at(0)));
+	}
+	MVert* varg = earg->GetObj(varg);
+	if (varg == NULL) {
+	    throw (runtime_error("Arg isn't vertex: " + args.at(0)));
+	}
+	TBool rr = IsPair(varg);
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "GetPair") {
+	TInt ind = Ifu::ToInt(args.at(0));
+	res = GetPair(ind);
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }
@@ -307,3 +286,18 @@ string Vert::Mid() const
     return Elem::Mid();
 }
 
+void Vert::OnCompDeleting(MElem& aComp, TBool aSoft)
+{
+    // Disconnect the binding edges if the comp is vert connected
+    MVert* vert = aComp.GetObj(vert);
+    if (vert != NULL && vert->PairsCount() > 0) {
+	for (vector<MElem*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
+	    MElem* comp = *it;
+	    MEdge* edge = comp->GetObj(edge);
+	    if (edge != NULL && (edge->Point1() == vert || edge->Point2() == vert)) {
+		edge->Disconnect(vert);
+	    }
+	}
+    }
+    Elem::OnCompDeleting(aComp, aSoft);
+}

@@ -101,7 +101,7 @@ void Ut_uri::test_UriBase()
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 34);
     MVert* mdoutpv = doutp->GetObj(mdoutpv);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out vertex", mdoutpv != 0);
-    MVert* pair = *(mdoutpv->Pairs().begin());
+    MVert* pair = mdoutpv->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
     MElem* efuninp = root->GetNode("./(Incaps:)test/(FuncIncInt:)Incr/Capsule/inp");
     CPPUNIT_ASSERT_MESSAGE("Fail to get fun inp", efuninp != NULL);

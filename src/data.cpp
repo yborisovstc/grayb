@@ -287,7 +287,7 @@ TBool DInt::Update()
     }
     if (einp != NULL) {
 	Vert* vert = einp->GetObj(vert);
-	MVert* pair = *(vert->Pairs().begin());
+	MVert* pair = vert->GetPair(0);
 	if (pair != NULL) {
 	    Elem* inpe = pair->GetObj(inpe);
 	    inp = (MDIntGet*) inpe->GetSIfiC(MDIntGet::Type(), this);

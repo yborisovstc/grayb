@@ -22,7 +22,6 @@ class MEdge: public MIface
 	// TODO [YB] Do we need disconnect from point? To clarify the concept of connection, ref uc_015
 	virtual void Disconnect(MVert* aPoint) = 0;
 	virtual void Disconnect() = 0;
-	virtual MVert* Pair(const MVert* aPoint) = 0;
 	virtual MVert* Point1() const = 0;
 	virtual MVert* Point2() const = 0;
 	virtual MVert* Ref1() const = 0;

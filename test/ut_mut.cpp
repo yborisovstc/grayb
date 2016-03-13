@@ -205,7 +205,7 @@ void Ut_mut::test_MutSyst()
     CPPUNIT_ASSERT_MESSAGE("Fail to get cp1", cp1 != 0);
     MVert* mcp1 = cp1->GetObj(mcp1);
     CPPUNIT_ASSERT_MESSAGE("Fail to get mcp1", mcp1 != 0);
-    MVert* pair = *(mcp1->Pairs().begin());
+    MVert* pair = mcp1->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
     MElem* epair = pair->GetObj(epair);
     const string pname = epair->Name();
@@ -236,7 +236,7 @@ void Ut_mut::test_MutSyst()
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syst1/cp", cp_1 != 0);
     MVert* mcp_1 = cp_1->GetObj(mcp_1);
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syst1/cp MVert", mcp_1 != 0);
-    MVert* pair_1 = *(mcp_1->Pairs().begin());
+    MVert* pair_1 = mcp_1->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair of Syst1/cp", pair_1 != 0);
     MElem* epair_1 = pair_1->GetObj(epair_1);
     const string pname_1 = epair_1->Name();
@@ -532,7 +532,7 @@ void Ut_mut::test_MutInv1()
     // Check that the inital connection is set
     MVert* mv1 = v1->GetObj(mv1);
     MVert* mv2 = v2->GetObj(mv2);
-    CPPUNIT_ASSERT_MESSAGE("Fail to connect v1 to v2", mv1->Pairs().count(mv2) == 1);
+    CPPUNIT_ASSERT_MESSAGE("Fail to connect v1 to v2", mv1->IsPair(mv2));
     // Try to mutate edge point P2 to change v2 to v3
     MElem* edge1 = root->GetNode("./edge1");
     ChromoNode mut = edge1->Mutation().Root().AddChild(ENt_Cont);
@@ -558,7 +558,7 @@ void Ut_mut::test_MutInv1()
     mv1 = v1->GetObj(mv1);
     MElem* v3 = root->GetNode("./v3");
     MVert* mv3 = v3->GetObj(mv3);
-    CPPUNIT_ASSERT_MESSAGE("Fail to connect v1 to v3", mv1->Pairs().count(mv3) == 1);
+    CPPUNIT_ASSERT_MESSAGE("Fail to connect v1 to v3", mv1->IsPair(mv3));
     // Check that secondary forward dependency was resolved
     MElem* p1 = root->GetNode("./p1");
     string p1_cont;
@@ -589,7 +589,7 @@ void Ut_mut::test_MutInvRename()
     // Check that the inital connection is set
     MVert* mv1 = v1->GetObj(mv1);
     MVert* mv2 = v2->GetObj(mv2);
-    CPPUNIT_ASSERT_MESSAGE("Fail to connect v1 to v2", mv1->Pairs().count(mv2) == 1);
+    CPPUNIT_ASSERT_MESSAGE("Fail to connect v1 to v2", mv1->IsPair(mv2));
     // Try to mutate edge point P2 to change v2 to v3
     MElem* edge1 = root->GetNode("./edge1");
     ChromoNode mut = edge1->Mutation().Root().AddChild(ENt_Cont);
@@ -615,7 +615,7 @@ void Ut_mut::test_MutInvRename()
     mv1 = v1->GetObj(mv1);
     MElem* v3 = root->GetNode("./v3");
     MVert* mv3 = v3->GetObj(mv3);
-    CPPUNIT_ASSERT_MESSAGE("Fail to connect v1 to v3", mv1->Pairs().count(mv3) == 1);
+    CPPUNIT_ASSERT_MESSAGE("Fail to connect v1 to v3", mv1->IsPair(mv3));
     // Check that secondary forward dependency was resolved
     MElem* p1 = root->GetNode("./p1");
     string p1_cont;
@@ -702,7 +702,7 @@ void Ut_mut::test_MutInvImplicit()
     MElem* sbcp = root->GetNode("./System/Syst_B/Cp");
     MVert* sacpv = sacp->GetObj(sacpv);
     MVert* sbcpv = sbcp->GetObj(sbcpv);
-    MVert* pair = *(sacpv->Pairs().begin());
+    MVert* pair = sacpv->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair of Syst_A Cp", pair != 0);
     MElem* pmelem = pair->GetObj(pmelem);
     CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pmelem == sbcp);
@@ -723,7 +723,7 @@ void Ut_mut::test_MutInvImplicit()
     sbcp = root->GetNode("./System/Syst_B/Cp");
     sacpv = sacp->GetObj(sacpv);
     sbcpv = sbcp->GetObj(sbcpv);
-    pair = *(sacpv->Pairs().begin());
+    pair = sacpv->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair of Syst_A Cp", pair != 0);
     pmelem = pair->GetObj(pmelem);
     CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pmelem== sbcp);
@@ -927,7 +927,7 @@ void Ut_mut::test_Compact2()
     CPPUNIT_ASSERT_MESSAGE("Fail to get v1", v1 != 0);
     MVert* mv1 = v1->GetObj(mv1);
     CPPUNIT_ASSERT_MESSAGE("Fail to get mv1", mv1 != 0);
-    MVert* pair = *(mv1->Pairs().begin());
+    MVert* pair = mv1->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
     MElem* v3 = root->GetNode("./(Vert:)v3");
     MElem* pmelem = pair->GetObj(pmelem);

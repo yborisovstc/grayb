@@ -74,6 +74,21 @@ string Ifu::FromBool(TBool aBool)
     return aBool ? "true" : "false";
 }
 
+TInt Ifu::ToInt(const string& aString)
+{
+    TInt res = 0;
+    stringstream ss(aString);
+    ss >> res;
+    return res;
+}
+
+string Ifu::FromInt(TInt aInt)
+{
+    stringstream ss;
+    ss << aInt;
+    return ss.str();
+}
+
 void Ifu::RegMethod(const string& aName, TInt aArgsNum)
 {
     __ASSERT(mMpars.count(aName) == 0);

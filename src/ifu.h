@@ -19,6 +19,8 @@ class Ifu
 	static void ParseIcSpec(const string& aSpec, string& aName, string& aSig, vector<string>& aArgs);
 	static TBool ToBool(const string& aString);
 	static string FromBool(TBool aBool);
+	static TInt ToInt(const string& aString);
+	static string FromInt(TInt aInt);
 	void RegMethod(const string& aName, TInt aArgsNum);
 	TBool CheckMname(const string& aName) const;
 	TBool CheckMpars(const string& aName, TInt aArgsNum) const;

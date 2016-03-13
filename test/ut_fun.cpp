@@ -67,7 +67,7 @@ void Ut_func::test_FuncSeq1()
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 34);
     MVert* mdoutpv = doutp->GetObj(mdoutpv);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out vertex", mdoutpv != 0);
-    MVert* pair = *(mdoutpv->Pairs().begin());
+    MVert* pair = mdoutpv->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
     MElem* efuninp = root->GetNode("./test/Incr/Capsule/inp");
     CPPUNIT_ASSERT_MESSAGE("Fail to get fun inp", efuninp != NULL);
@@ -135,7 +135,7 @@ void Ut_func::test_FuncSeq2()
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 34);
     MVert* mdoutpv = doutp->GetObj(mdoutpv);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out vertex", mdoutpv != 0);
-    MVert* pair = *(mdoutpv->Pairs().begin());
+    MVert* pair = mdoutpv->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
     MElem* efuninp = root->GetNode("./test/Add/Capsule/inp");
     CPPUNIT_ASSERT_MESSAGE("Fail to get fun inp", efuninp != NULL);
@@ -203,7 +203,7 @@ void Ut_func::test_FuncSeq3()
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 34);
     MVert* mdoutpv = doutp->GetObj(mdoutpv);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out vertex", mdoutpv != 0);
-    MVert* pair = *(mdoutpv->Pairs().begin());
+    MVert* pair = mdoutpv->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
     MElem* efuninp = root->GetNode("./test/Add/Capsule/inp");
     CPPUNIT_ASSERT_MESSAGE("Fail to get fun inp", efuninp != NULL);

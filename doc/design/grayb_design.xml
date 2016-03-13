@@ -2134,6 +2134,47 @@
 	</sect2>
     </sect1>
 
+    <sect1 id="ds_graph"><title>Agents of graph model</title>
+	<sect2><title>Intro</title>
+	    <simpara>Vertex model provide system in form of graph, i.e as the pair of elements. The agents for modelling graph are Vertex agent and 
+		Edge agent. The graph level is the lowest layer of models hierarchy. At the moment (20160311) there are graph layer agents implemented.
+		But this implementation is not effective one. Morover it causes extra communication between agent that causes deadlock in distributed 
+		environment, ref <ulink url="../../../fap2-srv/doc/design/index.html#ds_pacl_id"/>. So some redesign is required for graph layer.</simpara>
+	    <simpara>The proposal for improvement is to avoid vertex interacting to edge.</simpara>
+	</sect2>
+	<sect2><title>The current implementation</title>
+	    <simpara>The idea of the implementation was to have in edge direct refs to the vertexes related. So edge has actually the status "connected/disconnected" basing
+		on this ref: if direct ref is not null then the status is "connected". So in order to handle the status properly we need also to have direct ref to edge in 
+		vertexes. For instance when vertexes gets removed it notifies edge of that, so edge change the status to "disconnected". Edge also have indirect refs
+		to vertexes via URI specified in edge's points ("P1", "P2") properties.</simpara>
+	    <simpara>Also Vertex contains the cash of it's pairs (iPairs set). This cashe is used in iface resolution mechanism to quick redirecting the 
+		request to vertex pairs.</simpara>
+	</sect2>
+	<sect2><title>Redesing: lightweight version.</title>
+	    <simpara>The initial proposal is to avoid keeping refs to vertexes in edge, but keep only refs to pairs in vertexes. The problem here is
+		that these edge's refs to pair are activelly used by studio when creating detail representation of the node. So seems the real way to
+		simplify the scheme is to avoid refs from vertex to edges. How to handle vertex removal in this case? It can be done via handling
+		removal on vertex owner level. This owner should find the proper edge and disconnect it (or just redirect the notification to all edges). Another
+		way is to disable removing vertes until it has some pairs.</simpara>
+	</sect2>
+	<sect2><title>Use-cases: Vertex being deleted</title>
+	    <sect3><title>Intro</title>
+		<simpara>Current implementation handles the vertex deletion: edge received notification from the vertex and disconnects from it. What should
+		    be the handling in improved implementation? It could be the same, the only difference is that first the notification should go to the
+		    vertex owner and then the owner has to redirect it to the proper edge. Do we actually need to handle vertex deletion? One case that
+		    points to necessity of that is: there are vertexes V1 and V2 containing V1_1 and V2_1 correspondingly, there is edge E1 connecting
+		    V1_1 and V2_1, then V2_1 gets removed, then E1 gets removed - E1 tries to disconnect V2_1 but it is already removed. Seems that the
+		    problem here is mostly in deletion design is not quite polished.</simpara>
+		<simpara>If we implement edge disconnecting on vertex removed (as it is done currently) it will mean that all edges inside the complex
+		    system will be disconnected. It's hard to reason such a behavior. More reasonable would be to keep internal connections as is. 
+		    We could disable deleting vertex when its connection is active. But this also will require the necessity of all edges manual disconnecting
+		    inside the complex system being removed.</simpara>
+		<simpara>Another approach is to not touch connections when delete vertex but improve the behavior of deleted nodes. We need to disable
+		    handling all events by them.</simpara>
+	    </sect3>
+	</sect2>
+    </sect1>
+
     <sect1 id="ds_daa"><title>Distributed asyncronous agents (DAA)</title>
 	<sect2><title>Introduction.</title>
 	    <simpara>Creating of agents in separate execution environment should be supported. Ref TBD for use-case.

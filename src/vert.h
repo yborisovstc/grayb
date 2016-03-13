@@ -22,13 +22,15 @@ class Vert: public Elem, public MVert
 	virtual void *DoGetObj(const char *aName);
 	// From MVert
 	virtual TBool Connect(MVert* aPair);
-	virtual TBool Connect(MEdge* aEdge);
 	virtual void Disconnect(MVert* aPair);
-	virtual void Disconnect(MEdge* aEdge);
-	virtual set<MVert*>& Pairs();
+	virtual TInt PairsCount() const;
+	virtual MVert* GetPair(TInt aInd) const;
+	virtual TBool IsPair(const MVert* aPair) const;
+	//virtual set<MVert*>& Pairs();
 	virtual void *MVert_DoGetObj(const char *aName);
 	// From Elem
 	virtual TBool OnCompChanged(MElem& aComp);
+	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue);
 	virtual void SetRemoved();
 	// Iface cache
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
@@ -36,11 +38,8 @@ class Vert: public Elem, public MVert
 	virtual MIface* Call(const string& aSpec, string& aRes);
 	virtual string Mid() const;
     protected:
-	void Disconnect();
-	void RemoveFromMap(MEdge* aEdge, const TNMKey& aKey);
-    protected:
+	// Cached pairs
 	set<MVert*> iPairs;
-	TEdgesMap iMEdges;
 };
 
 #endif

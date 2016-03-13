@@ -41,7 +41,6 @@ class Edge: public Elem, public MEdge
 	virtual TBool ConnectP2(MVert* aPoint);
 	virtual void Disconnect(MVert* aPoint);
 	virtual void Disconnect();
-	virtual MVert* Pair(const MVert* aPoint);
 	virtual MVert* Point1() const;
 	virtual MVert* Point2() const;
 	virtual MVert* Ref1() const; // Proposed refs point1

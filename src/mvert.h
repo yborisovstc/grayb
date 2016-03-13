@@ -39,10 +39,11 @@ class MVert: public MIface
     public:
 	static const char* Type() { return "MVert";};
 	virtual TBool Connect(MVert* aPair) = 0;
-	virtual TBool Connect(MEdge* aEdge) = 0;
 	virtual void Disconnect(MVert* aPair) = 0;
-	virtual void Disconnect(MEdge* aEdge) = 0;
-	virtual set<MVert*>& Pairs() = 0;
+	virtual TInt PairsCount() const = 0;
+	virtual MVert* GetPair(TInt aInd) const = 0;
+	virtual TBool IsPair(const MVert* aPair) const = 0;
+	//virtual set<MVert*>& Pairs() = 0;
 	virtual void *MVert_DoGetObj(const char *aName) = 0;
 	template <class T> T* GetObj(T* aInst) {return aInst = static_cast<T*>(MVert_DoGetObj(aInst->Type()));};
 	// From MIface

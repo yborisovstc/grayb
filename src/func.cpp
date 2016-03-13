@@ -64,7 +64,7 @@ void FuncBase::NotifyUpdate()
     Elem* eout = GetNodeE("./../../Capsule/out");
     if (eout != NULL) {
 	MVert* mvout = eout->GetObj(mvout);
-	MVert* mpair = *(mvout->Pairs().begin());
+	MVert* mpair = mvout->GetPair(0);
 	if (mpair != NULL) {
 	    Elem* epair = mpair->GetObj(epair);
 	    if (epair != NULL) {
@@ -140,7 +140,7 @@ MDIntGet* AFunInt::GetInp(const string& aInpName)
     Elem* einp = GetNodeE("./../../Capsule/" + aInpName);
     if (einp != NULL) {
 	Vert* vert = einp->GetObj(vert);
-	MVert* pair = *(vert->Pairs().begin());
+	MVert* pair = vert->GetPair(0);
 	if (pair != NULL) {
 	    Elem* epair = pair->GetObj(epair);
 	    if (epair != NULL) {
@@ -236,7 +236,7 @@ TBool AFunIntRes::HandleIoChanged(MElem& aContext, MElem* aCp)
 {
     TBool res = ETrue;
     Vert* vert = aCp->GetObj(vert);
-    MVert* pair = *(vert->Pairs().begin());
+    MVert* pair = vert->GetPair(0);
     if (pair != NULL) {
 	Vert* vpair = pair->GetObj(vpair);
 	if (aCp->Name() == "inp") {
@@ -263,7 +263,7 @@ void AFunIntRes::UpdateOutp()
     Elem* out = GetNodeE("./../../Capsule/out");
     if (out != NULL) {
 	Vert* vert = out->GetObj(vert);
-	MVert* pair = *(vert->Pairs().begin());
+	MVert* pair = vert->GetPair(0);
 	if (pair != NULL) {
 	    Vert* vpair = pair->GetObj(vpair);
 	    MDIntSet* dset = (MDIntSet*) vpair->GetSIfiC(MDIntSet::Type(), this);
@@ -466,7 +466,7 @@ void AFunc::NotifyUpdate()
     Elem* eout = GetNodeE("./../../Capsule/out");
     __ASSERT(eout != NULL);
     MVert* mvout = eout->GetObj(mvout);
-    MVert* mpair = *(mvout->Pairs().begin());
+    MVert* mpair = mvout->GetPair(0);
     if (mpair != NULL) {
 	Elem* epair = mpair->GetObj(epair);
 	if (epair != NULL) {
@@ -961,7 +961,7 @@ void AFuncm::NotifyUpdate()
     Elem* eout = GetNodeE("./../../Capsule/out");
     if (eout != NULL) {
 	MVert* mvout = eout->GetObj(mvout);
-	MVert* mpair = *(mvout->Pairs().begin());
+	MVert* mpair = mvout->GetPair(0);
 	if (mpair != NULL) {
 	    Elem* epair = mpair->GetObj(epair);
 	    if (epair != NULL) {

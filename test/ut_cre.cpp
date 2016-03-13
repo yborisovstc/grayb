@@ -106,7 +106,7 @@ void Ut_cre::test_CreGr()
     CPPUNIT_ASSERT_MESSAGE("Fail to get v1", v1 != 0);
     MVert* mv1 = v1->GetObj(mv1);
     CPPUNIT_ASSERT_MESSAGE("Fail to get mv1", mv1 != 0);
-    MVert* pair = *(mv1->Pairs().begin());
+    MVert* pair = mv1->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
     MElem* epair = pair->GetObj(epair);
     const string pname = epair->Name();
@@ -130,7 +130,7 @@ void Ut_cre::test_CreSyst()
     CPPUNIT_ASSERT_MESSAGE("Fail to get cp1", cp1 != 0);
     MVert* mcp1 = cp1->GetObj(mcp1);
     CPPUNIT_ASSERT_MESSAGE("Fail to get mcp1", mcp1 != 0);
-    MVert* pair = *(mcp1->Pairs().begin());
+    MVert* pair = mcp1->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
     MElem* epair = pair->GetObj(epair);
     const string pname = epair->Name();
@@ -156,7 +156,7 @@ void Ut_cre::test_CreIncaps()
     CPPUNIT_ASSERT_MESSAGE("Fail to get ep1", ep1 != 0);
     MVert* mep1 = ep1->GetObj(mep1);
     CPPUNIT_ASSERT_MESSAGE("Fail to get mep1", mep1 != 0);
-    MVert* pair = *(mep1->Pairs().begin());
+    MVert* pair = mep1->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
     MElem* epairt = root->GetNode("./test/(Incaps:)Ics2/Capsule/ep");
     MVert* mpairt = epairt->GetObj(mpairt);
@@ -186,7 +186,7 @@ void Ut_cre::test_CreData()
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 34);
     MVert* mdoutpv = doutp->GetObj(mdoutpv);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out vertex", mdoutpv != 0);
-    MVert* pair = *(mdoutpv->Pairs().begin());
+    MVert* pair = mdoutpv->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
     MElem* efuninp = root->GetNode("./test/Incr/Capsule/inp");
     CPPUNIT_ASSERT_MESSAGE("Fail to get fun inp", efuninp != NULL);
