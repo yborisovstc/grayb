@@ -62,7 +62,7 @@ void GLogRec::WriteFormat(const char* aFmt,...)
     va_end(list);
 }
 
-void GLogRec::Write(TLogRecCtg aCtg, const Elem* aNode, const char* aFmt,...)
+void GLogRec::Write(TLogRecCtg aCtg, const MElem* aNode, const char* aFmt,...)
 {
     char buf1[KLogRecBufSize] = "";
     stringstream ss;
@@ -95,7 +95,7 @@ void GLogRec::Write(TLogRecCtg aCtg, const Elem* aNode, const char* aFmt,...)
     va_end(list);
 }
 
-void GLogRec::Write(TLogRecCtg aCtg, Elem* aNode, const ChromoNode& aMut, const char* aFmt,...)
+void GLogRec::Write(TLogRecCtg aCtg, MElem* aNode, const ChromoNode& aMut, const char* aFmt,...)
 {
     char buf1[KLogRecBufSize] = "";
     stringstream ss;

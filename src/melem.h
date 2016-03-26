@@ -14,6 +14,12 @@ class MElem;
 class RqContext;
 class Rank;
 
+class TICacheRCtx: public vector<Base*>
+{
+    public:
+	TICacheRCtx();
+	TICacheRCtx(const RqContext* aCtx);
+};
 
 class MCompsObserver
 {
@@ -194,6 +200,7 @@ class MElem : public Base, public MMutable, public MOwner, public MParent, publi
 	class EIfu: public Ifu {
 	    public:
 		EIfu();
+		static void FromCtx(const TICacheRCtx& aCtx, string& aRes);
 	};
 	// Interface methods utility
 	static EIfu mIfu;

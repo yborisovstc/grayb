@@ -14,6 +14,7 @@ using namespace std;
 class Base;
 
 // Request connext
+// TODO [YB] To consider migration to TICacheRCtx
 class RqContext
 {
     public:

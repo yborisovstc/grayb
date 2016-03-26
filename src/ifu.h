@@ -21,12 +21,14 @@ class Ifu
 	static string FromBool(TBool aBool);
 	static TInt ToInt(const string& aString);
 	static string FromInt(TInt aInt);
+	static void ToStringArray(const string& aString, vector<string>& aRes);
 	void RegMethod(const string& aName, TInt aArgsNum);
 	TBool CheckMname(const string& aName) const;
 	TBool CheckMpars(const string& aName, TInt aArgsNum) const;
     public:
 	static string KRinvSep;
 	static char KRinvEscape;
+	static string KArraySep;
     protected:
 	// Methods parameters
 	map<string, TInt> mMpars;

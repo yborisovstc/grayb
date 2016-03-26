@@ -5,6 +5,7 @@
 #include "mvert.h"
 #include "mchromo.h"
 #include "mprop.h"
+#include <stdexcept> 
 
 // Caplule
 
@@ -45,6 +46,17 @@ TBool ACapsule::OnCompChanged(MElem& aComp)
 
 // Base of ConnPoint reimplement obj provider iface to redirect the request to the hier mgr
 
+MCompatChecker::EIfu MCompatChecker::mIfu;
+
+// Ifu static initialisation
+MCompatChecker::EIfu::EIfu()
+{
+    RegMethod("IsCompatible", 2);
+    RegMethod("GetExtd", 0);
+    RegMethod("GetDir", 0);
+}
+
+
 string ConnPointBase::PEType()
 {
     return Vert::PEType() + GUri::KParentSep + Type();
@@ -81,8 +93,8 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
     TIfRange rr;
     TBool resg = EFalse;
     RqContext ctx(this, aCtx);
-    TICacheRCtx rctx;
-    ToCacheRCtx(aCtx, rctx);
+    TICacheRCtx rctx(aCtx);
+    //ToCacheRCtx(aCtx, rctx);
     Base* rqstr = aCtx != NULL ? aCtx->Requestor() : NULL;
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
@@ -98,15 +110,15 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
     else {
 	// Redirect to pairs if iface requiested is provided by this CP
-	Elem* eprov = ToElem(GetNode("./(Prop:)Provided"));
-	Elem* ereq = ToElem(GetNode("./(Prop:)Required"));
+	MElem* eprov = GetNode("./(Prop:)Provided");
+	MElem* ereq = GetNode("./(Prop:)Required");
 	if (eprov != NULL) {
 	    MProp* prov = eprov->GetObj(prov);
 	    if (prov != NULL && prov->Value() == aName) {
 		// Requested provided iface - cannot be obtain via pairs - redirect to host
 		if (iMan != NULL && !ctx.IsInContext(iMan)) {
 		    // TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
-		    Elem* mgr = ToElem(iMan->Name() == "Capsule" ? iMan->GetMan() : iMan);
+		    MElem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
 		    rr = mgr->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, mgr, rr);
 		    resg = ETrue;
@@ -117,7 +129,7 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    MProp* req = ereq->GetObj(req);
 	    if (req != NULL && req->Value() == aName) {
 		for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
-		    Elem* pe = (*it)->GetObj(pe);
+		    MElem* pe = (*it)->GetObj(pe);
 		    if (!ctx.IsInContext(pe)) {
 			rr = pe->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, pe, rr);
@@ -125,7 +137,7 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 		}
 		// Responsible pairs not found, redirect to upper layer
 		if ((rr.first == rr.second) && iMan != NULL && !ctx.IsInContext(iMan)) {
-		    Elem* mgr = ToElem(iMan->Name() == "Capsule" ? iMan->GetMan() : iMan);
+		    MElem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
 		    rr = mgr->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, mgr, rr);
 		}
@@ -144,17 +156,17 @@ TBool ConnPointBase::IsCompatible(MElem* aPair, TBool aExt)
     MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type(), this);
     // Consider all pairs not supporting MCompatChecker as not compatible 
     if (pchkr != NULL) {
-	Elem* ecp = pchkr->GetExtd(); 
+	MElem* ecp = pchkr->GetExtd(); 
 	if (ecp != NULL ) {
 	    ext = !ext;
 	    cp = ecp;
 	}
 	if (cp != NULL) {
 	    // Check roles conformance
-	    Elem* ept1prov = ToElem(GetNode("./(Prop:)Provided"));
-	    Elem* ept2req = ToElem(cp->GetNode("./(Prop:)Required"));
-	    Elem* ept2prov = ToElem(cp->GetNode("./(Prop:)Provided"));
-	    Elem* ept1req = GetNodeE("./(Prop:)Required");
+	    MElem* ept1prov = GetNode("./(Prop:)Provided");
+	    MElem* ept2req = cp->GetNode("./(Prop:)Required");
+	    MElem* ept2prov = cp->GetNode("./(Prop:)Provided");
+	    MElem* ept1req = GetNode("./(Prop:)Required");
 	    if (ept1prov && ept2req && ept2prov && ept1req) {
 		// Point#1 provided
 		MProp* ppt1prov = ept1prov->GetObj(ppt1prov);
@@ -179,7 +191,7 @@ TBool ConnPointBase::IsCompatible(MElem* aPair, TBool aExt)
     return res;
 }
 
-Elem* ConnPointBase::GetExtd()
+MElem* ConnPointBase::GetExtd()
 {
     return NULL;
 }
@@ -188,6 +200,43 @@ MCompatChecker::TDir ConnPointBase::GetDir() const
 {
     return ERegular;
 }
+
+MIface* ConnPointBase::MCompatChecker_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MCompatChecker::mIfu.CheckMname(name);
+    if (!name_ok) 
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MCompatChecker::mIfu.CheckMpars(name, args.size());
+    if (!args_ok) 
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "GetDir") {
+	TInt rr = GetDir();
+	aRes = Ifu::FromInt(rr);
+    } else if (name == "GetExtd") {
+	res = GetExtd();
+    } else if (name == "IsCompatible") {
+	MElem* pair = GetNode(args.at(0), ETrue);
+	if (pair == NULL) {
+	    throw (runtime_error("Cannot find pair: " + args.at(0)));
+	}
+	TBool ext = Ifu::ToBool(args.at(1));
+	TBool rr = IsCompatible(pair, ext);
+	aRes = Ifu::FromBool(rr);
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string ConnPointBase::MCompatChecker_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
 
 
 // Input ConnPoint base
@@ -292,8 +341,8 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
     TIfRange rr;
     RqContext ctx(this, aCtx);
     MElem* host = iMan->GetMan();
-    TICacheRCtx rctx;
-    ToCacheRCtx(aCtx, rctx);
+    TICacheRCtx rctx(aCtx);
+    //ToCacheRCtx(aCtx, rctx);
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
     }
@@ -353,7 +402,7 @@ TBool ExtenderAgent::IsCompatible(MElem* aPair, TBool aExt)
     return res;
 }
 
-Elem* ExtenderAgent::GetExtd()
+MElem* ExtenderAgent::GetExtd()
 {
     return GetNodeE("./../../Int");
 }
@@ -362,6 +411,18 @@ MCompatChecker::TDir ExtenderAgent::GetDir() const
 {
     return ERegular;
 }
+
+MIface* ExtenderAgent::Call(const string& aSpec, string& aRes)
+{
+    __ASSERT(EFalse);
+    return  NULL;
+}
+
+string ExtenderAgent::Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
 
 
 // Input Extender Agent
@@ -470,8 +531,8 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
     TIfRange rr;
     TBool resok = EFalse;
     RqContext ctx(this, aCtx);
-    TICacheRCtx rctx;
-    ToCacheRCtx(aCtx, rctx);
+    TICacheRCtx rctx(aCtx);
+    //ToCacheRCtx(aCtx, rctx);
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
     }
@@ -521,7 +582,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 			apair = NULL;
 			if (cp->IsCompatible(host, isextd)) {
 			    isextd ^= ETrue;
-			    Elem* extd = cp->GetExtd();
+			    MElem* extd = cp->GetExtd();
 			    if (extd != host) {
 				apair = extd != NULL ? extd : ctxe;
 			    }
@@ -638,7 +699,7 @@ TBool ASocket::IsCompatible(MElem* aPair, TBool aExt)
     // Requesing anonymously because can be returned to itself vie extender
     MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type());
     if (pchkr != NULL) {
-	Elem* ecp = pchkr->GetExtd(); 
+	MElem* ecp = pchkr->GetExtd(); 
 	// Checking if the pair is Extender
 	if (ecp != NULL ) {
 	    ext = !ext;
@@ -672,7 +733,7 @@ TBool ASocket::IsCompatible(MElem* aPair, TBool aExt)
     return res;
 }
 
-Elem* ASocket::GetExtd()
+MElem* ASocket::GetExtd()
 {
     return NULL;
 }
@@ -695,6 +756,17 @@ Elem* ASocket::GetPin(const RqContext* aCtx)
 MCompatChecker::TDir ASocket::GetDir() const
 {
     return ERegular;
+}
+
+MIface* ASocket::Call(const string& aSpec, string& aRes)
+{
+    __ASSERT(EFalse);
+    return  NULL;
+}
+
+string ASocket::Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
 }
 
 
@@ -796,10 +868,10 @@ void *Syst::DoGetObj(const char *aName)
 
 void Syst::OnCompDeleting(MElem& aComp, TBool aSoft)
 {
-    Elem* eedge = ToElem(GetCompOwning("Edge", &aComp));
+    MElem* eedge = GetCompOwning("Edge", &aComp);
     if (eedge != NULL) {
 	// Reconnect the edge
-	Edge* edge = eedge->GetObj(edge);
+	MEdge* edge = eedge->GetObj(edge);
 	// TODO [YB] For comp hard removing the edge destructor called first then the notif issued
 	// So iface reolver doesn't work. To consider some solution.
 	if (edge != NULL) {
@@ -810,7 +882,7 @@ void Syst::OnCompDeleting(MElem& aComp, TBool aSoft)
 }
 
 
-TBool Syst::IsPtOk(Elem* aPt) {
+TBool Syst::IsPtOk(MElem* aPt) {
     return ETrue;
 }
 
@@ -827,8 +899,8 @@ TBool Syst::OnCompChanged(MElem& aComp)
 	MVert* cp1 = edge->Point1();
 	MVert* cp2 = edge->Point2();
 	if (cp1 != ref1 || cp2 != ref2) {
-	    Elem* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
-	    Elem* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
+	    MElem* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
+	    MElem* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
 	    TBool isptok1 = (ref1 == NULL || IsPtOk(pt1));
 	    TBool isptok2 = (ref2 == NULL || IsPtOk(pt2));
 	    if (isptok1 && isptok2) {
@@ -848,15 +920,15 @@ TBool Syst::OnCompChanged(MElem& aComp)
 			if (cp1 == NULL) res = edge->ConnectP1(ref1);
 			if (res && cp2 == NULL) res = edge->ConnectP2(ref2);
 			if (!res) {
-			    Elem* host = ToElem(iMan->GetMan());
-			    Logger()->Write(MLogRec::EErr, ToElem(&aComp), "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
+			    MElem* host = iMan->GetMan();
+			    Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
 			}
 		    }
 		    else {
 			TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
 			TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
-			Elem* host = this;
-			Logger()->Write(MLogRec::EErr, ToElem(&aComp), "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
+			MElem* host = this;
+			Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
 		    }
 
 		} else {
@@ -865,9 +937,9 @@ TBool Syst::OnCompChanged(MElem& aComp)
 		    else if (cp2 == NULL && ref2 != NULL) edge->ConnectP2(ref2);
 		}
 	    } else {
-		Elem* pt = isptok1 ? pt2 : pt1;
-		Elem* host = this;
-		Logger()->Write(MLogRec::EErr, ToElem(&aComp), "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
+		MElem* pt = isptok1 ? pt2 : pt1;
+		MElem* host = this;
+		Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
 	    }
 	}
     }

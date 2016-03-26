@@ -41,13 +41,52 @@ MElem::EIfu::EIfu()
     RegMethod("RegisterChild", 1);
     RegMethod("GetUri", 0);
     RegMethod("DoGetObj", 1);
+    RegMethod("GetIfi", 2);
+    RegMethod("GetIfind", 3);
+    RegMethod("GetSIfi", 2);
 }
+
+void MElem::EIfu::FromCtx(const TICacheRCtx& aCtx, string& aRes)
+{
+    for (TICacheRCtx::const_iterator it = aCtx.begin(); it != aCtx.end(); it++) {
+	Base* rq = *it;
+	if (rq != NULL) {
+	    MElem* re = rq->GetObj(re);
+	    if (it == aCtx.begin()) {
+		aRes += KArraySep;
+	    }
+	    string uri = re->GetUri(NULL, ETrue);
+	    aRes += uri;
+	}
+    }
+}
+
+TICacheRCtx::TICacheRCtx(): vector<Base*>() {}
+
+TICacheRCtx::TICacheRCtx(const RqContext* aCtx)
+{
+    TICacheRCtx res;
+    const RqContext* cct(aCtx);
+    while (cct != NULL) {
+	Base* rq = cct->Requestor();
+	res.push_back(rq);
+	cct = cct->Ctx();
+    }
+    TInt size = res.size();
+    reserve(size);
+    for (TICacheRCtx::const_reverse_iterator it = res.rbegin(); it != res.rend(); it++) {
+	Base* rr = *it;
+	push_back(rr);
+    }
+}
+
 
 string Elem::PEType()
 {
     return string() + GUri::KParentSep + Elem::Type();
 }
 
+/*
 void Elem::ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct) 
 {
     TICacheRCtx res;
@@ -64,6 +103,7 @@ void Elem::ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct)
 	aCct.push_back(rr);
     }
 }
+*/
 
 Elem::IfIter::IfIter(Elem* aHost, const string& aIName, const TICacheRCtx& aReq, TBool aToEnd): iHost(aHost), iIName(aIName), iReq(aReq) 
 {
@@ -506,7 +546,6 @@ void *Elem::DoGetObj(const char *aName)
 Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
 {
     // Get from cache first
-    TICacheRCtx req;
     // Add NULL to context in case of anonymous context
     // This is required to avoid problem with If relations invalidating
     // The matter is that the initial requestor doesnt cache relation into its cache
@@ -515,7 +554,8 @@ Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
     // To avoid this inconsistance we need to explicitly register even anonymous requestor
     RqContext newctx(NULL);
     const RqContext* ctx(aCtx == NULL ? &newctx: aCtx);
-    ToCacheRCtx(ctx, req);
+    TICacheRCtx req(ctx);
+    //ToCacheRCtx(ctx, req);
     IfIter beg(this, aName, req);
     IfIter end(this, aName, req, ETrue);
     if (beg == end) {
@@ -703,8 +743,8 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
 
 void Elem::InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv, void* aVal)
 {
-    TICacheRCtx req;
-    ToCacheRCtx(aCtx, req);
+    TICacheRCtx req(aCtx);
+    //ToCacheRCtx(aCtx, req);
     InsertIfCache(aName, req, aProv, aVal);
 }
 
@@ -721,8 +761,8 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
 
 void Elem::InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv, TIfRange aRg)
 {
-    TICacheRCtx req;
-    ToCacheRCtx(aCtx, req);
+    TICacheRCtx req(aCtx);
+    //ToCacheRCtx(aCtx, req);
     InsertIfCache(aName, req, aProv, aRg);
 }
 
@@ -1294,8 +1334,7 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafet
     TBool mutadded = EFalse;
     if (node != NULL) {
 	if (node != this && (epheno || node->GetAowner() == this  || IsDirectInheritedComp(node))) {
-	    Elem* enode = ToElem(node);
-	    TBool res = enode->ChangeAttr(GUri::NodeAttr(mattrs), mval);
+	    TBool res = node->ChangeAttr(GUri::NodeAttr(mattrs), mval);
 	    if (!res) {
 		Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - failure", snode.c_str());
 	    }
@@ -1446,9 +1485,8 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
        */
     //Logger()->Write(MLogRec::EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
     MElem* elem = NULL;
-    MElem* mnode = snode.empty() ? this: GetNode(snode); 
-    if (mnode != NULL) {
-	Elem* node = ToElem(mnode);
+    MElem* node = snode.empty() ? this: GetNode(snode); 
+    if (node != NULL) {
 	// Obtain parent first
 	MElem *parent = NULL;
 	// Check if the parent is specified
@@ -1463,7 +1501,7 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 		    // Probably external node not imported yet - ask env for resolving uri
 		    GUri pruri(prnturi);
 		    MImportMgr* impmgr = iEnv->ImpsMgr();
-		    parent = ToElem(impmgr->OnUriNotResolved(this, pruri));
+		    parent = impmgr->OnUriNotResolved(this, pruri);
 		}
 		ext_parent = EFalse;
 	    }
@@ -1606,7 +1644,7 @@ MElem* Elem::CreateHeir(const string& aName, MElem* aMan)
     MElem* heir = NULL;
     //Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p1 ");
     if (IsProvided()) {
-	heir = Provider()->CreateNode(Name(), aName, ToElem(aMan), iEnv);
+	heir = Provider()->CreateNode(Name(), aName, aMan, iEnv);
     } else {
 	__ASSERT(iParent != NULL);
 	if (iParent->IsProvided()) {
@@ -3123,8 +3161,81 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	aRes = GetUri(NULL, ETrue);
     } else if (name == "DoGetObj") {
 	res = (MIface*) DoGetObj(args.at(0).c_str());
+    } else if (name == "GetIfi") {
+	string name = args.at(0);
+	vector<string> ctxe;
+	if (!args.at(1).empty()) {
+	    Ifu::ToStringArray(args.at(1), ctxe);
+	}
+	RqContext* ctx(NULL);
+	for (vector<string>::iterator it = ctxe.begin(); it != ctxe.end(); it++) {
+	    string suri = *it;
+	    MElem* elem = GetNode(suri);
+	}
+	TIfRange rg = GetIfi(name, ctx);
+	res = NULL;
+	TInt isize = IfRangeSize(rg);
+	aRes = Ifu::FromInt(isize);
+	/*
+	if (rg.first != rg.second) {
+	    res = (MIface*) *(rg.first);
+	}
+	*/
+    } else if (name == "GetIfind") {
+	string name = args.at(0);
+	vector<string> ctxe;
+	if (!args.at(1).empty()) {
+	    Ifu::ToStringArray(args.at(1), ctxe);
+	}
+	RqContext* ctx(NULL);
+	for (vector<string>::iterator it = ctxe.begin(); it != ctxe.end(); it++) {
+	    string suri = *it;
+	    MElem* elem = GetNode(suri);
+	}
+	TIfRange rg = GetIfi(name, ctx);
+	TInt ind = Ifu::ToInt(args.at(2));
+	res = (MIface*) GetIfind(rg, ind);
+    } else if (name == "GetSIfi") {
+	string name = args.at(0);
+	vector<string> ctxe;
+	if (!args.at(1).empty()) {
+	    Ifu::ToStringArray(args.at(1), ctxe);
+	}
+	RqContext* ctx(NULL);
+	for (vector<string>::iterator it = ctxe.begin(); it != ctxe.end(); it++) {
+	    string suri = *it;
+	    MElem* elem = GetNode(suri);
+	}
+	TIfRange rg = GetIfi(name, ctx);
+	TInt isize = IfRangeSize(rg);
+	if (isize == 1) {
+	    res = (MIface*) *(rg.first);
+	}
     } else {
 	throw (runtime_error("Unhandled method: " + name));
+    }
+    return res;
+}
+
+TInt Elem::IfRangeSize(const TIfRange& aRange) const
+{
+    TInt res = 0;
+    for (TIfIter it = aRange.first; it != aRange.second; it++, res++);
+    return res;
+}
+
+void* Elem::GetIfind(TIfRange& aRange, TInt aInd)
+{
+    void* res = NULL;
+    TIfIter it = aRange.first;
+    for (; it != aRange.second && aInd >= 0; it++, aInd--) {
+	if (aInd == 0)  {
+	    res = *it;
+	    break;
+	}
+    }
+    if (aInd != 0)  {
+	__ASSERT(EFalse);
     }
     return res;
 }

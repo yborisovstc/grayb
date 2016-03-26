@@ -16,8 +16,8 @@ class GLogRec: public Base, public MLogRec
 	virtual void *DoGetObj(const char *aName);
 	// From MLogRec
 	virtual void WriteFormat(const char* aFmt,...);
-	virtual void Write(TLogRecCtg aCtg, const Elem* aNode, const char* aFmt,...);
-	virtual void Write(TLogRecCtg aCtg, Elem* aNode, const ChromoNode& aMut, const char* aFmt,...);
+	virtual void Write(TLogRecCtg aCtg, const MElem* aNode, const char* aFmt,...);
+	virtual void Write(TLogRecCtg aCtg, MElem* aNode, const ChromoNode& aMut, const char* aFmt,...);
 	virtual void Flush();
 	virtual void SetContextMutId(TInt aMutId = -1);
 	virtual TBool AddLogObserver(MLogObserver* aObs);

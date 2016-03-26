@@ -5,8 +5,17 @@
 #include "mprop.h"
 #include "elem.h"
 
+class MProp_Imd: public MProp
+{
+    virtual MIface* MProp_Call(const string& aSpec, string& aRes) = 0;
+    virtual string MProp_Mid() const = 0;
+    // From MIface
+    virtual MIface* Call(const string& aSpec, string& aRes) { return MProp_Call(aSpec, aRes);};
+    virtual string Mid() const { return MProp_Mid();};
+};
+
 // Property
-class Prop: public Elem, public MProp
+class Prop: public Elem, public MProp_Imd
 {
     public:
 	static const char* Type() { return "Prop";};
@@ -22,6 +31,9 @@ class Prop: public Elem, public MProp
 	virtual void GetCont(string& aCont, const string& aName=string()); 
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName = string()); 
 	virtual TBool IsContChangeable(const string& aName = string()) const; 
+	// From MProp_Imd
+	virtual MIface* MProp_Call(const string& aSpec, string& aRes);
+	virtual string MProp_Mid() const;
     protected:
 	string iValue;
 };

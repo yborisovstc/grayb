@@ -32,7 +32,7 @@ class Elem: public MElem
 
     public:
 	// Request context
-	typedef vector<Base*> TICacheRCtx;
+	//typedef vector<Base*> TICacheRCtx;
 	// Iface cache key first part: [iface name, requestor]
 	typedef pair<string, TICacheRCtx> TICacheKeyF;
 	// Iface cache key: [[iface name, requestor], provider]
@@ -160,7 +160,7 @@ class Elem: public MElem
 	virtual ChromoNode AppendMutation(const ChromoNode& aMuta);
 	virtual TBool AppendMutation(const string& aFileName);
 	string PName() const;
-	static void ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct);
+	//static void ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct);
     public:
 	virtual MElem* CreateHeir(const string& aName, MElem* aMan);
 	virtual auto_ptr<MChromo> GetFullChromo() const;
@@ -205,6 +205,8 @@ class Elem: public MElem
 	virtual void* GetSIfi(const string& aName, const RqContext* aCtx = NULL);
 	virtual void* GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert = ETrue);
 	virtual TIfRange GetIfi(const string& aName, const RqContext* aCtx = NULL);
+	TInt IfRangeSize(const TIfRange& aRange) const;
+	void* GetIfind(TIfRange& aRange, TInt aInd);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MElem

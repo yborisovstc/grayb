@@ -74,8 +74,8 @@ void Vert::UpdateIfi(const string& aName, const RqContext* aCtx)
     void* res = NULL;
     TIfRange rr;
     RqContext ctx(this, aCtx);
-    TICacheRCtx rctx;
-    ToCacheRCtx(aCtx, rctx);
+    TICacheRCtx rctx(aCtx);
+    //ToCacheRCtx(aCtx, rctx);
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
     }
@@ -93,7 +93,7 @@ void Vert::UpdateIfi(const string& aName, const RqContext* aCtx)
 	MElem* agents = GetComp("Elem", "Agents");
 	if (agents != NULL) {
 	    for (vector<MElem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && res == NULL; it++) {
-		Elem* eit = ToElem(*it);
+		MElem* eit = *it;
 		if (!ctx.IsInContext(eit)) {
 		    rr = eit->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, eit, rr);
@@ -211,7 +211,7 @@ TBool Vert::OnCompChanged(MElem& aComp)
 	    if (!res) {
 		MElem* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
 		MElem* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
-		Logger()->Write(MLogRec::EErr, ToElem(&aComp), "Connecting [%s - %s] failed", pt1->GetUri().c_str(), pt2->GetUri().c_str());
+		Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri().c_str(), pt2->GetUri().c_str());
 	    }
 	}
     }

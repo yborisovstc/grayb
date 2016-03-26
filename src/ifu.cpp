@@ -6,6 +6,7 @@
 
 string Ifu::KRinvSep = ",";
 char Ifu::KRinvEscape = '\\';
+string Ifu::KArraySep = ";";
 
 Ifu::Ifu()
 {
@@ -105,4 +106,21 @@ TBool Ifu::CheckMname(const string& aName) const
 {
     TBool res = mMpars.count(aName) > 0;
     return res;
+}
+
+void Ifu::ToStringArray(const string& aString, vector<string>& aRes)
+{
+    size_t end = 0;
+    size_t beg = end + 1;
+    do {
+	beg = end + 1;
+	size_t mid = beg;
+	// Find first non-escaped separator
+	do {
+	    end = aString.find_first_of(KArraySep, mid); 
+	    mid = end + 1;
+	} while (end != string::npos && aString.at(end - 1) == KRinvEscape);
+	string elem = aString.substr(beg, (end == string::npos) ? string::npos : end - beg);
+	aRes.push_back(elem);
+    } while (end != string::npos);
 }

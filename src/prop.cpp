@@ -1,4 +1,14 @@
 #include "prop.h"
+#include <stdexcept> 
+
+MProp::EIfu MProp::mIfu;
+
+// Ifu static initialisation
+MProp::EIfu::EIfu()
+{
+    RegMethod("Value", 0);
+}
+
 
 
 string Prop::PEType()
@@ -59,6 +69,30 @@ void Prop::GetCont(string& aCont, const string& aName)
     aCont = iValue;
 }
 
+MIface* Prop::MProp_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MProp::mIfu.CheckMname(name);
+    if (!name_ok) 
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MProp::mIfu.CheckMpars(name, args.size());
+    if (!args_ok) 
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "Value") {
+	aRes = Value();
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string Prop::MProp_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
 
 
 string Description::PEType()

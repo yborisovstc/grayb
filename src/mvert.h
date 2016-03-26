@@ -10,13 +10,12 @@ using namespace std;
 
 class Base;
 class MEdge;
-class Elem;
 
 // TODO [YB] To we need compat checker. Isn't is better to include this to MVert?
 // TODO [YB] To reconsider mechanism of compat checking. Current ony is ugly
 // Compatibility checker. Behaves both as checking and checked parts.
 // TODO [YB] It is iface of Connectable actually, to rename
-class MCompatChecker
+class MCompatChecker: public MIface
 {
     public:
 	enum TDir { ERegular, EInp, EOut };
@@ -26,11 +25,20 @@ class MCompatChecker
 	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse) = 0;
 	// Checked
 	// In case if checked is extender, to get extended part
-	virtual Elem* GetExtd() = 0;
+	virtual MElem* GetExtd() = 0;
 	// Direction
 	virtual TDir GetDir() const = 0;
 	// Getting associated point
 //	virtual vector<Elem*> GetAssoc(RqContext* aCtx) = 0;
+	// From MIface
+	virtual string Uid() const { return Mid() + "%" + Type();};
+    protected:
+	class EIfu: public Ifu {
+	    public:
+		EIfu();
+	};
+	// Interface methods utility
+	static EIfu mIfu;
 };
 
 // Graph vertex interface

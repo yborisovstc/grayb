@@ -1,7 +1,6 @@
 #ifndef __GRAYB_SYST_H
 #define __GRAYB_SYST_H
 
-#include "mconn.h"
 #include "vert.h"
 
 // Caplule
@@ -18,9 +17,17 @@ class ACapsule: public Elem
 	virtual TBool OnCompChanged(MElem& aComp);
 };
 
+class MCompatChecker_Imd: public MCompatChecker
+{
+    virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes) = 0;
+    virtual string MCompatChecker_Mid() const = 0;
+    // From MIface
+    virtual MIface* Call(const string& aSpec, string& aRes) { return MCompatChecker_Call(aSpec, aRes);};
+    virtual string Mid() const { return MCompatChecker_Mid();};
+};
 
 // Base of ConnPoint reimplement obj provider iface to redirect the request to the hier mgr
-class ConnPointBase: public Vert, public MCompatChecker
+class ConnPointBase: public Vert, public MCompatChecker_Imd
 {
     public:
 	static const char* Type() { return "ConnPointBase";};
@@ -33,9 +40,14 @@ class ConnPointBase: public Vert, public MCompatChecker
 	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
 	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
-	virtual Elem* GetExtd();
+	virtual MElem* GetExtd();
 	virtual TDir GetDir() const;
 //	virtual Elem* GetAssoc(RqContext* aCtx);
+	// From MCompatChecker MIface
+	virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes);
+	virtual string MCompatChecker_Mid() const;
+	//virtual MIface* Call(const string& aSpec, string& aRes);
+	//virtual string Mid() const;
 };
 
 // Input ConnPoint base
@@ -78,10 +90,13 @@ class ExtenderAgent: public Elem, public MCompatChecker
 	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
 	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
-	virtual Elem* GetExtd();
+	virtual MElem* GetExtd();
 	virtual TDir GetDir() const;
 	// From Elem
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
+	// From MIface
+	virtual MIface* Call(const string& aSpec, string& aRes);
+	virtual string Mid() const;
 };
 
 // Input Extender agent
@@ -123,10 +138,13 @@ class ASocket: public Elem, public MCompatChecker
 	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
 	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
-	virtual Elem* GetExtd();
+	virtual MElem* GetExtd();
 	virtual TDir GetDir() const;
 	// From Elem
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
+	// From MIface
+	virtual MIface* Call(const string& aSpec, string& aRes);
+	virtual string Mid() const;
 };
 
 // Input Socket agent
@@ -167,7 +185,7 @@ class Syst: public Vert
 	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue);
 	virtual TBool OnCompChanged(MElem& aComp);
     protected:
-	TBool IsPtOk(Elem* aPt);
+	TBool IsPtOk(MElem* aPt);
 };
 
 #endif
