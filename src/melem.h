@@ -110,6 +110,8 @@ class MIfProv
 	virtual void* GetSIfi(const string& aName, const RqContext* aCtx = NULL) = 0;
 	virtual void* GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert = ETrue) = 0;
 	virtual TIfRange GetIfi(const string& aName, const RqContext* aCtx = NULL) = 0;
+	virtual void UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx) = 0;
+	virtual void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MElem* aProv, TBool aInv = EFalse) = 0;
 };
 
 // Agent - comps observer
@@ -122,7 +124,9 @@ class MACompsObserver
 
 // Composite interface of Element (node) of native graph hierarchy
 // TODO [YB] Do we need MComp also ?
-class MElem : public Base, public MMutable, public MOwner, public MParent, public MChild, public MIfProv, public MIface
+// Please note that MIface should be on 1-st position. This is required in order to trivial cast to MIface from DoGetObj result
+// TODO [YB] actually this is a hack, to re-design (probably MIface needs methos GetIface to use instead DoGetObj)
+class MElem : public MIface, public Base, public MMutable, public MOwner, public MParent, public MChild, public MIfProv
 {
     friend class Elem;
     friend class ImportsMgr;
@@ -201,6 +205,7 @@ class MElem : public Base, public MMutable, public MOwner, public MParent, publi
 	    public:
 		EIfu();
 		static void FromCtx(const TICacheRCtx& aCtx, string& aRes);
+		static void ToCtx(MElem* aHost, const string& aStr, TICacheRCtx& aCtx);
 	};
 	// Interface methods utility
 	static EIfu mIfu;

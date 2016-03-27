@@ -278,8 +278,8 @@ class Elem: public MElem
 	// Ifaces cache
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
 	void RmIfCache(IfIter& aIt);
-	void UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx);
-	void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, Elem* aProv, TBool aInv = EFalse);
+	virtual void UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx);
+	virtual void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MElem* aProv, TBool aInv = EFalse);
 	void InvalidateIfCache();
 	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, void* aVal);
 	void InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv, void* aVal);

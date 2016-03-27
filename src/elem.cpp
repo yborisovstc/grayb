@@ -44,6 +44,8 @@ MElem::EIfu::EIfu()
     RegMethod("GetIfi", 2);
     RegMethod("GetIfind", 3);
     RegMethod("GetSIfi", 2);
+    RegMethod("UnregIfReq", 2);
+    RegMethod("UnregIfProv", 4);
 }
 
 void MElem::EIfu::FromCtx(const TICacheRCtx& aCtx, string& aRes)
@@ -60,6 +62,26 @@ void MElem::EIfu::FromCtx(const TICacheRCtx& aCtx, string& aRes)
 	}
     }
 }
+
+void MElem::EIfu::ToCtx(MElem* aHost, const string& aString, TICacheRCtx& aCtx)
+{
+    size_t end = 0;
+    size_t beg = end + 1;
+    do {
+	beg = end + 1;
+	size_t mid = beg;
+	// Find first non-escaped separator
+	do {
+	    end = aString.find_first_of(KArraySep, mid); 
+	    mid = end + 1;
+	} while (end != string::npos && aString.at(end - 1) == KRinvEscape);
+	string elem = aString.substr(beg, (end == string::npos) ? string::npos : end - beg);
+	MElem* rq = aHost->GetNode(elem);
+	aCtx.push_back(rq);
+    } while (end != string::npos);
+}
+
+
 
 TICacheRCtx::TICacheRCtx(): vector<Base*>() {}
 
@@ -538,7 +560,8 @@ void *Elem::DoGetObj(const char *aName)
 	MIface* mei = (MIface*) me;
 	MElem* mev = (MElem*) vv;
 	MIface* meiv = (MIface*) vv;
-	res = (MElem*) this;
+	res = mei;
+	//res = (MElem*) this;
     }
     return res;
 }
@@ -617,7 +640,7 @@ void Elem::UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx)
     for (TICacheQFIter it = rg.first; it != rg.second; it++) {
 	// Unregister itself on next provider
 	Base* prov = it->second.second;
-	Elem* prove = prov->GetObj(prove);
+	MElem* prove = prov->GetObj(prove);
 	if (prove != this) {
 	    const TICacheRCtx& ctx = it->first.second;
 	    TICacheRCtx rctx(ctx);
@@ -634,7 +657,7 @@ void Elem::UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx)
 // same as for provider related records. This simplifies the whole iface requesting (no need to check
 // invalidity on requesting phase, all records are gone) but requres to rerequest ifaces thru all
 // potential providers again after invalidatiio from only one particular provider.
-void Elem::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, Elem* aProv, TBool aInv)
+void Elem::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MElem* aProv, TBool aInv)
 {
     TICacheKeyF query(aIfName, aCtx);
     TICacheQFRange rg = iICacheQF.equal_range(query);
@@ -648,7 +671,7 @@ void Elem::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, Elem* aPr
     TICacheQFIter it = rg.first; 
     while (it != rg.second) {
 	Base* cnd = it->second.second;
-	Elem* cnde = cnd->GetObj(cnde);
+	MElem* cnde = cnd->GetObj(cnde);
 	if (it->second.second == aProv || aInv) {
 	    // Unregister next requestor
 	    // TODO [YB] Do we need to unregister this in requestor. In fact this
@@ -658,7 +681,7 @@ void Elem::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, Elem* aPr
 		TICacheRCtx rctx(ctx);
 		rctx.pop_back();
 		Base* reqb = ctx.back();
-		Elem* reqe = reqb->GetObj(reqe);
+		MElem* reqe = reqb->GetObj(reqe);
 		reqe->UnregIfProv(it->first.first, rctx, this, aInv);
 	    }
 	    iICache.erase(it->second);
@@ -683,12 +706,12 @@ void Elem::UnregAllIfRel(TBool aInv)
 	    TICacheRCtx rctx(ctx);
 	    rctx.pop_back();
 	    Base* reqb = ctx.back();
-	    Elem* reqe = reqb->GetObj(reqe);
+	    MElem* reqe = reqb->GetObj(reqe);
 	    reqe->UnregIfProv(it->first.first, rctx, this, aInv);
 	}
 	// Unregister itself on provider
 	Base* prov = it->second.second;
-	Elem* prove = prov->GetObj(prove);
+	MElem* prove = prov->GetObj(prove);
 	if (prove != this) {
 	    TICacheRCtx rctx(ctx);
 	    rctx.push_back(this);
@@ -3160,6 +3183,9 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
     } else if (name == "GetUri") {
 	aRes = GetUri(NULL, ETrue);
     } else if (name == "DoGetObj") {
+	// TODO [YB] DoGetObj cannot be used here because it returns just void* prt to given iface
+	// Trivial casting this iface to MIface* can cause to wrong result if MIface is not the first
+	// parent of given iface. To consider adding MIface method "GetIface" to be used here
 	res = (MIface*) DoGetObj(args.at(0).c_str());
     } else if (name == "GetIfi") {
 	string name = args.at(0);
@@ -3211,6 +3237,18 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	if (isize == 1) {
 	    res = (MIface*) *(rg.first);
 	}
+    } else if (name == "UnregIfReq") {
+	string name = args.at(0);
+	TICacheRCtx ctx;
+	EIfu::ToCtx(this, args.at(1), ctx);
+	UnregIfReq(name, ctx);
+    } else if (name == "UnregIfProv") {
+	string name = args.at(0);
+	TICacheRCtx ctx;
+	EIfu::ToCtx(this, args.at(1), ctx);
+	MElem* prov = GetNode(args.at(2));
+	TBool inv = Ifu::ToBool(args.at(3));	
+	UnregIfProv(name, ctx, prov, inv);
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }
