@@ -2682,6 +2682,27 @@
 	    <sect3><title id="ds_daa_chrc_rln">Decoupled chromo: how to relate from owner [node] mut to corresponding model node chromo root</title>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_daa_dec"><title>Design issue: dependency on execution context. Should remote env agent be server itself ?</title>
+	    <sect3><title>Intro</title>
+		<simpara>Currently the scheme of simple distribution based on dedicated agents (ref <xref linkend="ds_daa_proxy_crh_stx_agt"/>) is as following:
+		    In primary model the dedicated remote environment agent is created (ARenv). As soon as content of this agent is set (content is the
+		    URL of remote server) the agent connects to the remote server. As soon as some component of agent is specified via mutation, the 
+		    agent issues request of creating the remote secondary environment with the component as root. The component is the child of another dedicated agent - 
+		    remote environment upper agent, ARenvu. This agent is the point of communication back to the primary model. To establish this back
+		    communication ARenv sets the secondary environment variables "primary env URL".</simpara>
+		<simpara>The problem here is that ARenvu depends on type of primary env execution context. So if we have more than one type of execution context
+		    (for instance INET socket based and pseudo async loop based) it will not be possible to specify the model independently on execution contex. By another
+		    words the model has to be created for the particular execution context.</simpara>
+		<simpara>So the origin of this problem is that DAA needs two-ways communication between primary and secondary enviroments, so both envs have
+		    to be "compatible" with remote env agents. There is the question related to this fact: do we actually need the server above env level? This 
+		    approach is used currently, so remote env agent in primary env communicates to server owning secondary env. But what if we "move" the 
+		    communications inside remote env agents? This would make the remote env agent on secondary side independent on "nature" of primary env.
+		    This secondary Renvu agent will be dependent only on it's counterpart in primary env. According to this approach the remote agents get
+		    "active" subjects of communication. Ref <xref linkend="ds_daa_dec_arenv"/> for outline and analysis of this approach.</simpara>
+	    </sect3>
+	    <sect3 id="ds_daa_dec_arenv"><title>Outline of "active" remote env agents.</title>
+	    </sect3>
+	</sect2>
 	<sect2 id="ds_daa_iss"><title>Design issues to be considered</title>
 	    <orderedlist>
 		<listitem><xref linkend="ds_daa_md"/></listitem>
