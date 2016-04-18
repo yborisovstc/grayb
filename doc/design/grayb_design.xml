@@ -52,7 +52,7 @@
 	    <title>Y.Borisov. Using incremental mutation process for systems modeling</title> </biblioentry>
 
 	<biblioentry id="ref_rfc_3986"> <abbrev>RFC_3986_URI</abbrev>
-	    <productname><ulink url="http://www.ietf.org/rfc/rfc3986.txt"/></productname>
+	    <productname><ulink url="httpss://www.ietf.org/rfc/rfc3986.txt"/></productname>
 	    <title>RFC 3986: Uniform Resource Identifier (URI): Generic Syntax</title> </biblioentry>
 
     </bibliolist>
@@ -113,10 +113,12 @@
 	    </sect3>
 	    <sect3><title>Syntax</title>
 		<simpara>The node unified URI can be considered as path to node from the given node in hierarchy. The path is the sequence of nodes, where
-		    node is specified relatively to the previous node in the path.
+		    node is specified relatively to the previous node in the path. Uri is conformed with <xref linkend="ref_rfc_3986"/>
 		    The general form is as:</simpara>
 		<programlisting>
-		    uri = node_uri | iface_uri
+		    uri = scheme ":" hier_part [ "?" query ] [ "#" fragment ]
+		    hier_part   = "//" authority path-abempty | path-absolute | path-rootless | path-empty
+		    fragment = node_uri | iface_uri
 		    iface_uri = node_uri,iface
 		    iface = implementation_relation,iface_name
 		    implementation_relation = "%"
@@ -134,6 +136,7 @@
 		</programlisting>
 		<simpara>Notes:</simpara>
 		<itemizedlist>
+		    <listitem>hier_part specifies DES server</listitem>
 		    <listitem>If relation_to_predecessor is missing it means that the node is native one.
 		    </listitem>
 		</itemizedlist>
@@ -151,6 +154,10 @@
 		    <listitem>Nodes iface
 			<programlisting> /Root/Node_1/Node_1_1%MElem </programlisting>
 		    </listitem>
+		    <listitem>Root on local host port 235 server Env_1
+			<programlisting>socks://localhost:234/Env_1#/root</programlisting>
+		    </listitem>
+
 		</itemizedlist>
 	    </sect3>
 	</sect2>
@@ -2702,6 +2709,77 @@
 	    </sect3>
 	    <sect3 id="ds_daa_dec_arenv"><title>Outline of "active" remote env agents.</title>
 	    </sect3>
+	</sect2>
+	<sect2 id="ds_daa_ao"><title>Getting notification from model. Agent observer: </title>
+	    <sect3><title>Intro</title>
+		<simpara>There is base agent API "SetObserver" to connect observer for pushing notification of agents status. Currently there is a 
+		    problem with using this API with unified call. Implementing this
+		    API differs from implementation of main part of base agents API: observer itself is the object "outside" the model. For "regular" case
+		    the argument of unified call is ID to agent in form of URI. The agent can resolve this ID with using its own mechanism (for instance
+		    GetNode in case of URI). For remote agent resolved the agents proxy will be created by dedicated agents supporting distrtibuted modes.
+		    But we cannot use URI for identifying "external" agent observer instance. Instead, we need to use ID in form 
+		    [back_server_uri, observer uid]. So we need specific mechanism for resolving such kind of "external" objects.</simpara>
+		<simpara>There can be two approaches considered:</simpara>
+		<orderedlist>
+		    <listitem>Using dedicated agent observer proxy creator on server session level (Sesssion leve proxy - SLP). 
+			<para>In this there should be session's specific API for creaitin proxy and connect it to given agent: server session creates proxy and
+			    runs direct base agent API SetObserver.</para>
+		    </listitem>
+		    <listitem>Add API to DES env in order to resolve "external" object such as agent observer and create proxy
+			(Resolving external objects Env API and create proxy - REOP).</listitem>
+		    <listitem>Add API to DES env in order to resolve "external" object such as agent observer
+			(Resolving external objects Env API - REO).
+			<para>In this approach Env just provides base agent with external object by ID but not creates proxy. This doesn't adapt Env API to
+			DAA but resolve the lack in unified call mechanism.</para>
+		    </listitem>
+		</orderedlist>
+		<simpara>Ref <xref linkend="ds_daa_ao_sper"/> for comparision of this two approaches.</simpara>
+	    </sect3>
+	    <sect3 id="ds_daa_ao_sper"><title>Session level proxy (SLP)  vs Env resolving external objects API (REO) vs REOP</title>
+		<simpara>The simplest use case is just to create model remotely, where some client request server session to create model and want
+		    to connect clients own agent observer to some agent of the model. In this case model doesn't contain DAA specific agents at all. So we
+		    would like to avoid any DAA specifics here. REOP requires some modification in Env and base agent, that contradicts this wish.</simpara>
+		<simpara>On another hand, REO doesn't contradicts. REO isn't alternative at all, it is just enhances SLP, where base element has 
+		    convenient way to handle unified call with external object in arguments.</simpara>
+		<simpara>DECISION: initially use SLP withot using unified call, then introduce REO and migrate to unified call</simpara>
+	    </sect3>
+	    <sect3 id="ds_daa_ao_lppp"><title>Long Polling vs Point-to-Point</title>
+		<simpara>Distributed model uses two-way interactions to communicate between parts of the model. Currently Point-to-Point approach is used
+		    for "back" communication from secondary model to primary model, see also analysis in <xref linkend="ds_daa_dec"/>. Similar design
+		    problem is also for communicating from model to "primary" DesObserver. This case clearly correspond common case of "push" type
+		    communication from server to its client. Taking this into account in observer case we can see the resonable alternative -
+		    Long polling approach.</simpara>
+		<simpara>This approach idea is the client uses regular session to make request to the server for notification. Server in this case 
+		    not nesessarily response immediately but can defer the response till notification event happens. What approach is to be used?</simpara>
+		<simpara>Long poll scheme is outlined on diagram below:</simpara>
+		<figure id="fig_daa_lppp"><imageobject> <imagedata fileref="pics/long_poll_observer.png"/> </imageobject></figure>
+		<simpara>Point to point scheme is outlined on diagram below:</simpara>
+		<figure id="fig_daa_ptp"><imageobject> <imagedata fileref="pics/pic_daa_ptp.png"/> </imageobject></figure>
+		<simpara>Currently the decision is to use Point-to-Point approach as more compatible with the DAA philosofy.</simpara>
+	    </sect3>
+	    <sect3 id="ds_daa_ao_lppp_shr"><title>Agents observer PtP approach: server shared resources</title>
+		<simpara>The current scheme of server owned resources is rather inconvenient for Agent observer PTP solution.
+		    The scheme is that env is owned not by the server but by the session that created the env. The current
+		    solution is based on "attaching" client to the session "owning" env. This solution is ambiguous. More 
+		    direct solution would be not attaching the client but allow client access to the env. This can be done by
+		    moving env ownership from session to server, where all the session can potentially access it.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2><title>DAA: server owning resources approach</title>
+	    <simpara>Use-cases</simpara>
+	    <orderedlist>
+		<listitem>Client requests creating Env
+		    <para>The question is where the context is keept. Currently the context is owned by session created env.
+			Seems this is correct, because context obviously relates to the session: this is context of request.
+		    </para>
+		</listitem>
+		<listitem>Client requests attaching to the existing Env
+		    <para>How can we identify the env session to be attached to? Currently within the scope of session
+			we use predefined context for the env. But as we stated before the context is local for session so 
+			we cannot use env context with new session (the valid context is accessible only from the session that 
+			created this env. So dedicated identification of env is required.</para>
+		</listitem>
+	    </orderedlist>
 	</sect2>
 	<sect2 id="ds_daa_iss"><title>Design issues to be considered</title>
 	    <orderedlist>

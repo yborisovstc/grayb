@@ -16,7 +16,9 @@ const string GUriBase::KTypeAnywhere = "**";
 const string KTypeUnknown = "";
 const string GUriBase::KUpperLevel = "..";
 
-const string KSchemeSep = ":";
+const char GUriBase:: KSchemeSep = ':';
+const char GUriBase::KPathDelim = '/';
+const char GUriBase::KQueryDelim = '?';
 const char GUriBase::KBaseSep = '#';
 const char GUriBase::KIfaceSep = '%';
 const string GUriBase::KIfaceSepS = "%";
@@ -116,6 +118,16 @@ const string& GUriBase::GetLoc() const
 const string& GUriBase::Scheme() const
 {
     return iScheme;
+}
+
+const string& GUriBase::Authority() const
+{
+    return iAuthority;
+}
+
+const string& GUriBase::Path() const
+{
+    return iPath;
 }
 
 const string& GUriBase::GetBase() const
@@ -293,15 +305,28 @@ void GUri::Parse()
     TBool fin = EFalse;
     TBool err = EFalse;
     string frag;
-    size_t base_end = iUri.find_first_of('#', 0);
+    size_t base_end = iUri.find_first_of(KBaseSep, 0);
     if (base_end != string::npos) {
 	// Base part is presented
 	iBase = iUri.substr(0, base_end);
 	frag = iUri.substr(base_end + 1);
-	size_t scheme_end = iUri.find_first_of(':', 0);
+	size_t scheme_end = iBase.find_first_of(KSchemeSep, 0);
 	if (scheme_end != string::npos) {
-	    iScheme = iUri.substr(0, scheme_end);
+	    iScheme = iBase.substr(0, scheme_end);
 	}
+	size_t auth_beg = (scheme_end != string::npos) ? scheme_end + 1 : 0;
+	size_t auth_end = auth_beg;
+	// Checking authority
+	if ((iBase.size() > (scheme_end + 2)) && (iBase.at(scheme_end + 1) == KPathDelim)
+		&& (iBase.at(scheme_end + 2) == KPathDelim)) {
+	    auth_beg = auth_beg + 2;
+	    auth_end = iBase.find_first_of(KPathDelim, auth_beg);
+	    iAuthority = iBase.substr(auth_beg, (auth_end == string::npos) ? string::npos : auth_end - auth_beg);
+	}
+	// Checking path
+	size_t path_beg = (auth_end != string::npos) ? auth_end + 1 : 0;
+	size_t path_end = iBase.find_first_of(KQueryDelim, path_beg);
+	iPath = iBase.substr(path_beg, (path_end == string::npos) ? string::npos : path_end - path_beg);
     }
     else {
 	// Base part is missing

@@ -154,7 +154,7 @@ class Elem: public MElem
 	virtual void SetParent(const string& aParent);
 	virtual void SetParent(MElem* aParent);
 	virtual void SetMan(MElem* aMan);
-	virtual void SetObserver(MCompsObserver* aObserver);
+	virtual void SetObserver(MAgentObserver* aObserver);
 	virtual void SetMutation(const ChromoNode& aMuta);
 	virtual void SetMutation(const string& aMutSpec);
 	virtual ChromoNode AppendMutation(const ChromoNode& aMuta);
@@ -356,7 +356,7 @@ class Elem: public MElem
 	// Managing (higher) element of hier
 	MElem* iMan;
 	// Observer, mostly for root - normally elem notifies to Mgr
-	MCompsObserver* iObserver;
+	MAgentObserver* iObserver;
 	// Chromo
 	Chromo* iChromo;
 	// Mutation

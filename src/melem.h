@@ -21,6 +21,30 @@ class TICacheRCtx: public vector<Base*>
 	TICacheRCtx(const RqContext* aCtx);
 };
 
+// Cloned from MCompsObserver in order to avoid MCompsObserver be MIface
+// This would require MIface wrapper for MCompsObserver to distinguish MIface methods in Elem
+class MAgentObserver: public MIface
+{
+    public:
+	static const char* Type() { return "MAgentObserver";};
+	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue) = 0;
+	virtual void OnCompAdding(MElem& aComp) = 0;
+	// TODO [YB] Return value isn't used, to remove ?
+	virtual TBool OnCompChanged(MElem& aComp) = 0;
+	// For run-time only. Use OnCompChanged when the content is changed via mutation
+	virtual TBool OnContentChanged(MElem& aComp) = 0;
+	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName) = 0;
+	// From MIface
+	virtual string Uid() const { return Mid() + "%" + Type();};
+    protected:
+	class EIfu: public Ifu {
+	    public:
+		EIfu();
+	};
+	// Interface methods utility
+	static EIfu mIfu;
+};
+
 class MCompsObserver
 {
     public:
@@ -139,7 +163,7 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 	virtual MElem* GetMan() = 0;
 	virtual const MElem* GetMan() const = 0;
 	virtual void SetMan(MElem* aMan) = 0;
-	virtual void SetObserver(MCompsObserver* aObserver) = 0;
+	virtual void SetObserver(MAgentObserver* aObserver) = 0;
 	virtual vector<MElem*>& Comps() = 0;
 	virtual const vector<MElem*>& Comps() const = 0;
 	virtual MElem* GetNode(const string& aUri, TBool aInclRm = EFalse) = 0;

@@ -324,7 +324,7 @@ void ChromoMgr::SetEnableOptimization(bool aEnable)
 
 
 Env::Env(const string& aSpecFile, const string& aLogFileName): Base(), iRoot(NULL), iLogger(NULL),
-    iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse)
+    iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse), mExtIfProv(NULL)
 {
     iLogger = new GLogRec(aLogFileName.empty() ? KLogFileName : aLogFileName);
     iProvider = new GFactory(string(), this);
@@ -336,7 +336,7 @@ Env::Env(const string& aSpecFile, const string& aLogFileName): Base(), iRoot(NUL
 }
 
 Env::Env(const string& aSpec, const string& aLogFileName, TBool aOpt): Base(), iRoot(NULL), iLogger(NULL),
-    iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse)
+    iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse), mExtIfProv(NULL)
 {
     iLogger = new GLogRec(aLogFileName.empty() ? KLogFileName : aLogFileName);
     //iLogger = new GLogRec("Logger", aName + ".log");
@@ -351,6 +351,7 @@ Env::Env(const string& aSpec, const string& aLogFileName, TBool aOpt): Base(), i
 
 Env::~Env()
 {
+    delete mExtIfProv;
     //Logger()->Write(MLogRec::EInfo, iRoot, "Starting deleting system");
     delete iRoot;
     //Logger()->Write(MLogRec::EInfo, NULL, "Finished deleting system");
@@ -509,5 +510,17 @@ TBool Env::GetEVar(const string& aName, string& aValue) const
 	res = ETrue;
     }
     return res;
+}
+
+void Env::SetExtIfProv(MExtIfProv* aProv)
+{
+    __ASSERT(mExtIfProv == NULL);
+    mExtIfProv = aProv;
+    mExtIfProv->SetEnv(this);
+}
+
+MExtIfProv* Env::ExtIfProv()
+{
+    return mExtIfProv;
 }
 

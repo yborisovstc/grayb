@@ -1,6 +1,10 @@
 #ifndef __GRAYB_MIFACE_H
 #define __GRAYB_MIFACE_H
 
+#include <string>
+
+using namespace std;
+
 /*
  * Interface of interface. Support unified invocation of methods
  */

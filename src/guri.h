@@ -83,6 +83,8 @@ class GUriBase
 	string GetUri(TBool aShort = EFalse) const { return GetUri(iElems.begin(), aShort);};
 	const string& GetLoc() const;
 	const string& Scheme() const;
+	const string& Authority() const;
+	const string& Path() const;
 	string GetName() const;
 	const string& GetBase() const;
 	const_elem_iter Begin() const;
@@ -113,6 +115,8 @@ class GUriBase
     protected:
 	string iUri;
 	string iScheme;
+	string iAuthority;
+	string iPath;
 	// Nw hier part
 	string iBase;
 	vector<TElem> iElems;
@@ -124,6 +128,9 @@ class GUriBase
 	static const string KTypeAnywhere;
 	static const string KUpperLevel;
 	static const char KParentSep;
+	static const char KSchemeSep;
+	static const char KPathDelim;
+	static const char KQueryDelim;
 	static const char KNodeSep;
 	static const char KSepNone;
 	static const char KBaseSep;

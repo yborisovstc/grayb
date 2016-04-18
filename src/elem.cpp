@@ -21,6 +21,19 @@ string Elem::Fmt::mSepContName = "~";
 //string IfuPars = "Name,0,GetNode,1,Mutate,4";
 //Ifu Elem::mIfu(IfuPars);
 
+MAgentObserver::EIfu MAgentObserver::mIfu;
+
+// Ifu static initialisation
+MAgentObserver::EIfu::EIfu()
+{
+    RegMethod("OnCompDeleting", 1);
+    RegMethod("OnCompAdding", 1);
+    RegMethod("OnCompChanged", 1);
+    RegMethod("OnContentChanged", 1);
+    RegMethod("OnCompRenamed", 2);
+}
+
+
 MElem::EIfu MElem::mIfu;
 
 // Ifu static initialisation
@@ -46,6 +59,7 @@ MElem::EIfu::EIfu()
     RegMethod("GetSIfi", 2);
     RegMethod("UnregIfReq", 2);
     RegMethod("UnregIfProv", 4);
+    RegMethod("SetObserver", 1);
 }
 
 void MElem::EIfu::FromCtx(const TICacheRCtx& aCtx, string& aRes)
@@ -497,7 +511,7 @@ void Elem::SetMan(MElem* aMan)
     iMan = aMan;
 }
 
-void Elem::SetObserver(MCompsObserver* aObserver)
+void Elem::SetObserver(MAgentObserver* aObserver)
 {
     __ASSERT(iObserver == NULL && aObserver != NULL || iObserver != NULL && aObserver == NULL);
     iObserver = aObserver;
@@ -3249,6 +3263,20 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	MElem* prov = GetNode(args.at(2));
 	TBool inv = Ifu::ToBool(args.at(3));	
 	UnregIfProv(name, ctx, prov, inv);
+    } else if (name == "SetObserver") {
+	MExtIfProv* prov = iEnv->ExtIfProv();
+	if (prov == NULL) {
+	    throw (runtime_error("Cannot get ext iface provider"));
+	}
+	MIface* iobs = prov->GetEIface(args.at(0), MAgentObserver::Type());
+	if (iobs == NULL) {
+	    throw (runtime_error("Cannot get agent observer iface" + args.at(0)));
+	}
+	MAgentObserver* obs = dynamic_cast<MAgentObserver*>(iobs);
+	if (obs == NULL) {
+	    throw (runtime_error("Cannot get agent observer" + args.at(0)));
+	}
+	SetObserver(obs);
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }

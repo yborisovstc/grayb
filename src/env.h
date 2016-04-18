@@ -89,6 +89,8 @@ class Env: public Base, public MEnv
     // Separated from constructor because constr can be followed by second phase - setting providers etc.
     void AddProvider(GProvider* aProv);
     void RemoveProvider(GProvider* aProv);
+    // TODO [YB] To implement external iface provider as env module (plugin), to add provider of env modules
+    void SetExtIfProv(MExtIfProv* aProv);
     public:
     // From Base
     virtual void *DoGetObj(const char *aName);
@@ -98,6 +100,7 @@ class Env: public Base, public MEnv
     virtual Elem* Root();
     virtual MChromoMgr* ChMgr();
     virtual MImportMgr* ImpsMgr();
+    virtual MExtIfProv* ExtIfProv();
     virtual TBool GetSBool(TSBool aId) const;
     virtual void SetSBool(TSBool aId, TBool aVal);
     virtual void SetEVar(const string& aName, const string& aValue);
@@ -126,6 +129,7 @@ class Env: public Base, public MEnv
     TBool mEnIfTrace;
     map<string, string> mEVars;
     static EIfu mIfu;
+    MExtIfProv* mExtIfProv;
 };
 
 

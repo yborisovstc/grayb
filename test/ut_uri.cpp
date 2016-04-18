@@ -15,6 +15,7 @@
 class Ut_uri : public CPPUNIT_NS::TestFixture
 {
     CPPUNIT_TEST_SUITE(Ut_uri);
+    CPPUNIT_TEST(test_UriParsing);
     CPPUNIT_TEST(test_UriOpr);
     CPPUNIT_TEST(test_UriBase);
     //CPPUNIT_TEST(test_UriChromo_1);
@@ -23,6 +24,7 @@ public:
     virtual void setUp();
     virtual void tearDown();
 private:
+    void test_UriParsing();
     void test_UriOpr();
     void test_UriBase();
     void test_UriChromo_1();
@@ -42,6 +44,19 @@ void Ut_uri::tearDown()
 {
 //    delete iEnv;
     CPPUNIT_ASSERT_EQUAL_MESSAGE("tearDown", 0, 0);
+}
+
+void Ut_uri::test_UriParsing()
+{
+    printf("\n === Test of uri parsing\n");
+    GUri uri_1("sock://localhost:12345/env_1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get scheme", uri_1.Scheme() == "sock");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get authority", uri_1.Authority() == "localhost:12345");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get path", uri_1.Path() == "env_1");
+    GUri uri_a("sock://localhost:12345/env_1#/root/root_comp");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get scheme", uri_a.Scheme() == "sock");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get authority", uri_a.Authority() == "localhost:12345");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get path", uri_a.Path() == "env_1");
 }
 
 void Ut_uri::test_UriOpr()

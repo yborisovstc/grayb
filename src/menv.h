@@ -15,8 +15,17 @@ class GUri;
 
 using namespace std;
 
-// Import manager
+class MEnv;
 
+// External ifaces instances provider
+class MExtIfProv
+{
+    public:
+	virtual MIface* GetEIface(const string& aIfaceId, const string& aIfaceType) = 0;
+	virtual void SetEnv(MEnv* aEnv) = 0;
+};
+
+// Import manager
 class MImportMgr
 {
     public:
@@ -66,6 +75,7 @@ class MEnv: public MIface
 	virtual Elem* Root() = 0;
 	virtual MChromoMgr* ChMgr() = 0;
 	virtual MImportMgr* ImpsMgr() = 0;
+	virtual MExtIfProv* ExtIfProv() = 0;
 	virtual TBool GetSBool(TSBool aId) const = 0;
 	virtual void SetSBool(TSBool aId, TBool aVal) = 0;
 	virtual void SetEVar(const string& aName, const string& aValue) = 0;
