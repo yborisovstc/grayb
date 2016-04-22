@@ -37,7 +37,7 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
 //    CPPUNIT_TEST(test_CompactRmDa); //TODO [YB] To enable
 //    CPPUNIT_TEST(test_CompactRef1); //TODO [YB] To enable
 //    CPPUNIT_TEST(test_CompactCont); //TODO [YB] To enable
-    CPPUNIT_TEST(test_TransfModif1);
+//    CPPUNIT_TEST(test_TransfModif1);
     CPPUNIT_TEST(test_GetParentModifs);
     CPPUNIT_TEST(test_ParentMut);
     CPPUNIT_TEST(test_ParentMut2);

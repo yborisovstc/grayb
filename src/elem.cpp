@@ -60,6 +60,7 @@ MElem::EIfu::EIfu()
     RegMethod("UnregIfReq", 2);
     RegMethod("UnregIfProv", 4);
     RegMethod("SetObserver", 1);
+    RegMethod("OnCompAdding", 1);
 }
 
 void MElem::EIfu::FromCtx(const TICacheRCtx& aCtx, string& aRes)
@@ -441,6 +442,10 @@ Elem::~Elem()
     // TODO [YB] OnCompDeleting called only here, i.e. after Elem derivation desctuctor completed
     // This means that the ovner notified will not be able to understand what agent is deleted
     // To consider to add one more notification - before deletions
+    //
+    // Don't notify of deletion here because the owner is doing it (owner manages deleting its comp)
+    // The only exception is root node
+    /*
     if (iMan != NULL) {
 	iMan->OnCompDeleting(*this, EFalse);
     }
@@ -450,12 +455,23 @@ Elem::~Elem()
     if (iParent != NULL) {
 	iParent->OnChildDeleting(this);
     }
+    */
+    if (iMan == NULL) {
+	if (iObserver != NULL) {
+	    iObserver->OnCompDeleting(*this, EFalse);
+	}
+	if (iParent != NULL) {
+	    iParent->OnChildDeleting(this);
+	}
+    }
     // Unregigster ifaces providers
     UnregAllIfRel();
     // Remove the comps, using iterator refresh because the map is updated on each comp deletion
     vector<MElem*>::reverse_iterator it = iComps.rbegin();
     while (it != iComps.rend()) {
-	delete *it;
+	MElem* comp = *it;
+	OnCompDeleting(*comp, EFalse);
+	delete comp;
 	it = iComps.rbegin();
     }
     iComps.clear();
@@ -1872,7 +1888,7 @@ void Elem::OnCompDeleting(MElem& aComp, TBool aSoft)
     if (iObserver != NULL) {
 	iObserver->OnCompDeleting(aComp, aSoft);
     }
-    // Handle for direct child
+    // Handle for direct comp
     if (aComp.GetMan() == this) {
 	// Don't deattach the childs chromo. Ref UC_016. The childs chromo (childs creation mutation) needs
 	// to be kept in parents chromo.
@@ -1882,6 +1898,10 @@ void Elem::OnCompDeleting(MElem& aComp, TBool aSoft)
 	*/
 	// Don't unregister comp in case if notif is for "soft" removal, ref ds_mut_rm_appr2
 	if (!aSoft) {
+	    MElem* cparent = aComp.GetParent();
+	    if (cparent != NULL) {
+		cparent->OnChildDeleting(&aComp);
+	    }
 	    // Unregister first
 	    UnregisterComp(&aComp);
 	    // Then remove from comps
@@ -2305,6 +2325,7 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
 		//if (dep.first.first == NULL || dep.second == ENa_Id) {
 		// TODO [YB] To add checking refs
 		if (ETrue) {
+		    OnCompDeleting(*node, ETrue);
 		    node->SetRemoved();
 		    if (!aRunTime) {
 			// Adding dependency to object of change
@@ -2391,9 +2412,11 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 			// If node has children then just mark it as removed but not remove actually
 			if (snode->HasInherDeps(snode)) {
 			    //TODO [YB] Consider to handle correctly
+			    OnCompDeleting(*snode, ETrue);
 			    snode->SetRemoved();
 			}
 			else {
+			    OnCompDeleting(*snode, EFalse);
 			    delete snode;
 			}
 		    }
@@ -2859,12 +2882,14 @@ void Elem::SetRemoved()
 {
     // Remove node from native hier but keep it in inher hier
     // Notify the man of deleting
+#if 0
     if (iMan != NULL) {
 	iMan->OnCompDeleting(*this);
     }
     if (iObserver != NULL) {
 	iObserver->OnCompDeleting(*this);
     }
+#endif
 #if 0 // Regular iteration is to be used because no real removal happens, but just "soft", ref ds_mut_rm_appr2
     // Mark the comps as removed, using iterator refresh because the map is updated on each comp deletion
     vector<Elem*>::reverse_iterator it = iComps.rbegin();
@@ -3154,8 +3179,9 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
     vector<string> args;
     Ifu::ParseIcSpec(aSpec, name, sig, args);
     TBool name_ok = mIfu.CheckMname(name);
-    if (!name_ok) 
+    if (!name_ok) {
 	throw (runtime_error("Wrong method name"));
+    }
     TBool args_ok = mIfu.CheckMpars(name, args.size());
     if (!args_ok) 
 	throw (runtime_error("Wrong arguments number"));
@@ -3277,6 +3303,9 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	    throw (runtime_error("Cannot get agent observer" + args.at(0)));
 	}
 	SetObserver(obs);
+    } else if (name == "OnCompAdding") {
+	MElem* comp = GetNode(args.at(0));
+	OnCompAdding(*comp);
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }
