@@ -2781,6 +2781,20 @@
 		</listitem>
 	    </orderedlist>
 	</sect2>
+	<sect2 id="ds_daa_pxdup"><title>DAA design issue: dupicating of agents via proxy in the same env.</title>
+	    <simpara>Currently it is possible that the proxy gets created pointing to agent in the same environment. The case is 
+		outliend in the diagram below. Agent "Comp" from secondary env requests getting node Renvu by absolute URI. So it firsly get
+		root (this will cause creating proxy Px%Root in env#2) and then requests root to follow the absolute path. On final step
+		REnv returns Uid of Px%Renvu to env#2 so proxy Px%Px%Renvu is created that is the dup of real Renv agent. </simpara>
+	    <figure id="fig_daa_px_dup"><imageobject> <imagedata fileref="pics/pic_daa_px_dup.png"/> </imageobject></figure>
+	    <simpara>This creates the problem in many cases. For instance when we request "Comp" to get relative URI basing from
+		Revnu, "Comp" requested the base and gets it in the form of proxy Px%Px%Renvu. There is logic in GetUri:</simpara>
+	    <programlisting>if (iMan != aTop) { ...</programlisting>
+	    <simpara>Actually iMan and aTop should be the same, but aTop is proxy, so the pointers differ.</simpara>
+	    <simpara>Possible solution would be to avoid such a duplication when creating proxy  - the proxy creator should
+		check if there is primary UID in the current model and to use this primary UID instead of proxy UID. Checking primary UID can
+	    be done with utilizing the fact that the UID is based on ablolute local URI of the agent. </simpara>
+	</sect2>
 	<sect2 id="ds_daa_iss"><title>Design issues to be considered</title>
 	    <orderedlist>
 		<listitem><xref linkend="ds_daa_md"/></listitem>
@@ -2854,6 +2868,14 @@
 	</sect2>
 	<sect2><title>OSM linear chromo: chromo compacting</title>
 	    <simpara>Ref <xref linkend="ds_mut_osmlc_cmp"/></simpara>
+	</sect2>
+	<sect2><title>Async agents model</title>
+	    <simpara>Currently the nature of agent is synchronous, i.e. agent sends signal to another agent and waits for response. Needs to 
+		consider async agent, where agent sents signal (message) and doesn't wait for it immediately. We can use same dynamic system approach to 
+		implement agent internal state machine is this case. The only specific of DES here will be that it will be "limited", i.e. 
+		not extending via mutation, because agent is an "atom" in such a model.</simpara>
+	    <simpara>We will need our own specific envionment for such a model to get and deliever messages from/to agents (somethig like
+		glib events loop etc.)</simpara>
 	</sect2>
     </sect1>
 

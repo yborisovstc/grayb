@@ -317,6 +317,8 @@ class Elem: public MElem
 	void LogComps() const;
 	Elem* GetNodeE(const string& aUri) {return ToElem(GetNode(aUri));};
 	Elem* GetNodeE(const GUri& aUri) {return ToElem(GetNode(aUri));};
+	virtual TInt CompsCount() const;
+	virtual MElem* GetComp(TInt aInd);
     protected:
 	static Elem* ToElem(MElem* aMelem) { Elem* res = (aMelem == NULL) ? NULL: aMelem->GetObj(res); return res;};
 	inline MProvider* Provider() const;
@@ -346,7 +348,6 @@ class Elem: public MElem
 	static long GetClockElapsed(long aStart);
 	static long GetClock();
 	// Debugging
-	virtual MElem* GetComp(TInt aInd);
 	virtual void DumpMcDeps() const;
 	virtual void DumpCmDeps() const;
 	virtual void SaveChromo(const char* aPath) const;

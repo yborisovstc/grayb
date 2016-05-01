@@ -220,6 +220,7 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 	virtual TInt GetCapacity() const = 0;
 	virtual TBool IsHeirOf(const string& aParent) const = 0;
 	virtual MElem* GetNodeS(const char* aUri) = 0;
+	virtual TInt CompsCount() const = 0;
 	virtual MElem* GetComp(TInt aInd) = 0;
 	virtual void SaveChromo(const char* aPath) const = 0;
 	// From MIface

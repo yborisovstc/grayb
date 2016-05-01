@@ -981,8 +981,8 @@ void ADes::Update()
 {
     // Update all the DES components avoiding agents and capsule
     MElem* host = iMan->GetMan();
-    for (vector<MElem*>::iterator it = host->Comps().begin(); it != host->Comps().end(); it++) {
-	MElem* eit = (*it);
+    for (TInt ci = 0; ci < host->CompsCount(); ci++) {
+	MElem* eit = host->GetComp(ci);
 	if (eit != iMan && eit->Name() != "Capsule") {
 	    MDesSyncable* msync = (MDesSyncable*) eit->GetSIfiC(MDesSyncable::Type(), this);
 	    if (msync != NULL) {
@@ -1003,8 +1003,8 @@ void ADes::Confirm()
 {
     // Confirm all the DES components
     MElem* host = iMan->GetMan();
-    for (vector<MElem*>::iterator it = host->Comps().begin(); it != host->Comps().end(); it++) {
-	MElem* eit = (*it);
+    for (TInt ci = 0; ci < host->CompsCount(); ci++) {
+	MElem* eit = host->GetComp(ci);
 	MDesSyncable* msync = (MDesSyncable*) eit->GetSIfiC(MDesSyncable::Type(), this);
 	if (msync != NULL) {
 	    if (msync->IsUpdated()) {

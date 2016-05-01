@@ -92,8 +92,8 @@ void Vert::UpdateIfi(const string& aName, const RqContext* aCtx)
     if (res == NULL) {
 	MElem* agents = GetComp("Elem", "Agents");
 	if (agents != NULL) {
-	    for (vector<MElem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && res == NULL; it++) {
-		MElem* eit = *it;
+	    for (TInt ci = 0; ci < agents->CompsCount() && res == NULL; ci++) {
+		MElem* eit = agents->GetComp(ci);
 		if (!ctx.IsInContext(eit)) {
 		    rr = eit->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, eit, rr);

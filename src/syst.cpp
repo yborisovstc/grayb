@@ -648,8 +648,8 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		Elem* man = ToElem(iMan->GetMan());
 		// Redirect to internal pins. Add host into context, this will prevent internals to redirect
 		// TODO [YB] To avoid routing directly from agent excluding host. This causes incorrect context
-		for (vector<MElem*>::const_iterator it = man->Comps().begin(); it != man->Comps().end() && res == NULL; it++) {
-		    Elem* eit = ToElem(*it);
+		for (TInt ci = 0; ci < man->CompsCount() && res == NULL; ci++) {
+		    MElem* eit = man->GetComp(ci);
 		    if (!ctx.IsInContext(eit) && eit != iMan) {
 			rr = eit->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, eit, rr);
@@ -707,8 +707,8 @@ TBool ASocket::IsCompatible(MElem* aPair, TBool aExt)
 	}
 	if (cp != NULL) {
 	    Elem* host = ToElem(iMan->GetMan());
-	    for (vector<MElem*>::const_iterator it = host->Comps().begin(); it != host->Comps().end() && res; it++) {
-		Elem *comp = ToElem(*it);
+	    for (TInt ci = 0; ci < host->CompsCount() && res; ci++) {
+		MElem *comp = host->GetComp(ci);
 		if (comp->Name() != "Agents" && comp->Name() != "Logspec") {
 		    MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), this);
 		    if (checker != NULL) {
@@ -742,8 +742,9 @@ Elem* ASocket::GetPin(const RqContext* aCtx)
 {
     Elem* res = NULL;
     Elem* host = ToElem(iMan->GetMan());
-    for (vector<MElem*>::const_iterator it = host->Comps().begin(); it != host->Comps().end() && res == NULL; it++) {
-	Elem *comp = ToElem(*it);
+    for (TInt ci = 0; ci < host->CompsCount() && res == NULL; ci++) {
+	MElem *mcomp = host->GetComp(ci);
+	Elem* comp = ToElem(mcomp);
 	if (comp->Name() != "Agents" && comp->Name() != "Logspec") {
 	    if (aCtx->IsInContext(comp)) {
 		res = comp;

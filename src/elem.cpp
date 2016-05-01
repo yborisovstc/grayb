@@ -53,6 +53,7 @@ MElem::EIfu::EIfu()
     RegMethod("EType", 1);
     RegMethod("RegisterChild", 1);
     RegMethod("GetUri", 0);
+    RegMethod("GetUri#2", 1);
     RegMethod("DoGetObj", 1);
     RegMethod("GetIfi", 2);
     RegMethod("GetIfind", 3);
@@ -60,6 +61,9 @@ MElem::EIfu::EIfu()
     RegMethod("UnregIfReq", 2);
     RegMethod("UnregIfProv", 4);
     RegMethod("SetObserver", 1);
+    RegMethod("OnCompAdding", 1);
+    RegMethod("CompsCount", 0);
+    RegMethod("GetComp", 1);
 }
 
 void MElem::EIfu::FromCtx(const TICacheRCtx& aCtx, string& aRes)
@@ -1920,8 +1924,9 @@ TBool Elem::OnCompChanged(MElem& aComp)
     MElem* agents = GetComp("Elem", "Agents");
     TBool res = EFalse;
     if (agents != NULL) {
-	for (vector<MElem*>::const_iterator it = agents->Comps().begin(); it != agents->Comps().end() && !res; it++) {
-	    MACompsObserver* iagent = (*it)->GetObj(iagent);
+	for (TInt ci = 0; ci < agents->CompsCount() && !res; ci++) {
+	    MElem* acomp = agents->GetComp(ci);
+	    MACompsObserver* iagent = acomp->GetObj(iagent);
 	    if (iagent != NULL) {
 		res = iagent->HandleCompChanged(*this, aComp);
 	    }
@@ -2190,7 +2195,7 @@ TInt Elem::GetLocalRank() const
     TInt res = -1;
     if (iMan != NULL) {
 	res = 0;
-	for (vector<MElem*>::const_iterator it = iMan->Comps().begin(); it != iMan->Comps().end() && *it != this; it++, res++);
+	for (TInt ci = 0; ci < iMan->CompsCount() && iMan->GetComp(ci) != this; ci++, res++);
     }
     return res;
 }
@@ -3135,6 +3140,11 @@ TBool Elem::ImportNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode
     return ETrue;
 }
 
+TInt Elem::CompsCount() const
+{
+    return iComps.size();
+}
+
 MElem* Elem::GetComp(TInt aInd)
 {
     return iComps.at(aInd);
@@ -3144,7 +3154,7 @@ string Elem::Mid() const
 {
     // Using local root insteat of true root
 //    return GetUri(iEnv->Root(), ETrue) + GUriBase::KIfaceSepS + MElem::Type();
-    return GetUri(iEnv->Root(), ETrue);
+    return iEnv->Root()->Name() + "/" + GetUri(iEnv->Root(), ETrue);
 }
 
 MIface* Elem::Call(const string& aSpec, string& aRes)
@@ -3196,6 +3206,9 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	aRes = Ifu::FromBool(rr);
     } else if (name == "GetUri") {
 	aRes = GetUri(NULL, ETrue);
+    } else if (name == "GetUri#2") {
+	MElem* base = GetNode(args.at(0));
+	aRes = GetUri(base, ETrue);
     } else if (name == "DoGetObj") {
 	// TODO [YB] DoGetObj cannot be used here because it returns just void* prt to given iface
 	// Trivial casting this iface to MIface* can cause to wrong result if MIface is not the first
@@ -3277,6 +3290,15 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	    throw (runtime_error("Cannot get agent observer" + args.at(0)));
 	}
 	SetObserver(obs);
+    } else if (name == "OnCompAdding") {
+	MElem* comp = GetNode(args.at(0));
+	OnCompAdding(*comp);
+    } else if (name == "CompsCount") {
+	TInt cnt = CompsCount();
+	aRes = Ifu::FromInt(cnt);
+    } else if (name == "GetComp") {
+	TInt ind = Ifu::ToInt(args.at(0));
+	res = GetComp(ind);
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }
