@@ -15,6 +15,10 @@ class Ifu
     public:
 	Ifu();
 	Ifu(const string& aPars);
+	static string CombineIcSpec(const string& aName, const string& aSig);
+	static string CombineIcSpec(const string& aName, const string& aSig, const string& aArg);
+	static void AddIcSpecArg(string& aSpec, const string& aArg);
+	static void AddIcSpecArg(string& aSpec, TBool aArg);
 	// Parsing of Iface call invocation spec
 	static void ParseIcSpec(const string& aSpec, string& aName, string& aSig, vector<string>& aArgs);
 	static TBool ToBool(const string& aString);
@@ -25,10 +29,16 @@ class Ifu
 	void RegMethod(const string& aName, TInt aArgsNum);
 	TBool CheckMname(const string& aName) const;
 	TBool CheckMpars(const string& aName, TInt aArgsNum) const;
+	static void ParseUid(const string& aUid, string& aOid, string& aType);
+	static void CombineUid(const string& aOid, const string& aType, string& aUid);
+	static TBool IsSimpleIid(const string& aIid);
+	static string EscCtrl(const string& aInp, char aCtrl);
+	static string DeEscCtrl(const string& aInp, char aCtrl);
     public:
-	static string KRinvSep;
-	static char KRinvEscape;
+	static char KRinvSep;
+	static char KEsc;
 	static string KArraySep;
+	static char KUidSep;
     protected:
 	// Methods parameters
 	map<string, TInt> mMpars;

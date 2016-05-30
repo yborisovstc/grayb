@@ -96,7 +96,7 @@ void Ut_func::test_FuncSeq1()
     // Checking the result update on update of input
     // Mutate the input data first
     MElem* dinp = root->GetNode("./test/DataS_Int_1");
-    ChromoNode nchange = dinp->Mutation().Root().AddChild(ENt_Cont);
+    ChromoNode nchange = dinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./Value");
     nchange.SetAttr(ENa_MutVal, "57");
     dinp->Mutate();
@@ -164,7 +164,7 @@ void Ut_func::test_FuncSeq2()
     // Checking the result update on update of input
     // Mutate the input data first
     MElem* dinp = root->GetNode("./test/DataS_Int_1");
-    ChromoNode nchange = dinp->Mutation().Root().AddChild(ENt_Cont);
+    ChromoNode nchange = dinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./Value");
     nchange.SetAttr(ENa_MutVal, "57");
     dinp->Mutate();
@@ -232,7 +232,7 @@ void Ut_func::test_FuncSeq3()
     // Checking the result update on update of input
     // Mutate the input data first
     MElem* dinp = root->GetNode("./test/DataS_Int_1");
-    ChromoNode nchange = dinp->Mutation().Root().AddChild(ENt_Cont);
+    ChromoNode nchange = dinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./Value");
     nchange.SetAttr(ENa_MutVal, "57");
     dinp->Mutate();
@@ -280,7 +280,7 @@ void Ut_func::test_FuncSeq4()
     // Checking the result update on update of input
     // Mutate the input data first
     MElem* dinp = root->GetNode("./test/Data_SelfCoord");
-    ChromoNode nchange = dinp->Mutation().Root().AddChild(ENt_Cont);
+    ChromoNode nchange = dinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./Value");
     nchange.SetAttr(ENa_MutVal, "80");
     dinp->Mutate();
@@ -315,7 +315,7 @@ void Ut_func::test_FuncVar1()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
     MElem* dir = root->GetNode("./Start/Incaps_root/e2");
-    ChromoNode mut1 = dir->Mutation().Root().AddChild(ENt_Cont);
+    ChromoNode mut1 = dir->AppendMutation(ENt_Cont);
     mut1.SetAttr(ENa_MutNode, "./P1");
     mut1.SetAttr(ENa_Ref, "/Root/Start/Incaps_root/Inp_data1/Capsule/out");
     dir->Mutate();
@@ -351,7 +351,7 @@ void Ut_func::test_FuncVar2()
 
     /*
     MElem* dir = root->GetNode("Start/Incaps_root");
-    ChromoNode mut1 = dir->Mutation().Root().AddChild(ENt_Cont);
+    ChromoNode mut1 = dir->AppendMutation(ENt_Cont);
     mut1.SetAttr(ENa_MutNode, "e2/P1");
     mut1.SetAttr(ENa_Ref, "/Root/Start/Incaps_root/Inp_data1/Capsule/out");
     dir->Mutate();
@@ -375,7 +375,7 @@ void Ut_func::test_FuncVar2()
     // Checking the type establishing
     // Mutate the result data first
     MElem* dinp = root->GetNode("./Start/Incaps_root/Inp_data1");
-    ChromoNode nchange = dinp->Mutation().Root().AddChild(ENt_Cont);
+    ChromoNode nchange = dinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./Value");
     nchange.SetAttr(ENa_MutVal, "I 80");
     dinp->Mutate();

@@ -7,6 +7,34 @@
 #include <map>
 
 
+// Mutation spec
+class TMut
+{
+    public:
+	typedef pair<TNodeAttr, string> TElem;
+    public:
+	TMut(const string& aSpec);
+	TMut(TNodeType aType);
+	TMut(TNodeType aType, TNodeAttr aAttr0, const string& aAttr0Val);
+	TMut(TNodeType aType, TNodeAttr aAttr0, const string& aAttr0Val, TNodeAttr aAttr1, const string& aAttr1Val);
+	TMut(TNodeType aType, TNodeAttr aAttr0, const string& aAttr0Val, TNodeAttr aAttr1, const string& aAttr1Val,
+		TNodeAttr aAttr2, const string& aAttr2Val);
+	TInt ArgsCount() const { return mAttrs.size();};
+	TNodeType Type() const { return mType;};
+	const TElem& ArgAt(TInt aInd) const;
+	operator string() const;
+    private:
+	static string EscapeCtrls(const string& aInp);
+    private:
+	TNodeType mType;
+	vector<TElem> mAttrs;
+	static const char KSep = ',';
+	static const char KAttrSep = ':';
+	static const char KEsc = '\\';
+	static const char KValDelim = '"';
+	static const string KCtrls;
+};
+
 // Rank
 class Rank: public vector<TInt>
 {

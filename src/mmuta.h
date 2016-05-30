@@ -15,6 +15,7 @@ typedef pair<TMutRef, TNodeAttr> TMDep;
 // Deps muts on run-time agent node
 typedef vector<TMDep> TMDeps;
 
+class TMut;
 // Mutable element of graph
 class MMutable
 {
@@ -28,10 +29,11 @@ class MMutable
 	virtual string GetChromoSpec() const = 0;
 	virtual const MChromo& Chromos() const = 0;
 	virtual MChromo& Chromos() = 0;
-	virtual MChromo& Mutation() = 0;
 	virtual void SetMutation(const ChromoNode& aMuta) = 0;
 	virtual TBool AppendMutation(const string& aFileName) = 0;
 	virtual ChromoNode AppendMutation(const ChromoNode& aMuta) = 0;
+	virtual ChromoNode AppendMutation(TNodeType aType) = 0;
+	virtual void AppendMutation(const TMut& aMut) = 0;
 	virtual TMDeps& GetMDeps() = 0;
 	virtual void AddMDep(MElem* aNode, const ChromoNode& aMut, TNodeAttr aAttr) = 0;
 	virtual void AddCMDep(const ChromoNode& aMut, TNodeAttr aAttr, MElem* aNode) = 0;

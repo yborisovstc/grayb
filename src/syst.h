@@ -17,6 +17,7 @@ class ACapsule: public Elem
 	virtual TBool OnCompChanged(MElem& aComp);
 };
 
+// Introducint iface extender to avoid clashing MIface methods
 class MCompatChecker_Imd: public MCompatChecker
 {
     virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes) = 0;

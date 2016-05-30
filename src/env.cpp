@@ -105,46 +105,6 @@ MElem* ImportsMgr::GetImportsContainer() const
     return mHost.Root()->GetNode(KImportsContainerUri);
 }
 
-#if 0
-TBool ImportsMgr::Import(const string& aUri)
-{
-    TBool res = ETrue;
-    GUri moduri(aUri);
-    GUri::const_elem_iter it = moduri.Elems().begin();
-    it++;
-    GUri::TElem urie = *it;
-    string modname = urie.second.second;
-    string modpath = GetModulePath(modname);
-    if (!modpath.empty()) {
-	// Explicit chromo uri
-	// Get the whole external chromo
-	Elem* icontr = GetImportsContainer();
-	__ASSERT(icontr != NULL);
-	TBool res1 = icontr->AppendMutation(modpath);
-	// Rebasing uri to mut root, and get the target node
-	GUri selr(".");
-	GUri::const_elem_iter it = moduri.Elems().begin();
-	it++;
-	selr.AppendTail(moduri, it);
-	ChromoNode sel = icontr->Mutation().Root().GetNode(selr);
-	if (sel.Handle() != NULL) {
-	    // Reduce chromo to target node, mutate and check
-	    icontr->Mutation().ReduceToSelection(sel);
-	    icontr->Mutate(ETrue);
-	    res = icontr->GetNode(selr);
-	    if (res) {
-		mHost.Logger()->Write(MLogRec::EInfo, NULL, "Imported node: [%s]", aUri.c_str());
-	    } else {
-		mHost.Logger()->Write(MLogRec::EErr, NULL, "Importing node: failed [%s]", aUri.c_str());
-	    }
-	} else {
-	    mHost.Logger()->Write(MLogRec::EErr, NULL, "Importing to module: cannot find chromo node [%s]", aUri.c_str());
-	}
-    }
-    return res;
-}
-#endif
-
 TBool ImportsMgr::Import(const string& aUri)
 {
     MElem* res = DoImport(aUri);
@@ -323,8 +283,41 @@ void ChromoMgr::SetEnableOptimization(bool aEnable)
 }
 
 
+
+IfcResolver::IfcResolver(Env& aHost): mHost(aHost)
+{
+}
+
+MIface* IfcResolver::GetIfaceByUid(const string& aUid)
+{
+    MIface* res = NULL;
+    string suri, type;
+    Ifu::ParseUid(aUid, suri, type);
+    GUri uri(suri);
+    if (!uri.IsErr()) {
+	MElem* node = NULL;
+	if (uri.IsAbsolute()) {
+	    node = mHost.Root()->GetNode(uri);
+	} else {
+	    GUri::const_elem_iter it = uri.Begin();
+	    if (it->second.second == mHost.Root()->Name()) {
+		node = mHost.Root();
+	    }
+	    if (node != NULL && ++it != uri.Elems().end()) {
+		node = mHost.Root()->GetNode(uri, it);
+	    }
+	}
+	if (node != NULL) {
+	    res = (MIface*)(node->GetObj(type.c_str()));
+	}
+    }
+    return res;
+}
+
+
+
 Env::Env(const string& aSpecFile, const string& aLogFileName): Base(), iRoot(NULL), iLogger(NULL),
-    iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse), mExtIfProv(NULL)
+    iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse), mExtIfProv(NULL), mIfResolver(NULL)
 {
     iLogger = new GLogRec(aLogFileName.empty() ? KLogFileName : aLogFileName);
     iProvider = new GFactory(string(), this);
@@ -333,10 +326,11 @@ Env::Env(const string& aSpecFile, const string& aLogFileName): Base(), iRoot(NUL
     srand(time(NULL));
     iChMgr = new ChromoMgr(*this);
     iImpMgr = new ImportsMgr(*this);
+    mIfResolver = new IfcResolver(*this);    
 }
 
 Env::Env(const string& aSpec, const string& aLogFileName, TBool aOpt): Base(), iRoot(NULL), iLogger(NULL),
-    iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse), mExtIfProv(NULL)
+    iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse), mExtIfProv(NULL), mIfResolver(NULL)
 {
     iLogger = new GLogRec(aLogFileName.empty() ? KLogFileName : aLogFileName);
     //iLogger = new GLogRec("Logger", aName + ".log");
@@ -346,6 +340,7 @@ Env::Env(const string& aSpec, const string& aLogFileName, TBool aOpt): Base(), i
     srand(time(NULL));
     iChMgr = new ChromoMgr(*this);
     iImpMgr = new ImportsMgr(*this);
+    mIfResolver = new IfcResolver(*this);    
 }
 
 
@@ -359,6 +354,7 @@ Env::~Env()
     delete iImpMgr;
     delete iProvider;
     delete iLogger;
+    delete mIfResolver;
 }
 
 // TODO [YB] To integrate into env creation
@@ -522,5 +518,10 @@ void Env::SetExtIfProv(MExtIfProv* aProv)
 MExtIfProv* Env::ExtIfProv()
 {
     return mExtIfProv;
+}
+
+MIfaceResolver* Env::IfaceResolver()
+{
+    return mIfResolver;
 }
 

@@ -78,6 +78,16 @@ class ChromoMgr: public Base, public MChromoMgr
 	TBool mEnableOptimization;
 };
 
+// Iface resolver. Ref ds_irm
+class IfcResolver: public MIfaceResolver
+{
+    public:
+	IfcResolver(Env& aHost);
+	virtual MIface* GetIfaceByUid(const string& aUid);
+    protected:
+	Env& mHost;
+};
+
 class Env: public Base, public MEnv
 {
     friend class ChromoMgr;
@@ -101,6 +111,7 @@ class Env: public Base, public MEnv
     virtual MChromoMgr* ChMgr();
     virtual MImportMgr* ImpsMgr();
     virtual MExtIfProv* ExtIfProv();
+    virtual MIfaceResolver* IfaceResolver();
     virtual TBool GetSBool(TSBool aId) const;
     virtual void SetSBool(TSBool aId, TBool aVal);
     virtual void SetEVar(const string& aName, const string& aValue);
@@ -130,6 +141,7 @@ class Env: public Base, public MEnv
     map<string, string> mEVars;
     static EIfu mIfu;
     MExtIfProv* mExtIfProv;
+    IfcResolver* mIfResolver;
 };
 
 

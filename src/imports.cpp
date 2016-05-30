@@ -36,35 +36,6 @@ void* AImports::DoGetObj(const char *aName)
     return res;
 }
 
-/*
-TBool AImports::Import(const string& aUri)
-{
-    TBool res = ETrue;
-    GUri moduri(aUri);
-    if (!moduri.GetBase().empty()) {
-	// Explicit chromo uri
-	// Get the whole external chromo
-	TBool res1 = AppendMutation(moduri.GetBase());
-	// Rebasing uri to mut root, and get the target node
-	GUri selr("."); 
-	GUri::const_elem_iter it = moduri.Elems().begin(); 
-	it++;
-	selr.AppendTail(moduri, it);
-	ChromoNode sel = iMut->Root().GetNode(selr);
-	if (sel.Handle() != NULL) {
-	    // Reduce chromo to target node, mutate and check
-	    iMut->ReduceToSelection(sel);
-	    Mutate();
-	    res = GetNode(aUri);
-	} else {
-	    Logger()->Write(MLogRec::EErr, this, "Importing to module: cannot find chromo node [%s]", aUri.c_str());
-	}
-    }
-
-    return res;
-}
-*/
-
 TBool AImports::Import(const string& aUri)
 {
     TBool res = ETrue;

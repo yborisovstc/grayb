@@ -12,12 +12,20 @@ using namespace std;
 class MIface
 {
     public:
-	static const char* Type() { return "MIface";};
+//	static const char* Type() { return "MIface";};
 	// Invocation of iface method: aRes - data of result, returns context or NULL otherwise
 	virtual MIface* Call(const string& aSpec, string& aRes) = 0;
-	// Getting UID
+	// Getting UID - id unique in the scope of env
 	virtual string Uid() const { return string();};
 	virtual string Mid() const = 0;
+	// TODO to introduce GUID - ID unique in the scope of the whole model
+};
+
+class MIfaceResolver
+{
+    public:
+	static const char* Type() { return "MIfaceResolver";};
+	virtual MIface* GetIfaceByUid(const string& aUid) = 0;
 };
 
 #endif

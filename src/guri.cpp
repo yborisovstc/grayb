@@ -55,8 +55,6 @@ void GUriBase::Construct()
 	KNodeTypes["rm"] = ENt_Rm;
 	KNodeTypes["change"] = ENt_Change;
 	KNodeTypes["cont"] = ENt_Cont;
-	KNodeTypes["add"] = ENt_Add;
-	KNodeTypes["order"] = ENt_Order;
 	KNodeTypes["import"] = ENt_Import;
 
 	for (map<string, TNodeType>::const_iterator it = KNodeTypes.begin(); it != KNodeTypes.end(); it++) {

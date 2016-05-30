@@ -15,6 +15,8 @@ MEdge::EIfu::EIfu()
     RegMethod("ConnectP2", 1);
     RegMethod("Disconnect", 1);
     RegMethod("Disconnect#2", 0);
+    RegMethod("Point1", 0);
+    RegMethod("Point2", 0);
 }
 
 
@@ -420,6 +422,10 @@ MIface* Edge::Call(const string& aSpec, string& aRes)
 	aRes = EdgeName();
     } else if (name == "EdgeUri") {
 	aRes = EdgeUri();
+    } else if (name == "Point1") {
+	res = Point1();
+    } else if (name == "Point2") {
+	res = Point2();
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }

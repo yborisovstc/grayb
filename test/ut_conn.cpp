@@ -131,8 +131,7 @@ void Ut_conn::test_Reconn()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
  
     // Delete v1
-    ChromoNode smutr = root->Mutation().Root();
-    ChromoNode mutn = smutr.AddChild(ENt_Rm);
+    ChromoNode mutn = root->AppendMutation(ENt_Rm);
     mutn.SetAttr(ENa_MutNode, "./v1");
     root->Mutate();
     // Verify the connection pair is disconnected
@@ -146,8 +145,7 @@ void Ut_conn::test_Reconn()
     MVert* p1 = me1->Point1();
     CPPUNIT_ASSERT_MESSAGE("Edges Point1 is not disconnected", p1 == 0);
     // Delete v3
-    smutr = root->Mutation().Root();
-    mutn = smutr.AddChild(ENt_Rm);
+    mutn = root->AppendMutation(ENt_Rm);
     mutn.SetAttr(ENa_MutNode, "./v3");
     root->Mutate();
     // Verify the connection pair is disconnected
@@ -175,8 +173,7 @@ void Ut_conn::test_Conn2()
  
    // Disconnect one point of edge e2
     MElem* e2 = root->GetNode("./e2");
-    ChromoNode smutr = e2->Mutation().Root();
-    ChromoNode mutn = smutr.AddChild(ENt_Cont);
+    ChromoNode mutn = e2->AppendMutation(ENt_Cont);
     mutn.SetAttr(ENa_MutNode, "./P1");
     mutn.SetAttr(ENa_Ref, "");
     e2->Mutate();

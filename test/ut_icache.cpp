@@ -79,7 +79,7 @@ void Ut_icache::test_Inv1()
 
     // Connect feedback edge
     MElem* mnode = root->GetNode("/Root/IncapsRoot/DesRoot/E_back");
-    ChromoNode mut = mnode->Mutation().Root().AddChild(ENt_Cont);
+    ChromoNode mut = mnode->AppendMutation(ENt_Cont);
     mut.SetAttr(ENa_MutNode, "./P1");
     mut.SetAttr(ENa_Ref, "/Root/IncapsRoot/DesRoot/st/Capsule/Inp");
     mnode->Mutate();

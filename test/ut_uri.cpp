@@ -101,13 +101,17 @@ void Ut_uri::test_UriBase()
     MElem* enode1 = root->GetNode(euri);
     CPPUNIT_ASSERT_MESSAGE("Fail to generate URI of native agent", enode1 == enode);
     
-    enode = root->GetNode(".");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get current node", enode != NULL);
+    MElem* cnode = root->GetNode(".");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get current node", cnode != NULL);
 
-    enode = root->GetNode("./test/Incr");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get Incr", enode != NULL);
-    MElem* owner = enode->GetNode("./..");
+    MElem* enode2 = root->GetNode("./test/Incr");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get Incr", enode2 != NULL);
+    MElem* owner = enode2->GetNode("./..");
     CPPUNIT_ASSERT_MESSAGE("Fail to get current owner", owner != NULL);
+    // Generating native agent relative uri
+    string eruri = enode->GetUri(enode2);
+    enode1 = enode2->GetNode(eruri);
+    CPPUNIT_ASSERT_MESSAGE("Fail to generate URI of native agent", enode1 == enode);
 
     MElem* doutp = root->GetNode("./(Incaps:)test/(DataSInt:)DataS_Int_1/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
@@ -145,7 +149,7 @@ void Ut_uri::test_UriBase()
     // Checking the result update on update of input
     // Mutate the input data first
     MElem* dinp = root->GetNode("./(Incaps:)test/(DataSInt:)DataS_Int_1");
-    ChromoNode nchange = dinp->Mutation().Root().AddChild(ENt_Cont);
+    ChromoNode nchange = dinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./(Prop:)Value");
     nchange.SetAttr(ENa_MutVal, "57");
     dinp->Mutate();
@@ -201,7 +205,7 @@ void Ut_uri::test_UriBase()
     CPPUNIT_ASSERT_MESSAGE("Fail to get node by absolute URI", nodeau == resdata1);
     // Checking creating module with absolute uri
     /* Temporarily avoided because of disabling modules deletion, so FuncComps is already in root
-    ChromoNode madd = root->Mutation().Root().AddChild(ENt_Node);
+    ChromoNode madd = root->AppendMutation(ENt_Node);
     madd.SetAttr(ENa_Id, "new_elem1");
     madd.SetAttr(ENa_Parent, "file:../modules/func.xml#/(Elem:)FuncComps");
     root->Mutate();

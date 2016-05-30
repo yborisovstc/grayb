@@ -20,6 +20,7 @@ class Ut_cre : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_CreIncaps);
     CPPUNIT_TEST(test_CreData);
     CPPUNIT_TEST(test_BaseApis1);
+    CPPUNIT_TEST(test_Iface);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -31,6 +32,7 @@ private:
     void test_CreIncaps();
     void test_CreData();
     void test_BaseApis1();
+    void test_Iface();
 private:
     Env* iEnv;
 };
@@ -244,4 +246,23 @@ void Ut_cre::test_BaseApis1()
     delete iEnv;
 }
 
+void Ut_cre::test_Iface()
+{
+    printf("\n === Test of Iface resolution\n");
+
+    iEnv = new Env("ut_cre_iface.xml", "ut_cre_iface.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    MElem* cp1 = root->GetNode("./cp1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get cp1", cp1 != 0);
+    string uid = cp1->Uid();
+    MIface* cp1r = iEnv->IfaceResolver()->GetIfaceByUid(uid);
+    CPPUNIT_ASSERT_MESSAGE("cp1 resolution failed", cp1r == cp1);
+
+    delete iEnv;
+}
 

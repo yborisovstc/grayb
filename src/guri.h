@@ -12,12 +12,10 @@ enum TNodeType
 {
     ENt_Unknown = 0,
     ENt_Node = 1,
-    ENt_Order = 2,	// Set order of node
     ENt_Move = 3, 	// Mutation - move node
     ENt_Rm = 4,   	// Mutation - removal
     ENt_Change = 5, 	// Change node attribute
     ENt_Cont = 6, 	// Change node content
-    ENt_Add = 7, 	// Add elem to node
     ENt_Import = 8, 	// Importing node
 };
 

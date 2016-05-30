@@ -52,8 +52,13 @@ class MVert: public MIface
 	virtual MVert* GetPair(TInt aInd) const = 0;
 	virtual TBool IsPair(const MVert* aPair) const = 0;
 	//virtual set<MVert*>& Pairs() = 0;
-	virtual void *MVert_DoGetObj(const char *aName) = 0;
-	template <class T> T* GetObj(T* aInst) {return aInst = static_cast<T*>(MVert_DoGetObj(aInst->Type()));};
+	// TODO [YB] We introduced local iface resolver here. It is restricted for some ifaces only
+	// The idea was that earlier the EBase() methos was used that return Base - not safe solution
+	// But in fact it's same, current resolver allows MElem (i.e. Base). To consider safer solution
+	// Currently MElem and MCompatChecker are allowe by resolver, MElem is used for getting Uri for logging
+	// Possible to use Uid() instead and introduce MCompatChecker getter
+	virtual MIface* MVert_DoGetObj(const char *aName) = 0;
+	template <class T> T* GetObj(T* aInst) {return aInst = dynamic_cast<T*>(MVert_DoGetObj(aInst->Type()));};
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};
     protected:

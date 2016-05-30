@@ -47,6 +47,7 @@ MElem::EIfu::EIfu()
     RegMethod("GetNode#2", 3);
     RegMethod("GetCont", 1);
     RegMethod("Mutate", 4);
+    RegMethod("Mutate#2", 3);
     RegMethod("IsProvided", 0);
     RegMethod("GetParent", 0);
     RegMethod("GetChromoSpec", 0);
@@ -54,6 +55,7 @@ MElem::EIfu::EIfu()
     RegMethod("RegisterChild", 1);
     RegMethod("GetUri", 0);
     RegMethod("GetUri#2", 1);
+    RegMethod("GetRUri", 1);
     RegMethod("DoGetObj", 1);
     RegMethod("GetIfi", 2);
     RegMethod("GetIfind", 3);
@@ -64,6 +66,10 @@ MElem::EIfu::EIfu()
     RegMethod("OnCompAdding", 1);
     RegMethod("CompsCount", 0);
     RegMethod("GetComp", 1);
+    RegMethod("AppendMutation", 1);
+    RegMethod("IsRemoved", 0);
+    RegMethod("IsHeirOf", 1);
+    RegMethod("IsComp", 1);
 }
 
 void MElem::EIfu::FromCtx(const TICacheRCtx& aCtx, string& aRes)
@@ -92,7 +98,7 @@ void MElem::EIfu::ToCtx(MElem* aHost, const string& aString, TICacheRCtx& aCtx)
 	do {
 	    end = aString.find_first_of(KArraySep, mid); 
 	    mid = end + 1;
-	} while (end != string::npos && aString.at(end - 1) == KRinvEscape);
+	} while (end != string::npos && aString.at(end - 1) == KEsc);
 	string elem = aString.substr(beg, (end == string::npos) ? string::npos : end - beg);
 	MElem* rq = aHost->GetNode(elem);
 	aCtx.push_back(rq);
@@ -1180,6 +1186,11 @@ ChromoNode Elem::AppendMutation(const ChromoNode& aMuta)
     return iMut->Root().AddChild(aMuta);
 }
 
+ChromoNode Elem::AppendMutation(TNodeType aType)
+{
+    return iMut->Root().AddChild(aType);
+}
+
 TBool Elem::AppendMutation(const string& aFileName)
 {
     TBool res = EFalse;
@@ -1296,8 +1307,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    MElem* ftarg = GetNode(rno.Attr(ENa_Targ));
 	    // Mutation is not local, propagate downward
 	    if (ftarg != NULL) {
-		ChromoNode& troot = ftarg->Mutation().Root();
-		ChromoNode madd = troot.AddChild(rno, ETrue, ETrue);
+		ChromoNode madd = ftarg->AppendMutation(rno);
 		madd.RmAttr(ENa_Targ);
 		// Redirect the mut to target: no run-time to keep the mut in internal nodes
 		// Propagate till target owning comp if run-time to keep hidden all muts from parent 
@@ -3152,9 +3162,10 @@ MElem* Elem::GetComp(TInt aInd)
 
 string Elem::Mid() const
 {
-    // Using local root insteat of true root
+    // Model Id is formed as full local URI (including  root) 
 //    return GetUri(iEnv->Root(), ETrue) + GUriBase::KIfaceSepS + MElem::Type();
-    return iEnv->Root()->Name() + "/" + GetUri(iEnv->Root(), ETrue);
+    //return iEnv->Root()->Name() + "/" + GetUri(iEnv->Root(), ETrue);
+    return GetUri(iEnv->Root()->GetMan(), ETrue);
 }
 
 MIface* Elem::Call(const string& aSpec, string& aRes)
@@ -3197,6 +3208,12 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	trialmode = Ifu::ToBool(args.at(3));
 	SetMutation(args.at(0));
 	Mutate(rtonly, checksafety, trialmode);
+    } else if (name == "Mutate#2") {
+	TBool rtonly, checksafety, trialmode;
+	rtonly = Ifu::ToBool(args.at(0));
+	checksafety = Ifu::ToBool(args.at(1));
+	trialmode = Ifu::ToBool(args.at(2));
+	Mutate(rtonly, checksafety, trialmode);
     } else if (name == "GetChromoSpec") {
 	aRes = GetChromoSpec();
     } else if (name == "EType") {
@@ -3209,6 +3226,9 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
     } else if (name == "GetUri#2") {
 	MElem* base = GetNode(args.at(0));
 	aRes = GetUri(base, ETrue);
+    } else if (name == "GetRUri") {
+	MElem* base = GetNode(args.at(0));
+	aRes = GetRUri(base);
     } else if (name == "DoGetObj") {
 	// TODO [YB] DoGetObj cannot be used here because it returns just void* prt to given iface
 	// Trivial casting this iface to MIface* can cause to wrong result if MIface is not the first
@@ -3299,6 +3319,23 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
     } else if (name == "GetComp") {
 	TInt ind = Ifu::ToInt(args.at(0));
 	res = GetComp(ind);
+    } else if (name == "AppendMutation") {
+	TMut mut(args.at(0));
+	AppendMutation(mut);
+    } else if (name == "IsRemoved") {
+	TBool rr = IsRemoved();
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "IsHeirOf") {
+	TBool rr = IsHeirOf(args.at(0));
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "IsComp") {
+	MElem* comp = GetNode(args.at(0));
+	if (comp == NULL) {
+	    throw (runtime_error("Cannot get agent" + args.at(0)));
+	} else {
+	    TBool rr = IsComp(comp);
+	    aRes = Ifu::FromBool(rr);
+	}
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }
@@ -3458,4 +3495,13 @@ TBool Elem::RegisterChild(const string& aChildUri)
     }
 
     return res;
+}
+
+void Elem::AppendMutation(const TMut& aMut)
+{
+    ChromoNode mut = iMut->Root().AddChild(aMut.Type());
+    for (TInt ct = 0; ct < aMut.ArgsCount(); ct++) {
+	TMut::TElem me = aMut.ArgAt(ct);
+	mut.SetAttr(me.first, me.second);
+    }
 }

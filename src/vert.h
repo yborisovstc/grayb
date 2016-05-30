@@ -27,7 +27,7 @@ class Vert: public Elem, public MVert
 	virtual MVert* GetPair(TInt aInd) const;
 	virtual TBool IsPair(const MVert* aPair) const;
 	//virtual set<MVert*>& Pairs();
-	virtual void *MVert_DoGetObj(const char *aName);
+	virtual MIface* MVert_DoGetObj(const char *aName);
 	// From Elem
 	virtual TBool OnCompChanged(MElem& aComp);
 	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue);

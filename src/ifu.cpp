@@ -4,9 +4,10 @@
 #include <sstream>
 #include "ifu.h" 
 
-string Ifu::KRinvSep = ",";
-char Ifu::KRinvEscape = '\\';
+char Ifu::KRinvSep = ',';
+char Ifu::KEsc = '\\';
 string Ifu::KArraySep = ";";
+char Ifu::KUidSep = '%';
 
 Ifu::Ifu()
 {
@@ -28,6 +29,26 @@ Ifu::Ifu(const string& aPars)
 	ss >> numv;
 	RegMethod(name, numv);
     } while (par_end != string::npos);
+}
+
+string Ifu::CombineIcSpec(const string& aName, const string& aSig)
+{
+    return aName + KRinvSep + aSig;
+}
+
+string Ifu::CombineIcSpec(const string& aName, const string& aSig, const string& aArg)
+{
+    return aName + KRinvSep + aSig + KRinvSep + EscCtrl(aArg, KRinvSep);
+}
+
+void Ifu::AddIcSpecArg(string& aSpec, const string& aArg)
+{
+    aSpec += KRinvSep + EscCtrl(aArg, KRinvSep);
+}
+
+void Ifu::AddIcSpecArg(string& aSpec, TBool aArg)
+{
+    aSpec += KRinvSep + EscCtrl(FromBool(aArg), KRinvSep);
 }
 
 void Ifu::ParseIcSpec(const string& aSpec, string& aName, string& aSig, vector<string>& aArgs) 
@@ -53,9 +74,9 @@ void Ifu::ParseIcSpec(const string& aSpec, string& aName, string& aSig, vector<s
 		do {
 		    arg_end = aSpec.find_first_of(KRinvSep, arg_mid); 
 		    arg_mid = arg_end + 1;
-		} while(arg_end != string::npos && aSpec.at(arg_end - 1) == KRinvEscape);
+		} while(arg_end != string::npos && aSpec.at(arg_end - 1) == KEsc);
 		string arg = aSpec.substr(arg_beg, (arg_end == string::npos) ? string::npos : arg_end - arg_beg);
-		aArgs.push_back(arg);
+		aArgs.push_back(DeEscCtrl(arg, KRinvSep));
 	    } while (arg_end != string::npos);
 	}
     }
@@ -119,8 +140,57 @@ void Ifu::ToStringArray(const string& aString, vector<string>& aRes)
 	do {
 	    end = aString.find_first_of(KArraySep, mid); 
 	    mid = end + 1;
-	} while (end != string::npos && aString.at(end - 1) == KRinvEscape);
+	} while (end != string::npos && aString.at(end - 1) == KEsc);
 	string elem = aString.substr(beg, (end == string::npos) ? string::npos : end - beg);
 	aRes.push_back(elem);
     } while (end != string::npos);
+}
+
+void Ifu::ParseUid(const string& aUid, string& aOid, string& aType)
+{
+    size_t oid_beg = 0, oid_end = 0;
+    oid_end = aUid.find_first_of(KUidSep, oid_beg); 
+    aOid = aUid.substr(oid_beg, (oid_end == string::npos) ? string::npos : oid_end - oid_beg);
+    if (oid_end != string::npos) {
+	size_t type_beg = oid_end + 1;
+	aType = aUid.substr(type_beg);
+    }
+}
+
+void Ifu::CombineUid(const string& aOid, const string& aType, string& aUid)
+{
+    aUid = aOid + KUidSep + aType;
+}
+
+TBool Ifu::IsSimpleIid(const string& aIid)
+{
+    size_t sep = aIid.find_first_of(KUidSep); 
+    return (sep == string::npos);
+}
+
+string Ifu::EscCtrl(const string& aInp, char aCtrl)
+{
+    string res;
+    for (string::const_iterator it = aInp.begin(); it != aInp.end(); it++) {
+	const char cc = *it;
+	if (cc == aCtrl) {
+	    res.push_back(KEsc);
+	}
+	res.push_back(cc);
+    }
+    return res;
+}
+
+string Ifu::DeEscCtrl(const string& aInp, char aCtrl)
+{
+    string res;
+    for (string::const_iterator it = aInp.begin(); it != aInp.end(); it++) {
+	const char cc = *it;
+	const char cn = ((it + 1) != aInp.end()) ? *(it +1) : 0x0;
+	if (cc == KEsc && cn == aCtrl) {
+	    continue;
+	}
+	res.push_back(cc);
+    }
+    return res;
 }

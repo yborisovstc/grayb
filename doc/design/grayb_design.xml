@@ -40,6 +40,8 @@
 		<revremark>Added <xref linkend="ds_ifnegot"/></revremark> </revision>
 	    <revision> <revnumber>0.12</revnumber> <date>14-Apr-2015</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="ds_mod"/></revremark> </revision>
+	    <revision> <revnumber>0.13</revnumber> <date>07-May-2016</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="ds_cplx_cont_strc"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -64,7 +66,12 @@
 	    <glossdef> <para>Connection Point</para> <para>
 		    Element that is used as endpoint of connections between systems.  
 		    </para></glossdef> </glossentry>
-	<glossentry id="gls_dhc"><glossterm>DHC</glossterm> <acronym>CP</acronym>
+	<glossentry id="gls_daa"><glossterm>DAA</glossterm> <acronym>DAA</acronym>
+	    <glossdef> <para>Distributed Agents Approach</para> <para>
+		    Approach of multi-agent system that assumes that the modes is distributed among several environments that 
+		    can be running on undependent executable enviromnents.
+		    Ref <xref linkend="ds_daa"/> </para></glossdef> </glossentry>
+	<glossentry id="gls_dhc"><glossterm>DHC</glossterm> <acronym>DHC</acronym>
 	    <glossdef> <para>Direct Hierarchical Chromosome</para> <para>
 		    Approach of multi-agent system definition that describes the model's structure directly. 
 		    Ref <xref linkend="ds_smc"/> </para></glossdef> </glossentry>
@@ -1526,7 +1533,7 @@
 	</sect2>
     </sect1>
 
-    <sect1 id="ds_cplx_cont"><title>Complex content of agent: pros and cons</title>
+    <sect1 id="ds_cplx_cont"><title>Complex content (multi-content) of agent: pros and cons</title>
 	<sect2><title>Intro</title>
 	    <simpara>There is proposal to add support of complex content of agent. Currently agents content is simple - just single string. 
 		The complex data can be implemented as set of named data, like map[string, string] where the key is data name, and the value is the data.
@@ -1612,6 +1619,68 @@
 		    field name. Win-win.</listitem>
 		<listitem></listitem>
 	    </orderedlist>
+	</sect2> 
+	<sect2 id="ds_cplx_cont_strc"><title>Continuation. Structured content</title>
+	    <sect3><title>Intro</title>
+		<simpara>There already was the proposal to introduce multi-content design solution for simpifying the model.
+		    Multicontent should ensure keeping several content elements including debug data. Howewer this 
+		    solution implementation was postponed till thorough design consideration.</simpara>
+	    </sect3>
+	    <sect3><title>Requirements</title>
+		<orderedlist>
+		    <listitem>Getting string representation of the whole value (inluding hier of contained content)</listitem>
+		    <listitem>Support of categories
+			<para>The categories helps the client to select the only required content.
+			    The categories could be for instance: read_only, debug, hidden etc. We need to consider predefined and
+			    settable categories.</para>
+		    </listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>From multi-content to structured content.</title>
+		<simpara>We can consider more common context model then multicontent. The need of complex content happens
+		    because in reality the content of agent can be complex. Of course the universal content used currently 
+		    (just string) doesn't creates any limitation itself for the content interpretation by agent.
+		    But the matter here is that content is also interface of agent to the world. If the content required 
+		    non-trivial interpretation than the interpretation rules/methods have also to be includen to the interface.
+		    This "inclusion" potentially can be avoided if we simplify the interpretation. This simplification should
+		    ensure that most common operation with content on client side can be done without scecific methods.
+		</simpara>
+		<simpara>Multi-content approach solves this task by straightforward way - it just separate the parts of 
+		    content. This allow client avoid such interpretation task as separation. This approach exploit the
+		    assumption that content consists of some parts that doesn't relate one to another. But in reality, there 
+		    can be relation within the content, i.e. the content can be structured in complex manner.</simpara>
+		<simpara>Why not use universal mechanism, like hipertext, to describe the structure (composition and relations)
+		    of content? Currently this seems to be superfluous. We need simpler but effective solution. In fact
+		    even multi-content solution is good enough. Whe just need to generalize this approach in order to
+		    cover as many use-cases as possible. So the proposal is to extend mutli-content solution with 
+		    support of some types of relations.</simpara>
+		<simpara>There could be several approaches here:</simpara>
+		<orderedlist>
+		    <listitem>Typified content.</listitem>
+		    <listitem>Universal content</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Typified content.</title>
+		<simpara>The idea is to introduce content of some predefined type. Generally the type from content point
+		    of view means relation. For instance we can introduce the type "tree node" that is the content part that
+		    relates to another content parts (leafs). Another example is array: content part has relation of type
+		    "owning" of other parts that also has relation to predefined set (for instance integer numeric set).</simpara>
+	    </sect3>
+	    <sect3><title>Universal content</title>
+		<simpara>The idea of universal content is to introduce specific single iface for content. The conent has its 
+		    own value but also is a container of contents instances. The container API is as: </simpara>
+		<itemizedlist>
+		    <listitem>Size - get size, 0 if no containment</listitem>
+		    <listitem>At(int aInd) - get by index</listitem>
+		    <listitem>At(const string&amp; aKey) - get by key</listitem>
+		    <listitem>Get(const string&amp; aHKey) - get by hierarhical key</listitem>
+		    <listitem>IsReadOnly()</listitem>
+		    <listitem>Value()</listitem>
+		</itemizedlist>
+		<simpara>Container allows getting component using hierarhical key (kind of uri in agents hier tree). The 
+		    step in hkey separates by "." symbol. Hkey example is: vector.end.x - x coordinate of vector end point.</simpara>
+		<simpara>Container iface covers the following containment type</simpara>
+	    </sect3>
 	</sect2>
     </sect1>
 
@@ -2190,6 +2259,7 @@
 		acess is direct, whereas for separate process there agents are existing in independent memory, so
 		cannot be accessed directly. In case of separate network node, the interaction should be performed
 		via some network protocole.</simpara>
+	    <simpara>Ref also <xref linkend="ds_irm"/> for discussion regarding using of iface resolution in models parts communication.</simpara>
 	</sect2>
 	<sect2><title>Refs</title>
 	    <biblioentry id="ref_crm_drds"> <abbrev>CRM_DRDS</abbrev>
@@ -2580,6 +2650,13 @@
 		</simpara>
 	    </sect3>
 	</sect2>
+	<sect2><title>RRC request method spec (ABNF)</title>
+	    <programlisting>
+		sep = "," ; Separator of parts
+		method = name sep sigid *(sep arg)
+		sigid = DIGIT ; Signature id (in case if there are more than one method with the same name)
+	    </programlisting>
+	</sect2>
 	<sect2 id="ds_daa_px"><title>Proxy design</title>
 	    <sect3><title>Proxy ifaces</title>
 		<simpara>Proxy should acts as base agent because it should be included into model instead of real agent. For instance
@@ -2730,7 +2807,7 @@
 		    <listitem>Add API to DES env in order to resolve "external" object such as agent observer
 			(Resolving external objects Env API - REO).
 			<para>In this approach Env just provides base agent with external object by ID but not creates proxy. This doesn't adapt Env API to
-			DAA but resolve the lack in unified call mechanism.</para>
+			    DAA but resolve the lack in unified call mechanism.</para>
 		    </listitem>
 		</orderedlist>
 		<simpara>Ref <xref linkend="ds_daa_ao_sper"/> for comparision of this two approaches.</simpara>
@@ -2793,7 +2870,8 @@
 	    <simpara>Actually iMan and aTop should be the same, but aTop is proxy, so the pointers differ.</simpara>
 	    <simpara>Possible solution would be to avoid such a duplication when creating proxy  - the proxy creator should
 		check if there is primary UID in the current model and to use this primary UID instead of proxy UID. Checking primary UID can
-	    be done with utilizing the fact that the UID is based on ablolute local URI of the agent. </simpara>
+		be done with utilizing the fact that the UID is based on ablolute local URI of the agent. Ref <xref linkend="ds_irm"/> for
+		improvement mechanism of iface resolution by UID.</simpara>
 	</sect2>
 	<sect2 id="ds_daa_iss"><title>Design issues to be considered</title>
 	    <orderedlist>
@@ -2808,6 +2886,57 @@
 	    <biblioentry id="ref_fi"> <abbrev>FI</abbrev>
 		<productname><ulink url="https://en.wikipedia.org/wiki/Fast_Infoset"/></productname>
 		<title>Fast Infoset</title> </biblioentry>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_irm"><title>How to improve iface resolution mechanism</title>
+	<sect2 id="ds_irm_intro"><title>Intro</title>
+	    <simpara>Currently we have two ifaces design and three resolution mechanism:</simpara>
+	    <orderedlist>
+		<listitem id="ds_irm_intro_im">Initail mechanism - local iface resolution
+		    <para>It was initially introduce in multiagents model: the "Base" CPP ifase was introduced that assumes that Base implementation
+			can implement any ifaces also and embed theirs resolution by iface name (i.e. iface type, static prop of iface).
+			The abstract method "DoGetObj" was added to "Base" iface for that. There was not dedicated CPP iface for iface introduced on
+			initial stage. DoGetObj just returns void so the Base cient is responsible to do proper cast the returned value to
+			iface requested.</para>
+		</listitem>
+		<listitem>Topology specified resolution
+		    <para>This mechanism is used to resolve iface globally depending on context (topology) of requested agent. This is key part
+			of multiagent system.</para>
+		</listitem>
+		<listitem>Mechanism introduced in the scope of <xref linkend="gls_daa"/> implementation.
+		    <para>In the scope <xref linkend="gls_daa"/> the elementary CPP iface "MIface" was introduced for agents ifaces. This MIface
+			exposes method "Call" for unified request to iface and methods "Uid" and "Mid" for identifying. In fact all agents ifaces should
+			inherit this core "MIface" iface. This elementary iface was introduce in order to enable agents communication within distributed
+			environment. This idea was to implement the communication between distributed parts as remote procedure, that greatly simplifies the
+			overall <xref linkend="gls_daa"/> implementation. To do that we need to have thus object of remote call - this is elementary iface
+			that supports unified remote call method "Call". Then we need to uniquely identify the remote call object - this is done vis 
+			introducing elementary iface method "Uid". Finally we need to provide the communincation layer (currently des server session) with
+			simple mechanism of resolution of remote call object. This resolution mechanism currently (20160501) is implemented on server
+			session vis map with iface UID as key. But this solution seems not good. The better would be to implement iface resolution mechanism
+			on env or even base agent level. Because we already have initial mechanism of resolution implemented (ref <xref linkend="ds_irm_intro_im"/>)
+			it makes sense to improve the mechanism in order to support full iface resolution.</para>
+		</listitem>
+	    </orderedlist>
+	    <simpara>Full iface resolution mechanism is required for instance to avoid creation of proxies duplicating original local iface,
+		ref <xref linkend="ds_daa_pxdup"/></simpara>
+	</sect2>
+	<sect2 id="ds_irm_fil"><title>Global iface resolution</title>
+	    <simpara>The iface resolution required for <xref linkend="gls_daa"/> is similar to existing local iface resoluton implemented in base agent
+		(ref <xref linkend="ds_irm_intro_im"/>. The only difference is that the former should resolve iface in native hier tree. Why
+		we need such "extension" of local iface resolution? This is because this mechanism is used for remote call but the remote call mechanism
+		is implemented "above" the model. So to specify the object of remote call we need to specify the agent first and then the iface of agent (local
+		iface). We will call iface resolution using for <xref linkend="gls_daa"/> as "global resolution" in contrast of local iface resulution.
+		Correspoidingly we will say that MIface UID is iface "global" identifier in contrast of iface type - identifier using for local iface
+		resolution. So global iface identifier currently is combined from agent URI (agent identifier in the current env) and local iface identifier
+		(iface type). To be exact this global identifier is not global in scope of the whole distributed model but only in the scope of environments that
+		combine the whole model. Do MIface UID is the identifier that allows iface resolution in the scope of environment. Potentially we can
+		introduce "true" global identifier (GUID) that allows to resolve iface in global scope (in the scope of the whole distributed model).</simpara>
+	    <simpara>What should be UID in case of proxy? For proxy it gets a bit complicated to create UID. The first part of UID is clear - it should be
+		URI to the proxy manager. What next? In fact proxy manager can have more that one proxy with the same local iface. So the second part would
+		be proxy UID in the scope of proxy manager. It can be proxy context for instance. The context is unique within proxy manager scope so
+		can be used for proxy identifier. It is clear that with this approach we have to specifically implement proxy manager local iface
+		resolution because the UID actually gets not truly local but needs look up to the owned proxies too.</simpara>
 	</sect2>
     </sect1>
 
@@ -2836,6 +2965,7 @@
 	</sect2>
 	<sect2><title>Support of Multi-content</title>
 	    <simpara>To add support of multi-content: named content. This would simplify many cases where embedded "property" agents are used now.</simpara>
+	    <simpara>Ref discussion in <xref linkend="ds_cplx_cont"/></simpara>
 	</sect2>
 	<sect2><title>Support of connection by agent.</title>
 	    <simpara>The idea is to avoid using separate agenent for the connection. Instead the owner can specify the property in the agent which input are 
@@ -2876,6 +3006,9 @@
 		not extending via mutation, because agent is an "atom" in such a model.</simpara>
 	    <simpara>We will need our own specific envionment for such a model to get and deliever messages from/to agents (somethig like
 		glib events loop etc.)</simpara>
+	</sect2>
+	<sect2><title>To implement improved iface resolution mechanism</title>
+	    <simpara>Ref <xref linkend="ds_irm"/></simpara>
 	</sect2>
     </sect1>
 

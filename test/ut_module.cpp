@@ -138,7 +138,7 @@ void Ut_mod::test_ModInt1()
     CPPUNIT_ASSERT_MESSAGE("Import is failed", impe != NULL);
     // Try to import node to from module
     // Try to add node with parent from module
-    ChromoNode mut = root->Mutation().Root().AddChild(ENt_Node);
+    ChromoNode mut = root->AppendMutation(ENt_Node);
     mut.SetAttr(ENa_Parent, "/test/Modules/ut_mod_int_1m/Mod_root/Mod_comp_1");
     mut.SetAttr(ENa_Id, "v3");
     root->Mutate();

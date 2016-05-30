@@ -158,7 +158,9 @@ class Elem: public MElem
 	virtual void SetMutation(const ChromoNode& aMuta);
 	virtual void SetMutation(const string& aMutSpec);
 	virtual ChromoNode AppendMutation(const ChromoNode& aMuta);
+	virtual ChromoNode AppendMutation(TNodeType aType);
 	virtual TBool AppendMutation(const string& aFileName);
+	virtual void AppendMutation(const TMut& aMut);
 	string PName() const;
 	//static void ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct);
     public:
@@ -167,7 +169,7 @@ class Elem: public MElem
 	virtual string GetChromoSpec() const;
 	virtual const MChromo& Chromos() const { return *iChromo;};
 	virtual MChromo& Chromos() { return *iChromo;};
-	virtual MChromo& Mutation() { return *iMut;};
+	//virtual MChromo& Mutation() { return *iMut;};
 	// Gets the comp with given type and owning given element
 	virtual MElem* GetCompOwning(const string& aParent, MElem* aElem);
 	virtual MElem* GetCompOwning(MElem* aElem);

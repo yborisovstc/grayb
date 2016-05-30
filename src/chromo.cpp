@@ -1,6 +1,104 @@
 #include "chromo.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdexcept> 
+
+
+const string TMut::KCtrls = string(TMut::KSep, TMut::KAttrSep);
+
+TMut::TMut(TNodeType aType): mType(aType)
+{
+}
+
+TMut::TMut(TNodeType aType, TNodeAttr aAttr0, const string& aAttr0Val):
+    mType(aType)
+{
+    mAttrs.push_back(TElem(aAttr0, aAttr0Val));
+}
+
+TMut::TMut(TNodeType aType, TNodeAttr aAttr0, const string& aAttr0Val, TNodeAttr aAttr1, const string& aAttr1Val):
+    mType(aType)
+{
+    mAttrs.push_back(TElem(aAttr0, aAttr0Val));
+    mAttrs.push_back(TElem(aAttr1, aAttr1Val));
+}
+
+TMut::TMut(TNodeType aType, TNodeAttr aAttr0, const string& aAttr0Val, TNodeAttr aAttr1, const string& aAttr1Val,
+	TNodeAttr aAttr2, const string& aAttr2Val): mType(aType)
+{
+    mAttrs.push_back(TElem(aAttr0, aAttr0Val));
+    mAttrs.push_back(TElem(aAttr1, aAttr1Val));
+    mAttrs.push_back(TElem(aAttr2, aAttr2Val));
+}
+
+TMut::TMut(const string& aSpec)
+{
+    size_t type_beg = 0, type_end = 0;
+    type_end = aSpec.find_first_of(KSep, type_beg); 
+    string types = aSpec.substr(type_beg, (type_end == string::npos) ? string::npos : type_end - type_beg);
+    mType = GUri::NodeType(types);
+    if (mType == ENt_Unknown) {
+	throw (runtime_error("Incorrect TMut type: " + types));
+    }
+    if (type_end != string::npos) {
+	size_t attr_end = type_end;
+	size_t attr_beg;
+	do {
+	    attr_beg = attr_end + 1;
+	    size_t attr_mid = attr_beg;
+	    // Find first non-escaped separator
+	    do {
+		attr_end = aSpec.find_first_of(KSep, attr_mid); 
+		attr_mid = attr_end + 1;
+	    } while (attr_end != string::npos && aSpec.at(attr_end - 1) == KEsc);
+	    string attr = aSpec.substr(attr_beg, (attr_end == string::npos) ? string::npos : attr_end - attr_beg);
+	    // Parse arg
+		size_t attrtype_end = attr.find_first_of(KAttrSep); 
+		if (attrtype_end != string::npos) {
+		    string attrtype = attr.substr(0, attrtype_end);
+		    TNodeAttr atype = GUri::NodeAttr(attrtype);
+		    if (atype == ENa_Unknown) {
+			throw (runtime_error("Incorrect TMut attr type: " + atype));
+		    }
+		    size_t attrval_beg = attrtype_end + 1;
+		    string attrval = attr.substr(attrval_beg, string::npos);
+		    mAttrs.push_back(TElem(atype, attrval));
+		} else {
+		    throw (runtime_error("Incorrect TMut attr: " + attr));
+		}
+	} while (attr_end != string::npos);
+    }
+}
+
+TMut::operator string() const
+{
+    string res(GUri::NodeTypeName(mType));
+    for (vector<TElem>::const_iterator it = mAttrs.begin(); it != mAttrs.end(); it++) {
+	res += KSep + GUri::NodeAttrName(it->first) + KAttrSep + EscapeCtrls(it->second);
+    }
+    return res;
+}
+
+const TMut::TElem& TMut::ArgAt(TInt aInd) const
+{
+    __ASSERT(aInd < mAttrs.size());
+    return mAttrs.at(aInd);
+}
+
+string TMut::EscapeCtrls(const string& aInp)
+{
+    string res;
+    for (string::const_iterator it = aInp.begin(); it != aInp.end(); it++) {
+	const char cc = *it;
+	if (cc == KSep || cc == KAttrSep || cc == KEsc) {
+	    res.push_back(KEsc);
+	}
+	res.push_back(cc);
+    }
+    return res;
+}
+
+
 
 string Rank::ToString() const
 {

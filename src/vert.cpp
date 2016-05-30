@@ -28,6 +28,11 @@ Vert::Vert(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv
     // Create component for run-time extentions
     Elem* agents = Provider()->CreateNode("Elem", "Agents", this, iEnv);
     __ASSERT(agents != NULL);
+    // TODO [YB] Early construction in this place creates the problem:
+    // AppendComp sends notificaion of comps added thru owning chain
+    // But this instance of Vert is not registered by owner yet, so
+    // if observer tries to get comp added then null will be returned
+    // To consider the standard approach of deferred construction.
     TBool res = AppendComp(agents);
     __ASSERT(res);
 }
@@ -49,9 +54,16 @@ Vert::Vert(MElem* aMan, MEnv* aEnv):Elem(Type(), aMan, aEnv)
 
 }
 
-void *Vert::MVert_DoGetObj(const char *aName)
+MIface* Vert::MVert_DoGetObj(const char *aName)
 {
-    return DoGetObj(aName);
+    MIface* res = NULL;
+    if (strcmp(aName, MElem::Type()) == 0) {
+	res = dynamic_cast<MElem*>(this);
+    }
+    else if (strcmp(aName, MCompatChecker::Type()) == 0) {
+	res = dynamic_cast<MCompatChecker*>(this);
+    }
+    return res;
 }
 
 void *Vert::DoGetObj(const char *aName)
@@ -249,15 +261,7 @@ MIface* Vert::Call(const string& aSpec, string& aRes)
 	TBool rr = Connect(vpair);
 	aRes = Ifu::FromBool(rr);
     } else if (name == "MVert_DoGetObj") {
-	void* obj = MVert_DoGetObj(args.at(0).c_str());
-	string itype = args.at(0);
-	if (itype == MElem::Type()) {
-	    res = (MElem*) obj;
-	} else if (itype == MVert::Type()) {
-	    res = (MVert*) obj;
-	} else {
-	    __ASSERT(false);
-	}
+	res = MVert_DoGetObj(args.at(0).c_str());
     } else if (name == "PairsCount") {
 	TInt pc = PairsCount();
 	aRes = Ifu::FromInt(pc);
