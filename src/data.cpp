@@ -281,15 +281,15 @@ TBool DInt::Update()
 {
     TBool res = EFalse;
     MDIntGet* inp = NULL;
-    Elem* einp = ToElem(GetNode("./../../Capsule/inp"));
+    MElem* einp = GetNode("./../../Capsule/inp");
     if (einp == NULL) {
-	einp = ToElem(GetNode("./../../Capsule/Inp"));
+	einp = GetNode("./../../Capsule/Inp");
     }
     if (einp != NULL) {
 	Vert* vert = einp->GetObj(vert);
 	MVert* pair = vert->GetPair(0);
 	if (pair != NULL) {
-	    Elem* inpe = pair->GetObj(inpe);
+	    MElem* inpe = pair->GetObj(inpe);
 	    inp = (MDIntGet*) inpe->GetSIfiC(MDIntGet::Type(), this);
 	    if (inp != NULL) {
 		TInt idata = inp->Value();

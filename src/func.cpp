@@ -117,7 +117,7 @@ void *AFunInt::DoGetObj(const char *aName)
 void AFunInt::SetRes(TInt aData)
 {
     if (mData != aData) {
-	Elem* host = ToElem(iMan->GetMan());
+	MElem* host = iMan->GetMan();
 	Logger()->Write(MLogRec::EInfo, host, "Updated [%d <- %d]", aData, mData);
 	mData = aData;
 	NotifyUpdate();
@@ -235,10 +235,10 @@ void *AFunIntRes::DoGetObj(const char *aName)
 TBool AFunIntRes::HandleIoChanged(MElem& aContext, MElem* aCp)
 {
     TBool res = ETrue;
-    Vert* vert = aCp->GetObj(vert);
+    MVert* vert = aCp->GetObj(vert);
     MVert* pair = vert->GetPair(0);
     if (pair != NULL) {
-	Vert* vpair = pair->GetObj(vpair);
+	MElem* vpair = pair->GetObj(vpair);
 	if (aCp->Name() == "inp") {
 	    // Check input change
 	    MDIntGet* dget = (MDIntGet*) vpair->GetSIfiC(MDIntGet::Type(), this);
@@ -260,12 +260,12 @@ TBool AFunIntRes::HandleIoChanged(MElem& aContext, MElem* aCp)
 
 void AFunIntRes::UpdateOutp()
 {
-    Elem* out = GetNodeE("./../../Capsule/out");
+    MElem* out = GetNode("./../../Capsule/out");
     if (out != NULL) {
-	Vert* vert = out->GetObj(vert);
+	MVert* vert = out->GetObj(vert);
 	MVert* pair = vert->GetPair(0);
 	if (pair != NULL) {
-	    Vert* vpair = pair->GetObj(vpair);
+	    MElem* vpair = pair->GetObj(vpair);
 	    MDIntSet* dset = (MDIntSet*) vpair->GetSIfiC(MDIntSet::Type(), this);
 	    if (dset != NULL) {
 		dset->SetValue(mData);

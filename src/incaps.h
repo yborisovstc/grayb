@@ -15,7 +15,7 @@ class Incaps: public Elem, public MACompsObserver
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp);
     protected:
-	TBool IsPtOk(Elem& aContext, Elem* aPt);
+	TBool IsPtOk(MElem& aContext, MElem* aPt);
 };
 
 #endif

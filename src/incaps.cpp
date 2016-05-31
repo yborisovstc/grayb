@@ -48,18 +48,18 @@ void *Incaps::DoGetObj(const char *aName)
     return res;
 }
 
-TBool Incaps::IsPtOk(Elem& aContext, Elem* aPt) {
+TBool Incaps::IsPtOk(MElem& aContext, MElem* aPt) {
     __ASSERT(aPt != NULL);
     TBool res = EFalse;
-    Elem* man = ToElem(aContext.GetCompOwning("Incaps", aPt));
+    MElem* man = aContext.GetCompOwning("Incaps", aPt);
     if (man != NULL) {
 	if (man->GetMan() == &aContext) {
-	    Elem* caps = man->GetNodeE("./Capsule");
+	    MElem* caps = man->GetNode("./Capsule");
 	    res = caps->IsComp(aPt);
 	}
     }
     else {
-	man = ToElem(aContext.GetCompOwning("Syst", aPt));
+	man = aContext.GetCompOwning("Syst", aPt);
 	if ( man != NULL) {
 	    if (man->GetMan() == &aContext) {
 		res = aPt->EType() == "ConnPoint";
@@ -83,10 +83,10 @@ TBool Incaps::HandleCompChanged(MElem& aContext, MElem& aComp)
 	MVert* cp1 = edge->Point1();
 	MVert* cp2 = edge->Point2();
 	if (cp1 != ref1 || cp2 != ref2) {
-	    Elem* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
-	    Elem* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
-	    TBool isptok1 = (ref1 == NULL || IsPtOk(*ToElem(&aContext), pt1));
-	    TBool isptok2 = (ref2 == NULL || IsPtOk(*ToElem(&aContext), pt2));
+	    MElem* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
+	    MElem* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
+	    TBool isptok1 = (ref1 == NULL || IsPtOk(aContext, pt1));
+	    TBool isptok2 = (ref2 == NULL || IsPtOk(aContext, pt2));
 	    if (isptok1 && isptok2) {
 		if (cp1 != NULL && ref1 != cp1) edge->Disconnect(cp1);
 		if (cp2 != NULL && ref2 != cp2) edge->Disconnect(cp2);
@@ -104,15 +104,13 @@ TBool Incaps::HandleCompChanged(MElem& aContext, MElem& aComp)
 			if (cp1 == NULL) res = edge->ConnectP1(ref1);
 			if (res && cp2 == NULL) res = edge->ConnectP2(ref2);
 			if (!res) {
-			    Elem* host = ToElem(iMan->GetMan());
-			    Logger()->Write(MLogRec::EErr, ToElem(&aComp), "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
+			    Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
 			}
 		    }
 		    else {
 			TBool c1 = pt1checker->IsCompatible(pt2);
 			TBool c2 = pt2checker->IsCompatible(pt1);
-			Elem* host = ToElem(iMan->GetMan());
-			Logger()->Write(MLogRec::EErr, ToElem(&aComp), "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
+			Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
 		    }
 
 		} else {
@@ -121,9 +119,8 @@ TBool Incaps::HandleCompChanged(MElem& aContext, MElem& aComp)
 		    else if (cp2 == NULL && ref2 != NULL) edge->ConnectP2(ref2);
 		}
 	    } else {
-		Elem* pt = isptok1 ? pt2 : pt1;
-		Elem* host = ToElem(iMan->GetMan());
-		Logger()->Write(MLogRec::EErr, ToElem(&aComp), "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
+		MElem* pt = isptok1 ? pt2 : pt1;
+		Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
 	    }
 	}
     }
