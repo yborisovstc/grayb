@@ -357,7 +357,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
     if (res == NULL) {
 	// Redirect to internal point or pair depending on the requiestor
-	Elem* intcp = GetNodeE("./../../Int");
+	MElem* intcp = GetNode("./../../Int");
 	if (intcp != NULL && !ctx.IsInContext(intcp)) {
 	    rr = intcp->GetIfi(aName, &ctx);
 	    InsertIfCache(aName, rctx, intcp, rr);
@@ -369,7 +369,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 		TInt count = vhost->PairsCount();
 		for (TInt ct = 0; ct < count; ct++) {
 		    MVert* pair = vhost->GetPair(ct);
-		    Elem* ep = pair->GetObj(ep);
+		    MElem* ep = pair->GetObj(ep);
 		    if (ep != NULL && !ctx.IsInContext(ep)) {
 			rr = ep->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, ep, rr);
@@ -380,9 +380,9 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
     // Responsible pairs not found, redirect to upper layer
     if (rr.first == rr.second && iMan != NULL) {
-	Elem* host = ToElem(iMan->GetMan());
-	Elem* hostmgr = ToElem(host->GetMan());
-	Elem* mgr = hostmgr->Name() == "Capsule" ? ToElem(hostmgr->GetMan()) : hostmgr;
+	MElem* host = iMan->GetMan();
+	MElem* hostmgr = host->GetMan();
+	MElem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
 	if (mgr != NULL && !ctx.IsInContext(mgr)) {
 	    rr = mgr->GetIfi(aName, &ctx);
 	    InsertIfCache(aName, rctx, mgr, rr);
@@ -394,7 +394,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 TBool ExtenderAgent::IsCompatible(MElem* aPair, TBool aExt)
 {
     TBool res = EFalse;
-    Elem* intcp = GetNodeE("./../../Int");
+    MElem* intcp = GetNode("./../../Int");
     MCompatChecker* mint = (intcp != NULL) ? (MCompatChecker*) intcp->GetSIfiC(MCompatChecker::Type(), this) : NULL;
     if (mint != NULL) {
 	res = mint->IsCompatible(aPair, !aExt);
@@ -547,17 +547,17 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
     if (res == NULL && aCtx != NULL) {
 	Base* master = aCtx->Requestor();
-	Elem* emaster = master->GetObj(emaster);
+	MElem* emaster = master->GetObj(emaster);
 	const RqContext* hostctx = aCtx->Ctx();
 	Base* rqst = aCtx->Ctx() != NULL ? aCtx->Ctx()->Requestor(): NULL;
 	if (rqst != NULL) {
 	    // Requestor is specified, so try to redirect basing on it
-	    Elem* erqst = rqst->GetObj(erqst);
+	    MElem* erqst = rqst->GetObj(erqst);
 	    TBool iscomp = emaster->IsComp(erqst);
 	    if (iscomp) {
 		// Request comes from internal CP - forward it to upper layer
 		if (iMan != NULL && !ctx.IsInContext(iMan)) {
-		    Elem* mgr =  ToElem(iMan->GetMan()->GetMan());
+		    MElem* mgr =  iMan->GetMan()->GetMan();
 		    if (mgr != NULL && !ctx.IsInContext(mgr)) {
 			rr = mgr->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, mgr, rr);
@@ -569,10 +569,10 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		// Request from not internals
 		// Find associated pair in context
 		Base* apair = NULL;
-		Elem* pcomp = NULL;
+		MElem* pcomp = NULL;
 		Base* ctxe = rqst;
 		const RqContext* cct = aCtx->Ctx();
-		Elem* host =  ToElem(iMan->GetMan());
+		MElem* host = iMan->GetMan();
 		TBool isextd = EFalse;
 		// TODO [YB] To cleanup
 		while (ctxe != NULL && pcomp == NULL) {
@@ -597,12 +597,12 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 			// Find associated pairs pin within the context
 			ASocket* psock = apair->GetObj(psock);
 			if (psock != NULL) {
-			    Elem* pereq = psock->GetPin(cct);
+			    MElem* pereq = psock->GetPin(cct);
 			    if (pereq != NULL) {
 				GUri uri;
 				// Using only name as signature of socket pin. This is because even the compatible types can differ
 				uri.AppendElem("*", pereq->Name());
-				pcomp = host->GetNodeE(uri);
+				pcomp = host->GetNode(uri);
 			    }
 			}
 		    }
@@ -617,13 +617,13 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    // TODO [YB] To add checking if requiested iface is supported, ref md "sec_refac_conncomp"
 	    // TODO [YB] Probably routing to pair needs to be done first, before the routing to pins
 	    if (rr.first == rr.second) {
-		Elem* man = ToElem(iMan->GetMan());
+		MElem* man = iMan->GetMan();
 		MVert* vman = man->GetObj(vman);
 		if (vman != NULL) {
 		    TInt pcount = vman->PairsCount();
 		    for (TInt ct = 0; ct < pcount && res == NULL; ct++) {
 			MVert* pair = vman->GetPair(ct);
-			Elem* pe = pair->GetObj(pe);
+			MElem* pe = pair->GetObj(pe);
 			if (!ctx.IsInContext(pe)) {
 			    rr = pe->GetIfi(aName, &ctx);
 			    InsertIfCache(aName, rctx, pe, rr);
@@ -633,9 +633,9 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    }
 	    // Redirect to upper layer
 	    if (rr.first == rr.second && iMan != NULL) {
-		Elem* host = ToElem(iMan->GetMan());
-		Elem* hostmgr = ToElem(host->GetMan());
-		Elem* mgr = hostmgr->Name() == "Capsule" ? ToElem(hostmgr->GetMan()) : hostmgr;
+		MElem* host = iMan->GetMan();
+		MElem* hostmgr = host->GetMan();
+		MElem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
 		if (mgr != NULL && !ctx.IsInContext(mgr)) {
 		    rr = mgr->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, mgr, rr);
@@ -645,7 +645,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	else {
 	    // Requestor not specified, anonymous request
 	    if (!resok) {
-		Elem* man = ToElem(iMan->GetMan());
+		MElem* man = iMan->GetMan();
 		// Redirect to internal pins. Add host into context, this will prevent internals to redirect
 		// TODO [YB] To avoid routing directly from agent excluding host. This causes incorrect context
 		for (TInt ci = 0; ci < man->CompsCount() && res == NULL; ci++) {
@@ -660,13 +660,13 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    // TODO [YB] To add checking if requiested iface is supported, ref md "sec_refac_conncomp"
 	    // TODO [YB] Probably routing to pair needs to be done first, before the routing to pins
 	    if (rr.first == rr.second) {
-		Elem* man = ToElem(iMan->GetMan());
+		MElem* man = iMan->GetMan();
 		MVert* vman = man->GetObj(vman);
 		if (vman != NULL) {
 		    TInt pcount = vman->PairsCount();
 		    for (TInt ct = 0; ct < pcount && res == NULL; ct++) {
 			MVert* pair = vman->GetPair(ct);
-			Elem* pe = pair->GetObj(pe);
+			MElem* pe = pair->GetObj(pe);
 			if (!ctx.IsInContext(pe)) {
 			    rr = pe->GetIfi(aName, &ctx);
 			    InsertIfCache(aName, rctx, pe, rr);
@@ -676,9 +676,9 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    }
 	    // Redirect to upper layer
 	    if (rr.first == rr.second && iMan != NULL && !ctx.IsInContext(iMan)) {
-		Elem* host = ToElem(iMan->GetMan());
-		Elem* hostmgr = ToElem(host->GetMan());
-		Elem* mgr = hostmgr->Name() == "Capsule" ? ToElem(hostmgr->GetMan()) : hostmgr;
+		MElem* host = iMan->GetMan();
+		MElem* hostmgr = host->GetMan();
+		MElem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
 		if (mgr != NULL && !ctx.IsInContext(mgr)) {
 		    rr = mgr->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, mgr, rr);
@@ -706,7 +706,7 @@ TBool ASocket::IsCompatible(MElem* aPair, TBool aExt)
 	    cp = ecp;
 	}
 	if (cp != NULL) {
-	    Elem* host = ToElem(iMan->GetMan());
+	    MElem* host = iMan->GetMan();
 	    for (TInt ci = 0; ci < host->CompsCount() && res; ci++) {
 		MElem *comp = host->GetComp(ci);
 		if (comp->Name() != "Agents" && comp->Name() != "Logspec") {
@@ -738,13 +738,12 @@ MElem* ASocket::GetExtd()
     return NULL;
 }
 
-Elem* ASocket::GetPin(const RqContext* aCtx)
+MElem* ASocket::GetPin(const RqContext* aCtx)
 {
-    Elem* res = NULL;
-    Elem* host = ToElem(iMan->GetMan());
+    MElem* res = NULL;
+    MElem* host = iMan->GetMan();
     for (TInt ci = 0; ci < host->CompsCount() && res == NULL; ci++) {
-	MElem *mcomp = host->GetComp(ci);
-	Elem* comp = ToElem(mcomp);
+	MElem *comp = host->GetComp(ci);
 	if (comp->Name() != "Agents" && comp->Name() != "Logspec") {
 	    if (aCtx->IsInContext(comp)) {
 		res = comp;

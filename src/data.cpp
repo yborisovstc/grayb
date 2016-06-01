@@ -53,22 +53,21 @@ TBool DataBase::HandleCompChanged(MElem& aContext, MElem& aComp)
 		cp = caps->GetCompOwning("ConnPointOut", &aComp);
 	    }
 	    if (cp != NULL) {
-		Elem& context = *ToElem(&aContext);
-		res = HandleIoChanged(context, ToElem(cp));
+		res = HandleIoChanged(aComp, cp);
 	    }
 	}
     }
     return res;
 }
 
-TBool DataBase::HandleIoChanged(Elem& aContext, Elem* aCp)
+TBool DataBase::HandleIoChanged(MElem& aContext, MElem* aCp)
 {
     return ETrue;
 }
 
 void DataBase::NotifyUpdate()
 {
-    Elem* eout = ToElem(GetNode("./../../Capsule/out"));
+    MElem* eout = GetNode("./../../Capsule/out");
     // TODO [YB] Scheme of getting iface should be enough to get MDataObserver directly from eout. Seems the chunk below is redundant.
     if (eout != NULL) {
 	RqContext ctx(this);
@@ -113,9 +112,9 @@ void *DataBase::DoGetObj(const char *aName)
 
 void DataBase::UpdateProp()
 {
-    Elem* eprop = ToElem(GetNode("./../../Value"));
+    MElem* eprop = GetNode("./../../Value");
     if (eprop != NULL) {
-	Elem* etype = ToElem(GetNode("./../../Type"));
+	MElem* etype = GetNode("./../../Type");
 	if (etype == NULL) {
 	    string res;
 	    ToString(res);
@@ -132,7 +131,7 @@ void DataBase::UpdateProp()
 	
 TBool DataBase::IsLogeventUpdate() 
 {
-    Elem* node = ToElem(GetNode("./../../Logspec/Update"));
+    MElem* node = GetNode("./../../Logspec/Update");
     return node != NULL;
 }
 
@@ -497,7 +496,7 @@ bool DVar::ToString(string& aData)
 
 }
 
-TBool DVar::HandleIoChanged(Elem& aContext, Elem* aCp)
+TBool DVar::HandleIoChanged(MElem& aContext, MElem* aCp)
 {
     TBool res = ETrue;
     if (aCp->Name() == "inp" || aCp->Name() == "Inp") {
@@ -517,7 +516,7 @@ TBool DVar::Update()
     TBool res = EFalse;
     string old_value;
     ToString(old_value);
-    Elem* inp = GetInp();
+    MElem* inp = GetInp();
     if (inp != NULL) {
 	RqContext ctx(this);
 	MDVarGet* vget = (MDVarGet*) inp->GetSIfi(MDVarGet::Type(), &ctx);
@@ -542,11 +541,11 @@ TBool DVar::Update()
     return res;
 }
 
-Elem* DVar::GetInp()
+MElem* DVar::GetInp()
 {
-    Elem* einp = ToElem(GetNode("./../../Capsule/inp"));
+    MElem* einp = GetNode("./../../Capsule/inp");
     if (einp == NULL) {
-	einp = ToElem(GetNode("./../../Capsule/Inp"));
+	einp = GetNode("./../../Capsule/Inp");
     }
     return einp;
 }

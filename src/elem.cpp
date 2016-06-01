@@ -1843,7 +1843,7 @@ TBool Elem::MoveComp(MElem* aComp, const ChromoNode& aDest)
 	// Check first if dest exists 
 	vector<MElem*>::iterator dit;
 	for (dit = iComps.begin(); dit != iComps.end(); dit++) {
-	    Elem* ee = ToElem(*dit);
+	    MElem* ee = *dit;
 	    if (ee->Chromos().Root().Handle() == aDest.Handle()) break;
 	}
 	__ASSERT(dit != iComps.end());
@@ -1851,7 +1851,7 @@ TBool Elem::MoveComp(MElem* aComp, const ChromoNode& aDest)
     iComps.erase(it);
     if (aDest.Handle() != NULL) {
 	for (it = iComps.begin(); it != iComps.end(); it++) {
-	    Elem* ee = ToElem(*it);
+	    MElem* ee = *it;
 	    if (ee->Chromos().Root().Handle() == aDest.Handle()) break;
 	}
 	__ASSERT(it != iComps.end());
@@ -3125,6 +3125,7 @@ TInt Elem::GetCapacity() const
     return res;
 }
 
+// TODO [YB] To move to MElem and remove ToElem
 void Elem::LogComps() const
 {
     for (vector<MElem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {

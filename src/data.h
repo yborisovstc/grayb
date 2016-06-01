@@ -15,7 +15,7 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable, public M
 	TBool FromString(const string& aType, const string& aData); 
 	virtual TBool FromString(const string& aData); 
 	virtual bool ToString(string& aData); 
-	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
+	virtual TBool HandleIoChanged(MElem& aContext, MElem* aCp);
 	bool ToString(string& aType, string& aData);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
@@ -230,7 +230,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	DVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~DVar();
 	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp);
-	virtual TBool HandleIoChanged(Elem& aContext, Elem* aCp);
+	virtual TBool HandleIoChanged(MElem& aContext, MElem* aCp);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MUpdatable
@@ -244,7 +244,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	// From MDVarSet
 	virtual Elem* VarSetBase();
     protected:
-	Elem* GetInp();
+	MElem* GetInp();
 	TBool Init(const string& aString, MDVarGet* aInp = NULL);
     protected:
 	HBase* mData;

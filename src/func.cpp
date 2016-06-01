@@ -61,12 +61,12 @@ void FuncBase::OnDataChanged()
 
 void FuncBase::NotifyUpdate()
 {
-    Elem* eout = GetNodeE("./../../Capsule/out");
+    MElem* eout = GetNode("./../../Capsule/out");
     if (eout != NULL) {
 	MVert* mvout = eout->GetObj(mvout);
 	MVert* mpair = mvout->GetPair(0);
 	if (mpair != NULL) {
-	    Elem* epair = mpair->GetObj(epair);
+	    MElem* epair = mpair->GetObj(epair);
 	    if (epair != NULL) {
 		MDataObserver* obsr = (MDataObserver*) epair->GetSIfiC(MDataObserver::Type(), this);
 		if (obsr != NULL) {
@@ -137,12 +137,12 @@ TInt AFunInt::Value()
 MDIntGet* AFunInt::GetInp(const string& aInpName)
 {
     MDIntGet* res = NULL;
-    Elem* einp = GetNodeE("./../../Capsule/" + aInpName);
+    MElem* einp = GetNode("./../../Capsule/" + aInpName);
     if (einp != NULL) {
 	Vert* vert = einp->GetObj(vert);
 	MVert* pair = vert->GetPair(0);
 	if (pair != NULL) {
-	    Elem* epair = pair->GetObj(epair);
+	    MElem* epair = pair->GetObj(epair);
 	    if (epair != NULL) {
 		res = (MDIntGet*) epair->GetSIfiC(MDIntGet::Type(), this);
 	    }
@@ -277,7 +277,7 @@ void AFunIntRes::UpdateOutp()
 void AFunIntRes::OnDataChanged()
 {
 //    MDIntGet* mget = GetInp("inp");
-    Elem* einp = GetNodeE("./../../Capsule/inp");
+    MElem* einp = GetNode("./../../Capsule/inp");
     __ASSERT(einp != NULL);
     RqContext cont(this);
     MDIntGet* mget = (MDIntGet*) einp->GetSIfi("MDIntGet", &cont);
@@ -339,7 +339,7 @@ TBool AAddInt::HandleIoChanged(MElem& aContext, MElem* aCp)
 
 void AAddInt::OnDataChanged()
 {
-    Elem* einp = GetNodeE("./../../Capsule/inp");
+    MElem* einp = GetNode("./../../Capsule/inp");
     RqContext cont(this);
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
     TInt val = 0;
@@ -398,7 +398,7 @@ TBool ACountCritInt::HandleIoChanged(MElem& aContext, MElem* aCp)
 
 void ACountCritInt::OnDataChanged()
 {
-    Elem* einp = GetNodeE("./../../Capsule/inp");
+    MElem* einp = GetNode("./../../Capsule/inp");
     RqContext cont(this);
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
     TInt val = 0;
@@ -463,12 +463,12 @@ TBool AFunc::HandleCompChanged(MElem& aContext, MElem& aComp)
 
 void AFunc::NotifyUpdate()
 {
-    Elem* eout = GetNodeE("./../../Capsule/out");
+    MElem* eout = GetNode("./../../Capsule/out");
     __ASSERT(eout != NULL);
     MVert* mvout = eout->GetObj(mvout);
     MVert* mpair = mvout->GetPair(0);
     if (mpair != NULL) {
-	Elem* epair = mpair->GetObj(epair);
+	MElem* epair = mpair->GetObj(epair);
 	if (epair != NULL) {
 	    MDataObserver* obsr = (MDataObserver*) epair->GetSIfiC(MDataObserver::Type(), this);
 	    if (obsr != NULL) {
@@ -485,7 +485,7 @@ void AFunc::OnDataChanged()
 
 TBool AFunc::IsLogeventUpdate()
 {
-    Elem* node = GetNodeE("./../../Logspec/Update");
+    MElem* node = GetNode("./../../Logspec/Update");
     return node != NULL;
 }
 
@@ -579,7 +579,7 @@ void *AFAddInt::DoGetObj(const char *aName)
 
 TInt AFAddInt::Value()
 {
-    Elem* einp = GetNodeE("./../../Capsule/inp");
+    MElem* einp = GetNode("./../../Capsule/inp");
     RqContext cont(this);
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
     TInt val = 0;
@@ -627,7 +627,7 @@ TInt AFSubInt::GetValue()
     RqContext cont(this);
     TInt val = 0;
     // Positives
-    Elem* einp = GetNodeE("./../../Capsule/InpP");
+    MElem* einp = GetNode("./../../Capsule/InpP");
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
     for (TIfIter it = range.first; it != range.second; it++) {
 	MDIntGet* dget = (MDIntGet*) (*it);
@@ -636,7 +636,7 @@ TInt AFSubInt::GetValue()
 	}
     }
     // Negatives
-    einp = GetNodeE("./../../Capsule/InpN");
+    einp = GetNode("./../../Capsule/InpN");
     range = einp->GetIfi("MDIntGet", &cont);
     for (TIfIter it = range.first; it != range.second; it++) {
 	MDIntGet* dget = (MDIntGet*) (*it);
@@ -802,7 +802,7 @@ void *AFIntToVect::DoGetObj(const char *aName)
 vector<TInt> AFIntToVect::Value()
 {
     vector<TInt> res;
-    Elem* einp = GetNodeE("./../../Capsule/inp");
+    MElem* einp = GetNode("./../../Capsule/inp");
     __ASSERT(einp != NULL);
     RqContext cont(this);
     TIfRange range = einp->GetIfi("MDIntGet", &cont);
@@ -872,11 +872,11 @@ void AFConvInt::UpdateIfi(const string& aName, const RqContext* aCtx)
 TInt AFConvInt::GetValue()
 {
     TInt val = 0;
-    Elem* einp = GetNodeE("./../../Capsule/inp");
+    MElem* einp = GetNode("./../../Capsule/inp");
     __ASSERT(einp != NULL);
-    Elem* einpwf = GetNodeE("./../../Capsule/Inp_WFres");
+    MElem* einpwf = GetNode("./../../Capsule/Inp_WFres");
     __ASSERT(einpwf != NULL);
-    Elem* eargwf = GetNodeE("./../../WFArg/Capsule/inp");
+    MElem* eargwf = GetNode("./../../WFArg/Capsule/inp");
     __ASSERT(eargwf != NULL);
     RqContext cont(this);
     MDIntSet* wfarg = (MDIntSet*) eargwf->GetSIfi(MDIntSet::Type(), &cont);
@@ -958,12 +958,12 @@ TBool AFuncm::HandleCompChanged(MElem& aContext, MElem& aComp)
 
 void AFuncm::NotifyUpdate()
 {
-    Elem* eout = GetNodeE("./../../Capsule/out");
+    MElem* eout = GetNode("./../../Capsule/out");
     if (eout != NULL) {
 	MVert* mvout = eout->GetObj(mvout);
 	MVert* mpair = mvout->GetPair(0);
 	if (mpair != NULL) {
-	    Elem* epair = mpair->GetObj(epair);
+	    MElem* epair = mpair->GetObj(epair);
 	    if (epair != NULL) {
 		MDataObserver* obsr = (MDataObserver*) epair->GetSIfiC(MDataObserver::Type(), this);
 		if (obsr != NULL) {
@@ -1051,8 +1051,8 @@ void *AFGTInt::DoGetObj(const char *aName)
 
 TBool AFGTInt::Value()
 {
-    Elem* einp1 = GetNodeE("./../../Capsule/Inp1");
-    Elem* einp2 = GetNodeE("./../../Capsule/Inp2");
+    MElem* einp1 = GetNode("./../../Capsule/Inp1");
+    MElem* einp2 = GetNode("./../../Capsule/Inp2");
     __ASSERT(einp1 != NULL && einp2 != NULL);
     RqContext cont(this);
     MDIntGet* minp1 = (MDIntGet*) einp1->GetSIfi("MDIntGet", &cont);
@@ -1099,7 +1099,7 @@ void *AFBoolToInt::DoGetObj(const char *aName)
 
 TInt AFBoolToInt::Value()
 {
-    Elem* einp = GetNodeE("./../../Capsule/Inp");
+    MElem* einp = GetNode("./../../Capsule/Inp");
     __ASSERT(einp != NULL);
     RqContext cont(this);
     MDBoolGet* minp = (MDBoolGet*) einp->GetSIfi("MDBoolGet", &cont);
@@ -1214,7 +1214,7 @@ void *AFunVar::DoGetDObj(const char *aName)
 Elem::TIfRange AFunVar::GetInps(TInt aId, TBool aOpt)
 {
     TIfRange res;
-    Elem* inp = GetNodeE("./../../Capsule/" + GetInpUri(aId));
+    MElem* inp = GetNode("./../../Capsule/" + GetInpUri(aId));
     if (inp != NULL) {
 	RqContext cont(this);
 	res =  inp->GetIfi(MDVarGet::Type(), &cont);
@@ -2825,7 +2825,7 @@ void AFCastVar::Init(const string& aIfaceName)
     }
     // Checking if input type is defined explicitly
     string ifi;
-    Elem* inptd = GetNodeE("./../../InpType");
+    MElem* inptd = GetNode("./../../InpType");
     if (inptd != NULL) {
 	inptd->GetCont(ifi);
     }

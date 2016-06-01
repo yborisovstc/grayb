@@ -134,7 +134,7 @@ class ASocket: public Elem, public MCompatChecker
 	ASocket(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ASocket(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// Get pin existing in context
-	Elem* GetPin(const RqContext* aCtx);
+	MElem* GetPin(const RqContext* aCtx);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
