@@ -1,15 +1,11 @@
 #include "base.h"
 #include "guri.h"
+#include "chromo.h"
 
 
 // URI
 // Uri conforms to RFC 3986 
 // Query syntax: (attr_name '=' attr_value) *( ('&' | '|')  (attr_name '=' attr_value))  
-
-map<string, TNodeType> KNodeTypes;
-map<TNodeType, string> KNodeTypesNames;
-map<TNodeAttr, string> GUriBase::KNodeAttrsNames;
-map<string, TNodeAttr> KNodeAttrs;
 
 const string GUriBase::KTypeAny = "*";
 const string GUriBase::KTypeAnywhere = "**";
@@ -37,74 +33,10 @@ TBool GUriBase::iInit = EFalse;
 
 GUriBase::GUriBase(const string& aUri): iUri(aUri), iErr(EFalse)
 {
-    Construct();
 }
 
 GUriBase::GUriBase(): iUri(), iErr(EFalse)
 {
-    Construct();
-}
-
-// TODO [YB] To move all methods for node types/names to chromo
-void GUriBase::Construct()
-{
-    if (KNodeTypes.size() == 0)
-    {
-	KNodeTypes["node"] = ENt_Node;
-	KNodeTypes["move"] = ENt_Move;
-	KNodeTypes["rm"] = ENt_Rm;
-	KNodeTypes["change"] = ENt_Change;
-	KNodeTypes["cont"] = ENt_Cont;
-	KNodeTypes["import"] = ENt_Import;
-
-	for (map<string, TNodeType>::const_iterator it = KNodeTypes.begin(); it != KNodeTypes.end(); it++) {
-	    KNodeTypesNames[it->second] = it->first;
-	}
-    }
-
-    if (KNodeAttrsNames.size() == 0)
-    {
-	KNodeAttrsNames[ENa_Id] = "id";
-	KNodeAttrsNames[ENa_Parent] = "parent";
-	KNodeAttrsNames[ENa_Ref] = "ref";
-	KNodeAttrsNames[ENa_MutNode] = "node";
-	KNodeAttrsNames[ENa_MutAttr] = "attr";
-	KNodeAttrsNames[ENa_MutVal] = "val";
-	KNodeAttrsNames[ENa_Order] = "ord";
-	KNodeAttrsNames[ENa_TOrder] = "tord";
-	KNodeAttrsNames[ENa_Inactive] = "na";
-	KNodeAttrsNames[ENa_Targ] = "targ";
-	KNodeAttrsNames[ENa_Comp] = "comp";
-
-	for (map<TNodeAttr, string>::const_iterator it = KNodeAttrsNames.begin(); it != KNodeAttrsNames.end(); it++) {
-	    KNodeAttrs[it->second] = it->first;
-	}
-    }
-    iInit = ETrue;
-}
-
-const string& GUriBase::NodeAttrName(TNodeAttr aAttr)
-{
-    if (!iInit) Construct();
-    return KNodeAttrsNames[aAttr];
-}
-
-const string& GUriBase::NodeTypeName(TNodeType aType)
-{
-    if (!iInit) Construct();
-    return KNodeTypesNames[aType];
-}
-
-TNodeAttr GUriBase::NodeAttr(const string& aAttrName)
-{
-    if (!iInit) Construct();
-    return KNodeAttrs.count(aAttrName) > 0 ? KNodeAttrs[aAttrName] : ENa_Unknown;
-}
-
-TNodeType GUriBase::NodeType(const string& aTypeName)
-{
-    if (!iInit) Construct();
-    return KNodeTypes.count(aTypeName) > 0 ? KNodeTypes[aTypeName] : ENt_Unknown;
 }
 
 const string& GUriBase::GetLoc() const
@@ -427,7 +359,7 @@ string GUri::DoGetUri(const_elem_iter aStart, const_elem_iter aEnd, TBool aShort
 	    if (opr ==  EQop_And) {
 		res.append("&");
 	    }
-	    res.append(KNodeAttrsNames[it->second.first]);
+	    res.append(TMut::NodeAttrName(it->second.first));
 	    res.append("=");
 	    res.append(it->second.second);
 	}

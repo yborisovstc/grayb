@@ -23,7 +23,7 @@ void* ChromoMdlX::Init(TNodeType aRootType)
 {
     iDocOwned = ETrue;
     iDoc = xmlNewDoc((const xmlChar*) "1.0");
-    string sroottype = GUri::NodeTypeName(aRootType);
+    string sroottype = TMut::NodeTypeName(aRootType);
     xmlNodePtr root = xmlNewNode(NULL, (const xmlChar *) sroottype.c_str());
     xmlDocSetRootElement(iDoc, root);
     //xmlDtdPtr dtd = xmlParseDTD(NULL, (const xmlChar*) KChromoSystemId );
@@ -50,8 +50,8 @@ void* ChromoMdlX::Find(const void* aHandle, const string& aUri)
 	while (res != NULL) {
 	    if (res->type == XML_ELEMENT_NODE) {
 		TNodeType type = GetType((void*) res);
-		char *name = (char*) xmlGetProp(res, (const xmlChar *) GUri::NodeAttrName(ENa_Id).c_str());
-		char *parent = (char*) xmlGetProp(res, (const xmlChar *) GUri::NodeAttrName(ENa_Parent).c_str());
+		char *name = (char*) xmlGetProp(res, (const xmlChar *) TMut::NodeAttrName(ENa_Id).c_str());
+		char *parent = (char*) xmlGetProp(res, (const xmlChar *) TMut::NodeAttrName(ENa_Parent).c_str());
 		string eparent;
 		char rel = GUri::GetExtFirstPart(elem.first, eparent);
 		if (type == ENt_Node && rel == GUri::KParentSep && (eparent == GUri::KTypeAny || eparent.compare(parent) == 0) && elem.second.second.compare(name) == 0) {
@@ -144,7 +144,7 @@ void* ChromoMdlX::Set(const void* aHandle)
 
 TNodeType ChromoMdlX::GetType(const string& aId)
 {
-    return GUri::NodeType(aId);
+    return TMut::NodeType(aId);
 }
 
 TNodeType ChromoMdlX::GetType(const void* aHandle)
@@ -153,7 +153,7 @@ TNodeType ChromoMdlX::GetType(const void* aHandle)
     xmlNodePtr node = (xmlNodePtr) aHandle;
     if (node->name != NULL) {
 	const char* type_name = (const char*) node->name;
-	res = GUri::NodeType(type_name);
+	res = TMut::NodeType(type_name);
     }
     return res;
 }
@@ -260,7 +260,7 @@ char *ChromoMdlX::GetAttr(const void* aHandle, TNodeAttr aAttr) const
 {
     __ASSERT(aHandle != NULL);
     xmlNodePtr node = (xmlNodePtr) aHandle;
-    xmlChar *attr = xmlGetProp(node, (const xmlChar *) GUri::NodeAttrName(aAttr).c_str());
+    xmlChar *attr = xmlGetProp(node, (const xmlChar *) TMut::NodeAttrName(aAttr).c_str());
     return (char *) attr;
 }
 
@@ -283,7 +283,7 @@ TBool ChromoMdlX::AttrExists(const void* aHandle, TNodeAttr aAttr) const
     __ASSERT(aHandle != NULL);
     TBool res = EFalse;
     xmlNodePtr node = (xmlNodePtr) aHandle;
-    xmlChar *attr = xmlGetProp(node, (const xmlChar *) GUri::NodeAttrName(aAttr).c_str());
+    xmlChar *attr = xmlGetProp(node, (const xmlChar *) TMut::NodeAttrName(aAttr).c_str());
     res = (attr != NULL);
     free (attr);
     return res;
@@ -318,7 +318,7 @@ int ChromoMdlX::GetAttrInt(void *aHandle, const char *aName)
 
 void* ChromoMdlX::AddChild(void* aParent, TNodeType aNode)
 {
-    string name = GUri::NodeTypeName(aNode);
+    string name = TMut::NodeTypeName(aNode);
     xmlNodePtr node = xmlNewNode(NULL, (const xmlChar*) name.c_str());
     return xmlAddChild((xmlNodePtr) aParent, node);
 }
@@ -370,7 +370,7 @@ void* ChromoMdlX::AddNext(const void* aPrev, const void* aHandle, TBool aCopy)
 
 void* ChromoMdlX::AddNext(const void* aPrev, TNodeType aNode)
 {
-    string name = GUri::NodeTypeName(aNode);
+    string name = TMut::NodeTypeName(aNode);
     xmlNodePtr node = xmlNewNode(NULL, (const xmlChar*) name.c_str());
     return xmlAddNextSibling((xmlNodePtr) aPrev, node);
 }
@@ -383,7 +383,7 @@ void* ChromoMdlX::AddPrev(const void* aNext, const void* aHandle, TBool aCopy)
 
 void ChromoMdlX::SetAttr(void* aNode, TNodeAttr aType, const char* aVal)
 {
-    string name = GUri::NodeAttrName(aType);
+    string name = TMut::NodeAttrName(aType);
     if (AttrExists(aNode, aType)) {
 	xmlSetProp((xmlNodePtr) aNode, (const xmlChar*) name.c_str(), (const xmlChar*) aVal);
     }
@@ -394,7 +394,7 @@ void ChromoMdlX::SetAttr(void* aNode, TNodeAttr aType, const char* aVal)
 
 void ChromoMdlX::RmAttr(void* aNode, TNodeAttr aType)
 {
-    xmlAttrPtr attr = xmlHasProp((xmlNodePtr) aNode, (const xmlChar *) GUri::NodeAttrName(aType).c_str());
+    xmlAttrPtr attr = xmlHasProp((xmlNodePtr) aNode, (const xmlChar *) TMut::NodeAttrName(aType).c_str());
     if (attr != NULL) {
 	xmlRemoveProp(attr);
     }
@@ -484,7 +484,7 @@ xmlNodePtr ChromoMdlX::FindNodeEnterigPos(xmlNodePtr aParent, xmlNodePtr aNode)
     xmlElementContent* contc = FindEldeclSecCont(aParent, aNode);
     xmlElementContent* contp = GetPrevEldeclSecCont(contc);
     if (contp != NULL) {  
-	res = (xmlNodePtr) GetLastChild(aParent, GUri::NodeType((const char*) contp->name));
+	res = (xmlNodePtr) GetLastChild(aParent, TMut::NodeType((const char*) contp->name));
 	while ((res == NULL) && (contp != NULL))
 	    contp = GetPrevEldeclSecCont(contp);
     }

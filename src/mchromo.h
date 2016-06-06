@@ -2,15 +2,35 @@
 #define __GRAYB_MCHROMO_H
 
 #include "base.h"
-#include "guri.h"
 
 class MLogRec;
 
-// Mutation to model relation type
-enum TMutModRel {
-    EMrel_Parent = 1, // Parent
-    EMrel_Obj = 2, // Object of mutation 
-    EMrel_Ref = 3 // Ref to model node, e.g. -id- value in -cont-
+
+enum TNodeType
+{
+    ENt_Unknown = 0,
+    ENt_Node = 1,
+    ENt_Move = 3, 	// Mutation - move node
+    ENt_Rm = 4,   	// Mutation - removal
+    ENt_Change = 5, 	// Change node attribute
+    ENt_Cont = 6, 	// Change node content
+    ENt_Import = 8, 	// Importing node
+};
+
+enum TNodeAttr
+{
+    ENa_Unknown = 0,
+    ENa_Id = 1,
+    ENa_Parent = 2,
+    ENa_Ref = 3,
+    ENa_Order = 4,
+    ENa_TOrder = 5,
+    ENa_MutNode = 10,
+    ENa_MutAttr = 11,
+    ENa_MutVal = 12,
+    ENa_Inactive = 13, // Sign of mutations being inactive, optimized out for instance
+    ENa_Targ = 14, // Target node of mutation, is used in OSM mode, ref ds_mut_osm
+    ENa_Comp = 15, // Component to be changed, for comps related muts only, is used in OSM mode, ref ds_mut_osm
 };
 
 // Interface of chromo model

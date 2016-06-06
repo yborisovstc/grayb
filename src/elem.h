@@ -215,6 +215,7 @@ class Elem: public MElem
 	virtual const string EType(TBool aShort = ETrue) const;
 	virtual MElem* GetMan();
 	virtual const MElem* GetMan() const;
+	virtual void GetCRoot(TMut& aMut) const;
 	virtual void GetRank(Rank& aRank) const;
 	virtual void GetRank(Rank& aRank, const ChromoNode& aMut) const;
 	virtual void GetCompRank(Rank& aRank, const MElem* aComp) const;
@@ -275,8 +276,8 @@ class Elem: public MElem
 	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL);
 	virtual TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL);
 	virtual MElem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, TBool aTrialMode = EFalse, const MElem* aCtx = NULL);
-	virtual void OnNodeMutated(const MElem* aNode, const ChromoNode& aMut, const MElem* aCtx);
-	virtual void OnParentMutated(MElem* aParent, const ChromoNode& aMut);
+	virtual void OnNodeMutated(const MElem* aNode, const TMut& aMut, const MElem* aCtx);
+	virtual void OnParentMutated(MElem* aParent, const TMut& aMut);
 	// Ifaces cache
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
 	void RmIfCache(IfIter& aIt);
@@ -328,7 +329,7 @@ class Elem: public MElem
 	TBool RegisterComp(MElem* aComp);
 	TBool RegisterChild(MElem* aChild);
 	void NotifyNodeMutated(const ChromoNode& aMut, const MElem* aCtx);
-	void NotifyParentMutated(const ChromoNode& aMut);
+	void NotifyParentMutated(const TMut& aMut);
 	// aName is required because the comp can be renamed already. This is the case of
 	// comp renaming: comp is renamed first, then the renaming is handled
 	TBool UnregisterComp(MElem* aComp, const string& aName = string());

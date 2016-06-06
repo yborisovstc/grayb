@@ -12,27 +12,44 @@ class TMut
 {
     public:
 	typedef pair<TNodeAttr, string> TElem;
+	typedef map<TNodeAttr, string> TAttrs;
     public:
+	TMut();
 	TMut(const string& aSpec);
 	TMut(TNodeType aType);
+	TMut(const ChromoNode& aCnode);
 	TMut(TNodeType aType, TNodeAttr aAttr0, const string& aAttr0Val);
 	TMut(TNodeType aType, TNodeAttr aAttr0, const string& aAttr0Val, TNodeAttr aAttr1, const string& aAttr1Val);
 	TMut(TNodeType aType, TNodeAttr aAttr0, const string& aAttr0Val, TNodeAttr aAttr1, const string& aAttr1Val,
 		TNodeAttr aAttr2, const string& aAttr2Val);
-	TInt ArgsCount() const { return mAttrs.size();};
 	TNodeType Type() const { return mType;};
-	const TElem& ArgAt(TInt aInd) const;
+	void SetAttr(TNodeAttr aAttr, const string& aAttrVal);
+	void RmAttr(TNodeAttr aAttr);
+	string Attr(TNodeAttr aId) const;
+	TBool AttrExists(TNodeAttr aId) const;
+	const TAttrs& Attrs() const { return mAttrs;};
 	operator string() const;
+    public:
+	static const string& NodeAttrName(TNodeAttr aAttr);
+	static const string& NodeTypeName(TNodeType aType);
+	static TNodeAttr NodeAttr(const string& aAttrName);
+	static TNodeType NodeType(const string& aTypeName);
     private:
 	static string EscapeCtrls(const string& aInp);
+	static map<string, TNodeType> KNodeTypes_Init();
+	static map<string, TNodeAttr> KNodeAttrs_Init();
     private:
 	TNodeType mType;
-	vector<TElem> mAttrs;
+	TAttrs mAttrs;
 	static const char KSep = ',';
 	static const char KAttrSep = ':';
 	static const char KEsc = '\\';
 	static const char KValDelim = '"';
 	static const string KCtrls;
+	static map<string, TNodeType> KNodeTypes;
+	static map<string, TNodeAttr> KNodeAttrs;
+	static map<TNodeType, string> KNodeTypesNames;
+	static map<TNodeAttr, string> KNodeAttrsNames;
 };
 
 // Rank
@@ -179,6 +196,7 @@ class ChromoNode
 	const void* Handle() const { return iHandle;};
 	ChromoMdl& Mdl() const { return iMdl;};
 	ChromoNode AddChild(TNodeType aType);
+	ChromoNode AddChild(const TMut& aMut);
 	ChromoNode AddChild(const ChromoNode& aNode, TBool aCopy = ETrue, TBool aRecursively = ETrue);
 	ChromoNode AddChildDef(const ChromoNode& aNode, TBool aCopy = ETrue) { return 
 	    ChromoNode(iMdl, iMdl.AddChildDef(iHandle, aNode.Handle(), aCopy)); };

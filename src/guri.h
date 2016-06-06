@@ -5,35 +5,9 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <mchromo.h>
 
 using namespace std;
-
-enum TNodeType
-{
-    ENt_Unknown = 0,
-    ENt_Node = 1,
-    ENt_Move = 3, 	// Mutation - move node
-    ENt_Rm = 4,   	// Mutation - removal
-    ENt_Change = 5, 	// Change node attribute
-    ENt_Cont = 6, 	// Change node content
-    ENt_Import = 8, 	// Importing node
-};
-
-enum TNodeAttr
-{
-    ENa_Unknown = 0,
-    ENa_Id = 1,
-    ENa_Parent = 2,
-    ENa_Ref = 3,
-    ENa_Order = 4,
-    ENa_TOrder = 5,
-    ENa_MutNode = 10,
-    ENa_MutAttr = 11,
-    ENa_MutVal = 12,
-    ENa_Inactive = 13, // Sign of mutations being inactive, optimized out for instance
-    ENa_Targ = 14, // Target node of mutation, is used in OSM mode, ref ds_mut_osm
-    ENa_Comp = 15, // Component to be changed, for comps related muts only, is used in OSM mode, ref ds_mut_osm
-};
 
 // Node identification can be done by specifying it's "position" within given type of coordinates.
 // There are three coordinate types for now: network hier, native hier and inheritance chain
@@ -95,10 +69,6 @@ class GUriBase
 	void PrependElem(const TElem& aElem);
 	void PrependElem(const string& aType, const string& aName, char aRelType = KNodeSep);
 	void AppendQueryElem(TQueryOpr aOpr, TNodeAttr aAttr, const string& aValue);
-	static const string& NodeAttrName(TNodeAttr aAttr);
-	static const string& NodeTypeName(TNodeType aType);
-	static TNodeAttr NodeAttr(const string& aAttrName);
-	static TNodeType NodeType(const string& aTypeName);
 	//void ToString(string& aRes);
 	static TElem Elem(char aRelType, const string& aName, const string& aExt);
 	TBool IsErr() const { return iErr;};
@@ -107,7 +77,6 @@ class GUriBase
 	TBool Compare(const_elem_iter aStart, const GUriBase& aUri, const_elem_iter& aResPos) const;
     protected:
 	virtual string DoGetUri(const_elem_iter aStart, const_elem_iter aEnd, TBool aShort = EFalse) const = 0;
-	static void Construct();
 	static string SelectGroup(const string& aData, int aEndPos);
 	static size_t FindGroup(const string& aStr, size_t aPos);
     protected:
@@ -135,7 +104,6 @@ class GUriBase
 	static const char KIfaceSep;
 	static const string KIfaceSepS;
 	static const char KCurUnit;
-	static map<TNodeAttr, string> KNodeAttrsNames;
 };
 
 

@@ -162,6 +162,7 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 	virtual TBool IsProvided() const = 0;
 	virtual MElem* GetMan() = 0;
 	virtual const MElem* GetMan() const = 0;
+	virtual void GetCRoot(TMut& aMut) const = 0;
 	virtual void SetMan(MElem* aMan) = 0;
 	virtual void SetObserver(MAgentObserver* aObserver) = 0;
 	virtual vector<MElem*>& Comps() = 0;
@@ -208,8 +209,8 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 	virtual TInt GetCompLrank(const MElem* aComp) const = 0;
 	virtual MElem* GetComp(const string& aParent, const string& aName) = 0;
 	virtual MElem* GetComp(const string& aParent, const string& aName) const = 0;
-	virtual void OnNodeMutated(const MElem* aNode, const ChromoNode& aMut, const MElem* aCtx = NULL) = 0;
-	virtual void OnParentMutated(MElem* aParent, const ChromoNode& aMut) = 0;
+	virtual void OnNodeMutated(const MElem* aNode, const TMut& aMut, const MElem* aCtx = NULL) = 0;
+	virtual void OnParentMutated(MElem* aParent, const TMut& aMut) = 0;
 	// Gets the comp with given type and owning given element
 	virtual MElem* GetCompOwning(const string& aParent, MElem* aElem) = 0;
 	virtual MElem* GetCompOwning(MElem* aElem) = 0;

@@ -70,6 +70,10 @@ MElem::EIfu::EIfu()
     RegMethod("IsRemoved", 0);
     RegMethod("IsHeirOf", 1);
     RegMethod("IsComp", 1);
+    RegMethod("OnNodeMutated", 3);
+    RegMethod("IsCompAttached", 1);
+    RegMethod("GetCompLrank", 1);
+    RegMethod("GetCRoot", 0);
 }
 
 void MElem::EIfu::FromCtx(const TICacheRCtx& aCtx, string& aRes)
@@ -535,6 +539,11 @@ MElem* Elem::GetMan()
 const MElem* Elem::GetMan() const
 {
     return iMan;
+}
+
+void Elem::GetCRoot(TMut& aMut) const
+{
+    aMut = iChromo->Root();
 }
 
 auto_ptr<MChromo> Elem::GetFullChromo() const
@@ -1307,8 +1316,10 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    MElem* ftarg = GetNode(rno.Attr(ENa_Targ));
 	    // Mutation is not local, propagate downward
 	    if (ftarg != NULL) {
+		//TMut madd(rno);
 		ChromoNode madd = ftarg->AppendMutation(rno);
 		madd.RmAttr(ENa_Targ);
+		//ftarg->AppendMutation(madd);
 		// Redirect the mut to target: no run-time to keep the mut in internal nodes
 		// Propagate till target owning comp if run-time to keep hidden all muts from parent 
 		ftarg->Mutate(EFalse, aCheckSafety, aTrialMode, aRunTime ? GetCompOwning(ftarg) : aCtx);
@@ -1385,7 +1396,7 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafet
     TBool mutadded = EFalse;
     if (node != NULL) {
 	if (node != this && (epheno || node->GetAowner() == this  || IsDirectInheritedComp(node))) {
-	    TBool res = node->ChangeAttr(GUri::NodeAttr(mattrs), mval);
+	    TBool res = node->ChangeAttr(TMut::NodeAttr(mattrs), mval);
 	    if (!res) {
 		Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - failure", snode.c_str());
 	    }
@@ -2137,19 +2148,24 @@ TInt Elem::GetCompLrank(const MElem* aComp) const
 {
     TInt res = -1;
     const ChromoNode& croot = Chromos().Root();
-    const ChromoNode& comproot = aComp->Chromos().Root();
-    string name = comproot.Name();
-    TBool ia = comproot.IsActive();
+    //const ChromoNode& comproot = aComp->Chromos().Root();
+    TMut comproot;
+    aComp->GetCRoot(comproot);
+    //string name = comproot.Name();
+    string name = comproot.Attr(ENa_Id);
+    //TBool ia = comproot.IsActive();
     TBool found = EFalse;
     for (ChromoNode::Const_Iterator it = croot.Begin(); it != croot.End() && !found; it++, res++) {
 	ChromoNode mut = *it;
-	found = (mut.Type() == ENt_Node) && mut.IsActive() == ia && (mut.Name() == name);
+	//found = (mut.Type() == ENt_Node) && mut.IsActive() == ia && (mut.Name() == name);
+	found = (mut.Type() == ENt_Node) && mut.IsActive() && (mut.Name() == name);
 	if (found) {
 	    const MElem* targ = this;
 	    if (mut.AttrExists(ENa_Targ)) {
 	       	targ = ((MElem*) this)->GetNode(mut.Attr(ENa_Targ), ETrue);
 	    }
-	    if (aComp->GetMan() != targ) {
+	    const MElem* cowner = aComp->GetMan();
+	    if (cowner != targ) {
 		found = EFalse;
 	    }
 	}
@@ -3337,6 +3353,23 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	    TBool rr = IsComp(comp);
 	    aRes = Ifu::FromBool(rr);
 	}
+    } else if (name == "OnNodeMutated") {
+	MElem* node = GetNode(args.at(0));
+	TMut mut(args.at(1));
+	MElem* ctx = GetNode(args.at(2));
+	OnNodeMutated(node, mut, ctx);
+    } else if (name == "IsCompAttached") {
+	MElem* node = GetNode(args.at(0));
+	TBool isatt = IsCompAttached(node);
+	aRes = Ifu::FromBool(isatt);
+    } else if (name == "GetCompLrank") {
+	MElem* node = GetNode(args.at(0));
+	TInt rank = GetCompLrank(node);
+	aRes = Ifu::FromInt(rank);
+    } else if (name == "GetCRoot") {
+	TMut croot;
+	GetCRoot(croot);
+	aRes = croot;
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }
@@ -3395,7 +3428,7 @@ void Elem::NotifyNodeMutated(const ChromoNode& aMut, const MElem* aCtx)
     } 
 }
 
-void Elem::OnNodeMutated(const MElem* aNode, const ChromoNode& aMut, const MElem* aCtx)
+void Elem::OnNodeMutated(const MElem* aNode, const TMut& aMut, const MElem* aCtx)
 {
     MElem* root = GetRoot();
     // Copy mutation to the chromo in case of root or first non-attached owner in he owners chain
@@ -3416,14 +3449,14 @@ void Elem::OnNodeMutated(const MElem* aNode, const ChromoNode& aMut, const MElem
 	}
 	if (HasChilds()) {
 	    string nuri = aNode->GetUri(this, ETrue);
-	    ChromoNode mut(aMut);
+	    TMut mut(aMut);
 	    mut.SetAttr(ENa_Targ, nuri);
 	    NotifyParentMutated(mut);
 	}
     }
 }
 
-void Elem::NotifyParentMutated(const ChromoNode& aMut)
+void Elem::NotifyParentMutated(const TMut& aMut)
 {
     if (this != GetRoot()) {
 	for (TNMReg::iterator it = iChilds.begin(); it != iChilds.end(); it++) {
@@ -3433,7 +3466,7 @@ void Elem::NotifyParentMutated(const ChromoNode& aMut)
     }
 }
 
-void Elem::OnParentMutated(MElem* aParent, const ChromoNode& aMut)
+void Elem::OnParentMutated(MElem* aParent, const TMut& aMut)
 {
     TBool rres = ETrue;
     // Rebase and apply parent's mutation
@@ -3500,9 +3533,5 @@ TBool Elem::RegisterChild(const string& aChildUri)
 
 void Elem::AppendMutation(const TMut& aMut)
 {
-    ChromoNode mut = iMut->Root().AddChild(aMut.Type());
-    for (TInt ct = 0; ct < aMut.ArgsCount(); ct++) {
-	TMut::TElem me = aMut.ArgAt(ct);
-	mut.SetAttr(me.first, me.second);
-    }
+    ChromoNode mut = iMut->Root().AddChild(aMut);
 }

@@ -165,7 +165,7 @@ void Ut_mut::test_Add()
     CPPUNIT_ASSERT_MESSAGE("Fail to get elem added", eadded1 != 0);
 #endif
      // Mutation of type "Rename node"
-    root->AppendMutation(TMut(ENt_Change, ENa_MutNode, "./elem5", ENa_MutAttr, GUriBase::NodeAttrName(ENa_Id),
+    root->AppendMutation(TMut(ENt_Change, ENa_MutNode, "./elem5", ENa_MutAttr, TMut::NodeAttrName(ENa_Id),
 		ENa_MutVal, "elem5_renamed"));
     root->Mutate();
     MElem* eren = root->GetNode("./elem5_renamed");
@@ -822,7 +822,7 @@ void Ut_mut::test_MutRenameParent()
     // Rename elem2, which is parent of elem5 
     ChromoNode mut = e1->AppendMutation(ENt_Change);
     mut.SetAttr(ENa_MutNode, "./elem2");
-    mut.SetAttr(ENa_MutAttr, GUriBase::NodeAttrName(ENa_Id));
+    mut.SetAttr(ENa_MutAttr, TMut::NodeAttrName(ENa_Id));
     mut.SetAttr(ENa_MutVal, "elem2_renamed");
     root->Mutate();
     // Create child from elem5

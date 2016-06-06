@@ -6,6 +6,83 @@
 
 const string TMut::KCtrls = string(TMut::KSep, TMut::KAttrSep);
 
+map<TNodeAttr, string> KNodeAttrsNames_Init()
+{
+    map<TNodeAttr, string> res;
+    res[ENa_Id] = "id";
+    res[ENa_Parent] = "parent";
+    res[ENa_Ref] = "ref";
+    res[ENa_MutNode] = "node";
+    res[ENa_MutAttr] = "attr";
+    res[ENa_MutVal] = "val";
+    res[ENa_Order] = "ord";
+    res[ENa_TOrder] = "tord";
+    res[ENa_Inactive] = "na";
+    res[ENa_Targ] = "targ";
+    res[ENa_Comp] = "comp";
+    return res;
+}
+
+map<TNodeType, string> KNodeTypesNames_Init()
+{
+    map<TNodeType, string> res;
+    res[ENt_Node] = "node";
+    res[ENt_Move] = "move";
+    res[ENt_Rm] = "rm";
+    res[ENt_Change] = "change";
+    res[ENt_Cont] = "cont";
+    res[ENt_Import] = "import";
+    return res;
+}
+
+map<string, TNodeType> TMut::KNodeTypes_Init()
+{
+    map<string, TNodeType> res;
+    for (map<TNodeType, string>::const_iterator it = KNodeTypesNames.begin(); it != KNodeTypesNames.end(); it++) {
+	res[it->second] = it->first;
+    }
+    return res;
+}
+
+map<string, TNodeAttr> TMut::KNodeAttrs_Init()
+{
+    map<string, TNodeAttr> res;
+    for (map<TNodeAttr, string>::const_iterator it = KNodeAttrsNames.begin(); it != KNodeAttrsNames.end(); it++) {
+	res[it->second] = it->first;
+    }
+    return res;
+}
+
+map<TNodeType, string> TMut::KNodeTypesNames = KNodeTypesNames_Init();
+map<TNodeAttr, string> TMut::KNodeAttrsNames = KNodeAttrsNames_Init();
+map<string, TNodeType> TMut::KNodeTypes = TMut::KNodeTypes_Init();
+map<string, TNodeAttr> TMut::KNodeAttrs = TMut::KNodeAttrs_Init();
+
+
+const string& TMut::NodeAttrName(TNodeAttr aAttr)
+{
+    return KNodeAttrsNames[aAttr];
+}
+
+const string& TMut::NodeTypeName(TNodeType aType)
+{
+    return KNodeTypesNames[aType];
+}
+
+TNodeAttr TMut::NodeAttr(const string& aAttrName)
+{
+    return KNodeAttrs.count(aAttrName) > 0 ? KNodeAttrs[aAttrName] : ENa_Unknown;
+}
+
+TNodeType TMut::NodeType(const string& aTypeName)
+{
+    return KNodeTypes.count(aTypeName) > 0 ? KNodeTypes[aTypeName] : ENt_Unknown;
+}
+
+TMut::TMut(): mType(ENt_Unknown)
+{
+}
+
 TMut::TMut(TNodeType aType): mType(aType)
 {
 }
@@ -13,22 +90,52 @@ TMut::TMut(TNodeType aType): mType(aType)
 TMut::TMut(TNodeType aType, TNodeAttr aAttr0, const string& aAttr0Val):
     mType(aType)
 {
-    mAttrs.push_back(TElem(aAttr0, aAttr0Val));
+    mAttrs.insert(TElem(aAttr0, aAttr0Val));
 }
 
 TMut::TMut(TNodeType aType, TNodeAttr aAttr0, const string& aAttr0Val, TNodeAttr aAttr1, const string& aAttr1Val):
     mType(aType)
 {
-    mAttrs.push_back(TElem(aAttr0, aAttr0Val));
-    mAttrs.push_back(TElem(aAttr1, aAttr1Val));
+    mAttrs.insert(TElem(aAttr0, aAttr0Val));
+    mAttrs.insert(TElem(aAttr1, aAttr1Val));
 }
 
 TMut::TMut(TNodeType aType, TNodeAttr aAttr0, const string& aAttr0Val, TNodeAttr aAttr1, const string& aAttr1Val,
 	TNodeAttr aAttr2, const string& aAttr2Val): mType(aType)
 {
-    mAttrs.push_back(TElem(aAttr0, aAttr0Val));
-    mAttrs.push_back(TElem(aAttr1, aAttr1Val));
-    mAttrs.push_back(TElem(aAttr2, aAttr2Val));
+    mAttrs.insert(TElem(aAttr0, aAttr0Val));
+    mAttrs.insert(TElem(aAttr1, aAttr1Val));
+    mAttrs.insert(TElem(aAttr2, aAttr2Val));
+}
+
+TMut::TMut(const ChromoNode& aCnode): mType(aCnode.Type())
+{
+    for (map<TNodeAttr, string>::const_iterator it = KNodeAttrsNames.begin(); it != KNodeAttrsNames.end(); it++) {
+	TNodeAttr attr = it->first;
+	if (aCnode.AttrExists(attr)) {
+	    SetAttr(attr, aCnode.Attr(attr));
+	}
+    }
+}
+
+TBool TMut::AttrExists(TNodeAttr aId) const
+{
+    return mAttrs.count(aId) > 0;
+}
+
+string TMut::Attr(TNodeAttr aId) const
+{
+    return mAttrs.count(aId) > 0 ? mAttrs.at(aId) : string();
+}
+
+void TMut::SetAttr(TNodeAttr aAttr, const string& aAttrVal)
+{
+    mAttrs[aAttr] = aAttrVal;
+}
+
+void TMut::RmAttr(TNodeAttr aAttr)
+{
+    mAttrs.erase(aAttr);
 }
 
 TMut::TMut(const string& aSpec)
@@ -36,7 +143,7 @@ TMut::TMut(const string& aSpec)
     size_t type_beg = 0, type_end = 0;
     type_end = aSpec.find_first_of(KSep, type_beg); 
     string types = aSpec.substr(type_beg, (type_end == string::npos) ? string::npos : type_end - type_beg);
-    mType = GUri::NodeType(types);
+    mType = NodeType(types);
     if (mType == ENt_Unknown) {
 	throw (runtime_error("Incorrect TMut type: " + types));
     }
@@ -56,13 +163,13 @@ TMut::TMut(const string& aSpec)
 		size_t attrtype_end = attr.find_first_of(KAttrSep); 
 		if (attrtype_end != string::npos) {
 		    string attrtype = attr.substr(0, attrtype_end);
-		    TNodeAttr atype = GUri::NodeAttr(attrtype);
+		    TNodeAttr atype = NodeAttr(attrtype);
 		    if (atype == ENa_Unknown) {
 			throw (runtime_error("Incorrect TMut attr type: " + atype));
 		    }
 		    size_t attrval_beg = attrtype_end + 1;
 		    string attrval = attr.substr(attrval_beg, string::npos);
-		    mAttrs.push_back(TElem(atype, attrval));
+		    SetAttr(atype, attrval);
 		} else {
 		    throw (runtime_error("Incorrect TMut attr: " + attr));
 		}
@@ -72,18 +179,20 @@ TMut::TMut(const string& aSpec)
 
 TMut::operator string() const
 {
-    string res(GUri::NodeTypeName(mType));
-    for (vector<TElem>::const_iterator it = mAttrs.begin(); it != mAttrs.end(); it++) {
-	res += KSep + GUri::NodeAttrName(it->first) + KAttrSep + EscapeCtrls(it->second);
+    string res(NodeTypeName(mType));
+    for (TAttrs::const_iterator it = mAttrs.begin(); it != mAttrs.end(); it++) {
+	res += KSep + NodeAttrName(it->first) + KAttrSep + EscapeCtrls(it->second);
     }
     return res;
 }
 
-const TMut::TElem& TMut::ArgAt(TInt aInd) const
+/*
+const TMut::TElem& TMut::AttrAt(TInt aInd) const
 {
     __ASSERT(aInd < mAttrs.size());
     return mAttrs.at(aInd);
 }
+*/
 
 string TMut::EscapeCtrls(const string& aInp)
 {
@@ -629,6 +738,15 @@ void ChromoNode::GetRank(Rank& aRank, const ChromoNode& aBase) const
 ChromoNode ChromoNode::AddChild(TNodeType aType) 
 { 
     return ChromoNode(iMdl, iMdl.AddChild(iHandle, aType)); 
+}
+
+ChromoNode ChromoNode::AddChild(const TMut& aMut)
+{
+    ChromoNode mut(iMdl, iMdl.AddChild(iHandle, aMut.Type()));
+    for (TMut::TAttrs::const_iterator it = aMut.Attrs().begin(); it != aMut.Attrs().end(); it++) {
+	mut.SetAttr(it->first, it->second);
+    }
+    return mut;
 }
 
 ChromoNode ChromoNode::AddChild(const ChromoNode& aNode, TBool aCopy, TBool aRecursively) 
