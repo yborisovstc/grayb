@@ -90,8 +90,8 @@ void* ChromoMdlX::SetFromSpec(const string& aSpec)
     Reset();
     iDoc = xmlReadMemory(aSpec.c_str(), aSpec.size(), "noname.xml", NULL, XML_PARSE_DTDLOAD | XML_PARSE_DTDVALID);
     __ASSERT(iDoc != NULL);
-    // Get the node 
-    sRoot = (xmlNodePtr) GetFirstChild((void *) iDoc, ENt_Node);
+    // Get any node, not necessary ENt_Node, ref ds_mut_osmlc_impl
+    sRoot = (xmlNodePtr) GetFirstChild((void *) iDoc);
     iDocOwned = EFalse;
     return sRoot;
 }

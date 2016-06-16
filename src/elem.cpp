@@ -47,12 +47,11 @@ MElem::EIfu::EIfu()
     RegMethod("GetNode#2", 3);
     RegMethod("GetCont", 1);
     RegMethod("Mutate", 4);
-    RegMethod("Mutate#2", 3);
+    RegMethod("Mutate#2", 4);
     RegMethod("IsProvided", 0);
     RegMethod("GetParent", 0);
     RegMethod("GetChromoSpec", 0);
     RegMethod("EType", 1);
-    RegMethod("RegisterChild", 1);
     RegMethod("GetUri", 0);
     RegMethod("GetUri#2", 1);
     RegMethod("GetRUri", 1);
@@ -64,9 +63,11 @@ MElem::EIfu::EIfu()
     RegMethod("UnregIfProv", 4);
     RegMethod("SetObserver", 1);
     RegMethod("OnCompAdding", 1);
+    RegMethod("OnCompChanged", 1);
     RegMethod("CompsCount", 0);
     RegMethod("GetComp", 1);
     RegMethod("AppendMutation", 1);
+    RegMethod("AppendMutation#2", 1);
     RegMethod("IsRemoved", 0);
     RegMethod("IsHeirOf", 1);
     RegMethod("IsComp", 1);
@@ -74,6 +75,12 @@ MElem::EIfu::EIfu()
     RegMethod("IsCompAttached", 1);
     RegMethod("GetCompLrank", 1);
     RegMethod("GetCRoot", 0);
+    RegMethod("IsChromoAttached", 0);
+    RegMethod("GetCompOwning", 1);
+    RegMethod("RemoveChild", 1);
+    RegMethod("AppendChild", 1);
+    RegMethod("AppendComp", 1);
+    RegMethod("RemoveComp", 1);
 }
 
 void MElem::EIfu::FromCtx(const TICacheRCtx& aCtx, string& aRes)
@@ -1034,7 +1041,9 @@ MElem* Elem::GetNode(const GUri& aUri, TBool aInclRm)
 	if (it->second.second.empty() || anywhere) {
 	    MElem* root = NULL;
 	    if (it->second.first == GUri::KNodeSep) {
-		root = GetRoot();
+		// Using env's root to get root, because of in case of native agent
+		// GetRoot() doesn't work, ref ds_di_nacgna
+		root = iEnv->Root()->GetRoot();
 	    }
 	    else if (it->second.first == GUri::KParentSep) {
 		root = GetInhRoot();
@@ -1317,8 +1326,9 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    // Mutation is not local, propagate downward
 	    if (ftarg != NULL) {
 		//TMut madd(rno);
+		rno.RmAttr(ENa_Targ);
 		ChromoNode madd = ftarg->AppendMutation(rno);
-		madd.RmAttr(ENa_Targ);
+		//madd.RmAttr(ENa_Targ);
 		//ftarg->AppendMutation(madd);
 		// Redirect the mut to target: no run-time to keep the mut in internal nodes
 		// Propagate till target owning comp if run-time to keep hidden all muts from parent 
@@ -1597,7 +1607,10 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 			if (!snode.empty()) {
 			    hroot.SetAttr(ENa_MutNode, snode);
 			}
+			// Heir has been created, now we can establish solid two-ways relations, ref. ds_daa_hunv
 			res = node->AppendComp(elem);
+			elem->SetParent(NULL);
+			res = res && parent->AppendChild(elem);
 			if (res) {
 			    if (!aRunTime) {
 				// Copy just top node, not recursivelly, ref ds_daa_chrc_va
@@ -1707,11 +1720,20 @@ MElem* Elem::CreateHeir(const string& aName, MElem* aMan)
     //Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p1 ");
     if (IsProvided()) {
 	heir = Provider()->CreateNode(Name(), aName, aMan, iEnv);
+	// TODO To move AppendComp to CreateNode: initially set two-ways ownning relateion ?
+	// Using "light" one-way relation on creation phase, ref. ds_daa_hunv
+	MElem* hprnt = heir->GetParent();
+	hprnt->RemoveChild(heir);
+	heir->SetParent(hprnt);
     } else {
 	__ASSERT(iParent != NULL);
 	if (iParent->IsProvided()) {
 	    // Parent is Agent - native element. Create via provider
 	    heir = Provider()->CreateNode(EType(), aName, iMan, iEnv);
+	    // Using "light" one-way relation on creation phase, ref. ds_daa_hunv
+	    MElem* hprnt = heir->GetParent();
+	    hprnt->RemoveChild(heir);
+	    heir->SetParent(hprnt);
 	}
 	else {
 	    heir = iParent->CreateHeir(aName, iMan);
@@ -1729,9 +1751,9 @@ MElem* Elem::CreateHeir(const string& aName, MElem* aMan)
 	// Relocate heir to hier from which the request of creating heir came
 	heir->SetMan(NULL);
 	heir->SetMan(aMan);
-	// Re-adopte the child
-	iParent->RemoveChild(heir);
-	AppendChild(heir);
+	// Using "light" one-way relation on creation phase, ref. ds_daa_hunv
+	heir->SetParent(NULL);
+	heir->SetParent(this);
 	if (EN_PERF_TRACE) Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p4 ");
     }
     return heir;
@@ -1754,6 +1776,11 @@ void Elem::RemoveChild(MElem* aChild)
 
 TBool Elem::AppendComp(MElem* aComp)
 {
+    MElem* cowner = aComp->GetMan();
+    __ASSERT(cowner == NULL || cowner == this);
+    if (cowner == NULL) {
+	aComp->SetMan(this);
+    }
     TBool res = RegisterComp(aComp);
     if (res)
     {
@@ -1766,6 +1793,21 @@ TBool Elem::AppendComp(MElem* aComp)
 	}
     }
     return res;
+}
+
+void Elem::RemoveComp(MElem* aComp)
+{
+    MElem* cowner = aComp->GetMan();
+    __ASSERT(cowner == this);
+    TBool res = UnregisterComp(aComp);
+    if (res) {
+	aComp->SetMan(NULL);
+	for (vector<MElem*>::iterator oit = iComps.begin(); oit != iComps.end(); oit++) {
+	    if (*oit == aComp) {
+		iComps.erase(oit); break;
+	    }
+	}
+    }
 }
 
 TBool Elem::RegisterComp(MElem* aComp)
@@ -1785,6 +1827,11 @@ TBool Elem::RegisterComp(MElem* aComp)
 TBool Elem::RegisterChild(MElem* aChild)
 {
     TBool res = ETrue;
+    for (TNMReg::iterator it = iChilds.begin(); it != iChilds.end(); it++) {
+	if (it->second == aChild) {
+	    __ASSERT(EFalse);
+	}
+    }
     iChilds.insert(TNMVal(aChild->Name(), aChild));
     return res;
 }
@@ -1822,55 +1869,6 @@ TBool Elem::UnregisterComp(MElem* aComp, const string& aName)
 	}
     }
     //__ASSERT(found); /* To avoid panic when deleting comp that hasn't been registered yet */
-    res = ETrue;
-    return res;
-}
-
-TBool Elem::MoveComp(MElem* aComp, MElem* aDest)
-{
-    TBool res = EFalse;
-    vector<MElem*>::iterator it;
-    for (it = iComps.begin(); it != iComps.end() && *it != aComp; it++);
-    __ASSERT(it != iComps.end());
-    iComps.erase(it);
-    if (aDest != NULL) {
-	for (it = iComps.begin(); it != iComps.end() && *it != aDest; it++);
-	iComps.insert(it, aComp);
-    }
-    else {
-	iComps.push_back(aComp);
-    }
-    res = ETrue;
-    return res;
-}
-
-TBool Elem::MoveComp(MElem* aComp, const ChromoNode& aDest)
-{
-    TBool res = EFalse;
-    vector<MElem*>::iterator it;
-    for (it = iComps.begin(); it != iComps.end() && *it != aComp; it++);
-    __ASSERT(it != iComps.end());
-    if (aDest.Handle() != NULL) {
-	// Check first if dest exists 
-	vector<MElem*>::iterator dit;
-	for (dit = iComps.begin(); dit != iComps.end(); dit++) {
-	    MElem* ee = *dit;
-	    if (ee->Chromos().Root().Handle() == aDest.Handle()) break;
-	}
-	__ASSERT(dit != iComps.end());
-    }
-    iComps.erase(it);
-    if (aDest.Handle() != NULL) {
-	for (it = iComps.begin(); it != iComps.end(); it++) {
-	    MElem* ee = *it;
-	    if (ee->Chromos().Root().Handle() == aDest.Handle()) break;
-	}
-	__ASSERT(it != iComps.end());
-	iComps.insert(it, aComp);
-    }
-    else {
-	iComps.push_back(aComp);
-    }
     res = ETrue;
     return res;
 }
@@ -2414,7 +2412,7 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 		    // Create heir of source node in destination context
 		    MElem* heir = snode->CreateHeir(snode->Name(), dnode);
 		    // Re-adopt back to source parent
-		    snode->RemoveChild(heir);
+		    heir->SetParent(NULL);
 		    snode->GetParent()->AppendChild(heir);
 		    res = dnode->AppendComp(heir);
 		    if (res) {
@@ -3230,14 +3228,26 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	rtonly = Ifu::ToBool(args.at(0));
 	checksafety = Ifu::ToBool(args.at(1));
 	trialmode = Ifu::ToBool(args.at(2));
-	Mutate(rtonly, checksafety, trialmode);
+	MElem* ctx = GetNode(args.at(3));
+	Mutate(rtonly, checksafety, trialmode, ctx);
     } else if (name == "GetChromoSpec") {
 	aRes = GetChromoSpec();
     } else if (name == "EType") {
 	aRes = EType(Ifu::ToBool(args.at(0)));
-    } else if (name == "RegisterChild") {
-	TBool rr = RegisterChild(args.at(0));
+    } else if (name == "AppendComp") {
+	MElem* comp = GetNode(args.at(0));
+	TBool rr = AppendComp(comp);
 	aRes = Ifu::FromBool(rr);
+    } else if (name == "RemoveComp") {
+	MElem* comp = GetNode(args.at(0));
+	RemoveComp(comp);
+    } else if (name == "AppendChild") {
+	MElem* child = GetNode(args.at(0));
+	TBool rr = AppendChild(child);
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "RemoveChild") {
+	MElem* child = GetNode(args.at(0));
+	RemoveChild(child);
     } else if (name == "GetUri") {
 	aRes = GetUri(NULL, ETrue);
     } else if (name == "GetUri#2") {
@@ -3330,6 +3340,9 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
     } else if (name == "OnCompAdding") {
 	MElem* comp = GetNode(args.at(0));
 	OnCompAdding(*comp);
+    } else if (name == "OnCompChanged") {
+	MElem* comp = GetNode(args.at(0));
+	OnCompChanged(*comp);
     } else if (name == "CompsCount") {
 	TInt cnt = CompsCount();
 	aRes = Ifu::FromInt(cnt);
@@ -3339,6 +3352,11 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
     } else if (name == "AppendMutation") {
 	TMut mut(args.at(0));
 	AppendMutation(mut);
+    } else if (name == "AppendMutation#2") {
+	Chromo* mut = iEnv->Provider()->CreateChromo();
+	mut->SetFromSpec(args.at(0));
+	AppendMutation(mut->Root());
+	delete mut;
     } else if (name == "IsRemoved") {
 	TBool rr = IsRemoved();
 	aRes = Ifu::FromBool(rr);
@@ -3370,6 +3388,12 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	TMut croot;
 	GetCRoot(croot);
 	aRes = croot;
+    } else if (name == "IsChromoAttached") {
+	TBool isatt = IsChromoAttached();
+	aRes = Ifu::FromBool(isatt);
+    } else if (name == "GetCompOwning") {
+	MElem* node = GetNode(args.at(0));
+	res = GetCompOwning(node);
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }
@@ -3397,6 +3421,14 @@ void* Elem::GetIfind(TIfRange& aRange, TInt aInd)
 	__ASSERT(EFalse);
     }
     return res;
+}
+
+void Elem::DumpChilds() const
+{
+    for (TNMReg::const_iterator it = iChilds.begin(); it != iChilds.end(); it++) {
+	MElem* child = it->second;
+	cout << "ptr: " << (void*) child << ", name: " << child->Name() << endl;
+    }
 }
 
 void Elem::DumpMcDeps() const
@@ -3515,19 +3547,6 @@ string Elem::GetChromoSpec() const
 {
     string res;
     iChromo->GetSpec(res);
-    return res;
-}
-
-TBool Elem::RegisterChild(const string& aChildUri)
-{
-    TBool res = ETrue;
-    MElem* child = GetNode(aChildUri);
-    if (child != NULL) {
-	RegisterChild(child);
-    } else  {
-	res = EFalse;
-    }
-
     return res;
 }
 

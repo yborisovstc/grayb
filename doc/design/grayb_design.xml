@@ -42,6 +42,8 @@
 		<revremark>Added <xref linkend="ds_mod"/></revremark> </revision>
 	    <revision> <revnumber>0.13</revnumber> <date>07-May-2016</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="ds_cplx_cont_strc"/></revremark> </revision>
+	    <revision> <revnumber>0.14</revnumber> <date>07-Jun-2016</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="ds_daa_ttm"/>, updated <xref linkend="ds_cplx_cont_strc"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -65,7 +67,7 @@
 	<glossentry id="gls_cp"><glossterm>CP</glossterm> <acronym>CP</acronym>
 	    <glossdef> <para>Connection Point</para> <para>
 		    Element that is used as endpoint of connections between systems.  
-		    </para></glossdef> </glossentry>
+	</para></glossdef> </glossentry>
 	<glossentry id="gls_daa"><glossterm>DAA</glossterm> <acronym>DAA</acronym>
 	    <glossdef> <para>Distributed Agents Approach</para> <para>
 		    Approach of multi-agent system that assumes that the modes is distributed among several environments that 
@@ -80,10 +82,10 @@
 		    The approach of models creation where the same mutation order is
 		    used for model creation as on construction phase, ref
 		    <xref linkend="ds_mut_osm"/>
-		    </para></glossdef> </glossentry>
+	</para></glossdef> </glossentry>
 
     </glossary>
-    
+
     <sect1 id="ds_base"> <title>Base</title>
 	<sect2 id="ds_base_01"><title>DS_BASE_01 Getting iface</title>
 	    <sect3><title>Description</title>
@@ -96,7 +98,7 @@
 		    design approach:</simpara>
 		<itemizedlist>
 		    <listitem>Using agents extention mechanism. Redirect request to higher level of native hierarchy if the current level
-		       cannot handle the request.	
+			cannot handle the request.	
 		    </listitem>
 		</itemizedlist>
 	    </sect3>
@@ -303,10 +305,10 @@
 		    The mutations are applied in the order that is determined by the structures of mutations tree.
 		    The number of step when particular mutation will be applied is the mutations rank.</simpara>
 		<simpara>Almost are mutations includes reference to some node of current native hier.
-		   These relations can be considered as dependencies network. 
-		   Applying mutation Mn can brake the system if the mutaions is placed in unappropriate position within mutation tree.
-		   The brackage happens for instance if the mutation related to node NN is placed in the position with the rank 
-		   lower that rank of another mutation related to NN and "not knowing" of the first mutation.</simpara>
+		    These relations can be considered as dependencies network. 
+		    Applying mutation Mn can brake the system if the mutaions is placed in unappropriate position within mutation tree.
+		    The brackage happens for instance if the mutation related to node NN is placed in the position with the rank 
+		    lower that rank of another mutation related to NN and "not knowing" of the first mutation.</simpara>
 		<simpara>Below is the example of mutation braking system consistency:
 		    <figure id="fig_mut_uappr_intro_ex1"><imageobject> <imagedata fileref="pics/pic_mut_uc1.png"/> </imageobject></figure>
 		</simpara>
@@ -342,10 +344,10 @@
 		<orderedlist>
 		    <listitem id="ds_mut_unappr_rt_ths1"> If node Na depends on mut Mb then also owners and parents of Na depends on mut Mb. 
 			<simpara>
-			Prove for owner:  if there is owner No and it's comp Nc and mut Mc of Nc, then for instance mut of removing
-			No should go after Mc.
-			Prove for parent: There is parent Np and it's child Nc, and there is mut Mc of Nc containgin URI including parent,
-			then for instance mut Mp of renaming Np should go after Mc otherwise Mc will be broken.
+			    Prove for owner:  if there is owner No and it's comp Nc and mut Mc of Nc, then for instance mut of removing
+			    No should go after Mc.
+			    Prove for parent: There is parent Np and it's child Nc, and there is mut Mc of Nc containgin URI including parent,
+			    then for instance mut Mp of renaming Np should go after Mc otherwise Mc will be broken.
 			</simpara>
 			<simpara>There are different "nature" of these deps. Some of them are created because of referencing via
 			    URI, and that uri "trace" include the node. If the trace is going thru inheritance tree that deps parents via
@@ -414,7 +416,7 @@
 	    <sect3><title>Possible solutions</title>
 		<sect4><title>To check the parent - if run-time parent doesn't exist then get its chromo from system chromo.</title>
 		    <simpara>This approach goes to using parent's chromo instead of run-time nodes as is in current solution.
-		       Can we use chromo? The doubts are
+			Can we use chromo? The doubts are
 			because of the incremental mutation scheme principle "Chromosome as subject and system as object of creation". 
 			This means that the references in chromo (to object node, to parent etc.) are the references within system but 
 			not within chromo itserf.</simpara>
@@ -519,7 +521,7 @@
 		    So the mutation that use reference to some node must be applied AFTER the referenced node is created.</simpara>
 		<simpara>There was the discussion around this operation, 
 		    ref <ulink url="../../../fap-doc/doc_incr_syst_creation/index.html#sec_lim_transp"/>. There was conclusion
-		that transposition is not allowed in the scope of incremental mutations approach.</simpara>
+		    that transposition is not allowed in the scope of incremental mutations approach.</simpara>
 	    </sect3>
 	    <sect3><title>Approached</title>
 		<simpara>There are potential solution for the problem of changing order:</simpara>
@@ -999,7 +1001,7 @@
 		<simpara>So the question is if we can request strong restriction of components name to be unique?</simpara>
 		<simpara>Actually the ability of components to have the same name is activelly used to support cold-switching polymorphism, ref 
 		    <xref linkend="ds_mut_pmf"/>. For instance in [syst] module Extender agent has component "Connpoint:Int" for internal connection point.
-		In many cases it is removed and re-created with the same name but another parent. This keeps interface but change implementation.</simpara>
+		    In many cases it is removed and re-created with the same name but another parent. This keeps interface but change implementation.</simpara>
 	    </sect3>
 	    <sect3><title>Unique name: how to check uniqueness in case of chromo optimization.</title>
 		<simpara>The use-case is: node A has component A_1, that is removed then, chromo is optimized further, i.e. A_1 is not created in mode.
@@ -1071,9 +1073,9 @@
 		cause many problems with the model consistency. So to ensure the final model consistency the specific verification has to be done on
 		construction phase. This makes the implementation cumbersome and slow.</simpara>
 	    <simpara>Howewer there is alternative approach: to use the same sequence for model assembling as on creation phase. There are some variants
-	    of implementation of this approach.</simpara>
+		of implementation of this approach.</simpara>
 	</sect2>
-	<sect2><title>How to import external modules?</title>
+	<sect2 id="ds_mut_osm_imp"><title>How to import external modules?</title>
 	</sect2>
 	<sect2><title>What mutation scheme can we considered</title>
 	    <orderedlist>
@@ -1293,6 +1295,14 @@
 		<simpara>The key problem here is that we need to roll-back the mutation in case of failure. Currently the engine itself doesn't support
 		    rollback. The only way at the moment to roll-back is to set mutations limit to env and re-assemble the model. We need to 
 		    consider solid design for such mutation roll-back.</simpara>
+	    </sect3>
+	    <sect3 id="ds_mut_osmlc_impl"><title>OSM linear chromo implementation.</title>
+		<simpara>OSM linear chromo approach assumes that chromo can be just flat data - the sequence of mutations. For the first look this 
+		    can be implemented simply: to use current (tree-type) chromo but avoid creating hierarchical nodes. But in fact even root chromo
+		    remans at the moment hierarchical: there is root node, containing root node mutations.</simpara>
+		<simpara>The chromo implementation supports such structure - it requires that chromo has root of type ENt_Node. To implement true linear
+		    chromo these restriction should be removed. In this case the model creation scheme should also be slightly changed: env should create
+		    root of type Elem by default. So the chromo will be mutations of the root node.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_mut_osmlc_cmp"><title>OSM linear chromo: chromo compacting</title>
@@ -1680,6 +1690,58 @@
 		<simpara>Container allows getting component using hierarhical key (kind of uri in agents hier tree). The 
 		    step in hkey separates by "." symbol. Hkey example is: vector.end.x - x coordinate of vector end point.</simpara>
 		<simpara>Container iface covers the following containment type</simpara>
+		<simpara>Container iface covers the following containment types: array (map from natural numbers set to contents),
+		    map (from string key to content), tree.</simpara>
+		<simpara>Is it possible to avoid having dedicated iface for content and keep content APIs on base agent level?
+		    The matter is that having content iface increases the model complexity. To avoid dedicated iface we can use
+		    hkey. In order to get size of content container and content by index  we can use pre-defined key,
+		    for instance number sign ("#"). Example would be:
+		    <programlisting>
+			directions.# - size of directions array
+			directions.#2 - second direction
+			directions.#2.x - x coordinate of second direction
+		    </programlisting>
+		</simpara>
+		<simpara>The full string notation of containers value also could be assosiated with some pre-defined hkey,
+		    for instance "*". Or we can define that </simpara>
+		<simpara>As for support of settable categories there are some desing problems here:</simpara>
+		<simpara>Settable categories are in fact content itself. To "bind" some content with category we just
+		    need to establish relation category-content. This is "relation model" point of view. But this 
+		    approach complicates the solution even being "right solution".</simpara>
+		<simpara>Another solution would be simply add support of property "category" to content.</simpara>
+		<simpara>Looking again at "relation model" approach we can see that in fact the relations are 
+		    already supported in content - the hier is just relation. So we can enable relation of content to more
+		    than one "owner". Then the category can be considered as "owner" in "category" hier. </simpara>
+		<simpara>Summary of approaches for category:</simpara>
+		<orderedlist>
+		    <listitem>To use only predefined categories.
+			<para>The matter is that the category mostly makes sense as interface, i.e. it should be well known
+			    by the clients, i.e. published. Predefined category is such published interface.</para>
+		    </listitem>
+		    <listitem>To use settable property of content</listitem>
+		    <listitem>To use upper-level content with key equals category and component as keys to content related
+			to this category.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Notation of content value</title>
+		<simpara>The notation is the string representatin of the value of the content. </simpara>
+		<simpara>Notation ABNF:</simpara>
+		<programlisting>
+		    content_value = simple_content_value / combined_content_value
+		    simple_content_value = text_value / numeric_value
+		    text_value = text
+		    combined_content_value = "{" 1*(component_value) "}"
+		    component_value = "{" component_key ":" '"' content_value '"' "}"
+		</programlisting>
+		<simpara>Examples:</simpara>
+		<itemizedlist>
+		    <listitem>Mutlicontent edge:
+			<programlisting> { { P1 : "./../v_1"} { P2 : "./../v_2"} } </programlisting>
+		    </listitem>
+		    <listitem>Array of texts
+			<programlisting> { { #0 : "bla-bla 1"} { #1 : "bla-bla 2"} } </programlisting>
+		    </listitem>
+		</itemizedlist>
 	    </sect3>
 	</sect2>
     </sect1>
@@ -2698,6 +2760,9 @@
 		    <listitem>To use chromo independent validation procedure
 			<para>Ref also <xref linkend="ds_th_mv"/></para>
 		    </listitem>
+		    <listitem>To use Original Sequence Mutation (<xref linkend="gls_osm"/>)
+			<para>This approach avoids necessity of dependencies tracking. Ref <xref linkend="ds_mut_osm"/> for details.</para>
+		    </listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>
@@ -2712,8 +2777,12 @@
 		<simpara>The possible solutions here are:</simpara>
 		<itemizedlist>
 		    <listitem>To provide mechanism of chromo nodes communication.</listitem>
-		    <listitem>To modify the approach of chromo parts attachment: to avoid attaching chromo nodes but use models nodes attachments
-			to keep continuity of chromo, i.e use "virtual" attaching. We also will call this "decoupled" chromo approach.</listitem>
+		    <listitem>To modify the approach of chromo parts attachment
+			<para> to avoid attaching chromo nodes but use models nodes attachments
+			    to keep continuity of chromo, i.e use "virtual" attaching. We also will call this "decoupled" chromo approach.
+			    Ref <xref linkend="ds_daa_chrc_va"/> for details.
+			</para>
+		    </listitem>
 		</itemizedlist>
 	    </sect3>
 	    <sect3 id="ds_daa_chrc_va"><title>"Virtual attaching (decoupled chromo): to avoid attaching chromo nodes but use models nodes attachments.</title>
@@ -2735,7 +2804,6 @@
 		<simpara>The procedure of combinign whole chromo is based on the relation between owners chromo [node] mutation and corresponding owners component.
 		    This means that for each [node] mutation the owner can find the corresponding component, request the components chromo, and attach it to
 		    [node] mutation.</simpara>
-
 	    </sect3>
 	    <sect3 id="ds_daa_chrc_re"><title>Vitrual attaching: is model node rank equivalent to chromo node "node" rank ?</title>
 		<simpara>Model tree includes not only nodes created explicitl by the corresponding "node" mutation of chromo but also nodes inherited 
@@ -2857,6 +2925,30 @@
 			created this env. So dedicated identification of env is required.</para>
 		</listitem>
 	    </orderedlist>
+	    <sect3><title>Design solutions summary</title>
+		<orderedlist>
+		    <listitem>All server resources (env, observers etc) are shared by server, i.e allowed by all clients.  </listitem>
+		    <listitem>Resource is owned by its creator, for instance session created an Env is owning it.</listitem>
+		    <listitem>Resources are shared via common MIface registry - there is server resources keyed registry shared to clients
+			<para>Resource creator registers created resource in this registry.</para>
+		    </listitem>
+		    <listitem>There is resources provider iface/impl on server, so resources can be generated via resource type.</listitem>
+		    <listitem>There is server API to add resource provider, so server owner can customize resources.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Design items</title>
+		<orderedlist>
+		    <listitem>We need to extend URI in order to be able to locate agent in particular server and env.
+			<para>The matter is that potentially now it gets possible for client to create more than one env. So
+			    client should be able to address the agents distinguishly in both env even the agents URLs within the env 
+			    are equivalent. </para>
+		    </listitem>
+		    <listitem>Server resources identification
+			<para>Identification can be based on location in hierarchy how it is implemented for agents. The 
+			    hierarchy currently is just linear. So we need to give unique name to resorces.</para>
+		    </listitem>
+		</orderedlist>
+	    </sect3>
 	</sect2>
 	<sect2 id="ds_daa_pxdup"><title>DAA design issue: dupicating of agents via proxy in the same env.</title>
 	    <simpara>Currently it is possible that the proxy gets created pointing to agent in the same environment. The case is 
@@ -2873,7 +2965,90 @@
 		be done with utilizing the fact that the UID is based on ablolute local URI of the agent. Ref <xref linkend="ds_irm"/> for
 		improvement mechanism of iface resolution by UID.</simpara>
 	</sect2>
-	<sect2 id="ds_daa_iss"><title>Design issues to be considered</title>
+	<sect2 id="ds_daa_ttm"><title>DAA design issue: tree-type mutation as unified call argument</title>
+	    <sect3><title>Intro</title>
+		<simpara>Currently there is base agent iface MElem method:
+		    <programlisting> ChromoNode AppendMutation(const ChromoNode&amp; aMuta) </programlisting>
+		    The problem is that serialization of ChromoNode is rather tricky especially in case of three-type node.
+		    There is also similar method:
+		    <programlisting> void AppendMutation(const TMut&amp; aMut) </programlisting>
+		    that uses TMut having convenient serialization. But this method cannot be used to append three-type mutation.
+		</simpara>
+		<simpara>
+		    Where the appending of three-type mutation happens? This happen for instance in Elem::DoMutation():
+		    <programlisting>
+			if (ftarg != NULL) {
+			ChromoNode madd = ftarg->AppendMutation(rno);
+			madd.RmAttr(ENa_Targ);
+			ftarg->Mutate(...
+		    </programlisting>
+		    in cases when the chromo includes three-type mutations.
+		</simpara>
+		<simpara>There was migration done from tree-type chromo to flat chromo implementing <xref linkend="gls_osm"/> approach.
+		    In case of true OSM chromo (flat chromo) the only single (not tree-type) mutations are appending via AppendMutation.
+		    But we still keep the possibility of treating tree-type mutations for compatibility purpose.</simpara>
+		<simpara>Where tree-type mutations are used? The cases are:</simpara>
+		<orderedlist>
+		    <listitem>In node import</listitem>
+		    <listitem>In inserting of saved chromo
+			<para>The chromo itself is tree-type even there are only 2-layers in case of OSM chromo: root and other mutations.</para>
+		    </listitem>
+		</orderedlist>
+		<simpara>So there are some options here:</simpara>
+		<orderedlist>
+		    <listitem>To implement convenient serialization of tree-type ChromoNode</listitem>
+		    <listitem>To enable OSM chromo only
+			<para>I.e to deny comptibility with hierarchical chromo. In this case all the mutations will be single mutations
+			    and the method ppendMutation(const TMut&amp; aMut) can be used in all places.</para>
+		    </listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Proposals</title>
+		<simpara>The proposal is to implement serialization of tree-type chromo. This should unblock the further model improvement.
+		    But as long term the "OSM chromo only" approach is preferred. We need to re-design importing mechanism in order to allow
+		    OSM in modules also, ref <xref linkend="ds_mut_osm_imp"/>.
+		    This new mechanism could be based on run-time modules resided in some DES server.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_daa_ina"><title>DAA design issue: native agent cannot get unif call arg by UID</title>
+	    <sect3><title>Intro</title>
+		<simpara>Iface's UID is used currently for identification of iface. UID itself is based on native hier - it includes iface's node
+		    absolute URI in order to navigate to it. But there are some cases where this approach doesn't work. For instance in case of native agents.
+		    For native agents absolute URI doesn't work currently, ref. <xref linkend="ds_di_nacgna"/>.
+		</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_daa_hunv"><title>DAA desing issue: heir UID is not valid on heir creation phase</title>
+	    <sect3><title>Intro</title>
+		<simpara>In CreateHeir() method of Elem and MElemPx heir is not really inserted to owning hier, owner just is set for it
+		    (but it is not adding comp to owner but one-side relation owned-owner. With this one-side relation it is possble to get heir's URI
+		    (i.e. genarate UID), but not possible to get node by this UID. For local model it doesn't cause any problem, but in 
+		    distributed model it leads to error in getting proxy by UID, particularly on: </simpara>
+		<programlisting>
+		    MElem*  MelemPx::CreateHeir(const string&amp; aName, MElem* aMan)
+		    ...
+		    AppendChild(heir);
+		</programlisting>
+		<simpara>The situation seems serious for the case if in CreateHeir the new owner is remote node. In this case to append comp to 
+		    remote owner we need to make request passing heir's UID, but UID is not resolvable because heir doesn't have owner yet.
+		</simpara>
+	    </sect3>
+	    <sect3><title>Solution: "ligth" relations on heir creation phase</title>
+		<simpara>The potential solution would be to avoid of using any requests required UID before heir is not finally included into owning hier
+		    (the base condition of UID generation). How to avoid? The only such request is AppendChild() in CreateHeir(). But we can avoid
+		    this AppendChild() - in fact the "solid" two-ways inheritance relation is not necessary here, just "light" relation is enough. This 
+		    approach is already using for owning relation - only one-way relation is set in agent's constructor. Actually it is enough to
+		    allow agent request nodes duing mutation.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_daa_hhb"><titel>DAA desing issue: heir hier gets broken in case of distribute inheritance</titel>
+	    <sect3><title>Intro</title>
+		<simpara>In DAA the remote inheritance (i.e. when parent is located in remote env) currently is based on the approach where the parent
+		    created heir evolves back the inheritance chain in form of proxies of real nodes in inheritance chain, but the final node of chain
+		    (native agent) is obtained from local env provider. Generally it works, but the problem is </simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_daa_iss"><title>DAA Design issues to be considered</title>
 	    <orderedlist>
 		<listitem><xref linkend="ds_daa_md"/></listitem>
 		<listitem><xref linkend="ds_daa_chrc"/></listitem>
@@ -2928,7 +3103,7 @@
 		is implemented "above" the model. So to specify the object of remote call we need to specify the agent first and then the iface of agent (local
 		iface). We will call iface resolution using for <xref linkend="gls_daa"/> as "global resolution" in contrast of local iface resulution.
 		Correspoidingly we will say that MIface UID is iface "global" identifier in contrast of iface type - identifier using for local iface
-		resolution. So global iface identifier currently is combined from agent URI (agent identifier in the current env) and local iface identifier
+		resolution. So global iface identifier currently is combined from agent URI (ogent identifier in the current env) and local iface identifier
 		(iface type). To be exact this global identifier is not global in scope of the whole distributed model but only in the scope of environments that
 		combine the whole model. Do MIface UID is the identifier that allows iface resolution in the scope of environment. Potentially we can
 		introduce "true" global identifier (GUID) that allows to resolve iface in global scope (in the scope of the whole distributed model).</simpara>
@@ -2937,6 +3112,18 @@
 		be proxy UID in the scope of proxy manager. It can be proxy context for instance. The context is unique within proxy manager scope so
 		can be used for proxy identifier. It is clear that with this approach we have to specifically implement proxy manager local iface
 		resolution because the UID actually gets not truly local but needs look up to the owned proxies too.</simpara>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_di"><title>Desing issues</title>
+	<sect2 id="ds_di_nacgna"><title>Native agents cannot get node by absolute URI</title>
+	    <simpara>The origin of this behaviour it that native agents are not included into model's main native hier. They have theirs own hier instead.
+		To be clearer, they don't have native hier (i.e. root) at all, so the rule of UID for native agent is just the agent name.
+		They have only inheritance hier.  Actually there is kind of careless design in native agents.</simpara>
+	    <simpara>Originally this fact didn't cause any problem, but with <xref linkend="gls_daa"/> this lack in design can lead to problems, ref.
+		<xref linkend="ds_daa_ina"/> for instance.</simpara>
+	    <simpara>The possible solution would be to check in agents GetNode() if the agent is native, and if so, use iEnv-&gt;Root()-&gt;GetRoot()
+		to get root. Or we can use this approach persistently for getting root.</simpara>
 	</sect2>
     </sect1>
 
@@ -3009,6 +3196,25 @@
 	</sect2>
 	<sect2><title>To implement improved iface resolution mechanism</title>
 	    <simpara>Ref <xref linkend="ds_irm"/></simpara>
+	</sect2>
+	<sect2><title>To implement remote logging</title>
+	    <simpara>Currently remote env logs records locally. This is inconvenient - needs to look at multiple logs located in different places.
+		Needs to implement receining logs from secondary envs.</simpara>
+	</sect2>
+	<sect2><title>To replace MElem comps APIs with generic nodes APIs</title>
+	    <simpara>Base agents API includes comps APIs: CompsCount(), GetComp(). This APIs is quite primitive and dont support filtering, i.e. by
+		removed sign. This cause overhead when implementing distributed models because client needs to request status of "removed" for each
+	    comp. So we need to implement filtering when getting comps. There are some options here:</simpara>
+	<orderedlist>
+	    <listitem>To introduce MElem "comps iterator" and corresponding APIs (begin, end)
+		<para>This APIs should allow to pass filtering parameters. Note that there is already such APIs in Elem:
+		NodesLoc_Begin, NodesLoc_End. So we just need to slighly redesign it and move to MElem iface level.</para>
+	    </listitem>
+	    <listitem>To implement iterator for generic nodes query API (GetNode).
+		<para>Currently there is just restricted nodes APIs - only single node query is allowed. We can extend
+		    APIs using nodes iterator. In that case nodes API will be suitable for getting components using uri "./*"</para>
+	    </listitem>
+	</orderedlist>
 	</sect2>
     </sect1>
 

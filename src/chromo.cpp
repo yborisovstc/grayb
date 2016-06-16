@@ -169,7 +169,7 @@ TMut::TMut(const string& aSpec)
 		    }
 		    size_t attrval_beg = attrtype_end + 1;
 		    string attrval = attr.substr(attrval_beg, string::npos);
-		    SetAttr(atype, attrval);
+		    SetAttr(atype, DeEscCtrls(attrval));
 		} else {
 		    throw (runtime_error("Incorrect TMut attr: " + attr));
 		}
@@ -207,6 +207,24 @@ string TMut::EscapeCtrls(const string& aInp)
     return res;
 }
 
+string TMut::DeEscCtrls(const string& aInp)
+{
+    string res;
+    for (string::const_iterator it = aInp.begin(); it != aInp.end(); it++) {
+	const char cc = *it;
+	string::const_iterator itn = it + 1;
+	if (itn != aInp.end()) {
+	    const char cn = *itn;
+	    if (cc == KEsc && IsCtrlSymb(cn)) {
+		res.push_back(cn);
+		it++;
+		continue;
+	    }
+	}
+	res.push_back(cc);
+    }
+    return res;
+}
 
 
 string Rank::ToString() const
@@ -826,3 +844,10 @@ void ChromoNode::Activate()
 	}
     }
 };
+
+ChromoNode::operator string() const
+{
+    string res;
+    ToString(res);
+    return res;
+}

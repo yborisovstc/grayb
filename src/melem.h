@@ -62,9 +62,8 @@ class MOwner: public MCompsObserver
     public:
 	static const char* Type() { return "MOwner";};
 	virtual TBool IsComp(const MElem* aElem) const = 0;
-	virtual TBool MoveComp(MElem* aComp, MElem* aDest) = 0;
-	virtual TBool MoveComp(MElem* aComp, const ChromoNode& aDest) = 0;
 	virtual TBool AppendComp(MElem* aComp) = 0;
+	virtual void RemoveComp(MElem* aComp) = 0;
 };
 
 // Interface of parent in native hierarchy
@@ -76,7 +75,6 @@ class MParent
 	virtual void OnChildDeleting(MElem* aChild) = 0;
 	virtual TBool OnChildRenamed(MElem* aComp, const string& aOldName) = 0;
 	virtual TBool AppendChild(MElem* aChild) = 0;
-	virtual TBool RegisterChild(const string& aChildUri) = 0;
 	virtual void RemoveChild(MElem* aChild) = 0;
 };
 
@@ -221,9 +219,12 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 	virtual TInt GetCapacity() const = 0;
 	virtual TBool IsHeirOf(const string& aParent) const = 0;
 	virtual MElem* GetNodeS(const char* aUri) = 0;
+	// TODO [YB] To replace Comps APIs with local nodes APIs (NodesLoc_Begin etc.)
+	// or general nodes APIs (GetNode). This will allow proper iteration with excluding removed nodes
 	virtual TInt CompsCount() const = 0;
 	virtual MElem* GetComp(TInt aInd) = 0;
 	virtual void SaveChromo(const char* aPath) const = 0;
+	virtual void DumpChilds() const = 0;
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};
     protected:

@@ -128,6 +128,7 @@ void Ut_cre::test_CreSyst()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    root->Chromos().Save("ut_cre_syst1_saved.xml_");
     MElem* cp1 = root->GetNode("./cp1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get cp1", cp1 != 0);
     MVert* mcp1 = cp1->GetObj(mcp1);
@@ -137,6 +138,10 @@ void Ut_cre::test_CreSyst()
     MElem* epair = pair->GetObj(epair);
     const string pname = epair->Name();
     CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pname == "cp2");
+    MElem* e2 = root->GetNode("./E2");
+    MElem* e2_p1 = e2->GetNode("./P1");
+    TBool isatt = e2->IsCompAttached(e2_p1);
+    CPPUNIT_ASSERT_MESSAGE("e2->IsAttached(e2_p1) returns false", isatt);
 
     delete iEnv;
 }

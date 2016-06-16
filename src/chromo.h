@@ -36,8 +36,10 @@ class TMut
 	static TNodeType NodeType(const string& aTypeName);
     private:
 	static string EscapeCtrls(const string& aInp);
+	static string DeEscCtrls(const string& aInp);
 	static map<string, TNodeType> KNodeTypes_Init();
 	static map<string, TNodeAttr> KNodeAttrs_Init();
+	static TBool IsCtrlSymb(const char aSymb) { return aSymb == KSep || aSymb == KAttrSep;};
     private:
 	TNodeType mType;
 	TAttrs mAttrs;
@@ -252,6 +254,7 @@ class ChromoNode
 	ChromoNode At(TInt aInd, TNodeType aType) const;
 	void ReduceToSelection(const ChromoNode& aSelNode);
 	void ToString(string& aString) const { iMdl.ToString(iHandle, aString);};
+	operator string() const;
     private :
 	ChromoMdl& iMdl;
 	void* iHandle;

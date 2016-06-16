@@ -249,7 +249,6 @@ class Elem: public MElem
 	virtual TInt GetCapacity() const;
 	// Nodes
 	virtual TBool AppendChild(MElem* aChild);
-	virtual TBool RegisterChild(const string& aChildUri);
 	virtual void RemoveChild(MElem* aChild);
 	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL);
 	virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse);
@@ -270,8 +269,6 @@ class Elem: public MElem
 	virtual TBool OnCompChanged(MElem& aComp);
 	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName);
 	virtual TBool OnContentChanged(MElem& aComp);
-	virtual TBool MoveComp(MElem* aComp, MElem* aDest);
-	virtual TBool MoveComp(MElem* aComp, const ChromoNode& aDest);
 	// From MMutable
 	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL);
 	virtual TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL);
@@ -326,6 +323,7 @@ class Elem: public MElem
 	static Elem* ToElem(MElem* aMelem) { Elem* res = (aMelem == NULL) ? NULL: aMelem->GetObj(res); return res;};
 	inline MProvider* Provider() const;
 	virtual TBool AppendComp(MElem* aComp);
+	virtual void RemoveComp(MElem* aComp);
 	TBool RegisterComp(MElem* aComp);
 	TBool RegisterChild(MElem* aChild);
 	void NotifyNodeMutated(const ChromoNode& aMut, const MElem* aCtx);
@@ -354,6 +352,7 @@ class Elem: public MElem
 	virtual void DumpMcDeps() const;
 	virtual void DumpCmDeps() const;
 	virtual void SaveChromo(const char* aPath) const;
+	virtual void DumpChilds() const;
     protected:
 	// Environment
 	MEnv* iEnv;
