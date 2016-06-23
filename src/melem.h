@@ -155,6 +155,8 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
     public:
 	static const char* Type() { return "MElem";};
     public:
+	// Dedicated request of deletion, ref ds_daa_powrd
+	virtual void Delete() = 0;
 	virtual const string EType(TBool aShort = ETrue) const = 0;
 	virtual const string& Name() const = 0;
 	virtual TBool IsProvided() const = 0;

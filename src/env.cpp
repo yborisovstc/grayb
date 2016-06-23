@@ -348,7 +348,9 @@ Env::~Env()
 {
     delete mExtIfProv;
     //Logger()->Write(MLogRec::EInfo, iRoot, "Starting deleting system");
-    delete iRoot;
+    if (iRoot != NULL) {
+	delete iRoot;
+    }
     //Logger()->Write(MLogRec::EInfo, NULL, "Finished deleting system");
     delete iChMgr;
     delete iImpMgr;
@@ -523,5 +525,11 @@ MExtIfProv* Env::ExtIfProv()
 MIfaceResolver* Env::IfaceResolver()
 {
     return mIfResolver;
+}
+
+// Handle notification of root deleted, ref ds_daa_rdo
+void Env::OnRootDeleted()
+{
+    iRoot = NULL;
 }
 

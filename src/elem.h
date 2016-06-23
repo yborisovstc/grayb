@@ -149,6 +149,7 @@ class Elem: public MElem
 	static string PEType();
 	Elem(const string &aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	Elem(Elem* aMan = NULL, MEnv* aEnv = NULL);
+	virtual void Delete();
 	virtual ~Elem();
 	virtual TBool IsProvided() const;
 	virtual void SetParent(const string& aParent);

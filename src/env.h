@@ -117,6 +117,7 @@ class Env: public Base, public MEnv
     virtual void SetEVar(const string& aName, const string& aValue);
     virtual TBool GetEVar(const string& aName, string& aValue) const;
     virtual void ConstructSystem();
+    virtual void OnRootDeleted();
     // From MIface
     virtual MIface* Call(const string& aSpec, string& aRes);
     virtual string Mid() const;

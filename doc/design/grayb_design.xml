@@ -3041,11 +3041,61 @@
 		    allow agent request nodes duing mutation.</simpara>
 	    </sect3>
 	</sect2>
-	<sect2 id="ds_daa_hhb"><titel>DAA desing issue: heir hier gets broken in case of distribute inheritance</titel>
+	<sect2 id="ds_daa_hhb"><title>DAA desing issue: heir hier gets broken in case of distribute inheritance</title>
 	    <sect3><title>Intro</title>
 		<simpara>In DAA the remote inheritance (i.e. when parent is located in remote env) currently is based on the approach where the parent
 		    created heir evolves back the inheritance chain in form of proxies of real nodes in inheritance chain, but the final node of chain
 		    (native agent) is obtained from local env provider. Generally it works, but the problem is </simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_daa_powrd"><title>DAA design issue: Proxies one-way relations cannot support safe model deletion.</title>
+	    <sect3><title>Intro</title>
+		<simpara>There was two-ways relation used in base model env: owner-owned and parent-child. Node's deletion secure proper mechanism 
+		    of relations breaking. This mechanism is basing on notifications that are issued by the node playing inferior role: 
+		    from child to parent, from component to owner. In case of distributed model the only one-way relations are esatblished
+		    between MElem proxy and Elem agent.
+		</simpara>
+	    </sect3>
+	    <sect3><title>Analysis</title>
+		<simpara>Please note that proxies are deleted first when secondary env is deleted (ref ARenvu agent).</simpara>
+		<simpara>Consider parent-child relation. Let's assume [P] is parent in primary env, [PP] - MEelm proxy of [P] in secondary env,
+		    [C] - remote child in secondary env, [CP] child's proxy in primary env. What happens if [PP] gets removed? On one hand we
+		    need to notify [C] of parents removal, so [C] can reset relation to parent (please note that this requires two-ways relation
+		    between [C] and [PP]. But what happens then if [P] get removed?
+		    [P] will notify [C] via [CP] of parent removal, that seems weird, because [C] already got such an notification from [PP].
+		    This shows that two-ways relations between Elem and Proxy is wrong way.
+		</simpara>
+		<simpara>Another way is that [PP] notifies [P] of child deletion (because [PP] is actually child [C] representation in 
+		relation to [P], i.e. direction where [PP] can act via requesting).</simpara>
+	    </sect3>
+	    <sect3><title>Use-case: MElem proxy - parent removal; child cannot get EType()</title>
+		<orderedlist>
+		    <listitem>Actors are:
+			<programlisting>
+			    [P] - parent, MElem proxy
+			    [C] - child, Elem
+			</programlisting>
+		    </listitem>
+		    <listitem>[P] is being deleted, [P] notifies [C] on deletion of parent, [C] reset relation to parent</listitem>
+		    <listitem>Relation to parent supports some MElem API, for instance EType. Now this API will not work.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Solution</title>
+		<simpara>We need to complete deletion the model in a normal way. This means that we need to keep the proxies alive during
+		    model destruction process. This can be done via kind of trick - to initiate in Renv/Renvu destructor components removal
+		    before deleting proxies manager. This approach required dedicated request of deletion in MElem in order to 
+		    distinct MElem C++ destructor (that also works in MElem proxy) and MElem deletion.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_daa_rdo"><title>DAA design issue: root elem double ownership in secondary env</title>
+	    <sect3><title>Intro</title>
+		<simpara>In distributed env the secondary environment has pecularity, namelly that root agent ownership is shared between env
+		and root owner in primary env. This causes the problem on distributed model destruction: both owners are trying to delete root.</simpara>
+	    </sect3>
+	    <sect3><title>Solution</title>
+		<simpara>Actually the interaction is as: owner in primary env request root deletion first, the secondary env tries to 
+		    delete root on the final phase of destruction. So we can add to MEnv the notification of root deletion so the env understand
+		    that it shouldn't delete root.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_daa_iss"><title>DAA Design issues to be considered</title>
@@ -3204,17 +3254,17 @@
 	<sect2><title>To replace MElem comps APIs with generic nodes APIs</title>
 	    <simpara>Base agents API includes comps APIs: CompsCount(), GetComp(). This APIs is quite primitive and dont support filtering, i.e. by
 		removed sign. This cause overhead when implementing distributed models because client needs to request status of "removed" for each
-	    comp. So we need to implement filtering when getting comps. There are some options here:</simpara>
-	<orderedlist>
-	    <listitem>To introduce MElem "comps iterator" and corresponding APIs (begin, end)
-		<para>This APIs should allow to pass filtering parameters. Note that there is already such APIs in Elem:
-		NodesLoc_Begin, NodesLoc_End. So we just need to slighly redesign it and move to MElem iface level.</para>
-	    </listitem>
-	    <listitem>To implement iterator for generic nodes query API (GetNode).
-		<para>Currently there is just restricted nodes APIs - only single node query is allowed. We can extend
-		    APIs using nodes iterator. In that case nodes API will be suitable for getting components using uri "./*"</para>
-	    </listitem>
-	</orderedlist>
+		comp. So we need to implement filtering when getting comps. There are some options here:</simpara>
+	    <orderedlist>
+		<listitem>To introduce MElem "comps iterator" and corresponding APIs (begin, end)
+		    <para>This APIs should allow to pass filtering parameters. Note that there is already such APIs in Elem:
+			NodesLoc_Begin, NodesLoc_End. So we just need to slighly redesign it and move to MElem iface level.</para>
+		</listitem>
+		<listitem>To implement iterator for generic nodes query API (GetNode).
+		    <para>Currently there is just restricted nodes APIs - only single node query is allowed. We can extend
+			APIs using nodes iterator. In that case nodes API will be suitable for getting components using uri "./*"</para>
+		</listitem>
+	    </orderedlist>
 	</sect2>
     </sect1>
 

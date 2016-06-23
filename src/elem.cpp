@@ -64,6 +64,7 @@ MElem::EIfu::EIfu()
     RegMethod("SetObserver", 1);
     RegMethod("OnCompAdding", 1);
     RegMethod("OnCompChanged", 1);
+    RegMethod("OnCompDeleting", 2);
     RegMethod("CompsCount", 0);
     RegMethod("GetComp", 1);
     RegMethod("AppendMutation", 1);
@@ -81,6 +82,8 @@ MElem::EIfu::EIfu()
     RegMethod("AppendChild", 1);
     RegMethod("AppendComp", 1);
     RegMethod("RemoveComp", 1);
+    RegMethod("OnChildDeleting", 1);
+    RegMethod("Delete", 0);
 }
 
 void MElem::EIfu::FromCtx(const TICacheRCtx& aCtx, string& aRes)
@@ -449,6 +452,11 @@ Elem::Elem(Elem* aMan, MEnv* aEnv): iName(Type()), iMan(aMan), iEnv(aEnv),
     SetParent(string());
 }
 
+void Elem::Delete()
+{
+    delete this;
+}
+
 Elem::~Elem() 
 {
     // Notify the man of deleting
@@ -459,15 +467,6 @@ Elem::~Elem()
     Logger()->Write(MLogRec::EInfo, this, ss.str().c_str());
     */
 
-    // TODO [YB] OnCompDeleting called only here, i.e. after Elem derivation desctuctor completed
-    // This means that the ovner notified will not be able to understand what agent is deleted
-    // To consider to add one more notification - before deletions
-    if (iMan != NULL) {
-	iMan->OnCompDeleting(*this, EFalse);
-    }
-    if (iObserver != NULL) {
-	iObserver->OnCompDeleting(*this, EFalse);
-    }
     if (iParent != NULL) {
 	iParent->OnChildDeleting(this);
     }
@@ -481,6 +480,16 @@ Elem::~Elem()
     }
     iComps.clear();
     iMComps.clear();
+    // TODO [YB] OnCompDeleting called only here, i.e. after Elem derivation desctuctor completed
+    // This means that the ovner notified will not be able to understand what agent is deleted
+    // To consider to add one more notification - before deletions
+    if (iMan != NULL) {
+	iMan->OnCompDeleting(*this, EFalse);
+    }
+    if (iObserver != NULL) {
+	iObserver->OnCompDeleting(*this, EFalse);
+    }
+
     // Disconnect from the childs
     for (TNMReg::iterator it = iChilds.begin(); it != iChilds.end(); it++) {
 	MElem* child = it->second;
@@ -488,6 +497,10 @@ Elem::~Elem()
 	//child->SetParent(NULL);
     }
     iChilds.clear();
+    // Notify env of root deletion, ref ds_daa_rdo
+    if (this == GetRoot()) {
+	iEnv->OnRootDeleted();
+    }
     iEnv = NULL; // Not owned
     if (iMut != NULL) {
 	delete iMut;
@@ -3197,6 +3210,8 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	throw (runtime_error("Wrong arguments number"));
     if (name == "Name") {
 	aRes = Name();
+    } else if (name == "Delete") {
+	Delete();
     } else if (name == "GetMan") {
 	res = GetMan();
     } else if (name == "GetRoot") {
@@ -3211,7 +3226,7 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
     } else if (name == "GetNode#2") {
 	GUri uri(args.at(0));
 	TBool anywhere = Ifu::ToBool(args.at(1));
-	TBool inclrm = Ifu::ToBool(args.at(1));
+	TBool inclrm = Ifu::ToBool(args.at(2));
 	GUri::const_elem_iter it = uri.Begin();
 	res = GetNode(uri, it, anywhere, inclrm);
     } else if (name == "GetCont") {
@@ -3343,6 +3358,16 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
     } else if (name == "OnCompChanged") {
 	MElem* comp = GetNode(args.at(0));
 	OnCompChanged(*comp);
+    } else if (name == "OnCompDeleting") {
+	MElem* comp = GetNode(args.at(0), ETrue);
+	TBool soft = Ifu::ToBool(args.at(1));
+	OnCompDeleting(*comp, soft);
+    } else if (name == "OnChildDeleting") {
+	MElem* child = GetNode(args.at(0));
+	OnChildDeleting(child);
+    } else if (name == "OnParentDeleting") {
+	MElem* prnt = GetNode(args.at(0));
+	OnParentDeleting(prnt);
     } else if (name == "CompsCount") {
 	TInt cnt = CompsCount();
 	aRes = Ifu::FromInt(cnt);
