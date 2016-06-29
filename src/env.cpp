@@ -25,6 +25,7 @@ Env::EIfu Env::mIfu;
 Env::EIfu::EIfu()
 {
     RegMethod("Root", 0);
+    RegMethod("Logger", 0);
     RegMethod("ConstructSystem", 0);
     RegMethod("SetEVar", 2);
     RegMethod("GetEVar", 1);
@@ -476,6 +477,8 @@ MIface* Env::Call(const string& aSpec, string& aRes)
 	res = Root();
 	if (res == NULL) 
 	    throw (runtime_error("Cannot find root node"));
+    } else if (name == "Logger") {
+	res = Logger();
     } else if (name == "ConstructSystem") {
 	ConstructSystem();
     } else if (name == "SetEVar") {

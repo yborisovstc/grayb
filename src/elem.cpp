@@ -1544,6 +1544,7 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
     TBool res = EFalse;
     TBool ptrace = EN_PERF_TRACE;
     TBool ptevent = EFalse;
+    Log(TLog(EInfo, this) + "Adding element [" + sname + "]");
     //if (EN_PERF_METR && iName == "Held1" && sname == "1211685360"/* && sparent == "/(Elem:)Root/(Elem:)Modules/(Elem:)VisComps/(Extender:)DrawingElemExt"*/) {
     //if (EN_PERF_METR && EN_PERF_DBG1 && iName == "DrawingElem" && sname == "Logspec") {
     if (EN_PERF_METR && EN_PERF_DBG1 && iName == "Velocity_L" && sname == "448726636") {
@@ -1655,7 +1656,7 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 			       */
 			}
 			else {
-			    Logger()->Write(MLogRec::EErr, this, "Adding node [%s:%s] failed", elem->EType().c_str(), elem->Name().c_str());
+			    Log(TLog(EErr, this) + "Adding node [" + elem->EType() + ":" + elem->Name() + "] failed");
 			    delete elem;
 			    elem = NULL;
 			}
@@ -1831,7 +1832,7 @@ TBool Elem::RegisterComp(MElem* aComp)
     if (node == NULL) {
 	iMComps.insert(TNMVal(TNMKey(aComp->Name()), aComp));
     } else {
-	Logger()->Write(MLogRec::EErr, this, "Registering component [%s] - already exists", aComp->Name().c_str());
+	Log(TLog(EErr, this) + "Registering component [" + aComp->Name() + "] - already exists");
 	res = EFalse;
     }
     return res;

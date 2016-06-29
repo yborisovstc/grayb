@@ -23,8 +23,14 @@ class GLogRec: public Base, public MLogRec
 	virtual TBool AddLogObserver(MLogObserver* aObs);
 	virtual void RemoveLogObserver(MLogObserver* aObs);
 	virtual TInt GetStat(TLogRecCtg aCtg) const;
+	virtual void Write(const TLog& aRec);
+	// From MIface
+	virtual MIface* Call(const string& aSpec, string& aRes);
+	virtual string Uid() const { return Mid() + "%" + Type();};
+	virtual string Mid() const;
     protected:
 	void WriteRecord(const char* aText);
+	void WriteRecord(const string& aText);
     protected:
 	FILE* iLogFile;
 	string iLogFileName;

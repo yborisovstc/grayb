@@ -310,6 +310,7 @@ class Elem: public MElem
 	virtual TBool CompactChromo(const ChromoNode& aNode);
 	void UndoCompactChromo();
 	inline MLogRec* Logger() const;
+	inline void Log(const TLog& aRec) const;
 	inline TBool IsIftEnabled() const;
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);
@@ -404,5 +405,7 @@ inline MLogRec* Elem::Logger() const {return iEnv ? iEnv->Logger(): NULL; }
 inline MProvider* Elem::Provider() const {return iEnv ? iEnv->Provider(): NULL; }
 
 inline TBool Elem::IsIftEnabled() const { return iEnv ? iEnv->GetSBool(MEnv::ESb_EnIfTrace): EFalse;};
+
+inline void Elem::Log(const TLog& aRec) const { Logger()->Write(aRec);};
 
 #endif

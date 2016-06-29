@@ -2910,7 +2910,7 @@
 		    moving env ownership from session to server, where all the session can potentially access it.</simpara>
 	    </sect3>
 	</sect2>
-	<sect2><title>DAA: server owning resources approach</title>
+	<sect2 id="ds_daa_owr"><title>DAA: server owning resources approach</title>
 	    <simpara>Use-cases</simpara>
 	    <orderedlist>
 		<listitem>Client requests creating Env
@@ -2941,13 +2941,31 @@
 		    <listitem>We need to extend URI in order to be able to locate agent in particular server and env.
 			<para>The matter is that potentially now it gets possible for client to create more than one env. So
 			    client should be able to address the agents distinguishly in both env even the agents URLs within the env 
-			    are equivalent. </para>
+			    are equivalent. Ref <xref linkend="ds_base_03"/> for URI related desing item.</para>
 		    </listitem>
 		    <listitem>Server resources identification
 			<para>Identification can be based on location in hierarchy how it is implemented for agents. The 
 			    hierarchy currently is just linear. So we need to give unique name to resorces.</para>
 		    </listitem>
 		</orderedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_daa_irm"><title>DAA desing: Interface resolution</title>
+	    <sect3><title>Intro</title>
+		<simpara>Currently (20160629) the iface is resolved by server session with iface Id (or context) received in request. The mechanism
+		    of resolution is simple - the session has register of ifaces where the key is Iface Id. This scheme in fact is rather week. 
+		    More solid solution would be direct resolution, where Iface Id acts as URI that can be used to find iface impl within the 
+		    model.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_daa_log"><title>DAA: logging</title>
+	    <sect3><title>Intro</title>
+		<simpara>The use-case is: in distributed environment where secondary environments are created by primary env
+		    the primary env gets logs from secondary environments and combine the records in single log.</simpara>
+	    </sect3>
+	    <sect3><title>Solution: remote root in secondary env to redirect log records to the logger in primary env.</title>
+		<simpara>Pros of this solution is that it's aligned with the principle where specific remote agents (ARenvu in out case)
+		    are responsible for all communications between primary and secondary model parts.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_daa_pxdup"><title>DAA design issue: dupicating of agents via proxy in the same env.</title>
@@ -3066,7 +3084,7 @@
 		    This shows that two-ways relations between Elem and Proxy is wrong way.
 		</simpara>
 		<simpara>Another way is that [PP] notifies [P] of child deletion (because [PP] is actually child [C] representation in 
-		relation to [P], i.e. direction where [PP] can act via requesting).</simpara>
+		    relation to [P], i.e. direction where [PP] can act via requesting).</simpara>
 	    </sect3>
 	    <sect3><title>Use-case: MElem proxy - parent removal; child cannot get EType()</title>
 		<orderedlist>
@@ -3090,7 +3108,7 @@
 	<sect2 id="ds_daa_rdo"><title>DAA design issue: root elem double ownership in secondary env</title>
 	    <sect3><title>Intro</title>
 		<simpara>In distributed env the secondary environment has pecularity, namelly that root agent ownership is shared between env
-		and root owner in primary env. This causes the problem on distributed model destruction: both owners are trying to delete root.</simpara>
+		    and root owner in primary env. This causes the problem on distributed model destruction: both owners are trying to delete root.</simpara>
 	    </sect3>
 	    <sect3><title>Solution</title>
 		<simpara>Actually the interaction is as: owner in primary env request root deletion first, the secondary env tries to 
@@ -3102,6 +3120,7 @@
 	    <orderedlist>
 		<listitem><xref linkend="ds_daa_md"/></listitem>
 		<listitem><xref linkend="ds_daa_chrc"/></listitem>
+		<listitem><xref linkend="ds_daa_irm"/></listitem>
 	    </orderedlist>
 	</sect2>
     </sect1>
