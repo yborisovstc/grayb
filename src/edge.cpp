@@ -9,8 +9,6 @@ MEdge::EIfu MEdge::mIfu;
 // Ifu static initialisation
 MEdge::EIfu::EIfu()
 {
-    RegMethod("EdgeName", 0);
-    RegMethod("EdgeUri", 0);
     RegMethod("ConnectP1", 1);
     RegMethod("ConnectP2", 1);
     RegMethod("Disconnect", 1);
@@ -354,15 +352,15 @@ MElem* Edge::Point2p()
     return GetNode("./P2");
 }
 
-TBool Edge::OnCompChanged(MElem& aComp)
+TBool Edge::OnCompChanged(MElem& aComp, const string& aContName)
 {
-    Elem::OnCompChanged(aComp);
+    Elem::OnCompChanged(aComp, aContName);
     // Propagate notification to upper level
     if (iMan != NULL) {
-	iMan->OnCompChanged(*this);
+	iMan->OnCompChanged(*this, aContName);
     }
     if (iObserver != NULL) {
-	iObserver->OnCompChanged(*this);
+	iObserver->OnCompChanged(*this, aContName);
     }
     return ETrue;
 }
@@ -371,16 +369,6 @@ void Edge::SetRemoved()
 {
     Disconnect();
     Elem::SetRemoved();
-}
-
-string Edge::EdgeName() const
-{
-    return Name();
-}
-
-string Edge::EdgeUri() const
-{
-    return GetUri(NULL, ETrue);
 }
 
 MIface* Edge::Call(const string& aSpec, string& aRes)
@@ -418,10 +406,6 @@ MIface* Edge::Call(const string& aSpec, string& aRes)
 	}
 	TBool rr = ConnectP2(vpair);
 	aRes = Ifu::FromBool(rr);
-    } else if (name == "EdgeName") {
-	aRes = EdgeName();
-    } else if (name == "EdgeUri") {
-	aRes = EdgeUri();
     } else if (name == "Point1") {
 	res = Point1();
     } else if (name == "Point2") {
@@ -435,5 +419,293 @@ MIface* Edge::Call(const string& aSpec, string& aRes)
 string Edge::Mid() const
 {
     return Elem::Mid();
+}
+
+void Edge::SetPoint1(const string& aRef)
+{
+    MElem* p = Point1p();
+    GUri uri = GUri("./..") + aRef;
+    p->AppendMutation(TMut(ENt_Cont, ENa_Ref, uri));
+    p->Mutate(false, true, true, GetRoot());
+}
+
+void Edge::SetPoint2(const string& aRef)
+{
+    MElem* p = Point2p();
+    GUri uri = GUri("./..") + aRef;
+    p->AppendMutation(TMut(ENt_Cont, ENa_Ref, uri));
+    p->Mutate(false, true, true, GetRoot());
+}
+
+
+
+
+// Edge agent using named content to keep the refs to conn points
+
+const string& Aedge::mP1ContName = "P1";
+const string& Aedge::mP2ContName = "P2";
+
+string Aedge::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
+
+Aedge::Aedge(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
+{
+    SetParent(Type());
+}
+
+Aedge::Aedge(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
+{
+    SetParent(Elem::PEType());
+}
+
+Aedge::~Aedge() 
+{
+    Disconnect();
+}
+
+void* Aedge::DoGetObj(const char *aName)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    } else if (strcmp(aName, MEdge::Type()) == 0) {
+	res = (MEdge*) this;
+    } else {
+	res = Elem::DoGetObj(aName);
+    }
+    return res;
+}
+
+MVert* Aedge::Point1() const
+{
+    return iPoint1;
+}
+
+MVert* Aedge::Point2() const
+{
+    return iPoint2;
+}
+
+TBool Aedge::ConnectP1(MVert* aPoint)
+{
+    TBool res = EFalse;
+    __ASSERT(iPoint1 == NULL);
+    if (iPoint2 != NULL) {
+	// Try full connection
+	res = aPoint->Connect(iPoint2);
+       	if (res) {
+	    iPoint1 = aPoint;
+	}
+    } else {
+	// Just set one part connection
+	iPoint1 = aPoint;
+	res = ETrue;
+    }
+    return res;
+}
+
+TBool Aedge::ConnectP2(MVert* aPoint)
+{
+    TBool res = EFalse;
+    __ASSERT(iPoint2 == NULL);
+    if (iPoint1 != NULL) {
+	// Try full connection
+	res = aPoint->Connect(iPoint1);
+       	if (res) {
+	    iPoint2 = aPoint;
+	}
+    } else {
+	// Just set one part connection
+	iPoint2 = aPoint;
+	res = ETrue;
+    }
+    return res;
+}
+
+void Aedge::Disconnect(MVert* aPoint)
+{
+    if (aPoint != NULL) {
+	if (aPoint == iPoint1) {
+	    if (iPoint2 != NULL) {
+		iPoint1->Disconnect(iPoint2);
+		iPoint2->Disconnect(iPoint1);
+	    }
+	    iPoint1 = NULL;
+	}
+	if (aPoint == iPoint2) {
+	    if (iPoint1 != NULL) {
+		iPoint2->Disconnect(iPoint1);
+		iPoint1->Disconnect(iPoint2);
+	    }
+	    iPoint2 = NULL;
+	}
+    }
+}
+
+void Aedge::Disconnect()
+{
+    if (iPoint1 != NULL) {
+	Disconnect(iPoint1);
+    }
+    if (iPoint2 != NULL) {
+	Disconnect(iPoint2);
+    }
+}
+
+MVert* Aedge::Pair(const MVert* aPoint)
+{
+    return aPoint == iPoint1 ? iPoint2 : iPoint1;
+}
+
+const string& Aedge::Point1u() const
+{
+    return mPoint1Uri;
+}
+
+const string& Aedge::Point2u() const
+{
+    return mPoint2Uri;
+}
+
+Base* Aedge::EBase()
+{
+    return (Base*) this;
+}
+
+const Base* Aedge::EBase() const
+{
+    return (const Base*) this;
+}
+
+/*
+void Aedge::GetCont(string& aCont, const string& aName) const
+{
+    if (aName == mP1ContName) aCont = mPoint1Uri;
+    else if (aName == mP2ContName) aCont = mPoint2Uri;
+}
+*/
+
+TBool Aedge::GetCont(TInt aInd, string& aName, string& aCont) const
+{
+    TBool res = ETrue;
+    if (aInd == ECnt_P1) { aName = mP1ContName; aCont = mPoint1Uri; }
+    else if (aInd == ECnt_P2) { aName = mP2ContName; aCont = mPoint2Uri; }
+    else res = EFalse;
+    return res;
+}
+
+TBool Aedge::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
+{
+    TBool res = ETrue;
+    TBool changed = EFalse;
+    if (aName == mP1ContName) {
+	if (aVal != mPoint1Uri) { mPoint1Uri = aVal; changed = ETrue; }
+    } else if (aName == mP2ContName) {
+	if (aVal != mPoint2Uri) { mPoint2Uri = aVal; changed = ETrue; }
+    }
+    res = Elem::ChangeCont(aVal, aRtOnly, aName);
+    if (res && changed) {
+	if (aRtOnly) iMan->OnContentChanged(*this);
+	else iMan->OnCompChanged(*this, aName);
+    }
+    return res;
+}
+
+TBool Aedge::IsContChangeable(const string& aName) const
+{
+    return (aName == mP1ContName || aName == mP2ContName);
+}
+
+MIface* Aedge::Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MEdge::mIfu.CheckMname(name);
+    if (!name_ok) {
+	return Elem::Call(aSpec, aRes);
+    }
+    TBool args_ok = MEdge::mIfu.CheckMpars(name, args.size());
+    if (!args_ok) 
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "ConnectP1") {
+	MElem* pair = GetNode(args.at(0));
+	if (pair != NULL) {
+	    throw (runtime_error("Cannot get pair: " + args.at(0)));
+	}
+	MVert* vpair = pair->GetObj(vpair);
+	if (vpair != NULL) {
+	    throw (runtime_error("Pair isn't vertex: " + args.at(0)));
+	}
+	TBool rr = ConnectP1(vpair);
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "ConnectP2") {
+	MElem* pair = GetNode(args.at(0));
+	if (pair != NULL) {
+	    throw (runtime_error("Cannot get pair: " + args.at(0)));
+	}
+	MVert* vpair = pair->GetObj(vpair);
+	if (vpair != NULL) {
+	    throw (runtime_error("Pair isn't vertex: " + args.at(0)));
+	}
+	TBool rr = ConnectP2(vpair);
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "Point1") {
+	res = Point1();
+    } else if (name == "Point2") {
+	res = Point2();
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return res;
+}
+
+string Aedge::Mid() const
+{
+    return Elem::Mid();
+}
+
+MVert* Aedge::Ref1() const
+{
+    MVert* res = NULL;
+    const string& uri = Point1u();
+    if (!uri.empty()) {
+	MElem* pr = ((MElem*) this)->GetNode(uri);
+	if (pr != NULL) res = pr->GetObj(res);
+	if (res == NULL) {
+	    Logger()->Write(MLogRec::EErr, this, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());
+	}
+    }
+    return res;
+}
+
+
+MVert* Aedge::Ref2() const
+{
+    MVert* res = NULL;
+    const string& uri = Point2u();
+    if (!uri.empty()) {
+	MElem* pr = ((MElem*) this)->GetNode(uri);
+	if (pr != NULL) res = pr->GetObj(res);
+	if (res == NULL) {
+	    Logger()->Write(MLogRec::EErr, this, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());
+	}
+    }
+    return res;
+}
+
+void Aedge::SetPoint1(const string& aRef)
+{
+    AppendMutation(TMut(ENt_Cont, ENa_Id, mP1ContName, ENa_Ref, aRef));
+    Mutate(false, true, true, GetRoot());
+}
+
+void Aedge::SetPoint2(const string& aRef)
+{
+    AppendMutation(TMut(ENt_Cont, ENa_Id, mP2ContName, ENa_Ref, aRef));
+    Mutate(false, true, true, GetRoot());
 }
 

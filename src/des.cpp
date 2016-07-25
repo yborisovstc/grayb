@@ -36,7 +36,7 @@ void *ATrBase::DoGetObj(const char *aName)
     return res;
 }
 
-TBool ATrBase::HandleCompChanged(MElem& aContext, MElem& aComp)
+TBool ATrBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
 {
     TBool res = ETrue;
     return res;
@@ -396,11 +396,14 @@ void ATrVar::OnFuncContentChanged()
     OnContentChanged(*this);
 }
 
-void ATrVar::GetCont(string& aCont, const string& aName)
+TBool ATrVar::GetCont(string& aCont, const string& aName) const
 {
+    TBool res = EFalse;
     if (mFunc != NULL) {
 	mFunc->GetResult(aCont);
+	res = ETrue;
     }
+    return res;
 }
 
 void ATrVar::LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...)

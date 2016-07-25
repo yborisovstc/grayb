@@ -17,7 +17,7 @@ class ATrBase: public Elem, public MACompsObserver
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp);
+	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
 };
 
 // Agent base of Int transition function
@@ -117,7 +117,7 @@ class ATrVar: public ATrBase, public MDVarGet, public Func::Host
 	virtual Elem* GetAgent() {return this;};
 	virtual TInt GetInpCpsCount() const {return 0;};
 	// From Elem
-	virtual void GetCont(string& aCont, const string& aName=string()); 
+	virtual TBool GetCont(string& aCont, const string& aName=string()) const; 
     protected:
 	virtual void Init(const string& aIfaceName) {};
 	virtual string GetInpUri(TInt aId) const;

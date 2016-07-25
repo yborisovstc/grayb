@@ -40,7 +40,7 @@ void *FuncBase::DoGetObj(const char *aName)
     return res;
 }
 
-TBool FuncBase::HandleCompChanged(MElem& aContext, MElem& aComp)
+TBool FuncBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
 {
     TBool res = ETrue;
     MElem* caps = aContext.GetNode("./Capsule");
@@ -448,7 +448,7 @@ void *AFunc::DoGetObj(const char *aName)
     return res;
 }
 
-TBool AFunc::HandleCompChanged(MElem& aContext, MElem& aComp)
+TBool AFunc::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
 {
     TBool res = ETrue;
     MElem* caps = aContext.GetNode("./Capsule");
@@ -533,11 +533,12 @@ TInt AFuncInt::Value()
     return mData;
 }
 
-void AFuncInt::GetCont(string& aCont, const string& aName)
+TBool AFuncInt::GetCont(string& aCont, const string& aName) const
 {
     stringstream ss;
-    ss << Value();
+    ss << ((AFuncInt*) this)->Value();
     aCont = ss.str();
+    return ETrue;
 }
 
 TInt AFuncInt::GetValue()
@@ -943,7 +944,7 @@ void *AFuncm::DoGetObj(const char *aName)
     return res;
 }
 
-TBool AFuncm::HandleCompChanged(MElem& aContext, MElem& aComp)
+TBool AFuncm::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
 {
     TBool res = ETrue;
     MElem* caps = aContext.GetNode("./Capsule");
@@ -1162,7 +1163,7 @@ void *AFunVar::DoGetObj(const char *aName)
     return res;
 }
 
-TBool AFunVar::HandleCompChanged(MElem& aContext, MElem& aComp)
+TBool AFunVar::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
 {
     TBool res = ETrue;
     MElem* caps = aContext.GetNode("./Capsule");
@@ -1244,7 +1245,7 @@ string AFunVar::GetInpUri(TInt aId) const
     else return string();
 }
 
-void AFunVar::GetCont(string& aCont, const string& aName)
+TBool AFunVar::GetCont(string& aCont, const string& aName) const
 {
     if (mFunc != NULL) {
 	mFunc->GetResult(aCont);
@@ -1252,6 +1253,7 @@ void AFunVar::GetCont(string& aCont, const string& aName)
     else {
 	aCont = "Init ERR";
     }
+    return ETrue;
 }
 
 TInt AFunVar::GetInpsCount() const
@@ -1392,6 +1394,7 @@ TBool AFunVar::GetCont(TInt aInd, string& aName, string& aCont) const
 	    mFunc->GetCont(aInd - 3 - inpscnt, aName, aCont);
 	} 
     }
+    return ETrue;
 }
 
 TInt AFunVar::GetContCount() const

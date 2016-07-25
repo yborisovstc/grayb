@@ -19,8 +19,10 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable, public M
 	bool ToString(string& aType, string& aData);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
+	// From MElem
+	//virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()); 
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp);
+	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
 	// From MDataObserver
 	virtual void OnDataChanged();
 	// From MUpdatable
@@ -29,7 +31,11 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable, public M
 	void UpdateProp();
 	void NotifyUpdate();
 	TBool IsLogeventUpdate();
+	inline MElem* Context();
+	static const string KCont_Value;
 };
+
+inline MElem* DataBase::Context() { return iMan == NULL ? NULL: iMan->GetMan();};
 
 // Data is representing some static model
 //
@@ -229,7 +235,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	DVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	DVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~DVar();
-	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp);
+	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
 	virtual TBool HandleIoChanged(MElem& aContext, MElem* aCp);
 	// From Base
 	virtual void *DoGetObj(const char *aName);

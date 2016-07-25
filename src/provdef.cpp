@@ -31,6 +31,9 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, MElem* aMan,
     else if (aType.compare(Edge::Type()) == 0) {
 	res = new Edge(aName, aMan, aEnv);
     }
+    else if (aType.compare(Aedge::Type()) == 0) {
+	res = new Aedge(aName, aMan, aEnv);
+    }
     else if (aType.compare(AMod::Type()) == 0) {
 	res = new AMod(aName, aMan, aEnv);
     }
@@ -57,6 +60,9 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, MElem* aMan,
     }
     else if (aType.compare(ConnPointBaseOut::Type()) == 0) {
 	res = new ConnPointBaseOut(aName, aMan, aEnv);
+    }
+    else if (aType.compare(ConnPointMc::Type()) == 0) {
+	res = new ConnPointMc(aName, aMan, aEnv);
     }
     else if (aType.compare(Syst::Type()) == 0) {
 	res = new Syst(aName, aMan, aEnv);
@@ -154,6 +160,9 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, MElem* aMan,
     else if (aType.compare(ExtenderAgentOut::Type()) == 0) {
 	res = new ExtenderAgentOut(aName, aMan, aEnv);
     }
+    else if (aType.compare(AExtender::Type()) == 0) {
+	res = new AExtender(aName, aMan, aEnv);
+    }
     else if (aType.compare(StateAgent::Type()) == 0) {
 	res = new StateAgent(aName, aMan, aEnv);
     }
@@ -235,6 +244,10 @@ Elem* ProvDef::GetNode(const string& aUri)
 	    parent = GetNode("Elem");
 	    res = new Edge(NULL, iEnv);
 	}
+	else if (aUri.compare(Aedge::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new Aedge(NULL, iEnv);
+	}
 	else if (aUri.compare(AMod::Type()) == 0) {
 	    parent = GetNode("Elem");
 	    res = new AMod(NULL, iEnv);
@@ -258,6 +271,10 @@ Elem* ProvDef::GetNode(const string& aUri)
 	else if (aUri.compare(ExtenderAgentOut::Type()) == 0) {
 	    parent = GetNode("ExtenderAgent");
 	    res = new ExtenderAgentOut(NULL, iEnv);
+	}
+	else if (aUri.compare(AExtender::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new AExtender(NULL, iEnv);
 	}
 	else if (aUri.compare(ASocket::Type()) == 0) {
 	    parent = GetNode("Elem");
@@ -318,6 +335,10 @@ Elem* ProvDef::GetNode(const string& aUri)
 	else if (aUri.compare(ConnPointBaseOut::Type()) == 0) {
 	    parent = GetNode("ConnPointBase");
 	    res = new ConnPointBaseOut(NULL, iEnv);
+	}
+	else if (aUri.compare(ConnPointMc::Type()) == 0) {
+	    parent = GetNode("Vert");
+	    res = new ConnPointMc(NULL, iEnv);
 	}
 	else if (aUri.compare(Description::Type()) == 0) {
 	    parent = GetNode("Prop");
@@ -510,10 +531,12 @@ void ProvDef::AppendNodesInfo(vector<string>& aInfo)
 {
     aInfo.push_back(Elem::Type());
     aInfo.push_back(Edge::Type());
+    aInfo.push_back(Aedge::Type());
     aInfo.push_back(Vert::Type());
     aInfo.push_back(Prop::Type());
     aInfo.push_back(Description::Type());
     aInfo.push_back(ConnPointBase::Type());
+    aInfo.push_back(ConnPointMc::Type());
     aInfo.push_back(Syst::Type());
     aInfo.push_back(Incaps::Type());
     aInfo.push_back(DInt::Type());
@@ -530,6 +553,7 @@ void ProvDef::AppendNodesInfo(vector<string>& aInfo)
     aInfo.push_back(AFIntToVect::Type());
     aInfo.push_back(AFunIntRes::Type());
     aInfo.push_back(ExtenderAgent::Type());
+    aInfo.push_back(AExtender::Type());
     aInfo.push_back(StateAgent::Type());
     aInfo.push_back(ATrIncInt::Type());
     aInfo.push_back(ATrSubInt::Type());

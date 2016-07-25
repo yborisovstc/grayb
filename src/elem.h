@@ -29,6 +29,20 @@ class Elem: public MElem
 	typedef pair<void*, TNodeAttr> TCMRelFrom;
 	typedef pair<TCMRelFrom, MElem*> TCMRel;
 	typedef map<TCMRelFrom, MElem*> TCMRelReg;
+	// Type of content elements
+	typedef enum 
+	{
+	    ECnt_Comp = 0, // Component of content
+	    ECnt_Val,      // Value
+	    ECnt_Ctg       // Category
+	} TCnt;
+	// Content key
+	//typedef pair<string, TCnt> TCntKey;
+	//typedef pair<TCntKey, string> TCntRec;
+	//typedef multimap<TCntKey, string> TCntReg;
+	typedef pair<string, string> TCntRec;
+	typedef multimap<string, string> TCntComps;
+	typedef map<string, string> TCntVals;
 
     public:
 	// Request context
@@ -237,12 +251,12 @@ class Elem: public MElem
 	// TODO [YB] The only attr allowed for change is name. To consider replacing of ChangeAttr to Rename
 	virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal);
 	virtual void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL);
-	virtual void GetCont(string& aCont, const string& aName = string());
-	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
+	virtual TBool GetCont(string& aValue, const string& aName = string()) const;
+	virtual TBool GetCont(TInt aInd, string& aName, string& aCont, const string& aOwnerName = string()) const;
 	virtual string GetContent(const string& aName=string()) const;
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string());
 	virtual TBool IsContChangeable(const string& aName = string()) const;
-	virtual TInt GetContCount() const;
+	virtual TInt GetContCount(const string& aName = string()) const;
 	virtual MElem* GetUpperAowner();
 	virtual TBool IsRemoved() const;
 	virtual void SetRemoved();
@@ -267,9 +281,9 @@ class Elem: public MElem
 	virtual TBool IsComp(const MElem* aElem) const;
 	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue);
 	virtual void OnCompAdding(MElem& aComp);
-	virtual TBool OnCompChanged(MElem& aComp);
+	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string());
 	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName);
-	virtual TBool OnContentChanged(MElem& aComp);
+	virtual TBool OnContentChanged(MElem& aComp, const string& aContName = string());
 	// From MMutable
 	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL);
 	virtual TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL);
@@ -322,6 +336,8 @@ class Elem: public MElem
 	virtual TInt CompsCount() const;
 	virtual MElem* GetComp(TInt aInd);
     protected:
+	void InsertContent(const string& aName);
+	void InsertContCompsRec(const string& aName, const string& aComp);
 	static Elem* ToElem(MElem* aMelem) { Elem* res = (aMelem == NULL) ? NULL: aMelem->GetObj(res); return res;};
 	inline MProvider* Provider() const;
 	virtual TBool AppendComp(MElem* aComp);
@@ -336,7 +352,6 @@ class Elem: public MElem
 	TBool UnregisterChild(MElem* aChild, const string& aName = string());
 	virtual MElem* GetComp(const string& aParent, const string& aName);
 	virtual MElem* GetComp(const string& aParent, const string& aName) const;
-	virtual void DoOnCompChanged(Elem& aComp);
 	TBool IsLogeventCreOn();
 	TBool HasChilds() const;
 	virtual TBool HasInherDeps(const MElem* aScope) const;
@@ -355,6 +370,13 @@ class Elem: public MElem
 	virtual void DumpCmDeps() const;
 	virtual void SaveChromo(const char* aPath) const;
 	virtual void DumpChilds() const;
+	virtual void DumpCntVal() const;
+    public:
+	// TODO [YB] To move to Ifu ?
+	static const char KContentStart = '{';
+	static const char KContentEnd = '}';
+	static const char KContentValSep = ':';
+	static const char KContentSep = '.';
     protected:
 	// Environment
 	MEnv* iEnv;
@@ -385,6 +407,10 @@ class Elem: public MElem
 	// Sign of that node is removed
 	TBool isRemoved;
 	string iName;
+	// Content register
+	//TCntReg mContent;
+	TCntComps mCntComps;
+	TCntVals mCntVals;
 	static TBool EN_PERF_TRACE;
 	static TBool EN_PERF_METR;
 	static TBool EN_MUT_LIM;

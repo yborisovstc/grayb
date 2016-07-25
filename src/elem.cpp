@@ -63,7 +63,7 @@ MElem::EIfu::EIfu()
     RegMethod("UnregIfProv", 4);
     RegMethod("SetObserver", 1);
     RegMethod("OnCompAdding", 1);
-    RegMethod("OnCompChanged", 1);
+    RegMethod("OnCompChanged", 2);
     RegMethod("OnCompDeleting", 2);
     RegMethod("CompsCount", 0);
     RegMethod("GetComp", 1);
@@ -119,7 +119,27 @@ void MElem::EIfu::ToCtx(MElem* aHost, const string& aString, TICacheRCtx& aCtx)
     } while (end != string::npos);
 }
 
+string MElem::GetContentOwner(const string& aCont)
+{
+    string res;
+    size_t pos = aCont.find_last_of(Elem::KContentSep);
+    if (pos != string::npos) {
+	res = aCont.substr(0, pos);
+    }
+    return res;
+}
 
+string MElem::GetContentLName(const string& aName)
+{
+    string res;
+    size_t end = aName.find_last_of(Elem::KContentSep);
+    if (end != string::npos) {
+	res = aName.substr(end + 1);
+    } else {
+	res = aName;
+    }
+    return res;
+}
 
 TICacheRCtx::TICacheRCtx(): vector<Base*>() {}
 
@@ -432,6 +452,7 @@ Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMa
     croot.SetAttr(ENa_Id, iName);
     SetParent(Type());
     iComps.reserve(100);
+    InsertContent("About");
 }
 
 Elem::Elem(Elem* aMan, MEnv* aEnv): iName(Type()), iMan(aMan), iEnv(aEnv),
@@ -450,6 +471,7 @@ Elem::Elem(Elem* aMan, MEnv* aEnv): iName(Type()), iMan(aMan), iEnv(aEnv),
     ChromoNode croot = iChromo->Root();
     croot.SetAttr(ENa_Id, iName);
     SetParent(string());
+    InsertContent("About");
 }
 
 void Elem::Delete()
@@ -1380,33 +1402,143 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 
 TBool Elem::IsContChangeable(const string& aName) const
 {
+    //return EFalse;
+    return ETrue; // Temporarily only
+}
+
+/*
+TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
+{
+    mContent.insert(TCntRec(TCntKey(aName, ECnt_Val), aVal));
+    InsertContent(aName);
     return EFalse;
 }
+*/
 
 TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
 {
-    return EFalse;
+    TBool res = ETrue;
+    //mCntVals.insert(TCntRec(aName, aVal));
+    mCntVals[aName] = aVal;
+    InsertContent(aName);
+    OnCompChanged(*this, aName);
+    /*
+    if (iMan != NULL) {
+	if (aRtOnly) {
+	    iMan->OnContentChanged(*this, aName);
+	} else {
+	    iMan->OnCompChanged(*this, aName);
+	}
+    }
+    */
+    return res;
 }
 
-void Elem::GetCont(string& aCont, const string& aName)
+void Elem::InsertContent(const string& aName)
 {
+    size_t end = aName.find_last_of(KContentSep);
+    if (end != string::npos) {
+	string oname = aName.substr(0, end);
+	InsertContCompsRec(oname, aName);
+	InsertContent(oname);
+    } else {
+	InsertContCompsRec("", aName);
+    }
+}
+
+void Elem::InsertContCompsRec(const string& aName, const string& aComp)
+{
+    pair<TCntComps::const_iterator, TCntComps::const_iterator> range = mCntComps.equal_range(aName);
+    TBool exists = EFalse;
+    for (TCntComps::const_iterator it = range.first; it != range.second; it++) {
+	if (it->second == aComp) {
+	    exists = ETrue;
+	    break;
+	}
+    }
+    if (!exists) {
+	mCntComps.insert(TCntRec(aName, aComp));
+    }
+}
+
+#if 0
+void Elem::GetCont(string& aCont, const string& aName) const
+{
+    if (mCntVals.count(aName) > 0) {
+	aCont = mCntVals.at(aName);
+    } else if (mCntComps.count(aName) > 0) {
+	pair<TCntComps::const_iterator, TCntComps::const_iterator> range = mCntComps.equal_range(aName);
+	aCont = "{";
+	for (TCntComps::const_iterator it = range.first; it != range.second; it++) {
+	    string comp = it->second;
+	    string compcnt;
+	    if (mCntVals.count(comp) > 0) {
+		compcnt = "'" + GetContent(comp) + "'";
+	    } else {
+		compcnt = GetContent(comp);
+	    }
+	    if (it != range.first) {
+		aCont += ",";
+	    }
+	    aCont += GetLastContentName(comp) + ":" + compcnt;
+	}
+	aCont += "}";
+    }
+}
+#endif
+
+TBool Elem::GetCont(string& aValue, const string& aName) const
+{
+    TBool res = ETrue;
+    if (mCntVals.count(aName) > 0) {
+	aValue = mCntVals.at(aName);
+    } else if (mCntComps.count(aName) > 0) {
+	pair<TCntComps::const_iterator, TCntComps::const_iterator> range = mCntComps.equal_range(aName);
+	aValue = KContentStart;
+	for (TCntComps::const_iterator it = range.first; it != range.second; it++) {
+	    string comp = it->second;
+	    string compcnt;
+	    if (mCntVals.count(comp) > 0) {
+		compcnt = "'" + GetContent(comp) + "'";
+	    } else {
+		compcnt = GetContent(comp);
+	    }
+	    aValue += KContentStart + GetContentLName(comp) + KContentValSep + compcnt + KContentEnd;
+	}
+	aValue += KContentEnd;
+    } else {
+	res = EFalse;
+    }
+    return res;
 }
 
 string Elem::GetContent(const string& aName) const 
 {
     string res;
-    ((Elem*) this)->GetCont(res, aName);
+    GetCont(res, aName);
     return res;
 }
 
-TBool Elem::GetCont(TInt aInd, string& aName, string& aCont) const
+TBool Elem::GetCont(TInt aInd, string& aName, string& aValue, const string& aOwnerName) const
 {
-    return EFalse;
+    TBool res = EFalse;
+    if (GetContCount(aOwnerName) > aInd) {
+	TInt cnt = aInd;
+	pair<TCntComps::const_iterator, TCntComps::const_iterator> range = mCntComps.equal_range(aOwnerName);
+	TCntComps::const_iterator it = range.first;
+	for (; it != range.second && cnt > 0; it++, cnt--);
+	aName = it->second;
+	if (mCntVals.count(aName) > 0) {
+	    aValue = mCntVals.at(aName);
+	    res = ETrue;
+	}
+    }
+    return res;
 }
 
-TInt Elem::GetContCount() const
+TInt Elem::GetContCount(const string& aName) const
 {
-    return 0;
+    return mCntComps.count(aName);
 }
 
 void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MElem* aCtx)
@@ -1473,6 +1605,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
     TBool efix = iEnv->ChMgr()->EnableFixErrors();
     TBool erepos = iEnv->ChMgr()->EnableReposMuts();
     string snode = aSpec.Attr(ENa_MutNode);
+    string cname = aSpec.Attr(ENa_Id);
     TBool refex = aSpec.AttrExists(ENa_Ref);
     string mval = aSpec.Attr(refex ? ENa_Ref :ENa_MutVal);
     MElem* node = NULL;
@@ -1500,7 +1633,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 		}
 	    }
 	    if (res) {
-		res = node->ChangeCont(mval, EFalse);
+		res = node->ChangeCont(mval, EFalse, cname);
 		if (res) {
 		    if (!aRunTime) {
 			ChromoNode chn = iChromo->Root().AddChild(aSpec);
@@ -1510,7 +1643,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 		    }
 		} else {
 		    Logger()->Write(MLogRec::EErr, this, aSpec, "Changing [%s] - failure", snode.c_str());
-		    node->ChangeCont(mval, EFalse);
+		    node->ChangeCont(mval, EFalse, cname);
 		}
 	    }
 	}
@@ -1952,7 +2085,7 @@ void Elem::OnCompAdding(MElem& aComp)
 // If providing mechanism is used instead of full relations tracking in Vert. So node A has Ifaces cache
 // that includes ifaces from node B but there is no mechanism of the changes in the cache. To consider
 // to implement cache update notification. Ref UC_010 
-TBool Elem::OnCompChanged(MElem& aComp)
+TBool Elem::OnCompChanged(MElem& aComp, const string& aContName)
 {
     MElem* agents = GetComp("Elem", "Agents");
     TBool res = EFalse;
@@ -1961,16 +2094,17 @@ TBool Elem::OnCompChanged(MElem& aComp)
 	    MElem* acomp = agents->GetComp(ci);
 	    MACompsObserver* iagent = acomp->GetObj(iagent);
 	    if (iagent != NULL) {
-		res = iagent->HandleCompChanged(*this, aComp);
+		res = iagent->HandleCompChanged(*this, aComp, aContName);
 	    }
 	}
     }
-    // Propagate notification to upper level
-    if (res && iMan != NULL) {
-	res = iMan->OnCompChanged(aComp);
+    // If event isn't handled then Propagate notification to upper level
+    if (!res && iMan != NULL) {
+	res = iMan->OnCompChanged(aComp, aContName);
     }
-    if (res && iObserver != NULL) {
-	iObserver->OnCompChanged(aComp);
+    // Notify observer
+    if (iObserver != NULL) {
+	iObserver->OnCompChanged(aComp, aContName);
     }
     return res;
 }
@@ -1998,20 +2132,16 @@ TBool Elem::OnCompRenamed(MElem& aComp, const string& aOldName)
     return res;
 }
 
-TBool Elem::OnContentChanged(MElem& aComp)
+TBool Elem::OnContentChanged(MElem& aComp, const string& aContName)
 {
     TBool res = EFalse, res1 = EFalse;
     if (iMan != NULL) {
-	res = iMan->OnContentChanged(aComp);
+	res = iMan->OnContentChanged(aComp, aContName);
     }
     if (iObserver != NULL) {
-	res1 = iObserver->OnContentChanged(aComp);
+	res1 = iObserver->OnContentChanged(aComp, aContName);
     }
     return res && res1;
-}
-
-void Elem::DoOnCompChanged(Elem& aComp)
-{
 }
 
 MElem* Elem::GetCompOwning(const string& aParent, MElem* aElem)
@@ -3358,7 +3488,7 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	OnCompAdding(*comp);
     } else if (name == "OnCompChanged") {
 	MElem* comp = GetNode(args.at(0));
-	OnCompChanged(*comp);
+	OnCompChanged(*comp, args.at(1));
     } else if (name == "OnCompDeleting") {
 	MElem* comp = GetNode(args.at(0), ETrue);
 	TBool soft = Ifu::ToBool(args.at(1));
@@ -3579,4 +3709,11 @@ string Elem::GetChromoSpec() const
 void Elem::AppendMutation(const TMut& aMut)
 {
     ChromoNode mut = iMut->Root().AddChild(aMut);
+}
+
+void Elem::DumpCntVal() const
+{
+    for (TCntVals::const_iterator it = mCntVals.begin(); it != mCntVals.end(); it++) {
+	cout << it->first << ": " << it->second << endl;
+    }
 }

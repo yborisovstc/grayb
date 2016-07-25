@@ -14,7 +14,7 @@ class ACapsule: public Elem
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MOwner
-	virtual TBool OnCompChanged(MElem& aComp);
+	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string());
 };
 
 // Introducint iface extender to avoid clashing MIface methods
@@ -50,6 +50,42 @@ class ConnPointBase: public Vert, public MCompatChecker_Imd
 	//virtual MIface* Call(const string& aSpec, string& aRes);
 	//virtual string Mid() const;
 };
+
+// Base of mutli-content ConnPoint 
+class ConnPointMc: public Vert, public MCompatChecker_Imd
+{
+    public:
+	static const char* Type() { return "ConnPointMc";};
+	static string PEType();
+	ConnPointMc(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
+	ConnPointMc(MElem* aMan = NULL, MEnv* aEnv = NULL);
+	// Iface provider
+	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
+	// From Base
+	virtual void *DoGetObj(const char *aName);
+	// From MElem
+	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()); 
+	// From MCompatChecker
+	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
+	virtual MElem* GetExtd();
+	virtual TDir GetDir() const;
+	// From MCompatChecker MIface
+	virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes);
+	virtual string MCompatChecker_Mid() const;
+    protected:
+	string GetProvided() const;
+	string GetRequired() const;
+    public:
+	static const string KContName_Provided;
+	static const string KContName_Required;
+	static const string KContDir;
+	static const string KContDir_Val_Regular;
+	static const string KContDir_Val_Inp;
+	static const string KContDir_Val_Out;
+};
+
+	inline string ConnPointMc::GetProvided() const { return GetContent(KContName_Provided);};
+	inline string ConnPointMc::GetRequired() const { return GetContent(KContName_Required);};
 
 // Input ConnPoint base
 class ConnPointBaseInp: public ConnPointBase
@@ -124,6 +160,27 @@ class ExtenderAgentOut: public ExtenderAgent
 	virtual TDir GetDir() const;
 };
 
+// Extention agent (multicontent). Redirects request for iface to internal CP of extention.
+class AExtender: public Elem, public MCompatChecker
+{
+    public:
+	static const char* Type() { return "AExtender";};
+	static string PEType();
+	AExtender(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
+	AExtender(MElem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName);
+	// From MCompatChecker
+	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
+	virtual MElem* GetExtd();
+	virtual TDir GetDir() const;
+	// From Elem
+	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
+	// From MIface
+	virtual MIface* Call(const string& aSpec, string& aRes);
+	virtual string Mid() const;
+};
+
 
 // Socket agent: redirects iface requests to pins
 class ASocket: public Elem, public MCompatChecker
@@ -184,7 +241,7 @@ class Syst: public Vert
 	virtual void *DoGetObj(const char *aName);
 	// From MOwner
 	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue);
-	virtual TBool OnCompChanged(MElem& aComp);
+	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string());
     protected:
 	TBool IsPtOk(MElem* aPt);
 };

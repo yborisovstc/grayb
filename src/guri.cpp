@@ -380,4 +380,8 @@ GUri& GUri::operator+=(const GUri& aUri)
     return *this;
 }
 
+GUri::operator string() const
+{
+    return GetUri(iElems.begin(), ETrue);
+}
 

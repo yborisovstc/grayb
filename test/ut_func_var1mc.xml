@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="Root" parent="Elem">
+    <node id="Modules" parent="Elem">
+	<!-- Module containing components of incaps layer -->
+	<import id="/IncapsComps/Incaps" />
+	<!-- Module containing components of data -->
+	<import id="/DataComps/DataTVar" />
+	<import id="/DataComps/DataSVarMc" />
+	<!-- Module containing components of func -->
+	<import id="/FuncComps/FAddVar" />
+	<import id="/FuncComps/FuncIntRes" />
+    </node>
+    <node id="Start" parent="Elem">
+	<node id="Incaps_root" parent="/(Elem:)Root/(Elem:)Modules/(Elem:)IncapsComps/(Syst:)Incaps">
+	    <node id="Dt" parent="/Root/Modules/DataComps/DataTVar">
+		<cont node="./Value" val="F 0"/>
+	    </node>
+	    <node id="Add" parent="/(Elem:)Root/(Elem:)Modules/(Elem:)FuncComps/(FuncVar:)FAddVar"/>
+	    <node id="Inp_data1" parent="/Root/Modules/DataComps/DataSVarMc">
+		<cont node="./Value" val="I 4"/>
+	    </node>
+	    <node id="e1" parent="Edge">
+		<cont node="./(Prop:)P2" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(DataTVar:)Dt/Capsule/inp"/>
+		<cont node="./(Prop:)P1" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(FAddVar:)Add/Capsule/(Out_FVar:)out"/>
+	    </node>
+	    <node id="e2" parent="Edge">
+		<cont node="./P2" ref="/Root/Start/Incaps_root/Add/Capsule/Inp"/>
+		<!-- <cont node="./P1" ref="/Root/Start/Incaps_root/Inp_data1/Capsule/out"/> -->
+	    </node>
+	</node>
+    </node>
+</node>

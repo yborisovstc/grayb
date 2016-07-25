@@ -32,14 +32,14 @@ void *ACapsule::DoGetObj(const char *aName)
     return res;
 }
 
-TBool ACapsule::OnCompChanged(MElem& aComp)
+TBool ACapsule::OnCompChanged(MElem& aComp, const string& aContName)
 {
-    Elem::OnCompChanged(aComp);
+    Elem::OnCompChanged(aComp, aContName);
     if (iMan != NULL) {
-	iMan->OnCompChanged(aComp);
+	iMan->OnCompChanged(aComp, aContName);
     }
     if (iObserver != NULL) {
-	iObserver->OnCompChanged(aComp);
+	iObserver->OnCompChanged(aComp, aContName);
     }
     return ETrue;
 }
@@ -238,6 +238,192 @@ string ConnPointBase::MCompatChecker_Mid() const
 }
 
 
+// Base of mutli-content ConnPoint 
+
+const string ConnPointMc::KContName_Provided = "Provided";
+const string ConnPointMc::KContName_Required = "Required";
+const string ConnPointMc::KContDir = "Direction";
+const string ConnPointMc::KContDir_Val_Regular = "Regular";
+const string ConnPointMc::KContDir_Val_Inp = "Inp";
+const string ConnPointMc::KContDir_Val_Out = "Out";
+
+string ConnPointMc::PEType()
+{
+    return Vert::PEType() + GUri::KParentSep + Type();
+}
+
+ConnPointMc::ConnPointMc(const string& aName, MElem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
+{
+    SetParent(Type());
+    InsertContent("Required");
+    InsertContent("Provided");
+    ChangeCont(ConnPointMc::KContDir_Val_Regular, EFalse, ConnPointMc::KContDir);
+}
+
+ConnPointMc::ConnPointMc(MElem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
+{
+    SetParent(Vert::PEType());
+    InsertContent("Required");
+    InsertContent("Provided");
+    ChangeCont(ConnPointMc::KContDir_Val_Regular, EFalse, ConnPointMc::KContDir);
+}
+
+void *ConnPointMc::DoGetObj(const char *aName)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
+	res = (MCompatChecker*) this;
+    } else {
+	res = Vert::DoGetObj(aName);
+    }
+    return res;
+}
+
+void ConnPointMc::UpdateIfi(const string& aName, const RqContext* aCtx)
+{
+    void* res = NULL;
+    TIfRange rr;
+    TBool resg = EFalse;
+    RqContext ctx(this, aCtx);
+    TICacheRCtx rctx(aCtx);
+    //ToCacheRCtx(aCtx, rctx);
+    Base* rqstr = aCtx != NULL ? aCtx->Requestor() : NULL;
+    if (strcmp(aName.c_str(), Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName.c_str(), MCompatChecker::Type()) == 0) {
+	res = (MCompatChecker*) this;
+    }
+    else {
+	res = Vert::DoGetObj(aName.c_str());
+    }
+    if (res != NULL) {
+	InsertIfCache(aName, rctx, this, res);
+    }
+    else {
+	// Redirect to pairs if iface requiested is provided by this CP
+	if (GetProvided() == aName) {
+	    // Requested provided iface - cannot be obtain via pairs - redirect to host
+	    if (iMan != NULL && !ctx.IsInContext(iMan)) {
+		// TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
+		MElem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
+		rr = mgr->GetIfi(aName, &ctx);
+		InsertIfCache(aName, rctx, mgr, rr);
+		resg = ETrue;
+	    }
+	}
+	if (!resg) {
+	    if (GetRequired() == aName) {
+		for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
+		    MElem* pe = (*it)->GetObj(pe);
+		    if (!ctx.IsInContext(pe)) {
+			rr = pe->GetIfi(aName, &ctx);
+			InsertIfCache(aName, rctx, pe, rr);
+		    }
+		}
+		// Responsible pairs not found, redirect to upper layer
+		if ((rr.first == rr.second) && iMan != NULL && !ctx.IsInContext(iMan)) {
+		    MElem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
+		    rr = mgr->GetIfi(aName, &ctx);
+		    InsertIfCache(aName, rctx, mgr, rr);
+		}
+	    }
+	}
+    }
+}
+
+TBool ConnPointMc::IsCompatible(MElem* aPair, TBool aExt)
+{
+    TBool res = EFalse;
+    TBool ext = aExt;
+    MElem *cp = aPair;
+    // Checking if the pair is Extender
+    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type(), this);
+    // Consider all pairs not supporting MCompatChecker as not compatible 
+    if (pchkr != NULL) {
+	MElem* ecp = pchkr->GetExtd(); 
+	if (ecp != NULL ) {
+	    ext = !ext;
+	    cp = ecp;
+	}
+	if (cp != NULL) {
+	    // Check roles conformance
+	    string ppt1prov = GetProvided();
+	    string ppt1req = GetRequired();
+	    string ppt2prov = cp->GetContent(KContName_Provided);
+	    string ppt2req = cp->GetContent(KContName_Required); 
+	    if (ext) {
+		res = (ppt1prov == ppt2prov && ppt2req == ppt1req);
+	    } else {
+		res = (ppt1prov == ppt2req && ppt2prov == ppt1req);
+	    }
+	}
+    }
+    return res;
+}
+
+MElem* ConnPointMc::GetExtd()
+{
+    return NULL;
+}
+
+MCompatChecker::TDir ConnPointMc::GetDir() const
+{
+    TDir res = ERegular;
+    string cdir;
+    GetCont(cdir, ConnPointMc::KContDir);
+    if (cdir == ConnPointMc::KContDir_Val_Inp) res = EInp;
+    else if (cdir == ConnPointMc::KContDir_Val_Out) res = EOut;
+    return res;
+}
+
+MIface* ConnPointMc::MCompatChecker_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MCompatChecker::mIfu.CheckMname(name);
+    if (!name_ok) 
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MCompatChecker::mIfu.CheckMpars(name, args.size());
+    if (!args_ok) 
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "GetDir") {
+	TInt rr = GetDir();
+	aRes = Ifu::FromInt(rr);
+    } else if (name == "GetExtd") {
+	res = GetExtd();
+    } else if (name == "IsCompatible") {
+	MElem* pair = GetNode(args.at(0), ETrue);
+	if (pair == NULL) {
+	    throw (runtime_error("Cannot find pair: " + args.at(0)));
+	}
+	TBool ext = Ifu::ToBool(args.at(1));
+	TBool rr = IsCompatible(pair, ext);
+	aRes = Ifu::FromBool(rr);
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string ConnPointMc::MCompatChecker_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
+TBool ConnPointMc::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
+{
+    // If compatibility gets broken disconnect pair, ref UC_061
+    TBool res = Vert::ChangeCont(aVal, aRtOnly, aName);
+    if (res && (aName == KContName_Required || aName == KContName_Provided)) {
+	Disconnect();
+    }
+    return res;
+}
 
 // Input ConnPoint base
 string ConnPointBaseInp::PEType()
@@ -489,6 +675,133 @@ MCompatChecker::TDir ExtenderAgentOut::GetDir() const
 {
     return EOut;
 }
+
+// Extender agent, multicontent
+
+
+string AExtender::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
+
+AExtender::AExtender(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+{
+    SetParent(Type());
+    ChangeCont(ConnPointMc::KContDir_Val_Regular, EFalse, ConnPointMc::KContDir);
+}
+
+AExtender::AExtender(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+{
+    SetParent(Elem::PEType());
+    ChangeCont(ConnPointMc::KContDir_Val_Regular, EFalse, ConnPointMc::KContDir);
+}
+
+void *AExtender::DoGetObj(const char *aName)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
+	res = (MCompatChecker*) this;
+    } else {
+	res = Elem::DoGetObj(aName);
+    }
+    return res;
+}
+
+void AExtender::UpdateIfi(const string& aName, const RqContext* aCtx)
+{
+    void* res = NULL;
+    TIfRange rr;
+    RqContext ctx(this, aCtx);
+    MElem* host = iMan->GetMan();
+    TICacheRCtx rctx(aCtx);
+    //ToCacheRCtx(aCtx, rctx);
+    if (strcmp(aName.c_str(), Type()) == 0) {
+	res = this;
+    }
+    else if (strcmp(aName.c_str(), MCompatChecker::Type()) == 0) {
+	res = (MCompatChecker*) this;
+    }
+    else {
+	res = Elem::DoGetObj(aName.c_str());
+    }
+    if (res != NULL) {
+	InsertIfCache(aName, rctx, this, res);
+    }
+    if (res == NULL) {
+	// Redirect to internal point or pair depending on the requiestor
+	MElem* intcp = GetNode("./../../Int");
+	if (intcp != NULL && !ctx.IsInContext(intcp)) {
+	    rr = intcp->GetIfi(aName, &ctx);
+	    InsertIfCache(aName, rctx, intcp, rr);
+	}
+	else {
+	    MElem* host = iMan->GetMan();
+	    MVert* vhost = host->GetObj(vhost);
+	    if (vhost != NULL) {
+		TInt count = vhost->PairsCount();
+		for (TInt ct = 0; ct < count; ct++) {
+		    MVert* pair = vhost->GetPair(ct);
+		    MElem* ep = pair->GetObj(ep);
+		    if (ep != NULL && !ctx.IsInContext(ep)) {
+			rr = ep->GetIfi(aName, &ctx);
+			InsertIfCache(aName, rctx, ep, rr);
+		    }
+		}
+	    }
+	}
+    }
+    // Responsible pairs not found, redirect to upper layer
+    if (rr.first == rr.second && iMan != NULL) {
+	MElem* host = iMan->GetMan();
+	MElem* hostmgr = host->GetMan();
+	MElem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
+	if (mgr != NULL && !ctx.IsInContext(mgr)) {
+	    rr = mgr->GetIfi(aName, &ctx);
+	    InsertIfCache(aName, rctx, mgr, rr);
+	}
+    }
+
+}
+
+TBool AExtender::IsCompatible(MElem* aPair, TBool aExt)
+{
+    TBool res = EFalse;
+    MElem* intcp = GetNode("./../../Int");
+    MCompatChecker* mint = (intcp != NULL) ? (MCompatChecker*) intcp->GetSIfiC(MCompatChecker::Type(), this) : NULL;
+    if (mint != NULL) {
+	res = mint->IsCompatible(aPair, !aExt);
+    }
+    return res;
+}
+
+MElem* AExtender::GetExtd()
+{
+    return GetNodeE("./../../Int");
+}
+
+MCompatChecker::TDir AExtender::GetDir() const
+{
+    TDir res = ERegular;
+    string cdir;
+    GetCont(cdir, ConnPointMc::KContDir);
+    if (cdir == ConnPointMc::KContDir_Val_Inp) res = EInp;
+    else if (cdir == ConnPointMc::KContDir_Val_Out) res = EOut;
+    return res;
+}
+
+MIface* AExtender::Call(const string& aSpec, string& aRes)
+{
+    __ASSERT(EFalse);
+    return  NULL;
+}
+
+string AExtender::Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
 
 
 
@@ -886,9 +1199,9 @@ TBool Syst::IsPtOk(MElem* aPt) {
     return ETrue;
 }
 
-TBool Syst::OnCompChanged(MElem& aComp)
+TBool Syst::OnCompChanged(MElem& aComp, const string& aContName)
 {
-    TBool res = Elem::OnCompChanged(aComp);
+    TBool res = Elem::OnCompChanged(aComp, aContName);
     if (res) return res;
     TBool hres = EFalse;
     MEdge* edge = aComp.GetObj(edge);	
@@ -928,7 +1241,7 @@ TBool Syst::OnCompChanged(MElem& aComp)
 			TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
 			TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
 			MElem* host = this;
-			Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
+			Logger()->Write(MLogRec::EErr, this, "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
 		    }
 
 		} else {
@@ -939,7 +1252,7 @@ TBool Syst::OnCompChanged(MElem& aComp)
 	    } else {
 		MElem* pt = isptok1 ? pt2 : pt1;
 		MElem* host = this;
-		Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
+		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
 	    }
 	}
     }

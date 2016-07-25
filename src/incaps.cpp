@@ -72,7 +72,7 @@ TBool Incaps::IsPtOk(MElem& aContext, MElem* aPt) {
     return res;
 }
 
-TBool Incaps::HandleCompChanged(MElem& aContext, MElem& aComp)
+TBool Incaps::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
 {
     TBool hres = EFalse;
     MEdge* edge = aComp.GetObj(edge);	
@@ -110,7 +110,7 @@ TBool Incaps::HandleCompChanged(MElem& aContext, MElem& aComp)
 		    else {
 			TBool c1 = pt1checker->IsCompatible(pt2);
 			TBool c2 = pt2checker->IsCompatible(pt1);
-			Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
+			Logger()->Write(MLogRec::EErr, this, "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
 		    }
 
 		} else {
@@ -120,7 +120,7 @@ TBool Incaps::HandleCompChanged(MElem& aContext, MElem& aComp)
 		}
 	    } else {
 		MElem* pt = isptok1 ? pt2 : pt1;
-		Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
+		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
 	    }
 	}
     }

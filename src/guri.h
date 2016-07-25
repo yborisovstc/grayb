@@ -120,6 +120,7 @@ class GUri: public GUriBase
 	GUri();
 	GUri operator+(const GUri& aUri);
 	GUri& operator+=(const GUri& aUri);
+	operator string() const;
     protected:
 	virtual string DoGetUri(const_elem_iter  aStart, const_elem_iter aEnd, TBool aShort = EFalse) const;
 	void Parse();

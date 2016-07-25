@@ -127,6 +127,13 @@ void Ut_cre::test_CreSyst()
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
+    root->ChangeCont("root_prop", EFalse);
+    root->ChangeCont("yes", EFalse, "Debug.Enable_trace");
+    root->ChangeCont("no", EFalse, "Debug.Enable_dbg");
+    string cont;
+    root->GetCont(cont);
+    TBool cont_ok = (cont == "{Debug:{Enable_trace:'yes',Enable_dbg:'no'}}");
+    CPPUNIT_ASSERT_MESSAGE("Wrong root content", cont_ok);
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     root->Chromos().Save("ut_cre_syst1_saved.xml_");
     MElem* cp1 = root->GetNode("./cp1");
@@ -141,7 +148,10 @@ void Ut_cre::test_CreSyst()
     MElem* e2 = root->GetNode("./E2");
     MElem* e2_p1 = e2->GetNode("./P1");
     TBool isatt = e2->IsCompAttached(e2_p1);
-    CPPUNIT_ASSERT_MESSAGE("e2->IsAttached(e2_p1) returns false", isatt);
+    //CPPUNIT_ASSERT_MESSAGE("e2->IsAttached(e2_p1) returns false", isatt);
+    MElem* e1 = root->GetNode("./E1");
+    string cont_e1;
+    e1->GetCont(cont_e1);
 
     delete iEnv;
 }
@@ -242,12 +252,32 @@ void Ut_cre::test_BaseApis1()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Content
+    root->ChangeCont("yes", EFalse, "Debug.Enable_trace");
+    root->ChangeCont("no", EFalse, "Debug.Enable_dbg");
+    TInt rc_count = root->GetContCount();
+    CPPUNIT_ASSERT_MESSAGE("Wrong root content count", rc_count == 1);
+    TInt rc_debug_count = root->GetContCount("Debug");
+    CPPUNIT_ASSERT_MESSAGE("Wrong root debug content count", rc_debug_count == 2);
+    for (TInt ct = 0; ct < rc_debug_count; ct++) {
+	string cname;
+	string cval;
+	root->GetCont(ct, cname, cval, "Debug");
+	cout << "Ind: " << ct << ", Content_name: " << cname << ", Value: " << cval << endl;
+    }
+    string cont;
+    root->GetCont(cont);
+    cout << "Root content >>" << endl;
+    cout << cont << endl;
+    TBool cont_ok = (cont == "{Debug:{Enable_trace:'yes',Enable_dbg:'no'}}");
+    CPPUNIT_ASSERT_MESSAGE("Wrong root content", cont_ok);
     // Make illegal modif and enable transformation
     MElem* vb = root->GetNode("./VB");
     MElem* va1b1 = root->GetNode("./VB/VA_1/VA_1_B1");
     Elem* evb = vb->GetObj(evb);
     bool isdirinh1 = evb->IsDirectInheritedComp(va1b1);
     CPPUNIT_ASSERT_MESSAGE("Wrong result of IsDirectInheritedComp for VA_1_B1", !isdirinh1);
+
     delete iEnv;
 }
 

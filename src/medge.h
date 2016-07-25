@@ -15,8 +15,6 @@ class MEdge: public MIface
 {
     public:
 	static const char* Type() { return "MEdge";};
-	virtual string EdgeName() const = 0;
-	virtual string EdgeUri() const = 0;
 	virtual TBool ConnectP1(MVert* aPoint) = 0;
 	virtual TBool ConnectP2(MVert* aPoint) = 0;
 	// TODO [YB] Do we need disconnect from point? To clarify the concept of connection, ref uc_015
@@ -26,6 +24,8 @@ class MEdge: public MIface
 	virtual MVert* Point2() const = 0;
 	virtual MVert* Ref1() const = 0;
 	virtual MVert* Ref2() const = 0;
+	virtual void SetPoint1(const string& aRef) = 0;
+	virtual void SetPoint2(const string& aRef) = 0;
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};
     protected:

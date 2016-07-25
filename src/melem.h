@@ -30,9 +30,9 @@ class MAgentObserver: public MIface
 	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue) = 0;
 	virtual void OnCompAdding(MElem& aComp) = 0;
 	// TODO [YB] Return value isn't used, to remove ?
-	virtual TBool OnCompChanged(MElem& aComp) = 0;
+	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string()) = 0;
 	// For run-time only. Use OnCompChanged when the content is changed via mutation
-	virtual TBool OnContentChanged(MElem& aComp) = 0;
+	virtual TBool OnContentChanged(MElem& aComp, const string& aContName = string()) = 0;
 	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName) = 0;
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};
@@ -51,9 +51,9 @@ class MCompsObserver
 	static const char* Type() { return "MCompsObserver";};
 	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue) = 0;
 	virtual void OnCompAdding(MElem& aComp) = 0;
-	virtual TBool OnCompChanged(MElem& aComp) = 0;
+	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string()) = 0;
 	// For run-time only. Use OnCompChanged when the content is changed via mutation
-	virtual TBool OnContentChanged(MElem& aComp) = 0;
+	virtual TBool OnContentChanged(MElem& aComp, const string& aContName = string()) = 0;
 	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName) = 0;
 };
 
@@ -141,7 +141,7 @@ class MACompsObserver
 {
     public:
 	static const char* Type() { return "MACompsObserver";};
-	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp) = 0;
+	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string()) = 0;
 };
 
 // Composite interface of Element (node) of native graph hierarchy
@@ -153,11 +153,16 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
     friend class Elem;
     friend class ImportsMgr;
     public:
+    // Predefined content categories
+    typedef enum {
+	ECct_Ro = 1,
+	ECct_Dbg
+    } TCntCat;
+    public:
 	static const char* Type() { return "MElem";};
     public:
 	// Dedicated request of deletion, ref ds_daa_powrd
-	virtual void Delete() = 0;
-	virtual const string EType(TBool aShort = ETrue) const = 0;
+	virtual void Delete() = 0; virtual const string EType(TBool aShort = ETrue) const = 0;
 	virtual const string& Name() const = 0;
 	virtual TBool IsProvided() const = 0;
 	virtual MElem* GetMan() = 0;
@@ -172,11 +177,11 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 	virtual MElem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere = EFalse, TBool aInclRm = EFalse) = 0;
 	virtual MElem* GetRoot() const = 0;
 	virtual MElem* GetInhRoot() const = 0;
-	virtual TInt GetContCount() const = 0;
+	virtual TInt GetContCount(const string& aName = string()) const = 0;
 	virtual TBool IsContChangeable(const string& aName = string()) const = 0; 
-	virtual void GetCont(string& aCont, const string& aName=string()) = 0; 
+	virtual TBool GetCont(string& aValue, const string& aName=string()) const = 0; 
 	virtual string GetContent(const string& aName=string()) const = 0; 
-	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const = 0;
+	virtual TBool GetCont(TInt aInd, string& aName, string& aCont, const string& aOwnerName = string()) const = 0;
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()) = 0; 
 	virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse) = 0;
 	virtual void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MElem* aCtx = NULL) = 0;
@@ -227,8 +232,12 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 	virtual MElem* GetComp(TInt aInd) = 0;
 	virtual void SaveChromo(const char* aPath) const = 0;
 	virtual void DumpChilds() const = 0;
+	virtual void DumpCntVal() const = 0;
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};
+	// Helpers
+	static string GetContentOwner(const string& aCont);
+	static string GetContentLName(const string& aName);
     protected:
 	class EIfu: public Ifu {
 	    public:

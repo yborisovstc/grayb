@@ -29,7 +29,7 @@ class Vert: public Elem, public MVert
 	//virtual set<MVert*>& Pairs();
 	virtual MIface* MVert_DoGetObj(const char *aName);
 	// From Elem
-	virtual TBool OnCompChanged(MElem& aComp);
+	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string());
 	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue);
 	virtual void SetRemoved();
 	// Iface cache
@@ -37,6 +37,8 @@ class Vert: public Elem, public MVert
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);
 	virtual string Mid() const;
+    protected:
+	void Disconnect();
     protected:
 	// Cached pairs
 	set<MVert*> iPairs;

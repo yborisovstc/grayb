@@ -6,6 +6,7 @@
 #include "data.h"
 #include "vert.h"
 
+const string DataBase::KCont_Value = "Value";
 
 string DataBase::PEType()
 {
@@ -15,14 +16,22 @@ string DataBase::PEType()
 DataBase::DataBase(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
+    if (iMan != NULL) { // There is a context
+	MElem* ctx = iMan->GetMan();
+	ctx->ChangeCont("", ETrue, KCont_Value);
+    }
 }
 
 DataBase::DataBase(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
     SetParent(Elem::PEType());
+    if (iMan != NULL) { // There is a context
+	MElem* ctx = iMan->GetMan();
+	ctx->ChangeCont("", ETrue, KCont_Value);
+    }
 }
 
-TBool DataBase::HandleCompChanged(MElem& aContext, MElem& aComp)
+TBool DataBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
 {
     TBool res = ETrue;
     if ((aComp.Name() == "Value" || aComp.Name() == "Type") && aComp.EType() == "Prop") {
@@ -44,13 +53,27 @@ TBool DataBase::HandleCompChanged(MElem& aContext, MElem& aComp)
 	    string stype = ptype == NULL ? string() : ptype->Value();
 	    FromString(stype, prop->Value());
 	}
-    }
-    else {
+    } else if (&aComp == Context() && aContName == KCont_Value) { // Value - multicontent
+	string val;
+	Context()->GetCont(val, KCont_Value);
+	if (IsLogeventUpdate()) {
+	    string curr;
+	    ToString(curr);
+	    Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", val.c_str(), curr.c_str());
+	}
+	FromString(string(), val);
+    } else {
 	MElem* caps = aContext.GetNode("./Capsule");
 	if (caps != NULL) {
 	    MElem* cp = caps->GetCompOwning("ConnPointInp", &aComp);
 	    if (cp == NULL) {
 		cp = caps->GetCompOwning("ConnPointOut", &aComp);
+	    }
+	    if (cp == NULL) {
+		cp = caps->GetCompOwning("ConnPointInpMc", &aComp);
+	    }
+	    if (cp == NULL) {
+		cp = caps->GetCompOwning("ConnPointOutMc", &aComp);
 	    }
 	    if (cp != NULL) {
 		res = HandleIoChanged(aComp, cp);
@@ -126,6 +149,14 @@ void DataBase::UpdateProp()
 	    etype->ChangeCont(type);
 	    eprop->ChangeCont(data);
 	}
+    } else { // Multicontent ?
+	__ASSERT(Context() != NULL);
+	string val;
+	TBool valex = Context()->GetCont(val, KCont_Value);
+	__ASSERT(valex);
+	string res;
+	ToString(res);
+	Context()->ChangeCont(res, ETrue, KCont_Value);
     }
 }
 	
@@ -175,6 +206,21 @@ bool DataBase::ToString(string& aType, string& aData)
     aData = full.substr(end + 1, string::npos);
 }
 
+/*
+TBool DataBase::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
+{
+    TBool res = Elem::ChangeCont(aVal, aRtOnly, aName);
+    if (aName == KCont_Value && res) {
+	string curr;
+	ToString(curr);
+	if (IsLogeventUpdate()) {
+	    Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", aVal.c_str(), curr.c_str());
+	}
+	FromString(aVal);
+    }
+    return res;
+}
+*/
 
 string DInt::PEType()
 {
@@ -550,9 +596,9 @@ MElem* DVar::GetInp()
     return einp;
 }
 
-TBool DVar::HandleCompChanged(MElem& aContext, MElem& aComp)
+TBool DVar::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
 {
-    return DataBase::HandleCompChanged(aContext, aComp);
+    return DataBase::HandleCompChanged(aContext, aComp, aContName);
 }
 
 // Bool data

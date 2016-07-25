@@ -198,9 +198,9 @@ void Vert::Disconnect(MVert* aPair)
     }
 }
 
-TBool Vert::OnCompChanged(MElem& aComp)
+TBool Vert::OnCompChanged(MElem& aComp, const string& aContName)
 {
-    TBool hres = Elem::OnCompChanged(aComp);
+    TBool hres = Elem::OnCompChanged(aComp, aContName);
     if (hres) return ETrue;
     MEdge* edge = aComp.GetObj(edge);	
     if (edge != NULL) {
@@ -304,4 +304,12 @@ void Vert::OnCompDeleting(MElem& aComp, TBool aSoft)
 	}
     }
     Elem::OnCompDeleting(aComp, aSoft);
+}
+
+void Vert::Disconnect()
+{
+    while (PairsCount() > 0) {
+	set<MVert*>::iterator it = iPairs.begin();
+	Disconnect(*it);
+    }
 }

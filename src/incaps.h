@@ -13,7 +13,7 @@ class Incaps: public Elem, public MACompsObserver
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp);
+	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
     protected:
 	TBool IsPtOk(MElem& aContext, MElem* aPt);
 };

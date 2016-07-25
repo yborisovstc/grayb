@@ -14,7 +14,7 @@ class FuncBase: public Elem, public MACompsObserver, public MDataObserver
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp);
+	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
 	// From MDataObserver
 	virtual void OnDataChanged();
     protected:
@@ -119,7 +119,7 @@ class AFunc: public Elem, public MACompsObserver, public MDataObserver
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp);
+	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
 	// From MDataObserver
 	virtual void OnDataChanged();
     protected:
@@ -143,7 +143,7 @@ class AFuncInt: public AFunc, public MDIntGet
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MElem
-	virtual void GetCont(string& aCont, const string& aName=string()); 
+	virtual TBool GetCont(string& aValue, const string& aName=string()) const; 
 	// From MDIntGet
 	virtual TInt Value();
     protected:
@@ -266,7 +266,7 @@ class AFuncm: public Elem, public MACompsObserver, public MDataObserver, public 
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp);
+	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
 	// From MDataObserver
 	virtual void OnDataChanged();
     protected:
@@ -363,7 +363,7 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp);
+	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
 	// From Func::Host
 	virtual TIfRange GetInps(TInt aId, TBool aOpt = EFalse);
 	virtual void OnFuncContentChanged();
@@ -371,7 +371,7 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	virtual Elem* GetAgent() {return this;};
 	virtual TInt GetInpCpsCount() const {return -1;};
 	// From Elem
-	virtual void GetCont(string& aCont, const string& aName=string()); 
+	virtual TBool GetCont(string& aCont, const string& aName=string()) const; 
 	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
 	virtual TInt GetContCount() const;
     protected:

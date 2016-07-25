@@ -69,10 +69,22 @@
        <cont node="./Provided" val="MDataObserver"/>
    </node>
 
+   <!-- Input of Func with Var arg/res, multicontent -->
+   <node id="Inp_FVarMc" parent="/*/Modules/SysComps/ConnPointInpMc"> 
+       <cont id="Required" val="MDVarGet"/>
+       <cont id="Provided" val="MDataObserver"/>
+   </node>
+
    <!-- Output of Func with Var result -->
    <node id="Out_FVar" parent="/*/Modules/SysComps/ConnPointOut"> 
        <cont node="./Required" val="MDataObserver"/>
        <cont node="./Provided" val="MDVarGet"/>
+   </node>
+
+   <!-- Output of Func with Var result, multicontent -->
+   <node id="Out_FVarMc" parent="/*/Modules/SysComps/ConnPointOutMc"> 
+       <cont id="Required" val="MDataObserver"/>
+       <cont id="Provided" val="MDVarGet"/>
    </node>
 
     <!-- Int function wo inputs  -->
@@ -86,6 +98,12 @@
 	<node id="ViewData" parent="Vert">
 	    <node id="Res" parent="Prop"/>
 	</node>
+    </node>
+
+    <!-- Var function wo inputs  -->
+    <node id="FuncVarMc" parent="/*/Modules/IncapsComps/Incaps"> 
+	<node node="./Capsule" id="out" parent="./../Out_FVarMc"/> 
+	<content id="ViewData.Res" value=""/>
     </node>
 
     <!-- Composed/Reduced Var function wo inputs  -->
@@ -122,9 +140,20 @@
 	<cont node="./Required" val="MDVarGet"/>
     </node>
 
+    <!-- Input of Transition Func with variable arg/res -->
+    <node id="Inp_TFVarMc" parent="/*/Modules/SysComps/ConnPointInpMc"> 
+	<cont id="About" val="Input of Transition Func with variable arg/res"/>
+	<cont id="Required" val="MDVarGet"/>
+    </node>
+
     <!-- Output of Transition Func with variable arg/res -->
     <node id="Out_TFVar" parent="/*/Modules/SysComps/ConnPointOut"> 
 	<cont node="./Provided" val="MDVarGet"/>
+    </node>
+
+    <!-- Output of Transition Func with variable arg/res, multicontent -->
+    <node id="Out_TFVarMc" parent="/*/Modules/SysComps/ConnPointOutMc"> 
+	<cont id="Provided" val="MDVarGet"/>
     </node>
 
     <!-- Extended Input of Transition Func with Var arg/res -->
@@ -221,6 +250,14 @@
 	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
     </node>
 
+    <!-- Function of var addition wo caching, multicontent -->
+    <node id="FAddVarMc" parent="./FuncVarMc"> 
+	<node node="./Agents" id="func_agt" parent="AFAddVar"/>
+	<!-- Input positives -->
+	<node node="./Capsule" id="Inp" parent="./../Inp_FVarMc"/> 
+	<cont id="ViewData.Res" ref="./Agents/func_agt"/>
+    </node>
+
 
     <!-- Function of integer addition wo caching -->
     <node id="FSubInt" parent="./FuncInt"> 
@@ -304,6 +341,13 @@
 	<node id="ViewData" parent="Vert">
 	    <node id="Res" parent="Prop"/>
 	</node>
+    </node>
+
+    <!-- Var Transition function wo inputs  -->
+    <node id="TFuncVarMc" parent="/*/Modules/IncapsComps/Incaps"> 
+	<cont id="About" val="Var Transition function wo inputs"/>
+	<node node="./Capsule" id="Out" parent="./../Out_TFVarMc"/> 
+	<cont id="ViewData.Res" val="">
     </node>
 
 
@@ -390,11 +434,11 @@
     </node>
 
     <!-- Transition Function of variable adding -->
-    <node id="TFAddVar" parent="./TFuncVar"> 
+    <node id="TFAddVarMc" parent="./TFuncVarMc"> 
+	<cont id="About" val="Transition Function of variable adding"/>
 	<node node="./Agents" id="func_agt" parent="AFAddVar"/>
-	<!-- Input positives -->
-	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<node node="./Capsule" id="Inp" parent="./../Inp_TFVarMc"/> 
+	<cont id="ViewData.Res" ref="./Agents/func_agt"/>
     </node>
 
     <!-- Transition Function of variable adding and substraction -->

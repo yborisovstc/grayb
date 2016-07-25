@@ -54,8 +54,22 @@
 
     </articleinfo>
 
-    <bibliolist>
-	<title>References</title>
+    <glossary> <title>Glossary</title> 
+	<glossentry id="gls_connpoint"><glossterm>Connection Point</glossterm>
+	    <glossdef> <para>Element that is used as endpoint of connections between systems.  
+	</para><glossseealso otherterm="gls_cp"/></glossdef> </glossentry>
+	<glossentry id="gls_cp"><glossterm>CP</glossterm> <acronym>CP</acronym>
+	    <glossdef> <para>Connection Point - Element that is used as endpoint of connections between systems.  
+	</para><glossseealso otherterm="gls_connpoint"/></glossdef> </glossentry>
+	<glossentry id="gls_edge"><glossterm>Edge</glossterm>
+	    <glossdef> <para>Agent that represents edge in graph model layer.
+	</para><glossseealso otherterm="gls_vertex"/></glossdef> </glossentry>
+	<glossentry id="gls_vertex"><glossterm>Vertex</glossterm>
+	    <glossdef> <para>Agent that represents vertex in graph model layer.
+	</para><glossseealso otherterm="gls_edge"/></glossdef> </glossentry>
+    </glossary>
+
+    <bibliolist><title>References</title>
     </bibliolist>
 
     <sect1 id="nimp"><title>Treaceability: not implemented yet</title>
@@ -77,7 +91,7 @@
 	    <listitem> <xref linkend="uc_029"/>, via marking removed node as deleted but keeping it in runtime model </listitem>
 	</itemizedlist>
     </sect1>
-    
+
     <sect1 id="uc"> <title>Use cases</title>
 
 	<sect2 id="uc_000"><title>UC_000 Usecase template</title>
@@ -236,7 +250,7 @@
 	    <sect3><title>Details</title>
 		<itemizedlist>
 		    <listitem>System contains end points for connection. Connection is established via creating relation between
-			end points of two systems. Such connection endpoints are called Connection points (CP).</listitem>
+			end points of two systems. Such connection endpoints are called Connection points (<xref linkend="gls_cp"/>).</listitem>
 		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Extension of</title>
@@ -244,8 +258,11 @@
 	    <sect3><title>Extended by</title>
 		<itemizedlist>
 		    <listitem><xref linkend="uc_06"/></listitem>
+		    <listitem><xref linkend="uc_007"/></listitem>
+		    <listitem><xref linkend="uc_005"/></listitem>
 		    <listitem><xref linkend="uc_012"/></listitem>
 		    <listitem><xref linkend="uc_015"/></listitem>
+		    <listitem><xref linkend="uc_059"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>
@@ -280,6 +297,9 @@
 		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Extension of</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_03"/></listitem>
+		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Extended by</title>
 		<itemizedlist>
@@ -478,19 +498,23 @@
 
 	<sect2 id="uc_015"><title>UC_015 Edges correcting when removing vert</title>
 	    <sect3><title>Actors</title>
-		VERT: some vertex witin upper node.
-		EDGE: edge 
-		UPPER_NODE: node that contains VERT and EDGE
+		<itemizedlist>
+		    <listitem>VERT: some vertex witin upper node.</listitem>
+		    <listitem>EDGE: edge</listitem>
+		    <listitem>UPPER_NODE: node that contains VERT and EDGE</listitem>
+		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Preconditions</title>
-		EDGE is connected to VERT
+		<itemizedlist>
+		    <listitem>EDGE is connected to VERT</listitem>
+		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Normal</title>
 		<simpara>Mutation of UPPER_NODE is done that removes VERT, UPPER_NODE disconnects EDGE from VERT so that connection point previously 
 		connected to VERT gets free.</simpara>
 	    </sect3>
 	    <sect3><title>Extends</title>
-		<xref linkend="uc_015"/>
+		<xref linkend="uc_03"/>
 	    </sect3>
 	    <sect3><title>Extended by</title>
 	    </sect3>
@@ -609,13 +633,17 @@
 
 	<sect2 id="uc_024"><title>UC_024 Mutation: node references correcting when renaming node</title>
 	    <sect3><title>Actors</title>
-		NODE: some node within UPPER_NODE
-		VERT: some vertex witin upper node.
-		EDGE: edge 
-		UPPER_NODE: node that contains VERT and EDGE
+		<itemizedlist>
+		    <listitem> NODE: some node within UPPER_NODE </listitem>
+		    <listitem> VERT: some vertex witin upper node.  </listitem>
+		    <listitem> EDGE: edge <listitem>
+		    </listitem> UPPER_NODE: node that contains VERT and EDGE </listitem>
+		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Preconditions</title>
-		Some references to NODE are specified in SYSTEM spec
+		<itemizedlist>
+		    <listitem> Some references to NODE are specified in SYSTEM spec </listitem>
+		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Assumptions</title>
 	    </sect3>
@@ -630,7 +658,10 @@
 	    <sect3><title>Variations</title>
 	    </sect3>
 	    <sect3><title>Extends</title>
-		<xref linkend="uc_022"/>
+		<itemizedlist>
+		    <listitem> <xref linkend="uc_022"/> </listitem>
+		    <listitem> <xref linkend="uc_03"/> </listitem>
+		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Extended by</title>
 	    </sect3>
@@ -1908,6 +1939,138 @@
 		of convenient modifying, verifying and releasing modules.</simpara>
 	    </sect3>
 	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
+	<sect2 id="uc_059"><title>UC_059 Connection via relation of Connection Points.</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem>CLIENT: client of SYSTEM</listitem>
+		    <listitem>SYSTEM: modelling run-time</listitem>
+		    <listitem>MODEL: a model of system</listitem>
+		    <listitem>SUBSYSTEM1, SUBSYSTEM2: some parts of MODEL</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<itemizedlist>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>CLIENT requests connecting SUBSYSTEM1 and SUBSYSTEM2.</listitem>
+		    <listitem>SYSTEM connects SUBSYSTEM1 and SUBSYSTEM2 via establishing of relations between them. SYSTEM provdes graph layer of
+			agents that includes vertex and edge agents. Edge creates relation between two vertexes, so establishes connection between them.</listitem>
+		    <listitem>SYSTEM can establish relation between some connection points SUBSYSTEM1 and SUBSYSTEM2, not between subsystem itself.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_03"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_060"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Related to</title> </sect3>
+	    <sect3><title>Discussion</title>
+		<itemizedlist>
+		    <listitem><xref linkend="gls_connpoint"/> can be considered as "representative" of subsystem. I.e. it represents one of many 
+			aspects of system. This approach allows great flexibility in connecting the subsystems.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
+	<sect2 id="uc_060"><title>UC_060 Connection points compatibility.</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem>CLIENT: client of SYSTEM</listitem>
+		    <listitem>SYSTEM: modelling run-time</listitem>
+		    <listitem>MODEL: a model of system</listitem>
+		    <listitem>SUBSYSTEM1, SUBSYSTEM2: some parts of MODEL</listitem>
+		    <listitem>CP1: Connection Point of SUBSYSTEM1</listitem>
+		    <listitem>CP2: Connection Point of SUBSYSTEM2</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<itemizedlist>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>CLIENT requests connecting SUBSYSTEM1 and SUBSYSTEM2.</listitem>
+		    <listitem>SYSTEM connects SUBSYSTEM1 and SUBSYSTEM2 via creating edge between CP1 and CP2.</listitem>
+		    <listitem>SYSTEM checks if CP1 and CP2 are <emphasis>compatible</emphasis> so creates edge only if they are compatible.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_059"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_061"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Related to</title> </sect3>
+	    <sect3><title>Discussion</title>
+		<itemizedlist>
+		    <listitem><xref linkend="gls_connpoint"/> agent shall provide specific interface for checking compatibility.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
+	<sect2 id="uc_061"><title>UC_061 Mutation breaking Connection points compatibility.</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem>CLIENT: client of SYSTEM</listitem>
+		    <listitem>SYSTEM: modelling run-time</listitem>
+		    <listitem>MODEL: a model of system</listitem>
+		    <listitem>SUBSYSTEM1, SUBSYSTEM2: some parts of MODEL</listitem>
+		    <listitem>CP1: Connection Point of SUBSYSTEM1</listitem>
+		    <listitem>CP2: Connection Point of SUBSYSTEM2</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<itemizedlist>
+		    <listitem>There is edge created between CP1 and CP2. CP1 and CP2 are connected.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>CLIENT requests mutation of CP1 that breaks CP1 compatibility with CP2</listitem>
+		    <listitem>SYSTEM applies mutation and disconnects CP1 and CP2</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_060"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+	    </sect3>
+	    <sect3><title>Related to</title> </sect3>
+	    <sect3><title>Discussion</title>
+		<itemizedlist>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
 	</sect2>
 
     </sect1>

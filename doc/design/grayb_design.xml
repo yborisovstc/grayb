@@ -1562,9 +1562,9 @@
 	<sect2 id="ds_cplx_cont_cns"><title>Considerations</title>
 	    <sect3><title>Simple agent philosophy</title>
 		<simpara>The simple content correspond to the multy-agent philosophy "agent is simple". Complex content makes agent more comples. Does it
-		    breaks the philosophy?</simpara>
+		    break the philosophy?</simpara>
 	    </sect3>
-	    <sect3 id="ds_cplx_cont_cns_if"><title>Agent expose its behaviour via interfaces</title>
+	    <sect3 id="ds_cplx_cont_cns_if"><title>Agent exposes its behaviour via interfaces</title>
 		<simpara>So why we need content access methods in base agent interface at all? Why not have specific interfaces for access to 
 		    agents content? Like it is imlpemented for property? For instance we can add the extended Prop interface, that supports named
 		    property, read-only for instance or changeable. 
@@ -1596,7 +1596,12 @@
 		    </listitem>
 		</itemizedlist>
 		<simpara>So it makes sense to use these approach for different aims: Complex content - to enrich the base agent, but extended prop - to
-		    support debugging feature.</simpara>
+		    support specific debugging feature.</simpara>
+		<simpara>Again, content is <emphasis>universal</emphasis> mechanism of changing agent via mutations and exposing agents data.
+		    Exposing agents data in univirsal form is especially suitable in case when the data is for debugging purpose or if 
+		    the data itself is of string form (i.e. refs to points in edge).
+		    This universal mechanism is implemented in base agent. Inherited agent can also implement specific ifaces (i.e. MDVarGet implemented by DVar agent)
+		    for getting content.  This allows agent to expose content in native form instead of unified (string).</simpara>
 	    </sect3>
 	    <sect3><title>Agents for just keeping data</title>
 		<simpara>Currently the agent-property for just keeping data is used widely. This seems too wasteful.</simpara>
@@ -1689,7 +1694,6 @@
 		</itemizedlist>
 		<simpara>Container allows getting component using hierarhical key (kind of uri in agents hier tree). The 
 		    step in hkey separates by "." symbol. Hkey example is: vector.end.x - x coordinate of vector end point.</simpara>
-		<simpara>Container iface covers the following containment type</simpara>
 		<simpara>Container iface covers the following containment types: array (map from natural numbers set to contents),
 		    map (from string key to content), tree.</simpara>
 		<simpara>Is it possible to avoid having dedicated iface for content and keep content APIs on base agent level?
@@ -1703,7 +1707,9 @@
 		    </programlisting>
 		</simpara>
 		<simpara>The full string notation of containers value also could be assosiated with some pre-defined hkey,
-		    for instance "*". Or we can define that </simpara>
+		    for instance "*". Or we can define that. The problem whit this approach (not using Content iface) is that
+		    it is inconvenient for native clients. This is because it returns only string values. So the client will need to
+		    convert size "directions.#" to int.</simpara>
 		<simpara>As for support of settable categories there are some desing problems here:</simpara>
 		<simpara>Settable categories are in fact content itself. To "bind" some content with category we just
 		    need to establish relation category-content. This is "relation model" point of view. But this 
@@ -1731,7 +1737,19 @@
 		    simple_content_value = text_value / numeric_value
 		    text_value = text
 		    combined_content_value = "{" 1*(component_value) "}"
-		    component_value = "{" component_key ":" '"' content_value '"' "}"
+		    component_value = simple_conmponent_value / combined_component_value
+		    simple_component_value = "{" component_key ":" "'" simple_content_value "'" "}"
+		    combined_component_value = "{" component_key ":" combined_content_value "}"
+		</programlisting>
+		<simpara>Another variant:</simpara>
+		<programlisting>
+		    content_value = simple_content_value / combined_content_value
+		    simple_content_value = text_value / numeric_value
+		    text_value = text
+		    combined_content_value = "{" component_value 0*("," component_value) "}"
+		    component_value = simple_conmponent_value / combined_component_value
+		    simple_component_value = component_key ":" "'" simple_content_value "'" 
+		    combined_component_value = component_key ":" "{" combined_content_value "}"
 		</programlisting>
 		<simpara>Examples:</simpara>
 		<itemizedlist>
@@ -1742,6 +1760,28 @@
 			<programlisting> { { #0 : "bla-bla 1"} { #1 : "bla-bla 2"} } </programlisting>
 		    </listitem>
 		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extending URI via adding content name</title>
+		<simpara>With single content there is no problem to point to content - the content unambiguously pointed by agent's URI.
+		    But for complex content we need to specify not only agent owning the content but also content name. We can just
+		    add content name to agent's URI to have URI for content.</simpara>
+	    </sect3>
+	    <sect3><title>Structured content implementation: use-cases</title>
+		<orderedlist>
+		    <listitem>Agent needs to manipulate the context content
+			<para>For instance AData agent: it uses content in its context. This means context content should be rw.</para>
+		    </listitem>
+		    <listitem>Using content as interface instead of MProp
+			<para>In single content model special agent Prop is used for keeping data. So the client (i.e. Studio App) can
+			    use this Prop URI to get access to data (maybe it is not effective way - better would be to use specific iface of 
+			    managing agent (i.e. MDVarGet)). In multicontent model the container (incaps) is playing this role.</para>
+			<para>The problem here is that this approach doesn't allow to notify managing agent of container content change - this
+			    simply because of notification is propagated to owner only.  </para>
+		    </listitem>
+		    <listitem>Customization of data displaying in Studio SystCrp
+			<para>Ref syscrp.cpp SysCrp::AddDataRp(). There the content is used for customization of data displaying.</para>
+		    </listitem>
+		</orderedlist>
 	    </sect3>
 	</sect2>
     </sect1>
@@ -3125,6 +3165,13 @@
 	</sect2>
     </sect1>
 
+    <sect1 id="ds_nas"><title>Natively asynchronous model.</title>
+	<sect3><title>Intro</title>
+	    <simpara>Current DAA approach actually isn't asyncronous. On native layer it is still sync. Asynchrony in DAA can be implemented on 
+	    DES layer, this is specific kind of asyncrony - cooperative one. It would be more interesting to have asynchrony on native level.</simpara>
+	</sect3>
+    </sect1>
+
     <sect1 id="ds_chr"><title>Chromo language. Representation, serialization etc.</title>
 	<sect2><title>Refs</title>
 	    <biblioentry id="ref_fi"> <abbrev>FI</abbrev>
@@ -3201,8 +3248,6 @@
 	    <listitem>Using mut order to ensure original sequence of muts, ref <xref linkend="ds_mut_dis_pheno"/> </listitem>
 	    <listitem>References: rules and limitations, ref <xref linkend="ds_mut_refs"/> </listitem>
 	</orderedlist>
-	<sect2><title>Multicontent elem</title>
-	</sect2>
 	<sect2><title>Speed up of model creation</title>
 	    <simpara>To revise the approach of creating child. Currently the full historical creation approach is used: all ancestors are created
 		subsequently. To consider direct inheritance.</simpara>
@@ -3262,6 +3307,7 @@
 		not extending via mutation, because agent is an "atom" in such a model.</simpara>
 	    <simpara>We will need our own specific envionment for such a model to get and deliever messages from/to agents (somethig like
 		glib events loop etc.)</simpara>
+	    <simpara>Ref aslo <xref linkend="ds_nas"/></simpara>
 	</sect2>
 	<sect2><title>To implement improved iface resolution mechanism</title>
 	    <simpara>Ref <xref linkend="ds_irm"/></simpara>
@@ -3269,6 +3315,7 @@
 	<sect2><title>To implement remote logging</title>
 	    <simpara>Currently remote env logs records locally. This is inconvenient - needs to look at multiple logs located in different places.
 		Needs to implement receining logs from secondary envs.</simpara>
+	    <simpara>Ref <xref linkend="ds_daa_log"/> - initially implemented.</simpara>
 	</sect2>
 	<sect2><title>To replace MElem comps APIs with generic nodes APIs</title>
 	    <simpara>Base agents API includes comps APIs: CompsCount(), GetComp(). This APIs is quite primitive and dont support filtering, i.e. by

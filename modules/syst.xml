@@ -22,6 +22,14 @@
 	<node id="Required" parent="Prop"/>
     </node>
 
+    <node id="ConnPointInpMc" parent="ConnPointMc">
+	<cont id="Direction" val="Inp"/> 
+    </node>
+
+    <node id="ConnPointOutMc" parent="ConnPointMc">
+	<cont id="Direction" val="Out"/> 
+    </node>
+
     <!-- Element that acts as feedthrough for capsula of system - it extend
 	 the connection from outside into the system. The extention is implemented via embedding inernal CP,
 	 that is the point to connect from within the owning system.
@@ -57,6 +65,20 @@
 	<node id="Int" parent="./../ConnPoint"/>
 	<node node="./(Elem:)Agents" id="MAExteder" parent="ExtenderAgentOut"/> 
     </node>
+
+    <node id="ExtenderMc" parent="Vert"> 
+	<node id="Int" parent="ConnPointMc"/>
+	<node node="./(Elem:)Agents" id="MAExteder" parent="AExtender"/> 
+    </node>
+
+    <node id="ExtenderInpMc" parent="ExtenderMc"> 
+	<cont node="./Agents/MAExteder" id="Direction" val="Inp"/> 
+    </node>
+
+    <node id="ExtenderOutMc" parent="ExtenderMc"> 
+	<cont node="./Agents/MAExteder" id="Direction" val="Out"/> 
+    </node>
+
 
 
     <!-- Socket -->
