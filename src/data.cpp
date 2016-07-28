@@ -54,8 +54,7 @@ TBool DataBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& a
 	    FromString(stype, prop->Value());
 	}
     } else if (&aComp == Context() && aContName == KCont_Value) { // Value - multicontent
-	string val;
-	Context()->GetCont(val, KCont_Value);
+	string val = Context()->GetContent(KCont_Value);
 	if (IsLogeventUpdate()) {
 	    string curr;
 	    ToString(curr);
@@ -151,9 +150,7 @@ void DataBase::UpdateProp()
 	}
     } else { // Multicontent ?
 	__ASSERT(Context() != NULL);
-	string val;
-	TBool valex = Context()->GetCont(val, KCont_Value);
-	__ASSERT(valex);
+	string val = Context()->GetContent(KCont_Value);
 	string res;
 	ToString(res);
 	Context()->ChangeCont(res, ETrue, KCont_Value);

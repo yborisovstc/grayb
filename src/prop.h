@@ -28,7 +28,7 @@ class Prop: public Elem, public MProp_Imd
 	// From MProp
 	virtual const string& Value() const;
 	// From MElem
-	virtual void GetCont(string& aCont, const string& aName=string()); 
+	virtual string GetContent(const string& aName=string()) const; 
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName = string()); 
 	virtual TBool IsContChangeable(const string& aName = string()) const; 
 	// From MProp_Imd

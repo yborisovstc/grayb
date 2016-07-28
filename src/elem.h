@@ -43,7 +43,7 @@ class Elem: public MElem
 	typedef pair<string, string> TCntRec;
 	typedef multimap<string, string> TCntComps;
 	typedef map<string, string> TCntVals;
-
+	//typedef multimap<string, string> TContent;
     public:
 	// Request context
 	//typedef vector<Base*> TICacheRCtx;
@@ -251,9 +251,10 @@ class Elem: public MElem
 	// TODO [YB] The only attr allowed for change is name. To consider replacing of ChangeAttr to Rename
 	virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal);
 	virtual void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL);
-	virtual TBool GetCont(string& aValue, const string& aName = string()) const;
-	virtual TBool GetCont(TInt aInd, string& aName, string& aCont, const string& aOwnerName = string()) const;
-	virtual string GetContent(const string& aName=string()) const;
+	//virtual TBool GetCont(string& aValue, const string& aName = string()) const;
+	virtual TBool ContValueExists(const string& aName=string()) const;
+	virtual string GetContComp(const string& aOwnerName, TInt aInd) const;
+	virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const;
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string());
 	virtual TBool IsContChangeable(const string& aName = string()) const;
 	virtual TInt GetContCount(const string& aName = string()) const;
@@ -360,6 +361,9 @@ class Elem: public MElem
 	// ICache helpers, for debug only
 	Elem* GetIcCtxComp(const TICacheRCtx& aCtx, TInt aInd);
 	void LogIfReqs();
+	static string ContentKey(const string& aBase, const string& aSuffix);
+	static string ContentValueKey(const string& aId);
+	static string ContentCompsKey(const string& aId);
 	// Profiling
 	static void Delay(long us);
 	static long GetClockElapsed(const timespec& aStart, timespec& aEnd);
@@ -376,7 +380,11 @@ class Elem: public MElem
 	static const char KContentStart = '{';
 	static const char KContentEnd = '}';
 	static const char KContentValSep = ':';
+	static const char KContentValQuote = '\'';
 	static const char KContentSep = '.';
+	static const char KContentKey_Value = '#';
+	static const char KContentKey_Comps = '*';
+	static const char KContentKey_Props = '~';
     protected:
 	// Environment
 	MEnv* iEnv;
@@ -408,9 +416,9 @@ class Elem: public MElem
 	TBool isRemoved;
 	string iName;
 	// Content register
-	//TCntReg mContent;
 	TCntComps mCntComps;
 	TCntVals mCntVals;
+	//TContent mContent;
 	static TBool EN_PERF_TRACE;
 	static TBool EN_PERF_METR;
 	static TBool EN_MUT_LIM;

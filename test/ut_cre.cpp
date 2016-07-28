@@ -21,6 +21,7 @@ class Ut_cre : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_CreData);
     CPPUNIT_TEST(test_BaseApis1);
     CPPUNIT_TEST(test_Iface);
+    CPPUNIT_TEST(test_Content);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -32,6 +33,7 @@ private:
     void test_CreIncaps();
     void test_CreData();
     void test_BaseApis1();
+    void test_Content();
     void test_Iface();
 private:
     Env* iEnv;
@@ -130,8 +132,7 @@ void Ut_cre::test_CreSyst()
     root->ChangeCont("root_prop", EFalse);
     root->ChangeCont("yes", EFalse, "Debug.Enable_trace");
     root->ChangeCont("no", EFalse, "Debug.Enable_dbg");
-    string cont;
-    root->GetCont(cont);
+    string cont = root->GetContent();
     TBool cont_ok = (cont == "{Debug:{Enable_trace:'yes',Enable_dbg:'no'}}");
     CPPUNIT_ASSERT_MESSAGE("Wrong root content", cont_ok);
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
@@ -150,8 +151,7 @@ void Ut_cre::test_CreSyst()
     TBool isatt = e2->IsCompAttached(e2_p1);
     //CPPUNIT_ASSERT_MESSAGE("e2->IsAttached(e2_p1) returns false", isatt);
     MElem* e1 = root->GetNode("./E1");
-    string cont_e1;
-    e1->GetCont(cont_e1);
+    string cont_e1 = e1->GetContent();
 
     delete iEnv;
 }
@@ -252,25 +252,6 @@ void Ut_cre::test_BaseApis1()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    // Content
-    root->ChangeCont("yes", EFalse, "Debug.Enable_trace");
-    root->ChangeCont("no", EFalse, "Debug.Enable_dbg");
-    TInt rc_count = root->GetContCount();
-    CPPUNIT_ASSERT_MESSAGE("Wrong root content count", rc_count == 1);
-    TInt rc_debug_count = root->GetContCount("Debug");
-    CPPUNIT_ASSERT_MESSAGE("Wrong root debug content count", rc_debug_count == 2);
-    for (TInt ct = 0; ct < rc_debug_count; ct++) {
-	string cname;
-	string cval;
-	root->GetCont(ct, cname, cval, "Debug");
-	cout << "Ind: " << ct << ", Content_name: " << cname << ", Value: " << cval << endl;
-    }
-    string cont;
-    root->GetCont(cont);
-    cout << "Root content >>" << endl;
-    cout << cont << endl;
-    TBool cont_ok = (cont == "{Debug:{Enable_trace:'yes',Enable_dbg:'no'}}");
-    CPPUNIT_ASSERT_MESSAGE("Wrong root content", cont_ok);
     // Make illegal modif and enable transformation
     MElem* vb = root->GetNode("./VB");
     MElem* va1b1 = root->GetNode("./VB/VA_1/VA_1_B1");
@@ -301,3 +282,32 @@ void Ut_cre::test_Iface()
     delete iEnv;
 }
 
+void Ut_cre::test_Content()
+{
+    printf("\n === Test of base agent content apis\n");
+    iEnv = new Env("ut_content.xml", "ut_content.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Setting of content
+    root->ChangeCont("debug_content", EFalse, "Debug");
+    root->ChangeCont("yes", EFalse, "Debug.Enable_trace");
+    root->ChangeCont("no", EFalse, "Debug.Enable_dbg");
+    TInt rc_debug_count = root->GetContCount("Debug");
+    CPPUNIT_ASSERT_MESSAGE("Wrong root debug content count", rc_debug_count == 2);
+    for (TInt ct = 0; ct < rc_debug_count; ct++) {
+	string cname = root->GetContComp("Debug", ct);
+	string cval = root->GetContent(cname);
+	cout << "Ind: " << ct << ", Content_name: " << cname << ", Value: " << cval << endl;
+    }
+    string cont = root->GetContent(string(), ETrue);
+    cout << "Root content >>" << endl;
+    cout << cont << endl;
+    TBool cont_ok = (cont == "{ About: Debug:{'debug_content' Enable_trace:{'yes'} Enable_dbg:{'no'}}}");
+    CPPUNIT_ASSERT_MESSAGE("Wrong root content", cont_ok);
+
+    delete iEnv;
+}

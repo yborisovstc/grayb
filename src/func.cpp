@@ -1245,15 +1245,15 @@ string AFunVar::GetInpUri(TInt aId) const
     else return string();
 }
 
-TBool AFunVar::GetCont(string& aCont, const string& aName) const
+string AFunVar::GetContent(const string& aName) const
 {
+    string res;
     if (mFunc != NULL) {
-	mFunc->GetResult(aCont);
+	mFunc->GetResult(res);
+    } else {
+	res = "Init ERR";
     }
-    else {
-	aCont = "Init ERR";
-    }
-    return ETrue;
+    return res;
 }
 
 TInt AFunVar::GetInpsCount() const
@@ -2830,7 +2830,7 @@ void AFCastVar::Init(const string& aIfaceName)
     string ifi;
     MElem* inptd = GetNode("./../../InpType");
     if (inptd != NULL) {
-	inptd->GetCont(ifi);
+	ifi = inptd->GetContent();
     }
     // If not, trying to get type from input
     if (ifi.empty()) {

@@ -64,9 +64,10 @@ TBool Prop::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
     return res;
 }
 
-void Prop::GetCont(string& aCont, const string& aName)
+string Prop::GetContent(const string& aName) const
 {
-    aCont = iValue;
+    __ASSERT(aName.empty());
+    return iValue;
 }
 
 MIface* Prop::MProp_Call(const string& aSpec, string& aRes)

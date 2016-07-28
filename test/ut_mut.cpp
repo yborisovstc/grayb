@@ -323,8 +323,7 @@ void Ut_mut::test_MutRmRecr()
     mut1.SetAttr(ENa_Ref, "./../../v1_new");
     e1->Mutate();
     MElem* p2 = e1->GetNode("./P2");
-    string p2_cont;
-    p2->GetCont(p2_cont);
+    string p2_cont = p2->GetContent();
     CPPUNIT_ASSERT_MESSAGE("Fail to set edge1/P2 with ref to v1_new", p2_cont == "./../../v1_new");
     auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_mut_rm_recr_res.xml_");
@@ -349,8 +348,7 @@ void Ut_mut::test_MutRmRecrInh()
     // Verify the ref to v1/v1p_1 is found correctly (no duplication occurs)
     MElem* e1 = root->GetNode("./edge1");
     MElem* p2 = e1->GetNode("./P2");
-    string p2_cont;
-    p2->GetCont(p2_cont);
+    string p2_cont = p2->GetContent();
     CPPUNIT_ASSERT_MESSAGE("Fail to set edge1/P2 with ref", p2_cont == "./../../v1/v1p_1_new/v1p_1_1");
     auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_mut_rm_recrinh_res.xml_");
@@ -575,8 +573,7 @@ void Ut_mut::test_MutInv1()
     CPPUNIT_ASSERT_MESSAGE("Fail to connect v1 to v3", mv1->IsPair(mv3));
     // Check that secondary forward dependency was resolved
     MElem* p1 = root->GetNode("./p1");
-    string p1_cont;
-    p1->GetCont(p1_cont);
+    string p1_cont = p1->GetContent();
     CPPUNIT_ASSERT_MESSAGE("Fail to set p1 with ref to edge1/P1", p1_cont == "./../edge1/P1");
     // Save upated chromo 
     auto_ptr<MChromo> chromo1 = iEnv->Root()->GetFullChromo();
@@ -632,8 +629,7 @@ void Ut_mut::test_MutInvRename()
     CPPUNIT_ASSERT_MESSAGE("Fail to connect v1 to v3", mv1->IsPair(mv3));
     // Check that secondary forward dependency was resolved
     MElem* p1 = root->GetNode("./p1");
-    string p1_cont;
-    p1->GetCont(p1_cont);
+    string p1_cont = p1->GetContent();
     CPPUNIT_ASSERT_MESSAGE("Fail to set p1 with ref to edge1/P1", p1_cont == "./../edge1/P1");
     // Save upated chromo 
     auto_ptr<MChromo> chromo1 = iEnv->Root()->GetFullChromo();
@@ -681,8 +677,7 @@ void Ut_mut::test_MutInvParent()
     root = iEnv->Root();
     // Check that secondary forward dependency was resolved
     MElem* p1 = root->GetNode("./p1");
-    string p1_cont;
-    p1->GetCont(p1_cont);
+    string p1_cont = p1->GetContent();
     CPPUNIT_ASSERT_MESSAGE("Fail to set p1 with ref to v1", p1_cont == "./../v1");
     // Save upated chromo 
     auto_ptr<MChromo> chromo1 = iEnv->Root()->GetFullChromo();
@@ -1089,8 +1084,7 @@ void Ut_mut::test_CompactCont()
     MElem* e2 = root->GetNode("./E2");
     MElem* p1 = root->GetNode("./E2/P1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get P1", p1 != NULL);
-    string cp1;
-    p1->GetCont(cp1);
+    string cp1 = p1->GetContent();
     CPPUNIT_ASSERT_MESSAGE("Incorrect content of P1", cp1 == "P1_new_content");
     ChromoNode rnode = e2->Chromos().Root();
     ChromoNode::Iterator it = rnode.Begin(); 

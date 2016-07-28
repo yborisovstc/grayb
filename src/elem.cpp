@@ -45,7 +45,7 @@ MElem::EIfu::EIfu()
     RegMethod("GetRoot", 0);
     RegMethod("GetNode", 1);
     RegMethod("GetNode#2", 3);
-    RegMethod("GetCont", 1);
+    RegMethod("GetContent", 1);
     RegMethod("Mutate", 4);
     RegMethod("Mutate#2", 4);
     RegMethod("IsProvided", 0);
@@ -1406,33 +1406,49 @@ TBool Elem::IsContChangeable(const string& aName) const
     return ETrue; // Temporarily only
 }
 
-/*
-TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
-{
-    mContent.insert(TCntRec(TCntKey(aName, ECnt_Val), aVal));
-    InsertContent(aName);
-    return EFalse;
-}
-*/
-
 TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
 {
     TBool res = ETrue;
-    //mCntVals.insert(TCntRec(aName, aVal));
     mCntVals[aName] = aVal;
     InsertContent(aName);
     OnCompChanged(*this, aName);
-    /*
-    if (iMan != NULL) {
-	if (aRtOnly) {
-	    iMan->OnContentChanged(*this, aName);
-	} else {
-	    iMan->OnCompChanged(*this, aName);
-	}
-    }
-    */
     return res;
 }
+
+/*
+TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
+{
+    TBool res = ETrue;
+    if (aVal.at(0) == KContentStart) { // Complex content
+	string delims; delims += KContentValQuote;
+    } else { // Just value
+	mCntVals[aName] = aVal;
+	InsertContent(aName);
+    }
+    OnCompChanged(*this, aName);
+    return res;
+}
+*/
+
+// #2
+#if 0
+TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
+{
+    TBool res = ETrue;
+    string key = ContentValueKey(aName);
+    TInt cnt = mContent.count(ContentValueKey(aName));
+    __ASSERT(cnt <= 1);
+    if (cnt == 0) { // New insertion
+	mContent.insert(TCntRec(key, aVal));
+    } else {
+	TContent::iterator it = mContent.find(key);
+    }
+    mContent[ContentValueKey(aName)] = aVal;
+    InsertContent(aName);
+    OnCompChanged(*this, aName);
+    return res;
+}
+#endif
 
 void Elem::InsertContent(const string& aName)
 {
@@ -1487,7 +1503,8 @@ void Elem::GetCont(string& aCont, const string& aName) const
 }
 #endif
 
-TBool Elem::GetCont(string& aValue, const string& aName) const
+/*
+string Elem::GetCont(const string& aName) const
 {
     TBool res = ETrue;
     if (mCntVals.count(aName) > 0) {
@@ -1511,35 +1528,100 @@ TBool Elem::GetCont(string& aValue, const string& aName) const
     }
     return res;
 }
+*/
 
-string Elem::GetContent(const string& aName) const 
+/*
+string Elem::GetContent(const string& aName, TBool aFull) const 
+{
+    // TODO [YB] Assert if no content value ??
+    return (mCntVals.count(aName) > 0) ? mCntVals.at(aName) : string();
+}
+*/
+
+string Elem::GetContent(const string& aId, TBool aFull) const
 {
     string res;
-    GetCont(res, aName);
-    return res;
-}
-
-TBool Elem::GetCont(TInt aInd, string& aName, string& aValue, const string& aOwnerName) const
-{
-    TBool res = EFalse;
-    if (GetContCount(aOwnerName) > aInd) {
-	TInt cnt = aInd;
-	pair<TCntComps::const_iterator, TCntComps::const_iterator> range = mCntComps.equal_range(aOwnerName);
-	TCntComps::const_iterator it = range.first;
-	for (; it != range.second && cnt > 0; it++, cnt--);
-	aName = it->second;
-	if (mCntVals.count(aName) > 0) {
-	    aValue = mCntVals.at(aName);
-	    res = ETrue;
+    if (!aFull) { // Simple content
+	res = (mCntVals.count(aId) > 0) ? mCntVals.at(aId) : string();
+    } else if (mCntVals.count(aId) > 0 || mCntComps.count(aId) > 0) { // Full content, not empty
+	res = KContentStart;
+	// Quoted value
+	if (mCntVals.count(aId) > 0) {
+	    res += KContentValQuote + mCntVals.at(aId) + KContentValQuote ;
 	}
+	//  Components
+	if (mCntComps.count(aId) > 0) {
+	    res += " ";
+	    pair<TCntComps::const_iterator, TCntComps::const_iterator> range = mCntComps.equal_range(aId);
+	    for (TCntComps::const_iterator it = range.first; it != range.second; it++) {
+		string comp = it->second;
+		string compcnt = GetContent(comp, ETrue);
+		if (it != range.first) {
+		    res += " ";
+		}
+		res += GetContentLName(comp) + KContentValSep + compcnt;
+	    }
+	}
+	res += KContentEnd;
     }
     return res;
 }
+
+// #2
+#if 0
+string Elem::GetContent(const string& aName) const 
+{
+    string key = ContentValueKey(aName);
+    return (mContent.count(key) > 0) ? mContent.at(key) : string();
+}
+#endif
+
+TBool Elem::ContValueExists(const string& aName) const
+{
+    return (mCntVals.count(aName) > 0);
+}
+
+// #2
+#if 0
+TBool Elem::ContValueExists(const string& aName) const
+{
+    return (mContent.count(ContentValueKey(aName)) > 0);
+}
+#endif
+
+string Elem::GetContComp(const string& aOwnerName, TInt aInd) const
+{
+    __ASSERT(aInd < GetContCount(aOwnerName));
+    pair<TCntComps::const_iterator, TCntComps::const_iterator> range = mCntComps.equal_range(aOwnerName);
+    TCntComps::const_iterator it = range.first;
+    for (TInt cnt = aInd; it != range.second && cnt > 0; it++, cnt--);
+    return it->second;
+}
+
+// #2
+#if 0
+string Elem::GetContComp(const string& aOwnerName, TInt aInd) const
+{
+    __ASSERT(aInd < GetContCount(aOwnerName));
+    pair<TContent::const_iterator, TContent::const_iterator> range = mContent.equal_range(ContentCompsKey(aOwnerName));
+    TCntComps::const_iterator it = range.first;
+    for (TInt cnt = aInd; it != range.second && cnt > 0; it++, cnt--);
+    return it->second;
+}
+#endif
 
 TInt Elem::GetContCount(const string& aName) const
 {
     return mCntComps.count(aName);
 }
+
+// #2
+#if 0
+TInt Elem::GetContCount(const string& aName) const
+{
+    return mContent.count(ContentCompsKey(aName));
+}
+#endif
 
 void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MElem* aCtx)
 {
@@ -3360,8 +3442,8 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	TBool inclrm = Ifu::ToBool(args.at(2));
 	GUri::const_elem_iter it = uri.Begin();
 	res = GetNode(uri, it, anywhere, inclrm);
-    } else if (name == "GetCont") {
-	GetCont(aRes, args.at(0));
+    } else if (name == "GetContent") {
+	aRes = GetContent(args.at(0));
     } else if (name == "Mutate") {
 	TBool rtonly, checksafety, trialmode;
 	rtonly = Ifu::ToBool(args.at(1));
@@ -3713,7 +3795,27 @@ void Elem::AppendMutation(const TMut& aMut)
 
 void Elem::DumpCntVal() const
 {
+    cout << "<< Values >>" << endl;
     for (TCntVals::const_iterator it = mCntVals.begin(); it != mCntVals.end(); it++) {
 	cout << it->first << ": " << it->second << endl;
     }
+    cout << "<< Components >>" << endl;
+    for (TCntComps::const_iterator it = mCntComps.begin(); it != mCntComps.end(); it++) {
+	cout << it->first << ": " << it->second << endl;
+    }
+}
+
+string Elem::ContentKey(const string& aBase, const string& aSuffix)
+{
+    return  aBase + KContentSep + aSuffix;
+}
+
+string Elem::ContentValueKey(const string& aId)
+{
+    return  aId + KContentSep + KContentKey_Value;
+}
+
+string Elem::ContentCompsKey(const string& aId)
+{
+    return  aId + KContentSep + KContentKey_Comps;
 }

@@ -1546,16 +1546,20 @@
     <sect1 id="ds_cplx_cont"><title>Complex content (multi-content) of agent: pros and cons</title>
 	<sect2><title>Intro</title>
 	    <simpara>There is proposal to add support of complex content of agent. Currently agents content is simple - just single string. 
-		The complex data can be implemented as set of named data, like map[string, string] where the key is data name, and the value is the data.
+		The complex data can be implemented as set of named data, like map[string, string] where the key is data name,
+		and the value is the data.
 		So the complex data can be considered as set of named fields.
 		In many cases having complex content seems convenient and preferrable.
 		The example is visual debugging of complex system. 
-		For the debugging purpose it is required to see some "internal" data of the agent. For agent-function it could be the value of its 
+		For the debugging purpose it is required to see some "internal" data of the agent.
+		For agent-function it could be the value of its 
 		arguments. Currently this feature is implemented only partially: visual representation of function has some parameter that
 		defines content of which agent to display. So to support debugging data there are two ways: 
 		<orderedlist>
-		    <listitem>To extend the current approach by adding some agents-paremeters (agent-function can set their content by debug data)</listitem>
-		    <listitem>To add support of complex data. Agent function can set the debug data to the corresponding content fields.</listitem>
+		    <listitem>To extend the current approach by adding some agents-paremeters
+			(agent-function can set their content by debug data)</listitem>
+		    <listitem>To add support of complex data.
+			Agent function can set the debug data to the corresponding content fields.</listitem>
 		</orderedlist>
 	    </simpara>
 	</sect2>
@@ -1640,6 +1644,8 @@
 		<simpara>There already was the proposal to introduce multi-content design solution for simpifying the model.
 		    Multicontent should ensure keeping several content elements including debug data. Howewer this 
 		    solution implementation was postponed till thorough design consideration.</simpara>
+		<simpara>There is proposals of improvement of structured content approach, ref 
+		    <xref linkend="ds_cplx_cont_strcimpr"/></simpara>
 	    </sect3>
 	    <sect3><title>Requirements</title>
 		<orderedlist>
@@ -1782,6 +1788,72 @@
 			<para>Ref syscrp.cpp SysCrp::AddDataRp(). There the content is used for customization of data displaying.</para>
 		    </listitem>
 		</orderedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_cplx_cont_strcimpr">How to improve the current messy multi-content APIs
+	    <sect3><title>Intro</title>
+		<simpara>Currently the initial implementation of structured content is in progress, ref
+		    <xref linkend="ds_cplx_cont_strc"/> for initial desing. But seems the approach and 
+		APIs are not considered thorougly. We need to improve them.</simpara>
+	    </sect3>
+	    <sect3><title>Proposals of improvement</title>
+		<orderedlist>
+		    <listitem> To use short Id for content - currently GetCont returns full path instead of Id </listitem>
+		    <listitem>To enable content both to keep value and components</listitem>
+		    <listitem>To add API to check if content contains value (API to check if it contains comps already exists,
+			ref GetContCount, maybe make sense to rename to GetContCompsCount() </listitem>
+		    <listitem>To add API to get only content value, only content component,
+			whole content data - by content path.</listitem>
+		    <listitem>To introduce content properties</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Proposed update of syntax of context representation (ABNF)</title>
+		<programlisting>
+		    content_repr = simple_content / full_content
+		    simple_content = content_value 
+		    full_content = content_empty / content_with_value / content_wo_value
+		    content_empty =  "{" "}"
+		    content_with_value = “{“ quoted_value  *(“,” component) “}”
+		    quoted_value = DQUOTE content_value DQUOTE
+		    content_wo_value =  components_repr *(“,” component)
+		    component = component_name  “:”  component_value
+		    component_value = content_repr
+		</programlisting>
+
+		Example of root content that has value and components:
+		<programlisting>
+		    { “Just some value”,  About: “This is agent …”, ViewData: { Res: “./../Agents/fun_agent”, Res1:”...”}}
+		</programlisting>
+	    </sect3>
+	    <sect3><title>What should be the content properties</title>
+		Read-only - no changes to content components (deletion or addition) are allowed
+		Value read-only - no changes to value are allowed.
+		Owning content should use components properties (including props of content value),
+		so missing read-only prop means just that components cannot be deleted or added.
+		For content value missing read-only prop means that the value can be changed.
+	    </sect3>
+	    <sect3><title>How this new approach differs from existing one?</title>
+		Existing approach states that there are two kinds of content: value and comps owner.
+		New approach states that content is only one type, that can keep both value and comps.
+		Consequence: Existing approach doesn’t allow root content to have value - that’s because generic
+		agent root content already has comps, so it cannot keep value same time.
+	    </sect3>
+	    <sect3><title>Empty content value vs not existing content value</title>
+		<simpara>There can be two states of value of given existing content:</simpara>
+		<itemizedlist>
+		    <listitem>Value doesn't exists, i.e. was not set </listitem>
+		    <listitem>Value is empty</listitem>
+		</itemizedlist>
+		<simpara>Are these cases equivalent? Seems not, because empty value is still value but not existing
+		    value means that content just doesn't have value (it can have comps instead).</simpara>
+		<simpara>
+		    So to keep these cases separatelly we need to introduce one more base agent method: DoesContValExist
+		</simpara>
+	    </sect3>
+	    <sect3><title>What should be API for content change?</title>
+		<simpara>Simple content approach provides simple API for content change - just ChangeCont() that 
+		    changes conent value. In case of structured API we need not only means of changing content
+		    value but also content comps and content props.</simpara>
 	    </sect3>
 	</sect2>
     </sect1>

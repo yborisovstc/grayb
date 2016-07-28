@@ -103,7 +103,7 @@
     <!-- Var function wo inputs  -->
     <node id="FuncVarMc" parent="/*/Modules/IncapsComps/Incaps"> 
 	<node node="./Capsule" id="out" parent="./../Out_FVarMc"/> 
-	<content id="ViewData.Res" value=""/>
+	<cont id="ViewData.Res" val=""/>
     </node>
 
     <!-- Composed/Reduced Var function wo inputs  -->
@@ -347,7 +347,7 @@
     <node id="TFuncVarMc" parent="/*/Modules/IncapsComps/Incaps"> 
 	<cont id="About" val="Var Transition function wo inputs"/>
 	<node node="./Capsule" id="Out" parent="./../Out_TFVarMc"/> 
-	<cont id="ViewData.Res" val="">
+	<cont id="ViewData.Res" val=""/>
     </node>
 
 

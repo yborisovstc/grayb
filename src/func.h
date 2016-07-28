@@ -371,7 +371,7 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	virtual Elem* GetAgent() {return this;};
 	virtual TInt GetInpCpsCount() const {return -1;};
 	// From Elem
-	virtual TBool GetCont(string& aCont, const string& aName=string()) const; 
+	virtual string GetContent(const string& aName=string()) const; 
 	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
 	virtual TInt GetContCount() const;
     protected:

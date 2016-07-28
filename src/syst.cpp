@@ -255,16 +255,20 @@ string ConnPointMc::PEType()
 ConnPointMc::ConnPointMc(const string& aName, MElem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
 {
     SetParent(Type());
-    InsertContent("Required");
-    InsertContent("Provided");
+    //InsertContent("Required");
+    //InsertContent("Provided");
+    ChangeCont("", ETrue, "Required");
+    ChangeCont("", ETrue, "Provided");
     ChangeCont(ConnPointMc::KContDir_Val_Regular, EFalse, ConnPointMc::KContDir);
 }
 
 ConnPointMc::ConnPointMc(MElem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
 {
     SetParent(Vert::PEType());
-    InsertContent("Required");
-    InsertContent("Provided");
+    //InsertContent("Required");
+    //InsertContent("Provided");
+    ChangeCont("", ETrue, "Required");
+    ChangeCont("", ETrue, "Provided");
     ChangeCont(ConnPointMc::KContDir_Val_Regular, EFalse, ConnPointMc::KContDir);
 }
 
@@ -352,8 +356,24 @@ TBool ConnPointMc::IsCompatible(MElem* aPair, TBool aExt)
 	    // Check roles conformance
 	    string ppt1prov = GetProvided();
 	    string ppt1req = GetRequired();
-	    string ppt2prov = cp->GetContent(KContName_Provided);
-	    string ppt2req = cp->GetContent(KContName_Required); 
+	    string ppt2prov;
+	    string ppt2req; 
+	    ConnPointMc* ppt2mc = cp->GetObj(ppt2mc);
+	    if (ppt2mc != NULL) { // Multiconent conn point
+		ppt2prov = cp->GetContent(KContName_Provided);
+		ppt2req = cp->GetContent(KContName_Required); 
+	    } else { // Obsolete conn point
+		MElem* ept2req = cp->GetNode("./(Prop:)Required");
+		MElem* ept2prov = cp->GetNode("./(Prop:)Provided");
+		if (ept2req && ept2prov) {
+		    MProp* ppt2reqp = ept2req->GetObj(ppt2reqp);
+		    MProp* ppt2provp= ept2prov->GetObj(ppt2provp);
+		    if (ppt2reqp && ppt2provp) {
+			ppt2prov = ppt2provp->Value();
+			ppt2req = ppt2reqp->Value();
+		    }
+		}
+	    }
 	    if (ext) {
 		res = (ppt1prov == ppt2prov && ppt2req == ppt1req);
 	    } else {
@@ -372,8 +392,7 @@ MElem* ConnPointMc::GetExtd()
 MCompatChecker::TDir ConnPointMc::GetDir() const
 {
     TDir res = ERegular;
-    string cdir;
-    GetCont(cdir, ConnPointMc::KContDir);
+    string cdir = GetContent(ConnPointMc::KContDir);
     if (cdir == ConnPointMc::KContDir_Val_Inp) res = EInp;
     else if (cdir == ConnPointMc::KContDir_Val_Out) res = EOut;
     return res;
@@ -784,8 +803,7 @@ MElem* AExtender::GetExtd()
 MCompatChecker::TDir AExtender::GetDir() const
 {
     TDir res = ERegular;
-    string cdir;
-    GetCont(cdir, ConnPointMc::KContDir);
+    string cdir = GetContent(ConnPointMc::KContDir);
     if (cdir == ConnPointMc::KContDir_Val_Inp) res = EInp;
     else if (cdir == ConnPointMc::KContDir_Val_Out) res = EOut;
     return res;
