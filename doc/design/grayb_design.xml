@@ -1811,13 +1811,10 @@
 		<programlisting>
 		    content_repr = simple_content / full_content
 		    simple_content = content_value 
-		    full_content = content_empty / content_with_value / content_wo_value
-		    content_empty =  "{" "}"
-		    content_with_value = “{“ quoted_value  *(“,” component) “}”
-		    quoted_value = DQUOTE content_value DQUOTE
-		    content_wo_value =  components_repr *(“,” component)
+		    full_content = “{“ [quoted_value / component /(quoted_value " " component)] *(“ ” component) “}”
 		    component = component_name  “:”  component_value
-		    component_value = content_repr
+		    component_value = quoted_value / content_repr
+		    quoted_value = DQUOTE content_value DQUOTE
 		</programlisting>
 
 		Example of root content that has value and components:

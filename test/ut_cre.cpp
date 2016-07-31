@@ -15,13 +15,13 @@ class Ut_cre : public CPPUNIT_NS::TestFixture
 {
     CPPUNIT_TEST_SUITE(Ut_cre);
     CPPUNIT_TEST(test_Cre);
+    CPPUNIT_TEST(test_BaseApis1);
+    CPPUNIT_TEST(test_Content);
     CPPUNIT_TEST(test_CreGr);
     CPPUNIT_TEST(test_CreSyst);
     CPPUNIT_TEST(test_CreIncaps);
     CPPUNIT_TEST(test_CreData);
-    CPPUNIT_TEST(test_BaseApis1);
     CPPUNIT_TEST(test_Iface);
-    CPPUNIT_TEST(test_Content);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -306,8 +306,16 @@ void Ut_cre::test_Content()
     string cont = root->GetContent(string(), ETrue);
     cout << "Root content >>" << endl;
     cout << cont << endl;
-    TBool cont_ok = (cont == "{ About: Debug:{'debug_content' Enable_trace:{'yes'} Enable_dbg:{'no'}}}");
+    TBool cont_ok = (cont == "{ About:'' Debug:{'debug_content' Enable_trace:'yes' Enable_dbg:'no'}}");
     CPPUNIT_ASSERT_MESSAGE("Wrong root content", cont_ok);
+    // Setting of structured content: without comps
+    TBool ccres = root->ChangeCont("{'Without comps'}", EFalse, "Test_WOC");
+    CPPUNIT_ASSERT_MESSAGE("Failed on setting content (without comps)", ccres);
+    cont = root->GetContent("Test_WOC", ETrue);
+    // Setting of structured content: with comps
+    ccres = root->ChangeCont("{'With comps' Comp1:'Comp1_Value' Comp2:'Comp2_Value'}", EFalse, "Test_WC");
+    CPPUNIT_ASSERT_MESSAGE("Failed on setting content (with comps)", ccres);
+    cont = root->GetContent("Test_WC", ETrue);
 
     delete iEnv;
 }

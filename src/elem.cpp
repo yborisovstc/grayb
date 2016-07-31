@@ -161,6 +161,7 @@ TICacheRCtx::TICacheRCtx(const RqContext* aCtx)
 }
 
 
+
 string Elem::PEType()
 {
     return string() + GUri::KParentSep + Elem::Type();
@@ -1406,6 +1407,7 @@ TBool Elem::IsContChangeable(const string& aName) const
     return ETrue; // Temporarily only
 }
 
+/*
 TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
 {
     TBool res = ETrue;
@@ -1414,21 +1416,85 @@ TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
     OnCompChanged(*this, aName);
     return res;
 }
+*/
 
-/*
 TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
 {
     TBool res = ETrue;
+    size_t pos_beg = 0, pos = 0;
     if (aVal.at(0) == KContentStart) { // Complex content
-	string delims; delims += KContentValQuote;
-    } else { // Just value
+	string delims(1, KContentValQuote); delims += KContentValSep;
+	size_t pos_beg = 1;
+	size_t pos = aVal.find_first_of(delims, pos_beg);
+	if (pos == string::npos) { // Empty content
+	} else { // Non-empty content
+	    if (aVal.at(pos) == KContentValQuote) { // Value
+		pos_beg = pos + 1;
+		pos = Ifu::FindFirstCtrl(aVal, KContentValQuote, pos_beg);
+		if (pos == string::npos) { // Error: missing value closing quote
+		    res = EFalse;
+		} else {
+		    string value = aVal.substr(pos_beg, pos - pos_beg);
+		    mCntVals[aName] = value;
+		    InsertContent(aName);
+		    pos_beg = pos + 1;
+		}
+	    } else { // Value is omitted
+	    }
+	    // Parsing comps
+	    while (pos != string::npos && res) { // By comps
+		pos = aVal.find_first_not_of(' ', pos_beg);
+		__ASSERT(pos != string::npos);
+		pos_beg = pos;
+		// Getting comp name
+		pos = Ifu::FindFirstCtrl(aVal, KContentValSep, pos_beg);
+		if (pos == string::npos) break;
+		string sname = aVal.substr(pos_beg, pos - pos_beg);
+		pos_beg = pos + 1;
+		if (pos_beg >= aVal.size()) { // Error: Uncomplete comp
+		    res = EFalse; break;
+		} else {
+		    if (aVal.at(pos_beg) == KContentStart) { // Comps value is full content
+			pos_beg += 1;
+			pos = Ifu::FindFirstCtrl(aVal, KContentEnd, pos_beg);
+		    } else if (aVal.at(pos_beg) == KContentValQuote) { // Quoted value
+			pos_beg += 1;
+			pos = Ifu::FindFirstCtrl(aVal, KContentValQuote, pos_beg);
+		    } else { // Error: Incorrect comp value start delimiter
+			res = EFalse; break;
+		    }
+		}
+		if (pos == string::npos) { // Error: missing comp end delimiter
+		    res = EFalse; break;
+		} else {
+		    string value = aVal.substr(pos_beg, pos - pos_beg);
+		    ChangeCont(value, aRtOnly, ContentCompId(aName, sname));
+		}
+		pos_beg = pos + 1;
+	    };
+	}
+    } else if (aVal.at(0) == KContentValQuote) { // Quoted value
+	res = EFalse; // Disabled at the moment
+	/*
+	pos_beg = 1;
+	pos = Ifu::FindFirstCtrl(aVal, KContentValQuote, pos_beg);
+	if (pos == string::npos) { // Error: missing closing quote
+	    res = EFalse;
+	} else {
+	    string value = aVal.substr(pos_beg, pos - pos_beg);
+	    mCntVals[aName] = value;
+	    InsertContent(aName);
+	}
+	*/
+    } else { // Bare value
 	mCntVals[aName] = aVal;
 	InsertContent(aName);
     }
-    OnCompChanged(*this, aName);
+    if (res) {
+	OnCompChanged(*this, aName);
+    }
     return res;
 }
-*/
 
 // #2
 #if 0
@@ -1462,6 +1528,12 @@ void Elem::InsertContent(const string& aName)
     }
 }
 
+void Elem::InsertContentComp(const string& aContName, const string& aCompName)
+{
+    InsertContCompsRec(aContName, aCompName);
+    InsertContent(aContName);
+}
+
 void Elem::InsertContCompsRec(const string& aName, const string& aComp)
 {
     pair<TCntComps::const_iterator, TCntComps::const_iterator> range = mCntComps.equal_range(aName);
@@ -1475,6 +1547,11 @@ void Elem::InsertContCompsRec(const string& aName, const string& aComp)
     if (!exists) {
 	mCntComps.insert(TCntRec(aName, aComp));
     }
+}
+
+TBool Elem::ContentHasComps(const string& aContName) const
+{
+    return (mCntComps.count(aContName) > 0);
 }
 
 #if 0
@@ -1547,6 +1624,7 @@ string Elem::GetContent(const string& aId, TBool aFull) const
 	res = KContentStart;
 	// Quoted value
 	if (mCntVals.count(aId) > 0) {
+	    string val = mCntVals.at(aId);
 	    res += KContentValQuote + mCntVals.at(aId) + KContentValQuote ;
 	}
 	//  Components
@@ -1555,11 +1633,16 @@ string Elem::GetContent(const string& aId, TBool aFull) const
 	    pair<TCntComps::const_iterator, TCntComps::const_iterator> range = mCntComps.equal_range(aId);
 	    for (TCntComps::const_iterator it = range.first; it != range.second; it++) {
 		string comp = it->second;
-		string compcnt = GetContent(comp, ETrue);
 		if (it != range.first) {
 		    res += " ";
 		}
-		res += GetContentLName(comp) + KContentValSep + compcnt;
+		if (ContentHasComps(comp)) { // Full content of comp
+		    string compcnt = GetContent(comp, ETrue);
+		    res += GetContentLName(comp) + KContentValSep + compcnt;
+		} else { // Simple content
+		    string compcnt = GetContent(comp, EFalse);
+		    res += GetContentLName(comp) + KContentValSep + KContentValQuote + compcnt + KContentValQuote;
+		}
 	    }
 	}
 	res += KContentEnd;
@@ -3803,6 +3886,11 @@ void Elem::DumpCntVal() const
     for (TCntComps::const_iterator it = mCntComps.begin(); it != mCntComps.end(); it++) {
 	cout << it->first << ": " << it->second << endl;
     }
+}
+
+string Elem::ContentCompId(const string& aOwnerName, const string& aCompName)
+{
+    return  aOwnerName + KContentSep + aCompName;
 }
 
 string Elem::ContentKey(const string& aBase, const string& aSuffix)

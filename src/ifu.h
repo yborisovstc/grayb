@@ -34,6 +34,7 @@ class Ifu
 	static TBool IsSimpleIid(const string& aIid);
 	static string EscCtrl(const string& aInp, char aCtrl);
 	static string DeEscCtrl(const string& aInp, char aCtrl);
+	static size_t FindFirstCtrl(const string& aString, const char aCtrl, size_t aPos); 
     public:
 	static char KRinvSep;
 	static char KEsc;

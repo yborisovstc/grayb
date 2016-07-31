@@ -338,7 +338,9 @@ class Elem: public MElem
 	virtual MElem* GetComp(TInt aInd);
     protected:
 	void InsertContent(const string& aName);
+	void InsertContentComp(const string& aContName, const string& aCompName);
 	void InsertContCompsRec(const string& aName, const string& aComp);
+	TBool ContentHasComps(const string& aContName) const;
 	static Elem* ToElem(MElem* aMelem) { Elem* res = (aMelem == NULL) ? NULL: aMelem->GetObj(res); return res;};
 	inline MProvider* Provider() const;
 	virtual TBool AppendComp(MElem* aComp);
@@ -361,6 +363,7 @@ class Elem: public MElem
 	// ICache helpers, for debug only
 	Elem* GetIcCtxComp(const TICacheRCtx& aCtx, TInt aInd);
 	void LogIfReqs();
+	static string ContentCompId(const string& aOwnerName, const string& aCompName);
 	static string ContentKey(const string& aBase, const string& aSuffix);
 	static string ContentValueKey(const string& aId);
 	static string ContentCompsKey(const string& aId);
@@ -380,6 +383,7 @@ class Elem: public MElem
 	static const char KContentStart = '{';
 	static const char KContentEnd = '}';
 	static const char KContentValSep = ':';
+	static const char KContentCompsSep = ' ';
 	static const char KContentValQuote = '\'';
 	static const char KContentSep = '.';
 	static const char KContentKey_Value = '#';

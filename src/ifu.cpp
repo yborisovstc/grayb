@@ -82,6 +82,17 @@ void Ifu::ParseIcSpec(const string& aSpec, string& aName, string& aSig, vector<s
     }
 }
 
+size_t Ifu::FindFirstCtrl(const string& aString, const char aCtrl, size_t aPos)
+{
+    size_t pos_beg = aPos;
+    size_t pos;
+    do {
+	pos = aString.find_first_of(aCtrl, pos_beg); 
+	pos_beg = pos + 1;
+    } while(pos != string::npos && aString.at(pos - 1) == KEsc);
+    return pos;
+}
+
 TBool Ifu::ToBool(const string& aString)
 {
     TBool res = EFalse;
