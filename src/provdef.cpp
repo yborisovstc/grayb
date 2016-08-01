@@ -208,6 +208,9 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, MElem* aMan,
     else if (aType.compare(ASocketOut::Type()) == 0) {
 	res = new ASocketOut(aName, aMan, aEnv);
     }
+    else if (aType.compare(ASocketMc::Type()) == 0) {
+	res = new ASocketMc(aName, aMan, aEnv);
+    }
     else if (aType.compare(ADes::Type()) == 0) {
 	res = new ADes(aName, aMan, aEnv);
     }
@@ -287,6 +290,10 @@ Elem* ProvDef::GetNode(const string& aUri)
 	else if (aUri.compare(ASocketOut::Type()) == 0) {
 	    parent = GetNode("ASocket");
 	    res = new ASocketOut(NULL, iEnv);
+	}
+	else if (aUri.compare(ASocketMc::Type()) == 0) {
+	    parent = GetNode("ASocket");
+	    res = new ASocketMc(NULL, iEnv);
 	}
 	else if (aUri.compare(Incaps::Type()) == 0) {
 	    parent = GetNode("Elem");

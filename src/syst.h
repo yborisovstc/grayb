@@ -229,6 +229,20 @@ class ASocketOut: public ASocket
 	virtual TDir GetDir() const;
 };
 
+// Socket agent, multicontent: redirects iface requests to pins
+class ASocketMc: public ASocket
+{
+    public:
+	static const char* Type() { return "ASocketMc";};
+	static string PEType();
+	ASocketMc(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
+	ASocketMc(MElem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual void *DoGetObj(const char *aName);
+	// From MCompatChecker
+	virtual TDir GetDir() const;
+};
+
 // System: relates to others via proxies - ConnPoints, that specialized relation with roles
 class Syst: public Vert
 {

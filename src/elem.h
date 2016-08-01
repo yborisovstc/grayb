@@ -376,6 +376,7 @@ class Elem: public MElem
 	virtual void DumpMcDeps() const;
 	virtual void DumpCmDeps() const;
 	virtual void SaveChromo(const char* aPath) const;
+	virtual void DumpComps() const;
 	virtual void DumpChilds() const;
 	virtual void DumpCntVal() const;
     public:

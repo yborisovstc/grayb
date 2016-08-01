@@ -233,6 +233,7 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 	virtual MElem* GetComp(TInt aInd) = 0;
 	virtual void SaveChromo(const char* aPath) const = 0;
 	virtual void DumpChilds() const = 0;
+	virtual void DumpComps() const = 0;
 	virtual void DumpCntVal() const = 0;
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};

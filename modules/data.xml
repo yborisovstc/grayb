@@ -184,7 +184,7 @@
 	<cont id="About" val="Data base with separate conn point for update"/>
 	<node node="./Capsule" id="Inp" parent="/*/Modules/SysComps/ConnPointInpMc"/> 
 	<node node="./Capsule" id="Out" parent="/*/Modules/SysComps/ConnPointOutMc"/> 
-	<node node="./Capsule" id="Upd" parent="/*/Modules/SysComps/ConnPointMc"/> 
+	<node node="./Capsule" id="Upd" parent="ConnPointMc"/> 
 	<cont id="Value" val=""/>
     </node>
 

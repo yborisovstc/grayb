@@ -1,0 +1,60 @@
+<?xml version="1.0" ?>
+
+
+<!-- Simple test that creates sole state Incrementor looped to youself 
+     Tests: state (Confirmed, Prepared, Trans, agent), socket connection 
+     State is based on variable data
+-->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="testroot" parent="Elem">
+    <node id="Modules" parent="AImports">
+	<!-- Module containing components of des layer -->
+	<import id="/DataComps/DataSVarMc" />
+	<import id="/DesComps/StateVarMc" />
+	<import id="/DesComps/StInpSocket" />
+	<import id="/FuncComps/TFAddVarMc" />
+    </node>
+
+    <node id="test" parent="./Modules/IncapsComps/Incaps">
+	<cont id="About" val="Simple test that creates sole state DES Incrementor (var, multicontent) looped to youself"/>
+
+	<node id="State1" parent="./../Modules/DesComps/StateVarMc">
+	    <cont id="Log.Creation" val="y"/>
+	    <cont id="Log.Update" node="./Confirmed" val="y"/>
+	    <cont node="./Prepared" id="Value" val="I 0" />
+	    <cont node="./Confirmed" id="Value" val="I 0" />
+
+	    <node node="./Capsule" id="Inp2" parent="./../../Modules/SysComps/ExtenderInpMc"> 
+		<node id="Int" parent="./../../../../Modules/DesComps/StInpSocket"/> 
+	    </node>
+
+	    <node id="Trans" parent="./../../Modules/FuncComps/TFAddVarMc"/>
+
+	    <node id="E1" parent="Aedge"> 
+		<cont val="{P1:'./../Trans/Inp' P2:'./../Capsule/Inp/Int/PinData'}"/> 
+	    </node>
+
+	    <node id="E2" parent="Aedge"> 
+		<cont val="{P1:'./../Trans/Inp' P2:'./../Capsule/Inp2/Int/PinData'}"/> 
+	    </node>
+
+	    <node id="E3" parent="Aedge"> 
+		<cont val="{P1:'./../Trans/Out' P2:'./../Prepared/Capsule/Inp'}"/> 
+	    </node>
+	</node>
+
+	<node id="Incr" parent="./../Modules/DataComps/DataSVarMc">
+	    <cont val="2"/>
+	</node>
+
+	<!-- Loop -->
+	<node id="E4" parent="Aedge"> 
+	    <cont val="{P1:'./../State1/Capsule/Out' P2:'./../State1/Capsule/Inp'}"/> 
+	</node>
+
+    </node>
+</node>
+

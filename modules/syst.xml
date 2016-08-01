@@ -67,7 +67,6 @@
     </node>
 
     <node id="ExtenderMc" parent="Vert"> 
-	<node id="Int" parent="ConnPointMc"/>
 	<node node="./(Elem:)Agents" id="MAExteder" parent="AExtender"/> 
     </node>
 
@@ -95,6 +94,19 @@
     <node id="SocketOut" parent="Vert"> 
 	<node node="./Agents" id="Sock" parent="ASocketOut"/> 
     </node>
+
+    <node id="SocketMc" parent="Vert"> 
+	<node node="./Agents" id="Sock" parent="ASocketMc"/> 
+    </node>
+
+    <node id="SocketInpMc" parent="SocketMc">
+	<cont id="Direction" val="Inp"/> 
+    </node>
+
+    <node id="SocketOutMc" parent="SocketMc">
+	<cont id="Direction" val="Out"/> 
+    </node>
+
 
 </node>
 

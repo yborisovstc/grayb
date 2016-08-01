@@ -1142,7 +1142,6 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
 	    }
 	}
 	else {
-	    __ASSERT(EFalse);
 	    Logger()->Write(MLogRec::EErr, this, "Getting node [%s] - path to top of root", aUri.GetUri().c_str());
 	}
     }
@@ -1422,7 +1421,10 @@ TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
 {
     TBool res = ETrue;
     size_t pos_beg = 0, pos = 0;
-    if (aVal.at(0) == KContentStart) { // Complex content
+    if (aVal.empty()) { // Empty conent
+	mCntVals[aName] = aVal;
+	InsertContent(aName);
+    } else if (aVal.at(0) == KContentStart) { // Complex content
 	string delims(1, KContentValQuote); delims += KContentValSep;
 	size_t pos_beg = 1;
 	size_t pos = aVal.find_first_of(delims, pos_beg);
@@ -2794,7 +2796,8 @@ TBool Elem::IsName(const char* aName)
 TBool Elem::IsLogeventCreOn() 
 {
     MElem* node = GetNode("./Elem:Logspec/Elem:Creation");
-    return node != NULL;
+    string ls = GetContent("Debug.Creation");
+    return node != NULL || ls == "y";
 }
 
 // TODO [YB] To implement with usage of URI but not just string
@@ -3749,6 +3752,20 @@ void Elem::DumpChilds() const
     for (TNMReg::const_iterator it = iChilds.begin(); it != iChilds.end(); it++) {
 	MElem* child = it->second;
 	cout << "ptr: " << (void*) child << ", name: " << child->Name() << endl;
+    }
+}
+
+void Elem::DumpComps() const
+{
+    cout << "<< List of components >>" << endl << endl;
+    for (vector<MElem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
+	MElem* comp = *it;
+	cout << "ptr: " << (void*) comp << ", name: " << comp->Name() << endl;
+    }
+    cout << endl << "<< Named register of components >>" << endl << endl;
+    for (TNMReg::const_iterator it = iMComps.begin(); it != iMComps.end(); it++) {
+	MElem* comp = it->second;
+	cout << "name: " << it->first << ", ptr: " << (void*) comp << endl;
     }
 }
 

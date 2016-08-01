@@ -1167,6 +1167,43 @@ MCompatChecker::TDir ASocketOut::GetDir() const
 }
 
 
+// Socket agent, multicontent: redirects iface requests to pins
+string ASocketMc::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
+
+ASocketMc::ASocketMc(const string& aName, MElem* aMan, MEnv* aEnv): ASocket(aName, aMan, aEnv)
+{
+    SetParent(Type());
+}
+
+ASocketMc::ASocketMc(MElem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
+{
+    SetParent(ASocket::PEType());
+}
+
+void *ASocketMc::DoGetObj(const char *aName)
+{
+    void* res = NULL;
+    if (strcmp(aName, Type()) == 0) {
+	res = this;
+    } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
+	res = (MCompatChecker*) this;
+    } else {
+	res = Elem::DoGetObj(aName);
+    }
+    return res;
+}
+
+MCompatChecker::TDir ASocketMc::GetDir() const
+{
+    TDir res = ERegular;
+    string cdir = GetContent(ConnPointMc::KContDir);
+    if (cdir == ConnPointMc::KContDir_Val_Inp) res = EInp;
+    else if (cdir == ConnPointMc::KContDir_Val_Out) res = EOut;
+    return res;
+}
 
 
 // System

@@ -18,6 +18,7 @@ class Ut_des : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Cre1);
     CPPUNIT_TEST(test_Cre2);
     CPPUNIT_TEST(test_Cre4);
+    CPPUNIT_TEST(test_Cre5mc);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -26,6 +27,7 @@ private:
     void test_Cre1();
     void test_Cre2();
     void test_Cre4();
+    void test_Cre5mc();
 private:
     Env* iEnv;
 };
@@ -150,6 +152,45 @@ void Ut_des::test_Cre4()
 	}
     }
     CPPUNIT_ASSERT_MESSAGE("Fail to get final value of data iface", doutpget->Value() == 10);
+
+    delete iEnv;
+}
+
+void Ut_des::test_Cre5mc()
+{
+    printf("\n === Test of creation of simple des: var, multicontent\n");
+
+    iEnv = new Env("ut_des_cre1vmc.xml", "ut_des_cre1vmc.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
+    MElem* doutp = root->GetNode("./test/State1/Capsule/Out/Int/PinData");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get state out", doutp != 0);
+    MDVarGet* doutpget = (MDVarGet*) doutp->GetSIfi(MDVarGet::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
+    MDIntGet* doutpgetp= (MDIntGet*) doutpget->DoGetDObj(MDIntGet::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get data out IntGet iface", doutpgetp != 0);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpgetp->Value() == 0);
+    // Sync the state
+    MElem* esync = root->GetNode("./test/State1/Capsule/Sync");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != 0);
+    MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
+    // Do some ticks
+    const TInt ticksnum = 5;
+    for (TInt cnt = 0; cnt < ticksnum; cnt++) {
+	if (sync->IsActive()) {
+	    sync->Update();
+	}
+	if (sync->IsUpdated()) {
+	    sync->Confirm();
+	}
+    }
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpgetp->Value() == 5);
 
     delete iEnv;
 }

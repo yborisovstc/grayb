@@ -21,6 +21,18 @@
 	</node>
     </node>
 
+    <!-- State Output socket, multicontent -->
+    <node id="StOutSocketMc" parent="/*/Modules/SysComps/SocketInpMc">
+	<cont id="About" val="State Output socket, multicontent"/>
+	<node id="PinObs" parent="ConnPointMc"> 
+	    <cont id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>
+	    <cont id="Provided" val="MDesObserver"/>
+	</node>
+	<node id="PinData" parent="ConnPointMc"> 
+	    <cont id="About" val="Pin Data observer. Provides data interface"/>
+	</node>
+    </node>
+
     <!-- Input socket -->
     <node id="StInpSocket" parent="/*/Modules/SysComps/SocketOut">
 	<!-- Pin Des observer. Requires DES observer interface to handle activation of the state -->
@@ -29,6 +41,18 @@
 	</node>
 	<!-- Pin Data observer. Provides data interface -->
 	<node id="PinData" parent="/*/Modules/SysComps/ConnPoint"> 
+	</node>
+    </node>
+
+    <!-- State Input socket, multicontent -->
+    <node id="StInpSocketMc" parent="/*/Modules/SysComps/SocketOut">
+	<cont id="About" val="State Input socket, multicontent"/>
+	<node id="PinObs" parent="ConnPointMc"> 
+	    <cont id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>
+	    <cont id="Required" val="MDesObserver"/>
+	</node>
+	<node id="PinData" parent="/*/Modules/SysComps/ConnPoint"> 
+	    <cont id="About" val="Pin Data observer. Provides data interface"/>
 	</node>
     </node>
 
@@ -228,15 +252,16 @@
 
     <!-- State base, multicontent -->
     <node id="StateMc" parent="/*/Modules/IncapsComps/Incaps"> 
+	<cont id="About" val="DES state multicontent base"/>
 	<node node="./Agents" id="StateAgt" parent="StateAgent"/> 
-	<node node="./Capsule" id="Sync" parent="/*/Modules/SysComps/ConnPointMc"> 
+	<node node="./Capsule" id="Sync" parent="ConnPointMc"> 
 	    <cont id="Provided" val="MDesSyncable"/>
 	</node>
 	<node node="./Capsule" id="Inp" parent="/*/Modules/SysComps/ExtenderInpMc"> 
-	    <node id="Int" parent="./../../../StInpSocket"/> 
+	    <node id="Int" parent="./../../../StInpSocketMc"/> 
 	</node>
 	<node node="./Capsule" id="Out" parent="/*/Modules/SysComps/ExtenderOutMc"> 
-	    <node id="Int" parent="./../../../StOutSocket"/> 
+	    <node id="Int" parent="./../../../StOutSocketMc"/> 
 	</node>
     </node>
 
@@ -396,9 +421,9 @@
 
     <!-- DES base, multicontent -->
     <node id="DesMc" parent="/*/Modules/IncapsComps/Incaps"> 
-	<cont id="About" val="Discrete Events System base"/>
+	<cont id="About" val="Discrete Events System (DES) multicontent base"/>
 	<node node="./Agents" id="DesAgt" parent="ADes"/> 
-	<node node="./Capsule" id="Sync" parent="/*/Modules/SysComps/ConnPointMc"> 
+	<node node="./Capsule" id="Sync" parent="ConnPointMc"> 
 	    <cont id="Provided" val="MDesSyncable"/>
 	</node>
     </node>
@@ -412,7 +437,7 @@
     </node>
 
     <!-- DES ticks source, multicontent -->
-    <node id="DesTicker" parent="/*/Modules/IncapsComps/Incaps"> 
+    <node id="DesTickerMc" parent="/*/Modules/IncapsComps/Incaps"> 
 	<cont id="About" val="DES ticks generator"/>
 	<node node="./Capsule" id="Out" parent="/*/Modules/SysComps/ConnPointOutMc"> 
 	    <cont id="Required" val="MDesSyncable"/>
