@@ -45,13 +45,13 @@
     </node>
 
     <!-- State Input socket, multicontent -->
-    <node id="StInpSocketMc" parent="/*/Modules/SysComps/SocketOut">
+    <node id="StInpSocketMc" parent="/*/Modules/SysComps/SocketOutMc">
 	<cont id="About" val="State Input socket, multicontent"/>
 	<node id="PinObs" parent="ConnPointMc"> 
 	    <cont id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>
 	    <cont id="Required" val="MDesObserver"/>
 	</node>
-	<node id="PinData" parent="/*/Modules/SysComps/ConnPoint"> 
+	<node id="PinData" parent="ConnPointMc"> 
 	    <cont id="About" val="Pin Data observer. Provides data interface"/>
 	</node>
     </node>

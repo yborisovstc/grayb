@@ -160,7 +160,7 @@ void DataBase::UpdateProp()
 TBool DataBase::IsLogeventUpdate() 
 {
     MElem* node = GetNode("./../../Logspec/Update");
-    string upd = GetContent("Debug.Update");
+    string upd = iMan->GetMan()->GetContent("Debug.Update");
     return node != NULL || upd == "y";
 }
 

@@ -23,26 +23,28 @@
 
 	<node id="State1" parent="./../Modules/DesComps/StateVarMc">
 	    <cont id="Log.Creation" val="y"/>
-	    <cont id="Log.Update" node="./Confirmed" val="y"/>
+	    <cont id="Debug.Update" node="./Confirmed" val="y"/>
 	    <cont node="./Prepared" id="Value" val="I 0" />
 	    <cont node="./Confirmed" id="Value" val="I 0" />
 
 	    <node node="./Capsule" id="Inp2" parent="./../../Modules/SysComps/ExtenderInpMc"> 
-		<node id="Int" parent="./../../../../Modules/DesComps/StInpSocket"/> 
+		<node id="Int" parent="./../../../../Modules/DesComps/StInpSocketMc"> 
+		    <cont node="./PinData" id="Provided" val="MDVarGet"/>
+		</node>
 	    </node>
 
 	    <node id="Trans" parent="./../../Modules/FuncComps/TFAddVarMc"/>
 
 	    <node id="E1" parent="Aedge"> 
-		<cont val="{P1:'./../Trans/Inp' P2:'./../Capsule/Inp/Int/PinData'}"/> 
+		<cont val="{P1:'./../Trans/Capsule/Inp' P2:'./../Capsule/Inp/Int/PinData'}"/> 
 	    </node>
 
 	    <node id="E2" parent="Aedge"> 
-		<cont val="{P1:'./../Trans/Inp' P2:'./../Capsule/Inp2/Int/PinData'}"/> 
+		<cont val="{P1:'./../Trans/Capsule/Inp' P2:'./../Capsule/Inp2/Int/PinData'}"/> 
 	    </node>
 
 	    <node id="E3" parent="Aedge"> 
-		<cont val="{P1:'./../Trans/Out' P2:'./../Prepared/Capsule/Inp'}"/> 
+		<cont val="{P1:'./../Trans/Capsule/Out' P2:'./../Prepared/Capsule/Inp'}"/> 
 	    </node>
 	</node>
 

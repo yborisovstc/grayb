@@ -3907,7 +3907,7 @@ void Elem::DumpCntVal() const
 
 string Elem::ContentCompId(const string& aOwnerName, const string& aCompName)
 {
-    return  aOwnerName + KContentSep + aCompName;
+    return  aOwnerName.empty() ? aCompName : aOwnerName + KContentSep + aCompName;
 }
 
 string Elem::ContentKey(const string& aBase, const string& aSuffix)
