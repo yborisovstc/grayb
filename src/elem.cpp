@@ -2265,8 +2265,8 @@ TBool Elem::OnCompChanged(MElem& aComp, const string& aContName)
 	    }
 	}
     }
-    // If event isn't handled then Propagate notification to upper level
-    if (!res && iMan != NULL) {
+    // TODO To consider if the event is to be propagated to upper level even if it has been already handled
+    if (iMan != NULL) {
 	res = iMan->OnCompChanged(aComp, aContName);
     }
     // Notify observer

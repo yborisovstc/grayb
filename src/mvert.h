@@ -70,4 +70,51 @@ class MVert: public MIface
 	static EIfu mIfu;
 };
 
+// Simple Connection point
+// Connection point gets info of agent role, i.e. the ifaces the agent provides and requires.
+class MConnPoint: public MIface
+{
+    public:
+	static const char* Type() { return "MConnPoint";};
+	virtual TBool IsProvided(const string& aIfName) const = 0;
+	virtual TBool IsRequired(const string& aIfName) const = 0;
+	virtual string Provided() const = 0;
+	virtual string Required() const = 0;
+	// From MIface
+	virtual string Uid() const { return Mid() + "%" + Type();};
+    protected:
+	class EIfu: public Ifu {
+	    public:
+		EIfu();
+	};
+	// Interface methods utility
+	static EIfu mIfu;
+};
+
+// Connection point with multiple ifaces (isn't used at the moment)
+// Connection point gets info of agent role, i.e. the ifaces the agent provides and requires.
+class MConnPointm: public MIface
+{
+    public:
+	static const char* Type() { return "MConnPointm";};
+	virtual TBool IsProvided(const string& aIfName) const = 0;
+	virtual TBool IsRequired(const string& aIfName) const = 0;
+	virtual void GetProvided(set<string>& aIfNames) const = 0;
+	virtual void GetRequired(set<string>& aIfNames) const = 0;
+	// From MIface
+	virtual string Uid() const { return Mid() + "%" + Type();};
+};
+
+// Socket
+
+class MSocket: public MIface
+{
+    public:
+	static const char* Type() { return "MSocket";};
+	virtual TInt PinsCount() const = 0;
+	virtual MElem* GetPin(TInt aInd) = 0;
+	// From MIface
+	virtual string Uid() const { return Mid() + "%" + Type();};
+};
+
 #endif

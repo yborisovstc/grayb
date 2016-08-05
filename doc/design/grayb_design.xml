@@ -3300,15 +3300,82 @@
 	</sect2>
     </sect1>
 
-    <sect1 id="ds_di"><title>Desing issues</title>
-	<sect2 id="ds_di_nacgna"><title>Native agents cannot get node by absolute URI</title>
-	    <simpara>The origin of this behaviour it that native agents are not included into model's main native hier. They have theirs own hier instead.
-		To be clearer, they don't have native hier (i.e. root) at all, so the rule of UID for native agent is just the agent name.
-		They have only inheritance hier.  Actually there is kind of careless design in native agents.</simpara>
-	    <simpara>Originally this fact didn't cause any problem, but with <xref linkend="gls_daa"/> this lack in design can lead to problems, ref.
-		<xref linkend="ds_daa_ina"/> for instance.</simpara>
-	    <simpara>The possible solution would be to check in agents GetNode() if the agent is native, and if so, use iEnv-&gt;Root()-&gt;GetRoot()
-		to get root. Or we can use this approach persistently for getting root.</simpara>
+    <sect1 id="ds_mi"><title>Model representing to the client: effective interface of multi-agent model.</title>
+	<sect2><title>Intro</title>
+	    <simpara>Currently the model publish to the client a series of native and unified (via MIface::Call) interfaces
+		in order to allow client to interact to the mode. But the main iface for communication is MElem allowing to browse
+		into the agent components and inheritance chain. In fact the client, i.e. Studio uses MElem for understanding if 
+		the agent is sutable for UI representation. Studio performs that via analysis of agents inheritance chain. But this
+		approach is not solid and doesn't work.</simpara>
+	    <simpara>The example is SockErp embedded representation. The representation declares support of :Elem:Vert:Socket agent,
+		so it doesn't support of :Elem:Vert:SocketMc (counterpart of Socket, but armed with multicontent supported agent
+		ASocketMc.</simpara>
+	    <simpara>This examples shows that the idea of using inheritance chain as the criteria of compatibility is not correct.
+		What would be correct approach? This section is dedicated for discussion of effective approach of model representing to
+	    the client.</simpara>
+	</sect2>
+	<sect2><title>Set of native interfaces as model representation to the client.</title>
+	    <simpara>Anycase the interface shall be declared and publish set of ways of interaction to the model. Currently there
+		are native (C++) and unified (of text form) interfaces used. Seems this is enough at the moment. The only improvement
+		that we need is to cover by ifaces all the model behaviour. This will allow us to use ifaces exposes by the agent as
+		criteria of compatibility for the client.</simpara>
+	    <simpara>The idea is that agent exposes a set of ifcases. There is assumption that ifaces are kind of elementary, so 
+		each iface doesn't cross to others or depend on others. So the whole agent iface is combined from thiese elementary
+		ifaces like the big pazzle is combined from many small peaces. We can say that elemenary ifase is "orthogonal" to other
+		elementary ifaces. We can call this approach poly-iface.
+		The question is if it's possible to create such full ifase from a set of elementary ifaces.</simpara>
+	</sect2>
+	<sect2 id="ds_mi_rm"><title>Poly-iface approach and iface resolution mechanism.</title>
+	    <simpara>With poly-iface approach the key role plays the mechanism of iface resolution. Currently two mechanism are
+		implemented:</simpara>
+	    <orderedlist>
+		<listitem>Local iface resolution</listitem>
+		<listitem>Global iface resolution</listitem>
+	    </orderedlist>
+	    <simpara>Local method cannot be used because often the iface implementor is embedded agent (placed in Agents node).
+		Global method is also not acceptable for relolution because it can obtain remote iface. Actually we need the method being
+		near to global but limited only by local context, i.e. looking at the iface just in agent itself locally or 
+		in agent embedded agents.
+	    </simpara>
+	    <simpara>Decision: to update local iface method in order to also look up in embedded agent.</simpara>
+	</sect1>
+
+	<sect1 id="ds_di"><title>Desing issues</title>
+	    <sect2 id="ds_di_nacgna"><title>Native agents cannot get node by absolute URI</title>
+		<simpara>The origin of this behaviour it that native agents are not included into model's main native hier.
+		    They have theirs own hier instead.
+		    To be clearer, they don't have native hier (i.e. root) at all, so the rule of UID for native agent is just the agent name.
+		    They have only inheritance hier.  Actually there is kind of careless design in native agents.</simpara>
+		<simpara>Originally this fact didn't cause any problem, but with <xref linkend="gls_daa"/> this lack in design
+		    can lead to problems, ref.  <xref linkend="ds_daa_ina"/> for instance.</simpara>
+		<simpara>The possible solution would be to check in agents GetNode() if the agent is native, and if so,
+		    use iEnv-&gt;Root()-&gt;GetRoot()
+		    to get root. Or we can use this approach persistently for getting root.</simpara>
+	    </sect2>
+	    <sect2 id="ds_di_wsucv"><title>Wrong scheme of using content "Value" in DataBase</title>
+	    <simpara>The current scheme of using "Value" content in DataBase (data.cpp) is wrong. The example is update
+		of data: on the update of data (using Set()) also the update of property is initiated, but this causes FromString(),
+		that in turn calls Set. The only thing that prevents the scheme from full mess is checking in Set that new data is
+		the same as old and stopping of proceeding. See the stack below:
+	    </simpara>
+	    <programlisting>
+		#0  DVar::HInt::Set (this=0x7b531a0, aData=1) at data.cpp:725
+		#1  DVar::HInt::FromString (this=0x7b531a0, aString="I 1") at data.cpp:705
+		#2  DVar::FromString (this=0x8635d90, aData="I 1") at data.cpp:517
+		#3  DataBase::FromString (this=0x8635d90, aType="", aData="I 1") at data.cpp:181
+		#4  DataBase::HandleCompChanged (this=0x8635d90, aContext=..., aComp=..., aContName="Value") at data.cpp:63
+		#5  DVar::HandleCompChanged (this=0x8635d90, aContext=..., aComp=..., aContName="Value") at data.cpp:601
+		#6  Elem::OnCompChanged (this=0x7c1cf30, aComp=..., aContName="Value") at elem.cpp:2264
+		#7  Syst::OnCompChanged (this=0x7c1cf30, aComp=..., aContName="Value") at syst.cpp:1261
+		#8  Elem::ChangeCont (this=0x7c1cf30, aVal="I 1", aRtOnly=true, aName="Value") at elem.cpp:1496
+		#9  DataBase::UpdateProp (this=0x8635d90) at data.cpp:156
+		#10 DVar::HInt::Set (this=0x7b531a0, aData=1) at data.cpp:727
+		#11 DVar::HInt::Set (this=0x7b531a0, aInp=0x77a4380) at data.cpp:738
+		#12 DVar::Update (this=0x8635d90) at data.cpp:572
+		#13 StateAgent::Confirm (this=0x7c9aa60) at des.cpp:888
+	    </programlisting>
+	    <simpara>The solution can be having two contents instead on single: one is read-write, for setting data, second is 
+		read-only just for checking of data only. Then DVar should ignore the change of second content in HandleCompChanged.</simpara>
 	</sect2>
     </sect1>
 
@@ -3400,6 +3467,8 @@
 			APIs using nodes iterator. In that case nodes API will be suitable for getting components using uri "./*"</para>
 		</listitem>
 	    </orderedlist>
+	</sect2>
+	<sect2><title>Enhanced ifaces of the model, ref <xref linkend="ds_mi"/></title>
 	</sect2>
     </sect1>
 

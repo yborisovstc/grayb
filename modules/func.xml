@@ -434,6 +434,14 @@
     </node>
 
     <!-- Transition Function of variable adding -->
+    <node id="TFAddVar" parent="./TFuncVar"> 
+	<node node="./Agents" id="func_agt" parent="AFAddVar"/>
+	<!-- Input positives -->
+	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
+	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+    </node>
+
+    <!-- Transition Function of variable adding -->
     <node id="TFAddVarMc" parent="./TFuncVarMc"> 
 	<cont id="About" val="Transition Function of variable adding"/>
 	<node node="./Agents" id="func_agt" parent="AFAddVar"/>

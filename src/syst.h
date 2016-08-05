@@ -17,7 +17,7 @@ class ACapsule: public Elem
 	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string());
 };
 
-// Introducint iface extender to avoid clashing MIface methods
+// Iface stub to avoid clashing MIface methods
 class MCompatChecker_Imd: public MCompatChecker
 {
     virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes) = 0;
@@ -27,8 +27,18 @@ class MCompatChecker_Imd: public MCompatChecker
     virtual string Mid() const { return MCompatChecker_Mid();};
 };
 
+// Iface stub to avoid clashing MIface methods
+class MConnPoint_Imd: public MConnPoint
+{
+    virtual MIface* MConnPoint_Call(const string& aSpec, string& aRes) = 0;
+    virtual string MConnPoint_Mid() const = 0;
+    // From MIface
+    virtual MIface* Call(const string& aSpec, string& aRes) { return MConnPoint_Call(aSpec, aRes);};
+    virtual string Mid() const { return MConnPoint_Mid();};
+};
+
 // Base of ConnPoint reimplement obj provider iface to redirect the request to the hier mgr
-class ConnPointBase: public Vert, public MCompatChecker_Imd
+class ConnPointBase: public Vert, public MConnPoint_Imd, public MCompatChecker_Imd
 {
     public:
 	static const char* Type() { return "ConnPointBase";};
@@ -43,16 +53,21 @@ class ConnPointBase: public Vert, public MCompatChecker_Imd
 	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
 	virtual MElem* GetExtd();
 	virtual TDir GetDir() const;
-//	virtual Elem* GetAssoc(RqContext* aCtx);
 	// From MCompatChecker MIface
 	virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes);
 	virtual string MCompatChecker_Mid() const;
-	//virtual MIface* Call(const string& aSpec, string& aRes);
-	//virtual string Mid() const;
+	// From MConnPoint
+	virtual TBool IsProvided(const string& aIfName) const;
+	virtual TBool IsRequired(const string& aIfName) const;
+	virtual string Provided() const;
+	virtual string Required() const;
+	// From MConnPoint MIface
+	virtual MIface* MConnPoint_Call(const string& aSpec, string& aRes);
+	virtual string MConnPoint_Mid() const;
 };
 
 // Base of mutli-content ConnPoint 
-class ConnPointMc: public Vert, public MCompatChecker_Imd
+class ConnPointMc: public Vert, public MConnPoint_Imd, public MCompatChecker_Imd
 {
     public:
 	static const char* Type() { return "ConnPointMc";};
@@ -71,6 +86,14 @@ class ConnPointMc: public Vert, public MCompatChecker_Imd
 	virtual TDir GetDir() const;
 	// From MCompatChecker MIface
 	virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes);
+	// From MConnPoint
+	virtual TBool IsProvided(const string& aIfName) const;
+	virtual TBool IsRequired(const string& aIfName) const;
+	virtual string Provided() const;
+	virtual string Required() const;
+	// From MConnPoint MIface
+	virtual MIface* MConnPoint_Call(const string& aSpec, string& aRes);
+	virtual string MConnPoint_Mid() const;
 	virtual string MCompatChecker_Mid() const;
     protected:
 	string GetProvided() const;
@@ -182,6 +205,16 @@ class AExtender: public Elem, public MCompatChecker
 };
 
 
+// Iface stub to avoid clashing MIface methods
+class MSocket_Imd: public MSocket
+{
+    virtual MIface* MSocket_Call(const string& aSpec, string& aRes) = 0;
+    virtual string MSocket_Mid() const = 0;
+    // From MIface
+    virtual MIface* Call(const string& aSpec, string& aRes) { return MSocket_Call(aSpec, aRes);};
+    virtual string Mid() const { return MSocket_Mid();};
+};
+
 // Socket agent: redirects iface requests to pins
 class ASocket: public Elem, public MCompatChecker
 {
@@ -203,6 +236,11 @@ class ASocket: public Elem, public MCompatChecker
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);
 	virtual string Mid() const;
+	// From MSocket
+	virtual TInt PinsCount() const;
+	virtual MElem* GetPin(TInt aInd);
+	virtual MIface* MSocket_Call(const string& aSpec, string& aRes);
+	virtual string MSocket_Mid() const;
 };
 
 // Input Socket agent

@@ -67,17 +67,31 @@
     </node>
 
     <node id="ExtenderMc" parent="Vert"> 
+	<cont id="About" val="Base extender. Need to add internal connectable named Int"/>
 	<node node="./(Elem:)Agents" id="MAExteder" parent="AExtender"/> 
     </node>
 
-    <node id="ExtenderInpMc" parent="ExtenderMc"> 
+    <node id="ExtenderInpMc" parent="./ExtenderMc"> 
 	<cont node="./Agents/MAExteder" id="Direction" val="Inp"/> 
     </node>
 
-    <node id="ExtenderOutMc" parent="ExtenderMc"> 
+    <node id="ExtenderOutMc" parent="./ExtenderMc"> 
 	<cont node="./Agents/MAExteder" id="Direction" val="Out"/> 
     </node>
 
+    <node id="CpExtenderMc" parent="Vert"> 
+	<cont id="About" val="Extender of simple connpoint."/>
+	<node id="Int" parent="./../ConnPoint"/>
+	<node node="./(Elem:)Agents" id="MAExteder" parent="AExtender"/> 
+    </node>
+
+    <node id="CpExtenderInpMc" parent="./CpExtenderMc"> 
+	<cont node="./Agents/MAExteder" id="Direction" val="Inp"/> 
+    </node>
+
+    <node id="CpExtenderOutMc" parent="./CpExtenderMc"> 
+	<cont node="./Agents/MAExteder" id="Direction" val="Out"/> 
+    </node>
 
 
     <!-- Socket -->
@@ -99,11 +113,11 @@
 	<node node="./Agents" id="Sock" parent="ASocketMc"/> 
     </node>
 
-    <node id="SocketInpMc" parent="SocketMc">
+    <node id="SocketInpMc" parent="./SocketMc">
 	<cont id="Direction" val="Inp"/> 
     </node>
 
-    <node id="SocketOutMc" parent="SocketMc">
+    <node id="SocketOutMc" parent="./SocketMc">
 	<cont id="Direction" val="Out"/> 
     </node>
 

@@ -45,7 +45,7 @@
     </node>
 
     <!-- State Input socket, multicontent -->
-    <node id="StInpSocketMc" parent="/*/Modules/SysComps/SocketOutMc">
+    <node id="StInpSocketMc" parent="/*/Modules/SysComps/SocketInpMc">
 	<cont id="About" val="State Input socket, multicontent"/>
 	<node id="PinObs" parent="ConnPointMc"> 
 	    <cont id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>

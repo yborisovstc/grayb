@@ -78,6 +78,16 @@ void *Vert::DoGetObj(const char *aName)
     else {
 	res = Elem::DoGetObj(aName);
     }
+    // Added looing at the embedded agents also, ref ds_mi_rm
+    if (res == NULL) {
+	MElem* agents = GetComp("Elem", "Agents");
+	if (agents != NULL) {
+	    for (TInt ci = 0; ci < agents->CompsCount() && res == NULL; ci++) {
+		MElem* eit = agents->GetComp(ci);
+		res = eit->DoGetObj(aName);
+	    }
+	}
+    }
     return res;
 }
 

@@ -77,11 +77,11 @@ void *ConnPointBase::DoGetObj(const char *aName)
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
-    }
-    else if (strcmp(aName, MCompatChecker::Type()) == 0) {
+    } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
-    }
-    else {
+    } else if (strcmp(aName, MConnPoint::Type()) == 0) {
+	res = (MConnPoint*) this;
+    } else {
 	res = Vert::DoGetObj(aName);
     }
     return res;
@@ -98,11 +98,11 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
     Base* rqstr = aCtx != NULL ? aCtx->Requestor() : NULL;
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
-    }
-    else if (strcmp(aName.c_str(), MCompatChecker::Type()) == 0) {
+    } else if (strcmp(aName.c_str(), MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
-    }
-    else {
+    } else if (strcmp(aName.c_str(), MConnPoint::Type()) == 0) {
+	res = (MConnPoint*) this;
+    } else {
 	res = Vert::DoGetObj(aName.c_str());
     }
     if (res != NULL) {
@@ -146,7 +146,7 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
 }
 
-
+/* Replaced by method using MConnPoint for checking compatibility
 TBool ConnPointBase::IsCompatible(MElem* aPair, TBool aExt)
 {
     TBool res = EFalse;
@@ -184,6 +184,38 @@ TBool ConnPointBase::IsCompatible(MElem* aPair, TBool aExt)
 		}
 		else {
 		    res = EFalse;
+		}
+	    }
+	}
+    }
+    return res;
+}
+*/
+
+TBool ConnPointBase::IsCompatible(MElem* aPair, TBool aExt)
+{
+    TBool res = EFalse;
+    TBool ext = aExt;
+    MElem *cp = aPair;
+    // Checking if the pair is Extender
+    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type(), this);
+    // Consider all pairs not supporting MCompatChecker as not compatible 
+    if (pchkr != NULL) {
+	MElem* ecp = pchkr->GetExtd(); 
+	if (ecp != NULL ) {
+	    ext = !ext;
+	    cp = ecp;
+	}
+	if (cp != NULL) {
+	    // Check roles conformance
+	    string ppt1prov = Provided();
+	    string ppt1req = Required();
+	    MConnPoint* mcp = cp->GetObj(mcp);
+	    if (mcp != NULL) {
+		if (ext) {
+		    res = mcp->IsProvided(ppt1prov) && mcp->IsRequired(ppt1req);
+		} else {
+		    res = mcp->IsProvided(ppt1req) && mcp->IsRequired(ppt1prov);
 		}
 	    }
 	}
@@ -237,6 +269,89 @@ string ConnPointBase::MCompatChecker_Mid() const
     return GetUri(iEnv->Root(), ETrue);
 }
 
+// ConnPointBase MConnPoint
+
+MConnPoint::EIfu MConnPoint::mIfu;
+
+// Ifu static initialisation
+MConnPoint::EIfu::EIfu()
+{
+    RegMethod("IsProvided", 1);
+    RegMethod("IsRequired", 1);
+    RegMethod("Provided", 0);
+    RegMethod("Required", 0);
+}
+
+TBool ConnPointBase::IsProvided(const string& aIfName) const
+{
+    return Provided() == aIfName;
+}
+
+TBool ConnPointBase::IsRequired(const string& aIfName) const
+{
+    return Required() == aIfName;
+}
+
+string ConnPointBase::Provided() const
+{
+    string res;
+    MElem* eprov = ((MElem*) this)->GetNode("./Provided");
+    if (eprov != NULL) {
+	MProp* prov = eprov->GetObj(prov);
+	if (prov != NULL) {
+	    res = prov->Value();
+	}
+    }
+    return res;
+}
+
+string ConnPointBase::Required() const
+{
+    string res;
+    MElem* eprov = ((MElem*) this)->GetNode("./Required");
+    if (eprov != NULL) {
+	MProp* prov = eprov->GetObj(prov);
+	if (prov != NULL) {
+	    res = prov->Value();
+	}
+    }
+    return res;
+}
+
+MIface* ConnPointBase::MConnPoint_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MCompatChecker::mIfu.CheckMname(name);
+    if (!name_ok) 
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MCompatChecker::mIfu.CheckMpars(name, args.size());
+    if (!args_ok) 
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "IsProvided") {
+	TBool rr = IsProvided(args.at(0));
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "IsRequired") {
+	TBool rr = IsRequired(args.at(0));
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "Provided") {
+	aRes = Provided();
+    } else if (name == "Required") {
+	aRes = Required();
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string ConnPointBase::MConnPoint_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
+
 
 // Base of mutli-content ConnPoint 
 
@@ -265,8 +380,6 @@ ConnPointMc::ConnPointMc(const string& aName, MElem* aMan, MEnv* aEnv): Vert(aNa
 ConnPointMc::ConnPointMc(MElem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
 {
     SetParent(Vert::PEType());
-    //InsertContent("Required");
-    //InsertContent("Provided");
     ChangeCont("", ETrue, "Required");
     ChangeCont("", ETrue, "Provided");
     ChangeCont(ConnPointMc::KContDir_Val_Regular, EFalse, ConnPointMc::KContDir);
@@ -279,6 +392,8 @@ void *ConnPointMc::DoGetObj(const char *aName)
 	res = this;
     } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
+    } else if (strcmp(aName, MConnPoint::Type()) == 0) {
+	res = (MConnPoint*) this;
     } else {
 	res = Vert::DoGetObj(aName);
     }
@@ -296,11 +411,11 @@ void ConnPointMc::UpdateIfi(const string& aName, const RqContext* aCtx)
     Base* rqstr = aCtx != NULL ? aCtx->Requestor() : NULL;
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
-    }
-    else if (strcmp(aName.c_str(), MCompatChecker::Type()) == 0) {
+    } else if (strcmp(aName.c_str(), MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
-    }
-    else {
+    } else if (strcmp(aName.c_str(), MConnPoint::Type()) == 0) {
+	res = (MConnPoint*) this;
+    } else {
 	res = Vert::DoGetObj(aName.c_str());
     }
     if (res != NULL) {
@@ -338,6 +453,7 @@ void ConnPointMc::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
 }
 
+/* Replaced by method using MConnPoint for checking compatibility
 TBool ConnPointMc::IsCompatible(MElem* aPair, TBool aExt)
 {
     TBool res = EFalse;
@@ -378,6 +494,38 @@ TBool ConnPointMc::IsCompatible(MElem* aPair, TBool aExt)
 		res = (ppt1prov == ppt2prov && ppt2req == ppt1req);
 	    } else {
 		res = (ppt1prov == ppt2req && ppt2prov == ppt1req);
+	    }
+	}
+    }
+    return res;
+}
+*/
+
+TBool ConnPointMc::IsCompatible(MElem* aPair, TBool aExt)
+{
+    TBool res = EFalse;
+    TBool ext = aExt;
+    MElem *cp = aPair;
+    // Checking if the pair is Extender
+    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type(), this);
+    // Consider all pairs not supporting MCompatChecker as not compatible 
+    if (pchkr != NULL) {
+	MElem* ecp = pchkr->GetExtd(); 
+	if (ecp != NULL ) {
+	    ext = !ext;
+	    cp = ecp;
+	}
+	if (cp != NULL) {
+	    // Check roles conformance
+	    string ppt1prov = Provided();
+	    string ppt1req = Required();
+	    MConnPoint* mcp = cp->GetObj(mcp);
+	    if (mcp != NULL) {
+		if (ext) {
+		    res = mcp->IsProvided(ppt1prov) && mcp->IsRequired(ppt1req);
+		} else {
+		    res = mcp->IsProvided(ppt1req) && mcp->IsRequired(ppt1prov);
+		}
 	    }
 	}
     }
@@ -443,6 +591,62 @@ TBool ConnPointMc::ChangeCont(const string& aVal, TBool aRtOnly, const string& a
     }
     return res;
 }
+
+// ConnPointMc MConnPoint
+
+TBool ConnPointMc::IsProvided(const string& aIfName) const
+{
+    return GetProvided() == aIfName;
+}
+
+TBool ConnPointMc::IsRequired(const string& aIfName) const
+{
+    return GetRequired() == aIfName;
+}
+
+string ConnPointMc::Provided() const
+{
+    return GetProvided();
+}
+
+string ConnPointMc::Required() const
+{
+    return GetRequired();
+}
+
+MIface* ConnPointMc::MConnPoint_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MCompatChecker::mIfu.CheckMname(name);
+    if (!name_ok) 
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MCompatChecker::mIfu.CheckMpars(name, args.size());
+    if (!args_ok) 
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "IsProvided") {
+	TBool rr = IsProvided(args.at(0));
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "IsRequired") {
+	TBool rr = IsRequired(args.at(0));
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "Provided") {
+	aRes = Provided();
+    } else if (name == "Required") {
+	aRes = Required();
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string ConnPointMc::MConnPoint_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
 
 // Input ConnPoint base
 string ConnPointBaseInp::PEType()
@@ -846,6 +1050,8 @@ void *ASocket::DoGetObj(const char *aName)
 	res = this;
     } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
+    } else if (strcmp(aName, MSocket::Type()) == 0) {
+	res = (MSocket*) this;
     } else {
 	res = Elem::DoGetObj(aName);
     }
@@ -866,11 +1072,11 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
     //ToCacheRCtx(aCtx, rctx);
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
-    }
-    else if (strcmp(aName.c_str(), MCompatChecker::Type()) == 0) {
+    } else if (strcmp(aName.c_str(), MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
-    }
-    else {
+    } else if (strcmp(aName.c_str(), MSocket::Type()) == 0) {
+	res = (MSocket*) this;
+    } else {
 	res = Elem::DoGetObj(aName.c_str());
     }
     if (res != NULL) {
@@ -926,6 +1132,8 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    }
 		    if (apair != NULL && ctxe != NULL) {
 			// Find associated pairs pin within the context
+			// TODO [YB] Checking pair for being ASocket (implemenetation) is wrong way
+			// We need to use ifaces instead of impl. Knowledge of impl should be denied.
 			ASocket* psock = apair->GetObj(psock);
 			if (psock != NULL) {
 			    MElem* pereq = psock->GetPin(cct);
@@ -1084,10 +1292,13 @@ MElem* ASocket::GetPin(const RqContext* aCtx)
     return res;
 }
 
+
 MCompatChecker::TDir ASocket::GetDir() const
 {
     return ERegular;
 }
+
+// ASocket  MSocket
 
 MIface* ASocket::Call(const string& aSpec, string& aRes)
 {
@@ -1096,6 +1307,68 @@ MIface* ASocket::Call(const string& aSpec, string& aRes)
 }
 
 string ASocket::Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
+TInt ASocket::PinsCount() const
+{
+    TInt res = 0;
+    MElem* host = iMan->GetMan();
+    __ASSERT(host != NULL);
+    for (TInt ci = 0; ci < host->CompsCount() && res; ci++) {
+	MElem *comp = host->GetComp(ci);
+	MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), (Base*) this);
+	if (checker != NULL) {
+	    res++;
+	}
+    }
+    return res;
+}
+
+MElem* ASocket::GetPin(TInt aInd)
+{
+    MElem* res = 0;
+    MElem* host = iMan->GetMan();
+    __ASSERT(host != NULL);
+    for (TInt ci = 0, ct = 0; ci < host->CompsCount() && res; ci++) {
+	MElem *comp = host->GetComp(ci);
+	MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), (Base*) this);
+	if (checker != NULL) {
+	    if (ct == aInd) {
+		res = comp; break;
+	    }
+	    ct++;
+	}
+    }
+    return res;
+}
+
+MIface* ASocket::MSocket_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MCompatChecker::mIfu.CheckMname(name);
+    if (!name_ok) 
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MCompatChecker::mIfu.CheckMpars(name, args.size());
+    if (!args_ok) 
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "PinsCount") {
+	TInt rr = PinsCount();
+	aRes = Ifu::FromInt(rr);
+    } else if (name == "GetPin") {
+	TInt ind = Ifu::ToInt(args.at(0));
+	res = GetPin(ind);
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string ASocket::MSocket_Mid() const
 {
     return GetUri(iEnv->Root(), ETrue);
 }
@@ -1170,7 +1443,7 @@ MCompatChecker::TDir ASocketOut::GetDir() const
 // Socket agent, multicontent: redirects iface requests to pins
 string ASocketMc::PEType()
 {
-    return Elem::PEType() + GUri::KParentSep + Type();
+    return ASocket::PEType() + GUri::KParentSep + Type();
 }
 
 ASocketMc::ASocketMc(const string& aName, MElem* aMan, MEnv* aEnv): ASocket(aName, aMan, aEnv)
@@ -1188,10 +1461,8 @@ void *ASocketMc::DoGetObj(const char *aName)
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
 	res = this;
-    } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
-	res = (MCompatChecker*) this;
     } else {
-	res = Elem::DoGetObj(aName);
+	res = ASocket::DoGetObj(aName);
     }
     return res;
 }

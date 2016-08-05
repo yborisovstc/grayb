@@ -31,6 +31,8 @@ DataBase::DataBase(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
     }
 }
 
+// TODO [YB] Bug ds_di_wsucv: Wrong scheme of using content "Value" in DataBase
+// To fix
 TBool DataBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
 {
     TBool res = ETrue;
@@ -570,15 +572,17 @@ TBool DVar::Update()
 	    }
 	    if (mData != NULL) {
 		res = mData->Set(vget);
+		/* UpdateProp and NotifyUpdate already done in Set()
 		if (res) {
 		    UpdateProp();
 		    NotifyUpdate();
 		    if (IsLogeventUpdate()) {
 			string new_value;
 			ToString(new_value);
-			Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", new_value.c_str(), old_value.c_str());
+			Logger()->Write(MLogRec::EInfo, this, "Updated2 [%s <- %s]", new_value.c_str(), old_value.c_str());
 		    }
 		}
+		*/
 	    }
 	}
     }

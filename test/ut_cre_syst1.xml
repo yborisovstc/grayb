@@ -22,6 +22,9 @@
 	<node id="ep" parent="./../SysComps/Extender"> 
 	    <cont node="./Int/Provided" val="Role4"/> <cont node="./Int/Required" val="Role3"/>
 	</node>
+	<node id="scp1" parent="ConnPointMc"> 
+	    <cont id="Provided" val="Role1"/> <cont id="Required" val="Role2"/>
+	</node>
     </node>
 
     <node id="cp1" parent="./SysComps/ConnPoint"> 
@@ -33,7 +36,8 @@
     <node id="E1" parent="Aedge"> <cont id="P1" ref="./../cp1"/> <cont id="P2" ref="./../cp2"/> </node>
 
     <node id="E2" parent="Edge"> <cont node="./P1" ref="./../../Syst1/cp"/> <cont node="./P2" ref="./../../cp2"/> </node>
-    <node id="E3" parent="Aedge"> <cont id="P1" ref="././Syst1/ep"/> <cont id="P2" ref="././cp3"/> </node>
+    <node id="E3" parent="Aedge"> <cont id="P1" ref="./../Syst1/ep"/> <cont id="P2" ref="./../cp3"/> </node>
+    <node id="E2mc" parent="Aedge"> <cont id="P1" ref="./../Syst1/scp1"/> <cont id="P2" ref="./../cp2"/> </node>
 
 </node>
 
