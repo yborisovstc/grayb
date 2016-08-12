@@ -249,6 +249,8 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	virtual void *DoGetDObj(const char *aName);
 	// From MDVarSet
 	virtual Elem* VarSetBase();
+	// From MElem
+	virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const; 
     protected:
 	MElem* GetInp();
 	TBool Init(const string& aString, MDVarGet* aInp = NULL);

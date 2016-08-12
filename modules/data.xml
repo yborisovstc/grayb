@@ -119,6 +119,7 @@
     	<node node="./Agents" id="ADVar" parent="DVar"/>
 	<cont node="./Capsule/inp" id="Provided" val="MDVarSet"/>
 	<cont node="./Capsule/out" id="Provided" val="MDVarGet"/>
+	<cont id="ViewData." ref="./Agents/ADVar"/>
     </node>
 
     <!-- Terminal data, input only, provided data observer, required gettng data -->
@@ -216,6 +217,7 @@
 	<cont node="./Capsule/Inp" id="Required" val="MDVarGet"/>
 	<cont node="./Capsule/Out" id="Provided" val="MDVarGet"/>
 	<cont node="./Capsule/Upd" id="Provided" val="MUpdatable"/>
+	<cont id="ViewData." ref="./Agents/ADVar"/>
     </node>
 
     <!-- Data Var with separate type -->

@@ -100,16 +100,10 @@ void DataBase::NotifyUpdate()
 	    MDataObserver* obsr = (MDataObserver*) (*it);
 	    obsr->OnDataChanged();
 	}
-	/*
-	MVert* mvout = eout->GetObj(mvout);
-	MVert* mpair = *(mvout->Pairs().begin());
-	if (mpair != NULL) {
-	    MDataObserver* obsr = mpair->EBase()->GetObj(obsr);
-	    if (obsr != NULL) {
-		obsr->OnDataChanged();
-	    }
-	}
-	*/
+    }
+    // Also notify context in order to propagate the update event to observer
+    if (iMan != NULL) {
+	iMan->OnCompChanged(*this);
     }
 }
 
@@ -602,6 +596,19 @@ TBool DVar::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aCont
 {
     return DataBase::HandleCompChanged(aContext, aComp, aContName);
 }
+
+string DVar::GetContent(const string& aName, TBool aFull) const
+{
+    string res;
+    if (aName == "") {
+	((DVar*) this)->ToString(res);
+    } else { 
+	res = Elem::GetContent(aName, aFull);
+    }
+    return res;
+}
+
+
 
 // Bool data
 void *DVar::HBool::DoGetObj(const char *aName)

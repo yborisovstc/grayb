@@ -44,6 +44,8 @@
 		<revremark>Added <xref linkend="ds_cplx_cont_strc"/></revremark> </revision>
 	    <revision> <revnumber>0.14</revnumber> <date>07-Jun-2016</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="ds_daa_ttm"/>, updated <xref linkend="ds_cplx_cont_strc"/></revremark> </revision>
+	    <revision> <revnumber>0.14</revnumber> <date>07-Jun-2016</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="ds_cplx_cont_cdac"/>, updated <xref linkend="ds_cplx_cont_strcimpr"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -1829,7 +1831,7 @@
 		so missing read-only prop means just that components cannot be deleted or added.
 		For content value missing read-only prop means that the value can be changed.
 	    </sect3>
-	    <sect3><title>How this new approach differs from existing one?</title>
+	    <sect3><title>Two types of contents (value or owner) vs single type (value plus owner)</title>
 		Existing approach states that there are two kinds of content: value and comps owner.
 		New approach states that content is only one type, that can keep both value and comps.
 		Consequence: Existing approach doesn’t allow root content to have value - that’s because generic
@@ -1851,6 +1853,42 @@
 		<simpara>Simple content approach provides simple API for content change - just ChangeCont() that 
 		    changes conent value. In case of structured API we need not only means of changing content
 		    value but also content comps and content props.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_cplx_cont_cdac"><title>How to customize displaying of content of agents-containers.</title>
+	    <sect3><title>Intro</title>
+		<simpara>Current approach of creating new agents is to "embed" agent into some agent that serves as container.
+		    The example is system. To enhance system we can add new agent into systems Agent node, the agent-container
+		    will redirect notification from its compoanent to agents contained by "Agent" node. 
+		    For many clients (e.g. Studio) it is normal to deal with agent-containers and not looking to its 
+		    embedded agents.</simpara>
+		<simpara> Very often use-case is to display agent related info in agent compact representation.
+		    But agent-container itself doesn't contains any important info, the only embedded agents do. So we need
+		    to have some mechanism that allows client to obrtain this information.</simpara>
+		<simpara>Currently used mechanism is to add special info that gives some hints of where to get this agent
+		    related important info from. Current convention is that this should be kept in node "ViewData", or
+		    for multi-content agent in content "ViewData". For instance, to get result of function TFAddVarMc
+		    displayed properly we need to add the content:</simpara>
+		<programlisting> &lt;cont id="ViewData.Res" ref="./Agents/func_agt"/&gt; </programlisting>
+		<simpara>We will call this initial approach as "Customizing content" approach.</simpara>
+		<simpara>This approach works, but it has overhead because we need to add specific content. There are other solutions:
+		    <orderedlist>
+			<listitem> Embedded agents adding important data directly to agent-container content.
+			    Ref <xref linkend="ds_cplx_cont_cdac_ac"/> for details.  </listitem>
+			<listitem>Agent-container redirecting content request to embedded agents.
+			    <para>This approach requires that agent-container GetContent method be customized. It seems
+			    not to be acceptable at the moment. So this approach is not considered.</para>
+			</listitem>
+		    </orderedlist>
+		</simpara>
+	    </sect3>
+	    <sect3 id="ds_cplx_cont_cdac_ac"><title>Approach: Embedded agents adding content of agent-container.</title>
+		<simpara>We need to emphasize the difference between "Customizing content" approach and "Adding content to approach:
+		    "Customizing content" approach is approach of "on demand" where as "Adding content.." approach assumes that
+		    agent-containers content is change every time the "master" content is changed. It's clear that this
+		    causes to content duplication.</simpara>
+		<simpara>The matter is that in many cases embedded agent doesn't update even it's ownt content but returns
+		    it on gettng on-demand conent request only.</simpara>
 	    </sect3>
 	</sect2>
     </sect1>
@@ -3338,21 +3376,22 @@
 		in agent embedded agents.
 	    </simpara>
 	    <simpara>Decision: to update local iface method in order to also look up in embedded agent.</simpara>
-	</sect1>
+	</sect2>
+    </sect1>
 
-	<sect1 id="ds_di"><title>Desing issues</title>
-	    <sect2 id="ds_di_nacgna"><title>Native agents cannot get node by absolute URI</title>
-		<simpara>The origin of this behaviour it that native agents are not included into model's main native hier.
-		    They have theirs own hier instead.
-		    To be clearer, they don't have native hier (i.e. root) at all, so the rule of UID for native agent is just the agent name.
-		    They have only inheritance hier.  Actually there is kind of careless design in native agents.</simpara>
-		<simpara>Originally this fact didn't cause any problem, but with <xref linkend="gls_daa"/> this lack in design
-		    can lead to problems, ref.  <xref linkend="ds_daa_ina"/> for instance.</simpara>
-		<simpara>The possible solution would be to check in agents GetNode() if the agent is native, and if so,
-		    use iEnv-&gt;Root()-&gt;GetRoot()
-		    to get root. Or we can use this approach persistently for getting root.</simpara>
-	    </sect2>
-	    <sect2 id="ds_di_wsucv"><title>Wrong scheme of using content "Value" in DataBase</title>
+    <sect1 id="ds_di"><title>Desing issues</title>
+	<sect2 id="ds_di_nacgna"><title>Native agents cannot get node by absolute URI</title>
+	    <simpara>The origin of this behaviour it that native agents are not included into model's main native hier.
+		They have theirs own hier instead.
+		To be clearer, they don't have native hier (i.e. root) at all, so the rule of UID for native agent is just the agent name.
+		They have only inheritance hier.  Actually there is kind of careless design in native agents.</simpara>
+	    <simpara>Originally this fact didn't cause any problem, but with <xref linkend="gls_daa"/> this lack in design
+		can lead to problems, ref.  <xref linkend="ds_daa_ina"/> for instance.</simpara>
+	    <simpara>The possible solution would be to check in agents GetNode() if the agent is native, and if so,
+		use iEnv-&gt;Root()-&gt;GetRoot()
+		to get root. Or we can use this approach persistently for getting root.</simpara>
+	</sect2>
+	<sect2 id="ds_di_wsucv"><title>Wrong scheme of using content "Value" in DataBase</title>
 	    <simpara>The current scheme of using "Value" content in DataBase (data.cpp) is wrong. The example is update
 		of data: on the update of data (using Set()) also the update of property is initiated, but this causes FromString(),
 		that in turn calls Set. The only thing that prevents the scheme from full mess is checking in Set that new data is

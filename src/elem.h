@@ -11,6 +11,8 @@
 #include "ifu.h"
 #include <time.h>
 
+#define UNICONTENT
+
 class Chromo;
 class MProvider;
 
@@ -18,6 +20,13 @@ class MProvider;
 class Elem: public MElem
 {
     public:
+	// Predefined content data relations
+	typedef enum {
+	    ECrl_Undef = 0, 
+	    ECrl_Value,
+	    ECrl_Component,
+	    ECrl_Category
+	} TCntRel;
 
 	// Regiser keyed by name, multimap
 	typedef string TNMKey;
@@ -37,13 +46,13 @@ class Elem: public MElem
 	    ECnt_Ctg       // Category
 	} TCnt;
 	// Content key
-	//typedef pair<string, TCnt> TCntKey;
-	//typedef pair<TCntKey, string> TCntRec;
 	//typedef multimap<TCntKey, string> TCntReg;
 	typedef pair<string, string> TCntRec;
 	typedef multimap<string, string> TCntComps;
 	typedef map<string, string> TCntVals;
-	//typedef multimap<string, string> TContent;
+	typedef pair<string, TCntRel> TContentKey; // Content key: full name, relation
+	typedef pair<TContentKey, string> TContentRec; // Content record: key, data
+	typedef multimap<TContentKey, string> TContent;
     public:
 	// Request context
 	//typedef vector<Base*> TICacheRCtx;
@@ -252,9 +261,11 @@ class Elem: public MElem
 	virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal);
 	virtual void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL);
 	//virtual TBool GetCont(string& aValue, const string& aName = string()) const;
+	virtual TBool ContentExists(const string& aName) const;
 	virtual TBool ContValueExists(const string& aName=string()) const;
 	virtual string GetContComp(const string& aOwnerName, TInt aInd) const;
 	virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const;
+	virtual string GetContentValue(const string& aName) const;
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string());
 	virtual TBool IsContChangeable(const string& aName = string()) const;
 	virtual TInt GetContCount(const string& aName = string()) const;
@@ -336,8 +347,12 @@ class Elem: public MElem
 	Elem* GetNodeE(const GUri& aUri) {return ToElem(GetNode(aUri));};
 	virtual TInt CompsCount() const;
 	virtual MElem* GetComp(TInt aInd);
+	static string ContentCompId(const string& aOwnerName, const string& aCompName);
     protected:
 	void InsertContent(const string& aName);
+	void RemoveContent(const string& aName);
+	void RemoveContentComp(const string& aOwner, const string& aComp);
+	void SetContentValue(const string& aName, const string& aValue);
 	void InsertContentComp(const string& aContName, const string& aCompName);
 	void InsertContCompsRec(const string& aName, const string& aComp);
 	TBool ContentHasComps(const string& aContName) const;
@@ -363,7 +378,6 @@ class Elem: public MElem
 	// ICache helpers, for debug only
 	Elem* GetIcCtxComp(const TICacheRCtx& aCtx, TInt aInd);
 	void LogIfReqs();
-	static string ContentCompId(const string& aOwnerName, const string& aCompName);
 	static string ContentKey(const string& aBase, const string& aSuffix);
 	static string ContentValueKey(const string& aId);
 	static string ContentCompsKey(const string& aId);
@@ -390,6 +404,7 @@ class Elem: public MElem
 	static const char KContentKey_Value = '#';
 	static const char KContentKey_Comps = '*';
 	static const char KContentKey_Props = '~';
+	static const char KContentDeletion = '-';
     protected:
 	// Environment
 	MEnv* iEnv;
@@ -421,13 +436,17 @@ class Elem: public MElem
 	TBool isRemoved;
 	string iName;
 	// Content register
+#ifdef UNICONTENT
+	TContent mContent;
+#else 
 	TCntComps mCntComps;
 	TCntVals mCntVals;
-	//TContent mContent;
+#endif
 	static TBool EN_PERF_TRACE;
 	static TBool EN_PERF_METR;
 	static TBool EN_MUT_LIM;
 	static TBool EN_PERF_DBG1;
+	static const string KCont_About;
 	/*
     protected:
 	class EIfu: public Ifu {

@@ -10,10 +10,13 @@
 #include "mmod.h"
 #include "ifu.h"
 
+
 TBool Elem::EN_PERF_TRACE = EFalse;
 TBool Elem::EN_PERF_METR = EFalse;
 TBool Elem::EN_PERF_DBG1 = ETrue;
 TBool Elem::EN_MUT_LIM = ETrue;
+
+const string Elem::KCont_About = "About";
 
 string Elem::Fmt::mSepContInp = ";";
 string Elem::Fmt::mSepContName = "~";
@@ -453,7 +456,7 @@ Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMa
     croot.SetAttr(ENa_Id, iName);
     SetParent(Type());
     iComps.reserve(100);
-    InsertContent("About");
+    InsertContent(KCont_About);
 }
 
 Elem::Elem(Elem* aMan, MEnv* aEnv): iName(Type()), iMan(aMan), iEnv(aEnv),
@@ -472,7 +475,7 @@ Elem::Elem(Elem* aMan, MEnv* aEnv): iName(Type()), iMan(aMan), iEnv(aEnv),
     ChromoNode croot = iChromo->Root();
     croot.SetAttr(ENa_Id, iName);
     SetParent(string());
-    InsertContent("About");
+    InsertContent(KCont_About);
 }
 
 void Elem::Delete()
@@ -1400,22 +1403,259 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
     }
 }
 
+#ifdef UNICONTENT
+
+TBool Elem::IsContChangeable(const string& aName) const
+{
+    return ETrue; // Temporarily only
+}
+
+// TODO To add handling of comp already exists
+void Elem::InsertContCompsRec(const string& aName, const string& aComp)
+{
+    TContentKey key(aName, ECrl_Component);
+    pair<TContent::const_iterator, TContent::const_iterator> range = mContent.equal_range(key);
+    TBool exists = EFalse;
+    for (TContent::const_iterator it = range.first; it != range.second; it++) {
+	if (it->second == aComp) {
+	    exists = ETrue;
+	    break;
+	}
+    }
+    if (!exists) {
+	mContent.insert(TContentRec(key, aComp));
+    }
+}
+
+void Elem::InsertContent(const string& aName)
+{
+    if (!aName.empty()) {
+	string oname = GetContentOwner(aName);
+	InsertContCompsRec(oname, aName);
+	InsertContent(oname);
+    }
+}
+
+void Elem::RemoveContent(const string& aName)
+{
+    // Value
+    pair<TContent::iterator, TContent::iterator> range = mContent.equal_range(TContentKey(aName, ECrl_Value));
+    for (TContent::iterator it = range.first; it != range.second; it++) {
+	mContent.erase(it);
+    }
+    // Components
+    range = mContent.equal_range(TContentKey(aName, ECrl_Component));
+    for (TContent::const_iterator it = range.first; it != range.second; it++) {
+	RemoveContent(it->second);
+    }
+}
+
+void Elem::RemoveContentComp(const string& aOwner, const string& aComp)
+{
+    string fname = ContentCompId(aOwner, aComp);
+    // Remove comps record
+    pair<TContent::iterator, TContent::iterator> range = mContent.equal_range(TContentKey(aOwner, ECrl_Component));
+    for (TContent::iterator it = range.first; it != range.second; it++) {
+	if (it->second == fname) {
+	    mContent.erase(it); break;
+	}
+    }
+    // Remove comps content
+    RemoveContent(fname);
+}
+
+void Elem::SetContentValue(const string& aName, const string& aValue)
+{
+    TContentKey key(aName, ECrl_Value);
+    TInt count = mContent.count(key);
+    if (count == 0) { // New value
+	mContent.insert(TContentRec(key, aValue));
+    } else if (count == 1) { // Existing value
+	TContent::iterator it = mContent.find(key);
+	it->second = aValue;
+    } else { // Error
+	__ASSERT(EFalse);
+    }
+}
+
+TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
+{
+    TBool res = ETrue;
+    size_t pos_beg = 0, pos = 0;
+    if (!aVal.empty() && aVal.at(0) == KContentStart) { // Complex content
+	string delims(1, KContentValQuote); delims += KContentValSep;
+	size_t pos_beg = 1;
+	size_t pos = aVal.find_first_of(delims, pos_beg);
+	if (pos == string::npos) { // Empty content
+	} else { // Non-empty content
+	    if (aVal.at(pos) == KContentValQuote) { // Value
+		pos_beg = pos + 1;
+		pos = Ifu::FindFirstCtrl(aVal, KContentValQuote, pos_beg);
+		if (pos == string::npos) { // Error: missing value closing quote
+		    res = EFalse;
+		} else {
+		    string value = aVal.substr(pos_beg, pos - pos_beg);
+		    InsertContent(aName);
+		    SetContentValue(aName, value);
+		    pos_beg = pos + 1;
+		}
+	    } else { // Value is omitted
+	    }
+	    // Parsing comps
+	    while (pos != string::npos && res) { // By comps
+		pos = aVal.find_first_not_of(' ', pos_beg);
+		__ASSERT(pos != string::npos);
+		pos_beg = pos;
+		// Getting comp name
+		pos = Ifu::FindFirstCtrl(aVal, KContentValSep, pos_beg);
+		if (pos == string::npos) break;
+		string sname = aVal.substr(pos_beg, pos - pos_beg);
+		pos_beg = pos + 1;
+		if (pos_beg >= aVal.size()) { // Error: Uncomplete comp
+		    res = EFalse; break;
+		} else {
+		    if (aVal.at(pos_beg) == KContentStart) { // Comps value is full content
+			pos_beg += 1;
+			pos = Ifu::FindFirstCtrl(aVal, KContentEnd, pos_beg);
+		    } else if (aVal.at(pos_beg) == KContentValQuote) { // Quoted value
+			pos_beg += 1;
+			pos = Ifu::FindFirstCtrl(aVal, KContentValQuote, pos_beg);
+		    } else if (aVal.at(pos_beg) == KContentDeletion) { // Deletion
+			RemoveContentComp(aName, sname);
+		    } else { // Error: Incorrect comp value start delimiter
+			res = EFalse; break;
+		    }
+		}
+		if (pos == string::npos) { // Error: missing comp end delimiter
+		    res = EFalse; break;
+		} else {
+		    string value = aVal.substr(pos_beg, pos - pos_beg);
+		    ChangeCont(value, aRtOnly, ContentCompId(aName, sname));
+		}
+		pos_beg = pos + 1;
+	    };
+	}
+    } else { // Bare value
+	InsertContent(aName);
+	SetContentValue(aName, aVal);
+    }
+    if (res) {
+	OnCompChanged(*this, aName);
+    }
+    return res;
+}
+
+TBool Elem::ContentHasComps(const string& aContName) const
+{
+    return (GetContCount(aContName) > 0);
+}
+
+string Elem::GetContent(const string& aId, TBool aFull) const
+{
+    string res;
+    TContentKey valkey(aId, ECrl_Value);
+    TBool valexists = ContValueExists(aId);
+    if (!aFull) { // Simple content
+	res = valexists ? GetContentValue(aId) : string();
+    } else { // Full content
+	TContentKey ctgkey(aId, ECrl_Category);
+	TBool hascomps = ContentHasComps(aId);
+	if (valexists || hascomps || mContent.count(ctgkey) > 0) { // Not empty
+	    res = KContentStart;
+	    // Quoted value
+	    if (valexists) {
+		string val = GetContentValue(aId);
+		res += KContentValQuote + val + KContentValQuote ;
+	    }
+	    //  Components
+	    if (hascomps) {
+		res += " ";
+		for (TInt ind = 0; ind < GetContCount(aId); ind++) {
+		    string comp = GetContComp(aId, ind);
+		    if (ind != 0) {
+			res += " ";
+		    }
+		    if (ContentHasComps(comp)) { // Full content of comp
+			string compcnt = GetContent(comp, ETrue);
+			res += GetContentLName(comp) + KContentValSep + compcnt;
+		    } else { // Simple content
+			string compcnt = GetContent(comp, EFalse);
+			res += GetContentLName(comp) + KContentValSep + KContentValQuote + compcnt + KContentValQuote;
+		    }
+		}
+	    }
+	    res += KContentEnd;
+	}
+    }
+    return res;
+}
+
+TBool Elem::ContentExists(const string& aName) const
+{
+    return (ContValueExists(aName) || ContentHasComps(aName));
+}
+
+TBool Elem::ContValueExists(const string& aName) const
+{
+    return (mContent.count(TContentKey(aName, ECrl_Value)) > 0);
+}
+
+string Elem::GetContComp(const string& aOwnerName, TInt aInd) const
+{
+    __ASSERT(aInd < GetContCount(aOwnerName));
+    TContentKey compkey(aOwnerName, ECrl_Component);
+    pair<TContent::const_iterator, TContent::const_iterator> range = mContent.equal_range(compkey);
+    TContent::const_iterator it = range.first;
+    for (TInt cnt = aInd; it != range.second && cnt > 0; it++, cnt--);
+    return it->second;
+}
+
+TInt Elem::GetContCount(const string& aName) const
+{
+    return mContent.count(TContentKey(aName, ECrl_Component));
+}
+
+string Elem::GetContentValue(const string& aName) const
+{
+    string res;
+    TContent::const_iterator it = mContent.find(TContentKey(aName, ECrl_Value));
+    if (it != mContent.end()) {
+	res = it->second;
+    }
+    return res;
+}
+
+
+void Elem::DumpCntVal() const
+{
+    cout << "<< Content >>" << endl;
+    for (TContent::const_iterator it = mContent.begin(); it != mContent.end(); it++) {
+	TCntRel rel = it->first.second;
+	string srel;
+	if (rel == ECrl_Component) srel = "[Comp]";
+	else if (rel == ECrl_Category) srel = "[Category]";
+	else if (rel == ECrl_Value) srel = "[Value]";
+	else srel = "[???]";
+	cout << it->first.first << " " << srel << " : " << it->second << endl;
+    }
+}
+
+#else // UNICONTENT
+
 TBool Elem::IsContChangeable(const string& aName) const
 {
     //return EFalse;
     return ETrue; // Temporarily only
 }
 
-/*
-TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
+void Elem::SetContentValue(const string& aName, const string& aValue)
 {
-    TBool res = ETrue;
-    mCntVals[aName] = aVal;
-    InsertContent(aName);
-    OnCompChanged(*this, aName);
-    return res;
 }
-*/
+
+// TODO Not used?
+void Elem::InsertContentComp(const string& aContName, const string& aCompName)
+{
+}
 
 TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
 {
@@ -1498,26 +1738,6 @@ TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
     return res;
 }
 
-// #2
-#if 0
-TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
-{
-    TBool res = ETrue;
-    string key = ContentValueKey(aName);
-    TInt cnt = mContent.count(ContentValueKey(aName));
-    __ASSERT(cnt <= 1);
-    if (cnt == 0) { // New insertion
-	mContent.insert(TCntRec(key, aVal));
-    } else {
-	TContent::iterator it = mContent.find(key);
-    }
-    mContent[ContentValueKey(aName)] = aVal;
-    InsertContent(aName);
-    OnCompChanged(*this, aName);
-    return res;
-}
-#endif
-
 void Elem::InsertContent(const string& aName)
 {
     size_t end = aName.find_last_of(KContentSep);
@@ -1556,67 +1776,6 @@ TBool Elem::ContentHasComps(const string& aContName) const
     return (mCntComps.count(aContName) > 0);
 }
 
-#if 0
-void Elem::GetCont(string& aCont, const string& aName) const
-{
-    if (mCntVals.count(aName) > 0) {
-	aCont = mCntVals.at(aName);
-    } else if (mCntComps.count(aName) > 0) {
-	pair<TCntComps::const_iterator, TCntComps::const_iterator> range = mCntComps.equal_range(aName);
-	aCont = "{";
-	for (TCntComps::const_iterator it = range.first; it != range.second; it++) {
-	    string comp = it->second;
-	    string compcnt;
-	    if (mCntVals.count(comp) > 0) {
-		compcnt = "'" + GetContent(comp) + "'";
-	    } else {
-		compcnt = GetContent(comp);
-	    }
-	    if (it != range.first) {
-		aCont += ",";
-	    }
-	    aCont += GetLastContentName(comp) + ":" + compcnt;
-	}
-	aCont += "}";
-    }
-}
-#endif
-
-/*
-string Elem::GetCont(const string& aName) const
-{
-    TBool res = ETrue;
-    if (mCntVals.count(aName) > 0) {
-	aValue = mCntVals.at(aName);
-    } else if (mCntComps.count(aName) > 0) {
-	pair<TCntComps::const_iterator, TCntComps::const_iterator> range = mCntComps.equal_range(aName);
-	aValue = KContentStart;
-	for (TCntComps::const_iterator it = range.first; it != range.second; it++) {
-	    string comp = it->second;
-	    string compcnt;
-	    if (mCntVals.count(comp) > 0) {
-		compcnt = "'" + GetContent(comp) + "'";
-	    } else {
-		compcnt = GetContent(comp);
-	    }
-	    aValue += KContentStart + GetContentLName(comp) + KContentValSep + compcnt + KContentEnd;
-	}
-	aValue += KContentEnd;
-    } else {
-	res = EFalse;
-    }
-    return res;
-}
-*/
-
-/*
-string Elem::GetContent(const string& aName, TBool aFull) const 
-{
-    // TODO [YB] Assert if no content value ??
-    return (mCntVals.count(aName) > 0) ? mCntVals.at(aName) : string();
-}
-*/
-
 string Elem::GetContent(const string& aId, TBool aFull) const
 {
     string res;
@@ -1630,7 +1789,9 @@ string Elem::GetContent(const string& aId, TBool aFull) const
 	    res += KContentValQuote + mCntVals.at(aId) + KContentValQuote ;
 	}
 	//  Components
-	if (mCntComps.count(aId) > 0) {
+	TInt count = GetContCount(aId);
+	/*
+	if (count > 0) {
 	    res += " ";
 	    pair<TCntComps::const_iterator, TCntComps::const_iterator> range = mCntComps.equal_range(aId);
 	    for (TCntComps::const_iterator it = range.first; it != range.second; it++) {
@@ -1647,32 +1808,38 @@ string Elem::GetContent(const string& aId, TBool aFull) const
 		}
 	    }
 	}
+	*/
+
+	if (count > 0) {
+	    res += " ";
+	    for (TInt ind = 0; ind < count; ind++) {
+		string comp = GetContComp(aId, ind);
+		if (ind != 0) {
+		    res += " ";
+		}
+		if (ContentHasComps(comp)) { // Full content of comp
+		    string compcnt = GetContent(comp, ETrue);
+		    res += GetContentLName(comp) + KContentValSep + compcnt;
+		} else { // Simple content
+		    string compcnt = GetContent(comp, EFalse);
+		    res += GetContentLName(comp) + KContentValSep + KContentValQuote + compcnt + KContentValQuote;
+		}
+	    }
+	}
 	res += KContentEnd;
     }
     return res;
 }
 
-// #2
-#if 0
-string Elem::GetContent(const string& aName) const 
+TBool Elem::ContentExists(const string& aName) const
 {
-    string key = ContentValueKey(aName);
-    return (mContent.count(key) > 0) ? mContent.at(key) : string();
+    return (mCntVals.count(aName) > 0) || (mCntComps.count(aName) > 0);
 }
-#endif
 
 TBool Elem::ContValueExists(const string& aName) const
 {
     return (mCntVals.count(aName) > 0);
 }
-
-// #2
-#if 0
-TBool Elem::ContValueExists(const string& aName) const
-{
-    return (mContent.count(ContentValueKey(aName)) > 0);
-}
-#endif
 
 string Elem::GetContComp(const string& aOwnerName, TInt aInd) const
 {
@@ -1683,30 +1850,24 @@ string Elem::GetContComp(const string& aOwnerName, TInt aInd) const
     return it->second;
 }
 
-// #2
-#if 0
-string Elem::GetContComp(const string& aOwnerName, TInt aInd) const
-{
-    __ASSERT(aInd < GetContCount(aOwnerName));
-    pair<TContent::const_iterator, TContent::const_iterator> range = mContent.equal_range(ContentCompsKey(aOwnerName));
-    TCntComps::const_iterator it = range.first;
-    for (TInt cnt = aInd; it != range.second && cnt > 0; it++, cnt--);
-    return it->second;
-}
-#endif
-
 TInt Elem::GetContCount(const string& aName) const
 {
     return mCntComps.count(aName);
 }
 
-// #2
-#if 0
-TInt Elem::GetContCount(const string& aName) const
+void Elem::DumpCntVal() const
 {
-    return mContent.count(ContentCompsKey(aName));
+    cout << "<< Values >>" << endl;
+    for (TCntVals::const_iterator it = mCntVals.begin(); it != mCntVals.end(); it++) {
+	cout << it->first << ": " << it->second << endl;
+    }
+    cout << "<< Components >>" << endl;
+    for (TCntComps::const_iterator it = mCntComps.begin(); it != mCntComps.end(); it++) {
+	cout << it->first << ": " << it->second << endl;
+    }
 }
-#endif
+
+#endif // UNICONTENT
 
 void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MElem* aCtx)
 {
@@ -2805,8 +2966,14 @@ TBool Elem::IsLogeventCreOn()
 // (all parents chain) to detect inheritance.
 TBool Elem::IsHeirOf(const string& aParent) const
 {
-    int pos = EType(EFalse).find(aParent);
-    return pos != string::npos;
+    TBool res = EFalse;
+    string et = EType(EFalse);
+    int pos = et.find(aParent);
+    if (pos == 0) {
+	res = (aParent.size() == et.size() || et.at(aParent.size()) == GUri::KParentSep);
+    }
+    return res;
+    //return pos == 0 && (aParent.size() == et.size() || et.at(aParent.size()) == GUri::KParentSep);
 }
 
 // Checks if elements chromo is attached. Ref UC_019 for details
@@ -3891,18 +4058,6 @@ string Elem::GetChromoSpec() const
 void Elem::AppendMutation(const TMut& aMut)
 {
     ChromoNode mut = iMut->Root().AddChild(aMut);
-}
-
-void Elem::DumpCntVal() const
-{
-    cout << "<< Values >>" << endl;
-    for (TCntVals::const_iterator it = mCntVals.begin(); it != mCntVals.end(); it++) {
-	cout << it->first << ": " << it->second << endl;
-    }
-    cout << "<< Components >>" << endl;
-    for (TCntComps::const_iterator it = mCntComps.begin(); it != mCntComps.end(); it++) {
-	cout << it->first << ": " << it->second << endl;
-    }
 }
 
 string Elem::ContentCompId(const string& aOwnerName, const string& aCompName)

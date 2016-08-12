@@ -1114,6 +1114,9 @@ TInt AFBoolToInt::Value()
 
 // Agent of function of variable type
 
+static const string KCont_Debug = "Debug";
+static const string KCont_Debug_Inputs = "Debug.Inputs";
+
 string AFunVar::PEType()
 {
     return AFunc::PEType() + GUri::KParentSep + Type();
@@ -1122,11 +1125,22 @@ string AFunVar::PEType()
 AFunVar::AFunVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv), mFunc(NULL)
 {
     SetParent(Type());
+    Construct();
 }
 
 AFunVar::AFunVar(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv), mFunc(NULL)
 {
     SetParent(AFunc::PEType());
+    Construct();
+}
+
+void AFunVar::Construct()
+{
+    /*
+    if (!ContentExists(KCont_Debug)) {
+	InsertContent("KCont_Debug");
+    }
+    */
 }
 
 void *AFunVar::DoGetObj(const char *aName)
@@ -1245,13 +1259,63 @@ string AFunVar::GetInpUri(TInt aId) const
     else return string();
 }
 
-string AFunVar::GetContent(const string& aName) const
+string AFunVar::GetContent(const string& aName, TBool aFull) const
 {
     string res;
-    if (mFunc != NULL) {
-	mFunc->GetResult(res);
+    if (aName == "") {
+	if (mFunc != NULL) {
+	    mFunc->GetResult(res);
+	} else {
+	    res = "<Uninit>";
+	}
+    } else if (aName == KCont_Debug) {
+	res = "debug_test";
+    } else { 
+	string oname = GetContentOwner(aName);
+	if (oname == KCont_Debug_Inputs) {
+	    string compname = GetContentLName(aName);
+	    TInt count = GetContCount(oname);
+	    for (TInt ind = 0; ind < count; ind++) {
+		string name, value;
+		GetContInp(ind, name, value);
+		if (name == compname) {
+		    res = value; break;
+		}
+	    }
+	} else {
+	    res = Elem::GetContent(aName, aFull);
+	}
+    }
+    return res;
+}
+
+string AFunVar::GetContComp(const string& aOwnerName, TInt aInd) const
+{
+    string res;
+    TInt bcnt = Elem::GetContCount(aOwnerName);
+    if (aInd < bcnt) {
+	res = Elem::GetContComp(aOwnerName, aInd);
     } else {
-	res = "Init ERR";
+	if (aOwnerName == "") {
+	    if (!Elem::ContentExists(KCont_Debug) && aInd == bcnt) {
+		res = KCont_Debug;
+	    }
+	} else if (aOwnerName == KCont_Debug) {
+	    if (aInd < bcnt) {
+		res = GetContComp(aOwnerName, aInd);
+	    } else {
+		if (!Elem::ContentExists(KCont_Debug_Inputs) && aInd == bcnt) {
+		    res = KCont_Debug_Inputs;
+		}
+	    }
+	} else if (aOwnerName == KCont_Debug_Inputs) {
+	    __ASSERT(aInd < GetInpsCount());
+	    string name, value;
+	    GetContInp(aInd, name, value);
+	    res = ContentCompId(aOwnerName, name);
+	} else {
+	    res = Elem::GetContComp(aOwnerName, aInd);
+	}
     }
     return res;
 }
@@ -1397,7 +1461,21 @@ TBool AFunVar::GetCont(TInt aInd, string& aName, string& aCont) const
     return ETrue;
 }
 
-TInt AFunVar::GetContCount() const
+TInt AFunVar::GetContCount(const string& aName) const
+{
+    TInt ct = Elem::GetContCount(aName);
+    if (aName == "") {
+	if (!ContentExists(KCont_Debug)) {
+	    ct++; // Virtually adding Debug
+	}
+    } else if (aName == KCont_Debug) {
+	if (!ContentExists(KCont_Debug_Inputs)) ct++;
+    } else if (aName == KCont_Debug_Inputs) {
+	ct = GetInpsCount();
+    }
+    return ct;
+}
+/*
 {
     TInt res = 3 + GetInpsCount();
     if (mFunc != NULL) {
@@ -1405,6 +1483,7 @@ TInt AFunVar::GetContCount() const
     }
     return res;
 }
+*/
 
 TBool Func::GetCont(TInt aInd, string& aName, string& aCont) const
 {
@@ -1413,6 +1492,8 @@ TBool Func::GetCont(TInt aInd, string& aName, string& aCont) const
 	GetResult(aCont);
     }
 };
+
+const string AFAddVar::KContVal_About = "Addition function with variable type of arguments";
 
 // Addintion, variable 
 string AFAddVar::PEType()
@@ -1423,11 +1504,13 @@ string AFAddVar::PEType()
 AFAddVar::AFAddVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetParent(Type());
+    ChangeCont(KContVal_About, ETrue, KCont_About);
 }
 
 AFAddVar::AFAddVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
+    ChangeCont(KContVal_About, ETrue, KCont_About);
 }
 
 void *AFAddVar::DoGetObj(const char *aName)
@@ -1525,6 +1608,13 @@ void *FAddFloat::DoGetObj(const char *aName)
     return res;
 }
 
+string FAddFloat::DataToString(float aData)
+{
+    stringstream ss;
+    ss << aData;
+    return ss.str();
+}
+
 float FAddFloat::Value()
 {
     Elem::TIfRange range = mHost.GetInps(EInp);
@@ -1534,6 +1624,7 @@ float FAddFloat::Value()
 	MDFloatGet* dfget = dget->GetDObj(dfget);
 	if (dfget != NULL) {
 	    val += dfget->Value();
+	    mInps[dget] = DataToString(dfget->Value());
 	}
 	else {
 	    MDIntGet* diget = dget->GetDObj(diget);

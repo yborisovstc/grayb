@@ -357,6 +357,7 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	static string PEType();
 	AFunVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	AFunVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
+	void Construct();
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MDVarGet
@@ -371,9 +372,10 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	virtual Elem* GetAgent() {return this;};
 	virtual TInt GetInpCpsCount() const {return -1;};
 	// From Elem
-	virtual string GetContent(const string& aName=string()) const; 
+	virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const; 
 	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
-	virtual TInt GetContCount() const;
+	virtual TInt GetContCount(const string& aName = string()) const;
+	virtual string GetContComp(const string& aOwnerName, TInt aInd) const;
     protected:
 	virtual void Init(const string& aIfaceName) {};
 	virtual string GetInpUri(TInt aId) const;
@@ -415,6 +417,8 @@ class FAddFloat: public FAddBase, public MDFloatGet {
 	virtual void GetResult(string& aResult) const;
 	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
 	virtual TInt GetContCount() const;
+	virtual string GetInpExpType(TInt aId) const { return "float";};
+	static string DataToString(float aData);
 	float mRes;
 };
 
@@ -487,6 +491,7 @@ class AFAddVar: public AFunVar
 	virtual TInt GetInpCpsCount() const;
     protected:
 	virtual void Init(const string& aIfaceName);
+	static const string KContVal_About;
 };
 
 // Multiplication, variable type

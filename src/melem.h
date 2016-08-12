@@ -155,7 +155,7 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
     public:
     // Predefined content categories
     typedef enum {
-	ECct_Ro = 1,
+	ECct_RO = 1,
 	ECct_Dbg
     } TCntCat;
     public:
@@ -180,6 +180,7 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 	virtual TInt GetContCount(const string& aName = string()) const = 0;
 	virtual TBool IsContChangeable(const string& aName = string()) const = 0; 
 	//virtual TBool GetCont(string& aValue, const string& aName=string()) const = 0; 
+	virtual TBool ContentExists(const string& aName) const = 0;
 	virtual TBool ContValueExists(const string& aName=string()) const = 0;
 	virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const = 0; 
 	virtual string GetContComp(const string& aOwnerName, TInt aInd) const = 0;

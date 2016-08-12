@@ -165,7 +165,7 @@
 
 	<sect2 id="uc_002"><title>UC_002 Creation from spec</title>
 	    <sect3><title>Description</title>
-		CLIENT requests creation of graph by spec - SYSTEM creates the graph using the spec given.
+		CLIENT requests creation of MODEL by spec - SYSTEM creates the MODEL using the spec given.
 	    </sect3>
 	    <sect3><title>Extentended by</title>
 		<itemizedlist>
@@ -2067,6 +2067,187 @@
 	    <sect3><title>Related to</title> </sect3>
 	    <sect3><title>Discussion</title>
 		<itemizedlist>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_062"><title>UC_062 Model multi-agent structure</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem>CLIENT: client of SYSTEM</listitem>
+		    <listitem>SYSTEM: modelling run-time</listitem>
+		    <listitem>MODEL: a model of system</listitem>
+		    <listitem>AGENT: an elementary part of MODEL</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<itemizedlist>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>CLIENT performs some interaction to MODEL: MODEL is exposed to CLIENT as set of agents.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_002"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+	    </sect3>
+	    <sect3><title>Related to</title> </sect3>
+	    <sect3><title>Discussion</title>
+		<itemizedlist>
+		    <listitem>So agent is elementary "building block" of the model. There are no other substances representing
+			the model to the client.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_063"><title>UC_063 Agents APIs, interfaces</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem>CLIENT: client of SYSTEM</listitem>
+		    <listitem>SYSTEM: modelling run-time</listitem>
+		    <listitem>MODEL: a model of system</listitem>
+		    <listitem>AGENT: an elementary part of MODEL</listitem>
+		    <listitem>INTERFACE: definition of a set of requests to AGENTs</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<itemizedlist>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>CLIENT performs some interaction to MODEL: MODEL offers agents APIs for that as a set of INTERFACEs.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_062"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_064"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Related to</title> </sect3>
+	    <sect3><title>Discussion</title>
+		<itemizedlist>
+		    <listitem> </listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+		<orderedlist>
+		    <listitem>Can agent implement more that one interface? Yes, normally agent provides some interfaces</listitem>
+		    <listitem>How client can get the required interface from agent? - There is agents base APIs that
+			allows to resolve and get interfaces, ref <xref linkend="uc_064"/></listitem>
+		</orderedlist>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_064"><title>UC_064 Agents APIs, agent base interface</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem>CLIENT: client of SYSTEM</listitem>
+		    <listitem>SYSTEM: modelling run-time</listitem>
+		    <listitem>MODEL: a model of system</listitem>
+		    <listitem>AGENT: an elementary part of MODEL</listitem>
+		    <listitem>INTERFACE: definition of a set of requests to AGENTs</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<itemizedlist>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>CLIENT performs some interaction to MODEL: MODEL offers agents APIs for that as a set of INTERFACEs.
+		    There is AGENT base interface defined that offer APIs common for all AGENTs. </listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_063"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+	    </sect3>
+	    <sect3><title>Related to</title> </sect3>
+	    <sect3><title>Discussion</title>
+		<itemizedlist>
+		    <listitem>Important part of base interface is the requests for obtaining other interfaces supported by AGENT.
+		    </listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+		<orderedlist>
+		    <listitem>What requests supports agents base APIs? - The requests are:
+			<itemizedlist>
+			    <listitem>Resolving and obtaining interfaces</listitem>
+			    <listitem>Mutation</listitem>
+			</itemizedlist>
+		    </listitem>
+		</orderedlist>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_065"><title>UC_065 Content of agent.</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem>CLIENT: client of SYSTEM</listitem>
+		    <listitem>SYSTEM: modelling run-time</listitem>
+		    <listitem>MODEL: a model of system</listitem>
+		    <listitem>AGENT: an agent in MODEL</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<itemizedlist>
+		    <listitem>There is AGENT created in model</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>CLIENT requests manipulating with content of AGENT
+			(via base agent APIs, ref <xref linkend="uc_063"/>)</listitem>
+		    <listitem>AGENT base APIs offers the means of checking, getting, adding, deleting and changing the content.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_002"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+	    </sect3>
+	    <sect3><title>Related to</title> </sect3>
+	    <sect3><title>Discussion</title>
+		<itemizedlist>
+		    <listitem>The agent content is the data specific for that agent. It could be representation of the 
+		    internal state of agent, debug information etc.</listitem>
 		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Clarification</title>
