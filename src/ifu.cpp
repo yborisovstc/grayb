@@ -93,6 +93,33 @@ size_t Ifu::FindFirstCtrl(const string& aString, const char aCtrl, size_t aPos)
     return pos;
 }
 
+size_t Ifu::FindFirstCtrl(const string& aString, const string& aCtrls, size_t aPos)
+{
+    size_t pos_beg = aPos;
+    size_t pos;
+    do {
+	char ctrl = 0x00;
+	pos = aString.find_first_of(aCtrls, pos_beg); 
+	pos_beg = pos + 1;
+    } while(pos != string::npos && aString.at(pos - 1) == KEsc);
+    return pos;
+}
+
+/*
+size_t Ifu::FindFirstOutOfDelims(const string& aString, const string& aSymbols, const string& aDelims, size_t aBeg)
+{
+    size_t pos_beg = aBeg;
+    size_t pos;
+    do {
+    } while (false);
+    return pos;
+}
+*/
+
+size_t Ifu::FindEndNestedDelim(const string& aString, char LeftDelim, char RightDelim)
+{
+}
+
 TBool Ifu::ToBool(const string& aString)
 {
     TBool res = EFalse;

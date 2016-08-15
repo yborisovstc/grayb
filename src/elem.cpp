@@ -17,6 +17,9 @@ TBool Elem::EN_PERF_DBG1 = ETrue;
 TBool Elem::EN_MUT_LIM = ETrue;
 
 const string Elem::KCont_About = "About";
+const string MElem::KCont_Categories = "Categories";
+const string MElem::KCont_Ctg_Readonly = "Readonly";
+const string MElem::KCont_Ctg_Debug = "Debug";
 
 string Elem::Fmt::mSepContInp = ";";
 string Elem::Fmt::mSepContName = "~";
@@ -457,6 +460,8 @@ Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMa
     SetParent(Type());
     iComps.reserve(100);
     InsertContent(KCont_About);
+    //InsertContent(KCont_Categories);
+    //InsertContent(KCont_Ctg_Readonly);
 }
 
 Elem::Elem(Elem* aMan, MEnv* aEnv): iName(Type()), iMan(aMan), iEnv(aEnv),
@@ -476,6 +481,8 @@ Elem::Elem(Elem* aMan, MEnv* aEnv): iName(Type()), iMan(aMan), iEnv(aEnv),
     croot.SetAttr(ENa_Id, iName);
     SetParent(string());
     InsertContent(KCont_About);
+    //InsertContent(KCont_Categories);
+    //InsertContent(KCont_Ctg_Readonly);
 }
 
 void Elem::Delete()
@@ -1439,14 +1446,16 @@ void Elem::InsertContent(const string& aName)
 void Elem::RemoveContent(const string& aName)
 {
     // Value
-    pair<TContent::iterator, TContent::iterator> range = mContent.equal_range(TContentKey(aName, ECrl_Value));
-    for (TContent::iterator it = range.first; it != range.second; it++) {
+    TContent::iterator it = mContent.find(TContentKey(aName, ECrl_Value));
+    while (it != mContent.end()) {
 	mContent.erase(it);
+	it = mContent.find(TContentKey(aName, ECrl_Value));
     }
     // Components
-    range = mContent.equal_range(TContentKey(aName, ECrl_Component));
-    for (TContent::const_iterator it = range.first; it != range.second; it++) {
+    it = mContent.find(TContentKey(aName, ECrl_Component));
+    while (it != mContent.end()) {
 	RemoveContent(it->second);
+	it = mContent.find(TContentKey(aName, ECrl_Component));
     }
 }
 
@@ -1478,6 +1487,7 @@ void Elem::SetContentValue(const string& aName, const string& aValue)
     }
 }
 
+#if 0
 TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
 {
     TBool res = ETrue;
@@ -1503,6 +1513,7 @@ TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
 	    }
 	    // Parsing comps
 	    while (pos != string::npos && res) { // By comps
+		TBool deletion = EFalse;
 		pos = aVal.find_first_not_of(' ', pos_beg);
 		__ASSERT(pos != string::npos);
 		pos_beg = pos;
@@ -1521,19 +1532,49 @@ TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
 			pos_beg += 1;
 			pos = Ifu::FindFirstCtrl(aVal, KContentValQuote, pos_beg);
 		    } else if (aVal.at(pos_beg) == KContentDeletion) { // Deletion
-			RemoveContentComp(aName, sname);
+			deletion = ETrue;
 		    } else { // Error: Incorrect comp value start delimiter
 			res = EFalse; break;
 		    }
 		}
 		if (pos == string::npos) { // Error: missing comp end delimiter
 		    res = EFalse; break;
+		} else if (deletion) {
+			RemoveContentComp(aName, sname);
 		} else {
 		    string value = aVal.substr(pos_beg, pos - pos_beg);
 		    ChangeCont(value, aRtOnly, ContentCompId(aName, sname));
 		}
 		pos_beg = pos + 1;
 	    };
+	}
+    } else { // Bare value
+	InsertContent(aName);
+	SetContentValue(aName, aVal);
+    }
+    if (res) {
+	OnCompChanged(*this, aName);
+    }
+    return res;
+}
+#endif
+
+TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
+{
+    TBool res = ETrue;
+    size_t pos_beg = 0, pos = 0;
+    if (!aVal.empty() && aVal.at(0) == KContentStart) { // Complex content
+	string delims(1, KContentCompsSep); delims += KContentValQuote; delims += KContentEnd;
+	size_t pos_beg = 1;
+	// Parsing elements of content (value | comps | category)
+	while (pos != string::npos && res) { // By elements
+	    pos = Ifu::FindFirstCtrl(aVal, delims, pos_beg);
+	    if (pos != string::npos) {
+		char dl = aVal.at(pos);
+		if (dl == 
+		
+	    } else { // Error: missing delimiters
+	    }
 	}
     } else { // Bare value
 	InsertContent(aName);

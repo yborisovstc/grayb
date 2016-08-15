@@ -154,10 +154,9 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
     friend class ImportsMgr;
     public:
     // Predefined content categories
-    typedef enum {
-	ECct_RO = 1,
-	ECct_Dbg
-    } TCntCat;
+    static const string KCont_Categories;
+    static const string KCont_Ctg_Readonly;
+    static const string KCont_Ctg_Debug;
     public:
 	static const char* Type() { return "MElem";};
     public:

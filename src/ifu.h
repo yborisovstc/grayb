@@ -35,6 +35,11 @@ class Ifu
 	static string EscCtrl(const string& aInp, char aCtrl);
 	static string DeEscCtrl(const string& aInp, char aCtrl);
 	static size_t FindFirstCtrl(const string& aString, const char aCtrl, size_t aPos); 
+	static size_t FindFirstCtrl(const string& aString, const string& aCtrls, size_t aPos); 
+	// Find first occurance of symbol out of delimiters. Delims can be simple and nested
+//	static size_t FindFirstOutOfDelims(const string& aString, const string& aSymbols, char aSimpleDelim,
+//		const string& aNestedDelims, size_t aBeg); 
+	static size_t FindEndNestedDelim(const string& aString, char LeftDelim, char RightDelim);
     public:
 	static char KRinvSep;
 	static char KEsc;

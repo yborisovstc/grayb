@@ -317,12 +317,15 @@ void Ut_cre::test_Content()
     CPPUNIT_ASSERT_MESSAGE("Failed on setting content (with comps)", ccres);
     cont = root->GetContent("Test_WC", ETrue);
     // Deleting comp of content
+    cout << "Deleting [Enable_trace] comp from [Debug] ..." << endl;
     root->ChangeCont("{ Enable_trace:- }", EFalse, "Debug");
     cont = root->GetContent("Debug", ETrue);
-    cout << "[Debug] content after deleting [Enable_trace] >>" << endl;
+    cout << "[Debug] content after deleting [Enable_trace]:" << endl;
     cout << cont << endl;
     cont_ok = (cont == "{'debug_content' Enable_dbg:'no'}");
     CPPUNIT_ASSERT_MESSAGE("Wrong root content after deleting comp", cont_ok);
+    // Predefined categories
+    root->ChangeCont("{ @Debug }", EFalse, "Debug");
 
     delete iEnv;
 }
