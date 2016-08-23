@@ -39,7 +39,7 @@ class Ifu
 	// Find first occurance of symbol out of delimiters. Delims can be simple and nested
 //	static size_t FindFirstOutOfDelims(const string& aString, const string& aSymbols, char aSimpleDelim,
 //		const string& aNestedDelims, size_t aBeg); 
-	static size_t FindEndNestedDelim(const string& aString, char LeftDelim, char RightDelim);
+	static size_t FindRightDelim(const string& aString, char LeftDelim, char RightDelim, size_t aPos);
     public:
 	static char KRinvSep;
 	static char KEsc;

@@ -1487,6 +1487,12 @@ void Elem::SetContentValue(const string& aName, const string& aValue)
     }
 }
 
+void Elem::SetContentCategory(const string& aName, const string& aCategory)
+{
+    TContentKey key(aName, ECrl_Category);
+    mContent.insert(TContentRec(key, aCategory));
+}
+
 #if 0
 TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
 {
@@ -1567,15 +1573,83 @@ TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
 	string delims(1, KContentCompsSep); delims += KContentValQuote; delims += KContentEnd;
 	size_t pos_beg = 1;
 	// Parsing elements of content (value | comps | category)
-	while (pos != string::npos && res) { // By elements
-	    pos = Ifu::FindFirstCtrl(aVal, delims, pos_beg);
+	TBool end = EFalse;
+	do { // By elements
+	    // Passing thru elements separator
+	    pos = aVal.find_first_not_of(KContentCompsSep, pos_beg);
+	    //pos = Ifu::FindFirstCtrl(aVal, delims, pos_beg);
 	    if (pos != string::npos) {
 		char dl = aVal.at(pos);
-		if (dl == 
-		
-	    } else { // Error: missing delimiters
+		if (dl == KContentEnd) { // Complex content closing delimiter
+		    end = ETrue;
+		} else if (dl == KContentValQuote) { // Value
+		    pos_beg = pos + 1;
+		    pos = Ifu::FindFirstCtrl(aVal, KContentValQuote, pos_beg);
+		    if (pos == string::npos) { // Error: missing value closing quote
+			res = EFalse;
+		    } else {
+			string value = aVal.substr(pos_beg, pos - pos_beg);
+			InsertContent(aName);
+			SetContentValue(aName, value);
+			pos_beg = pos + 1;
+		    }
+		} else if (dl == KContentPref_Category) { // Category
+		    pos_beg = pos + 1;
+		    delims = string(1, KContentCompsSep); delims += KContentEnd;
+		    pos = aVal.find_first_of(delims, pos_beg);
+		    if (pos != string::npos) {
+			string category = aVal.substr(pos_beg, pos - pos_beg);
+			SetContentCategory(aName, category);
+			pos_beg = pos + 1;
+		    } else { // Error: undelimited category
+			__ASSERT(EFalse);
+			res = EFalse;
+		    }
+		} else if (isalpha(dl)) { // Component
+		    pos_beg = pos;
+		    // Getting comp name
+		    pos = aVal.find_first_of(KContentValSep, pos_beg);
+		    if (pos == string::npos) { // Error: comps name separator is missing
+			__ASSERT(EFalse);
+			res = EFalse;
+		    }
+		    string sname = aVal.substr(pos_beg, pos - pos_beg);
+		    pos_beg = pos + 1;
+		    if (pos_beg >= aVal.size()) { // Error: Uncomplete comp
+			__ASSERT(EFalse);
+			res = EFalse;
+		    } else {
+			if (aVal.at(pos_beg) == KContentStart) { // Comps value is full content
+			    pos = Ifu::FindRightDelim(aVal, KContentStart, KContentEnd, pos_beg + 1);
+			    string value = aVal.substr(pos_beg, pos - pos_beg + 1);
+			    ChangeCont(value, aRtOnly, ContentCompId(aName, sname));
+			} else if (aVal.at(pos_beg) == KContentValQuote) { // Quoted value
+			    pos_beg += 1;
+			    pos = Ifu::FindFirstCtrl(aVal, KContentValQuote, pos_beg);
+			    string value = aVal.substr(pos_beg, pos - pos_beg);
+			    ChangeCont(value, aRtOnly, ContentCompId(aName, sname));
+			} else if (aVal.at(pos_beg) == KContentDeletion) { // Deletion
+			    RemoveContentComp(aName, sname);
+			    pos = pos_beg;
+			} else { // Error: Incorrect comp value start delimiter
+			    res = EFalse;
+			    __ASSERT(EFalse);
+			}
+		    }
+		    if (pos == string::npos) { // Error: missing comp end delimiter
+			res = EFalse;
+			__ASSERT(EFalse);
+		    }
+		    pos_beg = pos + 1;
+		} else { // Error: incorrect element
+		    __ASSERT(EFalse);
+		    res = EFalse;
+		}
+	    } else { // Error: missing closing conent delimiter
+		__ASSERT(EFalse);
+		res = EFalse;
 	    }
-	}
+	} while (!end && pos != string::npos && res); // By elements
     } else { // Bare value
 	InsertContent(aName);
 	SetContentValue(aName, aVal);
@@ -1601,6 +1675,7 @@ string Elem::GetContent(const string& aId, TBool aFull) const
     } else { // Full content
 	TContentKey ctgkey(aId, ECrl_Category);
 	TBool hascomps = ContentHasComps(aId);
+	TBool ctgexist = mContent.count(ctgkey) > 0;
 	if (valexists || hascomps || mContent.count(ctgkey) > 0) { // Not empty
 	    res = KContentStart;
 	    // Quoted value
@@ -1608,8 +1683,15 @@ string Elem::GetContent(const string& aId, TBool aFull) const
 		string val = GetContentValue(aId);
 		res += KContentValQuote + val + KContentValQuote ;
 	    }
-	    //  Components
-	    if (hascomps) {
+	    if (ctgexist) { // Categories
+		pair<TContent::const_iterator, TContent::const_iterator> range = 
+		    mContent.equal_range(ctgkey);
+		for (TContent::const_iterator it = range.first; it != range.second; it++) {
+		    string ctg = it->second;
+		    res += KContentCompsSep; res += KContentPref_Category + ctg;
+		}
+	    }
+	    if (hascomps) { //  Components
 		res += " ";
 		for (TInt ind = 0; ind < GetContCount(aId); ind++) {
 		    string comp = GetContComp(aId, ind);

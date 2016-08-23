@@ -315,7 +315,15 @@ void Ut_cre::test_Content()
     // Setting of structured content: with comps
     ccres = root->ChangeCont("{'With comps' Comp1:'Comp1_Value' Comp2:'Comp2_Value'}", EFalse, "Test_WC");
     CPPUNIT_ASSERT_MESSAGE("Failed on setting content (with comps)", ccres);
+    cout << "Content of Test_WC:" << endl;
     cont = root->GetContent("Test_WC", ETrue);
+    cout << cont << endl;
+    // Nested component
+    ccres = root->ChangeCont("{'Value of Test_WC_nested' Test_WC_nested_1:{'Value of Test_WC_nested_1' comp:'test'}}",
+	    EFalse, "Test_WC_nested");
+    cout << "Content of Test_WC_nested:" << endl;
+    cont = root->GetContent("Test_WC_nested", ETrue);
+    cout << cont << endl;
     // Deleting comp of content
     cout << "Deleting [Enable_trace] comp from [Debug] ..." << endl;
     root->ChangeCont("{ Enable_trace:- }", EFalse, "Debug");
@@ -325,7 +333,10 @@ void Ut_cre::test_Content()
     cont_ok = (cont == "{'debug_content' Enable_dbg:'no'}");
     CPPUNIT_ASSERT_MESSAGE("Wrong root content after deleting comp", cont_ok);
     // Predefined categories
-    root->ChangeCont("{ @Debug }", EFalse, "Debug");
+    root->ChangeCont("{ @Debug @Readonly comp:{'some_value'}}", EFalse, "Debug");
+    cont = root->GetContent("Debug", ETrue);
+    cout << "[Debug] content after adding category @Debug:" << endl;
+    cout << cont << endl;
 
     delete iEnv;
 }

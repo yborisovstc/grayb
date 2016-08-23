@@ -353,6 +353,7 @@ class Elem: public MElem
 	void RemoveContent(const string& aName);
 	void RemoveContentComp(const string& aOwner, const string& aComp);
 	void SetContentValue(const string& aName, const string& aValue);
+	void SetContentCategory(const string& aName, const string& aCategory);
 	void InsertContentComp(const string& aContName, const string& aCompName);
 	void InsertContCompsRec(const string& aName, const string& aComp);
 	TBool ContentHasComps(const string& aContName) const;
@@ -403,7 +404,7 @@ class Elem: public MElem
 	static const char KContentSep = '.';
 	static const char KContentKey_Value = '#';
 	static const char KContentKey_Comps = '*';
-	static const char KContentKey_Props = '~';
+	static const char KContentPref_Category = '@';
 	static const char KContentDeletion = '-';
     protected:
 	// Environment
