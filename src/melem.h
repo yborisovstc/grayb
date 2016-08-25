@@ -177,8 +177,7 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 	virtual MElem* GetRoot() const = 0;
 	virtual MElem* GetInhRoot() const = 0;
 	virtual TInt GetContCount(const string& aName = string()) const = 0;
-	virtual TBool IsContChangeable(const string& aName = string()) const = 0; 
-	//virtual TBool GetCont(string& aValue, const string& aName=string()) const = 0; 
+	virtual TBool IsContOfCategory(const string& aName, const string& aCategory) const = 0; 
 	virtual TBool ContentExists(const string& aName) const = 0;
 	virtual TBool ContValueExists(const string& aName=string()) const = 0;
 	virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const = 0; 
@@ -223,6 +222,8 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 	virtual const MElem* GetCompOwning(const MElem* aElem) const = 0;
 	virtual TBool IsInheritedComp(const MElem* aNode) const = 0;
 	virtual TBool HasInherDeps(const MElem* aScope) const = 0;
+	// Visual client debugging, ref ds_visdbg
+	virtual string GetAssociatedData(const string& aUri) const = 0;
 	// Debugging
 	virtual TInt GetCapacity() const = 0;
 	virtual TBool IsHeirOf(const string& aParent) const = 0;
@@ -234,7 +235,7 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 	virtual void SaveChromo(const char* aPath) const = 0;
 	virtual void DumpChilds() const = 0;
 	virtual void DumpComps() const = 0;
-	virtual void DumpCntVal() const = 0;
+	virtual void DumpContent() const = 0;
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};
 	// Helpers

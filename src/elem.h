@@ -267,7 +267,7 @@ class Elem: public MElem
 	virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const;
 	virtual string GetContentValue(const string& aName) const;
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string());
-	virtual TBool IsContChangeable(const string& aName = string()) const;
+	virtual TBool IsContOfCategory(const string& aName, const string& aCategory) const; 
 	virtual TInt GetContCount(const string& aName = string()) const;
 	virtual MElem* GetUpperAowner();
 	virtual TBool IsRemoved() const;
@@ -387,13 +387,15 @@ class Elem: public MElem
 	static long GetClockElapsed(const timespec& aStart, timespec& aEnd);
 	static long GetClockElapsed(long aStart);
 	static long GetClock();
+	// Visual client debugging, ref ds_visdbg
+	virtual string GetAssociatedData(const string& aUri) const;
 	// Debugging
 	virtual void DumpMcDeps() const;
 	virtual void DumpCmDeps() const;
 	virtual void SaveChromo(const char* aPath) const;
 	virtual void DumpComps() const;
 	virtual void DumpChilds() const;
-	virtual void DumpCntVal() const;
+	virtual void DumpContent() const;
     public:
 	// TODO [YB] To move to Ifu ?
 	static const char KContentStart = '{';

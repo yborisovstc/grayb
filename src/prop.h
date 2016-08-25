@@ -30,7 +30,6 @@ class Prop: public Elem, public MProp_Imd
 	// From MElem
 	virtual string GetContent(const string& aName=string()) const; 
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName = string()); 
-	virtual TBool IsContChangeable(const string& aName = string()) const; 
 	// From MProp_Imd
 	virtual MIface* MProp_Call(const string& aSpec, string& aRes);
 	virtual string MProp_Mid() const;

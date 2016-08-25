@@ -613,11 +613,6 @@ TBool Aedge::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
     return res;
 }
 
-TBool Aedge::IsContChangeable(const string& aName) const
-{
-    return (aName == mP1ContName || aName == mP2ContName);
-}
-
 MIface* Aedge::Call(const string& aSpec, string& aRes)
 {
     MIface* res = NULL;

@@ -55,11 +55,6 @@ MElem* AMod::Import(const GUri& aUri)
     return res;
 }
 
-TBool AMod::IsContChangeable(const string& aName) const
-{
-    return ETrue;
-}
-
 TBool AMod::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
 {
     TBool res = ETrue;

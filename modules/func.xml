@@ -256,6 +256,7 @@
 	<!-- Input positives -->
 	<node node="./Capsule" id="Inp" parent="./../Inp_FVarMc"/> 
 	<cont id="ViewData.Res" ref="./Agents/func_agt"/>
+	<cont id="SpAgent" ref="./Agents/func_agt"/>
     </node>
 
 
@@ -447,6 +448,7 @@
 	<node node="./Agents" id="func_agt" parent="AFAddVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVarMc"/> 
 	<cont id="ViewData.Res" ref="./Agents/func_agt"/>
+	<cont id="SpAgent" ref="./Agents/func_agt"/>
     </node>
 
     <!-- Transition Function of variable adding and substraction -->

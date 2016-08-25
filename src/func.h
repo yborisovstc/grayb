@@ -371,11 +371,12 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...);
 	virtual Elem* GetAgent() {return this;};
 	virtual TInt GetInpCpsCount() const {return -1;};
-	// From Elem
+	// From MElem
 	virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const; 
 	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
 	virtual TInt GetContCount(const string& aName = string()) const;
 	virtual string GetContComp(const string& aOwnerName, TInt aInd) const;
+	virtual string GetAssociatedData(const string& aUri) const;
     protected:
 	virtual void Init(const string& aIfaceName) {};
 	virtual string GetInpUri(TInt aId) const;

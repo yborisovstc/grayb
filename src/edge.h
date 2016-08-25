@@ -96,7 +96,6 @@ class Aedge: public Elem, public MEdge
 	//virtual void GetCont(string& aCont, const string& aName = string()) const; 
 	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()); 
-	virtual TBool IsContChangeable(const string& aName = string()) const; 
 	virtual TInt GetContCount(const string& aName=string()) const {return ECnt_Num_;};
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);

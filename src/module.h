@@ -22,7 +22,6 @@ class AMod: public Elem, public MMod
 	// Fom MElem
 	virtual TBool GetCont(string& aValue, const string& aName = string()) const;
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string());
-	virtual TBool IsContChangeable(const string& aName = string()) const;
 	virtual TInt GetContCount() const;
     protected:
 	string mCont;

@@ -77,6 +77,7 @@
 	<node node="./Agents" id="ADVar" parent="DVar"/>
 	<cont node="./Capsule/inp" id="Provided" val="MDVarSet"/>
 	<cont node="./Capsule/out" id="Provided" val="MDVarGet"/>
+	<cont id="ViewData.Res" ref="./Agents/ADVar"/>
     </node>
 
 
@@ -147,6 +148,7 @@
 	<cont node="./Capsule/inp" id="Provided" val="MDataObserver"/>
 	<cont node="./Capsule/inp" id="Required" val="MDVarGet"/>
 	<cont node="./Capsule/out" id="Provided" val="MDVarGet"/>
+	<cont id="ViewData.Res" ref="./Agents/AData"/>
     </node>
 
     <!-- Terminal data, input only, provided data observer, required gettng data. Separate type prop -->

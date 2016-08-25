@@ -1485,6 +1485,45 @@ TInt AFunVar::GetContCount(const string& aName) const
 }
 */
 
+string AFunVar::GetAssociatedData(const string& aUri) const
+{
+    string res;
+    if (mFunc != NULL) {
+	// Checking inputs
+	TInt count = GetInpCpsCount();
+	TInt inpind = -1;
+	for (TInt ind = 0; ind < count; ind++) {
+	    string inp_uri = "./../../Capsule/" + GetInpUri(ind);
+	    if (inp_uri == aUri) {
+		inpind = ind; break;
+	    }
+	}
+	if (inpind != -1) {
+	    stringstream ss;
+	    Elem::TIfRange range = ((AFunVar*) this)->GetInps(inpind);
+	    for (TIfIter it = range.first; it != range.second; it++) {
+		if (it != range.first) {
+		    ss << endl;
+		}
+		MDVarGet* inp = (MDVarGet*) (*it);
+		if (mFunc->mInps.count(inp) > 0) {
+		    ss << mFunc->mInps.at(inp);
+		} else { // Error
+		    ss << "<ERROR>";
+		}
+	    }
+	    res = ss.str();
+	}
+	// Checking output
+	if (aUri == "./../../Capsule/Out" || aUri == "./../../Capsule/out") {
+	    mFunc->GetResult(res);
+	}
+    }
+    return res;
+}
+
+
+
 TBool Func::GetCont(TInt aInd, string& aName, string& aCont) const
 {
     if (aInd == 0) {
@@ -1630,6 +1669,7 @@ float FAddFloat::Value()
 	    MDIntGet* diget = dget->GetDObj(diget);
 	    if (diget != NULL) {
 		val += (float) diget->Value();
+		mInps[dget] = DataToString(diget->Value());
 	    }
 	}
     }

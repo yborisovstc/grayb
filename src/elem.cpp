@@ -1412,9 +1412,17 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 
 #ifdef UNICONTENT
 
-TBool Elem::IsContChangeable(const string& aName) const
+TBool Elem::IsContOfCategory(const string& aName, const string& aCategory) const
 {
-    return ETrue; // Temporarily only
+    TBool res = EFalse;
+    pair<TContent::const_iterator, TContent::const_iterator> range =
+       	mContent.equal_range(TContentKey(aName, ECrl_Category));
+    for (TContent::const_iterator it = range.first; it != range.second; it++) {
+	if (it->second == aCategory) {
+	    res = ETrue; break;
+	}
+    }
+    return res;
 }
 
 // TODO To add handling of comp already exists
@@ -1492,78 +1500,6 @@ void Elem::SetContentCategory(const string& aName, const string& aCategory)
     TContentKey key(aName, ECrl_Category);
     mContent.insert(TContentRec(key, aCategory));
 }
-
-#if 0
-TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
-{
-    TBool res = ETrue;
-    size_t pos_beg = 0, pos = 0;
-    if (!aVal.empty() && aVal.at(0) == KContentStart) { // Complex content
-	string delims(1, KContentValQuote); delims += KContentValSep;
-	size_t pos_beg = 1;
-	size_t pos = aVal.find_first_of(delims, pos_beg);
-	if (pos == string::npos) { // Empty content
-	} else { // Non-empty content
-	    if (aVal.at(pos) == KContentValQuote) { // Value
-		pos_beg = pos + 1;
-		pos = Ifu::FindFirstCtrl(aVal, KContentValQuote, pos_beg);
-		if (pos == string::npos) { // Error: missing value closing quote
-		    res = EFalse;
-		} else {
-		    string value = aVal.substr(pos_beg, pos - pos_beg);
-		    InsertContent(aName);
-		    SetContentValue(aName, value);
-		    pos_beg = pos + 1;
-		}
-	    } else { // Value is omitted
-	    }
-	    // Parsing comps
-	    while (pos != string::npos && res) { // By comps
-		TBool deletion = EFalse;
-		pos = aVal.find_first_not_of(' ', pos_beg);
-		__ASSERT(pos != string::npos);
-		pos_beg = pos;
-		// Getting comp name
-		pos = Ifu::FindFirstCtrl(aVal, KContentValSep, pos_beg);
-		if (pos == string::npos) break;
-		string sname = aVal.substr(pos_beg, pos - pos_beg);
-		pos_beg = pos + 1;
-		if (pos_beg >= aVal.size()) { // Error: Uncomplete comp
-		    res = EFalse; break;
-		} else {
-		    if (aVal.at(pos_beg) == KContentStart) { // Comps value is full content
-			pos_beg += 1;
-			pos = Ifu::FindFirstCtrl(aVal, KContentEnd, pos_beg);
-		    } else if (aVal.at(pos_beg) == KContentValQuote) { // Quoted value
-			pos_beg += 1;
-			pos = Ifu::FindFirstCtrl(aVal, KContentValQuote, pos_beg);
-		    } else if (aVal.at(pos_beg) == KContentDeletion) { // Deletion
-			deletion = ETrue;
-		    } else { // Error: Incorrect comp value start delimiter
-			res = EFalse; break;
-		    }
-		}
-		if (pos == string::npos) { // Error: missing comp end delimiter
-		    res = EFalse; break;
-		} else if (deletion) {
-			RemoveContentComp(aName, sname);
-		} else {
-		    string value = aVal.substr(pos_beg, pos - pos_beg);
-		    ChangeCont(value, aRtOnly, ContentCompId(aName, sname));
-		}
-		pos_beg = pos + 1;
-	    };
-	}
-    } else { // Bare value
-	InsertContent(aName);
-	SetContentValue(aName, aVal);
-    }
-    if (res) {
-	OnCompChanged(*this, aName);
-    }
-    return res;
-}
-#endif
 
 TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName) 
 {
@@ -1749,7 +1685,7 @@ string Elem::GetContentValue(const string& aName) const
 }
 
 
-void Elem::DumpCntVal() const
+void Elem::DumpContent() const
 {
     cout << "<< Content >>" << endl;
     for (TContent::const_iterator it = mContent.begin(); it != mContent.end(); it++) {
@@ -1764,12 +1700,6 @@ void Elem::DumpCntVal() const
 }
 
 #else // UNICONTENT
-
-TBool Elem::IsContChangeable(const string& aName) const
-{
-    //return EFalse;
-    return ETrue; // Temporarily only
-}
 
 void Elem::SetContentValue(const string& aName, const string& aValue)
 {
@@ -4201,4 +4131,9 @@ string Elem::ContentValueKey(const string& aId)
 string Elem::ContentCompsKey(const string& aId)
 {
     return  aId + KContentSep + KContentKey_Comps;
+}
+
+string Elem::GetAssociatedData(const string& aUri) const
+{
+    return string();
 }

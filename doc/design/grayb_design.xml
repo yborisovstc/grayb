@@ -1527,20 +1527,24 @@
     <sect1 id="ds_visdbg"><title>Visual debugging support</title>
 	<sect2><title>Intro</title>
 	    <simpara>
-		For the debugging purpose it is required to see some "internal" data of the agent. For instance for agent-function it could be the value of its 
-		arguments. Currently this feature is implemented only partially: visual representation of function has some parameter that
-		defines content of which agent to display. What could be the approaches of support the full visual debugging functionality.
+		For the debugging purpose it is required to see some "internal" data of the agent. For instance for agent-function
+		it could be the value of its arguments. Currently this feature is implemented only partially: visual representation
+		of function has some parameter that defines content of which agent to display. What could be the approaches
+		of support the full visual debugging functionality.
 	    </simpara>
 	</sect2>
 	<sect2><title>Approach: special iface for debugging</title>
 	    <simpara>This iface can include the following methods:</simpara>
 	    <itemizedlist>
-		<listitem>Getting value that agent gets from the given input. Use-case here is: debugging some function, there is an error within
+		<listitem>Getting  data that agent assosiates to selected connection point (input, output, etc). Use-case here is:
+		    debugging some function, there is an error within
 		    some internal function, user move mouse pointer to input, tooltip gets displayed showing the value.</listitem>
 	    </itemizedlist>
-	    <simpara>What is difference between using debugging iface and complex content for keeping debug info (ref. <xref linkend="ds_cplx_cont"/>) ?.
-		Using content assumes that agent constantly updated content part that aims for debug info. This results in overhead. Of course we can
-		"switch" agent to "debug mode" via dedicated content, but it seems quite complex. ARGUING: It is not nececcary that object constantly
+	    <simpara>What is difference between using debugging iface and complex content for keeping debug info
+		(ref. <xref linkend="ds_cplx_cont"/>) ?.
+		Using content assumes that agent constantly updates content part that aims for debug info.
+		This results in overhead. Of course we can "switch" agent to "debug mode" via dedicated content,
+		but it seems quite complex. ARGUING: It is not nececcary that object constantly
 		refreshes debugging content. It depends on object. It can refresh the content only on demand via content getter.</simpara>
 	</sect2>
     </sect1>
@@ -1890,6 +1894,18 @@
 		<simpara>The matter is that in many cases embedded agent doesn't update even it's ownt content but returns
 		    it on gettng on-demand conent request only.</simpara>
 	    </sect3>
+	</sect2>
+	<sect2><title>Multiple vs simple content: multicontent is not an interface.</title>
+	    <simpara>Comparing again multi- and simple conent approaches we can ask the question: why don't just enhance the 
+		simple content approach, where content is interpreted accordind with the agent's specific interface. For
+		instance Edge agent can introduce and implement specific interface MEdge which specifies the format of content.
+		It could be like: "P1:uri_of_point1 P2:uri_of_point2". Any client in that case knows of how content should
+		be formed.</simpara>
+	    <simpara>In fact the multi-content approach is a part of this approach. Multi-content is not an interface but the
+		mechanism of convenient structuring of content. As we can see from example above, any kind of such "enhanced"
+		content has some structure (two parts P1 and P2 in the exampe). So multicontent is just method of unifying the
+		structure and operations of the content. The exact form of content should be defined by specific agent interface.
+	    </simpara>
 	</sect2>
     </sect1>
 
@@ -3508,6 +3524,8 @@
 	    </orderedlist>
 	</sect2>
 	<sect2><title>Enhanced ifaces of the model, ref <xref linkend="ds_mi"/></title>
+	</sect2>
+	<sect2><title>Visual debugging, ref <xref linkend="ds_visdbg"/></title>
 	</sect2>
     </sect1>
 
