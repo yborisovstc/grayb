@@ -393,7 +393,7 @@ Elem::TIfRange ATrVar::GetInps(TInt aId, TBool aOpt)
 
 void ATrVar::OnFuncContentChanged()
 {
-    OnContentChanged(*this);
+    OnChanged(*this);
 }
 
 TBool ATrVar::GetCont(string& aCont, const string& aName) const

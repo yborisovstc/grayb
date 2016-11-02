@@ -528,7 +528,7 @@ TInt AFuncInt::Value()
     TInt data = GetValue();
     if (data != mData) {
 	mData = data;
-	iMan->OnContentChanged(*this);
+	iMan->OnChanged(*this);
     }
     return mData;
 }
@@ -1201,7 +1201,7 @@ string AFunVar::VarGetIfid()
 
 void AFunVar::OnFuncContentChanged()
 {
-    OnContentChanged(*this);
+    OnChanged(*this);
 }
 
 void *AFunVar::DoGetDObj(const char *aName)

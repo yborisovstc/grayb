@@ -1,6 +1,13 @@
 #include "prov.h"
 #include "factr.h"
 #include "provdef.h"
+#include "mplugin.h"
+#include <dlfcn.h>
+#include <dirent.h>
+
+
+// Plugins default dir
+string KPluginDir = "/usr/lib/fap2/plugins/";
 
 GFactory::GFactory(const string& aName, MEnv* aEnv): Base(), iName(aName), iEnv(aEnv)
 {
@@ -12,7 +19,7 @@ GFactory::GFactory(const string& aName, MEnv* aEnv): Base(), iName(aName), iEnv(
 GFactory::~GFactory()
 {
     while (!iProviders.empty()) {
-	GProvider* prov = iProviders.begin()->second;
+	MProvider* prov = iProviders.begin()->second;
 	delete prov;
 	iProviders.erase(iProviders.begin());
     }
@@ -26,7 +33,7 @@ void *GFactory::DoGetObj(const char *aName)
 Elem* GFactory::CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv)
 {
     Elem* res = NULL;
-    for (map<string, GProvider*>::iterator it = iProviders.begin(); it != iProviders.end() && res == NULL; it++) {
+    for (map<string, MProvider*>::iterator it = iProviders.begin(); it != iProviders.end() && res == NULL; it++) {
 	res = it->second->CreateNode(aType, aName, aMan, aEnv);
     }
     return res;
@@ -35,7 +42,7 @@ Elem* GFactory::CreateNode(const string& aType, const string& aName, MElem* aMan
 Elem* GFactory::GetNode(const string& aUri)
 {
     Elem* res = NULL;
-    for (map<string, GProvider*>::iterator it = iProviders.begin(); it != iProviders.end() && res == NULL; it++) {
+    for (TProviders::iterator it = iProviders.begin(); it != iProviders.end() && res == NULL; it++) {
 	res = it->second->GetNode(aUri);
     }
     return res;
@@ -44,7 +51,7 @@ Elem* GFactory::GetNode(const string& aUri)
 TBool GFactory::IsProvided(const MElem* aElem) const
 {
     TBool res = EFalse;
-    for (map<string, GProvider*>::const_iterator it = iProviders.begin(); it != iProviders.end() && !res; it++) {
+    for (TProviders::const_iterator it = iProviders.begin(); it != iProviders.end() && !res; it++) {
 	res = it->second->IsProvided(aElem);
     }
     return res;
@@ -54,22 +61,62 @@ TBool GFactory::IsProvided(const MElem* aElem) const
 Chromo* GFactory::CreateChromo()
 {
     Chromo* res = NULL;
-    for (map<string, GProvider*>::iterator it = iProviders.begin(); it != iProviders.end() && res == NULL; it++) {
+    for (TProviders::iterator it = iProviders.begin(); it != iProviders.end() && res == NULL; it++) {
 	res = it->second->CreateChromo();
     }
     return res;
 }
 
-void GFactory::LoadPlugins()
+TBool GFactory::LoadPlugin(const string& aName)
 {
+    TBool res = EFalse;
+    MProvider* prov = NULL;
+    string plgpath = KPluginDir + aName;
+    void* handle = dlopen(plgpath.c_str(), RTLD_NOW|RTLD_LOCAL|RTLD_DEEPBIND);
+    if (handle != NULL) {
+	dlerror();
+	plugin_init_func_t* init = (plugin_init_func_t*) dlsym(handle, "init");
+	char* str_error = dlerror();
+	if (init!= NULL) {
+	    prov = init(iEnv);
+	    if (prov != NULL) {
+		res = ETrue;
+		AddProvider(prov);
+	    }
+	}
+    }
+    if (!res) {
+	dlclose(handle);
+    }
+    return res;
 }
 
-void GFactory::AddProvider(GProvider* aProv)
+int GFactory::FilterPlgDirEntries(const struct dirent *aEntry)
+{
+    string name = aEntry->d_name;
+    size_t ppos = name.find_first_of(".");
+    string suff = name.substr(ppos + 1);
+    int res = suff.compare("so"); 
+    return (res == 0) ? 1 : 0;
+}
+
+void GFactory::LoadPlugins()
+{
+    // List plugins directory
+    struct dirent **entlist;
+    int n = scandir(KPluginDir.c_str(), &entlist, FilterPlgDirEntries, alphasort);
+    // Load plugins
+    for (int cnt = 0; cnt < n; ++cnt) {
+	LoadPlugin(entlist[cnt]->d_name);
+    }
+}
+
+void GFactory::AddProvider(MProvider* aProv)
 {
     // TODO To support name
-    map<string, GProvider*>::const_iterator res = iProviders.find(aProv->Name());
+    TProviders::const_iterator res = iProviders.find(aProv->Name());
     __ASSERT(res == iProviders.end());
-    iProviders.insert(pair<string, GProvider*>(aProv->Name(), aProv));
+    iProviders.insert(TProvidersElem(aProv->Name(), aProv));
 }
 
 void GFactory::RemoveProvider(GProvider* aProv)
@@ -80,14 +127,14 @@ void GFactory::RemoveProvider(GProvider* aProv)
 
 void GFactory::AppendNodesInfo(vector<string>& aInfo)
 {
-    for (map<string, GProvider*>::iterator it = iProviders.begin(); it != iProviders.end(); it++) {
+    for (TProviders::iterator it = iProviders.begin(); it != iProviders.end(); it++) {
 	it->second->AppendNodesInfo(aInfo);
     }
 }
 
 const string& GFactory::ModulesPath() const
 {
-    GProvider* defprov = iProviders.at("ProvDef");
+    MProvider* defprov = iProviders.at("ProvDef");
     __ASSERT(defprov != NULL);
     return defprov->ModulesPath();
 }

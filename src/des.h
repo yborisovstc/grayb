@@ -260,8 +260,6 @@ class StateAgent: public Elem, public MDesSyncable, public MDesObserver
 	StateAgent(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
-	// From Elem
-	//virtual void OnCompChanged(Elem& aComp);
 	// From MDesSyncable
 	virtual void Update();
 	virtual void Confirm();
@@ -291,8 +289,6 @@ class ADes: public Elem, public MDesSyncable, public MDesObserver
 	ADes(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
-	// From Elem
-	//virtual void OnCompChanged(Elem& aComp);
 	// From MDesSyncable
 	virtual void Update();
 	virtual void Confirm();

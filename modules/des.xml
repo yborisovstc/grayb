@@ -86,6 +86,13 @@
 	</node>
     </node>
 
+    <node id="ExtStInpSocketMc" parent="/*/Modules/SysComps/ExtenderInpMc"> 
+	<node id="Int" parent="./../StInpSocketMc"/> 
+    </node>
+
+    <node id="ExtStOutSocketMc" parent="/*/Modules/SysComps/ExtenderOutMc"> 
+	<node id="Int" parent="./../StOutSocketMc"/> 
+    </node>
 
     <!-- Input of int transition -->
     <node id="TrIntInp" parent="/*/Modules/SysComps/ConnPointInp"> 

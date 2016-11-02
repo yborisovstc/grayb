@@ -32,7 +32,7 @@ class MAgentObserver: public MIface
 	// TODO [YB] Return value isn't used, to remove ?
 	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string()) = 0;
 	// For run-time only. Use OnCompChanged when the content is changed via mutation
-	virtual TBool OnContentChanged(MElem& aComp, const string& aContName = string()) = 0;
+	virtual TBool OnChanged(MElem& aComp) = 0;
 	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName) = 0;
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};
@@ -53,7 +53,7 @@ class MCompsObserver
 	virtual void OnCompAdding(MElem& aComp) = 0;
 	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string()) = 0;
 	// For run-time only. Use OnCompChanged when the content is changed via mutation
-	virtual TBool OnContentChanged(MElem& aComp, const string& aContName = string()) = 0;
+	virtual TBool OnChanged(MElem& aComp) = 0;
 	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName) = 0;
 };
 

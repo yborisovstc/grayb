@@ -606,10 +606,12 @@ TBool Aedge::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
 	if (aVal != mPoint2Uri) { mPoint2Uri = aVal; changed = ETrue; }
     }
     res = Elem::ChangeCont(aVal, aRtOnly, aName);
+    /*
     if (res && changed) {
-	if (aRtOnly) iMan->OnContentChanged(*this);
+	if (aRtOnly) iMan->OnChanged(*this);
 	else iMan->OnCompChanged(*this, aName);
     }
+    */
     return res;
 }
 

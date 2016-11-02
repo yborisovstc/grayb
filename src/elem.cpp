@@ -35,7 +35,7 @@ MAgentObserver::EIfu::EIfu()
     RegMethod("OnCompDeleting", 1);
     RegMethod("OnCompAdding", 1);
     RegMethod("OnCompChanged", 1);
-    RegMethod("OnContentChanged", 1);
+    RegMethod("OnChanged", 1);
     RegMethod("OnCompRenamed", 2);
 }
 
@@ -1591,7 +1591,10 @@ TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
 	SetContentValue(aName, aVal);
     }
     if (res) {
-	OnCompChanged(*this, aName);
+	if (aRtOnly)
+	    OnChanged(*this);
+	else
+	    res = OnCompChanged(*this, aName);
     }
     return res;
 }
@@ -2023,7 +2026,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 			//!AddCMDep(chn, ENa_MutNode, node);
 		    }
 		} else {
-		    Logger()->Write(MLogRec::EErr, this, aSpec, "Changing [%s] - failure", snode.c_str());
+		    Logger()->Write(MLogRec::EErr, this, aSpec, "Changing node [%s] - failure", snode.c_str());
 		    node->ChangeCont(mval, EFalse, cname);
 		}
 	    }
@@ -2058,7 +2061,7 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
     TBool res = EFalse;
     TBool ptrace = EN_PERF_TRACE;
     TBool ptevent = EFalse;
-    Log(TLog(EInfo, this) + "Adding element [" + sname + "]");
+    //Log(TLog(EInfo, this) + "Adding element [" + sname + "]");
     //if (EN_PERF_METR && iName == "Held1" && sname == "1211685360"/* && sparent == "/(Elem:)Root/(Elem:)Modules/(Elem:)VisComps/(Extender:)DrawingElemExt"*/) {
     //if (EN_PERF_METR && EN_PERF_DBG1 && iName == "DrawingElem" && sname == "Logspec") {
     if (EN_PERF_METR && EN_PERF_DBG1 && iName == "Velocity_L" && sname == "448726636") {
@@ -2469,6 +2472,8 @@ void Elem::OnCompAdding(MElem& aComp)
 TBool Elem::OnCompChanged(MElem& aComp, const string& aContName)
 {
     MElem* agents = GetComp("Elem", "Agents");
+    // TODO [YB] The logic is wrong. It needs to check negative response from observers. Currently
+    // the positive one is checked. To revise.
     TBool res = EFalse;
     if (agents != NULL) {
 	for (TInt ci = 0; ci < agents->CompsCount() && !res; ci++) {
@@ -2482,7 +2487,8 @@ TBool Elem::OnCompChanged(MElem& aComp, const string& aContName)
     // TODO To consider if the event is to be propagated to upper level even if it has been already handled
     if (iMan != NULL) {
 	res = iMan->OnCompChanged(aComp, aContName);
-    }
+    } else 
+	res = ETrue;
     // Notify observer
     if (iObserver != NULL) {
 	iObserver->OnCompChanged(aComp, aContName);
@@ -2513,14 +2519,24 @@ TBool Elem::OnCompRenamed(MElem& aComp, const string& aOldName)
     return res;
 }
 
-TBool Elem::OnContentChanged(MElem& aComp, const string& aContName)
+TBool Elem::OnChanged(MElem& aComp)
 {
     TBool res = EFalse, res1 = EFalse;
+    MElem* agents = GetComp("Elem", "Agents");
+    if (agents != NULL) {
+	for (TInt ci = 0; ci < agents->CompsCount() && !res; ci++) {
+	    MElem* acomp = agents->GetComp(ci);
+	    MACompsObserver* iagent = acomp->GetObj(iagent);
+	    if (iagent != NULL) {
+		res = iagent->HandleCompChanged(*this, aComp);
+	    }
+	}
+    }
     if (iMan != NULL) {
-	res = iMan->OnContentChanged(aComp, aContName);
+	res = iMan->OnChanged(aComp);
     }
     if (iObserver != NULL) {
-	res1 = iObserver->OnContentChanged(aComp, aContName);
+	res1 = iObserver->OnChanged(aComp);
     }
     return res && res1;
 }

@@ -429,7 +429,9 @@ Elem* Env::Root()
 
 void Env::AddProvider(GProvider* aProv)
 {
-    iProvider->AddProvider(aProv);
+    MProvider* prov = aProv->GetObj(prov);
+    __ASSERT(prov != NULL);
+    iProvider->AddProvider(prov);
     aProv->SetEnv(NULL);
     aProv->SetEnv(this);
 }

@@ -9,11 +9,15 @@ class GProvider;
 class GFactory: public Base, public MProvider
 {
     public:
+	typedef map<string, MProvider*> TProviders;
+	typedef pair<string, MProvider*> TProvidersElem;
+    public:
 	static const char* Type() { return "GFactory";};
 	GFactory(const string& aName, MEnv* aEnv);
 	virtual ~GFactory();
+	TBool LoadPlugin(const string& aName);
 	void LoadPlugins();
-	void AddProvider(GProvider* aProv);
+	void AddProvider(MProvider* aProv);
 	void RemoveProvider(GProvider* aProv);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
@@ -26,7 +30,9 @@ class GFactory: public Base, public MProvider
 	virtual void AppendNodesInfo(vector<string>& aInfo);
 	virtual const string& ModulesPath() const;
     protected:
-	map<string, GProvider*> iProviders;
+	static int FilterPlgDirEntries(const struct dirent *aEntry);
+    protected:
+	TProviders iProviders;
 	MEnv* iEnv;
 	string iName;
 };

@@ -3434,6 +3434,16 @@
 	</sect2>
     </sect1>
 
+    <sect1 id="ds_va"><title>Visualization agent</title>
+	<sect2><title>Refs</title>
+	    <biblioentry id="ref_j_gdk"> <abbrev>J_GDK</abbrev>
+		<productname><ulink url="http://james.id.au/tech/doc/gdk/"/></productname>
+		<title>Introduction to GDK - James</title> </biblioentry>
+	</sect2>
+	<sect2><title>APIs</title>
+	</sect2>
+    </sect1>
+
     <sect1 id="ds_th"><title>To handle</title>
 	<orderedlist>
 	    <listitem>Using mut order to ensure original sequence of muts, ref <xref linkend="ds_mut_dis_pheno"/> </listitem>

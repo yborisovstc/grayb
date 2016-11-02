@@ -146,7 +146,7 @@ TBool Vert::Connect(MVert* aPair)
 		aPair->Connect(this);
 	    }
 	    __ASSERT(iMan != NULL);
-	    iMan->OnCompChanged(*this);
+	    iMan->OnChanged(*this);
 	}
 	else {
 	    // TODO [YB] Seems this happens constantly. To analyze why
@@ -204,7 +204,7 @@ void Vert::Disconnect(MVert* aPair)
 	// Invalidate ifaces cache
 	InvalidateIfCache();
 	__ASSERT(iMan != NULL);
-	iMan->OnCompChanged(*this);
+	iMan->OnChanged(*this);
     }
 }
 

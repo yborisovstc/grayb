@@ -75,6 +75,16 @@ docs=/home/yborisov/projects/fap CD=. filter=".doc" {
    Makefile
   }
  }
+ desa/doc=desa/doc CD=. filter="*" {
+  requirements=requirements CD=. filter="*.xml Makefile" {
+   fap2_req.xml
+   Makefile
+  }
+  design=design CD=. filter="*.xml Makefile" {
+   desa_design.xml
+   Makefile
+  }
+ }
  fap2-studio-gtk/doc=fap2-studio-gtk/doc CD=. filter="*" {
   requirements=requirements CD=. filter="*.xml Makefile" {
    fap2_req.xml
@@ -97,4 +107,8 @@ docs=/home/yborisov/projects/fap CD=. filter=".doc" {
  }
 }
 fap-md=/home/yborisov/projects/fap/fap-md CD=. filter="*" {
+ Makefile
+ fap_md_yb.xml
+ index.html
+ metrix.ods
 }

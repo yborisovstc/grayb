@@ -24,7 +24,11 @@ void GProvider::SetEnv(MEnv* aEnv)
 
 void *GProvider::DoGetObj(const char *aName)
 {
-    return (strcmp(aName, Type()) == 0) ? this : NULL;
+    void* res = NULL;
+    if (strcmp(aName, MProvider::Type()) == 0) {
+	res = (MProvider*) this;
+    }
+    return res;
 }
 
 Elem* GProvider::CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv)

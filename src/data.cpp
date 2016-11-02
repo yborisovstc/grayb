@@ -103,7 +103,7 @@ void DataBase::NotifyUpdate()
     }
     // Also notify context in order to propagate the update event to observer
     if (iMan != NULL) {
-	iMan->OnCompChanged(*this);
+	iMan->OnChanged(*this);
     }
 }
 

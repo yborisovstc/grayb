@@ -132,8 +132,8 @@ void Ut_cre::test_CreSyst()
     root->ChangeCont("root_prop", EFalse);
     root->ChangeCont("yes", EFalse, "Debug.Enable_trace");
     root->ChangeCont("no", EFalse, "Debug.Enable_dbg");
-    string cont = root->GetContent();
-    TBool cont_ok = (cont == "{Debug:{Enable_trace:'yes',Enable_dbg:'no'}}");
+    string cont = root->GetContent("", ETrue);
+    TBool cont_ok = (cont == "{'root_prop' About:'' Debug:{ Enable_trace:'yes' Enable_dbg:'no'}}");
     CPPUNIT_ASSERT_MESSAGE("Wrong root content", cont_ok);
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     root->Chromos().Save("ut_cre_syst1_saved.xml_");

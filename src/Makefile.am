@@ -61,6 +61,7 @@ libgrayb_la_SOURCES = \
 		       rdata.cpp \
 		       miface.h \
 		       mmuta.h \
+		       mplugin.h \
 		       mmod.h
 
 include_HEADERS = \
@@ -73,6 +74,7 @@ include_HEADERS = \
 		  mlog.h \
 		  miface.h \
 		  mmuta.h \
+		  mplugin.h \
 		  mmod.h \
 		  mprop.h \
 		  mvert.h \

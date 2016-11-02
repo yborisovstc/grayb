@@ -295,7 +295,7 @@ class Elem: public MElem
 	virtual void OnCompAdding(MElem& aComp);
 	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string());
 	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName);
-	virtual TBool OnContentChanged(MElem& aComp, const string& aContName = string());
+	virtual TBool OnChanged(MElem& aComp);
 	// From MMutable
 	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL);
 	virtual TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL);

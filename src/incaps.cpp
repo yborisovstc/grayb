@@ -62,7 +62,10 @@ TBool Incaps::IsPtOk(MElem& aContext, MElem* aPt) {
 	man = aContext.GetCompOwning("Syst", aPt);
 	if ( man != NULL) {
 	    if (man->GetMan() == &aContext) {
-		res = aPt->EType() == "ConnPoint";
+		// TODO What about extenders? to use more adequate restriction
+		//res = aPt->EType() == "ConnPoint";
+		MConnPoint* mcp = aPt->GetObj(mcp);
+		res = mcp != NULL;
 	    }
 	}
 	else {
