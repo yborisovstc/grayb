@@ -1273,6 +1273,15 @@
 	    <sect3><title>Parent's mutations</title>
 		<simpara>Ref <xref linkend="ds_mut_osmlc_pm"/> for the material</simpara>
 	    </sect3>
+	    <sect3 id="ds_mut_osm_linchr_notif"><title>Issue: notification scheme gets broken with OSM approach.</title>
+		<simpara>Current notification scheme is used mutation run-time sign to give information to observer about change persistence (to be
+		    exact this was implemented implicitly, specific notif OnContentChanged was used in case of run-time. Last changes introduced 
+		    dedicated arg "run-time" to all notifications. In Hier chromo approach "run-time" designates two cases: true run-time modification and
+		    "inherited" mutation on creation hier (such mutations are not go to model chromo).</simpara>
+		<simpara>But in OSM "run-time" sign meaning differs from that in heirarchical chromo. In OSM run-time means just true run-time modif.
+		In case of "inherited" mutation "run-time" sign gets false in order to add all the changes to node's local chromo.</simpara>
+
+	    </sect3>
 	</sect2>
 	<sect2 id="ds_mut_osmlc_pm"><title>OSM linear chromo: parent's mutation</title>
 	    <sect3><title>Intro</title>

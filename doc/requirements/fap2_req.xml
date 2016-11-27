@@ -459,6 +459,7 @@
 		    <listitem><xref linkend="uc_018"/></listitem>
 		    <listitem><xref linkend="uc_042"/></listitem>
 		    <listitem><xref linkend="uc_044"/></listitem>
+		    <listitem><xref linkend="uc_066"/></listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>
@@ -2249,6 +2250,62 @@
 		    <listitem>The agent content is the data specific for that agent. It could be representation of the 
 		    internal state of agent, debug information etc.</listitem>
 		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_066"><title>UC_066 Observers distinguish between model's modification and mutation.</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem>CLIENT: client of SYSTEM</listitem>
+		    <listitem>SYSTEM: modelling run-time</listitem>
+		    <listitem>MODEL: a model of system</listitem>
+		    <listitem>AGENT: an agent in MODEL</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<itemizedlist>
+		    <listitem>There is AGENT created in model</listitem>
+		    <listitem>CLIENT registeres itself as observer of MODEL via AGENT base APIs,
+			ref <xref linkend="uc_063"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>CLIENT requests change (run-time modification or mutation) of AGENT
+			(via base agent APIs, ref <xref linkend="uc_063"/>)</listitem>
+		    <listitem>CLIENT gets notification of AGENT's change from MODEL. CLIENT can get information from notification
+		    if the change is run-time modification or mutation.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_013"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title>
+	    </sect3>
+	    <sect3><title>Related to</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_063"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<sect4><title>Example of such client: fap2-studio-gtk application</title>
+		    <simpara>The example of such client is fap2-studio-gtk application. There is chromo-tree-view in the
+			application's UI, that displays model's chromo. The model of this view gets notification from the
+			model of any change affecting chromo and ask the view for update. So it is needed to view model to
+			know if the change is mutation (i.e. affects chromo).</simpara>
+		</sect4>
+		<sect4><title>Are these "run-time modifications" needed at all?</title>
+		    <simpara>One case is creation Vert. It creates internal node "Agents" that is modification, not mutation. Second case
+		    is multicontent Edge - it added specific content "Provided" and "Required".</simpara>
+		</sect4>
 	    </sect3>
 	    <sect3><title>Clarification</title>
 	    </sect3>

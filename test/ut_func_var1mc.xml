@@ -20,7 +20,7 @@
 	    </node>
 	    <node id="Add" parent="/(Elem:)Root/(Elem:)Modules/(Elem:)FuncComps/(FuncVar:)FAddVar"/>
 	    <node id="Inp_data1" parent="/Root/Modules/DataComps/DataSVarMc">
-		<cont node="./Value" val="I 4"/>
+		<cont id="Value" val="I 4"/>
 	    </node>
 	    <node id="e1" parent="Edge">
 		<cont node="./(Prop:)P2" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(DataTVar:)Dt/Capsule/inp"/>

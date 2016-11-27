@@ -14,7 +14,7 @@ class ACapsule: public Elem
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MOwner
-	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string());
+	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse);
 };
 
 // Iface stub to avoid clashing MIface methods
@@ -202,7 +202,11 @@ class AExtender: public Elem, public MCompatChecker
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);
 	virtual string Mid() const;
+    protected:
+	inline MElem* Host() const;
 };
+
+MElem* AExtender::Host() const { return (iMan == NULL) ? NULL : iMan->GetMan(); };
 
 
 // Iface stub to avoid clashing MIface methods
@@ -241,7 +245,11 @@ class ASocket: public Elem, public MCompatChecker
 	virtual MElem* GetPin(TInt aInd);
 	virtual MIface* MSocket_Call(const string& aSpec, string& aRes);
 	virtual string MSocket_Mid() const;
+    protected:
+	inline MElem* Host() const;
 };
+
+MElem* ASocket::Host() const { return (iMan == NULL) ? NULL : iMan->GetMan(); };
 
 // Input Socket agent
 class ASocketInp: public ASocket
@@ -292,8 +300,8 @@ class Syst: public Vert
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MOwner
-	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue);
-	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string());
+	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
+	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse);
     protected:
 	TBool IsPtOk(MElem* aPt);
 };

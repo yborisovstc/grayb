@@ -84,9 +84,9 @@ TBool GFactory::LoadPlugin(const string& aName)
 		AddProvider(prov);
 	    }
 	}
-    }
-    if (!res) {
-	dlclose(handle);
+	if (!res) {
+	    dlclose(handle);
+	}
     }
     return res;
 }

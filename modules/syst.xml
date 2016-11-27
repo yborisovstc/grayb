@@ -72,11 +72,11 @@
     </node>
 
     <node id="ExtenderInpMc" parent="./ExtenderMc"> 
-	<cont node="./Agents/MAExteder" id="Direction" val="Inp"/> 
+	<cont id="Direction" val="Inp"/>
     </node>
 
     <node id="ExtenderOutMc" parent="./ExtenderMc"> 
-	<cont node="./Agents/MAExteder" id="Direction" val="Out"/> 
+	<cont id="Direction" val="Out"/>
     </node>
 
     <node id="CpExtenderMc" parent="Vert"> 
@@ -86,11 +86,11 @@
     </node>
 
     <node id="CpExtenderInpMc" parent="./CpExtenderMc"> 
-	<cont node="./Agents/MAExteder" id="Direction" val="Inp"/> 
+	<cont id="Direction" val="Inp"/>
     </node>
 
     <node id="CpExtenderOutMc" parent="./CpExtenderMc"> 
-	<cont node="./Agents/MAExteder" id="Direction" val="Out"/> 
+	<cont id="Direction" val="Out"/>
     </node>
 
 

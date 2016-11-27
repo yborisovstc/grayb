@@ -291,9 +291,9 @@ class Elem: public MElem
 	virtual TBool OnChildRenamed(MElem* aChild, const string& aOldName);
 	// From MOwner
 	virtual TBool IsComp(const MElem* aElem) const;
-	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue);
-	virtual void OnCompAdding(MElem& aComp);
-	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string());
+	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
+	virtual void OnCompAdding(MElem& aComp, TBool aModif = EFalse);
+	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse);
 	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName);
 	virtual TBool OnChanged(MElem& aComp);
 	// From MMutable
@@ -359,7 +359,7 @@ class Elem: public MElem
 	TBool ContentHasComps(const string& aContName) const;
 	static Elem* ToElem(MElem* aMelem) { Elem* res = (aMelem == NULL) ? NULL: aMelem->GetObj(res); return res;};
 	inline MProvider* Provider() const;
-	virtual TBool AppendComp(MElem* aComp);
+	virtual TBool AppendComp(MElem* aComp, TBool aRt = EFalse);
 	virtual void RemoveComp(MElem* aComp);
 	TBool RegisterComp(MElem* aComp);
 	TBool RegisterChild(MElem* aChild);

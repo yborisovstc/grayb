@@ -32,14 +32,14 @@ void *ACapsule::DoGetObj(const char *aName)
     return res;
 }
 
-TBool ACapsule::OnCompChanged(MElem& aComp, const string& aContName)
+TBool ACapsule::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 {
-    Elem::OnCompChanged(aComp, aContName);
+    Elem::OnCompChanged(aComp, aContName, aModif);
     if (iMan != NULL) {
-	iMan->OnCompChanged(aComp, aContName);
+	iMan->OnCompChanged(aComp, aContName, aModif);
     }
     if (iObserver != NULL) {
-	iObserver->OnCompChanged(aComp, aContName);
+	iObserver->OnCompChanged(aComp, aContName, aModif);
     }
     return ETrue;
 }
@@ -374,7 +374,7 @@ ConnPointMc::ConnPointMc(const string& aName, MElem* aMan, MEnv* aEnv): Vert(aNa
     //InsertContent("Provided");
     ChangeCont("", ETrue, "Required");
     ChangeCont("", ETrue, "Provided");
-    ChangeCont(ConnPointMc::KContDir_Val_Regular, EFalse, ConnPointMc::KContDir);
+    ChangeCont(ConnPointMc::KContDir_Val_Regular, ETrue, ConnPointMc::KContDir);
 }
 
 ConnPointMc::ConnPointMc(MElem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
@@ -382,7 +382,7 @@ ConnPointMc::ConnPointMc(MElem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
     SetParent(Vert::PEType());
     ChangeCont("", ETrue, "Required");
     ChangeCont("", ETrue, "Provided");
-    ChangeCont(ConnPointMc::KContDir_Val_Regular, EFalse, ConnPointMc::KContDir);
+    ChangeCont(ConnPointMc::KContDir_Val_Regular, ETrue, ConnPointMc::KContDir);
 }
 
 void *ConnPointMc::DoGetObj(const char *aName)
@@ -910,13 +910,13 @@ string AExtender::PEType()
 AExtender::AExtender(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
-    ChangeCont(ConnPointMc::KContDir_Val_Regular, EFalse, ConnPointMc::KContDir);
+    ChangeCont(ConnPointMc::KContDir_Val_Regular, ETrue, ConnPointMc::KContDir);
 }
 
 AExtender::AExtender(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
     SetParent(Elem::PEType());
-    ChangeCont(ConnPointMc::KContDir_Val_Regular, EFalse, ConnPointMc::KContDir);
+    ChangeCont(ConnPointMc::KContDir_Val_Regular, ETrue, ConnPointMc::KContDir);
 }
 
 void *AExtender::DoGetObj(const char *aName)
@@ -1007,7 +1007,7 @@ MElem* AExtender::GetExtd()
 MCompatChecker::TDir AExtender::GetDir() const
 {
     TDir res = ERegular;
-    string cdir = GetContent(ConnPointMc::KContDir);
+    string cdir = Host()->GetContent(ConnPointMc::KContDir);
     if (cdir == ConnPointMc::KContDir_Val_Inp) res = EInp;
     else if (cdir == ConnPointMc::KContDir_Val_Out) res = EOut;
     return res;
@@ -1470,7 +1470,7 @@ void *ASocketMc::DoGetObj(const char *aName)
 MCompatChecker::TDir ASocketMc::GetDir() const
 {
     TDir res = ERegular;
-    string cdir = GetContent(ConnPointMc::KContDir);
+    string cdir = Host()->GetContent(ConnPointMc::KContDir);
     if (cdir == ConnPointMc::KContDir_Val_Inp) res = EInp;
     else if (cdir == ConnPointMc::KContDir_Val_Out) res = EOut;
     return res;
@@ -1505,7 +1505,7 @@ void *Syst::DoGetObj(const char *aName)
     return res;
 }
 
-void Syst::OnCompDeleting(MElem& aComp, TBool aSoft)
+void Syst::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
 {
     MElem* eedge = GetCompOwning("Edge", &aComp);
     if (eedge != NULL) {
@@ -1517,7 +1517,7 @@ void Syst::OnCompDeleting(MElem& aComp, TBool aSoft)
 	    edge->Disconnect();
 	}
     }
-    Vert::OnCompDeleting(aComp, aSoft);
+    Vert::OnCompDeleting(aComp, aSoft, aModif);
 }
 
 
@@ -1525,14 +1525,13 @@ TBool Syst::IsPtOk(MElem* aPt) {
     return ETrue;
 }
 
-TBool Syst::OnCompChanged(MElem& aComp, const string& aContName)
+TBool Syst::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 {
-    TBool res = Elem::OnCompChanged(aComp, aContName);
-    if (res) return res;
-    TBool hres = EFalse;
+    TBool res = Elem::OnCompChanged(aComp, aContName, aModif);
+    if (!res) return res;
+    TBool hres = ETrue;
     MEdge* edge = aComp.GetObj(edge);	
     if (edge != NULL) {
-	hres = ETrue;
 	MVert* ref1 = edge->Ref1();
 	MVert* ref2 = edge->Ref2();
 	MVert* cp1 = edge->Point1();

@@ -23,14 +23,15 @@ class TICacheRCtx: public vector<Base*>
 
 // Cloned from MCompsObserver in order to avoid MCompsObserver be MIface
 // This would require MIface wrapper for MCompsObserver to distinguish MIface methods in Elem
+// Added flag for distinguish modif and mutation, ref uc_066
 class MAgentObserver: public MIface
 {
     public:
 	static const char* Type() { return "MAgentObserver";};
-	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue) = 0;
-	virtual void OnCompAdding(MElem& aComp) = 0;
+	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue, TBool aModif = EFalse) = 0;
+	virtual void OnCompAdding(MElem& aComp, TBool aModif = EFalse) = 0;
 	// TODO [YB] Return value isn't used, to remove ?
-	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string()) = 0;
+	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse) = 0;
 	// For run-time only. Use OnCompChanged when the content is changed via mutation
 	virtual TBool OnChanged(MElem& aComp) = 0;
 	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName) = 0;
@@ -49,9 +50,9 @@ class MCompsObserver
 {
     public:
 	static const char* Type() { return "MCompsObserver";};
-	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue) = 0;
-	virtual void OnCompAdding(MElem& aComp) = 0;
-	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string()) = 0;
+	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue, TBool aModif = EFalse) = 0;
+	virtual void OnCompAdding(MElem& aComp, TBool aModif = EFalse) = 0;
+	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse) = 0;
 	// For run-time only. Use OnCompChanged when the content is changed via mutation
 	virtual TBool OnChanged(MElem& aComp) = 0;
 	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName) = 0;
@@ -62,7 +63,7 @@ class MOwner: public MCompsObserver
     public:
 	static const char* Type() { return "MOwner";};
 	virtual TBool IsComp(const MElem* aElem) const = 0;
-	virtual TBool AppendComp(MElem* aComp) = 0;
+	virtual TBool AppendComp(MElem* aComp, TBool aRt = EFalse) = 0;
 	virtual void RemoveComp(MElem* aComp) = 0;
 };
 

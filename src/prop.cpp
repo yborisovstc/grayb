@@ -50,11 +50,7 @@ TBool Prop::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
     //if (aVal != iValue) {
     if (true) {
 	iValue = aVal;
-	if (aRtOnly) {
-	    iMan->OnChanged(*this);
-	} else {
-	    iMan->OnCompChanged(*this);
-	}
+	iMan->OnCompChanged(*this, aName, aRtOnly);
     }
     return res;
 }

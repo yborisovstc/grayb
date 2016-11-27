@@ -517,10 +517,10 @@ Elem::~Elem()
     // This means that the ovner notified will not be able to understand what agent is deleted
     // To consider to add one more notification - before deletions
     if (iMan != NULL) {
-	iMan->OnCompDeleting(*this, EFalse);
+	iMan->OnCompDeleting(*this, EFalse, ETrue);
     }
     if (iObserver != NULL) {
-	iObserver->OnCompDeleting(*this, EFalse);
+	iObserver->OnCompDeleting(*this, EFalse, ETrue);
     }
 
     // Disconnect from the childs
@@ -1320,7 +1320,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    }
 	}
 	if (rno.AttrExists(ENa_MutNode)) {
-	    // Transrom DHC mutation to OSM mutation
+	    // Transform DHC mutation to OSM mutation
 	    // Transform ENa_Targ: enlarge to ENa_MutNode
 	    MElem* targ = rno.AttrExists(ENa_Targ) ? GetNode(rno.Attr(ENa_Targ)) : this;
 	    if (targ == NULL) {
@@ -1378,6 +1378,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		// Redirect the mut to target: no run-time to keep the mut in internal nodes
 		// Propagate till target owning comp if run-time to keep hidden all muts from parent 
 		ftarg->Mutate(EFalse, aCheckSafety, aTrialMode, aRunTime ? GetCompOwning(ftarg) : aCtx);
+		//ftarg->Mutate(aRunTime, aCheckSafety, aTrialMode, aRunTime ? GetCompOwning(ftarg) : aCtx);
 	    } else {
 		Logger()->Write(MLogRec::EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_Targ).c_str());
 	    }
@@ -1591,10 +1592,7 @@ TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
 	SetContentValue(aName, aVal);
     }
     if (res) {
-	if (aRtOnly)
-	    OnChanged(*this);
-	else
-	    res = OnCompChanged(*this, aName);
+	res = OnCompChanged(*this, aName, aRtOnly);
     }
     return res;
 }
@@ -2017,7 +2015,13 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 		}
 	    }
 	    if (res) {
-		res = node->ChangeCont(mval, EFalse, cname);
+		// Ref ds_mut_osm_linchr_notif. With OSM (Original Sequence of Mutation) approach aRunTime can be set false
+		// even if the mutation is parents mutation (inherited mutation) in order to keep all nodes chromo.
+		// So we need to re-calculate run-time property: only if the mut is not to be included in root chromo
+		// Mark change as persistent (not run-time) only if the change affects model chromo
+		MElem* root = GetRoot();
+		TBool persist = !aRunTime && aCtx != NULL && (aCtx == root || root->IsCompAttached(this));
+		res = node->ChangeCont(mval, !persist, cname);
 		if (res) {
 		    if (!aRunTime) {
 			ChromoNode chn = iChromo->Root().AddChild(aSpec);
@@ -2027,7 +2031,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 		    }
 		} else {
 		    Logger()->Write(MLogRec::EErr, this, aSpec, "Changing node [%s] - failure", snode.c_str());
-		    node->ChangeCont(mval, EFalse, cname);
+		    node->ChangeCont(mval, aRunTime, cname);
 		}
 	    }
 	}
@@ -2139,7 +2143,11 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 			    hroot.SetAttr(ENa_MutNode, snode);
 			}
 			// Heir has been created, now we can establish solid two-ways relations, ref. ds_daa_hunv
-			res = node->AppendComp(elem);
+			//
+			// Mark change as persistent (not run-time) only if the change affects model chromo, ref ds_mut_osm_linchr_notif.
+			MElem* root = GetRoot();
+			TBool persist = !aRunTime && aCtx != NULL && (aCtx == root || root->IsCompAttached(this));
+			res = node->AppendComp(elem, !persist);
 			elem->SetParent(NULL);
 			res = res && parent->AppendChild(elem);
 			if (res) {
@@ -2305,7 +2313,7 @@ void Elem::RemoveChild(MElem* aChild)
     aChild->SetParent(NULL);
 }
 
-TBool Elem::AppendComp(MElem* aComp)
+TBool Elem::AppendComp(MElem* aComp, TBool aRt)
 {
     MElem* cowner = aComp->GetMan();
     __ASSERT(cowner == NULL || cowner == this);
@@ -2317,10 +2325,10 @@ TBool Elem::AppendComp(MElem* aComp)
     {
 	iComps.push_back(aComp);
 	if (iMan != NULL) {
-	    iMan->OnCompAdding(*aComp);
+	    iMan->OnCompAdding(*aComp, aRt);
 	}
 	if (iObserver != NULL) {
-	    iObserver->OnCompAdding(*aComp);
+	    iObserver->OnCompAdding(*aComp, aRt);
 	}
     }
     return res;
@@ -2417,14 +2425,14 @@ MElem* Elem::GetNode(const string& aUri, TBool aInclRm)
     return res;
 }
 
-void Elem::OnCompDeleting(MElem& aComp, TBool aSoft)
+void Elem::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
 {
     // Translate to hier
     if (iMan != NULL) {
-	iMan->OnCompDeleting(aComp, aSoft);
+	iMan->OnCompDeleting(aComp, aSoft, aModif);
     }
     if (iObserver != NULL) {
-	iObserver->OnCompDeleting(aComp, aSoft);
+	iObserver->OnCompDeleting(aComp, aSoft, aModif);
     }
     // Handle for direct child
     if (aComp.GetMan() == this) {
@@ -2450,14 +2458,14 @@ void Elem::OnCompDeleting(MElem& aComp, TBool aSoft)
 
 // TODO [YB] To avoid propagation thru the whole model. It is temporarily remaining because of
 // missing proper mechanism of the whole model observer.
-void Elem::OnCompAdding(MElem& aComp)
+void Elem::OnCompAdding(MElem& aComp, TBool aModif)
 {
     // Propagate the event
     if (iMan != NULL) {
-	iMan->OnCompAdding(aComp);
+	iMan->OnCompAdding(aComp, aModif);
     }
     if (iObserver != NULL) {
-	iObserver->OnCompAdding(aComp);
+	iObserver->OnCompAdding(aComp, aModif);
     }
 }
 
@@ -2469,29 +2477,30 @@ void Elem::OnCompAdding(MElem& aComp)
 // If providing mechanism is used instead of full relations tracking in Vert. So node A has Ifaces cache
 // that includes ifaces from node B but there is no mechanism of the changes in the cache. To consider
 // to implement cache update notification. Ref UC_010 
-TBool Elem::OnCompChanged(MElem& aComp, const string& aContName)
+TBool Elem::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 {
     MElem* agents = GetComp("Elem", "Agents");
-    // TODO [YB] The logic is wrong. It needs to check negative response from observers. Currently
-    // the positive one is checked. To revise.
-    TBool res = EFalse;
+    TBool res = ETrue;
     if (agents != NULL) {
-	for (TInt ci = 0; ci < agents->CompsCount() && !res; ci++) {
+	for (TInt ci = 0; ci < agents->CompsCount() && res; ci++) {
 	    MElem* acomp = agents->GetComp(ci);
 	    MACompsObserver* iagent = acomp->GetObj(iagent);
 	    if (iagent != NULL) {
 		res = iagent->HandleCompChanged(*this, aComp, aContName);
+		if (!res) {
+		    iagent->HandleCompChanged(*this, aComp, aContName);
+		}
 	    }
 	}
     }
+    // Propagate to upper layer if the notification wasn't denied
     // TODO To consider if the event is to be propagated to upper level even if it has been already handled
-    if (iMan != NULL) {
-	res = iMan->OnCompChanged(aComp, aContName);
-    } else 
-	res = ETrue;
+    if (res && iMan != NULL) {
+	res = iMan->OnCompChanged(aComp, aContName, aModif);
+    }
     // Notify observer
     if (iObserver != NULL) {
-	iObserver->OnCompChanged(aComp, aContName);
+	iObserver->OnCompChanged(aComp, aContName, aModif);
     }
     return res;
 }
@@ -2521,10 +2530,10 @@ TBool Elem::OnCompRenamed(MElem& aComp, const string& aOldName)
 
 TBool Elem::OnChanged(MElem& aComp)
 {
-    TBool res = EFalse, res1 = EFalse;
+    TBool res = ETrue;
     MElem* agents = GetComp("Elem", "Agents");
     if (agents != NULL) {
-	for (TInt ci = 0; ci < agents->CompsCount() && !res; ci++) {
+	for (TInt ci = 0; ci < agents->CompsCount() && res; ci++) {
 	    MElem* acomp = agents->GetComp(ci);
 	    MACompsObserver* iagent = acomp->GetObj(iagent);
 	    if (iagent != NULL) {
@@ -2532,13 +2541,13 @@ TBool Elem::OnChanged(MElem& aComp)
 	    }
 	}
     }
-    if (iMan != NULL) {
+    if (res && iMan != NULL) {
 	res = iMan->OnChanged(aComp);
     }
     if (iObserver != NULL) {
-	res1 = iObserver->OnChanged(aComp);
+	iObserver->OnChanged(aComp);
     }
-    return res && res1;
+    return res;
 }
 
 MElem* Elem::GetCompOwning(const string& aParent, MElem* aElem)

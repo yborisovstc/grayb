@@ -22,7 +22,7 @@
     </node>
 
     <!-- State Output socket, multicontent -->
-    <node id="StOutSocketMc" parent="/*/Modules/SysComps/SocketInpMc">
+    <node id="StOutSocketMc" parent="/*/Modules/SysComps/SocketMc">
 	<cont id="About" val="State Output socket, multicontent"/>
 	<node id="PinObs" parent="ConnPointMc"> 
 	    <cont id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>
@@ -31,6 +31,11 @@
 	<node id="PinData" parent="ConnPointMc"> 
 	    <cont id="About" val="Pin Data observer. Provides data interface"/>
 	</node>
+    </node>
+
+    <node id="StOutSocketMcVar" parent="./StOutSocketMc">
+	<cont id="About" val="State Output socket for variable data, multicontent"/>
+	<cont node="./PinData" id="Required" val="MDVarGet"/>
     </node>
 
     <!-- Input socket -->
@@ -45,7 +50,7 @@
     </node>
 
     <!-- State Input socket, multicontent -->
-    <node id="StInpSocketMc" parent="/*/Modules/SysComps/SocketInpMc">
+    <node id="StInpSocketMc" parent="/*/Modules/SysComps/SocketMc">
 	<cont id="About" val="State Input socket, multicontent"/>
 	<node id="PinObs" parent="ConnPointMc"> 
 	    <cont id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>
@@ -54,6 +59,11 @@
 	<node id="PinData" parent="ConnPointMc"> 
 	    <cont id="About" val="Pin Data observer. Provides data interface"/>
 	</node>
+    </node>
+
+    <node id="StInpSocketMcVar" parent="./StInpSocketMc">
+	<cont id="About" val="State Input socket for variable data, multicontent"/>
+	<cont node="./PinData" id="Provided" val="MDVarGet"/>
     </node>
 
     <!-- Input of standard Int State -->
@@ -88,10 +98,22 @@
 
     <node id="ExtStInpSocketMc" parent="/*/Modules/SysComps/ExtenderInpMc"> 
 	<node id="Int" parent="./../StInpSocketMc"/> 
+	<cont targ="./Int" id="Direction" val="Out"/>
     </node>
 
     <node id="ExtStOutSocketMc" parent="/*/Modules/SysComps/ExtenderOutMc"> 
 	<node id="Int" parent="./../StOutSocketMc"/> 
+    </node>
+
+    <node id="ExtStOutSocketMcVar" parent="/*/Modules/SysComps/ExtenderOutMc">
+	<cont id="About" val="Extender of state output socket, data variable, multicontent"/>
+	<node id="Int" parent="./../StOutSocketMcVar"/>
+	<cont targ="./Int" id="Direction" val="Inp"/>
+    </node>
+
+    <node id="ExtStInpSocketMcVar" parent="./ExtStInpSocketMc">
+	<cont id="About" val="Extender of state input socket, data variable, multicontent"/>
+	<cont targ="./Int/PinData" id="Provided" val="MDVarGet"/>
     </node>
 
     <!-- Input of int transition -->
@@ -312,7 +334,7 @@
 
     <!-- State with variable type data, multicontent -->
     <node id="StateVarMc" parent="./StateMc"> 
-	<cont id="About" val="DES state with variable type data"/>
+	<cont id="About" val="DES state with variable type data, multicontent"/>
 	<node id="Confirmed" parent="/*/Modules/DataComps/DataSCVarMc"/>
 	<node id="Prepared" parent="/*/Modules/DataComps/DataSCVarMc"/>
 	<cont node="./Capsule/Inp/Int/PinData" id="Provided" val="MDVarGet"/>

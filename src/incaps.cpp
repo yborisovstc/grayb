@@ -77,10 +77,10 @@ TBool Incaps::IsPtOk(MElem& aContext, MElem* aPt) {
 
 TBool Incaps::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
 {
-    TBool hres = EFalse;
+    TBool hres = ETrue;
     MEdge* edge = aComp.GetObj(edge);	
     if (edge != NULL) {
-	hres = ETrue;
+	TBool res = ETrue;
 	MVert* ref1 = edge->Ref1();
 	MVert* ref2 = edge->Ref2();
 	MVert* cp1 = edge->Point1();
@@ -103,7 +103,6 @@ TBool Incaps::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aCo
 		    TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
 		    if (ispt1cptb && ispt2cptb) {
 			// Are compatible - connect
-			TBool res = ETrue;
 			if (cp1 == NULL) res = edge->ConnectP1(ref1);
 			if (res && cp2 == NULL) res = edge->ConnectP2(ref2);
 			if (!res) {
@@ -111,6 +110,7 @@ TBool Incaps::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aCo
 			}
 		    }
 		    else {
+			res = EFalse;
 			TBool c1 = pt1checker->IsCompatible(pt2);
 			TBool c2 = pt2checker->IsCompatible(pt1);
 			Logger()->Write(MLogRec::EErr, this, "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
@@ -122,10 +122,12 @@ TBool Incaps::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aCo
 		    else if (cp2 == NULL && ref2 != NULL) edge->ConnectP2(ref2);
 		}
 	    } else {
+		res = EFalse;
 		MElem* pt = isptok1 ? pt2 : pt1;
 		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
 	    }
 	}
+	hres = res;
     }
     return hres;
 }

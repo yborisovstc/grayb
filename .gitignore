@@ -64,3 +64,6 @@ lcov_report
 install-root
 ut-grayb-lib
 *.xml_
+*.swn
+*.exrc
+Makefile

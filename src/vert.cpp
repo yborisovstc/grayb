@@ -33,7 +33,7 @@ Vert::Vert(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv
     // But this instance of Vert is not registered by owner yet, so
     // if observer tries to get comp added then null will be returned
     // To consider the standard approach of deferred construction.
-    TBool res = AppendComp(agents);
+    TBool res = AppendComp(agents, ETrue);
     __ASSERT(res);
 }
 
@@ -49,7 +49,7 @@ Vert::Vert(MElem* aMan, MEnv* aEnv):Elem(Type(), aMan, aEnv)
     }
     */
     __ASSERT(agents != NULL);
-    TBool res = AppendComp(agents);
+    TBool res = AppendComp(agents, ETrue);
     __ASSERT(res);
 
 }
@@ -208,10 +208,10 @@ void Vert::Disconnect(MVert* aPair)
     }
 }
 
-TBool Vert::OnCompChanged(MElem& aComp, const string& aContName)
+TBool Vert::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 {
-    TBool hres = Elem::OnCompChanged(aComp, aContName);
-    if (hres) return ETrue;
+    TBool hres = Elem::OnCompChanged(aComp, aContName, aModif);
+    if (!hres) return EFalse;
     MEdge* edge = aComp.GetObj(edge);	
     if (edge != NULL) {
 	hres = ETrue;
@@ -300,7 +300,7 @@ string Vert::Mid() const
     return Elem::Mid();
 }
 
-void Vert::OnCompDeleting(MElem& aComp, TBool aSoft)
+void Vert::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
 {
     // Disconnect the binding edges if the comp is vert connected
     MVert* vert = aComp.GetObj(vert);
@@ -313,7 +313,7 @@ void Vert::OnCompDeleting(MElem& aComp, TBool aSoft)
 	    }
 	}
     }
-    Elem::OnCompDeleting(aComp, aSoft);
+    Elem::OnCompDeleting(aComp, aSoft, aModif);
 }
 
 void Vert::Disconnect()
