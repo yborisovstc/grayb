@@ -15,6 +15,8 @@ MEdge::EIfu::EIfu()
     RegMethod("Disconnect#2", 0);
     RegMethod("Point1", 0);
     RegMethod("Point2", 0);
+    RegMethod("Ref1", 0);
+    RegMethod("Ref2", 0);
 }
 
 
@@ -365,10 +367,10 @@ TBool Edge::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
     return ETrue;
 }
 
-void Edge::SetRemoved()
+void Edge::SetRemoved(TBool aModif)
 {
     Disconnect();
-    Elem::SetRemoved();
+    Elem::SetRemoved(aModif);
 }
 
 MIface* Edge::Call(const string& aSpec, string& aRes)
@@ -386,22 +388,22 @@ MIface* Edge::Call(const string& aSpec, string& aRes)
 	throw (runtime_error("Wrong arguments number"));
     if (name == "ConnectP1") {
 	MElem* pair = GetNode(args.at(0));
-	if (pair != NULL) {
+	if (pair == NULL) {
 	    throw (runtime_error("Cannot get pair: " + args.at(0)));
 	}
 	MVert* vpair = pair->GetObj(vpair);
-	if (vpair != NULL) {
+	if (vpair == NULL) {
 	    throw (runtime_error("Pair isn't vertex: " + args.at(0)));
 	}
 	TBool rr = ConnectP1(vpair);
 	aRes = Ifu::FromBool(rr);
     } else if (name == "ConnectP2") {
 	MElem* pair = GetNode(args.at(0));
-	if (pair != NULL) {
+	if (pair == NULL) {
 	    throw (runtime_error("Cannot get pair: " + args.at(0)));
 	}
 	MVert* vpair = pair->GetObj(vpair);
-	if (vpair != NULL) {
+	if (vpair == NULL) {
 	    throw (runtime_error("Pair isn't vertex: " + args.at(0)));
 	}
 	TBool rr = ConnectP2(vpair);
@@ -410,6 +412,10 @@ MIface* Edge::Call(const string& aSpec, string& aRes)
 	res = Point1();
     } else if (name == "Point2") {
 	res = Point2();
+    } else if (name == "Ref1") {
+	res = Ref1();
+    } else if (name == "Ref2") {
+	res = Ref2();
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }

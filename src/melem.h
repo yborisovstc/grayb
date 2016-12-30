@@ -202,7 +202,7 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 	virtual MElem* GetUpperAowner() = 0;
 	virtual MElem* GetCommonOwner(MElem* aElem) = 0;
 	virtual TBool IsRemoved() const = 0;
-	virtual void SetRemoved() = 0;
+	virtual void SetRemoved(TBool aModif) = 0;
 	virtual MElem* GetAttachedMgr() = 0;
 	virtual TBool IsCompAttached(const MElem* aComp) const = 0;
 	virtual const MElem* GetAttachedMgr() const = 0;

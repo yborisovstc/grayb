@@ -18,7 +18,7 @@ class GFactory: public Base, public MProvider
 	TBool LoadPlugin(const string& aName);
 	void LoadPlugins();
 	void AddProvider(MProvider* aProv);
-	void RemoveProvider(GProvider* aProv);
+	void RemoveProvider(MProvider* aProv);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MProvider
@@ -29,6 +29,7 @@ class GFactory: public Base, public MProvider
 	virtual Chromo* CreateChromo();
 	virtual void AppendNodesInfo(vector<string>& aInfo);
 	virtual const string& ModulesPath() const;
+	virtual void SetEnv(MEnv* aEnv);
     protected:
 	static int FilterPlgDirEntries(const struct dirent *aEntry);
     protected:

@@ -50,6 +50,8 @@
 		<revremark>Added <xref linkend="uc_050"/></revremark> </revision>
 	    <revision> <revnumber>0.16</revnumber> <date>12-Apr-2015</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="uc_053"/></revremark> </revision>
+	    <revision> <revnumber>0.17</revnumber> <date>28-Nov-2016</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="uc_053"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -83,6 +85,7 @@
 	    <listitem> <xref linkend="uc_024"/> </listitem>
 	    <listitem> <xref linkend="uc_010"/> </listitem>
 	    <listitem> <xref linkend="uc_014"/> </listitem>
+	    <listitem> <xref linkend="uc_067"/> </listitem>
 	</itemizedlist>
     </sect1>
 
@@ -2309,6 +2312,101 @@
 	    </sect3>
 	    <sect3><title>Clarification</title>
 	    </sect3>
+	    <sect3><title>Design</title>
+		<itemizedlist>
+		    <listitem><ulink url="../design/index.html#ds_nmm"/> - main desing item</listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+
+	<sect2 id="uc_067"><title>UC_067 Mutations: Node re-parent.</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem>CLIENT: client of SYSTEM</listitem>
+		    <listitem>SYSTEM: modelling run-time</listitem>
+		    <listitem>MODEL: a model of system</listitem>
+		    <listitem>NODE_A, NODE_B, NODE_C, NODE_D, NODE_E: an agent in MODEL native hierarchy</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> 
+		<itemizedlist>
+		    <listitem>There is NODE created in model. The chain of inheritance hier is as:
+			<programlisting>
+			    ...:NODE_A:...:NODE_B:...
+			    ...:NODE_A:NODE_C:...:NODE_D:...
+			</programlisting>
+		    </listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>CLIENT understands that NODE_C should be inherited from NODE_B but not from NODE_A.
+			So CLIENT requests change (run-time modification or mutation) of NODE_A to change inheritance chain in order
+			to change NODE_A parent to NODE_C:
+			<programlisting>
+			    ...:NODE_A:...:NODE_B::NODE_C:...:NODE_D:...
+			</programlisting>
+		    </listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title> 
+		<itemizedlist>
+		    <listitem><xref linkend="uc_013"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Extended by</title> </sect3>
+	    <sect3><title>Relates to</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_068"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<orderedlist>
+		    <listitem>Ref <ulink url="../design/index.html#ds_mmc"/> for related desing materials</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	</sect2>
+
+	<sect2 id="uc_068"><title>UC_068 Correction of error</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem>CLIENT: client of SYSTEM</listitem>
+		    <listitem>SYSTEM: modelling run-time</listitem>
+		    <listitem>MODEL: a model of system</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>CLIENT creates MODEL </listitem>
+		    <listitem>In the scope of MODEL creation USER makes some error</listitem>
+		    <listitem>USER realized that the error was made after series of further steps of creating MODEl</listitem>
+		    <listitem>USER wants to correct the error make</listitem>
+		    <listitem>SYSTEM allows USER to fix the error</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title></sect3>
+	    <sect3><title>Extended by</title> </sect3>
+	    <sect3><title>Relates to</title>
+		<itemizedlist>
+		    <listitem><xref linkend="uc_067"/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<orderedlist>
+		    <listitem>Ref <ulink url="../design/index.html#ds_ecr"/> for related desing materials</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title> </sect3>
 	</sect2>
 
     </sect1>

@@ -240,11 +240,6 @@ TBool Vert::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
     return hres;
 }
 
-void Vert::SetRemoved()
-{
-    Elem::SetRemoved();
-}
-
 MIface* Vert::Call(const string& aSpec, string& aRes)
 {
     MIface* res = NULL;

@@ -93,6 +93,8 @@ include_HEADERS = \
 		  edge.h \
 		  rdata.h \
 		  ifu.h \
+		  des.h \
+		  func.h \
 		  incaps.h
 
 

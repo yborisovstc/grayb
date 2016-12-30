@@ -71,6 +71,7 @@ MElem::EIfu::EIfu()
     RegMethod("OnCompAdding", 1);
     RegMethod("OnCompChanged", 2);
     RegMethod("OnCompDeleting", 2);
+    RegMethod("OnChanged", 1);
     RegMethod("CompsCount", 0);
     RegMethod("GetComp", 1);
     RegMethod("AppendMutation", 1);
@@ -90,6 +91,8 @@ MElem::EIfu::EIfu()
     RegMethod("RemoveComp", 1);
     RegMethod("OnChildDeleting", 1);
     RegMethod("Delete", 0);
+    RegMethod("ContentExists", 1);
+    RegMethod("ContValueExists", 1);
 }
 
 void MElem::EIfu::FromCtx(const TICacheRCtx& aCtx, string& aRes)
@@ -2284,7 +2287,6 @@ MElem* Elem::CreateHeir(const string& aName, MElem* aMan)
 	// Mutate run-time only - !! DON'T UPDATE CHROMO, ref UC_019
 	heir->Mutate(ETrue, EFalse, EFalse, heir);
 	if (EN_PERF_TRACE) Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p3 ");
-	// Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo
 	// Mutated with parent's own chromo - so panent's name is the type now. Set also the parent, but it will be updated further
 	heir->SetParent(Name());
 	// Relocate heir to hier from which the request of creating heir came
@@ -2884,7 +2886,7 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
 		//if (dep.first.first == NULL || dep.second == ENa_Id) {
 		// TODO [YB] To add checking refs
 		if (ETrue) {
-		    node->SetRemoved();
+		    node->SetRemoved(aRunTime);
 		    if (!aRunTime) {
 			// Adding dependency to object of change
 			ChromoNode chn = iChromo->Root().AddChild(aSpec);
@@ -2970,7 +2972,7 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 			// If node has children then just mark it as removed but not remove actually
 			if (snode->HasInherDeps(snode)) {
 			    //TODO [YB] Consider to handle correctly
-			    snode->SetRemoved();
+			    snode->SetRemoved(aRunTime);
 			}
 			else {
 			    delete snode;
@@ -3441,15 +3443,15 @@ TBool Elem::IsRemoved() const
     return isRemoved;
 }
 
-void Elem::SetRemoved()
+void Elem::SetRemoved(TBool aModif)
 {
     // Remove node from native hier but keep it in inher hier
     // Notify the man of deleting
     if (iMan != NULL) {
-	iMan->OnCompDeleting(*this);
+	iMan->OnCompDeleting(*this, ETrue, aModif);
     }
     if (iObserver != NULL) {
-	iObserver->OnCompDeleting(*this);
+	iObserver->OnCompDeleting(*this, ETrue, aModif);
     }
 #if 0 // Regular iteration is to be used because no real removal happens, but just "soft", ref ds_mut_rm_appr2
     // Mark the comps as removed, using iterator refresh because the map is updated on each comp deletion
@@ -3463,7 +3465,7 @@ void Elem::SetRemoved()
     // Removing comps in reverce order
     for (vector<MElem*>::reverse_iterator it = iComps.rbegin(); it != iComps.rend(); it++) {
 	MElem* comp = *it;
-	comp->SetRemoved();
+	comp->SetRemoved(ETrue);
     }
 #endif
     // Mark node as removed from hative hier
@@ -3773,6 +3775,12 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	TBool inclrm = Ifu::ToBool(args.at(2));
 	GUri::const_elem_iter it = uri.Begin();
 	res = GetNode(uri, it, anywhere, inclrm);
+    } else if (name == "ContentExists") {
+	TBool rr = ContentExists(args.at(0));
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "ContValueExists") {
+	TBool rr = ContValueExists(args.at(0));
+	aRes = Ifu::FromBool(rr);
     } else if (name == "GetContent") {
 	aRes = GetContent(args.at(0));
     } else if (name == "Mutate") {
@@ -3902,6 +3910,9 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
     } else if (name == "OnCompChanged") {
 	MElem* comp = GetNode(args.at(0));
 	OnCompChanged(*comp, args.at(1));
+    } else if (name == "OnChanged") {
+	MElem* comp = GetNode(args.at(0));
+	OnCompChanged(*comp);
     } else if (name == "OnCompDeleting") {
 	MElem* comp = GetNode(args.at(0), ETrue);
 	TBool soft = Ifu::ToBool(args.at(1));

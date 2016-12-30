@@ -271,7 +271,7 @@ class Elem: public MElem
 	virtual TInt GetContCount(const string& aName = string()) const;
 	virtual MElem* GetUpperAowner();
 	virtual TBool IsRemoved() const;
-	virtual void SetRemoved();
+	virtual void SetRemoved(TBool aModif);
 	// Debugging
 	virtual TInt GetCapacity() const;
 	// Nodes

@@ -427,16 +427,15 @@ Elem* Env::Root()
     return iRoot; 
 }
 
-void Env::AddProvider(GProvider* aProv)
+void Env::AddProvider(MProvider* aProv)
 {
-    MProvider* prov = aProv->GetObj(prov);
-    __ASSERT(prov != NULL);
-    iProvider->AddProvider(prov);
+    __ASSERT(aProv != NULL);
+    iProvider->AddProvider(aProv);
     aProv->SetEnv(NULL);
     aProv->SetEnv(this);
 }
 
-void Env::RemoveProvider(GProvider* aProv)
+void Env::RemoveProvider(MProvider* aProv)
 {
     iProvider->RemoveProvider(aProv);
 }

@@ -46,6 +46,8 @@
 		<revremark>Added <xref linkend="ds_daa_ttm"/>, updated <xref linkend="ds_cplx_cont_strc"/></revremark> </revision>
 	    <revision> <revnumber>0.14</revnumber> <date>07-Jun-2016</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="ds_cplx_cont_cdac"/>, updated <xref linkend="ds_cplx_cont_strcimpr"/></revremark> </revision>
+	    <revision> <revnumber>0.15</revnumber> <date>06-Dec-2016</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="ds_mmc_br"/>, <xref linkend="ds_mmc_ipcm"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -716,7 +718,7 @@
 		    mutation changes reference to the renamed node. Some alternative approaches were already 
 		    discussed, e.g using aliases.</simpara>
 		<simpara>Another approach to keep chromo history is to introduce one more level on model - model of 
-		    changing of chromo, <xref linkend="ds_chrcmdl"/>. This makes chromo itself just intermediate
+		    changing of chromo, <xref linkend="ds_mmc"/>. This makes chromo itself just intermediate
 		    model being generated from upper layer model. "Chromo of chromo" or chromo2 can include all operations
 		    of changing chromo, not only elementary but also operations like "squeeze chromo" etc.</simpara>
 	    </sect3>
@@ -2401,10 +2403,90 @@
 	</sect2>
     </sect1>
 
-    <sect1 id="ds_prb"><title>Problems</title>
+    <sect1 id="ds_ecr"><title>Error correction</title>
+	<sect2><title>Intro</title>
+	    <itemizedlist>
+		<listitem>Ref <ulink url="../requirements/index.html#uc_68"/> for use-case.</listitem>
+		<listitem>Error correction is tightly connected to model branching, ref <xref linkend="ds_mmc_br"/></listitem>
+	    </itemizedlist>
+	    <simpara>There are some approaches for early error correction:</simpara>
+	    <itemizedlist>
+		<listitem>Incremental mutation with special mutations like re-parent to be introduced. Ref <xref linkend="ds_ecr_uim"/></listitem>
+		<listitem>Incremental mutation plus model-level branching. Ref <xref linkend="ds_ecr_mlb"/> for details. </listitem>
+	    </itemizedlist>
+	</sect2>
+	<sect2><title>Sketches</title>
+	    <sect3><title>Fixing error and re-using the model created</title>
+		<simpara>
+		    Main challenge in fixing error is that user wants not just fix error but fix it with minimal effort. This is not good enough solution
+		    to find the place of error introducing, create branch from that point and evolve this correct branch. The problem here is that the
+		    error could be introduced on early stage of model creation. So branching here causes that user need to repeat all the correct
+		    mutations that were done on “erroneous” branch. But user wants to reuse all the right steps in model creation but not to repeat them.
+		</simpara>
+	    </sect3>
+	    <sect3><title>What about direct change of chromo? Same problem with context.</title>
+		<simpara>What if we don't use incremental mutation but correct wrong mutations directly in the chromo. It is simple to see that
+		    there will be same problem with re-using other mutations. The cause is that the change of initial wrong mutations, for instance
+		    creation node from wrong parent, will change context for other mutations. So some of these mutations need to be corrected too.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_ecr_uim"><title>Using incremental mutations.</title>
+	    <sect3 id="ds_ecr_uim_ctx"><title>Can model errors be fixed in the scope of model’s incremental mutations? Context to be taken into account.</title>
+		<simpara>
+		    Can model errors be fixed in the scope of model’s incremental mutation or there are some fundamental restriction of fixing errors
+		    that way? There are few mutations for changing the model: node creation, name changing, content changing, removal, movement
+		    (not elementary). We can consider the chain of mutations as trajectory in the space of all possible variants of the model being created.
+		    So the question is: if some earlier movement in the trajectory is erroneous then is it possible to move the final point to right
+		    destination point by some set of incremental steps. 
+		</simpara>
+		<simpara>
+		    Important thing here is that all mutations are context dependent.
+		    It makes sense to consider the erroneous changes that causes massive corruption of the model. Good example is inheritance initial node
+		    from wrong parent and then creating big chain of inheritance and deps from this node. User did wrong mutation of creating node from parent A.
+		    The correct way would be to create from parent B. But now there are a lot of mutations applied over this wrong initial mutation.
+		    Can we fix it via incremental mutation. First of all we need mutation “re-parent”. Assuming we have it. The approach to this “re-parent”
+		    mutation is to keep the inheritance chain child_of_A … and apply to child_of_A all mutation from delta of chromos B-A.
+		    The problem here is that these mutations are context-dependent: they normally done on A context. But now we need to apply it above
+		    all mutations done for child_of_A (these mutations can corrupt the context, for instance they can delay some nodes from A that are
+		    to be mutated in the scope of B creation). In this case the attempt to apply delta of chromos B-A will cause errors.
+		    This example shows that context dependency leads to the fact that mutation depends on the position in the chromo, i.e. it
+		    is position dependent. Again: the mutations done when creating B from A (in the scope of A) are not equivalent to same mutations
+		    done in the scope of final (i.e. variously mutated) child_of_A because the context is different.
+		    Is there solution for that? Maybe. One of them could be that
+		    when the attempt of applying B-A causes errors then user can apply correcting mutations first, for instance undo removal of missing
+		    component of A - by this user will transform the context of B-A mutation to near to original one.
+		    Then the user can do another attempt to apply B-A. In any case the fundamental problem of this approach is that we
+		    try to apply mutation with the wrong context. Again: mutation and its context are inseparable, but probably we can consider mutations
+		    as correct even they are done in improper context it the result of mutation is as expected. (NOTE: same problem is in the current
+		    solution of mutation of parent – the mutations are propagated to children but the context there differs from that in parent so the
+		    mutations are propagated with improper context).
+		</simpara>
+	    </sect3>
+	    <sect3><title>Re-parent. Incremental mutation seems not working.</title>
+		<simpara>Re-parent (ref <xref linkend="ds_rpr"/> is a good example of early error. Incremental mutation approach can be used here via
+		    introducing new mutation "re-parent" to "move" Child_of_A from parent A to parent B. This mutation should apply delta B-A chromo to the
+		    Child_of_A. We alredy discussed the problem with wrong context when applying B-A (ref <xref linkend="ds_ecr_uim_ctx"/>). But there
+		    is another problem. Actually this applying B-A is very similar to creating hear of agent, ref Elem::CreateHeir(). This algorithm
+		    is based on getting heir of parent of agent and mutating it with agent's chromo. The procedure is recursive. There is important thing -
+		    mutation with agents chromo is done in the agent's context (agent intentionally ask parent to re-locate created heir to agent's context.
+		</simpara>
+		<simpara>This is ok for heir being created. But how can we move existing Child_of_A to the context of ...B? Child_of_A can have established
+		    relations so such a movement is impossible. How can we avoid this problem? One way is to transform mutations B-A for context of Child_of_A.
+		    This implies transformation of all references in the mutations. Howewer even this trick doesn't help absolutely. The matter is that
+		    the Child_of_A owner can handle Child_of_A mutations in different manner than right context in case of inheriting Child_of_A from B.
+		    It is the question if this aspect can be ignored.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_ecr_mlb"><title>Incremental mutations via model-level branching</title>
+	    <sect3><title>Intro</title>
+		<simpara>The idea of this approach is to re-create the erroneous part of model from scratch in another branch. This allows to keep the 
+		history and on the other hand to have new implementation.</simpara>
+	    </sect3>
+	</sect2>
+
     </sect1>
 
-    <sect1 id="ds_chrcmdl"><title>Model of chromo changing</title>
+    <sect1 id="ds_mmc"><title>Review of mechanism of model creation</title>
 	<sect2><title>Introduction</title>
 	    <simpara>The current implementation includes two models: target model (aka run-time model) and chromo 
 		(model of target model creation).  Chromo is just treeish structure of target model mutation,
@@ -2413,11 +2495,11 @@
 		"rollback" to any intermediate point of tagret model creation.
 		The initial idea was that using incremental mutation approach can cover all the use-cases for 
 		model creation. But then some use-cases was discovered that are not covered be this.
-		There are two main use-cases: </simpara>
+		There are some main use-cases: </simpara>
 	    <itemizedlist>
 		<listitem>Transformation of chromo. It was realized that incremental update of chromo doesn't 
 		    allow keeping optimal chromo structure. For instance in many cases it is required to do 
-		    transformation of chromo, ref <xref linkend="ds_transf"/>. In this case it gets not
+		    transformation of chromo (e.g. optimization), ref <xref linkend="ds_transf"/>. In this case it gets not
 		    possible to rollback to the given point of target model creation because the transformation
 		    breaks "history".</listitem>
 		<listitem>Multi-user creation of model. This is the case when more than one user is working on the 
@@ -2427,9 +2509,35 @@
 		    fully. One problem is that the history is for the whole model but not for users, so it is not 
 		    possible for the user to rollback his own changes. Another problem is that it's still possible 
 		    to mutate model "before branching point", i.e. parent of the "branch" user created.</listitem>
+		<listitem>Re-parent of node. This case is quite often when user creates the chain of inheritance and then realized
+		    that the initial inheritance was wrong. So it would like to re-parent the initial heir. Potentially this could be done
+		    without changing chromo, but direct way is to update chromo itself. 
+		    Ref <ulink url="../requirements/index.html#uc_067"/> for the use-case.</listitem>
+		<listitem>Roll-back of some mutation. In the scope of incremental mutation it was assumed that rollback should be done via applying
+		    "inverse" mutation (add node - remove node etc.). But this "inverse" mutation is not exactly same as avoiding initial mutation.
+		    For instance to roll-back change of content in case we don't know the previous value
+		    of content. In such case it is not possible to use "inverse" mutation so we need to "remove" the mutation from 
+		    the chromo.</listitem>
+		<listitem>Rollback to some mutation and continue changing of model. This scenario means that old "rolled back" mutations
+		    are still in history (i.e. in the chromo). Note that current incremental mutation approach doesn't support such kind of
+		    "branching".</listitem>
 	    </itemizedlist>
-	    <simpara>So one more approach can be taken into consideration. It is to use one more model: model of chromo 
-		changes. This is 3rd layer model. The elements of this model are mutations of chromo.</simpara>
+	    <simpara>All these cases can be generalized: we need to change the chromo itself only in those cases when it is not
+		possible (or ineffecive) to change the model via the series of new mutations. For instance we can do re-base just
+		removing the current chain and create the new one inherited from the right parent. This will work but be expensive.</simpara>
+	    <simpara>So, again, we can consider various mechanisms of model creation:</simpara>
+	    <orderedlist>
+		<listitem>Current approach – incremental mutation, all changes of previous mutations are prohibited, only mutations adding is enabled.</listitem>
+		<listitem>Enabled changing of chromo, not only adding mutations – there is mutation of mutation. It requires re-creation of the model
+		    (In fact this approach is wrong, because the history is broken in that case) </listitem>
+		<listitem>Inheritance with parents chromo mutation – currently the parent’s chromo is not changed when creating child. The only 
+		    incremental mutations are done "above" parent's chromo.
+		    With this new approach the parent’s chromo can be changed BEFORE creating the child. This allows to create parent’s “branch”
+		    with changed chromo without re-creation the whole model. Ref <xref linkend="ds_mmc_ipcm"/> for the approach analysis.</listitem>
+		<listitem>Using meta-chromo, which consists of mutations of chromo. The chromo is generated from meta-chromo and then created the model
+		    from the chromo. In that case there is two-stage model creation: 1. chomo is created from meta-chromo 2. model is created from chromo.
+		</listitem>
+	    </orderedlist>
 	</sect2>
 	<sect2><title>Keeping 2 level model</title>
 	    <simpara>It is still possible to cover many use-cases using initial approach (just chromo as 2nd level model) 
@@ -2439,8 +2547,73 @@
 		    at all. The only transformation are to be allowed that can be recovered. In many cases it is achievable.
 		    For instance the chromo optimization can be considered as marking chromo in order to help the models 
 		    assembling machine. This marking can be simply removed to recover the chromo. In other words the 
-		    optimization is just a mode of the machine that is set on or of before assembling.</listitem>
+		    optimization is just a mode of the machine that is set on or of before assembling. The argument here could be that
+		    technically such kind of optimization is diffucult to implement. For instance there are various versions of some sub-model, then
+		    the user wants to keep active only couple of them. He removes unused sub-models and requests optimization of the whole model. Then
+		    he decides to optimize remaining sub-models. The problem here that it is not possible to distinct the optimization, so when the
+		    user disable optimization of active sub-models the whole model optimization is disabled too. Probably this can be solved with
+		    some improved design, but the use-case shows that such "parametrized" optimization is not universal solution.</listitem>
 	    </itemizedlist>
+	</sect2>
+	<sect2 id="ds_mmc_br"><title>Branching</title>
+	    <sect3><title>Intro</title>
+		<itemizedlist>
+		    <listitem>Branching is sensitive feature in model creation mechanism. It plays similar role to versioning tools in source code development.
+			I.e it allows to keep in mind and evolve various sub-models.</listitem>
+		    <listitem>There is various requirements to the branching. Some of them are:
+			<itemizedlist>
+			    <listitem>User can select active branch for creating model - all other branches get unused.</listitem>
+			    <listitem>User can establish restrictions for its own branch so other users will deal with the branch under these restrictions.</listitem>
+			</itemizedlist>
+		    </listitem>
+		    <listitem>In fact even current incremental mutations approach supports branching - each new inherited agent is the branch of 
+			its parent. The specific is that normally all "branches" are used. This can be changed via removing unused "branches" and
+			optimizing the whole model but this mechanism needs to be designed yet - there is no obvious design for it.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Misc</title>
+		<orderedlist>
+		    <listitem>
+			How can we implement branching in the given model? One way is to select one of the sub-model as “branch”.
+			In this case the env should create model with such a parameter – “sub-model selected to be a branch”.
+			We need to take into account also the dependencies on other parts of the model. All deps need to be created too.
+		    </listitem>
+		    <listitem>
+			What is the difference between branching on model level and branching on chromo level? Main difference is that branching
+			on chromo level  guarantees that there is no dependencies to outside of the branch. It is similar to source code
+			versioning control – relations within version control are completely independent (even their nature is different)
+			on the model (source code, program).
+		    </listitem>
+		    <listitem>
+			Let’s consider two methods of branching: tree of objects and tree of elements. Multi-agents model is example of tree of objects.
+			Object itself here is complex but it is elementary member of tree chain. In multi-agents model it is not possible to branch from
+			some intermediate state of object (from some mutations of object). Tree of elements where elements are mutations allows branching
+			from any part of change history. So branching on model level has this limitation – we cannot branch from historic version of
+			object but from the current version only.
+		    </listitem>
+		    <listitem>
+			Branching is fundamental approach when creating complex models. User just cannot create the model without errors. Creation itself
+			is complex so it is impossible to avoid errors. So the creation process includes errors correction: user analyzes the problem,
+			finds where the error was introduced and then fix it. To fix it user creates branch from the point where error was introduced
+			and creates new error free version. Often the problem is not an error but some week design. Then user creates new branch from
+			the point that allows to create new design of model.
+		    </listitem>
+		</orderedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mmc_ipcm"><title>Inheritance with parents chromo mutation </title>
+	    <sect3><title>Intro</title>
+		<itemizedlist>
+		    <listitem>The idea of the approach is to implement so called "change of chromo" without introducing of new model creation layer like
+			meta-chromo ("chromo of chromo"). Instead of specifying the change of chromo in meta-chromo this approach enables to
+			specify parent's chromo change in the chromo of its child.</listitem>
+		    <listitem>What gives this approach? First thing is that we get the possibility of chromo changing. Then it keeps the history, like
+			meta-chromo approach does. Also it supports kind of "branching" (ref <xref linkend="ds_mmc_br"/>) because the parent
+			(i.e. old sub-model, one branch) gets unchanged, instead we get child (new branch) where the chromo is corrected.</listitem>
+		    <listitem>The weakness of this approach is that direct mutation (opposing to incremental mutation) can cause actual dramatical
+			change of sub-model so it is almost impossible to do smooth verification of the change.</listitem>
+		</itemizedlist>
+	    </sect3>
 	</sect2>
     </sect1>
 
@@ -3300,7 +3473,7 @@
     <sect1 id="ds_nas"><title>Natively asynchronous model.</title>
 	<sect3><title>Intro</title>
 	    <simpara>Current DAA approach actually isn't asyncronous. On native layer it is still sync. Asynchrony in DAA can be implemented on 
-	    DES layer, this is specific kind of asyncrony - cooperative one. It would be more interesting to have asynchrony on native level.</simpara>
+		DES layer, this is specific kind of asyncrony - cooperative one. It would be more interesting to have asynchrony on native level.</simpara>
 	</sect3>
     </sect1>
 
@@ -3375,7 +3548,7 @@
 		ASocketMc.</simpara>
 	    <simpara>This examples shows that the idea of using inheritance chain as the criteria of compatibility is not correct.
 		What would be correct approach? This section is dedicated for discussion of effective approach of model representing to
-	    the client.</simpara>
+		the client.</simpara>
 	</sect2>
 	<sect2><title>Set of native interfaces as model representation to the client.</title>
 	    <simpara>Anycase the interface shall be declared and publish set of ways of interaction to the model. Currently there
@@ -3401,6 +3574,17 @@
 		in agent embedded agents.
 	    </simpara>
 	    <simpara>Decision: to update local iface method in order to also look up in embedded agent.</simpara>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_rpr"><title>Re-parent of node</title>
+	<sect2><title>Intro</title>
+	    <simpara>Ref <ulink url="../requirements/index.html#uc_067"/> for the use-case.</simpara>
+	</sect2>
+	<sect2><title>Mutation vs transformation</title>
+	    <simpara>Re-parent causes the series of mutation (or modifications) made to the node re-parented. So the question is if this should
+		be transformation instead of mutation.</simpara>
+	    <simpara>Ref <xref linkend="ds_transf"/> for design item outlining transformation.</simpara>
 	</sect2>
     </sect1>
 
@@ -3450,6 +3634,55 @@
 		<title>Introduction to GDK - James</title> </biblioentry>
 	</sect2>
 	<sect2><title>APIs</title>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_nmm"><title>How to implement notification of mutation or modification</title>
+	<sect2><title>Intro</title>
+	    <itemizedlist>
+		<listitem>Ref <ulink url="../requirements/index.html#uc_066"/> for use-case</listitem>
+	    </itemizedlist>
+	</sect2>
+	<sect2><title>Current implementation: extra parameter in notification</title>
+	    <simpara>Currently (9767f9de) the mut/mod notification is implemented via additional argument (run-time or modif) of notifications. The rationale was
+	    </simpara>
+	    <itemizedlist>
+		<listitem>There are already notification of change so there is no sense to introduce one more new.  </listitem>
+		<listitem>Adding new notification "OnChromoChanged" causes to increasing the notifications almost twice. In distribured model each
+		    notification can cause "long" request (via IPC), so this increase of notificaction could downgrade the model's benchmark siginificantly.</listitem>
+	    </itemizedlist>
+	    <simpara>But there is still doubts regarding appropriateness of this approach.  The argument is that no one agent doesn't use this
+		parameter but the only observer (studio application).</simpara>
+	    <simpara>Also the trigger of this doubts was the bug in Elem::AddElem():</simpara>
+	    <programlisting>
+		TBool persist = !aRunTime &amp;&amp; aCtx != NULL &amp;&amp; (aCtx == root || root->IsCompAttached(this));
+		res = node->AppendComp(elem, !persist);
+	    </programlisting>
+	    <simpara>Here IsCompAttached() is called, that causes the problem in case of "this" is the node newly created and not inserted into owner. In this
+		case the node Uid cannot be resolved in distributed mode (ref <xref linkend="ds_daa_hunv"/>). The idea of solving <xref linkend="ds_daa_hunv"/>
+		was to avoid any "long" requests while created node is under weak one-side relation to owner. But the approach of using notification parameter for 
+		mut/modif requires calculation mut/modif before AppendComp, that leads to "long" call IsCompAttached().</simpara>
+	    <simpara>
+		The drawback of "mut/moduf arg" solution is that in fact the argument needs to be calculated (i.e. this is not a fact but a prediction) each
+		time the mutation occurs. This arg is not the sign of node's chromo changed but the sign of model's chromo changed. So node issuing the
+		notification that is not in its scope of responsibility. So this is architectural gap. To keep this "mut/modif arg" architecturally clear
+		this arg should have the meaning "this is mutation/modificatio" of the notifying node (component)". Then the owner can analyze this arg,
+		calculate its own arg and propagate the notification. This seems not to be elegant solution because it requires passing to the notification
+		some parameters required for the calculation: context of mutation for instance.  </simpara>
+	</sect2>
+	<sect2><title>Solution: dedicated observer for agent's chromo change</title>
+	    <sect3><titel>Intro</titel>
+		<simpara>Assuming that the observer is registered for root node only. The idea is to minimize the number of notification events.
+		    With this solution the number of notifications within the model remains same as in case of mut/modif argument. The only notifications number to
+		    model's client (studio application for instance) will be increased.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2><title>Solution: to add specific notification of chromo changed in agent observer.</title>
+	    <simpara>Note that there is already such a notification MElem::OnNodeMutated() that proparates to the upper node. So in any case the notification is issued.
+		The idea is to add such a notification (without mutation context in args) into agent's observer. Base agent should issue this notification from
+		its own handler OnNodeMutated in case if there is agents observer registered.  </simpara>
+	    <simpara>It makes sense to consider moving MElem::OnNodeMutated() to comp observer. In that case the correspondance between comp observer and
+		agent observer will exists for all notifications.</simpara>
 	</sect2>
     </sect1>
 

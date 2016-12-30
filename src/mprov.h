@@ -24,6 +24,7 @@ class MProvider
 	virtual Chromo* CreateChromo() = 0;
 	virtual void AppendNodesInfo(vector<string>& aInfo) = 0;
 	virtual const string& ModulesPath() const = 0;
+	virtual void SetEnv(MEnv* aEnv) = 0;
 };
 
 #endif

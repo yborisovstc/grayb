@@ -119,7 +119,7 @@ void GFactory::AddProvider(MProvider* aProv)
     iProviders.insert(TProvidersElem(aProv->Name(), aProv));
 }
 
-void GFactory::RemoveProvider(GProvider* aProv)
+void GFactory::RemoveProvider(MProvider* aProv)
 {
     __ASSERT(iProviders.count(aProv->Name()) > 0);
     iProviders.erase(aProv->Name());
@@ -139,3 +139,8 @@ const string& GFactory::ModulesPath() const
     return defprov->ModulesPath();
 }
 
+void GFactory::SetEnv(MEnv* aEnv)
+{
+    assert(iEnv == NULL || aEnv == NULL);
+    iEnv = aEnv;
+}

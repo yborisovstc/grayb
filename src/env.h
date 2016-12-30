@@ -97,8 +97,8 @@ class Env: public Base, public MEnv
     Env(const string& aSpec, const string& aLogFileName, TBool aOpt);
     virtual ~Env();
     // Separated from constructor because constr can be followed by second phase - setting providers etc.
-    void AddProvider(GProvider* aProv);
-    void RemoveProvider(GProvider* aProv);
+    void AddProvider(MProvider* aProv);
+    void RemoveProvider(MProvider* aProv);
     // TODO [YB] To implement external iface provider as env module (plugin), to add provider of env modules
     void SetExtIfProv(MExtIfProv* aProv);
     public:
