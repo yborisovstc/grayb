@@ -24,6 +24,7 @@ class TICacheRCtx: public vector<Base*>
 // Cloned from MCompsObserver in order to avoid MCompsObserver be MIface
 // This would require MIface wrapper for MCompsObserver to distinguish MIface methods in Elem
 // Added flag for distinguish modif and mutation, ref uc_066
+// TODO [YB] To remove flag aModif, it's functionality is covered by OnCompMutated notif
 class MAgentObserver: public MIface
 {
     public:
@@ -35,6 +36,8 @@ class MAgentObserver: public MIface
 	// For run-time only. Use OnCompChanged when the content is changed via mutation
 	virtual TBool OnChanged(MElem& aComp) = 0;
 	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName) = 0;
+	// Extra notification for the clients handling model's chromo, ref ds_nmm, uc_066
+	virtual void OnCompMutated(const MElem* aNode) = 0;
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};
     protected:
@@ -46,6 +49,7 @@ class MAgentObserver: public MIface
 	static EIfu mIfu;
 };
 
+// TODO [YB] To move OnNodeMutated to MCompsObserver ??
 class MCompsObserver
 {
     public:

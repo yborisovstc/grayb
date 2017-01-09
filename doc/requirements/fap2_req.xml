@@ -2403,10 +2403,19 @@
 	    </sect3>
 	    <sect3><title>Discussion</title>
 		<orderedlist>
-		    <listitem>Ref <ulink url="../design/index.html#ds_ecr"/> for related desing materials</listitem>
+		    <listitem>Do we need to consider un-recoverable errors separatelly?
+			<para>Let's designate the errors that can be fixed via series of incremental mutations as "recoverable" error. Correspondingly the
+			    errors that cannot be fixed this way we will call "un-recoverable". Do we need to use this use-case for un-recoverable errors also?
+			    What kind of un-recoverable errors are to be handled? Ref <ulink url="../design/index.html#ds_ecr_ure"/> for the discussion.</para>
+		    </listitem>
 		</orderedlist>
 	    </sect3>
 	    <sect3><title>Clarification</title> </sect3>
+	    <sect3><title>Desing</title>
+		<orderedlist>
+		    <listitem>Ref <ulink url="../design/index.html#ds_ecr"/> for related desing materials</listitem>
+		</orderedlist>
+	    </sect3>
 	</sect2>
 
     </sect1>

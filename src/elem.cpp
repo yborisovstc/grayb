@@ -37,6 +37,7 @@ MAgentObserver::EIfu::EIfu()
     RegMethod("OnCompChanged", 1);
     RegMethod("OnChanged", 1);
     RegMethod("OnCompRenamed", 2);
+    RegMethod("OnCompMutated", 1);
 }
 
 
@@ -51,7 +52,7 @@ MElem::EIfu::EIfu()
     RegMethod("GetRoot", 0);
     RegMethod("GetNode", 1);
     RegMethod("GetNode#2", 3);
-    RegMethod("GetContent", 1);
+    RegMethod("GetContent", 2);
     RegMethod("Mutate", 4);
     RegMethod("Mutate#2", 4);
     RegMethod("IsProvided", 0);
@@ -93,6 +94,9 @@ MElem::EIfu::EIfu()
     RegMethod("Delete", 0);
     RegMethod("ContentExists", 1);
     RegMethod("ContValueExists", 1);
+    RegMethod("GetContCount", 1);
+    RegMethod("GetContComp", 2);
+    RegMethod("SetParent", 1);
 }
 
 void MElem::EIfu::FromCtx(const TICacheRCtx& aCtx, string& aRes)
@@ -2022,8 +2026,8 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 		// even if the mutation is parents mutation (inherited mutation) in order to keep all nodes chromo.
 		// So we need to re-calculate run-time property: only if the mut is not to be included in root chromo
 		// Mark change as persistent (not run-time) only if the change affects model chromo
-		MElem* root = GetRoot();
-		TBool persist = !aRunTime && aCtx != NULL && (aCtx == root || root->IsCompAttached(this));
+		// TODO [YB] To cleanup, to remove run-time arg from notifications
+		TBool persist = ETrue;
 		res = node->ChangeCont(mval, !persist, cname);
 		if (res) {
 		    if (!aRunTime) {
@@ -2148,8 +2152,7 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 			// Heir has been created, now we can establish solid two-ways relations, ref. ds_daa_hunv
 			//
 			// Mark change as persistent (not run-time) only if the change affects model chromo, ref ds_mut_osm_linchr_notif.
-			MElem* root = GetRoot();
-			TBool persist = !aRunTime && aCtx != NULL && (aCtx == root || root->IsCompAttached(this));
+			TBool persist = ETrue;
 			res = node->AppendComp(elem, !persist);
 			elem->SetParent(NULL);
 			res = res && parent->AppendChild(elem);
@@ -3736,10 +3739,8 @@ MElem* Elem::GetComp(TInt aInd)
 
 string Elem::Mid() const
 {
-    // Model Id is formed as full local URI (including  root) 
-//    return GetUri(iEnv->Root(), ETrue) + GUriBase::KIfaceSepS + MElem::Type();
-    //return iEnv->Root()->Name() + "/" + GetUri(iEnv->Root(), ETrue);
-    return GetUri(iEnv->Root()->GetMan(), ETrue);
+    // Generating Mid as relative UID from local root, ref ds_daa_pxdup_birc
+    return GetUri(iEnv->Root(), ETrue);
 }
 
 MIface* Elem::Call(const string& aSpec, string& aRes)
@@ -3781,8 +3782,15 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
     } else if (name == "ContValueExists") {
 	TBool rr = ContValueExists(args.at(0));
 	aRes = Ifu::FromBool(rr);
+    } else if (name == "GetContCount") {
+	TInt rr = GetContCount(args.at(0));
+	aRes = Ifu::FromInt(rr);
     } else if (name == "GetContent") {
-	aRes = GetContent(args.at(0));
+	TBool full = Ifu::ToBool(args.at(1));
+	aRes = GetContent(args.at(0), full);
+    } else if (name == "GetContComp") {
+	TInt ind = Ifu::ToInt(args.at(1));
+	aRes = GetContComp(args.at(0), ind);
     } else if (name == "Mutate") {
 	TBool rtonly, checksafety, trialmode;
 	rtonly = Ifu::ToBool(args.at(1));
@@ -3815,6 +3823,9 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
     } else if (name == "RemoveChild") {
 	MElem* child = GetNode(args.at(0));
 	RemoveChild(child);
+    } else if (name == "SetParent") {
+	MElem* parent = GetNode(args.at(0));
+	SetParent(parent);
     } else if (name == "GetUri") {
 	aRes = GetUri(NULL, ETrue);
     } else if (name == "GetUri#2") {
@@ -4065,6 +4076,9 @@ void Elem::OnNodeMutated(const MElem* aNode, const TMut& aMut, const MElem* aCtx
 	string nuri = aNode->GetUri(this, ETrue);
 	ChromoNode anode = iChromo->Root().AddChild(aMut);
 	anode.SetAttr(ENa_Targ, nuri);
+	if (iObserver != NULL) {
+	    iObserver->OnCompMutated(aNode);
+	}
     }
     if (this != root) {
 	// Propagate till upper node of attaching chain, ref ds_mut_osm_linchr_lce

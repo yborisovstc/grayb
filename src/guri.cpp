@@ -205,9 +205,13 @@ size_t GUriBase::FindGroup(const string& aStr, size_t aPos)
 
 TBool GUriBase::IsAbsolute() const
 {
-    const_elem_iter it = iElems.begin();
-    TElem elem = *it;
-    return  elem.first.empty() && elem.second.second.empty();
+    TBool res = EFalse;
+    if (iElems.size() > 0) {
+	const_elem_iter it = iElems.begin();
+	TElem elem = *it;
+	res = elem.first.empty() && elem.second.second.empty();
+    }
+    return res;
 }
 
 TBool GUriBase::Compare(const_elem_iter aStart, const GUriBase& aUri, const_elem_iter& aResPos) const

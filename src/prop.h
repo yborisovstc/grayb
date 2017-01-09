@@ -15,6 +15,7 @@ class MProp_Imd: public MProp
 };
 
 // Property
+// TODO [YB] Prop seems unnecessary after complex contex support in Elem was introduced. To consider removing
 class Prop: public Elem, public MProp_Imd
 {
     public:
@@ -28,7 +29,7 @@ class Prop: public Elem, public MProp_Imd
 	// From MProp
 	virtual const string& Value() const;
 	// From MElem
-	virtual string GetContent(const string& aName=string()) const; 
+	virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const;
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName = string()); 
 	// From MProp_Imd
 	virtual MIface* MProp_Call(const string& aSpec, string& aRes);

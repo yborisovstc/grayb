@@ -48,17 +48,22 @@ TBool Prop::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
 {
     TBool res = ETrue;
     //if (aVal != iValue) {
-    if (true) {
+    if (aName.empty()) {
 	iValue = aVal;
 	iMan->OnCompChanged(*this, aName, aRtOnly);
+    } else {
+	res = Elem::ChangeCont(aVal, aRtOnly, aName);
     }
     return res;
 }
 
-string Prop::GetContent(const string& aName) const
+string Prop::GetContent(const string& aName, TBool aFull) const
 {
-    __ASSERT(aName.empty());
-    return iValue;
+    if (aName.empty()) {
+	return iValue;
+    } else {
+	return Elem::GetContent(aName, aFull);
+    }
 }
 
 MIface* Prop::MProp_Call(const string& aSpec, string& aRes)

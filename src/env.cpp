@@ -297,17 +297,9 @@ MIface* IfcResolver::GetIfaceByUid(const string& aUid)
     GUri uri(suri);
     if (!uri.IsErr()) {
 	MElem* node = NULL;
-	if (uri.IsAbsolute()) {
-	    node = mHost.Root()->GetNode(uri);
-	} else {
-	    GUri::const_elem_iter it = uri.Begin();
-	    if (it->second.second == mHost.Root()->Name()) {
-		node = mHost.Root();
-	    }
-	    if (node != NULL && ++it != uri.Elems().end()) {
-		node = mHost.Root()->GetNode(uri, it);
-	    }
-	}
+	__ASSERT(!uri.IsAbsolute());
+	// Uid is generated as relative UID from local root, ref ds_daa_pxdup_birc
+	node = mHost.Root()->GetNode(uri);
 	if (node != NULL) {
 	    res = (MIface*)(node->GetObj(type.c_str()));
 	}

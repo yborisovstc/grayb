@@ -2415,6 +2415,16 @@
 		<listitem>Incremental mutation plus model-level branching. Ref <xref linkend="ds_ecr_mlb"/> for details. </listitem>
 	    </itemizedlist>
 	</sect2>
+	<sect2 id="ds_ecr_ure"><title>Recoverable and un-recoverable errors.</title>
+	    <sect3><title>Intro</title>
+		<simpara>Let's designate the errors that can be fixed via series of incremental mutations as "recoverable" error. Correspondingly the
+		    errors that cannot be fixed this way we will call "un-recoverable".</simpara>
+	    </sect3>
+	    <sect3><title>What are examples of un-recoverable errors?</title>
+		<simpara>One example is adding or configuring agent that crashes the whole model. Is this example correct? Shouldn't this bad result of mutation
+		be prevented?</simpara>
+	    </sect3>
+	</sect2>
 	<sect2><title>Sketches</title>
 	    <sect3><title>Fixing error and re-using the model created</title>
 		<simpara>
@@ -2431,15 +2441,15 @@
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_ecr_uim"><title>Using incremental mutations.</title>
-	    <sect3 id="ds_ecr_uim_ctx"><title>Can model errors be fixed in the scope of model’s incremental mutations? Context to be taken into account.</title>
-		<simpara>
+	    <sect3 id="ds_ecr_uim_ctx"><title>Can model errors be fixed in the scope of model’s incremental mutations?</title>
+		<sect4>
 		    Can model errors be fixed in the scope of model’s incremental mutation or there are some fundamental restriction of fixing errors
 		    that way? There are few mutations for changing the model: node creation, name changing, content changing, removal, movement
 		    (not elementary). We can consider the chain of mutations as trajectory in the space of all possible variants of the model being created.
 		    So the question is: if some earlier movement in the trajectory is erroneous then is it possible to move the final point to right
 		    destination point by some set of incremental steps. 
-		</simpara>
-		<simpara>
+		</sect4>
+		<sect4><title>Context to be taken into account.</title>
 		    Important thing here is that all mutations are context dependent.
 		    It makes sense to consider the erroneous changes that causes massive corruption of the model. Good example is inheritance initial node
 		    from wrong parent and then creating big chain of inheritance and deps from this node. User did wrong mutation of creating node from parent A.
@@ -2460,7 +2470,10 @@
 		    as correct even they are done in improper context it the result of mutation is as expected. (NOTE: same problem is in the current
 		    solution of mutation of parent – the mutations are propagated to children but the context there differs from that in parent so the
 		    mutations are propagated with improper context).
-		</simpara>
+		</sect4>
+		<sect4><title>Unrecoverable errors cannot be fixed via incremental mutations</title>
+		    <simpara>We can also state that if there is unrecoverable error than the incremental mutation cannot help fixing it.</simpara>
+		</sect4>
 	    </sect3>
 	    <sect3><title>Re-parent. Incremental mutation seems not working.</title>
 		<simpara>Re-parent (ref <xref linkend="ds_rpr"/> is a good example of early error. Incremental mutation approach can be used here via
@@ -3323,10 +3336,34 @@
 		Revnu, "Comp" requested the base and gets it in the form of proxy Px%Px%Renvu. There is logic in GetUri:</simpara>
 	    <programlisting>if (iMan != aTop) { ...</programlisting>
 	    <simpara>Actually iMan and aTop should be the same, but aTop is proxy, so the pointers differ.</simpara>
-	    <simpara>Possible solution would be to avoid such a duplication when creating proxy  - the proxy creator should
-		check if there is primary UID in the current model and to use this primary UID instead of proxy UID. Checking primary UID can
-		be done with utilizing the fact that the UID is based on ablolute local URI of the agent. Ref <xref linkend="ds_irm"/> for
-		improvement mechanism of iface resolution by UID.</simpara>
+	    <sect3 id="ds_daa_pxdup_sir"><title>Proposed solution</title>
+		<simpara>Possible solution would be to avoid such a duplication when creating proxy  - the proxy creator should
+		    check if there is primary UID in the current model and to use this primary UID instead of proxy UID. Checking primary UID can
+		    be done with utilizing the fact that the UID is based on ablolute local URI of the agent. Ref <xref linkend="ds_irm"/> for
+		    improvement mechanism of iface resolution by UID.</simpara>
+	    </sect3>
+	    <sect3 id="ds_daa_pxdup_birc"><title>Bug: iface Uid isn't resolved correctly in case of OSM linear chromo of remote part.</title>
+		<sect4><title>Intro</title>
+		    <simpara>This issue is reproduced on rev d78e076bebd. Iface resolution was implemented already, ref <xref linkend="ds_daa_pxdup_sir"/>.
+			The problem is occuring when linera OSM chromo is used for creating remote model (reproduced on studio example daa_syst.xml).</simpara>
+		</sect4>
+		<sect4><title>Analysis</title>
+		    <simpara>The rootcause is that remote root iface Uid is generating incorrectly when remote root is just created but not
+			activated (connected) yet (the activation is done via separate cont change mutation). The matter is that for 
+			Uid generation is used:</simpara>
+		    <programlisting> GetUri(iEnv->Root()->GetMan(), ETrue); </programlisting>
+		    <simpara>But just after remote root creation (w/o activation) remote root doesn't have owner so in result the absolute uri is 
+			applied as Uid. This causes to error when iface resolution searches the iface with such Uid. For instance we can use
+			the algorithm:</simpara>
+		    <programlisting> GetUri(iEnv->Root(), ETrue); </programlisting>
+		    <simpara>This will not show the name of root in the Uid but will be unified and simple. The according change is needed in 
+			the iface checking method of environment iface resolver, ref <xref linkend="ds_irm"/>.</simpara>
+		</sect4>
+		<sect4><title>Proposed solution</title>
+		    <simpara>We need to use Uid generation algorithm independent of the status of remote model. It makes sense to use relative URI from 
+			env root node.  This is because the root is as "invariant" within the enviroment's native owning hier.</simpara>
+		</sect4>
+	    </sect3>
 	</sect2>
 	<sect2 id="ds_daa_ttm"><title>DAA design issue: tree-type mutation as unified call argument</title>
 	    <sect3><title>Intro</title>
@@ -3396,7 +3433,7 @@
 		    remote owner we need to make request passing heir's UID, but UID is not resolvable because heir doesn't have owner yet.
 		</simpara>
 	    </sect3>
-	    <sect3><title>Solution: "ligth" relations on heir creation phase</title>
+	    <sect3 id="ds_daa_hunv_slr"><title>Solution: "ligth" relations on heir creation phase</title>
 		<simpara>The potential solution would be to avoid of using any requests required UID before heir is not finally included into owning hier
 		    (the base condition of UID generation). How to avoid? The only such request is AppendChild() in CreateHeir(). But we can avoid
 		    this AppendChild() - in fact the "solid" two-ways inheritance relation is not necessary here, just "light" relation is enough. This 
@@ -3461,6 +3498,69 @@
 		    that it shouldn't delete root.</simpara>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_daa_hunv_osm"><title>DAA desing issue: remote heir UID is not valid on heir creation phase with <xref linkend="gls_osm"/> approach and
+		treeish chromo used.</title>
+	    <sect3><title>Intro</title>
+		<simpara>There was initial problem with heir Uid not valid, ref <xref linkend="ds_daa_hunv"/>.
+		    Solution (ref <xref linkend="ds_daa_hunv_slr"/>) was implemented and verified on treesh chromo. But the problem returned
+		    again on <xref linkend="gls_osm"/> (ref <xref linkend="ds_mut_osm"/>) implemented (rev 44ef95c5d9c888).</simpara>
+		<simpara>One of the scenafios is creating remote agent (REnvu agent based) and activating it (i.e. changing the content that causes
+		    connection of the agent), ref (fap2-srv/test/ut_bidir_cre.xml). The treesh form of remote chromo is used (OSM still
+		    allows that) than the mutation of changing the content is executed in the scope of creation remote root (REnvu child). The change content
+		    mutation sequence is like this: </simpara>
+		<itemizedlist>
+		    <listitem>Remote root mediator (primary env REnv heir) overloaded mutation handler AddElemRmt is called - creates remote env,
+			and requests constructing remote model from the given chromo (actually the treesh form).</listitem>
+		    <listitem>Remote env creates the root (REnvu heir), sets its cromo to root and initiates root mutation.</listitem>
+		    <listitem>The first mutation is changing content of root - it is for activating the root. The base agent mutation handler is used.</listitem>
+		    <listitem>REnvu ChangeCont virtual method is called first - this causes remote root (REnvu) connection to primary env, so remote
+			root gets its owner (remote root mediator) assigned.</listitem>
+		    <listitem>Base agent cont change mutation handler calls notification OnCompMutated to the owner. </listitem>
+		    <listitem>Remote root mediator gets notification, it starts handling it and tries to get the comp (actually its proxy) by UID. But
+			note the mediator doesn't register remote root as the comp yet.</listitem>
+		    <listitem>Remote root mediator AddElemRmt waits until the remote model full creation and only after that creates the proxy
+			of remote root and registers it as component.</listitem>
+		</itemizedlist>
+		<simpara>The mediator's attempt of getting the comp fails because the comp is not registered yet - this causes the model's crash.</simpara>
+	    </sect3>
+	    <sect3><title>Analysis</title>
+		<simpara>It's seen from the sequence above that the problem origin is incorrect design of DAA implementation in case of using treeish chromo
+		    for remote env.</simpara>
+	    </sect3>
+	    <sect3><title>Solutions review</title>
+		<simpara>There are the following solutions to be considered:</simpara>
+		<orderedlist>
+		    <listitem>To notify the mediator of remote root creation as soon as connection is established.
+			<programlisting>This would establish two-ways relation between primary env remote root mediator and secondary env remote root as early
+			as possible so remote root will be accessible via UID.</programlisting>
+		    </listitem>
+		    <listitem>To avoid establishing any relations between mediator and remote root until remote model construction complete.
+			<programlisting>This will isolate construction of remote model from the primary env, so no one request from remote model will
+			    be recieved by the primary env. Ref <xref linkend="ds_daa_hunv_osm_nas"/> for details.</programlisting>
+		    </listitem>
+		    <listitem>To avoid using treeish chromo in distributed models, ref <xref linkend="ds_daa_hunv_osm_aut"/> for details.</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3 id="ds_daa_hunv_osm_nas"><title>Proposed solution: to notify the mediator of remote root creation as soon as connection is established.</title>
+	    </sect3>
+	    <sect3 id="ds_daa_hunv_osm_aer"><title>To avoid establishing any relations between mediator and remote root until remote model construction complete</title>
+		<sect4><title>Disadvantages</title>
+		    <simpara>There are some use-cases below</simpara>
+		    <itemizedlist>
+			<listitem>Creating agents from the parents located in primary model. This required at least one-way (sec-to-pri) relation. This
+			use-case is quite valuable for creating DAA models.</listitem>
+		    </itemizedlist>
+		</sect4>
+	    </sect3>
+	    <sect3 id="ds_daa_hunv_osm_aut"><title>To avoid using treeish chromo in distributed models.</title>
+		<sect4><title>Disadvantages</title>
+		    <itemizedlist>
+			<listitem>Using OSM chromo requires interaction between model parts for each mutation. Threeish chromo allows partially isolate the 
+			    creation process within secondary env, that speeds up the process.</listitem>
+		    </itemizedlist>
+		</sect4>
+	    </sect3>
+	</sect2>
 	<sect2 id="ds_daa_iss"><title>DAA Design issues to be considered</title>
 	    <orderedlist>
 		<listitem><xref linkend="ds_daa_md"/></listitem>
@@ -3490,10 +3590,10 @@
 	    <simpara>Currently we have two ifaces design and three resolution mechanism:</simpara>
 	    <orderedlist>
 		<listitem id="ds_irm_intro_im">Initail mechanism - local iface resolution
-		    <para>It was initially introduce in multiagents model: the "Base" CPP ifase was introduced that assumes that Base implementation
+		    <para>It was initially introduce in multiagents model: the "Base" CPP iface was introduced that assumes that Base implementation
 			can implement any ifaces also and embed theirs resolution by iface name (i.e. iface type, static prop of iface).
 			The abstract method "DoGetObj" was added to "Base" iface for that. There was not dedicated CPP iface for iface introduced on
-			initial stage. DoGetObj just returns void so the Base cient is responsible to do proper cast the returned value to
+			initial stage. DoGetObj just returns ptr to void so the Base cient is responsible to do proper cast the returned value to
 			iface requested.</para>
 		</listitem>
 		<listitem>Topology specified resolution
@@ -3671,7 +3771,7 @@
 		some parameters required for the calculation: context of mutation for instance.  </simpara>
 	</sect2>
 	<sect2><title>Solution: dedicated observer for agent's chromo change</title>
-	    <sect3><titel>Intro</titel>
+	    <sect3><title>Intro</title>
 		<simpara>Assuming that the observer is registered for root node only. The idea is to minimize the number of notification events.
 		    With this solution the number of notifications within the model remains same as in case of mut/modif argument. The only notifications number to
 		    model's client (studio application for instance) will be increased.</simpara>
