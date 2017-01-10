@@ -610,7 +610,7 @@ void Elem::GetCRoot(TMut& aMut) const
     aMut = iChromo->Root();
 }
 
-auto_ptr<MChromo> Elem::GetFullChromo() const
+unique_ptr<MChromo> Elem::GetFullChromo() const
 {
     MChromo *spec = Provider()->CreateChromo();
     spec->Set(iChromo->Root());
@@ -633,7 +633,7 @@ auto_ptr<MChromo> Elem::GetFullChromo() const
 	    GUri prnu(node.Attr(ENa_Parent));
 	    MElem* comp = targ->GetComp(prnu.GetName(), node.Name());
 	    if (comp != NULL) {
-		auto_ptr<MChromo> cchromo = comp->GetFullChromo();
+		unique_ptr<MChromo> cchromo = comp->GetFullChromo();
 		ChromoNode comproot = cchromo->Root();
 		for (ChromoNode::Iterator itc = comproot.Begin(); itc != comproot.End(); itc++) {
 		    node.AddChild(*itc);
@@ -641,7 +641,7 @@ auto_ptr<MChromo> Elem::GetFullChromo() const
 	    }
 	}
     }
-    return auto_ptr<MChromo>(spec);
+    return unique_ptr<MChromo>(spec);
 }
 
 void *Elem::DoGetObj(const char *aName)

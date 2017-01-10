@@ -25,7 +25,7 @@ class MMutable
 	virtual MElem* CreateHeir(const string& aName, MElem* aMan) = 0;
 	virtual MElem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, TBool aTrialMode = EFalse, const MElem* aCtx = NULL) = 0;
 	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL) = 0;
-	virtual auto_ptr<MChromo> GetFullChromo() const = 0;
+	virtual unique_ptr<MChromo> GetFullChromo() const = 0;
 	virtual string GetChromoSpec() const = 0;
 	virtual const MChromo& Chromos() const = 0;
 	virtual MChromo& Chromos() = 0;

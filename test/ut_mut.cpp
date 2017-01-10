@@ -191,7 +191,7 @@ void Ut_mut::test_DcpChromo1()
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Check getting chromo 
-    auto_ptr<MChromo> chromo = root->GetFullChromo();
+    unique_ptr<MChromo> chromo = root->GetFullChromo();
     chromo->Save("ut_dcp_chromo_1_saved.xml_");
     // Checking that "node" indirect mutation is taken into chromo
     GUri ne22_uri("./elem3/elem2_2");
@@ -325,7 +325,7 @@ void Ut_mut::test_MutRmRecr()
     MElem* p2 = e1->GetNode("./P2");
     string p2_cont = p2->GetContent();
     CPPUNIT_ASSERT_MESSAGE("Fail to set edge1/P2 with ref to v1_new", p2_cont == "./../../v1_new");
-    auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_mut_rm_recr_res.xml_");
     delete iEnv;
 }
@@ -350,7 +350,7 @@ void Ut_mut::test_MutRmRecrInh()
     MElem* p2 = e1->GetNode("./P2");
     string p2_cont = p2->GetContent();
     CPPUNIT_ASSERT_MESSAGE("Fail to set edge1/P2 with ref", p2_cont == "./../../v1/v1p_1_new/v1p_1_1");
-    auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_mut_rm_recrinh_res.xml_");
     delete iEnv;
 }
@@ -520,7 +520,7 @@ void Ut_mut::test_MutDepsRmRef()
     root->Mutate(EFalse, EFalse, ETrue);
     v1_0 = root->GetNode("./v1/v1_0");
     CPPUNIT_ASSERT_MESSAGE("Mutation -rm- of v1_0 from root is refused", v1_0 == NULL);
-    auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_mut_dep_refs_res1.xml_");
     delete iEnv;
 }
@@ -553,7 +553,7 @@ void Ut_mut::test_MutInv1()
     edge1->Mutate();
    
     // Save upated chromo 
-    auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_mut_inv_1_res.xml_");
     delete iEnv;
     // Shifting mutation introduced another unsafety for -p1-, checking if it will be 
@@ -576,7 +576,7 @@ void Ut_mut::test_MutInv1()
     string p1_cont = p1->GetContent();
     CPPUNIT_ASSERT_MESSAGE("Fail to set p1 with ref to edge1/P1", p1_cont == "./../edge1/P1");
     // Save upated chromo 
-    auto_ptr<MChromo> chromo1 = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo1 = iEnv->Root()->GetFullChromo();
     chromo1->Save("ut_mut_inv_1_res2.xml_");
     delete iEnv;
 }
@@ -609,7 +609,7 @@ void Ut_mut::test_MutInvRename()
     edge1->Mutate();
    
     // Save upated chromo 
-    auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_mut_inv_rnm_res.xml_");
     delete iEnv;
     // Shifting mutation introduced another unsafety for -p1-, checking if it will be 
@@ -632,7 +632,7 @@ void Ut_mut::test_MutInvRename()
     string p1_cont = p1->GetContent();
     CPPUNIT_ASSERT_MESSAGE("Fail to set p1 with ref to edge1/P1", p1_cont == "./../edge1/P1");
     // Save upated chromo 
-    auto_ptr<MChromo> chromo1 = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo1 = iEnv->Root()->GetFullChromo();
     chromo1->Save("ut_mut_inv_rnm_res2.xml_");
     delete iEnv;
 }
@@ -664,7 +664,7 @@ void Ut_mut::test_MutInvParent()
     CPPUNIT_ASSERT_MESSAGE("Fail to create v2_child", v2_child != NULL);
     
     // Save upated chromo 
-    auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_mut_inv_prnt_res.xml_");
     delete iEnv;
     // Shifting mutation introduced another unsafety for -p1-, checking if it will be 
@@ -680,7 +680,7 @@ void Ut_mut::test_MutInvParent()
     string p1_cont = p1->GetContent();
     CPPUNIT_ASSERT_MESSAGE("Fail to set p1 with ref to v1", p1_cont == "./../v1");
     // Save upated chromo 
-    auto_ptr<MChromo> chromo1 = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo1 = iEnv->Root()->GetFullChromo();
     chromo1->Save("ut_mut_inv_prnt_res2.xml_");
     delete iEnv;
 }
@@ -717,7 +717,7 @@ void Ut_mut::test_MutInvImplicit()
     CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pmelem == sbcp);
     
     // Save upated chromo 
-    auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_mut_inv_impl_res.xml_");
     delete iEnv;
     // Recreate the system
@@ -737,7 +737,7 @@ void Ut_mut::test_MutInvImplicit()
     pmelem = pair->GetObj(pmelem);
     CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pmelem== sbcp);
     // Save upated chromo 
-    auto_ptr<MChromo> chromo2 = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo2 = iEnv->Root()->GetFullChromo();
     chromo2->Save("ut_mut_inv_impl_res2.xml_");
     delete iEnv;
 }
@@ -851,7 +851,7 @@ void Ut_mut::test_Compact1()
     // Compact chromo
     root->CompactChromo();
     // Save compacted chromo and recreate the model
-    auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_compact1_res.xml_");
     delete iEnv;
 
@@ -904,7 +904,7 @@ void Ut_mut::test_OptRmDeps()
     mut1.SetAttr(ENa_MutNode, "./v1");
     root->Mutate(EFalse, EFalse, ETrue);
     v1 = root->GetNode("./v1");
-    auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_opt_rm_deps_res1.xml_");
     CPPUNIT_ASSERT_MESSAGE("Mutation -rm- of v1 from root is refused", v1 == NULL);
     delete iEnv;
@@ -922,7 +922,7 @@ void Ut_mut::test_Compact2()
     // Compact chromo
     root->CompactChromo();
     // Save compacted chromo and recreate the model
-    auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_compact2_res.xml_");
     delete iEnv;
 
@@ -957,7 +957,7 @@ void Ut_mut::test_Compact3()
     // Compact chromo
     root->CompactChromo();
     // Save compacted chromo and recreate the model
-    auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_compact3_res.xml_");
     delete iEnv;
 
@@ -1005,7 +1005,7 @@ void Ut_mut::test_CompactRmDa()
     // Compact chromo
     root->CompactChromo();
     // Save compacted chromo and recreate the model
-    auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_compact_rmda_res.xml_");
     delete iEnv;
 
@@ -1037,7 +1037,7 @@ void Ut_mut::test_CompactRef1()
     // Compact chromo
     root->CompactChromo();
     // Save compacted chromo and recreate the model
-    auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_compact_ref1_res.xml_");
     delete iEnv;
 
@@ -1071,7 +1071,7 @@ void Ut_mut::test_CompactCont()
     // Compact chromo
     root->CompactChromo();
     // Save compacted chromo and recreate the model
-    auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_compact_cont_res.xml_");
     delete iEnv;
 
@@ -1203,7 +1203,7 @@ void Ut_mut::test_TransfModif1()
     madd.SetAttr(ENa_Parent, "Vert");
     root->Mutate();
     // Save transformed chromo and recreate the model
-    auto_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
+    unique_ptr<MChromo> chromo = iEnv->Root()->GetFullChromo();
     chromo->Save("ut_transfmdf1_res.xml_");
     delete iEnv;
 

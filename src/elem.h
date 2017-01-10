@@ -191,7 +191,7 @@ class Elem: public MElem
 	//static void ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct);
     public:
 	virtual MElem* CreateHeir(const string& aName, MElem* aMan);
-	virtual auto_ptr<MChromo> GetFullChromo() const;
+	virtual unique_ptr<MChromo> GetFullChromo() const;
 	virtual string GetChromoSpec() const;
 	virtual const MChromo& Chromos() const { return *iChromo;};
 	virtual MChromo& Chromos() { return *iChromo;};
