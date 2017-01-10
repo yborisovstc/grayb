@@ -27,16 +27,25 @@ You must have the libxml-2.0 and development headers installed to build.
 AC_SUBST(LIBXML_CFLAGS)
 AC_SUBST(LIBXML_LIBS)
 
+PKG_CHECK_MODULES([LIBCPPU], [cppunit >= 1.13], , [AC_MSG_ERROR([
+You must have the libcppunit-1.13 and development headers installed to build.
+])])
+
+AC_SUBST(LIBCPPU_CFLAGS)
+AC_SUBST(LIBCPPU_LIBS)
+
+CXXFLAGS="-std=c++11"
+
 if test x$debug = xyes; then
-    CXXFLAGS="-g -O0"
+    CXXFLAGS="$CXXFLAGS -g -O0"
 else
 #    CXXFLAGS="-g -O2"
-    CXXFLAGS="-g -O0"
+    CXXFLAGS="$CXXFLAGS -g -O0"
 fi
 
 
-CXXFLAGS="$CXXFLAGS $LIBXML_CFLAGS" 
-LDFLAGS="$LDFLAGS $LIBXML_LIBS"
+CXXFLAGS="$CXXFLAGS $LIBXML_CFLAGS $LIBCPPU_CFLAGS"
+LDFLAGS="$LDFLAGS $LIBXML_LIBS $LIBCPPU_LIBS"
 
 AC_CONFIG_FILES([libgrayb.pc])
 

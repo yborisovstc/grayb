@@ -347,6 +347,10 @@ Elem::IterImplBase::IterImplBase(const IterImplBase& aIt):
 {
 };
 
+Elem::IterImplBase::~IterImplBase()
+{
+}
+
 Elem::MIterImpl* Elem::IterImplBase::Clone()
 {
     return new IterImplBase(*this);
@@ -690,7 +694,7 @@ Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
 	    Logger()->Write(MLogRec::EInfo, this, "Iface [%s]: resolved from cache", aName.c_str());
 	}
     }
-    return TIfRange(beg, end);
+    return TIfRange(TIfIter(beg), TIfIter(end));
 }
 
 void* Elem::GetSIfiC(const string& aName, Base* aRequestor)

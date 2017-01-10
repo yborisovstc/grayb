@@ -104,6 +104,7 @@ class Elem: public MElem
 	// Components iterator interface
 	class MIterImpl {
 	    public:
+		virtual ~MIterImpl() {};
 		virtual MIterImpl* Clone() = 0;
 		virtual void Set(const MIterImpl& aImpl) = 0;
 		virtual void PostIncr() = 0;
@@ -119,6 +120,7 @@ class Elem: public MElem
 	    IterImplBase(Elem& aElem);
 	    IterImplBase(const IterImplBase& aImpl);
 	    char SRel() const;
+	    virtual ~IterImplBase();
 	    virtual MIterImpl* Clone();
 	    virtual void Set(const MIterImpl& aImpl);
 	    virtual void PostIncr();
