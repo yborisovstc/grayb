@@ -200,8 +200,6 @@ class Elem: public MElem
 	virtual MElem* GetCompOwning(const string& aParent, MElem* aElem);
 	virtual MElem* GetCompOwning(MElem* aElem);
 	virtual const MElem* GetCompOwning(const MElem* aElem) const;
-	// Gets acomp that attaches the given node or node itself if this is attaching it
-	MElem* GetAcompAttaching(MElem* aElem);
 	virtual MElem* GetRoot() const;
 	virtual MElem* GetInhRoot() const;
 	virtual MElem* GetCommonOwner(MElem* aElem);

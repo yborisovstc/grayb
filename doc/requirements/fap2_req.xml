@@ -63,6 +63,11 @@
 	<glossentry id="gls_cp"><glossterm>CP</glossterm> <acronym>CP</acronym>
 	    <glossdef> <para>Connection Point - Element that is used as endpoint of connections between systems.  
 	</para><glossseealso otherterm="gls_connpoint"/></glossdef> </glossentry>
+	<glossentry id="gls_daa"><glossterm>DAA</glossterm> <acronym>DAA</acronym>
+	    <glossdef> <para>Distributed Agents Approach</para> <para>
+		    Approach of multi-agent system that assumes that the model is distributed among several  
+		    executable enviromnents.
+		    Ref <ulink url="../design/index.html#ds_daa"/> for desing.</para></glossdef> </glossentry>
 	<glossentry id="gls_edge"><glossterm>Edge</glossterm>
 	    <glossdef> <para>Agent that represents edge in graph model layer.
 	</para><glossseealso otherterm="gls_vertex"/></glossdef> </glossentry>
@@ -76,6 +81,7 @@
 
     <sect1 id="nimp"><title>Treaceability: not implemented yet</title>
 	<itemizedlist>
+	    <listitem> <xref linkend="uc_013"/>, ref discussion <xref linkend="uc_013_dsc_01"/></listitem>
 	    <listitem> <xref linkend="uc_034"/> </listitem>
 	    <listitem> <xref linkend="uc_031"/> </listitem>
 	    <listitem> <xref linkend="uc_030"/> </listitem>
@@ -447,13 +453,33 @@
 
 	<sect2 id="uc_013"><title>UC_013 Mutation</title>
 	    <sect3><title>Actors</title>
-		CLIENT: user of FAP model
+		<itemizedlist>
+		    <listitem>CLIENT: user of FAP model</listitem>
+		    <listitem>MODEL: mutli-agents model</listitem>
+		    <listitem>AGENT: some agent within the MODEL</listitem>
+		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Precondition</title>
+		<itemizedlist>
+		    <listitem>MODEL is created by multi-agents environment.</listitem>
+		</itemizedlist>
 	    </sect3>
 	    <sect3><title>Normal</title>
-		CLIENT prepares specification of change in MODEL and requests MODEL for changing - MODEL performs the mutation and responce CLIENT of 
-		mutation result
+		<itemizedlist>
+		    <listitem>
+			CLIENT prepares specification of changing AGENT and requests AGENT for changing -
+			AGENT performs the mutation and responses CLIENT of mutation result
+		    </listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3 id="uc_013_dsc"><title>Discussion</title>
+		<orderedlist>
+		    <listitem id="uc_013_dsc_01">In the current implementation (rev 455826a7693a0e) request for mutation doesn't return
+			the result. This causes the problem in <xref linkend="gls_daa"/> models in case when remote
+			model doesn't connected properly to the primary model. In this case if the mutation request to some agent
+			in primary model targeting some agent in remote model fails in remote env then there will not be any indicaions
+			(even log records) of that fail in primary env.</listitem>
+		</orderedlist>
 	    </sect3>
 	    <sect3><title>Extended by</title>
 		<itemizedlist>
@@ -2421,7 +2447,6 @@
     </sect1>
 
     <sect1 id="ps"><title>Proposals</title>
-
 	<sect2 id="ps_001"><title>PS_001 Chromosome branching</title>
 	    <sect3><title>Description</title>
 		<simpara>It should be possible to fork new branch from some given node of chromosome. The branches should be distinguished via identifiers.
@@ -2439,7 +2464,44 @@
 	    <sect3><title>Discussion</title>
 	    </sect3>
 	</sect2>
+    </sect1>
 
+    <sect1 id="rq_tmpl"><title>Templates</title>
+	<sect2 id="rq_tmpl_uc"><title>UC_XXX Use-case name</title>
+	    <sect3><title>Actors</title>
+		<itemizedlist>
+		    <listitem>CLIENT: client of SYSTEM</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Preconditions</title> </sect3>
+	    <sect3><title>Assumptions</title> </sect3>
+	    <sect3><title>Normal</title>
+		<itemizedlist>
+		    <listitem>CLIENT creates MODEL </listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Alternative</title> <simpara>Alternative flows</simpara> </sect3>
+	    <sect3><title>Exceptions</title> </sect3>
+	    <sect3><title>Variations</title> </sect3>
+	    <sect3><title>Extends</title></sect3>
+	    <sect3><title>Extended by</title> </sect3>
+	    <sect3><title>Relates to</title>
+		<itemizedlist>
+		    <listitem><xref linkend=""/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Discussion</title>
+		<orderedlist>
+		    <listitem>Some discussion materials</listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Clarification</title> </sect3>
+	    <sect3><title>Desing</title>
+		<orderedlist>
+		    <listitem>Ref to related desing materials</listitem>
+		</orderedlist>
+	    </sect3>
+	</sect2>
     </sect1>
 
 </article>

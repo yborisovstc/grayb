@@ -49,6 +49,8 @@ MElem::EIfu::EIfu()
     RegMethod("Name", 0);
     RegMethod("GetMan", 0);
     RegMethod("GetAttachedMgr", 0);
+    RegMethod("GetAowner", 0);
+    RegMethod("GetCompAowner", 1);
     RegMethod("GetRoot", 0);
     RegMethod("GetNode", 1);
     RegMethod("GetNode#2", 3);
@@ -1947,22 +1949,18 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafet
 	    TBool res = node->ChangeAttr(TMut::NodeAttr(mattrs), mval);
 	    if (!res) {
 		Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - failure", snode.c_str());
-	    }
-	    else {
+	    } else {
 		// Adding dependency to object of change
 		if (!aRunTime) {
 		    ChromoNode chn = iChromo->Root().AddChild(aSpec);
 		    NotifyNodeMutated(aSpec, aCtx);
 		    mutadded = ETrue;
-		    //!AddCMDep(chn, ENa_MutNode, enode);
 		}
 	    }
-	}
-	else {
+	} else {
 	    Logger()->Write(MLogRec::EErr, this, "Changing node [%s]  - attempt of phenotypic modification - disabled", snode.c_str());
 	}
-    }
-    else {
+    } else {
 	Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - cannot find node or node isn't component", snode.c_str());
     }
     // Append mutation to chromo anytype, ref uc_043
@@ -2598,23 +2596,6 @@ const MElem* Elem::GetCompOwning(const MElem* aElem) const
     return res;
 }
 
-// Gets acomp that attaches the given node or node itself if this is attaching it
-// !! Returns only 1st level acomp or this
-MElem* Elem::GetAcompAttaching(MElem* aElem)
-{
-    MElem* res = NULL;
-    MElem* node = aElem;
-    MElem* aowner = node->GetAowner();
-    while (aowner != NULL && aowner != this) {
-	node = aowner;	
-	aowner = node->GetAowner();
-    }
-    if (aowner != NULL) {
-	res = node;
-    }
-    return res;
-}
-
 MElem* Elem::GetUpperAowner() {
     MElem* cand = GetAowner();
     MElem* res = NULL;
@@ -3149,47 +3130,8 @@ MElem* Elem::GetAcompOwning(MElem* aComp)
     return res;
 }
 
-
 // Get the node that attaches this node. Don't confuse with the nearest attached
 // owner, for that ref to GetAttachedMgr
-#if 0
-MElem* Elem::GetAowner()
-{
-    MElem* res = NULL;
-    ChromoNode::Iterator prnt = iChromo->Root().Parent();
-    if (prnt != iChromo->Root().End()) {
-	MElem* cand = GetMan();
-	while (res == NULL && cand != NULL) {
-	    if (cand->Chromos().Root() == *prnt) {
-		res = cand;
-	    }
-	    else {
-		cand = cand->GetMan();
-	    }
-	}
-    }
-    return res;
-}
-
-const MElem* Elem::GetAowner() const
-{
-    const MElem* res = NULL;
-    ChromoNode::Iterator prnt = iChromo->Root().Parent();
-    if (prnt != iChromo->Root().End()) {
-	const MElem* cand = GetMan();
-	while (res == NULL && cand != NULL) {
-	    if (cand->Chromos().Root() == *prnt) {
-		res = cand;
-	    }
-	    else {
-		cand = cand->GetMan();
-	    }
-	}
-    }
-    return res;
-}
-#endif
-
 MElem* Elem::GetAowner()
 {
     MElem* res = NULL;
@@ -3822,6 +3764,9 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	RemoveComp(comp);
     } else if (name == "AppendChild") {
 	MElem* child = GetNode(args.at(0));
+	if (child == NULL) {
+	    throw (runtime_error("Cannot get node " + args.at(0)));
+	}
 	TBool rr = AppendChild(child);
 	aRes = Ifu::FromBool(rr);
     } else if (name == "RemoveChild") {
@@ -3921,15 +3866,29 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	SetObserver(obs);
     } else if (name == "OnCompAdding") {
 	MElem* comp = GetNode(args.at(0));
+	if (comp == NULL) {
+	    throw (runtime_error("Cannot get node " + args.at(0)));
+	}
 	OnCompAdding(*comp);
     } else if (name == "OnCompChanged") {
 	MElem* comp = GetNode(args.at(0));
-	OnCompChanged(*comp, args.at(1));
+	if (comp == NULL) {
+	    throw (runtime_error("Cannot get node " + args.at(0)));
+	}
+	TBool res = OnCompChanged(*comp, args.at(1));
+	aRes = Ifu::FromBool(res);
     } else if (name == "OnChanged") {
 	MElem* comp = GetNode(args.at(0));
-	OnCompChanged(*comp);
+	if (comp == NULL) {
+	    throw (runtime_error("Cannot get node " + args.at(0)));
+	}
+	TBool res = OnCompChanged(*comp);
+	aRes = Ifu::FromBool(res);
     } else if (name == "OnCompDeleting") {
 	MElem* comp = GetNode(args.at(0), ETrue);
+	if (comp == NULL) {
+	    throw (runtime_error("Cannot get node " + args.at(0)));
+	}
 	TBool soft = Ifu::ToBool(args.at(1));
 	OnCompDeleting(*comp, soft);
     } else if (name == "OnChildDeleting") {
@@ -3989,6 +3948,14 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
     } else if (name == "GetCompOwning") {
 	MElem* node = GetNode(args.at(0));
 	res = GetCompOwning(node);
+    } else if (name == "GetAowner") {
+	res = GetAowner();
+    } else if (name == "GetCompAowner") {
+	MElem* comp = GetNode(args.at(0));
+	if (comp == NULL) {
+	    throw (runtime_error("Cannot get node " + args.at(0)));
+	}
+	res = GetCompAowner(comp);
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }

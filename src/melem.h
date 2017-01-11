@@ -189,6 +189,7 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 	virtual string GetContComp(const string& aOwnerName, TInt aInd) const = 0;
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()) = 0; 
 	virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse) = 0;
+	// TODO [YB] To support returning result. Ref uc_013_dsc_01 for use-case details.
 	virtual void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MElem* aCtx = NULL) = 0;
 	virtual void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MElem* aCtx = NULL) = 0;
 	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
