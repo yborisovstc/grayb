@@ -6,8 +6,7 @@
 
 const TInt GLogRec::KLogRecBufSize = 400;
 
-const char* CtgText[MLogRec::ECtg_Max] = {"ERR", "WRN", "INF", "DBG"};
-const char* CtgTxt[ECtg_Max] = {"ERR", "WRN", "INF", "DBG"};
+const char* CtgText[ECtg_Max] = {"ERR", "WRN", "INF", "DBG"};
 const char* KColSep = "; ";
 const char KFieldSep = ';';
 
@@ -28,7 +27,7 @@ TLog::TLog(TLogRecCtg aCtg, const MElem* aAgt)
     long int ms = tp.tv_sec * 1000000 + tp.tv_usec;
     ss << ms;
     mTimestampS = ss.str();
-    mCtgS = CtgTxt[aCtg];
+    mCtgS = CtgText[aCtg];
     if (aAgt != NULL) {
 	GUri uri;
 	aAgt->GetUri(uri);

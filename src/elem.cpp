@@ -456,18 +456,18 @@ Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMa
     stringstream ss;
     long prt = (long) this;
     ss << prt << ";Constr";
-    Logger()->Write(MLogRec::EInfo, this, ss.str().c_str());
+    Logger()->Write(EInfo, this, ss.str().c_str());
     */
-    //Logger()->Write(MLogRec::EInfo, this, "Elem constr p0");
+    //Logger()->Write(EInfo, this, "Elem constr p0");
     //Delay(100);
-    //Logger()->Write(MLogRec::EInfo, this, "Elem constr p1");
+    //Logger()->Write(EInfo, this, "Elem constr p1");
     iMut = Provider()->CreateChromo();
-    //Logger()->Write(MLogRec::EInfo, this, "Elem constr p2");
+    //Logger()->Write(EInfo, this, "Elem constr p2");
     iMut->Init(ENt_Node);
-    //Logger()->Write(MLogRec::EInfo, this, "Elem constr p3");
+    //Logger()->Write(EInfo, this, "Elem constr p3");
     iChromo = Provider()->CreateChromo();
     iChromo->Init(ENt_Node);
-    //Logger()->Write(MLogRec::EInfo, this, "Elem constr p4");
+    //Logger()->Write(EInfo, this, "Elem constr p4");
     ChromoNode croot = iChromo->Root();
     croot.SetAttr(ENa_Id, iName);
     SetParent(Type());
@@ -484,7 +484,7 @@ Elem::Elem(Elem* aMan, MEnv* aEnv): iName(Type()), iMan(aMan), iEnv(aEnv),
     stringstream ss;
     long prt = (long) this;
     ss << prt << ";Constr";
-    Logger()->Write(MLogRec::EInfo, this, ss.str().c_str());
+    Logger()->Write(EInfo, this, ss.str().c_str());
     */
     iMut = Provider()->CreateChromo();
     iMut->Init(ENt_Node);
@@ -510,7 +510,7 @@ Elem::~Elem()
     stringstream ss;
     long prt = (long) this;
     ss << prt << ";Destr";
-    Logger()->Write(MLogRec::EInfo, this, ss.str().c_str());
+    Logger()->Write(EInfo, this, ss.str().c_str());
     */
 
     if (iParent != NULL) {
@@ -628,7 +628,7 @@ unique_ptr<MChromo> Elem::GetFullChromo() const
 	    if (targ == NULL) {
 		targ = ((MElem*) this)->GetNode(targ_uri, ETrue);
 		//__ASSERT(targ != NULL);
-		Logger()->Write(MLogRec::EErr, this, "Getting full chromo, cannot find comp [%s]", node.Attr(ENa_MutNode).c_str());
+		Logger()->Write(EErr, this, "Getting full chromo, cannot find comp [%s]", node.Attr(ENa_MutNode).c_str());
 	    }
 	}
 	if (targ != NULL) {
@@ -682,7 +682,7 @@ Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
     IfIter end(this, aName, req, ETrue);
     if (beg == end) {
 	if (IsIftEnabled()) {
-	    Logger()->Write(MLogRec::EInfo, this, "Iface [%s]: -->", aName.c_str());
+	    Logger()->Write(EInfo, this, "Iface [%s]: -->", aName.c_str());
 	}
 	// Invalid cache, update cache
 	// Register the request with local provider anycase to create relation. 
@@ -693,7 +693,7 @@ Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
 	end = IfIter(this, aName, req, ETrue);
     } else {
 	if (IsIftEnabled()) {
-	    Logger()->Write(MLogRec::EInfo, this, "Iface [%s]: resolved from cache", aName.c_str());
+	    Logger()->Write(EInfo, this, "Iface [%s]: resolved from cache", aName.c_str());
 	}
     }
     return TIfRange(TIfIter(beg), TIfIter(end));
@@ -855,7 +855,7 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
     TICacheKey key(keyf, aProv);
     if (aVal != NULL) {
 	if (IsIftEnabled()) {
-	    Logger()->Write(MLogRec::EInfo, this, "Iface [%s]: resolved [%x], caching", aName.c_str(), aVal);
+	    Logger()->Write(EInfo, this, "Iface [%s]: resolved [%x], caching", aName.c_str(), aVal);
 	}
 	pair<TICacheKey, void*> val(key, aVal);
 	TICacheCIter res = iICache.insert(val);
@@ -908,7 +908,7 @@ void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
 
 void Elem::LogIfReqs()
 {
-    Logger()->Write(MLogRec::EInfo, this, "[%x], Ifaces requests: START", this);
+    Logger()->Write(EInfo, this, "[%x], Ifaces requests: START", this);
     for (TICacheQFIter it = iICacheQF.begin(); it != iICacheQF.end(); it++) {
 	const TICacheRCtx& ctx = it->first.second;
 	Base* provb = it->second.second;
@@ -916,15 +916,15 @@ void Elem::LogIfReqs()
 	if (!ctx.empty()) {
 	    Base* reqb = ctx.back();
 	    Elem* reqe = reqb == NULL ? NULL : reqb->GetObj(reqe);
-	    Logger()->Write(MLogRec::EInfo, NULL, "If: [%s], [%i][%x: %s] - [%x: %s]", it->first.first.c_str(),
+	    Logger()->Write(EInfo, NULL, "If: [%s], [%i][%x: %s] - [%x: %s]", it->first.first.c_str(),
 		    ctx.size(), reqe, reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue).c_str(), prov, prov->GetUri(NULL, ETrue).c_str());
 	}
 	else {
-	    Logger()->Write(MLogRec::EInfo, NULL, "If: [%s], [none] - [%x: %s]", it->first.first.c_str(),
+	    Logger()->Write(EInfo, NULL, "If: [%s], [none] - [%x: %s]", it->first.first.c_str(),
 		    prov, prov->GetUri(NULL, ETrue).c_str());
 	}
     }
-    Logger()->Write(MLogRec::EInfo, this, "Ifaces requests: END");
+    Logger()->Write(EInfo, this, "Ifaces requests: END");
 }
 
 const string Elem::EType(TBool aShort) const
@@ -1034,7 +1034,7 @@ TBool Elem::RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool 
 	    }
 	} else {
 	    __ASSERT(EFalse);
-	    Logger()->Write(MLogRec::EErr, this, "Revasing uri [%s] - path to top of root", aUri.GetUri().c_str());
+	    Logger()->Write(EErr, this, "Revasing uri [%s] - path to top of root", aUri.GetUri().c_str());
 	}
     } else {
 	if (!anywhere && elem.second.second == GUri::KTypeAnywhere) {
@@ -1165,7 +1165,7 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Getting node [%s] - path to top of root", aUri.GetUri().c_str());
+	    Logger()->Write(EErr, this, "Getting node [%s] - path to top of root", aUri.GetUri().c_str());
 	}
     }
     else {
@@ -1202,7 +1202,7 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
 			    }
 			    else {
 				res = NULL;
-				Logger()->Write(MLogRec::EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
+				Logger()->Write(EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
 				break;
 			    }
 			}
@@ -1212,7 +1212,7 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
 		    res = *it;
 		    if (++it != itend) {
 			MElem* dup = *it;
-			Logger()->Write(MLogRec::EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
+			Logger()->Write(EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
 			res = NULL;
 		    }
 		}
@@ -1232,7 +1232,7 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
 			}
 			else {
 			res = NULL;
-			Logger()->Write(MLogRec::EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
+			Logger()->Write(EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
 			break;
 		    }
 		}
@@ -1337,12 +1337,12 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    // Transform ENa_Targ: enlarge to ENa_MutNode
 	    MElem* targ = rno.AttrExists(ENa_Targ) ? GetNode(rno.Attr(ENa_Targ)) : this;
 	    if (targ == NULL) {
-		Logger()->Write(MLogRec::EErr, this, "Cannot find node [%s]", rno.Attr(ENa_Targ).c_str());
+		Logger()->Write(EErr, this, "Cannot find node [%s]", rno.Attr(ENa_Targ).c_str());
 		continue;
 	    }
 	    MElem* iftarg = targ->GetNode(rno.Attr(ENa_MutNode));
 	    if (iftarg == NULL) {
-		Logger()->Write(MLogRec::EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_MutNode).c_str());
+		Logger()->Write(EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_MutNode).c_str());
 		continue;
 	    }
 	    // Extract "comp" attr for component related mutations
@@ -1370,7 +1370,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		    parent = impmgr->OnUriNotResolved(this, pruri);
 		}
 		if (parent == NULL) {
-		    Logger()->Write(MLogRec::EErr, this, "Cannot find parent [%s]", prnturi.c_str());
+		    Logger()->Write(EErr, this, "Cannot find parent [%s]", prnturi.c_str());
 		    continue;
 		}
 		string spuri = parent->GetUri(ftarg, ETrue);
@@ -1393,7 +1393,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		ftarg->Mutate(EFalse, aCheckSafety, aTrialMode, aRunTime ? GetCompOwning(ftarg) : aCtx);
 		//ftarg->Mutate(aRunTime, aCheckSafety, aTrialMode, aRunTime ? GetCompOwning(ftarg) : aCtx);
 	    } else {
-		Logger()->Write(MLogRec::EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_Targ).c_str());
+		Logger()->Write(EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_Targ).c_str());
 	    }
 	} else {
 	    // Local mutation
@@ -1417,7 +1417,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		RmNode(rno, aRunTime, aCheckSafety, aTrialMode, aCtx);
 	    }
 	    else {
-		Logger()->Write(MLogRec::EErr, this, "Mutating - unknown mutation type [%d]", rnotype);
+		Logger()->Write(EErr, this, "Mutating - unknown mutation type [%d]", rnotype);
 	    }
 	    Logger()->SetContextMutId();
 	}
@@ -1948,7 +1948,7 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafet
 	if (node != this && (epheno || node->GetAowner() == this  || IsDirectInheritedComp(node))) {
 	    TBool res = node->ChangeAttr(TMut::NodeAttr(mattrs), mval);
 	    if (!res) {
-		Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - failure", snode.c_str());
+		Logger()->Write(EErr, this, "Changing node [%s] - failure", snode.c_str());
 	    } else {
 		// Adding dependency to object of change
 		if (!aRunTime) {
@@ -1958,10 +1958,10 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafet
 		}
 	    }
 	} else {
-	    Logger()->Write(MLogRec::EErr, this, "Changing node [%s]  - attempt of phenotypic modification - disabled", snode.c_str());
+	    Logger()->Write(EErr, this, "Changing node [%s]  - attempt of phenotypic modification - disabled", snode.c_str());
 	}
     } else {
-	Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - cannot find node or node isn't component", snode.c_str());
+	Logger()->Write(EErr, this, "Changing node [%s] - cannot find node or node isn't component", snode.c_str());
     }
     // Append mutation to chromo anytype, ref uc_043
     if (!aRunTime && !mutadded && !aTrialMode) {
@@ -2018,7 +2018,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 		//mval = rnode->GetRUri(node);
 		if (rnode == NULL) {
 		    rnode = node->GetNode(mval);
-		    Logger()->Write(MLogRec::EErr, this, aSpec,
+		    Logger()->Write(EErr, this, aSpec,
 			    "Changing content of node [%s] to ref [%s] - cannot find ref", snode.c_str(), mval.c_str());
 		    res = EFalse;
 		}
@@ -2039,18 +2039,18 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 			//!AddCMDep(chn, ENa_MutNode, node);
 		    }
 		} else {
-		    Logger()->Write(MLogRec::EErr, this, aSpec, "Changing node [%s] - failure", snode.c_str());
+		    Logger()->Write(EErr, this, aSpec, "Changing node [%s] - failure", snode.c_str());
 		    node->ChangeCont(mval, aRunTime, cname);
 		}
 	    }
 	}
 	else  {
-	    Logger()->Write(MLogRec::EErr, this, "Changing content of node [%s]  - attempt of phenotypic modification - disabled", 
+	    Logger()->Write(EErr, this, "Changing content of node [%s]  - attempt of phenotypic modification - disabled", 
 		    snode.c_str());
 	}
     }
     else {
-	Logger()->Write(MLogRec::EErr, this, "Changing node [%s] - cannot find node or node isn't comp", snode.c_str());
+	Logger()->Write(EErr, this, "Changing node [%s] - cannot find node or node isn't comp", snode.c_str());
     }
     // Append mutation to chromo anytype, ref uc_043
     if (!aRunTime && !mutadded && !aTrialMode) {
@@ -2078,7 +2078,7 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
     //if (EN_PERF_METR && iName == "Held1" && sname == "1211685360"/* && sparent == "/(Elem:)Root/(Elem:)Modules/(Elem:)VisComps/(Extender:)DrawingElemExt"*/) {
     //if (EN_PERF_METR && EN_PERF_DBG1 && iName == "DrawingElem" && sname == "Logspec") {
     if (EN_PERF_METR && EN_PERF_DBG1 && iName == "Velocity_L" && sname == "448726636") {
-	Logger()->Write(MLogRec::EInfo, this, "Point_1");
+	Logger()->Write(EInfo, this, "Point_1");
 	ptrace = ETrue;
 	iEnv->SetSBool(MEnv::ESb_EnPerfTrace, ETrue);
 	ptevent = ETrue;
@@ -2090,16 +2090,16 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
        */
     //timespec t1;
     //clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t1);
-    if (ptrace) Logger()->Write(MLogRec::EInfo, this, "Adding node [%s], t1", sname.c_str());
+    if (ptrace) Logger()->Write(EInfo, this, "Adding node [%s], t1", sname.c_str());
     long t1 = GetClock();
 
     __ASSERT(!sname.empty());
     /*
        if (IsLogeventCreOn()) {
-       Logger()->Write(MLogRec::EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
+       Logger()->Write(EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
        }
        */
-    //Logger()->Write(MLogRec::EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
+    //Logger()->Write(EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
     MElem* elem = NULL;
     MElem* node = snode.empty() ? this: GetNode(snode); 
     if (node != NULL) {
@@ -2134,10 +2134,10 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 	    if (parent != NULL) {
 		if (epheno || node == this || !ecsaf || IsDirectInheritedComp(node)) {
 		    // Create heir from the parent
-		    if (ptrace) { long t1_2 = GetClockElapsed(t1); Logger()->Write(MLogRec::EInfo, this, "Adding node, t1-t2: %d", t1_2);}
+		    if (ptrace) { long t1_2 = GetClockElapsed(t1); Logger()->Write(EInfo, this, "Adding node, t1-t2: %d", t1_2);}
 		    long t3; if (ptrace) t3 = GetClock();
 		    elem = parent->CreateHeir(sname, node);
-		    if (ptrace) { long t3_4 = GetClockElapsed(t3); Logger()->Write(MLogRec::EInfo, this, "Adding node, t3-t4: %d", t3_4);}
+		    if (ptrace) { long t3_4 = GetClockElapsed(t3); Logger()->Write(EInfo, this, "Adding node, t3-t4: %d", t3_4);}
 		    // Remove external parent from system
 		    // [YB] DON'T remove parent, otherwise the inheritance chain will be broken
 		    if (ext_parent) {
@@ -2180,11 +2180,11 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 			    long t5; if (ptrace) t5 = GetClock();
 			    elem->SetMutation(aNode);
 			    elem->Mutate(EFalse, ecsaf, aTrialMode, aRunTime ? elem : aCtx);
-			    if (ptrace) { long t5_6 = GetClockElapsed(t3); Logger()->Write(MLogRec::EInfo, this, "Adding node, t5-t6: %d", t5_6);}
-			    //Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
+			    if (ptrace) { long t5_6 = GetClockElapsed(t3); Logger()->Write(EInfo, this, "Adding node, t5-t6: %d", t5_6);}
+			    //Logger()->Write(EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
 			    /*
 			       if (IsLogeventCreOn()) {
-			       Logger()->Write(MLogRec::EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
+			       Logger()->Write(EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
 			       }
 			       */
 			}
@@ -2195,22 +2195,22 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 			}
 		    }
 		    else {
-			Logger()->Write(MLogRec::EErr, this, "Creating heir [%s] from parent [%s] - failed", sname.c_str(), sparent.c_str());
+			Logger()->Write(EErr, this, "Creating heir [%s] from parent [%s] - failed", sname.c_str(), sparent.c_str());
 		    }
 		}
 		else  {
 		    TBool isi = IsInheritedComp(node);
-		    Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] in node [%s] - attempt of phenotypic modification - disabled", 
+		    Logger()->Write(EErr, this, "Creating elem [%s] in node [%s] - attempt of phenotypic modification - disabled", 
 			    sname.c_str(), snode.c_str());
 		}
 	    }
 	    else {
-		Logger()->Write(MLogRec::EErr, this, "Creating [%s] - parent [%s] not found", sname.c_str(), sparent.c_str());
+		Logger()->Write(EErr, this, "Creating [%s] - parent [%s] not found", sname.c_str(), sparent.c_str());
 	    }
 	}
     }
     else  {
-	Logger()->Write(MLogRec::EErr, this, "Creating elem [%s] in node [%s] - cannot find node", sname.c_str(), snode.c_str());
+	Logger()->Write(EErr, this, "Creating elem [%s] in node [%s] - cannot find node", sname.c_str(), snode.c_str());
     }
     if (!aRunTime && !mutadded && !aTrialMode) {
 	ChromoNode chn = iChromo->Root().AddChild(aNode, ETrue, EFalse);
@@ -2223,14 +2223,14 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 	   int nodes = elem->GetCapacity();
 	   long tspan = t2-t1;
 	   long tspan_n = tspan/(nodes + 1);
-	   Logger()->Write(MLogRec::EInfo, this, "Created comp [%s] in node [%s];%d;%d", sname.c_str(), snode.c_str(), tspan, tspan_n);
+	   Logger()->Write(EInfo, this, "Created comp [%s] in node [%s];%d;%d", sname.c_str(), snode.c_str(), tspan, tspan_n);
 	   */
 	timespec te;
 	//long tspan = GetClockElapsed(t1, te);
 	long tspan = GetClockElapsed(t1);
 	int nodes = elem->GetCapacity();
 	long tspan_n = tspan/(nodes + 1);
-	Logger()->Write(MLogRec::EInfo, this, "Created comp [%s] in node [%s];%d;%d;%d", sname.c_str(), snode.c_str(), nodes, tspan, tspan_n);
+	Logger()->Write(EInfo, this, "Created comp [%s] in node [%s];%d;%d;%d", sname.c_str(), snode.c_str(), nodes, tspan, tspan_n);
     }
     if (ptevent) {
 	iEnv->SetSBool(MEnv::ESb_EnPerfTrace, EFalse);
@@ -2264,7 +2264,7 @@ long Elem::GetClockElapsed(long aStart)
 MElem* Elem::CreateHeir(const string& aName, MElem* aMan)
 {
     MElem* heir = NULL;
-    //Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p1 ");
+    //Logger()->Write(EInfo, this, "CreateHeir, p1 ");
     if (IsProvided()) {
 	heir = Provider()->CreateNode(Name(), aName, aMan, iEnv);
 	// TODO To move AppendComp to CreateNode: initially set two-ways ownning relateion ?
@@ -2285,13 +2285,13 @@ MElem* Elem::CreateHeir(const string& aName, MElem* aMan)
 	else {
 	    heir = iParent->CreateHeir(aName, iMan);
 	}
-	if (EN_PERF_TRACE) Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p2 ");
+	if (EN_PERF_TRACE) Logger()->Write(EInfo, this, "CreateHeir, p2 ");
 	// Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo
 	ChromoNode croot = iChromo->Root();
 	heir->SetMutation(croot);
 	// Mutate run-time only - !! DON'T UPDATE CHROMO, ref UC_019
 	heir->Mutate(ETrue, EFalse, EFalse, heir);
-	if (EN_PERF_TRACE) Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p3 ");
+	if (EN_PERF_TRACE) Logger()->Write(EInfo, this, "CreateHeir, p3 ");
 	// Mutated with parent's own chromo - so panent's name is the type now. Set also the parent, but it will be updated further
 	heir->SetParent(Name());
 	// Relocate heir to hier from which the request of creating heir came
@@ -2300,7 +2300,7 @@ MElem* Elem::CreateHeir(const string& aName, MElem* aMan)
 	// Using "light" one-way relation on creation phase, ref. ds_daa_hunv
 	heir->SetParent(NULL);
 	heir->SetParent(this);
-	if (EN_PERF_TRACE) Logger()->Write(MLogRec::EInfo, this, "CreateHeir, p4 ");
+	if (EN_PERF_TRACE) Logger()->Write(EInfo, this, "CreateHeir, p4 ");
     }
     return heir;
 }
@@ -2427,7 +2427,7 @@ MElem* Elem::GetNode(const string& aUri, TBool aInclRm)
 	res = GetNode(uri, aInclRm);
     }
     else  {
-	Logger()->Write(MLogRec::EErr, this, "Incorrect URI [%s]", aUri.c_str());
+	Logger()->Write(EErr, this, "Incorrect URI [%s]", aUri.c_str());
     }
     return res;
 }
@@ -2887,26 +2887,26 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
 			}
 		    }
 		} else {
-		    Logger()->Write(MLogRec::EErr, this,
+		    Logger()->Write(EErr, this,
 			    "Removing node [%s], refused, there is ref [%s] to the node, release first",
 			    snode.c_str(), "some ref");
 		}
 	    } else {
-		Logger()->Write(MLogRec::EErr, this,
+		Logger()->Write(EErr, this,
 			"Removing node [%s], refused, there are heirs of the node, unparent first", snode.c_str());
 		node->HasInherDeps(node);
 	    }
 	    if (IsLogeventCreOn()) {
-		Logger()->Write(MLogRec::EInfo, this, "Removed elem [%s]", snode.c_str());
+		Logger()->Write(EInfo, this, "Removed elem [%s]", snode.c_str());
 	    }
 	}
 	else  {
-	    Logger()->Write(MLogRec::EErr, this, "Removing node [%s] - attempt of phenotypic modification - disabled", snode.c_str());
+	    Logger()->Write(EErr, this, "Removing node [%s] - attempt of phenotypic modification - disabled", snode.c_str());
 	    IsCompOfInheritedComp(node);
 	}
     }
     else {
-	Logger()->Write(MLogRec::EErr, this, "Removing node [%s] - not found or isn't component", snode.c_str());
+	Logger()->Write(EErr, this, "Removing node [%s] - not found or isn't component", snode.c_str());
     }
     // Append mutation to chromo anytype, ref uc_043
     if (!aRunTime && !mutadded && !aTrialMode) {
@@ -2934,14 +2934,14 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 		MElem* sowner = snode->GetMan();
 		if (sowner != NULL && dnode == sowner) {
 		    // Attempt of moving node to the current contect 
-		    Logger()->Write(MLogRec::EErr, this, "Moving node [%s] to it's current owner - disabled", snode->GetUri().c_str());
+		    Logger()->Write(EErr, this, "Moving node [%s] to it's current owner - disabled", snode->GetUri().c_str());
 		}
 		else if (dnode == snode) {
 		    // Attempt of moving node to itself
-		    Logger()->Write(MLogRec::EErr, this, "Moving node [%s] into itself - disabled", snode->GetUri().c_str());
+		    Logger()->Write(EErr, this, "Moving node [%s] into itself - disabled", snode->GetUri().c_str());
 		}
 		else if (dnode != this) {
-		    Logger()->Write(MLogRec::EErr, this, "Moving to another destination");
+		    Logger()->Write(EErr, this, "Moving to another destination");
 		}
 		else {
 		    // Inter-nodes movement
@@ -2967,13 +2967,13 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 			}
 		    }
 		    else {
-			Logger()->Write(MLogRec::EErr, this, "Moving node [%s] failed", snode->GetUri().c_str());
+			Logger()->Write(EErr, this, "Moving node [%s] failed", snode->GetUri().c_str());
 			delete heir;
 		    }
 		}
 	    }
 	    else {
-		Logger()->Write(MLogRec::EErr, this, "Moving node [%s] - not found", srcs.c_str());
+		Logger()->Write(EErr, this, "Moving node [%s] - not found", srcs.c_str());
 	    }
 	}
 	else {
@@ -2993,7 +2993,7 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 		res = nnode != NULL;
 	    }
 	    else {
-		Logger()->Write(MLogRec::EErr, this, "Moving [%s] to [%s]: source node not found", srcs.c_str(), dests.c_str());
+		Logger()->Write(EErr, this, "Moving [%s] to [%s]: source node not found", srcs.c_str(), dests.c_str());
 	    }
 	}
 	if (!aRunTime && res) {
@@ -3007,7 +3007,7 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 	}
     }
     else {
-	Logger()->Write(MLogRec::EErr, this, "Moving to node [%s] - not found", dests.c_str());
+	Logger()->Write(EErr, this, "Moving to node [%s] - not found", dests.c_str());
     }
     // Append mutation to chromo anytype, ref uc_043
     if (!aRunTime && !mutadded && !aTrialMode) {
@@ -3255,7 +3255,7 @@ TBool Elem::IsDepActive(const TMDep& aDep)
 
 void Elem::GetMajorDep(TMDep& aDep, TBool aUp, TBool aDown)
 {
-    //Logger()->Write(MLogRec::EInfo, this, "Gmd");
+    //Logger()->Write(EInfo, this, "Gmd");
     // Ref to theses ds_mut_unappr_rt_ths1 for rules of searching deps
     Rank rc;
     if (aDep.first.first == NULL || aDep.first.second == NULL || aDep.second == ENa_Unknown) {
@@ -3474,7 +3474,7 @@ TBool Elem::CompactChromo(const ChromoNode& aNode)
 	    corrected = node->CompactChromo();
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Chromo squeezing: cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
+	    Logger()->Write(EErr, this, "Chromo squeezing: cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
 	}
     }
     else if (false && muttype == ENt_Change) {
@@ -3500,7 +3500,7 @@ TBool Elem::CompactChromo(const ChromoNode& aNode)
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Chromo squeezing: cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
+	    Logger()->Write(EErr, this, "Chromo squeezing: cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
 	}
 	// Remove mutation
 	gmut.Rm();
@@ -3530,7 +3530,7 @@ TBool Elem::CompactChromo(const ChromoNode& aNode)
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Chromo squeezing: cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
+	    Logger()->Write(EErr, this, "Chromo squeezing: cannot find related node for mutation of rank [%i]", gmut.GetLocalRank());
 	}
     }
     else if (muttype == ENt_Rm) {
@@ -3652,7 +3652,7 @@ void Elem::LogComps() const
 {
     for (vector<MElem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
 	Elem* comp = ToElem(*it);
-	Logger()->Write(MLogRec::EInfo, comp, ">");
+	Logger()->Write(EInfo, comp, ">");
 	comp->LogComps();
     }
 }
@@ -4088,7 +4088,7 @@ void Elem::OnParentMutated(MElem* aParent, const TMut& aMut)
 	    string ruri = ref->GetRUri(this);
 	    rno.SetAttr(ENa_Ref, ruri);
 	} else {
-	    Logger()->Write(MLogRec::EErr, this, "Cannot find ref [%s]", rno.Attr(ENa_Ref).c_str());
+	    Logger()->Write(EErr, this, "Cannot find ref [%s]", rno.Attr(ENa_Ref).c_str());
 	    rres = EFalse;
 	}
     }
@@ -4098,7 +4098,7 @@ void Elem::OnParentMutated(MElem* aParent, const TMut& aMut)
 	    string puri = prn->GetRUri(this);
 	    rno.SetAttr(ENa_Parent, puri);
 	} else {
-	    Logger()->Write(MLogRec::EErr, this, "Cannot find parent [%s]", rno.Attr(ENa_Parent).c_str());
+	    Logger()->Write(EErr, this, "Cannot find parent [%s]", rno.Attr(ENa_Parent).c_str());
 	    rres = EFalse;
 	}
     }

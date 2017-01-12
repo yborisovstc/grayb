@@ -42,14 +42,14 @@ TBool DataBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& a
 	__ASSERT(eval != NULL);
 	MProp* prop = eval->GetObj(prop);
 	if (prop == NULL) {
-	    Logger()->Write(MLogRec::EErr, this, "Missing MProp iface in property [%s]", aComp.Name().c_str());
+	    Logger()->Write(EErr, this, "Missing MProp iface in property [%s]", aComp.Name().c_str());
 	    res = EFalse;
 	}
 	else {
 	    string curr;
 	    ToString(curr);
 	    if (IsLogeventUpdate()) {
-		Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", prop->Value().c_str(), curr.c_str());
+		Logger()->Write(EInfo, this, "Updated [%s <- %s]", prop->Value().c_str(), curr.c_str());
 	    }
 	    MProp* ptype = etype == NULL ? NULL: etype->GetObj(ptype);
 	    string stype = ptype == NULL ? string() : ptype->Value();
@@ -60,7 +60,7 @@ TBool DataBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& a
 	if (IsLogeventUpdate()) {
 	    string curr;
 	    ToString(curr);
-	    Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", val.c_str(), curr.c_str());
+	    Logger()->Write(EInfo, this, "Updated [%s <- %s]", val.c_str(), curr.c_str());
 	}
 	FromString(string(), val);
     } else {
@@ -208,7 +208,7 @@ TBool DataBase::ChangeCont(const string& aVal, TBool aRtOnly, const string& aNam
 	string curr;
 	ToString(curr);
 	if (IsLogeventUpdate()) {
-	    Logger()->Write(MLogRec::EInfo, this, "Updated [%s <- %s]", aVal.c_str(), curr.c_str());
+	    Logger()->Write(EInfo, this, "Updated [%s <- %s]", aVal.c_str(), curr.c_str());
 	}
 	FromString(aVal);
     }
@@ -333,7 +333,7 @@ TBool DInt::Update()
 	    if (inp != NULL) {
 		TInt idata = inp->Value();
 		if (IsLogeventUpdate()) {
-		    Logger()->Write(MLogRec::EInfo, this, "Updated [%d <- %d]", idata, mData);
+		    Logger()->Write(EInfo, this, "Updated [%d <- %d]", idata, mData);
 		}
 		Set(idata);
 		res = ETrue;
@@ -573,7 +573,7 @@ TBool DVar::Update()
 		    if (IsLogeventUpdate()) {
 			string new_value;
 			ToString(new_value);
-			Logger()->Write(MLogRec::EInfo, this, "Updated2 [%s <- %s]", new_value.c_str(), old_value.c_str());
+			Logger()->Write(EInfo, this, "Updated2 [%s <- %s]", new_value.c_str(), old_value.c_str());
 		    }
 		}
 		*/

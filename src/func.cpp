@@ -118,7 +118,7 @@ void AFunInt::SetRes(TInt aData)
 {
     if (mData != aData) {
 	MElem* host = iMan->GetMan();
-	Logger()->Write(MLogRec::EInfo, host, "Updated [%d <- %d]", aData, mData);
+	Logger()->Write(EInfo, host, "Updated [%d <- %d]", aData, mData);
 	mData = aData;
 	NotifyUpdate();
     }
@@ -697,13 +697,13 @@ TInt AFLimInt::Value()
     }
     else {
 	if (minp == NULL) {
-	    Logger()->Write(MLogRec::EErr, Host(), "Inp not connected");
+	    Logger()->Write(EErr, Host(), "Inp not connected");
 	}
 	else if (mlimu == NULL) {
-	    Logger()->Write(MLogRec::EErr, Host(), "Inp_LimU not connected");
+	    Logger()->Write(EErr, Host(), "Inp_LimU not connected");
 	}
 	else if (mliml == NULL) {
-	    Logger()->Write(MLogRec::EErr, Host(), "Inp_LimL not connected");
+	    Logger()->Write(EErr, Host(), "Inp_LimL not connected");
 	}
     }
     return val;
@@ -899,7 +899,7 @@ TInt AFConvInt::GetValue()
 	    }
 	}
 	if (lupd) {
-	    Logger()->Write(MLogRec::EDbg, this,  "Result = %d", val);
+	    Logger()->Write(EDbg, this,  "Result = %d", val);
 	}
     }
     return val;
@@ -1235,12 +1235,12 @@ Elem::TIfRange AFunVar::GetInps(TInt aId, TBool aOpt)
 	res =  inp->GetIfi(MDVarGet::Type(), &cont);
     }
     else if (!aOpt) {
-	Logger()->Write(MLogRec::EErr, this, "Cannot get input [%s]", GetInpUri(aId).c_str());
+	Logger()->Write(EErr, this, "Cannot get input [%s]", GetInpUri(aId).c_str());
     }
     return res;
 }
 
-void AFunVar::LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...)
+void AFunVar::LogWrite(TLogRecCtg aCtg, const char* aFmt,...)
 {
     char buf[GLogRec::KLogRecBufSize];
     va_list list;
@@ -1812,7 +1812,7 @@ template<class T> void FAddVect<T>::VectGet(Vect<T>& aData)
 		mHost.OnFuncContentChanged();
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]", mHost.GetInpUri(EInp1).c_str());
+		mHost.LogWrite(EErr, "Incorrect size of argument [%s]", mHost.GetInpUri(EInp1).c_str());
 	    }
 	}
     }
@@ -1876,7 +1876,7 @@ template<class T> void FAddMtrd<T>::MtrdGet(Mtrd<T>& aData)
 		}
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]", mHost.GetInpUri(EInp).c_str());
+		mHost.LogWrite(EErr, "Incorrect size of argument [%s]", mHost.GetInpUri(EInp).c_str());
 	    }
 	}
     }
@@ -1923,19 +1923,19 @@ template<class T> void FAddMtr<T>::MtrGet(Mtr<T>& aData)
 		    }
 		}
 		else {
-		    Logger()->Write(MLogRec::EErr, mHost.GetAgent(), "Incorrect dimensions of argument [%s]",  mHost.GetInpUri(EInp).c_str());
+		    Logger()->Write(EErr, mHost.GetAgent(), "Incorrect dimensions of argument [%s]",  mHost.GetInpUri(EInp).c_str());
 		    res = EFalse;
 		    break;
 		}
 	    }
 	    else {
-		Logger()->Write(MLogRec::EErr, mHost.GetAgent(), "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
+		Logger()->Write(EErr, mHost.GetAgent(), "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
 		res = EFalse;
 		break;
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, mHost.GetAgent(), "Non-matrix argument  [%s]",  mHost.GetInpUri(EInp).c_str());
+	    Logger()->Write(EErr, mHost.GetAgent(), "Non-matrix argument  [%s]",  mHost.GetInpUri(EInp).c_str());
 	    res = EFalse;
 	    break;
 	}
@@ -2004,12 +2004,12 @@ template<class T> void FAddDt<T>::DtGet(T& aData)
 		}
 	    }
 	    else {
-		Logger()->Write(MLogRec::EErr, mHost.GetAgent(), "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
+		Logger()->Write(EErr, mHost.GetAgent(), "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
 		res = EFalse; break;
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, mHost.GetAgent(), "Incompatible argument [%s]",  mHost.GetInpUri(EInp).c_str());
+	    Logger()->Write(EErr, mHost.GetAgent(), "Incompatible argument [%s]",  mHost.GetInpUri(EInp).c_str());
 	    res = EFalse; break;
 	}
     }
@@ -2025,12 +2025,12 @@ template<class T> void FAddDt<T>::DtGet(T& aData)
 		aData -= arg;
 	    }
 	    else {
-		Logger()->Write(MLogRec::EErr, mHost.GetAgent(), "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
+		Logger()->Write(EErr, mHost.GetAgent(), "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
 		res = EFalse; break;
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, mHost.GetAgent(), "Incompatible argument [%s]",  mHost.GetInpUri(EInp).c_str());
+	    Logger()->Write(EErr, mHost.GetAgent(), "Incompatible argument [%s]",  mHost.GetInpUri(EInp).c_str());
 	    res = EFalse; break;
 	}
     }
@@ -2134,23 +2134,23 @@ template<class T> void FCpsVect<T>::DtGet(Mtr<T>& aData)
 			aData.Elem(cnt, 0) = arg.mData;
 		    }
 		    else {
-			mHost.LogWrite(MLogRec::EErr, "Invalid argument");
+			mHost.LogWrite(EErr, "Invalid argument");
 			res = EFalse;
 		    }
 		}
 		else {
-		    mHost.LogWrite(MLogRec::EErr, "Incorrect input type");
+		    mHost.LogWrite(EErr, "Incorrect input type");
 		    res = EFalse;
 		}
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Inputs number is less that the length of result");
+		mHost.LogWrite(EErr, "Inputs number is less that the length of result");
 		res = EFalse;
 	    }
 	}
     }
     else {
-	mHost.LogWrite(MLogRec::EErr, "Only vector result is supported");
+	mHost.LogWrite(EErr, "Only vector result is supported");
 	res = EFalse;
     }
     aData.mValid = res;
@@ -2317,12 +2317,12 @@ template<class T> void FMplDt<T>::DtGet(T& aData)
 		}
 	    }
 	    else {
-		Logger()->Write(MLogRec::EErr, mHost.GetAgent(), "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
+		Logger()->Write(EErr, mHost.GetAgent(), "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
 		res = EFalse; break;
 	    }
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, mHost.GetAgent(), "Incompatible argument [%s]",  mHost.GetInpUri(EInp).c_str());
+	    Logger()->Write(EErr, mHost.GetAgent(), "Incompatible argument [%s]",  mHost.GetInpUri(EInp).c_str());
 	    res = EFalse; break;
 	}
     }
@@ -2432,7 +2432,7 @@ template<class T> void FMplMtrdVect<T>::VectGet(Vect<T>& aData)
 		mHost.OnFuncContentChanged();
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument");
+		mHost.LogWrite(EErr, "Incorrect size of argument");
 	    }
 	}
     }
@@ -2519,17 +2519,17 @@ template<class T> void FMplMtr<T>::MtrGet(Mtr<T>& aData)
 		    }
 		}
 		else {
-		    mHost.LogWrite(MLogRec::EErr, "Incorrect dimensions of argument");
+		    mHost.LogWrite(EErr, "Incorrect dimensions of argument");
 		    res = EFalse;
 		}
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect argument");
+		mHost.LogWrite(EErr, "Incorrect argument");
 		res = EFalse;
 	    }
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument");
+	    mHost.LogWrite(EErr, "Non-matrix argument");
 	    res = EFalse;
 	}
     }
@@ -2602,12 +2602,12 @@ template<class T> void FMplncDt<T>::DtGet(T& aData)
 		res = aData.mValid;
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect argument");
+		mHost.LogWrite(EErr, "Incorrect argument");
 		res = EFalse;
 	    }
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument");
+	    mHost.LogWrite(EErr, "Non-matrix argument");
 	    res = EFalse;
 	}
     } else {
@@ -2678,12 +2678,12 @@ template<class T> void FMplncScMtr<T>::DtGet(Mtr<T>& aData)
 	    res = aData.mValid;
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Incorrect argument");
+	    mHost.LogWrite(EErr, "Incorrect argument");
 	    res = EFalse;
 	}
     }
     else {
-	mHost.LogWrite(MLogRec::EErr, "Non-compatible argument");
+	mHost.LogWrite(EErr, "Non-compatible argument");
 	res = EFalse;
     }
     aData.mValid = res;
@@ -2780,7 +2780,7 @@ template<class T> void FMplinvMtrd<T>::MtrdGet(Mtrd<T>& aData)
 		mHost.OnFuncContentChanged();
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect size of argument [%s]",  mHost.GetInpUri(EInp).c_str());
+		mHost.LogWrite(EErr, "Incorrect size of argument [%s]",  mHost.GetInpUri(EInp).c_str());
 	    }
 	}
     }
@@ -2836,17 +2836,17 @@ template<class T> void FMplinvMtr<T>::MtrGet(Mtr<T>& aData)
 		    }
 		}
 		else {
-		    mHost.LogWrite(MLogRec::EErr, "Incorrect dimensions of argument [%s]",  mHost.GetInpUri(EInp).c_str());
+		    mHost.LogWrite(EErr, "Incorrect dimensions of argument [%s]",  mHost.GetInpUri(EInp).c_str());
 		    res = EFalse;
 		}
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
+		mHost.LogWrite(EErr, "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
 		res = EFalse;
 	    }
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]",  mHost.GetInpUri(EInp).c_str());
+	    mHost.LogWrite(EErr, "Non-matrix argument [%s]",  mHost.GetInpUri(EInp).c_str());
 	    res = EFalse;
 	}
     }
@@ -2902,12 +2902,12 @@ template<class T> void FMplinvDt<T>::DtGet(T& aData)
 		res = aData.mValid;
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
+		mHost.LogWrite(EErr, "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
 		res = EFalse;
 	    }
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]",  mHost.GetInpUri(EInp).c_str());
+	    mHost.LogWrite(EErr, "Non-matrix argument [%s]",  mHost.GetInpUri(EInp).c_str());
 	    res = EFalse;
 	}
     }
@@ -3015,12 +3015,12 @@ template<class T, class TA> void FCastDt<T, TA>::DtGet(T& aData)
 	    res = aData.mValid;
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Incorrect argument [%s]",  mHost.GetInpUri(EInp1).c_str());
+	    mHost.LogWrite(EErr, "Incorrect argument [%s]",  mHost.GetInpUri(EInp1).c_str());
 	    res = EFalse;
 	}
     }
     else {
-	mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]",  mHost.GetInpUri(EInp1).c_str());
+	mHost.LogWrite(EErr, "Non-matrix argument [%s]",  mHost.GetInpUri(EInp1).c_str());
 	res = EFalse;
     }
     aData.mValid = res;
@@ -3118,12 +3118,12 @@ template<class T> void FCpsMtrdVect<T>::DtGet(Mtr<T>& aData)
 		}
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Invalid argument [%s]",  mHost.GetInpUri(EInp1).c_str());
+		mHost.LogWrite(EErr, "Invalid argument [%s]",  mHost.GetInpUri(EInp1).c_str());
 		res = EFalse;
 	    }
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Non-matrix argument [%s]",  mHost.GetInpUri(EInp1).c_str());
+	    mHost.LogWrite(EErr, "Non-matrix argument [%s]",  mHost.GetInpUri(EInp1).c_str());
 	    res = EFalse;
 	}
     }
@@ -3241,7 +3241,7 @@ float FDivFloat::Value()
 	    val /= dvs;
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Null divisor");
+	    mHost.LogWrite(EErr, "Null divisor");
 	}
     }
 
@@ -3406,7 +3406,7 @@ FBcmpBase::TFType AFBcmpVar::GetFType()
     else if (Name() == "AF_Gt") res = FBcmpBase::EGt;
     else if (Name() == "AF_Ge") res = FBcmpBase::EGe;
     else {
-	Logger()->Write(MLogRec::EErr, this, "Incorrect type of function [%s]", Name().c_str());
+	Logger()->Write(EErr, this, "Incorrect type of function [%s]", Name().c_str());
     }
     return res;
 }
@@ -3482,7 +3482,7 @@ FCmpBase::TFType AFCmpVar::GetFType()
     else if (Name() == "AF_Gt") res = FCmpBase::EGt;
     else if (Name() == "AF_Ge") res = FCmpBase::EGe;
     else {
-	Logger()->Write(MLogRec::EErr, this, "Incorrect type of function [%s]", Name().c_str());
+	Logger()->Write(EErr, this, "Incorrect type of function [%s]", Name().c_str());
     }
     return res;
 }
@@ -3603,7 +3603,7 @@ void AFAtVar::Init(const string& aIfaceName)
 	else if ((mFunc = FAtMVect<int>::Create(this, aIfaceName, t1)) != NULL);
 	else if ((mFunc = FAtNTuple::Create(this, t1, tind)) != NULL);
 	else {
-	    LogWrite(MLogRec::EErr, "Init error, outp_iface [%s], inp_iface", aIfaceName.c_str(), t1.c_str());
+	    LogWrite(EErr, "Init error, outp_iface [%s], inp_iface", aIfaceName.c_str(), t1.c_str());
 	}
     }
 }
@@ -3671,22 +3671,22 @@ template <class T> void FAtMVect<T>::DtGet(Sdata<T>& aData)
 		    aData.mValid = ETrue;
 		}
 		else {
-		    mHost.LogWrite(MLogRec::EErr, "Index is exceeded");
+		    mHost.LogWrite(EErr, "Index is exceeded");
 		    res = EFalse;
 		}
 	    }
 	    else {
-		mHost.LogWrite(MLogRec::EErr, "Argument must be vector");
+		mHost.LogWrite(EErr, "Argument must be vector");
 		res = EFalse;
 	    }
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Incorrect argument");
+	    mHost.LogWrite(EErr, "Incorrect argument");
 	    res = EFalse;
 	}
     }
     else {
-	mHost.LogWrite(MLogRec::EErr, "Non-matrix argument");
+	mHost.LogWrite(EErr, "Non-matrix argument");
 	res = EFalse;
     }
     aData.mValid = res;
@@ -3768,17 +3768,17 @@ void FAtNTuple::GetField()
 	if (arg.mValid && ind.mValid ) {
 	    dres = arg.GetElem(ind.mData);
 	    if (dres == NULL) {
-		mHost.LogWrite(MLogRec::EErr, "Cannot find field for given index");
+		mHost.LogWrite(EErr, "Cannot find field for given index");
 		res = EFalse;
 	    }
 	}
 	else {
-	    mHost.LogWrite(MLogRec::EErr, "Incorrect argument");
+	    mHost.LogWrite(EErr, "Incorrect argument");
 	    res = EFalse;
 	}
     }
     else {
-	mHost.LogWrite(MLogRec::EErr, "Missing or incorrect argument");
+	mHost.LogWrite(EErr, "Missing or incorrect argument");
 	res = EFalse;
     }
     if (dres != NULL) {

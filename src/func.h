@@ -333,7 +333,7 @@ class Func: public Base {
 	    MDVarGet* GetInp(TInt aInpId, TBool aOpt = EFalse);
 	    virtual Elem::TIfRange GetInps(TInt aId, TBool aOpt = EFalse) = 0;
 	    virtual void OnFuncContentChanged() = 0;
-	    virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...) = 0;
+	    virtual void LogWrite(TLogRecCtg aCtg, const char* aFmt,...) = 0;
 	    virtual string GetInpUri(TInt aId) const = 0;
 	    virtual Elem* GetAgent() = 0;
 	};
@@ -368,7 +368,7 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	// From Func::Host
 	virtual TIfRange GetInps(TInt aId, TBool aOpt = EFalse);
 	virtual void OnFuncContentChanged();
-	virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...);
+	virtual void LogWrite(TLogRecCtg aCtg, const char* aFmt,...);
 	virtual Elem* GetAgent() {return this;};
 	virtual TInt GetInpCpsCount() const {return -1;};
 	// From MElem

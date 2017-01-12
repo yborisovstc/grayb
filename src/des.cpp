@@ -96,7 +96,7 @@ Elem::TIfRange ATrInt::GetInpRg(const string& aInpName)
 	res = einp->GetIfi(MDIntGet::Type(), &cont);
     }
     else {
-	Logger()->Write(MLogRec::EErr, this, "Cannot get input [%s]", uri.c_str());
+	Logger()->Write(EErr, this, "Cannot get input [%s]", uri.c_str());
     }
     return res;
 }
@@ -145,7 +145,7 @@ TInt ATrIncInt::Value()
 	mData = val + 1;
     }
     else {
-	Logger()->Write(MLogRec::EErr, this, "Cannot get data from input [Inp]");
+	Logger()->Write(EErr, this, "Cannot get data from input [Inp]");
     }
     return mData;
 }
@@ -285,11 +285,11 @@ TInt ATrDivInt::Value()
 	    res = dd->Value() / drv;
 	}
 	else {
-	    Logger()->Write(MLogRec::EErr, this, "Divider value is zero");
+	    Logger()->Write(EErr, this, "Divider value is zero");
 	}
     }
     else {
-	Logger()->Write(MLogRec::EErr, this, "Inputs aren't exists");
+	Logger()->Write(EErr, this, "Inputs aren't exists");
     }
     return res;
 }
@@ -386,7 +386,7 @@ Elem::TIfRange ATrVar::GetInps(TInt aId, TBool aOpt)
 	res =  inp->GetIfi(MDVarGet::Type(), &cont);
     }
     else if (!aOpt) {
-	Logger()->Write(MLogRec::EErr, this, "Cannot get input [%s]", GetInpUri(aId).c_str());
+	Logger()->Write(EErr, this, "Cannot get input [%s]", GetInpUri(aId).c_str());
     }
     return res;
 }
@@ -406,7 +406,7 @@ TBool ATrVar::GetCont(string& aCont, const string& aName) const
     return res;
 }
 
-void ATrVar::LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...)
+void ATrVar::LogWrite(TLogRecCtg aCtg, const char* aFmt,...)
 {
     va_list list;
     va_start(list,aFmt);
@@ -781,7 +781,7 @@ FBcmpBase::TFType ATrBcmpVar::GetFType()
     else if (Name() == "AF_Gt") res = FBcmpBase::EGt;
     else if (Name() == "AF_Ge") res = FBcmpBase::EGe;
     else {
-	Logger()->Write(MLogRec::EErr, this, "Incorrect type of function [%s]", Name().c_str());
+	Logger()->Write(EErr, this, "Incorrect type of function [%s]", Name().c_str());
     }
     return res;
 }
@@ -871,7 +871,7 @@ void StateAgent::Update()
 		    SetUpdated();
 		}
 	    } catch (std::exception e) {
-		Logger()->Write(MLogRec::EErr, this, "Unspecified error on update");
+		Logger()->Write(EErr, this, "Unspecified error on update");
 	    }
 	    ResetActive();
 	}
@@ -994,7 +994,7 @@ void ADes::Update()
 			msync->Update();
 			SetUpdated();
 		    } catch (std::exception e) {
-			Logger()->Write(MLogRec::EErr, this, "Error on update [%s]", eit->GetUri().c_str());
+			Logger()->Write(EErr, this, "Error on update [%s]", eit->GetUri().c_str());
 		    }
 		}
 	    }

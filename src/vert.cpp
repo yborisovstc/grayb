@@ -151,7 +151,7 @@ TBool Vert::Connect(MVert* aPair)
 	else {
 	    // TODO [YB] Seems this happens constantly. To analyze why
 	    MElem* ep = aPair->GetObj(ep);
-	    Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - already connected, failed", ep->GetUri().c_str());
+	    Logger()->Write(EErr, this, "Connecting [%s] - already connected, failed", ep->GetUri().c_str());
 	    res = EFalse;
 	}
     }
@@ -233,7 +233,7 @@ TBool Vert::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 	    if (!res) {
 		MElem* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
 		MElem* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
-		Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri().c_str(), pt2->GetUri().c_str());
+		Logger()->Write(EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri().c_str(), pt2->GetUri().c_str());
 	    }
 	}
     }
@@ -256,7 +256,7 @@ MIface* Vert::Call(const string& aSpec, string& aRes)
     if (name == "Connect") {
 	MElem* pair = GetNode(args.at(0));
 	if (pair == NULL) {
-	    Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - cannot get pair, failed", args.at(0).c_str());
+	    Logger()->Write(EErr, this, "Connecting [%s] - cannot get pair, failed", args.at(0).c_str());
 	    throw (runtime_error("Cannot get pair: " + args.at(0)));
 	}
 	MVert* vpair = pair->GetObj(vpair);

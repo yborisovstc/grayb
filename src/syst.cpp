@@ -1559,14 +1559,14 @@ TBool Syst::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 			if (res && cp2 == NULL) res = edge->ConnectP2(ref2);
 			if (!res) {
 			    MElem* host = iMan->GetMan();
-			    Logger()->Write(MLogRec::EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
+			    Logger()->Write(EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
 			}
 		    }
 		    else {
 			TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
 			TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
 			MElem* host = this;
-			Logger()->Write(MLogRec::EErr, this, "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
+			Logger()->Write(EErr, this, "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
 		    }
 
 		} else {
@@ -1577,7 +1577,7 @@ TBool Syst::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 	    } else {
 		MElem* pt = isptok1 ? pt2 : pt1;
 		MElem* host = this;
-		Logger()->Write(MLogRec::EErr, this, "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
+		Logger()->Write(EErr, this, "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
 	    }
 	}
     }

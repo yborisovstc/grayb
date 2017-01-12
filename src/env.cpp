@@ -69,7 +69,7 @@ void ImportsMgr::AddImportModulesInfo(const string& aPath)
 	}
 	closedir(dp);
     } else {
-	mHost.Logger()->Write(MLogRec::EErr, NULL, "Collecting modules, cannot open imports dir [%s]", dirpath.c_str());
+	mHost.Logger()->Write(EErr, NULL, "Collecting modules, cannot open imports dir [%s]", dirpath.c_str());
     }
 }
 
@@ -142,16 +142,16 @@ MElem* ImportsMgr::DoImport(const string& aUri)
 	    selr.AppendTail(moduri, it);
 	    res = icontr->GetNode(selr);
 	    if (res != NULL) {
-		mHost.Logger()->Write(MLogRec::EInfo, NULL, "Imported node: [%s]", aUri.c_str());
+		mHost.Logger()->Write(EInfo, NULL, "Imported node: [%s]", aUri.c_str());
 	    } else {
-		mHost.Logger()->Write(MLogRec::EErr, NULL, "Importing node: failed [%s]", aUri.c_str());
+		mHost.Logger()->Write(EErr, NULL, "Importing node: failed [%s]", aUri.c_str());
 	    }
 	} else {
-	    mHost.Logger()->Write(MLogRec::EErr, NULL, "Importing to module: cannot find chromo node [%s]", aUri.c_str());
+	    mHost.Logger()->Write(EErr, NULL, "Importing to module: cannot find chromo node [%s]", aUri.c_str());
 	}
 	delete chromo;
     } else {
-	mHost.Logger()->Write(MLogRec::EErr, NULL, "Importing [%s]: cannot find module [%s]", aUri.c_str(), modname.c_str());
+	mHost.Logger()->Write(EErr, NULL, "Importing [%s]: cannot find module [%s]", aUri.c_str(), modname.c_str());
     }
     return res;
 }
@@ -340,11 +340,11 @@ Env::Env(const string& aSpec, const string& aLogFileName, TBool aOpt): Base(), i
 Env::~Env()
 {
     delete mExtIfProv;
-    //Logger()->Write(MLogRec::EInfo, iRoot, "Starting deleting system");
+    //Logger()->Write(EInfo, iRoot, "Starting deleting system");
     if (iRoot != NULL) {
 	delete iRoot;
     }
-    //Logger()->Write(MLogRec::EInfo, NULL, "Finished deleting system");
+    //Logger()->Write(EInfo, NULL, "Finished deleting system");
     delete iChMgr;
     delete iImpMgr;
     delete iProvider;
@@ -377,15 +377,15 @@ void Env::ConstructSystem()
 	    struct timeval tp;
 	    gettimeofday(&tp, NULL);
 	    long int beg_us = tp.tv_sec * 1000000 + tp.tv_usec;
-	    Logger()->Write(MLogRec::EInfo, iRoot, "Started of creating system, spec [%s]", iSpecFile.c_str());
+	    Logger()->Write(EInfo, iRoot, "Started of creating system, spec [%s]", iSpecFile.c_str());
 	    iRoot->SetMutation(root);
 	    iRoot->Mutate(EFalse, EFalse, EFalse, iRoot);
 	    gettimeofday(&tp, NULL);
 	    long int fin_us = tp.tv_sec * 1000000 + tp.tv_usec;
 	    ss << (fin_us - beg_us);
 	    TInt cpc = iRoot->GetCapacity();
-	    Logger()->Write(MLogRec::EInfo, iRoot, "Completed of creating system, nodes: %d, time, us: %s", cpc,  ss.str().c_str());
-	    //Logger()->Write(MLogRec::EInfo, iRoot, "Components");
+	    Logger()->Write(EInfo, iRoot, "Completed of creating system, nodes: %d, time, us: %s", cpc,  ss.str().c_str());
+	    //Logger()->Write(EInfo, iRoot, "Components");
 	    //iRoot->LogComps();
 	}
 	else {

@@ -113,7 +113,7 @@ class ATrVar: public ATrBase, public MDVarGet, public Func::Host
 	// From Func::Host
 	virtual TIfRange GetInps(TInt aId, TBool aOpt = EFalse);
 	virtual void OnFuncContentChanged();
-	virtual void LogWrite(MLogRec::TLogRecCtg aCtg, const char* aFmt,...);
+	virtual void LogWrite(TLogRecCtg aCtg, const char* aFmt,...);
 	virtual Elem* GetAgent() {return this;};
 	virtual TInt GetInpCpsCount() const {return 0;};
 	// From Elem

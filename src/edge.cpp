@@ -307,7 +307,7 @@ MVert* Edge::Ref1() const
 	MElem* pr = pte->GetNode(uri);
 	if (pr != NULL) res = pr->GetObj(res);
 	if (res == NULL) {
-	    Logger()->Write(MLogRec::EErr, this, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());
+	    Logger()->Write(EErr, this, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());
 	}
     }
     return res;
@@ -324,7 +324,7 @@ MVert* Edge::Ref2() const
 	MElem* pr = pte->GetNode(uri);
 	if (pr != NULL) res = pr->GetObj(res);
 	if (res == NULL) {
-	    Logger()->Write(MLogRec::EErr, this, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());
+	    Logger()->Write(EErr, this, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());
 	}
     }
     return res;
@@ -679,7 +679,7 @@ MVert* Aedge::Ref1() const
 	MElem* pr = ((MElem*) this)->GetNode(uri);
 	if (pr != NULL) res = pr->GetObj(res);
 	if (res == NULL) {
-	    Logger()->Write(MLogRec::EErr, this, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());
+	    Logger()->Write(EErr, this, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());
 	}
     }
     return res;
@@ -694,7 +694,7 @@ MVert* Aedge::Ref2() const
 	MElem* pr = ((MElem*) this)->GetNode(uri);
 	if (pr != NULL) res = pr->GetObj(res);
 	if (res == NULL) {
-	    Logger()->Write(MLogRec::EErr, this, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());
+	    Logger()->Write(EErr, this, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());
 	}
     }
     return res;

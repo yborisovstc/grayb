@@ -44,15 +44,6 @@ class TLog
 class MLogRec: public MIface
 {
     public:
-	// Category of log record
-	enum TLogRecCtg {
-	    EErr = 0, 
-	    EWarn,
-	    EInfo,
-	    EDbg, 
-	    ECtg_Max
-	};
-    public:
 	virtual void WriteFormat(const char* aFmt,...) = 0;
 	virtual void Write(TLogRecCtg aCtg, const MElem* aNode, const char* aFmt,...) = 0;
 	virtual void Write(TLogRecCtg aCtg, MElem* aNode, const ChromoNode& aMut, const char* aFmt,...) = 0;
@@ -79,7 +70,7 @@ class MLogObserver
     public:
 	virtual void AddObservable(MLogRec* aObservable) = 0;
 	virtual void RemoveObservable(MLogRec* aObservable) = 0;
-	virtual void OnLogAdded(long aTimeStamp, MLogRec::TLogRecCtg aCtg, const MElem* aNode, const std::string& aContent, TInt aMutId = 0) = 0;
+	virtual void OnLogAdded(long aTimeStamp, TLogRecCtg aCtg, const MElem* aNode, const std::string& aContent, TInt aMutId = 0) = 0;
 	virtual void OnLogAdded(const TLog& aLog) = 0;
 	virtual void OnLogRecDeleting(MLogRec* aLogRec) = 0;
 };
