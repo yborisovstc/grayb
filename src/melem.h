@@ -173,7 +173,11 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 	virtual const MElem* GetMan() const = 0;
 	virtual void GetCRoot(TMut& aMut) const = 0;
 	virtual void SetMan(MElem* aMan) = 0;
+	// Support of final owner, ref ds_daa_itn_sfo
+	virtual MElem* GetCtx() = 0;
+	virtual void SetCtx(MElem* aOwner) = 0;
 	virtual void SetObserver(MAgentObserver* aObserver) = 0;
+	// TODO [YB] To remove Comps()
 	virtual vector<MElem*>& Comps() = 0;
 	virtual const vector<MElem*>& Comps() const = 0;
 	virtual MElem* GetNode(const string& aUri, TBool aInclRm = EFalse) = 0;
@@ -218,7 +222,7 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 	virtual void GetRank(Rank& aRank, const ChromoNode& aMut) const = 0;
 	virtual void GetCompRank(Rank& aRank, const MElem* aComp) const = 0;
 	virtual TInt GetCompLrank(const MElem* aComp) const = 0;
-	virtual MElem* GetComp(const string& aParent, const string& aName) = 0;
+	//virtual MElem* GetComp(const string& aParent, const string& aName) = 0;
 	virtual MElem* GetComp(const string& aParent, const string& aName) const = 0;
 	virtual void OnNodeMutated(const MElem* aNode, const TMut& aMut, const MElem* aCtx = NULL) = 0;
 	virtual void OnParentMutated(MElem* aParent, const TMut& aMut) = 0;

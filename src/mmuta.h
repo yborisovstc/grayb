@@ -22,7 +22,7 @@ class MMutable
     public:
 	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL) = 0;
 	virtual TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL) = 0;
-	virtual MElem* CreateHeir(const string& aName, MElem* aMan) = 0;
+	virtual MElem* CreateHeir(const string& aName, MElem* aMan, MElem* aContext) = 0;
 	virtual MElem* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, TBool aTrialMode = EFalse, const MElem* aCtx = NULL) = 0;
 	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL) = 0;
 	virtual unique_ptr<MChromo> GetFullChromo() const = 0;

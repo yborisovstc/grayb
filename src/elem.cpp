@@ -48,6 +48,7 @@ MElem::EIfu::EIfu()
 {
     RegMethod("Name", 0);
     RegMethod("GetMan", 0);
+    RegMethod("GetCtx", 0);
     RegMethod("GetAttachedMgr", 0);
     RegMethod("GetAowner", 0);
     RegMethod("GetCompAowner", 1);
@@ -77,6 +78,7 @@ MElem::EIfu::EIfu()
     RegMethod("OnChanged", 1);
     RegMethod("CompsCount", 0);
     RegMethod("GetComp", 1);
+    RegMethod("GetComp#2", 2);
     RegMethod("AppendMutation", 1);
     RegMethod("AppendMutation#2", 1);
     RegMethod("IsRemoved", 0);
@@ -450,7 +452,7 @@ void Elem::Delay(long us)
 // Element
 
 Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMan), iEnv(aEnv),
-    iObserver(NULL), iParent(NULL), isRemoved(EFalse)
+    iObserver(NULL), iParent(NULL), isRemoved(EFalse), mContext(NULL)
 {
     /*
     stringstream ss;
@@ -478,7 +480,7 @@ Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMa
 }
 
 Elem::Elem(Elem* aMan, MEnv* aEnv): iName(Type()), iMan(aMan), iEnv(aEnv),
-    iObserver(NULL), iParent(NULL), isRemoved(EFalse)
+    iObserver(NULL), iParent(NULL), isRemoved(EFalse), mContext(NULL)
 {
     /*
     stringstream ss;
@@ -941,22 +943,9 @@ const string Elem::EType(TBool aShort) const
 }
 
 // Stated restriction: name to be unique, ref. ds_mut_nm
-#if 0
-MElem* Elem::GetComp(const string& aParent, const string& aName)
-{
-    MElem* res = NULL;
-    pair<TNMReg::iterator, TNMReg::iterator> range = iMComps.equal_range(TNMKey(aName));
-    for (TNMReg::iterator it = range.first; it != range.second && res == NULL; it++) {
-	MElem* node = it->second;
-	if (node->EType() == aParent) {
-	    res = node;
-	}
-    }
-    return res;
-}
-#endif
 
-MElem* Elem::GetComp(const string& aParent, const string& aName)
+#if 0
+MElem* Elem::GetComp(const string& aParent, const string& aName) const
 {
     MElem* res = NULL;
     if (iMComps.count(TNMKey(aName)) > 0) {
@@ -964,6 +953,7 @@ MElem* Elem::GetComp(const string& aParent, const string& aName)
     }
     return res;
 }
+#endif
 
 
 MElem* Elem::GetComp(const string& aParent, const string& aName) const
@@ -1156,12 +1146,14 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
     GUri::TElem elem = *uripos;
     TBool anywhere = aAnywhere;
     if (elem.second.second == "..") {
-	if (iMan != NULL) {
+	// Checking if mutation context is defined. Using context instead of owner if so, ref ds_daa_itn_sfo
+	MElem* top = (mContext == NULL ? iMan : mContext);
+	if (top != NULL) {
 	    if (++uripos != aUri.Elems().end()) {
-		res = iMan->GetNode(aUri, uripos, EFalse, aInclRm);
+		res = top->GetNode(aUri, uripos, EFalse, aInclRm);
 	    }
 	    else {
-		res = iMan;
+		res = top;
 	    }
 	}
 	else {
@@ -1229,8 +1221,8 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
 		if (res1 != NULL) {
 		    if (res == NULL) {
 			res = res1;
-			}
-			else {
+		    }
+		    else {
 			res = NULL;
 			Logger()->Write(EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
 			break;
@@ -2136,7 +2128,7 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 		    // Create heir from the parent
 		    if (ptrace) { long t1_2 = GetClockElapsed(t1); Logger()->Write(EInfo, this, "Adding node, t1-t2: %d", t1_2);}
 		    long t3; if (ptrace) t3 = GetClock();
-		    elem = parent->CreateHeir(sname, node);
+		    elem = parent->CreateHeir(sname, node, NULL);
 		    if (ptrace) { long t3_4 = GetClockElapsed(t3); Logger()->Write(EInfo, this, "Adding node, t3-t4: %d", t3_4);}
 		    // Remove external parent from system
 		    // [YB] DON'T remove parent, otherwise the inheritance chain will be broken
@@ -2154,10 +2146,13 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 			// Heir has been created, now we can establish solid two-ways relations, ref. ds_daa_hunv
 			//
 			// Mark change as persistent (not run-time) only if the change affects model chromo, ref ds_mut_osm_linchr_notif.
+			/*
 			TBool persist = ETrue;
+			elem->SetMan(NULL);
 			res = node->AppendComp(elem, !persist);
+			*/
 			elem->SetParent(NULL);
-			res = res && parent->AppendChild(elem);
+			res = parent->AppendChild(elem);
 			if (res) {
 			    if (!aRunTime) {
 				// Copy just top node, not recursivelly, ref ds_daa_chrc_va
@@ -2261,12 +2256,15 @@ long Elem::GetClockElapsed(long aStart)
 
 // Reimplemented to keep system consistency. New version is based on run-time model only
 // Ref uc_031, ds_rn_prnt
-MElem* Elem::CreateHeir(const string& aName, MElem* aMan)
+MElem* Elem::CreateHeir(const string& aName, MElem* aMan, MElem* aContext)
 {
     MElem* heir = NULL;
     //Logger()->Write(EInfo, this, "CreateHeir, p1 ");
     if (IsProvided()) {
 	heir = Provider()->CreateNode(Name(), aName, aMan, iEnv);
+	// Persistently attach heir to final owner, but also set context for mutation, ref ds_daa_itn_sfo
+	aMan->AppendComp(heir);
+	heir->SetCtx(aContext);
 	// TODO To move AppendComp to CreateNode: initially set two-ways ownning relateion ?
 	// Using "light" one-way relation on creation phase, ref. ds_daa_hunv
 	MElem* hprnt = heir->GetParent();
@@ -2276,14 +2274,17 @@ MElem* Elem::CreateHeir(const string& aName, MElem* aMan)
 	__ASSERT(iParent != NULL);
 	if (iParent->IsProvided()) {
 	    // Parent is Agent - native element. Create via provider
-	    heir = Provider()->CreateNode(EType(), aName, iMan, iEnv);
+	    heir = Provider()->CreateNode(EType(), aName, aMan, iEnv);
+	    // Persistently attach heir to final owner, but also set context for mutation, ref ds_daa_itn_sfo
+	    aMan->AppendComp(heir);
+	    heir->SetCtx(iMan);
 	    // Using "light" one-way relation on creation phase, ref. ds_daa_hunv
 	    MElem* hprnt = heir->GetParent();
 	    hprnt->RemoveChild(heir);
 	    heir->SetParent(hprnt);
 	}
 	else {
-	    heir = iParent->CreateHeir(aName, iMan);
+	    heir = iParent->CreateHeir(aName, aMan, iMan);
 	}
 	if (EN_PERF_TRACE) Logger()->Write(EInfo, this, "CreateHeir, p2 ");
 	// Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo
@@ -2295,8 +2296,11 @@ MElem* Elem::CreateHeir(const string& aName, MElem* aMan)
 	// Mutated with parent's own chromo - so panent's name is the type now. Set also the parent, but it will be updated further
 	heir->SetParent(Name());
 	// Relocate heir to hier from which the request of creating heir came
-	heir->SetMan(NULL);
-	heir->SetMan(aMan);
+	heir->SetCtx(NULL);
+	heir->SetCtx(aContext);
+	// Using full comp-owner relation, ref ds_di_cnfr_susl
+	//iMan->RemoveComp(heir);
+	//aMan->AppendComp(heir);
 	// Using "light" one-way relation on creation phase, ref. ds_daa_hunv
 	heir->SetParent(NULL);
 	heir->SetParent(this);
@@ -2331,7 +2335,8 @@ TBool Elem::AppendComp(MElem* aComp, TBool aRt)
     if (res)
     {
 	iComps.push_back(aComp);
-	if (iMan != NULL) {
+	// Propagate notification only if self is the component of owner, ref ds_di_cnfr
+	if (iMan != NULL && iMan->GetComp(string(), Name()) == this) {
 	    iMan->OnCompAdding(*aComp, aRt);
 	}
 	if (iObserver != NULL) {
@@ -2467,8 +2472,13 @@ void Elem::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
 // missing proper mechanism of the whole model observer.
 void Elem::OnCompAdding(MElem& aComp, TBool aModif)
 {
-    // Propagate the event
-    if (iMan != NULL) {
+#ifdef __EXT_ASSERTS__
+    string url = aComp.GetUri(NULL, ETrue);
+    MElem* comp = GetNode(url);
+    __ASSERT(comp != NULL);
+#endif
+    // Propagate notification only if self is the component of owner, ref ds_di_cnfr
+    if (iMan != NULL && iMan->GetComp(string(), Name()) == this) {
 	iMan->OnCompAdding(aComp, aModif);
     }
     if (iObserver != NULL) {
@@ -2950,11 +2960,12 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 		    // It is rather complicated to re-create snode in new context because all snode
 		    // mutation are related to original snode context, so use trick, ref "ds_mv_local"
 		    // Create heir of source node in destination context
-		    MElem* heir = snode->CreateHeir(snode->Name(), dnode);
+		    MElem* heir = snode->CreateHeir(snode->Name(), dnode, NULL);
 		    // Re-adopt back to source parent
 		    heir->SetParent(NULL);
 		    snode->GetParent()->AppendChild(heir);
-		    res = dnode->AppendComp(heir);
+		    //res = dnode->AppendComp(heir);
+		    res = ETrue;
 		    if (res) {
 			// Remove source node
 			// If node has children then just mark it as removed but not remove actually
@@ -3707,6 +3718,8 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	Delete();
     } else if (name == "GetMan") {
 	res = GetMan();
+    } else if (name == "GetCtx") {
+	res = GetCtx();
     } else if (name == "GetRoot") {
 	res = GetRoot();
     } else if (name == "GetParent") {
@@ -3765,6 +3778,7 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
     } else if (name == "AppendChild") {
 	MElem* child = GetNode(args.at(0));
 	if (child == NULL) {
+	    MElem* nn = GetNode(args.at(0));
 	    throw (runtime_error("Cannot get node " + args.at(0)));
 	}
 	TBool rr = AppendChild(child);
@@ -3903,6 +3917,9 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
     } else if (name == "GetComp") {
 	TInt ind = Ifu::ToInt(args.at(0));
 	res = GetComp(ind);
+    } else if (name == "GetComp#2") {
+	TInt ind = Ifu::ToInt(args.at(0));
+	res = GetComp(args.at(0), args.at(1));
     } else if (name == "AppendMutation") {
 	TMut mut(args.at(0));
 	AppendMutation(mut);
@@ -4157,4 +4174,15 @@ string Elem::ContentCompsKey(const string& aId)
 string Elem::GetAssociatedData(const string& aUri) const
 {
     return string();
+}
+
+MElem* Elem::GetCtx()
+{
+    return mContext;
+}
+
+void Elem::SetCtx(MElem* aContext)
+{
+    __ASSERT(mContext == NULL && aContext != NULL || aContext == NULL);
+    mContext = aContext;
 }

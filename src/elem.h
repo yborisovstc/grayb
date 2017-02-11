@@ -190,7 +190,7 @@ class Elem: public MElem
 	string PName() const;
 	//static void ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct);
     public:
-	virtual MElem* CreateHeir(const string& aName, MElem* aMan);
+	virtual MElem* CreateHeir(const string& aName, MElem* aMan, MElem* aContext);
 	virtual unique_ptr<MChromo> GetFullChromo() const;
 	virtual string GetChromoSpec() const;
 	virtual const MChromo& Chromos() const { return *iChromo;};
@@ -239,6 +239,8 @@ class Elem: public MElem
 	virtual const string EType(TBool aShort = ETrue) const;
 	virtual MElem* GetMan();
 	virtual const MElem* GetMan() const;
+	virtual MElem* GetCtx();
+	virtual void SetCtx(MElem* aOwner);
 	virtual void GetCRoot(TMut& aMut) const;
 	virtual void GetRank(Rank& aRank) const;
 	virtual void GetRank(Rank& aRank, const ChromoNode& aMut) const;
@@ -369,7 +371,7 @@ class Elem: public MElem
 	// comp renaming: comp is renamed first, then the renaming is handled
 	TBool UnregisterComp(MElem* aComp, const string& aName = string());
 	TBool UnregisterChild(MElem* aChild, const string& aName = string());
-	virtual MElem* GetComp(const string& aParent, const string& aName);
+	//virtual MElem* GetComp(const string& aParent, const string& aName);
 	virtual MElem* GetComp(const string& aParent, const string& aName) const;
 	TBool IsLogeventCreOn();
 	TBool HasChilds() const;
@@ -420,6 +422,7 @@ class Elem: public MElem
 	// Mutation
 	Chromo* iMut;
 	// Components, owninig container
+	// TODO [YB] To consider removing
 	vector<MElem*> iComps;
 	// Components map, not owning
 	TNMReg iMComps;
@@ -445,6 +448,9 @@ class Elem: public MElem
 	TCntComps mCntComps;
 	TCntVals mCntVals;
 #endif
+	// Context, ref ds_daa_itn_sfo
+	MElem* mContext;
+
 	static TBool EN_PERF_TRACE;
 	static TBool EN_PERF_METR;
 	static TBool EN_MUT_LIM;

@@ -115,6 +115,13 @@ class MSocket: public MIface
 	virtual MElem* GetPin(TInt aInd) = 0;
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};
+    protected:
+	class EIfu: public Ifu {
+	    public:
+		EIfu();
+	};
+	// Interface methods utility
+	static EIfu mIfu;
 };
 
 #endif

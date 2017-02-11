@@ -139,7 +139,7 @@ class ConnPointBaseOut: public ConnPointBase
 };
 
 // Extention agent. Redirects request for iface to internal CP of extention.
-class ExtenderAgent: public Elem, public MCompatChecker
+class ExtenderAgent: public Elem, public MCompatChecker_Imd
 {
     public:
 	static const char* Type() { return "ExtenderAgent";};
@@ -154,9 +154,9 @@ class ExtenderAgent: public Elem, public MCompatChecker
 	virtual TDir GetDir() const;
 	// From Elem
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
-	// From MIface
-	virtual MIface* Call(const string& aSpec, string& aRes);
-	virtual string Mid() const;
+	// From MCompatChecker MIface
+	virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes);
+	virtual string MCompatChecker_Mid() const;
 };
 
 // Input Extender agent
@@ -220,7 +220,7 @@ class MSocket_Imd: public MSocket
 };
 
 // Socket agent: redirects iface requests to pins
-class ASocket: public Elem, public MCompatChecker
+class ASocket: public Elem, public MCompatChecker_Imd, public MSocket_Imd
 {
     public:
 	static const char* Type() { return "ASocket";};
@@ -235,11 +235,10 @@ class ASocket: public Elem, public MCompatChecker
 	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
 	virtual MElem* GetExtd();
 	virtual TDir GetDir() const;
+	virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes);
+	virtual string MCompatChecker_Mid() const;
 	// From Elem
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
-	// From MIface
-	virtual MIface* Call(const string& aSpec, string& aRes);
-	virtual string Mid() const;
 	// From MSocket
 	virtual TInt PinsCount() const;
 	virtual MElem* GetPin(TInt aInd);

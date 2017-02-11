@@ -999,7 +999,7 @@
 	    <sect3><title>Intro</title>
 		<simpara>Current implementation of DES engine allows for agent to have components with the same name. The only limitation is to have 
 		    a pair (parents_name, name) unique. But even this restriction is not applied in case if component (parents_name, name) pair is the same as this
-		    in some removed component. Removed component is considered as invisivle via navigation so this lack of uniquiness doesn't trouble selecting
+		    in some removed component. Removed component is considered as invisible via navigation so this lack of uniquiness doesn't trouble selecting
 		    component by parents and name. Howewer this approach causes problems with navigation when we enable removed components lookup during navigation.
 		    This mode is required for decoupled chromo approach, ref <xref linkend="ds_daa_chrc_rm"/>.</simpara>
 		<simpara>So the question is if we can request strong restriction of components name to be unique?</simpara>
@@ -1020,12 +1020,23 @@
 		    "hot-plug" replacement via automatic disconnection/reconnection, but it was not implemented completelly.
 		    Now it makes sense to use re-parenting mechanism instead.</simpara>
 	    </sect3>
+	    <sect3 id="ds_mut_nm_pnc"><title>Problem: name uniquiness approach can cause to names clash when creating heir or moving node.</title>
+		<simpara>The problem was discovered in the scope of working on the problem with resolving temporal nodes UIDs in distributed models.
+		    Ref <xref linkend="ds_di_cnfr_susl_pnae"/> for details. Note that this problem becomes apparent only if temporal heir full
+		    registering is applied, ref <xref linkend="ds_di_cnfr_susl"/> for details.</simpara>
+	    </sect3>
+	    <sect3><title>Diary</title>
+		<itemizedlist>
+		    <listitem>20160131 Approach was implemented, ref 79b545db</listitem>
+		    <listitem>20170122 Problem <xref linkend="ds_mut_nm_pnc"/> was found.</listitem>
+		</itemizedlist>
+	    </sect3>
 	</sect2>
 	<sect2 id="ds_mut_rn"><title>Renaming of node</title>
 	    <sect3><title>Intro</title>
 		<simpara>Renaming is one of sensitive parts of model mutating. There are some reasons of this sensitivity.</simpara>
 		<itemizedlist>
-		    <listitem> One of them is that renaming brakes relation between chromo [node] mutation and corresponding model node, 
+		    <listitem> One of them is that renaming breaks relation between chromo [node] mutation and corresponding model node, 
 			ref <xref linkend="ds_daa_chrc_rn"/>.
 		    </listitem>
 		    <listitem>Another area of sensitivity is dependency that this mutation creates. Disabling of regular pheno modif minimised
@@ -3267,6 +3278,10 @@
 		    direct solution would be not attaching the client but allow client access to the env. This can be done by
 		    moving env ownership from session to server, where all the session can potentially access it.</simpara>
 	    </sect3>
+	    <sect3 id="ds_daa_ao_prb"><title>Problem with agent observer on DAA model</title>
+		<sect4><title>Intro</title>
+		</sect4>
+	    </sect3>
 	</sect2>
 	<sect2 id="ds_daa_owr"><title>DAA: server owning resources approach</title>
 	    <simpara>Use-cases</simpara>
@@ -3432,6 +3447,13 @@
 		<simpara>The situation seems serious for the case if in CreateHeir the new owner is remote node. In this case to append comp to 
 		    remote owner we need to make request passing heir's UID, but UID is not resolvable because heir doesn't have owner yet.
 		</simpara>
+		<simpara>Ref also <xref linkend="ds_daa_hunv_osm"/> for another issue with UID</simpara>
+	    </sect3>
+	    <sect3 id="ds_daa_hunv_sl"><title>Solutions</title>
+		<simpara>Solution <xref linkend="ds_daa_hunv_slr"/> was applied. But it was realized that this solution doesn't solve the problem
+		    completely. It fails in case when some agent A is creating and in scope of this is creating inherited comp B of A. AppendChild is 
+		    created for parent of B after B gets created but because creation of A in not completed (i.e. A isn't registered in hier solidly)
+		    the UID of B cannot be resolved, ref <xref linkend="ds_di_cnfr"/> for details.</simpara>
 	    </sect3>
 	    <sect3 id="ds_daa_hunv_slr"><title>Solution: "ligth" relations on heir creation phase</title>
 		<simpara>The potential solution would be to avoid of using any requests required UID before heir is not finally included into owning hier
@@ -3439,6 +3461,7 @@
 		    this AppendChild() - in fact the "solid" two-ways inheritance relation is not necessary here, just "light" relation is enough. This 
 		    approach is already using for owning relation - only one-way relation is set in agent's constructor. Actually it is enough to
 		    allow agent request nodes duing mutation.</simpara>
+		<simpara>Note: this solution doesn't actually solve the problem, ref <xref linkend="ds_daa_hunv_sl"/>.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_daa_hhb"><title>DAA desing issue: heir hier gets broken in case of distribute inheritance</title>
@@ -3559,6 +3582,52 @@
 			    creation process within secondary env, that speeds up the process.</listitem>
 		    </itemizedlist>
 		</sect4>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_daa_itn"><title>DAA design: Identification of temporary nodes (generating/resolving UID for them)</title>
+	    <sect3><title>Intro</title>
+		<simpara>There is specific kind of nodes - temporal. They ara those nodes that are in the process of creation so not attached to native hier.
+		    This means that UID of such nodes are not valid - it cannot be resolved properly.
+		    In monolitic model there are no problems with such agents - all interactions involved such agents use direct ref to the agents. But
+		    in distributed model many problems are discovered regarding temporary agents. There were already some discusson regarding the similar
+		    scenario/issues, ref <xref linkend="ds_daa_hunv_osm"/>,
+		    <xref linkend="ds_daa_hunv"/>, <xref linkend="ds_di_cnfr"/> (note that they are partially overlap one another).</simpara>
+		<simpara>There are a number of solution proposed and tried. At the moment it seems that the only apprach <xref linkend="ds_di_cnfr_siurm"/>
+		    is solid one.
+		</simpara>
+	    </sect3>
+	    <sect3><title>Analysis</title>
+		<simpara>The root-cause of the project is that we try to use to treate the temporary node as the regular node. But temp node is not identified.
+		    Without initial identification we cannot even attach the node in distributed model because it can be that the temp node from one part of
+		    distributed model is to be attached to the node from anoter part - this required "long" request using node UID.</simpara>
+		<simpara>So, we need to support temp nodes in procedure like getting nodes etc. Impotrant use-case is getting node that is comp of temp node.
+		    Such support means that we need to identify temp node and support this identification is UID scheme (because all the methods of getting
+		    node used UID).
+		</simpara>
+		<simpara>There are two options for identifying temp node:</simpara>
+		<itemizedlist>
+		    <listitem>To use real UID, it will be changes with node movement.</listitem>
+		    <listitem>To use final UID i.e. UID that heir will have on creation process completed, ref <xref linkend=""/></listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3 id="ds_daa_itn_sfu"><title>Solution: To use final UID i.e. UID that heir will have on creation process completed.</title>
+		<simpara>Ref also <xref linkend="ds_di_cnfr_siurm"/>. Note, that this UID is actually incorrect during the node movement.
+		    This incorrectness can be worked around with specific mechanism of resolving such UID. For instance provider or env can keep such temp nodes
+		    register. So the last node in UID (this will be the node future owner) will get error on attempt of resolving the nodes - in that case the 
+		    last node can check with env (or whoever keeps the register) if this is UID of temp node registered. Advantage of this approach is that
+		    it effectively support the heir node transition to context of parents from parent's chain.</simpara>
+	    </sect3>
+	    <sect3 id="ds_daa_itn_sfo"><title> Solution: to use final owner in base agent. The final owner is the agent that initiate creation of new agent.</title>
+		<simpara>
+		    The created agent is immediately registered in this final owner. The created agent also sets it's own attribute "Mutation Context" as pointer to
+		    owner used on the current stage of heir creation. This attribute is used when getting getting the nodes in the scope of the mutations.
+		    GetNode() method needs to be updated in order to check if mutation context is defined for the node and using it if so.
+		    So the node beeing created has persistent relation to final owner. The node
+		    will seem regular node - it can be identified by persistent Uir and can be  get by this Uri. The same time the temp node will attach the
+		    contexts of parents as owner. This allows the node to be within the context when being created - this means all the request from inside the
+		    node will go thru the context, but not thru final owner.	
+		</simpara>
+		<simpara>This solution doesn't solve some special cases, ref <xref linkend="ds_di_ndnac"/></simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_daa_iss"><title>DAA Design issues to be considered</title>
@@ -3725,6 +3794,121 @@
 	    <simpara>The solution can be having two contents instead on single: one is read-write, for setting data, second is 
 		read-only just for checking of data only. Then DVar should ignore the change of second content in HandleCompChanged.</simpara>
 	</sect2>
+	<sect2 id="ds_di_cnfr"><title>Component notifies to Component Observers chain while the component isn't fully registered in native hier yet.</title>
+	    <sect3><title>Intro</title>
+		<itemizedlist>
+		    <listitem>Ref <xref linkend="ds_daa_hunv"/> for related issue</listitem>
+		    <listitem>This happens for instance when creating heir from parent that contains components. In that case the newly created heir is
+			not fully included to hier (but just set owner) so all mutations of adding inherited comps generate notifs that are propagated
+			thru created heir but it is not in the hier. It can get URI but upper nodes cannot get comp by this uri.</listitem>
+		    <listitem>There is even more serious case - if heir mutation includes creation of more than one layer of inherited comps then we need to
+			add created comp to it's parent. This request seems to be not avoidable. But this comps upper owner is not attached to hier
+			(because there is not full attachment in Elem::CreateHeir())</listitem>
+		    <listitem>The problem is always there but it doesn't affect much because in monolitic model observers get ref to comp in notificatio.
+			The problem become apparent in DAA models where the ref is serialized to UID. But with this problem observer cannot get comp by UID
+			because the comp has "week" (one-way) inclusion to the hier.</listitem>
+		    <listitem>The problem can be simulated by attempting to get comp via it's UID in nofifier.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Analysis</title>
+		<itemizedlist>
+		    <listitem>Looking at Elem::AddElem(). Approach used in this method differs from that in Elem::CreateHeir(). In AddElem the
+			full inclusion is done before applying the mutations. Why don't use such approach in CreateHeir()? The rationale is that
+			creating heir is isolated process. The model shouldn't know of heir until it gets created. Another reason of not using
+			full attachment is that CreateHeir is called recursively, so we will need to re-register heir for each parent in the
+			parent's chain.</listitem>
+		    <listitem>So in general the root cause of the problem is that currently UID is based on persits characteristic of the node
+			(in terms of UID generation and resolution) but some nodes requesting handling are kind of temporary (for instance the node just
+			being created).</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3 id="ds_di_cnfr_snpn"><title>Solution: to not proparate notification in case if the node propagating is not fully included into hier.</title>
+		<itemizedlist>
+		    <listitem>Criticizm: This solution doesn't work in DAA: if upper owner is unattached then lower owner received notification
+			will not be able to resolve component's UID. This is because UID is resolved as URI related to root but the unattached owner
+			just breaks the chaing of URI.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3 id="ds_di_cnfr_susl"><title>Solution: to use solid relations during the process of creatin heir</title>
+		<sect4><title>Intro</title>
+		    <simpara>The idea is to establish heir solid relation to the hier when creatng heir. The only specific would be to not notify owners of
+		    that. </simpara>
+		</sect4>
+		<sect4><title>Analysis</title>
+		    <itemizedlist>
+			<listitem>"Light" relation approach is not just for minimizing interactions. It aslo allows to avoid serious problem with
+			    name duplication, ref <xref linkend="ds_di_cnfr_susl_pnae"/></listitem>
+		    </itemizedlist>
+		</sect4>
+		<sect4><title>Problem: Missing notification brakes URI safety</title>
+		    <para>
+			The important aspect of multi-agent env is the assosiation URI to the agent. So URI can be used as reference to agent.
+			In this aspect the notification plays important role of keeping URI safe - any changes of agent is reflected in notif so the owners can
+			react on the change and update URI accordingly. If we avoid issuing notifications (even on heir creation phase) we will miss
+			guarantee that agent URI is actual. Especially in case of creating heir where we need to constantly move heir from one 
+			parent to another. So this approach requires assumption that URI of agent notifying of changes is not persistent.
+		    </para>
+		    <para>On the other hand there will be very limited requests keeping reference to such "temporary" agent, probably just AppendChild.
+			We can combine the current solution with <xref linkend="ds_di_cnfr_snpn"/>. In this case there will not be notifs to owners so
+			the problem with temporary nature of URI will be not actual.</para>
+		</sect4>
+		<sect4><title>Problem: making agents interaction more tough</title>
+		    <simpara>One of the aim of avoiding full inclusion heir into hier on heir creation phase was to minimize agents interaction.
+			This is especially important in case of distributed env. If parent is remote (quite often case, i.e. parent is represented by proxy)
+			then full inclusion will leads to inter environments request. Currently this communication is avoided. The only heir (that is
+			always local) is requested to add owner and parent - this doesn't require "long" interactions at all.</simpara>
+		    <simpara>This is incorrect. Currently the notification from agents being created (including inherited agents) are proparated. This
+			is because "light" one-way relation comp-owner is established - it enables the notifications sending upwords.</simpara>
+		    <simpara>But indeed it needs to be considered if such notifications have to be blocked. Are they actually needed?</simpara>
+		</sect4>
+		<sect4><title>Problem: nodes that are parent's context are affected by creatin parent's heir</title>
+		    <simpara>This is important and propably dangerous effect. Currently the node that is parent's owner (i.e. parent's context) is
+			not affected when parent creates its heir. The context plays "passive" role here - it just is used for ensuring acces to model from
+			heir. One-way relation allows that.</simpara>
+		    <simpara>Using full comp-owner relation for created heir to parent's context causes to conext real change - its comps register will be
+			changed.</simpara>
+		</sect4>
+		<sect4 id="ds_di_cnfr_susl_pnae"><title>Problem: "Name already exists" error on mutations of type "move"</title>
+		    <simpara>"Move" mutation is performed by creating within the given target new heir from agent being moved. The name of created heir is
+			same as of node being moved. So the node being moved tries to created "copy" of itself within its owner. Obviously this causes error of
+			name duplicating when registernig new heir.</simpara>
+		    <simpara>This case evolves more general problem: it is possible that heir name will get duplicated to the name of some comps within
+			parents context chain. Note that this problem gets possible only if comp name uniquiness rule is applied,
+			ref <xref linkend="ds_mut_nm"/>.</simpara>
+		</sect4>
+		<sect4 id="ds_di_cnfr_susl_pfl"><title>Problem: tried, seems the limitation is fundamental</title>
+		    <simpara>The problem is that in case of remote parent the first remote call is AppendComp(). Before AppendComp() there is no
+		    valid UID in heir, but AppendComp remote call requires valid UID.</simpara>
+		</sect4>
+	    </sect3>
+	    <sect3 id="ds_di_cnfr_siurm"><title>Solution: to improve UID resolution mechanism for "temporal" nodes</title>
+		<sect4><title>Intro</title>
+		    <simpara>The idea is to remain the mechanism of creating heir as is but allow "temporal" nodes
+			(i.e. nodes having only "light" attachment to the hier, heir when creating for instance)
+			be the subject of UID resolution. This can be done via introducing specific resolution mechanism for such kind of nodes. This
+			mechanism could be based on registering in scecific register owned by env.</simpara>
+		</sect4>
+	    </sect3>
+	    <sect3><title>Diary</title>
+		<itemizedlist>
+		    <listitem>20170122 Tried solution <xref linkend="ds_di_cnfr_susl"/> plus rolled-back name uniquiness, ref <xref linkend="ds_mut_nm"/>
+			to avoid problem <xref linkend="ds_di_cnfr_susl_pnae"/></listitem>
+		    <listitem>20170123 Tried some small fixes to move forward after name uniquiness rolled-back. Realized that there is 
+			fundamental limitation of the approach, ref <xref linkend="ds_di_cnfr_susl_pfl"/>. So this approach cannot be applied.</listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_di_ndnac"><title>Modifications during native agent construction - agent cannot be found.</title>
+	    <sect3><title>Intro</title>
+		<simpara>Testing solution for having nodes attached on any phases of mutations, ref <xref linkend="ds_daa_itn_sfo"/>. Even the solution
+		    "legalize" the agents during creation there is still one special case where the solution doesn't help - when agent applies modifications
+		    during native constructor. The notification is propagated but the handler actually see not completed agent passed in notification. This
+		    agent even is not attached to the hier. So in distributed system it cannot be accessed via URI.</simpara>
+	    </sect3>
+	    <sect3><title>Solution: adding dedicated phase for native object modifications, like "Construct". It has to be called after adding created node
+		to hier.</title>
+	    </sect3>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_va"><title>Visualization agent</title>
@@ -3878,6 +4062,8 @@
 	<sect2><title>Enhanced ifaces of the model, ref <xref linkend="ds_mi"/></title>
 	</sect2>
 	<sect2><title>Visual debugging, ref <xref linkend="ds_visdbg"/></title>
+	</sect2>
+	<sect2><title>Issue "Modifications during native agent construction - agent cannot be found", ref <xref linkend="ds_di_ndnac"/></title>
 	</sect2>
     </sect1>
 

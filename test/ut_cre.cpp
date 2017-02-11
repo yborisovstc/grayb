@@ -10,6 +10,22 @@
  * This test is for checking the functionality of creation graph
  */
 
+class AgentObserver: public MAgentObserver
+{
+    public:
+	AgentObserver(MEnv* aEnv): mEnv(aEnv) {};
+	// From MAgentObserver
+	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
+	virtual void OnCompAdding(MElem& aComp, TBool aModif = EFalse);
+	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse);
+	virtual TBool OnChanged(MElem& aComp);
+	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName);
+	virtual void OnCompMutated(const MElem* aNode);
+	virtual MIface* Call(const string& aSpec, string& aRes) {};
+	virtual string Mid() const { return string();};
+    private:
+	MEnv* mEnv; 
+};
 
 class Ut_cre : public CPPUNIT_NS::TestFixture
 {
@@ -22,6 +38,7 @@ class Ut_cre : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_CreIncaps);
     CPPUNIT_TEST(test_CreData);
     CPPUNIT_TEST(test_Iface);
+    CPPUNIT_TEST(test_Notif);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -35,11 +52,51 @@ private:
     void test_BaseApis1();
     void test_Content();
     void test_Iface();
+    void test_Notif();
 private:
     Env* iEnv;
+    AgentObserver* mAgtObs;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( Ut_cre );
+
+
+
+void AgentObserver::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
+{
+}
+
+void AgentObserver::OnCompAdding(MElem& aComp, TBool aModif)
+{
+    string uid = aComp.Uid();
+    cout << "AgentObserver::OnCompAdding " << uid << endl;
+    MIface* comp = mEnv->IfaceResolver()->GetIfaceByUid(uid);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get comp iface by UID", comp != NULL);
+}
+
+TBool AgentObserver::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
+{
+    string uid = aComp.Uid();
+    cout << "AgentObserver::OnCompChanged " << uid << endl;
+    MIface* comp = mEnv->IfaceResolver()->GetIfaceByUid(uid);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get comp iface by UID", comp != NULL);
+}
+
+TBool AgentObserver::OnChanged(MElem& aComp)
+{
+}
+
+TBool AgentObserver::OnCompRenamed(MElem& aComp, const string& aOldName)
+{
+    string uid = aComp.Uid();
+    cout << "AgentObserver::OnCompRenamed " << uid << endl;
+    MIface* comp = mEnv->IfaceResolver()->GetIfaceByUid(uid);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get comp iface by UID", comp != NULL);
+}
+
+void AgentObserver::OnCompMutated(const MElem* aNode)
+{
+}
 
 
 void Ut_cre::setUp()
@@ -48,7 +105,7 @@ void Ut_cre::setUp()
 
 void Ut_cre::tearDown()
 {
-//    delete iEnv;
+    //    delete iEnv;
     CPPUNIT_ASSERT_EQUAL_MESSAGE("tearDown", 0, 0);
 }
 
@@ -338,5 +395,27 @@ void Ut_cre::test_Content()
     cout << "[Debug] content after adding category @Debug:" << endl;
     cout << cont << endl;
 
+    delete iEnv;
+}
+
+// Ref ds_di_cnfr
+void Ut_cre::test_Notif()
+{
+    printf("\n === Test of notification of observers\n");
+
+    iEnv = new Env("ut_cre_notif.xml", "ut_cre_notif.txt");
+    mAgtObs = new AgentObserver(iEnv);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    root->SetObserver(mAgtObs);
+    root->AppendMutation(TMut("node,id:Syst2,parent:./Syst1"));
+    root->Mutate();
+
+    root->SetObserver(NULL);
+    delete mAgtObs;
     delete iEnv;
 }

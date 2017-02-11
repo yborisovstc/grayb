@@ -34,6 +34,14 @@ void *ACapsule::DoGetObj(const char *aName)
 
 TBool ACapsule::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 {
+    if (!aModif) { // Don't care of modifications
+	string uri = aComp.GetUri(NULL, ETrue);
+	MElem* nd = GetNode(uri, ETrue);
+	if (nd == NULL) {
+	    nd = GetNode(uri, ETrue);
+	    __ASSERT(nd != NULL);
+	}
+    }
     Elem::OnCompChanged(aComp, aContName, aModif);
     if (iMan != NULL) {
 	iMan->OnCompChanged(aComp, aContName, aModif);
@@ -55,6 +63,15 @@ MCompatChecker::EIfu::EIfu()
     RegMethod("GetExtd", 0);
     RegMethod("GetDir", 0);
 }
+
+MSocket::EIfu MSocket::mIfu;
+
+MSocket::EIfu::EIfu()
+{
+    RegMethod("PinsCount", 0);
+    RegMethod("GetPin", 1);
+}
+
 
 
 string ConnPointBase::PEType()
@@ -243,7 +260,7 @@ MIface* ConnPointBase::MCompatChecker_Call(const string& aSpec, string& aRes)
     if (!name_ok) 
 	throw (runtime_error("Wrong method name"));
     TBool args_ok = MCompatChecker::mIfu.CheckMpars(name, args.size());
-    if (!args_ok) 
+    if (!args_ok)
 	throw (runtime_error("Wrong arguments number"));
     if (name == "GetDir") {
 	TInt rr = GetDir();
@@ -325,10 +342,10 @@ MIface* ConnPointBase::MConnPoint_Call(const string& aSpec, string& aRes)
     vector<string> args;
     Ifu::ParseIcSpec(aSpec, name, sig, args);
     TBool name_ok = MCompatChecker::mIfu.CheckMname(name);
-    if (!name_ok) 
+    if (!name_ok)
 	throw (runtime_error("Wrong method name"));
     TBool args_ok = MCompatChecker::mIfu.CheckMpars(name, args.size());
-    if (!args_ok) 
+    if (!args_ok)
 	throw (runtime_error("Wrong arguments number"));
     if (name == "IsProvided") {
 	TBool rr = IsProvided(args.at(0));
@@ -556,7 +573,7 @@ MIface* ConnPointMc::MCompatChecker_Call(const string& aSpec, string& aRes)
     if (!name_ok) 
 	throw (runtime_error("Wrong method name"));
     TBool args_ok = MCompatChecker::mIfu.CheckMpars(name, args.size());
-    if (!args_ok) 
+    if (!args_ok)
 	throw (runtime_error("Wrong arguments number"));
     if (name == "GetDir") {
 	TInt rr = GetDir();
@@ -821,13 +838,39 @@ MCompatChecker::TDir ExtenderAgent::GetDir() const
     return ERegular;
 }
 
-MIface* ExtenderAgent::Call(const string& aSpec, string& aRes)
+MIface* ExtenderAgent::MCompatChecker_Call(const string& aSpec, string& aRes)
 {
-    __ASSERT(EFalse);
-    return  NULL;
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MCompatChecker::mIfu.CheckMname(name);
+    if (!name_ok) {
+	return Elem::Call(aSpec, aRes);
+    }
+    TBool args_ok = MCompatChecker::mIfu.CheckMpars(name, args.size());
+    if (!args_ok)
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "IsCompatible") {
+	MElem* pair = GetNode(args.at(0));
+	if (pair == NULL) {
+	    throw (runtime_error("Cannot get pair: " + args.at(0)));
+	}
+	TBool ext = Ifu::ToBool(args.at(1));
+	TBool rr = IsCompatible(pair, ext);
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "GetExtd") {
+	res = GetExtd();
+    } else if (name == "GetDir") {
+	TDir dir = GetDir();
+	aRes = Ifu::FromInt(dir);
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return res;
 }
 
-string ExtenderAgent::Mid() const
+string ExtenderAgent::MCompatChecker_Mid() const
 {
     return GetUri(iEnv->Root(), ETrue);
 }
@@ -1300,16 +1343,6 @@ MCompatChecker::TDir ASocket::GetDir() const
 
 // ASocket  MSocket
 
-MIface* ASocket::Call(const string& aSpec, string& aRes)
-{
-    __ASSERT(EFalse);
-    return  NULL;
-}
-
-string ASocket::Mid() const
-{
-    return GetUri(iEnv->Root(), ETrue);
-}
 
 TInt ASocket::PinsCount() const
 {
@@ -1351,10 +1384,10 @@ MIface* ASocket::MSocket_Call(const string& aSpec, string& aRes)
     vector<string> args;
     Ifu::ParseIcSpec(aSpec, name, sig, args);
     TBool name_ok = MCompatChecker::mIfu.CheckMname(name);
-    if (!name_ok) 
+    if (!name_ok)
 	throw (runtime_error("Wrong method name"));
     TBool args_ok = MCompatChecker::mIfu.CheckMpars(name, args.size());
-    if (!args_ok) 
+    if (!args_ok)
 	throw (runtime_error("Wrong arguments number"));
     if (name == "PinsCount") {
 	TInt rr = PinsCount();
@@ -1372,6 +1405,43 @@ string ASocket::MSocket_Mid() const
 {
     return GetUri(iEnv->Root(), ETrue);
 }
+
+MIface* ASocket::MCompatChecker_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MCompatChecker::mIfu.CheckMname(name);
+    if (!name_ok)
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MCompatChecker::mIfu.CheckMpars(name, args.size());
+    if (!args_ok)
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "GetDir") {
+	TInt rr = GetDir();
+	aRes = Ifu::FromInt(rr);
+    } else if (name == "GetExtd") {
+	res = GetExtd();
+    } else if (name == "IsCompatible") {
+	MElem* pair = GetNode(args.at(0), ETrue);
+	if (pair == NULL) {
+	    throw (runtime_error("Cannot find pair: " + args.at(0)));
+	}
+	TBool ext = Ifu::ToBool(args.at(1));
+	TBool rr = IsCompatible(pair, ext);
+	aRes = Ifu::FromBool(rr);
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string ASocket::MCompatChecker_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
 
 
 // Input Socket Agent
