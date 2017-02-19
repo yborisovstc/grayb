@@ -3827,6 +3827,9 @@
 		    <listitem>Criticizm: This solution doesn't work in DAA: if upper owner is unattached then lower owner received notification
 			will not be able to resolve component's UID. This is because UID is resolved as URI related to root but the unattached owner
 			just breaks the chaing of URI.</listitem>
+		    <listitem>To avoid the problem above we need to use just agent's local status when checking if the agent is included in the hier.
+			This can be done by using the agent's mutation context introduced in the scope of solution <xref linkend="ds_daa_itn_sfo"/>.
+		    We can consider the node is included in hier only if owner exuals mutation context or mutation context is not set at all.</listitem>
 		</itemizedlist>
 	    </sect3>
 	    <sect3 id="ds_di_cnfr_susl"><title>Solution: to use solid relations during the process of creatin heir</title>
@@ -3895,6 +3898,8 @@
 			to avoid problem <xref linkend="ds_di_cnfr_susl_pnae"/></listitem>
 		    <listitem>20170123 Tried some small fixes to move forward after name uniquiness rolled-back. Realized that there is 
 			fundamental limitation of the approach, ref <xref linkend="ds_di_cnfr_susl_pfl"/>. So this approach cannot be applied.</listitem>
+		    <listitem>20170218 Tried solution <xref linkend="ds_di_cnfr_snpn"/> (using  just local checking owner and mutation context of agent).
+		    </listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>

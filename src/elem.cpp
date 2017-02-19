@@ -2440,7 +2440,8 @@ MElem* Elem::GetNode(const string& aUri, TBool aInclRm)
 void Elem::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
 {
     // Translate to hier
-    if (iMan != NULL) {
+    // Enable propagation from attached node only, ref ds_di_cnfr_snpn
+    if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
 	iMan->OnCompDeleting(aComp, aSoft, aModif);
     }
     if (iObserver != NULL) {
@@ -2477,8 +2478,8 @@ void Elem::OnCompAdding(MElem& aComp, TBool aModif)
     MElem* comp = GetNode(url);
     __ASSERT(comp != NULL);
 #endif
-    // Propagate notification only if self is the component of owner, ref ds_di_cnfr
-    if (iMan != NULL && iMan->GetComp(string(), Name()) == this) {
+    // Enable propagation from attached node only, ref ds_di_cnfr_snpn
+    if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
 	iMan->OnCompAdding(aComp, aModif);
     }
     if (iObserver != NULL) {
@@ -2512,7 +2513,8 @@ TBool Elem::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
     }
     // Propagate to upper layer if the notification wasn't denied
     // TODO To consider if the event is to be propagated to upper level even if it has been already handled
-    if (res && iMan != NULL) {
+    // Enable propagation from attached node only, ref ds_di_cnfr_snpn
+    if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
 	res = iMan->OnCompChanged(aComp, aContName, aModif);
     }
     // Notify observer
@@ -2536,7 +2538,8 @@ TBool Elem::OnCompRenamed(MElem& aComp, const string& aOldName)
 	}
     }
     // Propagate the notification
-    if (iMan != NULL) {
+    // Enable propagation from attached node only, ref ds_di_cnfr_snpn
+    if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
 	iMan->OnCompRenamed(aComp, aOldName);
     }
     if (iObserver != NULL) {
@@ -2558,7 +2561,8 @@ TBool Elem::OnChanged(MElem& aComp)
 	    }
 	}
     }
-    if (res && iMan != NULL) {
+    // Enable propagation from attached node only, ref ds_di_cnfr_snpn
+    if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
 	res = iMan->OnChanged(aComp);
     }
     if (iObserver != NULL) {
