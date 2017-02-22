@@ -3730,21 +3730,23 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	res = GetParent();
     } else if (name == "IsProvided") {
 	TBool rr = IsProvided();
-	aRes = Ifu::FromBool(rr);
+	//aRes = Ifu::FromBool(rr);
+	aRes = Ifu::Pack(rr);
     } else if (name == "GetNode") {
 	res = GetNode(args.at(0));
     } else if (name == "GetNode#2") {
 	GUri uri(args.at(0));
-	TBool anywhere = Ifu::ToBool(args.at(1));
+	//TBool anywhere = Ifu::ToBool(args.at(1));
+	TBool anywhere = Ifu::Unpack(args.at(1), anywhere);
 	TBool inclrm = Ifu::ToBool(args.at(2));
 	GUri::const_elem_iter it = uri.Begin();
 	res = GetNode(uri, it, anywhere, inclrm);
     } else if (name == "ContentExists") {
 	TBool rr = ContentExists(args.at(0));
-	aRes = Ifu::FromBool(rr);
+	aRes = Ifu::Pack(rr);
     } else if (name == "ContValueExists") {
 	TBool rr = ContValueExists(args.at(0));
-	aRes = Ifu::FromBool(rr);
+	aRes = Ifu::Pack(rr);
     } else if (name == "GetContCount") {
 	TInt rr = GetContCount(args.at(0));
 	aRes = Ifu::FromInt(rr);
@@ -3775,7 +3777,7 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
     } else if (name == "AppendComp") {
 	MElem* comp = GetNode(args.at(0));
 	TBool rr = AppendComp(comp);
-	aRes = Ifu::FromBool(rr);
+	aRes = Ifu::Pack(rr);
     } else if (name == "RemoveComp") {
 	MElem* comp = GetNode(args.at(0));
 	RemoveComp(comp);
@@ -3786,7 +3788,7 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	    throw (runtime_error("Cannot get node " + args.at(0)));
 	}
 	TBool rr = AppendChild(child);
-	aRes = Ifu::FromBool(rr);
+	aRes = Ifu::Pack(rr);
     } else if (name == "RemoveChild") {
 	MElem* child = GetNode(args.at(0));
 	RemoveChild(child);
@@ -3893,15 +3895,15 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	if (comp == NULL) {
 	    throw (runtime_error("Cannot get node " + args.at(0)));
 	}
-	TBool res = OnCompChanged(*comp, args.at(1));
-	aRes = Ifu::FromBool(res);
+	TBool rr = OnCompChanged(*comp, args.at(1));
+	aRes = Ifu::Pack(rr);
     } else if (name == "OnChanged") {
 	MElem* comp = GetNode(args.at(0));
 	if (comp == NULL) {
 	    throw (runtime_error("Cannot get node " + args.at(0)));
 	}
 	TBool res = OnCompChanged(*comp);
-	aRes = Ifu::FromBool(res);
+	aRes = Ifu::Pack(res);
     } else if (name == "OnCompDeleting") {
 	MElem* comp = GetNode(args.at(0), ETrue);
 	if (comp == NULL) {
@@ -3917,7 +3919,7 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	OnParentDeleting(prnt);
     } else if (name == "CompsCount") {
 	TInt cnt = CompsCount();
-	aRes = Ifu::FromInt(cnt);
+	aRes = Ifu::Pack(cnt);
     } else if (name == "GetComp") {
 	TInt ind = Ifu::ToInt(args.at(0));
 	res = GetComp(ind);
@@ -3934,7 +3936,7 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	delete mut;
     } else if (name == "IsRemoved") {
 	TBool rr = IsRemoved();
-	aRes = Ifu::FromBool(rr);
+	aRes = Ifu::Pack(rr);
     } else if (name == "IsHeirOf") {
 	TBool rr = IsHeirOf(args.at(0));
 	aRes = Ifu::FromBool(rr);

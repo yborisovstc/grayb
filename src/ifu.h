@@ -21,6 +21,10 @@ class Ifu
 	static void AddIcSpecArg(string& aSpec, TBool aArg);
 	// Parsing of Iface call invocation spec
 	static void ParseIcSpec(const string& aSpec, string& aName, string& aSig, vector<string>& aArgs);
+	template<typename TArg> static string Pack(TArg aArg);
+	template<typename TArg> static TArg Unpack(const string& aString, TArg& aArg);
+	template<typename TArg1> string PackMethod(const string& aName, TArg1 aAgr1);
+	template<typename TArg1, typename TArg2> string PackMethod(const string& aName, TArg1 aAgr1, TArg2 aArg2);
 	static TBool ToBool(const string& aString);
 	static string FromBool(TBool aBool);
 	static TInt ToInt(const string& aString);
@@ -51,5 +55,20 @@ class Ifu
 
 };
 
+
+template<typename TArg1> string Ifu::PackMethod(const string& aName, TArg1 aArg1)
+{
+    string res = Ifu::CombineIcSpec(aName, "1");
+    AddIcSpecArg(res, Pack(aArg1));
+    return res;
+}
+
+template<typename TArg1, typename TArg2> string Ifu::PackMethod(const string& aName, TArg1 aArg1, TArg2 aArg2)
+{
+    string res = Ifu::CombineIcSpec(aName, "1");
+    AddIcSpecArg(res, Pack(aArg1));
+    AddIcSpecArg(res, Pack(aArg2));
+    return res;
+}
 
 #endif

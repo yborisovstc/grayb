@@ -155,6 +155,32 @@ string Ifu::FromBool(TBool aBool)
     return aBool ? "true" : "false";
 }
 
+template<> string Ifu::Pack<TBool>(TBool aArg)
+{
+    return aArg ? "true" : "false";
+}
+
+template<> string Ifu::Pack<TInt>(TInt aArg)
+{
+    stringstream ss;
+    ss << aArg;
+    return ss.str();
+}
+
+template<> string Ifu::Pack<string>(string aArg)
+{
+    return aArg;
+}
+
+template<> TBool Ifu::Unpack<TBool>(const string& aString, TBool& aArg)
+{
+    TBool res = EFalse;
+    if (aString == "false") res = EFalse;
+    else if (aString == "true") res = ETrue;
+    else throw (runtime_error("Incorrect boolean value: " + aString));
+    return aArg = res;
+}
+
 TInt Ifu::ToInt(const string& aString)
 {
     TInt res = 0;
