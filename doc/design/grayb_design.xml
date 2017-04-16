@@ -48,6 +48,8 @@
 		<revremark>Added <xref linkend="ds_cplx_cont_cdac"/>, updated <xref linkend="ds_cplx_cont_strcimpr"/></revremark> </revision>
 	    <revision> <revnumber>0.15</revnumber> <date>06-Dec-2016</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="ds_mmc_br"/>, <xref linkend="ds_mmc_ipcm"/></revremark> </revision>
+	    <revision> <revnumber>0.16</revnumber> <date>04-Mar-2017</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Added <xref linkend="ds_mv_local_nm"/>, <xref linkend="ds_mv_local_wkc"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -62,12 +64,9 @@
 	<biblioentry id="ref_rfc_3986"> <abbrev>RFC_3986_URI</abbrev>
 	    <productname><ulink url="httpss://www.ietf.org/rfc/rfc3986.txt"/></productname>
 	    <title>RFC 3986: Uniform Resource Identifier (URI): Generic Syntax</title> </biblioentry>
-
     </bibliolist>
 
-
     <glossary> <title>Glossary</title> 
-
 	<glossentry id="gls_cp"><glossterm>CP</glossterm> <acronym>CP</acronym>
 	    <glossdef> <para>Connection Point</para> <para>
 		    Element that is used as endpoint of connections between systems.  
@@ -87,8 +86,17 @@
 		    used for model creation as on construction phase, ref
 		    <xref linkend="ds_mut_osm"/>
 	</para></glossdef> </glossentry>
-
     </glossary>
+
+    <sect1><title>Intro</title>
+	<sect2><title>Desing items status</title>
+	    <simpara>Desing items status is designated by specific tags in square brackets. The tag prefix is DS_. The status values are:</simpara>
+	    <itemizedlist>
+		<listitem>DS_P - proposal, the item that needs to be considered</listitem>
+		<listitem>DS_I - implemented</listitem>
+	    </itemizedlist>
+	</sect2>
+    </sect1>
 
     <sect1 id="ds_base"> <title>Base</title>
 	<sect2 id="ds_base_01"><title>DS_BASE_01 Getting iface</title>
@@ -467,11 +475,11 @@
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_mv_local"><title>Local Moving of node.</title>
-	    <sect3><title>Intro</title>
+	    <sect3 id="ds_mv_local_intro"><title>Intro</title>
 		<simpara>Actually local moving of node is not single mutation but two mutations: 
 		    re-creating node in new context and removing initial node.</simpara>
 	    </sect3>
-	    <sect3><title>How to transform chromo for new context</title>
+	    <sect3 id="ds_mv_local_tch"><title>How to transform chromo for new context</title>
 		<simpara>One of the problem when re-creating node in new context is transformation node's chromo to be 
 		    sutable for new context. </simpara>
 		<simpara>There can be some solution considered. One of them is to transform source node chromo to destination node context. 
@@ -488,6 +496,27 @@
 		    were no occurances at the moment of using this local movement operation.
 		</simpara>
 		<simpara>There is alternative approach, ref <xref linkend="ds_mut_cutncopy"/></simpara>
+	    </sect3>
+	    <sect3 id="ds_mv_local_nm"><title>Local movng and node mounting</title>
+		<simpara>There is tight relation between moving of node and mounting some remote node to local node. Mounting of remote node can be
+		    considered as one approach of distributed systems, ref <xref linkend="ds_daa"/>. Mounting remote node seems similar to moving - 
+		    it is in fact de-attaching some node from remote model and attach it to some local node - so the context is changed in this case.
+		</simpara>
+	    </sect3>
+	    <sect3 id="ds_mv_local_wkc"><title>Anoter way to keep consistency when moving node - using mutation context.</title>
+		<simpara>The main problem with moving node is to keep all the "references" correct in chromo, ref <xref linkend="ds_mv_local_tch"/> for
+		    details and current solution description. Anoter possible solution can be as follow:
+		    <itemizedlist>
+			<listitem>Special attribute is introduced in base agent - mutation context. (It's interesting how this mutation context
+			    corresponds to mutation context introduced in <xref linkend="ds_daa_itn_sfo"/>?).</listitem>
+			<listitem>All mutations are executed on base on this attribute.</listitem>
+			<listitem>Specia mutaion is added - "Change of mutation context". This mutation adds new element to mutation context.</listitem>
+			<listitem>When node A is moved to node B, not only node B mutation of moving is applied but node B also mutates
+			    node A with mutation "Change of mutation context"</listitem>
+			<listitem>When node A creates heir, the A mutations are subsequentely applied to its heir. As soon as mutation
+			    "Change context" occurs the attribute "mutation context" is set from the mutation.</listitem>
+		    </itemizedlist>
+		</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_mut_rm"><title>Removing of node</title>
@@ -2684,13 +2713,16 @@
 
     <sect1 id="ds_daa"><title>Distributed asyncronous agents (DAA)</title>
 	<sect2><title>Introduction.</title>
-	    <simpara>Creating of agents in separate execution environment should be supported. Ref TBD for use-case.
-		This assumes several kind of separate execution environment: thread, process, network node. These kinds of 
-		environments differs by interacting agents accessibility level. For separate thread environment the 
-		acess is direct, whereas for separate process there agents are existing in independent memory, so
-		cannot be accessed directly. In case of separate network node, the interaction should be performed
-		via some network protocole.</simpara>
-	    <simpara>Ref also <xref linkend="ds_irm"/> for discussion regarding using of iface resolution in models parts communication.</simpara>
+	    <itemizedlist>
+		<listitem>Creating of agents in separate execution environment should be supported. Ref TBD for use-case.
+		    This assumes several kind of separate execution environment: thread, process, network node. These kinds of 
+		    environments differs by interacting agents accessibility level. For separate thread environment the 
+		    acess is direct, whereas for separate process there agents are existing in independent memory, so
+		    cannot be accessed directly. In case of separate network node, the interaction should be performed
+		    via some network protocole.</listitem>
+		<listitem>Ref also <xref linkend="ds_irm"/> for discussion regarding using of iface resolution in models parts communication.</listitem>
+		<listitem>Ref <xref linkend="ds_mv_local_nm"/> for discussion regarding one of approaches of creating DAA.</listitem>
+	    </itemizedlist>
 	</sect2>
 	<sect2><title>Refs</title>
 	    <biblioentry id="ref_crm_drds"> <abbrev>CRM_DRDS</abbrev>
@@ -3628,6 +3660,7 @@
 		    node will go thru the context, but not thru final owner.	
 		</simpara>
 		<simpara>This solution doesn't solve some special cases, ref <xref linkend="ds_di_ndnac"/></simpara>
+		<simpara>Ref also <xref linkend="ds_mv_local_wkc"/> for mutation context using when moving node.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_daa_iss"><title>DAA Design issues to be considered</title>
@@ -3636,6 +3669,23 @@
 		<listitem><xref linkend="ds_daa_chrc"/></listitem>
 		<listitem><xref linkend="ds_daa_irm"/></listitem>
 	    </orderedlist>
+	</sect2>
+	<sect2 id="ds_daa_umm"><title>[DS_P] Using Unified messaging mechanism in DAA</title>
+	    <sect3><title>Intro</title>
+		<simpara>Two kinds of agents interaction are used currently: CPP native and messaging. CPP native is just CPP interface (set of functions assosiated
+		    to specified object-interface). Messaging is set of text-based messages assosiated to specified object-interface. Both of the methods use native 
+		    access to the native objects - one agent uses pointer to another agent (CPP object) to interact. So agents currently are CPP objects.</simpara>
+		<simpara>In DAA this approach leads to necessity of using of agents proxy in order to provide the model with "normal" agent representing remote
+		    agent that is not accessible from local environment.</simpara>
+		<simpara>We can consider another approach that uses dedicated messaging mechanism in the environment for agents interactions. It this case
+		    agent "nature" is not important - the agents don't use direct native access one to another. Messaging mechanism also "hides" the way of 
+		delivering message, so there is no diffrence between agents interaction within local environment and in distributed model.</simpara>
+	    </sect3>
+	    <sect3><title>Why we don't use messaging approach?</title>
+		<simpara>The main problem of multi-agents models is how the model is run on interpretating environment. The mechanism of interpretation has to be
+		    effective in order to apply the models in real applications. Thats why we use agents model projection to native language (CPP) model - this
+		    minimise the agents interactions.</simpara>
+	    </sect3>
 	</sect2>
     </sect1>
 
@@ -4064,12 +4114,45 @@
 		</listitem>
 	    </orderedlist>
 	</sect2>
-	<sect2><title>Enhanced ifaces of the model, ref <xref linkend="ds_mi"/></title>
+	<sect2><title>Enhanced ifaces of the model</title>
+	    <simpara>Ref <xref linkend="ds_mi"/></simpara>
 	</sect2>
-	<sect2><title>Visual debugging, ref <xref linkend="ds_visdbg"/></title>
+	<sect2><title>Visual debugging</title>
+	    <simpara>Ref <xref linkend="ds_visdbg"/></simpara>
 	</sect2>
-	<sect2><title>Issue "Modifications during native agent construction - agent cannot be found", ref <xref linkend="ds_di_ndnac"/></title>
+	<sect2><title>Issue "Modifications during native agent construction - agent cannot be found"</title>
+	    <simpara>Ref <xref linkend="ds_di_ndnac"/> </simpara>
+	</sect2>
+	<sect2><title>Reimplement moving node using mutation contexts.</title>
+	    <simpara>Ref <xref linkend="ds_mv_local_wkc"/></simpara>
 	</sect2>
     </sect1>
+
+    <sect1 id="ds_i"><title>Issues</title>
+	<sect2><title>Intro</title>
+	    <sect3><title>Status of issue</title>
+		<simpara>Issue status prefix is IS_. The following values of status are defined:</simpara>
+		<itemizedlist>
+		    <listitem>O - Open</listitem>
+		    <listitem>C - Closed</listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_i_cpssr"><title>I_CPSSR [IS_O] DAA clent-server messaging protocol supports simple response only.</title>
+	    <sect3><title>Description</title>
+		<simpara>The protocol (ref fap2-srv/client/bclient.h: BaseClient::Request()) supports simple response only:</simpara>
+		<programlisting> bool Request(const string&amp; aRequest, string&amp; aResponse); </programlisting>
+		<simpara>I.e. responce is just one serialized paremeter. But in some cases we need to return more than one parameter. So
+		    we need protocol to be more generic and to support package in the response.</simpara>
+		<simpara>For example ref fap2-srv/dmas/melempx.cpp: MelemPx::GetCont()
+		    <programlisting> TBool MelemPx::GetCont(string&amp; aCont, const string&amp; aName) const </programlisting>
+		</simpara>
+	    </sect3>
+	    <sect3><title>Analysis</title>
+		<simpara>Alternative solution would be just to restrict responce to contains only one parameter.</simpara>
+	    </sect3>
+	</sect2>
+    </sect1>
+
 
 </article>

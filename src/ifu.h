@@ -23,8 +23,13 @@ class Ifu
 	static void ParseIcSpec(const string& aSpec, string& aName, string& aSig, vector<string>& aArgs);
 	template<typename TArg> static string Pack(TArg aArg);
 	template<typename TArg> static TArg Unpack(const string& aString, TArg& aArg);
-	template<typename TArg1> string PackMethod(const string& aName, TArg1 aAgr1);
-	template<typename TArg1, typename TArg2> string PackMethod(const string& aName, TArg1 aAgr1, TArg2 aArg2);
+	//template<typename ... TArgs> static string PackMethod(const string& aName, TArgs... aArgs);
+	inline static string PackMethod(const string& aName);
+	template<typename TArg1> static string PackMethod(const string& aName, TArg1 aAgr1);
+	template<typename TArg1, typename TArg2> static string PackMethod(const string& aName, TArg1 aAgr1, TArg2 aArg2);
+	template<typename TArg1, typename TArg2, typename TArg3> static string PackMethod(const string& aName, TArg1 aAgr1, TArg2 aArg2, TArg3 aArg3);
+	template<typename TArg1, typename TArg2, typename TArg3, typename TArg4>
+	    static string PackMethod(const string& aName, TArg1 aAgr1, TArg2 aArg2, TArg3 aArg3, TArg4 aArg4);
 	static TBool ToBool(const string& aString);
 	static string FromBool(TBool aBool);
 	static TInt ToInt(const string& aString);
@@ -52,13 +57,26 @@ class Ifu
     protected:
 	// Methods parameters
 	map<string, TInt> mMpars;
-
 };
 
+/*
+template<typename ... TArgs> string Ifu::PackMethod(const string& aName, TArgs ... aArgs)
+{
+    string res = CombineIcSpec(aName, "1");
+    AddIcSpecArg(res, Pack(aArg1));
+    return res;
+}
+*/
+
+inline string Ifu::PackMethod(const string& aName)
+{
+    string res = CombineIcSpec(aName, "1");
+    return res;
+}
 
 template<typename TArg1> string Ifu::PackMethod(const string& aName, TArg1 aArg1)
 {
-    string res = Ifu::CombineIcSpec(aName, "1");
+    string res = CombineIcSpec(aName, "1");
     AddIcSpecArg(res, Pack(aArg1));
     return res;
 }
@@ -68,6 +86,25 @@ template<typename TArg1, typename TArg2> string Ifu::PackMethod(const string& aN
     string res = Ifu::CombineIcSpec(aName, "1");
     AddIcSpecArg(res, Pack(aArg1));
     AddIcSpecArg(res, Pack(aArg2));
+    return res;
+}
+
+template<typename TArg1, typename TArg2, typename TArg3> string Ifu::PackMethod(const string& aName, TArg1 aArg1, TArg2 aArg2, TArg3 aArg3)
+{
+    string res = Ifu::CombineIcSpec(aName, "1");
+    AddIcSpecArg(res, Pack(aArg1));
+    AddIcSpecArg(res, Pack(aArg2));
+    AddIcSpecArg(res, Pack(aArg3));
+    return res;
+}
+
+template<typename TArg1, typename TArg2, typename TArg3, typename TArg4> string Ifu::PackMethod(const string& aName, TArg1 aArg1, TArg2 aArg2, TArg3 aArg3, TArg4 aArg4)
+{
+    string res = Ifu::CombineIcSpec(aName, "1");
+    AddIcSpecArg(res, Pack(aArg1));
+    AddIcSpecArg(res, Pack(aArg2));
+    AddIcSpecArg(res, Pack(aArg3));
+    AddIcSpecArg(res, Pack(aArg4));
     return res;
 }
 

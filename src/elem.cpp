@@ -53,7 +53,7 @@ MElem::EIfu::EIfu()
     RegMethod("GetAowner", 0);
     RegMethod("GetCompAowner", 1);
     RegMethod("GetRoot", 0);
-    RegMethod("GetNode", 1);
+    RegMethod("GetNode", 2);
     RegMethod("GetNode#2", 3);
     RegMethod("GetContent", 2);
     RegMethod("Mutate", 4);
@@ -62,8 +62,7 @@ MElem::EIfu::EIfu()
     RegMethod("GetParent", 0);
     RegMethod("GetChromoSpec", 0);
     RegMethod("EType", 1);
-    RegMethod("GetUri", 0);
-    RegMethod("GetUri#2", 1);
+    RegMethod("GetUri", 1);
     RegMethod("GetRUri", 1);
     RegMethod("DoGetObj", 1);
     RegMethod("GetIfi", 2);
@@ -101,8 +100,10 @@ MElem::EIfu::EIfu()
     RegMethod("GetContCount", 1);
     RegMethod("GetContComp", 2);
     RegMethod("SetParent", 1);
+    RegMethod("IsContOfCategory", 2);
 }
 
+// TODO [YB] Seems to get obsolete (ref Ifu::Pack<const TICacheRCtx&>. To remove.
 void MElem::EIfu::FromCtx(const TICacheRCtx& aCtx, string& aRes)
 {
     for (TICacheRCtx::const_iterator it = aCtx.begin(); it != aCtx.end(); it++) {
@@ -929,7 +930,7 @@ void Elem::LogIfReqs()
     Logger()->Write(EInfo, this, "Ifaces requests: END");
 }
 
-const string Elem::EType(TBool aShort) const
+string Elem::EType(TBool aShort) const
 {
     if (iParent == NULL) {
 	return string();
@@ -3733,7 +3734,8 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	//aRes = Ifu::FromBool(rr);
 	aRes = Ifu::Pack(rr);
     } else if (name == "GetNode") {
-	res = GetNode(args.at(0));
+	TBool inclrm = Ifu::ToBool(args.at(1));
+	res = GetNode(args.at(0), inclrm);
     } else if (name == "GetNode#2") {
 	GUri uri(args.at(0));
 	//TBool anywhere = Ifu::ToBool(args.at(1));
@@ -3796,8 +3798,6 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	MElem* parent = GetNode(args.at(0));
 	SetParent(parent);
     } else if (name == "GetUri") {
-	aRes = GetUri(NULL, ETrue);
-    } else if (name == "GetUri#2") {
 	MElem* base = GetNode(args.at(0));
 	aRes = GetUri(base, ETrue);
     } else if (name == "GetRUri") {
@@ -3872,18 +3872,22 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	UnregIfProv(name, ctx, prov, inv);
     } else if (name == "SetObserver") {
 	MExtIfProv* prov = iEnv->ExtIfProv();
-	if (prov == NULL) {
-	    throw (runtime_error("Cannot get ext iface provider"));
+	if (args.at(0) == GUri::Nil()) {
+	    SetObserver(NULL);
+	} else {
+	    if (prov == NULL) {
+		throw (runtime_error("Cannot get ext iface provider"));
+	    }
+	    MIface* iobs = prov->GetEIface(args.at(0), MAgentObserver::Type());
+	    if (iobs == NULL) {
+		throw (runtime_error("Cannot get agent observer iface" + args.at(0)));
+	    }
+	    MAgentObserver* obs = dynamic_cast<MAgentObserver*>(iobs);
+	    if (obs == NULL) {
+		throw (runtime_error("Cannot get agent observer" + args.at(0)));
+	    }
+	    SetObserver(obs);
 	}
-	MIface* iobs = prov->GetEIface(args.at(0), MAgentObserver::Type());
-	if (iobs == NULL) {
-	    throw (runtime_error("Cannot get agent observer iface" + args.at(0)));
-	}
-	MAgentObserver* obs = dynamic_cast<MAgentObserver*>(iobs);
-	if (obs == NULL) {
-	    throw (runtime_error("Cannot get agent observer" + args.at(0)));
-	}
-	SetObserver(obs);
     } else if (name == "OnCompAdding") {
 	MElem* comp = GetNode(args.at(0));
 	if (comp == NULL) {
@@ -3924,7 +3928,6 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	TInt ind = Ifu::ToInt(args.at(0));
 	res = GetComp(ind);
     } else if (name == "GetComp#2") {
-	TInt ind = Ifu::ToInt(args.at(0));
 	res = GetComp(args.at(0), args.at(1));
     } else if (name == "AppendMutation") {
 	TMut mut(args.at(0));
@@ -3973,6 +3976,9 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	res = GetCompOwning(node);
     } else if (name == "GetAowner") {
 	res = GetAowner();
+    } else if (name == "GetCompOwning") {
+	TBool rr = IsContOfCategory(args.at(0), args.at(1));
+	aRes = Ifu::FromBool(rr);
     } else if (name == "GetCompAowner") {
 	MElem* comp = GetNode(args.at(0));
 	if (comp == NULL) {

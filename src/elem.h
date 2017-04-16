@@ -236,7 +236,7 @@ class Elem: public MElem
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MElem
-	virtual const string EType(TBool aShort = ETrue) const;
+	virtual string EType(TBool aShort = ETrue) const;
 	virtual MElem* GetMan();
 	virtual const MElem* GetMan() const;
 	virtual MElem* GetCtx();

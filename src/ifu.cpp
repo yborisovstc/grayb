@@ -3,6 +3,7 @@
 #include <stdexcept> 
 #include <sstream>
 #include "ifu.h" 
+#include "melem.h" 
 
 char Ifu::KRinvSep = ',';
 char Ifu::KEsc = '\\';
@@ -172,6 +173,107 @@ template<> string Ifu::Pack<string>(string aArg)
     return aArg;
 }
 
+template<> string Ifu::Pack<const string&>(const string& aArg)
+{
+    return aArg;
+}
+
+template<> string Ifu::Pack<const char*>(const char* aArg)
+{
+    return string(aArg);
+}
+
+template<> string Ifu::Pack<const MElem*>(const MElem* aArg)
+{
+    return aArg == NULL ? GUri::Nil() : aArg->GetUri(NULL, ETrue);
+}
+
+template<> string Ifu::Pack<MElem&>(MElem& aArg)
+{
+    return aArg.GetUri(NULL, ETrue);
+}
+
+template<> string Ifu::Pack<const MElem&>(const MElem& aArg)
+{
+    return aArg.GetUri(NULL, ETrue);
+}
+
+template<> string Ifu::Pack<MElem*>(MElem* aArg)
+{
+    return aArg == NULL ? GUri::Nil() : aArg->GetUri(NULL, ETrue);
+}
+
+template<> string Ifu::Pack<MIface*>(MIface* aArg)
+{
+    return aArg == NULL ? GUri::Nil() : aArg->Uid();
+}
+
+template<> string Ifu::Pack<const TICacheRCtx&>(const TICacheRCtx& aArg)
+{
+    string res;
+    for (TICacheRCtx::const_iterator it = aArg.begin(); it != aArg.end(); it++) {
+	Base* rq = *it;
+	if (rq != NULL) {
+	    MElem* re = rq->GetObj(re);
+	    if (it == aArg.begin()) {
+		res += KArraySep;
+	    }
+	    string uri = re->GetUri(NULL, ETrue);
+	    res += uri;
+	}
+    }
+    return res;
+}
+
+template<> string Ifu::Pack<const RqContext*>(const RqContext* aArg)
+{
+    string res;
+    const RqContext* cct(aArg);
+    while (cct != NULL) {
+	Base* rq = cct->Requestor();
+	if (rq == NULL) break;
+	MElem* re = rq->GetObj(re);
+	string reuri = re->GetUri(NULL, ETrue);
+	res += reuri + Ifu::KArraySep;
+	cct = cct->Ctx();
+    }
+    return res;
+}
+
+template<> string Ifu::Pack<TICacheRCtx&>(TICacheRCtx& aArg)
+{
+    string res;
+    for (TICacheRCtx::const_iterator it = aArg.begin(); it != aArg.end(); it++) {
+	Base* rq = *it;
+	if (rq != NULL) {
+	    MElem* re = rq->GetObj(re);
+	    if (it == aArg.begin()) {
+		res += KArraySep;
+	    }
+	    string uri = re->GetUri(NULL, ETrue);
+	    res += uri;
+	}
+    }
+    return res;
+}
+
+template<> string Ifu::Pack<TICacheRCtx>(TICacheRCtx aArg)
+{
+    string res;
+    for (TICacheRCtx::const_iterator it = aArg.begin(); it != aArg.end(); it++) {
+	Base* rq = *it;
+	if (rq != NULL) {
+	    MElem* re = rq->GetObj(re);
+	    if (it == aArg.begin()) {
+		res += KArraySep;
+	    }
+	    string uri = re->GetUri(NULL, ETrue);
+	    res += uri;
+	}
+    }
+    return res;
+}
+
 template<> TBool Ifu::Unpack<TBool>(const string& aString, TBool& aArg)
 {
     TBool res = EFalse;
@@ -179,6 +281,19 @@ template<> TBool Ifu::Unpack<TBool>(const string& aString, TBool& aArg)
     else if (aString == "true") res = ETrue;
     else throw (runtime_error("Incorrect boolean value: " + aString));
     return aArg = res;
+}
+
+template<> TInt Ifu::Unpack<TInt>(const string& aString, TInt& aRes)
+{
+    TInt res = 0;
+    stringstream ss(aString);
+    ss >> res;
+    return aRes = res;
+}
+
+template<> string Ifu::Unpack<string>(const string& aString, string& aRes)
+{
+    return aRes = aString;
 }
 
 TInt Ifu::ToInt(const string& aString)

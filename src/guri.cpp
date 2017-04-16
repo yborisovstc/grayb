@@ -11,6 +11,7 @@ const string GUriBase::KTypeAny = "*";
 const string GUriBase::KTypeAnywhere = "**";
 const string KTypeUnknown = "";
 const string GUriBase::KUpperLevel = "..";
+const string GUriBase::KNativeNil = "nil";
 
 const char GUriBase:: KSchemeSep = ':';
 const char GUriBase::KPathDelim = '/';
@@ -210,6 +211,17 @@ TBool GUriBase::IsAbsolute() const
 	const_elem_iter it = iElems.begin();
 	TElem elem = *it;
 	res = elem.first.empty() && elem.second.second.empty();
+    }
+    return res;
+}
+
+TBool GUriBase::IsNil() const
+{
+    TBool res = EFalse;
+    if (iElems.size() == 1) {
+	const_elem_iter it = iElems.begin();
+	TElem elem = *it;
+	res = elem.first.empty() && elem.second.second == Nil();
     }
     return res;
 }

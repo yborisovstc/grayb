@@ -50,7 +50,7 @@ class GUriBase
 	GUriBase(const string& aGUri);
 	GUriBase();
 	const vector<TElem>& Elems() const {return iElems;};
-	string GetUri(vector<TElem>::const_iterator aStart, TBool aShort = EFalse) const;
+	string GetUri(const_elem_iter aStart, TBool aShort = EFalse) const;
 	string GetUriBody(const_elem_iter aEnd, TBool aShort = EFalse) const;
 	string GetUri(TBool aShort = EFalse) const { return GetUri(iElems.begin(), aShort);};
 	const string& GetLoc() const;
@@ -58,6 +58,7 @@ class GUriBase
 	const string& Authority() const;
 	const string& Path() const;
 	string GetName() const;
+	static string Nil();
 	const string& GetBase() const;
 	const_elem_iter Begin() const;
 	void Append(const GUriBase& aUri);
@@ -73,6 +74,7 @@ class GUriBase
 	static TElem Elem(char aRelType, const string& aName, const string& aExt);
 	TBool IsErr() const { return iErr;};
 	TBool IsAbsolute() const;
+	TBool IsNil() const;
 	static char GetExtFirstPart(const string& aExt, string& aPart);
 	TBool Compare(const_elem_iter aStart, const GUriBase& aUri, const_elem_iter& aResPos) const;
     protected:
@@ -104,8 +106,10 @@ class GUriBase
 	static const char KIfaceSep;
 	static const string KIfaceSepS;
 	static const char KCurUnit;
+	static const string KNativeNil; // Predefined name of not existent native agent
 };
 
+inline string GUriBase::Nil() {return KNativeNil;};
 
 // URI for native hier coord. Inheritnace coord is provided as extended location thru GetLoc
 class GUri: public GUriBase
