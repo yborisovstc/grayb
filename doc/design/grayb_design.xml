@@ -4025,6 +4025,21 @@
 	</sect2>
     </sect1>
 
+    <sect1 id="ds_ifrd"><title>How to re-desing interface mechanism</title>
+	<sect2><title>Intro</title>
+	    <simpara>In current implementation of multi-agent model interface is the key part of the model. Each agent is represented in multi-agent 
+		environment as set of interfaces. An interface is elementary behavioural entity. At the moment (20170423) interface mechanism is 
+		implemented with definition of meta-inerface interface "miface" that states common behaviour of an interface itself.</simpara>
+	    <simpara>So, yes. We still use behavioural model for multi-agents. This was considered as simplest way of mapping multi-agent to
+		extising processors core computing model.</simpara>
+	    <simpara>The important aspect of interface concept is the mechanism of unified call of interfaces methods. This mechanism is 
+		implemented as text formed request, the format of requests is specified. Agent as interface implementor is responsible for handling
+		unified call request. In order to simplify handling the helper class "ifu" is used. It provides utilities simplifying of dealing with
+		unified call request: parsing, seriaizing/deserializing, etc. However the current implemetation is rather ineffective, so agent needs
+	    quite lot of code to handle the request. We need to re-desing the interface mechanism in order to make it more effective.</simpara>
+	</sect2>
+    </sect1>
+
     <sect1 id="ds_th"><title>To handle</title>
 	<orderedlist>
 	    <listitem>Using mut order to ensure original sequence of muts, ref <xref linkend="ds_mut_dis_pheno"/> </listitem>

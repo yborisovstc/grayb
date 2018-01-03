@@ -250,8 +250,28 @@ class ATrBcmpVar: public ATrVar
 };
 
 
+// Iface stub to avoid clashing MIface methods
+class MDesSyncable_Imd: public MDesSyncable
+{
+    virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes) = 0;
+    virtual string MDesSyncable_Mid() const = 0;
+    // From MIface
+    virtual MIface* Call(const string& aSpec, string& aRes) { return MDesSyncable_Call(aSpec, aRes);};
+    virtual string Mid() const { return MDesSyncable_Mid();};
+};
+
+// Iface stub to avoid clashing MIface methods
+class MDesObserver_Imd: public MDesObserver
+{
+    virtual MIface* MDesObserver_Call(const string& aSpec, string& aRes) = 0;
+    virtual string MDesObserver_Mid() const = 0;
+    // From MIface
+    virtual MIface* Call(const string& aSpec, string& aRes) { return MDesObserver_Call(aSpec, aRes);};
+    virtual string Mid() const { return MDesObserver_Mid();};
+};
+
 // State base agent
-class StateAgent: public Elem, public MDesSyncable, public MDesObserver
+class StateAgent: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd
 {
     public:
 	static const char* Type() { return "StateAgent";};
@@ -269,9 +289,13 @@ class StateAgent: public Elem, public MDesSyncable, public MDesObserver
 	virtual TBool IsActive();
 	virtual void SetActive();
 	virtual void ResetActive();
+	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes);
+	virtual string MDesSyncable_Mid() const;
 	// From MDesObserver
 	virtual void OnUpdated();
 	virtual void OnActivated();
+	virtual MIface* MDesObserver_Call(const string& aSpec, string& aRes);
+	virtual string MDesObserver_Mid() const;
 	// Iface provider
 	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
     private:
@@ -280,7 +304,7 @@ class StateAgent: public Elem, public MDesSyncable, public MDesObserver
 };
 
 // DES base agent
-class ADes: public Elem, public MDesSyncable, public MDesObserver
+class ADes: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd
 {
     public:
 	static const char* Type() { return "ADes";};
@@ -298,9 +322,13 @@ class ADes: public Elem, public MDesSyncable, public MDesObserver
 	virtual TBool IsActive();
 	virtual void SetActive();
 	virtual void ResetActive();
+	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes);
+	virtual string MDesSyncable_Mid() const;
 	// From MDesObserver
 	virtual void OnUpdated();
 	virtual void OnActivated();
+	virtual MIface* MDesObserver_Call(const string& aSpec, string& aRes);
+	virtual string MDesObserver_Mid() const;
     private:
 	TBool iActive;
 	TBool iUpdated;

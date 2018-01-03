@@ -6,6 +6,33 @@
 #include "vert.h"
 #include "mprop.h"
 
+
+// MDesObserver metadata
+MDesObserver::EIfu::EIfu()
+{
+    RegMethod("OnUpdated", 0);
+    RegMethod("OnActivated", 0);
+}
+
+MDesObserver::EIfu MDesObserver::mIfu;
+
+// MDesObserver metadata
+MDesSyncable::EIfu::EIfu()
+{
+    RegMethod("Update", 0);
+    RegMethod("Confirm", 0);
+    RegMethod("IsUpdated", 0);
+    RegMethod("SetUpdated", 0);
+    RegMethod("ResetUpdated", 0);
+    RegMethod("IsActive", 0);
+    RegMethod("SetActive", 0);
+    RegMethod("ResetActive", 0);
+}
+
+MDesSyncable::EIfu MDesSyncable::mIfu;
+
+
+
 ATrBase::ATrBase(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
@@ -920,6 +947,47 @@ void StateAgent::ResetUpdated()
     iUpdated = EFalse;
 }
 
+MIface* StateAgent::MDesSyncable_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MDesSyncable::mIfu.CheckMname(name);
+    if (!name_ok) 
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MDesSyncable::mIfu.CheckMpars(name, args.size());
+    if (!args_ok)
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "Update") {
+	Update();
+    } else if (name == "Confirm") {
+	Confirm();
+    } else if (name == "IsUpdated") {
+	TBool rr = IsUpdated();
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "SetUpdated") {
+	SetUpdated();
+    } else if (name == "ResetUpdated") {
+	ResetUpdated();
+    } else if (name == "IsActive") {
+	TBool rr = IsActive();
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "SetActive") {
+	SetActive();
+    } else if (name == "ResetActive") {
+	ResetActive();
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string StateAgent::MDesSyncable_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
 void StateAgent::OnUpdated()
 {
     // Mark active
@@ -928,6 +996,33 @@ void StateAgent::OnUpdated()
 
 void StateAgent::OnActivated()
 {
+}
+
+MIface* StateAgent::MDesObserver_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MDesObserver::mIfu.CheckMname(name);
+    if (!name_ok) 
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MDesObserver::mIfu.CheckMpars(name, args.size());
+    if (!args_ok)
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "OnUpdated") {
+	OnUpdated();
+    } else if (name == "OnActivated") {
+	OnActivated();
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string StateAgent::MDesObserver_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
 }
 
 /* DES base agent */
@@ -1033,6 +1128,47 @@ void ADes::ResetUpdated()
     iUpdated = EFalse;
 }
 
+MIface* ADes::MDesSyncable_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MDesSyncable::mIfu.CheckMname(name);
+    if (!name_ok) 
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MDesSyncable::mIfu.CheckMpars(name, args.size());
+    if (!args_ok)
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "Update") {
+	Update();
+    } else if (name == "Confirm") {
+	Confirm();
+    } else if (name == "IsUpdated") {
+	TBool rr = IsUpdated();
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "SetUpdated") {
+	SetUpdated();
+    } else if (name == "ResetUpdated") {
+	ResetUpdated();
+    } else if (name == "IsActive") {
+	TBool rr = IsActive();
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "SetActive") {
+	SetActive();
+    } else if (name == "ResetActive") {
+	ResetActive();
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string ADes::MDesSyncable_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
 void ADes::OnUpdated()
 {
     // Mark active
@@ -1041,5 +1177,32 @@ void ADes::OnUpdated()
 
 void ADes::OnActivated()
 {
+}
+
+MIface* ADes::MDesObserver_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MDesObserver::mIfu.CheckMname(name);
+    if (!name_ok) 
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MDesObserver::mIfu.CheckMpars(name, args.size());
+    if (!args_ok)
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "OnUpdated") {
+	OnUpdated();
+    } else if (name == "OnActivated") {
+	OnActivated();
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string ADes::MDesObserver_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
 }
 

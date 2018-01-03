@@ -260,6 +260,7 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
 		static void ToCtx(MElem* aHost, const string& aStr, TICacheRCtx& aCtx);
 	};
 	// Interface methods utility
+	// TODO [YB] To redesign: to separate iface metadata and utility. To add miface method to get metadata.
 	static EIfu mIfu;
 };
 

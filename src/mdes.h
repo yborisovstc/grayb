@@ -12,17 +12,26 @@ class Base;
 
 
 // Observer. Upper layer is observer of components 
-class MDesObserver
+class MDesObserver: public MIface
 {
     public:
 	static const char* Type() { return "MDesObserver";};
 	virtual void OnUpdated() = 0;
 	virtual void OnActivated() = 0;
-
+    public:
+	// From MIface
+	virtual string Uid() const { return Mid() + "%" + Type();};
+    protected:
+	class EIfu: public Ifu {
+	    public:
+		EIfu();
+	};
+	// Interface methods utility
+	static EIfu mIfu;
 };
 
 // Syncable
-class MDesSyncable
+class MDesSyncable: public MIface
 {
     public:
 	static const char* Type() { return "MDesSyncable";};
@@ -34,29 +43,16 @@ class MDesSyncable
 	virtual TBool IsActive() = 0;
 	virtual void SetActive() = 0;
 	virtual void ResetActive() = 0;
-};
-
-/*
-// Updatable
-class MDesUpdatable
-{
     public:
-	static const char* Type() { return "MDesUpdatable";};
-	virtual void Update() = 0;
-	virtual TBool IsUpdated() = 0;
-	virtual void SetUpdated() = 0;
-	virtual void ResetUpdated() = 0;
+	// From MIface
+	virtual string Uid() const { return Mid() + "%" + Type();};
+    protected:
+	class EIfu: public Ifu {
+	    public:
+		EIfu();
+	};
+	// Interface methods utility
+	static EIfu mIfu;
 };
-
-// Activable
-class MDesActivable
-{
-    public:
-	static const char* Type() { return "MDesActivable";};
-	virtual TBool IsActive() = 0;
-	virtual void SetActive() = 0;
-	virtual void ResetActive() = 0;
-};
-*/
 
 #endif
