@@ -1374,7 +1374,7 @@
 		    is another option that combines the benefits of "linear chromo" and "mutations order" options. To explain the new option let's 
 		    consider the use-case:</simpara>
 		<orderedlist>
-		    <listitem>Sysem A get created, some initial portion m_1 of mutations added</listitem>
+		    <listitem>Sysem A gets created, some initial portion m_1 of mutations added</listitem>
 		    <listitem>Mutation is applied to insert independent subsystem S (for instance from external chromo)</listitem>
 		    <listitem>Next portion m_2 of mutations are added to A chromo</listitem>
 		    <listitem id="ds_mut_osm_mrk_i_p1">Mutation ms_1 is applied to S chromo</listitem>
@@ -1382,11 +1382,24 @@
 		</orderedlist>
 		<simpara>Note that step <xref linkend="ds_mut_osm_mrk_i_p1"/> breaks consistency of A chromo. Let's look at of how this is 
 		    resolved with "markers" option. On step <xref linkend="ds_mut_osm_mrk_i_p1"/> we mark mutation ms_1 with specific marker _MS_V2_ (V2 means
-		    verstion#2), also we add the same marker to so called "dependence mark" of the first mut of m_3 portion. On applying phase we apply  not whole
+		    version#2), also we add the same marker to so called "dependence mark" of the first mut of m_3 portion. On applying phase we apply  not whole
 		    subsystem S mutation but till the mark only, then return to the "mainstream" chromo, apply m_2, then before applying m_3 we
 		    note that m_3 depends on mark _MS_V2_, so return to S and apply _MS_V2_ and then return to m_3.</simpara>
 		<simpara>We can see that this schema keeps chromo applying sequence equal to construction sequence. Same time we still able to 
 		    save subsystem S whole chromo (including mutations related to version#2).</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mut_osm_gnu"><title>Support of "gettin node by URI" in OSM chromo</title>
+	    <sect3><title>Intro</title>
+		<simpara>Currently the non-OSM chromo supports getting chromo node by URI, ref 
+		    <programlisting> void* MChromoMdl::Find(const void* aHandle, const string&amp; aUri) </programlisting>
+		    bun in OSM chromo this feature seems doesn't make sense because OSM chromo not having dedicated node for given model node.</simpara>
+		<simpara>Nevertheless the "getting node by URI" feature is important for instance when importing some submodel from module.</simpara>
+	    </sect3>
+	    <sect3><title>Solution: applying filter to the chromo</title>
+		<simpara>It is not possible to find dedicated node for given URI but it is possible to filter out all mutations related to the node.
+		    This filter can be applied to attribute "target" of the mutations in given chromo. So in result we can have chromo containing all the
+		mutation for the given node.</simpara>
 	    </sect3>
 	</sect2>
     </sect1>
@@ -3652,6 +3665,39 @@
 		<productname><ulink url="https://en.wikipedia.org/wiki/Fast_Infoset"/></productname>
 		<title>Fast Infoset</title> </biblioentry>
 	</sect2>
+	<sect2 id="ds_chr_nc"><title>New compact chromo language</title>
+	    <sect3><title>Intro</title>
+		<simpara>The current chromo language is the result of straightforward approach to chromo as spec of system mutations. So
+		    we didn't much care of such chromo language capabilities as compactness, expressivenes etc. In result the chromo itself can hardly
+		    be used as object of system design - the only visual representation is enough suitable for the design.</simpara>
+		<simpara>The aim of chromo languge enchancement is making it more "readable" in terms of understanding the system from it's chromo.</simpara>
+	    </sect3>
+	    <sect3><title>Main points</title>
+		<orderedlist>
+		    <listitem>To introduce relation as element of base model
+			<simpara>At the moment the only element is an atom of the system. Thus any relations are just specific elements. On one hand this makes
+			    the model very simple. On another hand it makes chromo (system spec) pleonastic. So the proposal is to extend the base model by 
+			    relations of nodes.</simpara>
+		    </listitem>
+		</orderedlist>
+	    </sect3>
+	    <sect3><title>Relations tree notation</title>
+		<simpara>The problem here is what would be notation for relations tree. For instance is transition function. It can be described by hierarchy of 
+		related functions. What would be compact notation for it?</simpara>
+	    <simpara>On variant is to use the scoping notation. Lets state that the scope is denoted by "{" "}" then the hier
+		<programlisting>
+		    a - a1
+		    a - a2
+		    a1 - a11
+		    a1 - a12
+		    a2 - a21
+		    a2 - a22
+		</programlisting>
+		can be denoted as:
+		<programlisting> a { a1 {a11 a12}  a2 {a21 a22} } </programlisting>
+	    </simpara>
+	    </sect3>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_irm"><title>How to improve iface resolution mechanism</title>
@@ -4069,6 +4115,27 @@
 	<sect2><title>Visual debugging, ref <xref linkend="ds_visdbg"/></title>
 	</sect2>
 	<sect2><title>Issue "Modifications during native agent construction - agent cannot be found", ref <xref linkend="ds_di_ndnac"/></title>
+	</sect2>
+	<sect2><title>Agent-provider</title>
+	    <simpara>At the moment an agent requests env for new agents provider. The provider impelements iface "MProvider". Plugin system is supported in
+		order to add new provider into the providers list.  </simpara>
+	    <simpara>Needs to consider another solution - when some agents serve as providers, i.e implement "MProvider" iface. In that case env can
+		use standard iface resolution mechanism to get the list of all providers.</simpara>
+	    <simpara>Please note that this approach is already used in fap2-srv (distributed multi-agents) for provider of proxies:
+		specific agent ADaaPxProv acts as provider of proxies (implements iface MIpxProv.)</simpara>
+	</sect2>
+	<sect2><title>Generated proxy</title>
+	    <simpara>Currently in distributed agents models, the specific proxies are created in order to represent "real" agents. Needs to consider the approaches
+		of generating such proxies. In fact any proxy acts as some service (offers iface for service). This service is used by some clients. 
+		Obviously this clients has to know of this service iface. So if the current env doesn't have provider for service and clients proxies, thebn
+		both service and clients should be in their "native" environment. This means that the border between current env and env with "foreign"
+		iface servece/clints has to be only "passed" by ifaces known by both current and remote env. This creates limitations in designing of
+		distributed system.</simpara>
+	    <simpara>Another solution would be having clients that automatically generates requests to service APIs. But how to do it? Is it
+		realistic at all?</simpara>
+	</sect2>
+	<sect2><title>New chromo language</title>
+	    <simpara>Ref <xref linkend="ds_chr_nc"/></simpara>
 	</sect2>
     </sect1>
 

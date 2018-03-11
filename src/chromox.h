@@ -81,6 +81,7 @@ class ChromoX: public Chromo
 {
     public:
 	ChromoX();
+	ChromoX(const ChromoX& aSrc);
 	ChromoX(const char *aFileName);
 	virtual ~ChromoX();
     public:

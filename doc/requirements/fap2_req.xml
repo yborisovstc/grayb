@@ -1355,6 +1355,9 @@
 		    <listitem>The reason of this case is that when we use studio and recreate the system (after undo/redo or 
 			run-stop) then we will see the different results in the log if we don't apply chromo as is but 
 			filter out some mutations. Currently erroneous mutations are not go to systems chromo.</listitem>
+		    <listitem>Another reason is that the validity of mutation depends on the context. Some owners can
+			reject component's mutation. But this mutation needs to be kept in compoent's chromo because in other
+			contexts it can be valid and applied.</listitem>
 		</orderedlist>
 	    </sect3>
 	    <sect3><title>Clarification</title> </sect3>
