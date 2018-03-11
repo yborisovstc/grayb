@@ -553,6 +553,11 @@ ChromoX::ChromoX(): iRootNode(iMdl, NULL)
 {
 }
 
+ChromoX::ChromoX(const ChromoX& aSrc)
+{
+    Set(aSrc.Root());
+}
+
 void ChromoX::Set(const char *aFileName)
 {
     void *root = iMdl.Set(aFileName);
