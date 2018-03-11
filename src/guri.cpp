@@ -7,156 +7,123 @@
 // Uri conforms to RFC 3986 
 // Query syntax: (attr_name '=' attr_value) *( ('&' | '|')  (attr_name '=' attr_value))  
 
-const string GUriBase::KTypeAny = "*";
-const string GUriBase::KTypeAnywhere = "**";
+const string GUri::KTypeAny = "*";
+const string GUri::KTypeAnywhere = "**";
 const string KTypeUnknown = "";
-const string GUriBase::KUpperLevel = "..";
-const string GUriBase::KNativeNil = "nil";
+const string GUri::KUpperLevel = "..";
+const string GUri::KNativeNil = "nil";
 
-const char GUriBase:: KSchemeSep = ':';
-const char GUriBase::KPathDelim = '/';
-const char GUriBase::KQueryDelim = '?';
-const char GUriBase::KBaseSep = '#';
-const char GUriBase::KIfaceSep = '%';
-const string GUriBase::KIfaceSepS = "%";
-const char GUriBase::KParentSep = ':';
-const char GUriBase::KSepNone = ' ';
-const char GUriBase::KNodeSep = '/';
+const char GUri:: KSchemeSep = ':';
+const char GUri::KPathDelim = '/';
+const char GUri::KQueryDelim = '?';
+const char GUri::KBaseSep = '#';
+const char GUri::KIfaceSep = '%';
+const string GUri::KIfaceSepS = "%";
+const char GUri::KParentSep = ':';
+const char GUri::KSepNone = ' ';
+const char GUri::KNodeSep = '/';
 const char KGroupStart = '(';
 const char KGroupEnd = ')';
-const char GUriBase::KCurUnit = '.';
+const char GUri::KCurUnit = '.';
 const string KGroupMark = "()";
 const string KRelTypesMarks = "/:";
 
-TBool GUriBase::iInit = EFalse;
+TBool GUri::iInit = EFalse;
 
 
-
-GUriBase::GUriBase(const string& aUri): iUri(aUri), iErr(EFalse)
+GUri::GUri(const GUri& s):
+    iUri(s.iUri), iScheme(s.iScheme), iAuthority(s.iAuthority), iPath(s.iPath), iBase(s.iBase), iElems(s.iElems), iErr(s.iErr)
 {
 }
 
-GUriBase::GUriBase(): iUri(), iErr(EFalse)
+GUri::GUri(const string& aUri): iUri(aUri), iErr(EFalse)
+{
+    Parse();
+}
+
+GUri::GUri(): iUri(), iErr(EFalse)
 {
 }
 
-const string& GUriBase::GetLoc() const
-{
-    TInt size = iElems.size();
-    return size == 0 ? KTypeUnknown : iElems.at(size -1).first;
-}
-
-const string& GUriBase::Scheme() const
+const string& GUri::Scheme() const
 {
     return iScheme;
 }
 
-const string& GUriBase::Authority() const
+const string& GUri::Authority() const
 {
     return iAuthority;
 }
 
-const string& GUriBase::Path() const
+const string& GUri::Path() const
 {
     return iPath;
 }
 
-const string& GUriBase::GetBase() const
+const string& GUri::GetBase() const
 {
     return iBase;
 }
 
-string GUriBase::GetName() const
+string GUri::GetName() const
 {
     TInt size = iElems.size();
-    return size == 0 ? string() : iElems.at(size -1).second.second;
+    return size == 0 ? string() : iElems.at(size -1).mName;
 }
 
-void GUriBase::Append(const GUriBase& aUri)
+void GUri::Append(const GUri& aUri)
 {
     for (const_elem_iter it = aUri.Elems().begin(); it != aUri.Elems().end(); it++) {
 	AppendElem(*it);
     }
 }
 
-void GUriBase::Prepend(const GUriBase& aUri)
+void GUri::Prepend(const GUri& aUri)
 {
     for (vector<TElem>::const_reverse_iterator it = aUri.Elems().rbegin(); it != aUri.Elems().rend(); it++) {
 	PrependElem(*it);
     }
 }
 
-void GUriBase::AppendTail(const GUriBase& aUri, const_elem_iter aIter)
+void GUri::AppendTail(const GUri& aUri, const_elem_iter aIter)
 {
     for (const_elem_iter it = aIter; it != aUri.Elems().end(); it++) {
 	AppendElem(*it);
     }
 }
 
-void GUriBase::AppendElem(const string& aType, const string& aName, char aRelType)
+void GUri::AppendElem(const string& aExt, const string& aName, char aRelChar)
 {
-    iElems.push_back(TElem(aType, TRel(aRelType, aName)));
+    iElems.push_back(TElem(aName, TElem::relFromChar(aRelChar), aExt));
 }
 
-void GUriBase::AppendElem(const string& aExt, const char aExtRel, const string& aName, char aRelType)
+void GUri::AppendElem(const string& aExtName, const char aExtRel, const string& aName, char aRel)
 {
-    AppendElem(aExt + string(1, aExtRel), aName, aRelType);
+    AppendElem(aExtName + string(1, aExtRel), aName, aRel);
 
 }
 
-void GUriBase::AppendElem(const TElem& aElem)
+void GUri::AppendElem(const TElem& aElem)
 {
     iElems.push_back(aElem);
 }
 
-void GUriBase::PrependElem(const TElem& aElem)
+void GUri::PrependElem(const TElem& aElem)
 {
     iElems.insert(iElems.begin(), aElem);
 }
 
-void GUriBase::PrependElem(const string& aType, const string& aName, char aRelType)
+void GUri::PrependElem(const string& aExt, const string& aName, char aRelChar)
 {
-    iElems.insert(iElems.begin(), TElem(aType, TRel(aRelType, aName)));
+    iElems.insert(iElems.begin(), TElem(aName, TElem::relFromChar(aRelChar), aExt));
 }
 
-void GUriBase::AppendQueryElem(TQueryOpr aOpr, TNodeAttr aAttr, const string& aValue)
+string GUri::toString(const_elem_iter aStart, TBool aShort) const
 {
-    iQueryElems.push_back(TQueryElem(aOpr, TQueryCnd(aAttr, aValue)));
+    return toString(aStart, iElems.end(), aShort);
 }
 
-string GUriBase::GetUri(const_elem_iter aStart, TBool aShort) const
-{
-    return DoGetUri(aStart, iElems.end(), aShort);
-}
-
-string GUriBase::GetUriBody(const_elem_iter aEnd, TBool aShort) const
-{
-    return DoGetUri(iElems.begin(), aEnd, aShort);
-}
-
-string GUriBase::SelectGroup(const string& aData, int aEndPos)
-{
-    char tag = KGroupEnd;    
-    int count = 0;
-    int endpos = aEndPos;
-    string tags(KGroupStart, 1); tags.append(KGroupEnd, 1);
-    while (endpos != string::npos && tag != KGroupStart) {
-	endpos = aData.find_last_of(tags, endpos);
-	tag = aData.at(endpos);
-	count++;
-    }
-    while (endpos != string::npos && count-- > 0) {
-	endpos = aData.find_last_of(KGroupStart, endpos);
-    }
-    return aData.substr(endpos, aEndPos);
-}
-
-GUriBase::TElem GUriBase::Elem(char aRelType, const string& aName, const string& aExt)
-{
-    return TElem(aExt, GUri::TRel(aRelType, aName));
-}
-
-char GUriBase::GetExtFirstPart(const string& aExt, string& aPart)
+char GUri::GetExtFirstPart(const string& aExt, string& aPart)
 {
     aPart.append(GUri::KTypeAny);
     char rel = GUri::KParentSep;
@@ -170,19 +137,8 @@ char GUriBase::GetExtFirstPart(const string& aExt, string& aPart)
     return rel;
 }
 
-
-
-GUri::GUri(const string& aUri): GUriBase(aUri)
-{
-    Parse();
-}
-
-GUri::GUri(): GUriBase()
-{
-}
-
 // Finds the end of group. Nested group are taken into account
-size_t GUriBase::FindGroup(const string& aStr, size_t aPos) 
+size_t GUri::FindGroup(const string& aStr, size_t aPos) 
 {
     size_t res = string::npos;
     size_t pos = aStr.find_first_of(KGroupStart, aPos); 
@@ -204,29 +160,29 @@ size_t GUriBase::FindGroup(const string& aStr, size_t aPos)
     return res;
 }
 
-TBool GUriBase::IsAbsolute() const
+TBool GUri::IsAbsolute() const
 {
     TBool res = EFalse;
     if (iElems.size() > 0) {
 	const_elem_iter it = iElems.begin();
 	TElem elem = *it;
-	res = elem.first.empty() && elem.second.second.empty();
+	res = elem.mExt.empty() && elem.mName.empty();
     }
     return res;
 }
 
-TBool GUriBase::IsNil() const
+TBool GUri::IsNil() const
 {
     TBool res = EFalse;
     if (iElems.size() == 1) {
 	const_elem_iter it = iElems.begin();
 	TElem elem = *it;
-	res = elem.first.empty() && elem.second.second == Nil();
+	res = elem.mExt.empty() && elem.mName == Nil();
     }
     return res;
 }
 
-TBool GUriBase::Compare(const_elem_iter aStart, const GUriBase& aUri, const_elem_iter& aResPos) const
+TBool GUri::Compare(const_elem_iter aStart, const GUri& aUri, const_elem_iter& aResPos) const
 {
     TBool res = EFalse;
     TBool matched = ETrue;
@@ -241,9 +197,53 @@ TBool GUriBase::Compare(const_elem_iter aStart, const GUriBase& aUri, const_elem
     return res;
 }
 
-GUriBase::const_elem_iter GUriBase::Begin() const
+GUri::const_elem_iter GUri::Begin() const
 {
     return iElems.begin();
+}
+
+string GUri::toString(const_elem_iter aStart, const_elem_iter aEnd, TBool aShort) const
+{
+    string res;
+    for (auto it = aStart; it != aEnd; it++) {
+	TElem elem = *it;
+	if (it == aStart && (!elem.mExt.empty() || !elem.mName.empty()) && elem.mRel != ENone) {
+	    res.append(1, KCurUnit);
+	    res.append(1, elem.relChar());
+	}
+	if (!aShort) {
+	    if (!elem.mExt.empty() && elem.mExt != KTypeAny) {
+		res.append(1, KGroupStart);
+		res.append(elem.mExt);
+		res.append(1, KGroupEnd);
+	    }
+	}
+	res.append(elem.mName);
+	// TODO Is it correct. This means that relation is relation current to next but not curr to prev
+	if (it + 1 != iElems.end()) {
+	    res.append(1, elem.relChar());
+	}
+    }
+    return res;
+}
+
+bool GUri::operator==(const GUri& s) const
+{
+    return iUri == s.iUri && iScheme == s.iScheme && iAuthority == s.iAuthority &&
+	iPath == s.iPath && iBase == s.iBase && iElems == s.iElems && iErr == s.iErr;
+}
+
+GUri GUri::operator+(const GUri& aUri)
+{
+    GUri res(*this);
+    res.Append(aUri);
+    return res;
+}
+
+GUri& GUri::operator+=(const GUri& aUri)
+{
+    Append(aUri);
+    return *this;
 }
 
 void GUri::Parse()
@@ -343,61 +343,3 @@ void GUri::Parse()
 	}
     }
 }
-
-string GUri::DoGetUri(const_elem_iter aStart, const_elem_iter aEnd, TBool aShort) const
-{
-    string res;
-    // Hier
-    for (vector<GUri::TElem>::const_iterator it = aStart; it != aEnd; it++) {
-	GUri::TElem elem = *it;
-	if (it == aStart && (!elem.first.empty() || !elem.second.second.empty()) && elem.second.first != KSepNone) {
-	    // Current node
-	    res.append(1, KCurUnit);
-	    res.append(1, elem.second.first);
-	}
-	if (!aShort) {
-	    if (!elem.first.empty() && elem.first != KTypeAny) {
-		res.append(1, KGroupStart);
-		res.append(elem.first);
-		res.append(1, KGroupEnd);
-	    }
-	}
-	res.append(elem.second.second);
-	if (it + 1 != iElems.end()) {
-	    res.append(1, elem.second.first);
-	}
-    }
-    // Query
-    if (!iQueryElems.empty()) {
-	res.append("?");
-	for (vector<TQueryElem>::const_iterator it = iQueryElems.begin(); it != iQueryElems.end(); it++) {
-	    TQueryOpr opr = it->first;
-	    if (opr ==  EQop_And) {
-		res.append("&");
-	    }
-	    res.append(TMut::NodeAttrName(it->second.first));
-	    res.append("=");
-	    res.append(it->second.second);
-	}
-    }
-    return res;
-}
-
-GUri GUri::operator+(const GUri& aUri)
-{
-    GUri res(*this);
-    res.Append(aUri);
-    return res;
-}
-
-GUri& GUri::operator+=(const GUri& aUri)
-{
-    Append(aUri);
-    return *this;
-}
-
-GUri::operator string() const
-{
-    return GetUri(iElems.begin(), ETrue);
-}
-

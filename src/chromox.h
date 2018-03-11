@@ -6,7 +6,6 @@
 #include <libxml/tree.h>
 #include "chromo.h"
 
-
 // Model of XML based chromo
 class ChromoMdlX: public ChromoMdl
 {
@@ -103,6 +102,5 @@ class ChromoX: public Chromo
 	ChromoMdlX iMdl;
 	ChromoNode iRootNode;
 };
-
 
 #endif

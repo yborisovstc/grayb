@@ -289,23 +289,23 @@ void*  Elem::IfIter::operator*()
 Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd, TBool aInclRm): iElem(aElem), iId(aId), iExt(GUri::KTypeAny), mInclRm(aInclRm)
 {
     char rel = SRel();
-    if (!iId.first.empty()) {
-	iExtsrel = iId.first.at(iId.first.size() - 1);
+    if (!iId.ext().empty()) {
+	iExtsrel = iId.ext().at(iId.ext().size() - 1);
 	if (iExtsrel == GUri::KParentSep || iExtsrel == GUri::KNodeSep) {
-	    iExt = iId.first.substr(0, iId.first.size() - 1);
+	    iExt = iId.ext().substr(0, iId.ext().size() - 1);
 	}
     }
     if (rel == GUri::KNodeSep) {
-	if (iId.second.second == GUri::KTypeAny) {
+	if (iId.name() == GUri::KTypeAny) {
 	    iCIterRange = TNMRegItRange(iElem.iMComps.begin(), iElem.iMComps.end());
 	} else {
-	    iCIterRange = iElem.iMComps.equal_range(iId.second.second);
+	    iCIterRange = iElem.iMComps.equal_range(iId.name());
 	}
 	if (aToEnd) {
 	    iCIter = iCIterRange.second;
 	}
 	else {
-	    if (iId.first.empty() || iExtsrel !=  GUri::KParentSep || iExt.empty() || iExt == GUri::KTypeAny) {
+	    if (iId.ext().empty() || iExtsrel !=  GUri::KParentSep || iExt.empty() || iExt == GUri::KTypeAny) {
 		iCIter = iCIterRange.first;
 		if (!mInclRm) for (; iCIter != iCIterRange.second && iCIter->second->IsRemoved(); iCIter++); 
 	    } 
@@ -320,16 +320,16 @@ Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd, TBo
 	}
     }
     else if (rel == GUri::KParentSep) {
-	if (iId.second.second == GUri::KTypeAny) {
+	if (iId.name() == GUri::KTypeAny) {
 	    iChildsRange = TNMRegItRange(iElem.iChilds.begin(), iElem.iChilds.end());
 	} else {
-	    iChildsRange = iElem.iChilds.equal_range(iId.second.second);
+	    iChildsRange = iElem.iChilds.equal_range(iId.name());
 	}
 	if (aToEnd) {
 	    iChildsIter = iChildsRange.second;
 	}
 	else {
-	    if (iId.first.empty() || iExtsrel !=  GUri::KNodeSep || iExt.empty() || iExt == GUri::KTypeAny) {
+	    if (iId.ext().empty() || iExtsrel !=  GUri::KNodeSep || iExt.empty() || iExt == GUri::KTypeAny) {
 		iChildsIter = iChildsRange.first;
 		if (!mInclRm) for (; iChildsIter != iChildsRange.second && iChildsIter->second->IsRemoved(); iChildsIter++); 
 	    }
@@ -374,7 +374,7 @@ void Elem::IterImplBase::Set(const MIterImpl& aImpl)
 
 char Elem::IterImplBase::SRel() const
 {
-    return iId.second.first;
+    return iId.relChar();
 }
 
 void Elem::IterImplBase::PostIncr()
@@ -383,7 +383,7 @@ void Elem::IterImplBase::PostIncr()
 	iCIter++;
 	// Omit removed comps from the look
 	if (!mInclRm) for (; iCIter != iCIterRange.second && iCIter->second->IsRemoved(); iCIter++); 
-	if (!iId.first.empty() && iExtsrel == GUri::KParentSep && !iExt.empty() && iExt != GUri::KTypeAny) {
+	if (!iId.ext().empty() && iExtsrel == GUri::KParentSep && !iExt.empty() && iExt != GUri::KTypeAny) {
 	    for (; iCIter != iCIterRange.second; iCIter++) {
 		MElem* comp = iCIter->second;
 		if (comp->GetParent()->Name() == iExt && (mInclRm || !comp->IsRemoved())) {
@@ -396,7 +396,7 @@ void Elem::IterImplBase::PostIncr()
 	iChildsIter++;
 	// Omit removed children from the look
 	if (!mInclRm) for (; iChildsIter != iChildsRange.second && iChildsIter->second->IsRemoved(); iChildsIter++); 
-	if (!iId.first.empty() && iExtsrel == GUri::KNodeSep && !iExt.empty() && iExt != GUri::KTypeAny) {
+	if (!iId.ext().empty() && iExtsrel == GUri::KNodeSep && !iExt.empty() && iExt != GUri::KTypeAny) {
 	    for (;iChildsIter != iChildsRange.second; iChildsIter++) {
 		MElem* comp = iChildsIter->second;
 		MElem* cowner = comp->GetMan();
@@ -977,20 +977,20 @@ TBool Elem::RebaseUri(const GUri& aUri, const MElem* aBase, GUri& aRes)
     if (aUri.IsErr()) return res;
     GUri::const_elem_iter it = aUri.Elems().begin();
     if (it != aUri.Elems().end()) {
-	TBool anywhere = (*it).second.second == GUri::KTypeAnywhere;
-	if (it->second.second.empty() || anywhere) {
+	TBool anywhere = it->name() == GUri::KTypeAnywhere;
+	if (it->name().empty() || anywhere) {
 	    MElem* root = NULL;
-	    if (it->second.first == GUri::KNodeSep) {
+	    if (it->rel() == GUri::EComp) {
 		root = GetRoot();
-	    } else if (it->second.first == GUri::KParentSep) {
+	    } else if (it->rel() == GUri::EChild) {
 		root = GetInhRoot();
 	    }
 	    if (!anywhere) {
 		it++;
 		GUri::TElem elem = *it;
-		anywhere = elem.second.second == GUri::KTypeAnywhere;
-		TBool any = elem.second.second == GUri::KTypeAny;
-		if (!anywhere && !any && root->Name() != elem.second.second) {
+		anywhere = elem.name() == GUri::KTypeAnywhere;
+		TBool any = elem.name() == GUri::KTypeAny;
+		if (!anywhere && !any && root->Name() != elem.name()) {
 		    root = NULL;
 		}
 	    }
@@ -1014,7 +1014,7 @@ TBool Elem::RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool 
     GUri::const_elem_iter uripos = aPathBase;
     GUri::TElem elem = *uripos;
     TBool anywhere = aAnywhere;
-    if (elem.second.second == "..") {
+    if (elem.name() == "..") {
 	if (iMan == aBase) {
 	    aRes.AppendTail(aUri, ++uripos);
 	    return ETrue;
@@ -1025,19 +1025,19 @@ TBool Elem::RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool 
 	    }
 	} else {
 	    __ASSERT(EFalse);
-	    Logger()->Write(EErr, this, "Revasing uri [%s] - path to top of root", aUri.GetUri().c_str());
+	    Logger()->Write(EErr, this, "Revasing uri [%s] - path to top of root", aUri.toString().c_str());
 	}
     } else {
-	if (!anywhere && elem.second.second == GUri::KTypeAnywhere) {
-	    elem = GUri::Elem(GUri::KParentSep, GUri::KTypeAny, GUri::KTypeAny);
+	if (!anywhere && elem.name() == GUri::KTypeAnywhere) {
+	    elem = GUri::TElem(GUri::KTypeAny, GUri::EChild, GUri::KTypeAny);
 	    anywhere = ETrue;
 	}
-	TBool isnative = elem.second.first == GUri::KSepNone;
+	TBool isnative = elem.rel() == GUri::ENone;
 	if (isnative) {
 	    // Native node, not embedded to hier, to get from environment, ref uc_045
 	    uripos++;
 	    if (uripos != aUri.Elems().end()) {
-		Elem* node = Provider()->GetNode(elem.second.second);
+		Elem* node = Provider()->GetNode(elem.name());
 		if (node == aBase) {
 		    aRes.AppendTail(aUri, ++uripos);
 		    return ETrue;
@@ -1065,7 +1065,7 @@ TBool Elem::RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool 
 	}
 	if (!res && anywhere && uripos != aUri.Elems().end()) {
 	    // Try to search in all nodes
-	    elem = GUri::Elem(GUri::KNodeSep, GUri::KTypeAny, GUri::KTypeAny);
+	    elem = GUri::TElem(GUri::KTypeAny, GUri::EComp, GUri::KTypeAny);
 	    Iterator it = NodesLoc_Begin(elem);
 	    Iterator itend = NodesLoc_End(elem);
 	    for (; it != itend && !res; it++) {
@@ -1087,23 +1087,23 @@ MElem* Elem::GetNode(const GUri& aUri, TBool aInclRm)
     MElem* res = NULL;
     GUri::const_elem_iter it = aUri.Elems().begin(); 
     if (it != aUri.Elems().end()) {
-	TBool anywhere = (*it).second.second == GUri::KTypeAnywhere; 
-	if (it->second.second.empty() || anywhere) {
+	TBool anywhere = (*it).name() == GUri::KTypeAnywhere; 
+	if (it->name().empty() || anywhere) {
 	    MElem* root = NULL;
-	    if (it->second.first == GUri::KNodeSep) {
+	    if (it->rel() == GUri::EComp) {
 		// Using env's root to get root, because of in case of native agent
 		// GetRoot() doesn't work, ref ds_di_nacgna
 		root = iEnv->Root()->GetRoot();
 	    }
-	    else if (it->second.first == GUri::KParentSep) {
+	    else if (it->rel() == GUri::EChild) {
 		root = GetInhRoot();
 	    }
 	    if (!anywhere) {
 		it++;
 		GUri::TElem elem = *it;
-		anywhere = elem.second.second == GUri::KTypeAnywhere; 
-		TBool any = elem.second.second == GUri::KTypeAny;
-		if (!anywhere && !any && root->Name() != elem.second.second) {
+		anywhere = elem.name() == GUri::KTypeAnywhere; 
+		TBool any = elem.name() == GUri::KTypeAny;
+		if (!anywhere && !any && root->Name() != elem.name()) {
 		    root = NULL;
 		}
 	    }
@@ -1146,7 +1146,7 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
     GUri::const_elem_iter uripos = aPathBase;
     GUri::TElem elem = *uripos;
     TBool anywhere = aAnywhere;
-    if (elem.second.second == "..") {
+    if (elem.name() == "..") {
 	// Checking if mutation context is defined. Using context instead of owner if so, ref ds_daa_itn_sfo
 	MElem* top = (mContext == NULL ? iMan : mContext);
 	if (top != NULL) {
@@ -1158,26 +1158,26 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
 	    }
 	}
 	else {
-	    Logger()->Write(EErr, this, "Getting node [%s] - path to top of root", aUri.GetUri().c_str());
+	    Logger()->Write(EErr, this, "Getting node [%s] - path to top of root", aUri.toString().c_str());
 	}
     }
     else {
-	if (!anywhere && elem.second.second == GUri::KTypeAnywhere) {
-	    elem = GUri::Elem(GUri::KParentSep, GUri::KTypeAny, GUri::KTypeAny);
+	if (!anywhere && elem.name() == GUri::KTypeAnywhere) {
+	    elem = GUri::TElem(GUri::KTypeAny, GUri::EChild, GUri::KTypeAny);
 	    anywhere = ETrue;
 	}
-	TBool isnative = elem.second.first == GUri::KSepNone;
+	TBool isnative = elem.rel() == GUri::ENone;
 	if (isnative) {
 	    // Native node, not embedded to hier, to get from environment, ref uc_045
 	    uripos++;
 	    if (uripos != aUri.Elems().end()) {
-		Elem* node = Provider()->GetNode(elem.second.second);
+		Elem* node = Provider()->GetNode(elem.name());
 		if (node != NULL) {
 		    res = node->GetNode(aUri, uripos, EFalse, aInclRm);
 		}
 	    }
 	    else {
-		res = Provider()->GetNode(elem.second.second);
+		res = Provider()->GetNode(elem.name());
 	    }
 	}
 	else {
@@ -1195,7 +1195,7 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
 			    }
 			    else {
 				res = NULL;
-				Logger()->Write(EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
+				Logger()->Write(EErr, this, "Getting node [%s] - multiple choice", aUri.toString().c_str());
 				break;
 			    }
 			}
@@ -1205,7 +1205,7 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
 		    res = *it;
 		    if (++it != itend) {
 			MElem* dup = *it;
-			Logger()->Write(EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
+			Logger()->Write(EErr, this, "Getting node [%s] - multiple choice", aUri.toString().c_str());
 			res = NULL;
 		    }
 		}
@@ -1213,7 +1213,7 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
 	}
 	if (res == NULL && anywhere && uripos != aUri.Elems().end()) {
 	    // Try to search in all nodes
-	    elem = GUri::Elem(GUri::KNodeSep, GUri::KTypeAny, GUri::KTypeAny);
+	    elem = GUri::TElem(GUri::KTypeAny, GUri::EComp, GUri::KTypeAny);
 	    Iterator it = NodesLoc_Begin(elem);
 	    Iterator itend = NodesLoc_End(elem);
 	    for (; it != itend; it++) {
@@ -1225,7 +1225,7 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
 		    }
 		    else {
 			res = NULL;
-			Logger()->Write(EErr, this, "Getting node [%s] - multiple choice", aUri.GetUri().c_str());
+			Logger()->Write(EErr, this, "Getting node [%s] - multiple choice", aUri.toString().c_str());
 			break;
 		    }
 		}
@@ -2800,7 +2800,7 @@ string Elem::GetRUri(MElem* aTop)
 {
     GUri uri;
     GetRUri(uri, aTop);
-    return uri.GetUri();
+    return uri.toString();
 }
 
 void Elem::GetUri(GUri& aUri, MElem* aTop) const
@@ -2832,7 +2832,7 @@ string Elem::GetUri(MElem* aTop, TBool aShort) const
 {
     GUri uri;
     GetUri(uri, aTop);
-    return uri.GetUri(aShort);
+    return uri.toString(aShort);
 }
 
 // TODO [YB] To consider if GetRoot can be moved from MElem to Elem

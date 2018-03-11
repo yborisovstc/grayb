@@ -8,6 +8,7 @@
 #include "ifu.h"
 #include <set>
 
+
 class ChromoNode;
 class Base;
 class MElem;
@@ -121,14 +122,14 @@ class MIfProv
 		~TIfIter() { if (mCloned) delete mImpl; mImpl = NULL;};
 		TIfIter& operator=(const TIfIter& aIt) { if (mImpl == NULL) { if (aIt.mImpl != NULL) mImpl = aIt.mImpl->Clone();} 
 		    else if (aIt.mImpl == NULL) {delete mImpl; mImpl = NULL;} else mImpl->operator=(*(aIt.mImpl)); return *this;};
-		TIfIter& operator++() { mImpl->operator++(); return *this;};
-		TIfIter operator++(int) { TIfIter tmp(*this); operator++(); return tmp; };
-		TBool operator==(const TIfIter& aIt) { return (mImpl != NULL && aIt.mImpl != NULL) ? mImpl->operator==((*aIt.mImpl)) : mImpl == aIt.mImpl;};
-		TBool operator!=(const TIfIter& aIt) { return !operator==(aIt);};
-		virtual void*  operator*() { return mImpl->operator*();};
+		    TIfIter& operator++() { mImpl->operator++(); return *this;};
+		    TIfIter operator++(int) { TIfIter tmp(*this); operator++(); return tmp; };
+		    TBool operator==(const TIfIter& aIt) { return (mImpl != NULL && aIt.mImpl != NULL) ? mImpl->operator==((*aIt.mImpl)) : mImpl == aIt.mImpl;};
+		    TBool operator!=(const TIfIter& aIt) { return !operator==(aIt);};
+		    virtual void*  operator*() { return mImpl->operator*();};
 	    protected:
-		MIfIter* mImpl;
-		TBool mCloned;
+		    MIfIter* mImpl;
+		    TBool mCloned;
 	};
 
 	typedef pair<TIfIter, TIfIter> TIfRange;
@@ -163,105 +164,105 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
     static const string KCont_Ctg_Readonly;
     static const string KCont_Ctg_Debug;
     public:
-	static const char* Type() { return "MElem";};
+    static const char* Type() { return "MElem";};
     public:
-	// Dedicated request of deletion, ref ds_daa_powrd
-	virtual void Delete() = 0;
-	virtual string EType(TBool aShort = ETrue) const = 0;
-	virtual const string& Name() const = 0;
-	virtual TBool IsProvided() const = 0;
-	virtual MElem* GetMan() = 0;
-	virtual const MElem* GetMan() const = 0;
-	virtual void GetCRoot(TMut& aMut) const = 0;
-	virtual void SetMan(MElem* aMan) = 0;
-	// Support of final owner, ref ds_daa_itn_sfo
-	virtual MElem* GetCtx() = 0;
-	virtual void SetCtx(MElem* aOwner) = 0;
-	virtual void SetObserver(MAgentObserver* aObserver) = 0;
-	// TODO [YB] To remove Comps()
-	virtual vector<MElem*>& Comps() = 0;
-	virtual const vector<MElem*>& Comps() const = 0;
-	virtual MElem* GetNode(const string& aUri, TBool aInclRm = EFalse) = 0;
-	virtual MElem* GetNode(const GUri& aUri, TBool aInclRm = EFalse) = 0;
-	virtual MElem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere = EFalse, TBool aInclRm = EFalse) = 0;
-	virtual MElem* GetRoot() const = 0;
-	virtual MElem* GetInhRoot() const = 0;
-	virtual TInt GetContCount(const string& aName = string()) const = 0;
-	virtual TBool IsContOfCategory(const string& aName, const string& aCategory) const = 0; 
-	virtual TBool ContentExists(const string& aName) const = 0;
-	virtual TBool ContValueExists(const string& aName=string()) const = 0;
-	virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const = 0; 
-	virtual string GetContComp(const string& aOwnerName, TInt aInd) const = 0;
-	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()) = 0; 
-	virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse) = 0;
-	// TODO [YB] To support returning result. Ref uc_013_dsc_01 for use-case details.
-	virtual void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MElem* aCtx = NULL) = 0;
-	virtual void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MElem* aCtx = NULL) = 0;
-	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
-	virtual void GetUri(GUri& aUri, MElem* aTop = NULL) const = 0;
-	virtual void GetRUri(GUri& aUri, MElem* aTop = NULL) = 0;
-	virtual string GetUri(MElem* aTop = NULL, TBool aShort = EFalse) const = 0;
-	virtual string GetRUri(MElem* aTop = NULL) = 0;
-	virtual TBool RebaseUri(const GUri& aUri, const MElem* aBase, GUri& aRes) = 0;
-	virtual TBool RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere, const MElem* aBase, GUri& aRes) = 0;
-	virtual MElem* GetAowner() = 0;
-	virtual const MElem* GetAowner() const = 0;
-	virtual MElem* GetCompAowner(const MElem* aComp) = 0;
-	virtual const MElem* GetCompAowner(const MElem* aComp) const = 0;
-	virtual MElem* GetAcompOwning(MElem* aComp) = 0;
-	virtual MElem* GetUpperAowner() = 0;
-	virtual MElem* GetCommonOwner(MElem* aElem) = 0;
-	virtual TBool IsRemoved() const = 0;
-	virtual void SetRemoved(TBool aModif) = 0;
-	virtual MElem* GetAttachedMgr() = 0;
-	virtual TBool IsCompAttached(const MElem* aComp) const = 0;
-	virtual const MElem* GetAttachedMgr() const = 0;
-	virtual TBool IsAownerOf(const MElem* aElem) const = 0;
-	virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal) = 0;
-	virtual void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL) = 0;
-	virtual void GetRank(Rank& aRank) const = 0; 
-	virtual void GetRank(Rank& aRank, const ChromoNode& aMut) const = 0;
-	virtual void GetCompRank(Rank& aRank, const MElem* aComp) const = 0;
-	virtual TInt GetCompLrank(const MElem* aComp) const = 0;
-	//virtual MElem* GetComp(const string& aParent, const string& aName) = 0;
-	virtual MElem* GetComp(const string& aParent, const string& aName) const = 0;
-	virtual void OnNodeMutated(const MElem* aNode, const TMut& aMut, const MElem* aCtx = NULL) = 0;
-	virtual void OnParentMutated(MElem* aParent, const TMut& aMut) = 0;
-	// Gets the comp with given type and owning given element
-	virtual MElem* GetCompOwning(const string& aParent, MElem* aElem) = 0;
-	virtual MElem* GetCompOwning(MElem* aElem) = 0;
-	virtual const MElem* GetCompOwning(const MElem* aElem) const = 0;
-	virtual TBool IsInheritedComp(const MElem* aNode) const = 0;
-	virtual TBool HasInherDeps(const MElem* aScope) const = 0;
-	// Visual client debugging, ref ds_visdbg
-	virtual string GetAssociatedData(const string& aUri) const = 0;
-	// Debugging
-	virtual TInt GetCapacity() const = 0;
-	virtual TBool IsHeirOf(const string& aParent) const = 0;
-	virtual MElem* GetNodeS(const char* aUri) = 0;
-	// TODO [YB] To replace Comps APIs with local nodes APIs (NodesLoc_Begin etc.)
-	// or general nodes APIs (GetNode). This will allow proper iteration with excluding removed nodes
-	virtual TInt CompsCount() const = 0;
-	virtual MElem* GetComp(TInt aInd) = 0;
-	virtual void SaveChromo(const char* aPath) const = 0;
-	virtual void DumpChilds() const = 0;
-	virtual void DumpComps() const = 0;
-	virtual void DumpContent() const = 0;
-	// From MIface
-	virtual string Uid() const { return Mid() + "%" + Type();};
-	// Helpers
-	static string GetContentOwner(const string& aCont);
-	static string GetContentLName(const string& aName);
+    // Dedicated request of deletion, ref ds_daa_powrd
+    virtual void Delete() = 0;
+    virtual string EType(TBool aShort = ETrue) const = 0;
+    virtual const string& Name() const = 0;
+    virtual TBool IsProvided() const = 0;
+    virtual MElem* GetMan() = 0;
+    virtual const MElem* GetMan() const = 0;
+    virtual void GetCRoot(TMut& aMut) const = 0;
+    virtual void SetMan(MElem* aMan) = 0;
+    // Support of final owner, ref ds_daa_itn_sfo
+    virtual MElem* GetCtx() = 0;
+    virtual void SetCtx(MElem* aOwner) = 0;
+    virtual void SetObserver(MAgentObserver* aObserver) = 0;
+    // TODO [YB] To remove Comps()
+    virtual vector<MElem*>& Comps() = 0;
+    virtual const vector<MElem*>& Comps() const = 0;
+    virtual MElem* GetNode(const string& aUri, TBool aInclRm = EFalse) = 0;
+    virtual MElem* GetNode(const GUri& aUri, TBool aInclRm = EFalse) = 0;
+    virtual MElem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere = EFalse, TBool aInclRm = EFalse) = 0;
+    virtual MElem* GetRoot() const = 0;
+    virtual MElem* GetInhRoot() const = 0;
+    virtual TInt GetContCount(const string& aName = string()) const = 0;
+    virtual TBool IsContOfCategory(const string& aName, const string& aCategory) const = 0; 
+    virtual TBool ContentExists(const string& aName) const = 0;
+    virtual TBool ContValueExists(const string& aName=string()) const = 0;
+    virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const = 0; 
+    virtual string GetContComp(const string& aOwnerName, TInt aInd) const = 0;
+    virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()) = 0; 
+    virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse) = 0;
+    // TODO [YB] To support returning result. Ref uc_013_dsc_01 for use-case details.
+    virtual void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MElem* aCtx = NULL) = 0;
+    virtual void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MElem* aCtx = NULL) = 0;
+    // Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
+    virtual void GetUri(GUri& aUri, MElem* aTop = NULL) const = 0;
+    virtual void GetRUri(GUri& aUri, MElem* aTop = NULL) = 0;
+    virtual string GetUri(MElem* aTop = NULL, TBool aShort = EFalse) const = 0;
+    virtual string GetRUri(MElem* aTop = NULL) = 0;
+    virtual TBool RebaseUri(const GUri& aUri, const MElem* aBase, GUri& aRes) = 0;
+    virtual TBool RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere, const MElem* aBase, GUri& aRes) = 0;
+    virtual MElem* GetAowner() = 0;
+    virtual const MElem* GetAowner() const = 0;
+    virtual MElem* GetCompAowner(const MElem* aComp) = 0;
+    virtual const MElem* GetCompAowner(const MElem* aComp) const = 0;
+    virtual MElem* GetAcompOwning(MElem* aComp) = 0;
+    virtual MElem* GetUpperAowner() = 0;
+    virtual MElem* GetCommonOwner(MElem* aElem) = 0;
+    virtual TBool IsRemoved() const = 0;
+    virtual void SetRemoved(TBool aModif) = 0;
+    virtual MElem* GetAttachedMgr() = 0;
+    virtual TBool IsCompAttached(const MElem* aComp) const = 0;
+    virtual const MElem* GetAttachedMgr() const = 0;
+    virtual TBool IsAownerOf(const MElem* aElem) const = 0;
+    virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal) = 0;
+    virtual void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL) = 0;
+    virtual void GetRank(Rank& aRank) const = 0; 
+    virtual void GetRank(Rank& aRank, const ChromoNode& aMut) const = 0;
+    virtual void GetCompRank(Rank& aRank, const MElem* aComp) const = 0;
+    virtual TInt GetCompLrank(const MElem* aComp) const = 0;
+    //virtual MElem* GetComp(const string& aParent, const string& aName) = 0;
+    virtual MElem* GetComp(const string& aParent, const string& aName) const = 0;
+    virtual void OnNodeMutated(const MElem* aNode, const TMut& aMut, const MElem* aCtx = NULL) = 0;
+    virtual void OnParentMutated(MElem* aParent, const TMut& aMut) = 0;
+    // Gets the comp with given type and owning given element
+    virtual MElem* GetCompOwning(const string& aParent, MElem* aElem) = 0;
+    virtual MElem* GetCompOwning(MElem* aElem) = 0;
+    virtual const MElem* GetCompOwning(const MElem* aElem) const = 0;
+    virtual TBool IsInheritedComp(const MElem* aNode) const = 0;
+    virtual TBool HasInherDeps(const MElem* aScope) const = 0;
+    // Visual client debugging, ref ds_visdbg
+    virtual string GetAssociatedData(const string& aUri) const = 0;
+    // Debugging
+    virtual TInt GetCapacity() const = 0;
+    virtual TBool IsHeirOf(const string& aParent) const = 0;
+    virtual MElem* GetNodeS(const char* aUri) = 0;
+    // TODO [YB] To replace Comps APIs with local nodes APIs (NodesLoc_Begin etc.)
+    // or general nodes APIs (GetNode). This will allow proper iteration with excluding removed nodes
+    virtual TInt CompsCount() const = 0;
+    virtual MElem* GetComp(TInt aInd) = 0;
+    virtual void SaveChromo(const char* aPath) const = 0;
+    virtual void DumpChilds() const = 0;
+    virtual void DumpComps() const = 0;
+    virtual void DumpContent() const = 0;
+    // From MIface
+    virtual string Uid() const { return Mid() + "%" + Type();};
+    // Helpers
+    static string GetContentOwner(const string& aCont);
+    static string GetContentLName(const string& aName);
     protected:
-	class EIfu: public Ifu {
-	    public:
-		EIfu();
-		static void FromCtx(const TICacheRCtx& aCtx, string& aRes);
-		static void ToCtx(MElem* aHost, const string& aStr, TICacheRCtx& aCtx);
-	};
-	// Interface methods utility
-	// TODO [YB] To redesign: to separate iface metadata and utility. To add miface method to get metadata.
-	static EIfu mIfu;
+    class EIfu: public Ifu {
+	public:
+	    EIfu();
+	    static void FromCtx(const TICacheRCtx& aCtx, string& aRes);
+	    static void ToCtx(MElem* aHost, const string& aStr, TICacheRCtx& aCtx);
+    };
+    // Interface methods utility
+    // TODO [YB] To redesign: to separate iface metadata and utility. To add miface method to get metadata.
+    static EIfu mIfu;
 };
 
 #endif

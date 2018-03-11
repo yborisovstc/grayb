@@ -4,6 +4,7 @@
 #include "base.h"
 #include "mprov.h"
 
+
 class GProvider;
 
 class GFactory: public Base, public MProvider
@@ -37,6 +38,7 @@ class GFactory: public Base, public MProvider
 	MEnv* iEnv;
 	string iName;
 };
+
 
 
 #endif

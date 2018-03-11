@@ -50,7 +50,7 @@ MElem* AMod::Import(const GUri& aUri)
 	Mutate(EFalse, ETrue, EFalse);
 	res = GetNode(aUri);
     } else {
-	Logger()->Write(EErr, this, "Importing to module: cannot find chromo node [%s]", aUri.GetUri().c_str());
+	Logger()->Write(EErr, this, "Importing to module: cannot find chromo node [%s]", aUri.toString().c_str());
     }
     return res;
 }

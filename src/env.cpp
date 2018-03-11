@@ -120,7 +120,7 @@ MElem* ImportsMgr::DoImport(const string& aUri)
     GUri::const_elem_iter it = moduri.Elems().begin();
     it++;
     GUri::TElem urie = *it;
-    string modname = urie.second.second;
+    string modname = urie.name();
     string modpath = GetModulePath(modname);
     if (!modpath.empty()) {
 	// Explicit chromo uri
@@ -204,7 +204,7 @@ MElem* ImportsMgr::OnUriNotResolved(MElem* aNode, const GUri& aUri)
 	    rebased = ETrue;
 	}
 	if (rebased) {
-	    suri = buri.GetUri(ETrue);
+	    suri = buri.toString(ETrue);
 	    res = DoImport(suri);
 	}
     }

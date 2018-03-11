@@ -4,6 +4,8 @@
 #include <stdexcept> 
 
 
+using namespace std;
+
 const string TMut::KCtrls = string(TMut::KSep, TMut::KAttrSep);
 
 map<TNodeAttr, string> KNodeAttrsNames_Init()
@@ -576,16 +578,16 @@ ChromoNode ChromoNode::GetNodeByMhUri(const GUri& aUri)
     if (aUri.IsErr()) return ChromoNode();
     GUri::const_elem_iter it = aUri.Elems().begin();
     if (it != aUri.Elems().end()) {
-	if (it->second.second.empty()) {
+	if (it->name().empty()) {
 	    Iterator root = End();
-	    if (it->second.first == GUri::KNodeSep) {
+	    if (it->rel() == GUri::EComp) {
 		root = Root();
 	    } else {
 		__ASSERT(false);
 	    }
 	    it++;
 	    GUri::TElem elem = *it;
-	    if ((*root).Name() != elem.second.second) {
+	    if ((*root).Name() != elem.name()) {
 		root = End();
 	    }
 	    if (root != End() && ++it != aUri.Elems().end()) {
@@ -605,7 +607,7 @@ ChromoNode ChromoNode::GetNodeByMhUri(const GUri& aUri, GUri::const_elem_iter& a
 {
     GUri::const_elem_iter uripos = aPathBase;
     GUri::TElem elem = *uripos;
-    if (elem.second.second == GUri::KUpperLevel) {
+    if (elem.name() == GUri::KUpperLevel) {
 	// Handle nodes distination path
 	// Get number of hops
 	TInt hops = 0;
@@ -618,7 +620,7 @@ ChromoNode ChromoNode::GetNodeByMhUri(const GUri& aUri, GUri::const_elem_iter& a
 	TBool hopsok = ETrue;
 	for (TInt ct = 0; ct < hops; ct++) {
 	    uripos++;
-	    if (uripos->second.second != GUri::KUpperLevel) {
+	    if (uripos->name() != GUri::KUpperLevel) {
 		hopsok = EFalse;
 		break;
 	    }
@@ -657,16 +659,16 @@ ChromoNode ChromoNode::GetNode(const GUri& aUri)
     if (aUri.IsErr()) return ChromoNode();
     GUri::const_elem_iter it = aUri.Elems().begin();
     if (it != aUri.Elems().end()) {
-	if (it->second.second.empty()) {
+	if (it->name().empty()) {
 	    Iterator root = End();
-	    if (it->second.first == GUri::KNodeSep) {
+	    if (it->rel() == GUri::EComp) {
 		root = Root();
 	    } else {
 		__ASSERT(false);
 	    }
 	    it++;
 	    GUri::TElem elem = *it;
-	    if ((*root).Name() != elem.second.second) {
+	    if ((*root).Name() != elem.name()) {
 		root = End();
 	    }
 	    if (root != End() && ++it != aUri.Elems().end()) {
@@ -686,7 +688,7 @@ ChromoNode ChromoNode::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBas
 {
     GUri::const_elem_iter uripos = aPathBase;
     GUri::TElem elem = *uripos;
-    if (elem.second.second == GUri::KUpperLevel) {
+    if (elem.name() == GUri::KUpperLevel) {
 	// Get number of hops
 	TInt hops = 0;
 	if (AttrExists(ENa_MutNode)) {
@@ -698,7 +700,7 @@ ChromoNode ChromoNode::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBas
 	TBool hopsok = ETrue;
 	for (TInt ct = 0; ct < hops; ct++) {
 	    uripos++;
-	    if (uripos->second.second != GUri::KUpperLevel) {
+	    if (uripos->name() != GUri::KUpperLevel) {
 		hopsok = EFalse;
 		break;
 	    }
@@ -716,7 +718,7 @@ ChromoNode ChromoNode::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBas
 	    return *it;
 	}
     } else {
-	Iterator it = Find(ENt_Node, elem.second.second);
+	Iterator it = Find(ENt_Node, elem.name());
 	if (it != End()) {
 	    uripos++;
 	    if (uripos != aUri.Elems().end()) {

@@ -5,6 +5,7 @@
 #include "ifu.h" 
 #include "melem.h" 
 
+
 char Ifu::KRinvSep = ',';
 char Ifu::KEsc = '\\';
 string Ifu::KArraySep = ";";

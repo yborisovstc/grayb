@@ -2,7 +2,6 @@
 #include "imports.h"
 #include "mprov.h"
 
-
 string AImports::PEType()
 {
     return Elem::PEType() + GUri::KParentSep + Type();
@@ -43,7 +42,7 @@ TBool AImports::Import(const string& aUri)
     GUri::const_elem_iter it = moduri.Elems().begin(); 
     it++;
     GUri::TElem urie = *it;
-    string modname = urie.second.second;
+    string modname = urie.name();
     string modpath = iEnv->ImpsMgr()->GetModulePath(modname);
     if (!modpath.empty()) {
 	// Explicit chromo uri

@@ -40,5 +40,4 @@ class Base
 	virtual void *DoGetObj(const char *aName) = 0;
 };
 
-
 #endif

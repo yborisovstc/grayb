@@ -760,12 +760,12 @@ TInt AFDivInt::Value()
 	if (dvr != 0) {
 	    val = dvd / dvr;
 	    if (lupd) {
-		Logger()->WriteFormat("[%s]: Result = %d", fullpath.GetUri(ETrue).c_str(), val);
+		Logger()->WriteFormat("[%s]: Result = %d", fullpath.toString(ETrue).c_str(), val);
 	    }
 	}
 	else {
 	    if (lupd) {
-		Logger()->WriteFormat("[%s]: Error: null devider", fullpath.GetUri(ETrue).c_str());
+		Logger()->WriteFormat("[%s]: Error: null devider", fullpath.toString(ETrue).c_str());
 	    }
 	}
     }

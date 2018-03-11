@@ -4,6 +4,7 @@
 #include "base.h"
 #include "menv.h"
 #include "ifu.h"
+#include "guri.h"
 
 class GProvider;
 class GFactory;
@@ -17,65 +18,65 @@ class ImportsMgr: public Base, public MImportMgr
 {
     friend class Env;
     public:
-	static const char* Type() { return "ImportsMgr";};
-	ImportsMgr(Env& aHost);
-	virtual ~ImportsMgr();
-	// From Base
-	virtual void *DoGetObj(const char *aName);
+    static const char* Type() { return "ImportsMgr";};
+    ImportsMgr(Env& aHost);
+    virtual ~ImportsMgr();
+    // From Base
+    virtual void *DoGetObj(const char *aName);
     public:
-	// From MImportMgr
-	virtual void GetModulesNames(vector<string>& aModules) const;
-	virtual void ResetImportsPaths();
-	virtual void AddImportsPaths(const string& aPaths);
-	virtual string GetModulePath(const string& aModName) const;
-	virtual TBool Import(const string& aUri);
-	virtual MElem* OnUriNotResolved(MElem* aNode, const GUri& aUri);
+    // From MImportMgr
+    virtual void GetModulesNames(vector<string>& aModules) const;
+    virtual void ResetImportsPaths();
+    virtual void AddImportsPaths(const string& aPaths);
+    virtual string GetModulePath(const string& aModName) const;
+    virtual TBool Import(const string& aUri);
+    virtual MElem* OnUriNotResolved(MElem* aNode, const GUri& aUri);
     private:
-	void AddImportModulesInfo(const string& aPath);
-	MElem* GetImportsContainer() const;
-	void ImportToNode(MElem* aNode, const ChromoNode& aMut, const ChromoNode& aSel);
-	MElem* DoImport(const string& aUri);
+    void AddImportModulesInfo(const string& aPath);
+    MElem* GetImportsContainer() const;
+    void ImportToNode(MElem* aNode, const ChromoNode& aMut, const ChromoNode& aSel);
+    MElem* DoImport(const string& aUri);
     private:
-	Env& mHost;
-	vector<string> mImportsPaths;
-	map<string, string> mModsPaths;
-	static const string KDefImportPath;
-	static const string KImportsContainerUri;
+    Env& mHost;
+    vector<string> mImportsPaths;
+    map<string, string> mModsPaths;
+    static const string KDefImportPath;
+    static const string KImportsContainerUri;
 };
 
 class ChromoMgr: public Base, public MChromoMgr
 {
     friend class Env;
     public:
-	static const char* Type() { return "ChromoMgr";};
-	ChromoMgr(Env& aHost);
-	virtual ~ChromoMgr();
+    static const char* Type() { return "ChromoMgr";};
+    ChromoMgr(Env& aHost);
+    virtual ~ChromoMgr();
     public:
-	// From Base
-	virtual void *DoGetObj(const char *aName);
-	// Form MChromoMgr
-	virtual int GetSpecMaxOrder() const;
-	virtual int GetMaxOrder() const;
-	virtual TInt GetLim() const { return mLim;};
-	virtual void SetLim(TInt aLim) { mLim = aLim;};
-	virtual TBool EnablePhenoModif() const {return mEnablePhenoModif;};
-	virtual void SetEnablePhenoModif(TBool aEnable);
-	virtual bool EnableFixErrors() const { return mEnableFixErrors;};
-	virtual void SetEnableFixErrors(bool aEnable);
-	virtual bool EnableReposMuts() const { return mEnableReposMuts;};
-	virtual void SetEnableReposMuts(bool aEnable);
-	virtual bool EnableCheckSafety() const { return mEnableCheckSafety;};
-	virtual void SetEnableCheckSafety(bool aEnable);
-	virtual bool EnableOptimization() const { return mEnableOptimization;};;
-	virtual void SetEnableOptimization(bool aEnable);
+    // From Base
+    virtual void *DoGetObj(const char *aName);
+    // Form MChromoMgr
+    virtual int GetSpecMaxOrder() const;
+    virtual int GetMaxOrder() const;
+    virtual TInt GetLim() const { return mLim;};
+    virtual void SetLim(TInt aLim) { mLim = aLim;};
+    virtual TBool EnablePhenoModif() const {return mEnablePhenoModif;};
+    virtual void SetEnablePhenoModif(TBool aEnable);
+    virtual bool EnableFixErrors() const { return mEnableFixErrors;};
+    virtual void SetEnableFixErrors(bool aEnable);
+    virtual bool EnableReposMuts() const { return mEnableReposMuts;};
+    virtual void SetEnableReposMuts(bool aEnable);
+    virtual bool EnableCheckSafety() const { return mEnableCheckSafety;};
+    virtual void SetEnableCheckSafety(bool aEnable);
+    virtual bool EnableOptimization() const { return mEnableOptimization;};;
+    virtual void SetEnableOptimization(bool aEnable);
     protected:
-	TInt mLim;
-	Env& mHost;
-	TBool mEnablePhenoModif;
-	TBool mEnableFixErrors;
-	TBool mEnableReposMuts;
-	TBool mEnableCheckSafety;
-	TBool mEnableOptimization;
+    TInt mLim;
+    Env& mHost;
+    TBool mEnablePhenoModif;
+    TBool mEnableFixErrors;
+    TBool mEnableReposMuts;
+    TBool mEnableCheckSafety;
+    TBool mEnableOptimization;
 };
 
 // Iface resolver. Ref ds_irm
@@ -144,7 +145,6 @@ class Env: public Base, public MEnv
     MExtIfProv* mExtIfProv;
     IfcResolver* mIfResolver;
 };
-
 
 
 #endif

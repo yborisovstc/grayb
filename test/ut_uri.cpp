@@ -65,10 +65,10 @@ void Ut_uri::test_UriOpr()
     GUri uri_a("./(Elem:)Node1/(Elem:)Node2");
     string uri_bis = "./(Elem:)Node3";
     GUri uri_b(uri_bis);
-    string uri_bs = uri_b.GetUri();
+    string uri_bs = uri_b.toString();
     CPPUNIT_ASSERT_MESSAGE("Fail to uri_b convert to string", uri_bs == uri_bis);
     uri_a += uri_b;
-    string uri_as = uri_a.GetUri();
+    string uri_as = uri_a.toString();
     CPPUNIT_ASSERT_MESSAGE("Fail to uri +=", uri_as == "./(Elem:)Node1/(Elem:)Node2/(Elem:)Node3");
 }
 
@@ -192,12 +192,12 @@ void Ut_uri::test_UriBase()
     // Checking getting uri basing on hier mgr
     GUri rduri;
     resdata1->GetUri(rduri, root);
-    string rduriss = rduri.GetUri();
+    string rduriss = rduri.toString();
     CPPUNIT_ASSERT_MESSAGE("Fail to get URI from hier", rduriss == "./(Incaps:)test/(DataSInt:)ResData/(ACapsule:)Capsule/(ConnPointOut:)out");
     // Checking getting absolute uri
     GUri rduria;
     resdata1->GetUri(rduria);
-    string rduriass= rduria.GetUri();
+    string rduriass= rduria.toString();
     CPPUNIT_ASSERT_MESSAGE("Fail to get absolute URI", 
 	    rduriass == "/(Elem:)testroot/(Incaps:)test/(DataSInt:)ResData/(ACapsule:)Capsule/(ConnPointOut:)out");
     // Checking of getting node by absolute uri

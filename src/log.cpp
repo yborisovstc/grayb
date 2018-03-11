@@ -31,7 +31,7 @@ TLog::TLog(TLogRecCtg aCtg, const MElem* aAgt)
     if (aAgt != NULL) {
 	GUri uri;
 	aAgt->GetUri(uri);
-	mNodeUriS = uri.GetUri(ETrue);
+	mNodeUriS = uri.toString(ETrue);
     }
 }
 
@@ -173,7 +173,7 @@ void GLogRec::Write(TLogRecCtg aCtg, const MElem* aNode, const char* aFmt,...)
     if (aNode != NULL) {
 	GUri fullpath;
 	aNode->GetUri(fullpath);
-	ss << fullpath.GetUri(ETrue) << KColSep;
+	ss << fullpath.toString(ETrue) << KColSep;
     }
     va_list list;
     va_start(list,aFmt);
@@ -196,7 +196,7 @@ void GLogRec::Write(TLogRecCtg aCtg, MElem* aNode, const ChromoNode& aMut, const
     if (aNode != NULL) {
 	GUri fullpath;
 	aNode->GetUri(fullpath);
-	ss << fullpath.GetUri(ETrue) << KColSep;
+	ss << fullpath.toString(ETrue) << KColSep;
     }
     va_list list;
     va_start(list,aFmt);

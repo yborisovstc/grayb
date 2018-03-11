@@ -28,4 +28,5 @@ class AMod: public Elem, public MMod
 	Chromo* mSpec;
 };
 
+
 #endif

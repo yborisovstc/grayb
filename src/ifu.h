@@ -7,6 +7,7 @@
 #include <sstream>
 #include <map>
 
+
 using namespace std;
 
 // Interface support utility
@@ -46,8 +47,8 @@ class Ifu
 	static size_t FindFirstCtrl(const string& aString, const char aCtrl, size_t aPos); 
 	static size_t FindFirstCtrl(const string& aString, const string& aCtrls, size_t aPos); 
 	// Find first occurance of symbol out of delimiters. Delims can be simple and nested
-//	static size_t FindFirstOutOfDelims(const string& aString, const string& aSymbols, char aSimpleDelim,
-//		const string& aNestedDelims, size_t aBeg); 
+	//	static size_t FindFirstOutOfDelims(const string& aString, const string& aSymbols, char aSimpleDelim,
+	//		const string& aNestedDelims, size_t aBeg); 
 	static size_t FindRightDelim(const string& aString, char LeftDelim, char RightDelim, size_t aPos);
     public:
 	static char KRinvSep;
@@ -60,13 +61,13 @@ class Ifu
 };
 
 /*
-template<typename ... TArgs> string Ifu::PackMethod(const string& aName, TArgs ... aArgs)
-{
-    string res = CombineIcSpec(aName, "1");
-    AddIcSpecArg(res, Pack(aArg1));
-    return res;
-}
-*/
+   template<typename ... TArgs> string Ifu::PackMethod(const string& aName, TArgs ... aArgs)
+   {
+   string res = CombineIcSpec(aName, "1");
+   AddIcSpecArg(res, Pack(aArg1));
+   return res;
+   }
+   */
 
 inline string Ifu::PackMethod(const string& aName)
 {
@@ -107,5 +108,7 @@ template<typename TArg1, typename TArg2, typename TArg3, typename TArg4> string 
     AddIcSpecArg(res, Pack(aArg4));
     return res;
 }
+
+
 
 #endif

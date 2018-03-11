@@ -6,7 +6,6 @@
 #include "mchromo.h"
 #include <map>
 
-
 // Mutation spec
 class TMut
 {
