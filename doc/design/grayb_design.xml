@@ -1035,6 +1035,8 @@
 		<simpara>Actually the ability of components to have the same name is activelly used to support cold-switching polymorphism, ref 
 		    <xref linkend="ds_mut_pmf"/>. For instance in [syst] module Extender agent has component "Connpoint:Int" for internal connection point.
 		    In many cases it is removed and re-created with the same name but another parent. This keeps interface but change implementation.</simpara>
+		<simpara>It also needs to be taken into account that not-unique name approach causes performance degradation. Ref <xref linkend="ds_prfopt_un"/>
+		for analysis of such affect.</simpara>
 	    </sect3>
 	    <sect3><title>Unique name: how to check uniqueness in case of chromo optimization.</title>
 		<simpara>The use-case is: node A has component A_1, that is removed then, chromo is optimized further, i.e. A_1 is not created in mode.
@@ -1053,6 +1055,14 @@
 		<simpara>The problem was discovered in the scope of working on the problem with resolving temporal nodes UIDs in distributed models.
 		    Ref <xref linkend="ds_di_cnfr_susl_pnae"/> for details. Note that this problem becomes apparent only if temporal heir full
 		    registering is applied, ref <xref linkend="ds_di_cnfr_susl"/> for details.</simpara>
+	    </sect3>
+	    <sect3 id="ds_mut_nm_cfl"><title>How to resolve same names conflict in unique name approach.</title>
+		<simpara>It would be effective if we have solution for automatic names resolution. In that case user can assign to newly created 
+		    components the name, that already exists (there could be cases when using same name is quite reasoned and correspond to real semantic of
+		    the model.</simpara>
+		<simpara>One approach is to automatically add unique suffix to the name. This approach is already partially applied for agent that 
+		    is not named by user, edge for instance. With this approach the name gets just generated.
+		    We can avoid displaying the suffix in studio.</simpara>
 	    </sect3>
 	    <sect3><title>Diary</title>
 		<itemizedlist>
@@ -4083,6 +4093,32 @@
 		unified call request. In order to simplify handling the helper class "ifu" is used. It provides utilities simplifying of dealing with
 		unified call request: parsing, seriaizing/deserializing, etc. However the current implemetation is rather ineffective, so agent needs
 	    quite lot of code to handle the request. We need to re-desing the interface mechanism in order to make it more effective.</simpara>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_prfopt"><title>Performance optimization</title>
+	<sect2 id="ds_prfopt_un"><title>Moving to unique name</title>
+	    <sect3><title>Intro</title>
+		<simpara>Ref <xref linkend="ds_mut_nm"/> for the design consideration regarding unique naming.</simpara>
+		<simpara>Non-unique names causes performance degradation. An example is component resolution when searching node by URI. Look at 
+		Elem::GetNode():</simpara>
+	    <programlisting>
+		MElem* Elem::GetNode(const GUri&amp; aUri, GUri::const_elem_iter&amp; aPathBase, TBool aAnywhere, TBool aInclRm)
+		...
+		|||             Iterator it = NodesLoc_Begin(elem, aInclRm); 
+		|||             Iterator itend = NodesLoc_End(elem, aInclRm);
+		45-                     for (; it != itend; it++) {
+		456                         MElem* node = *it;
+		456                         MElem* res1 = node->GetNode(aUri, uripos, EFalse, aInclRm);
+	    </programlisting>
+	    <simpara>It is seen from this chank that for URI each unit: </simpara>
+	    <itemizedlist>
+		<listitem>We look up all components, not just selecting one. Look at Elem::Iterator mechanism.</listitem>
+		<listitem>We try to find next unit for all nodes we found for current unit. So having two same names we do remaining search twice. If next units
+		    also have say 2 same names then we have sarch branch again.
+		</listitem>
+	    </itemizedlist>
+	    </sect3>
 	</sect2>
     </sect1>
 
