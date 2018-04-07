@@ -4097,29 +4097,58 @@
     </sect1>
 
     <sect1 id="ds_prfopt"><title>Performance optimization</title>
-	<sect2 id="ds_prfopt_un"><title>Moving to unique name</title>
+	<sect2 id="ds_prfopt_un"><title>Migrating to unique name</title>
 	    <sect3><title>Intro</title>
 		<simpara>Ref <xref linkend="ds_mut_nm"/> for the design consideration regarding unique naming.</simpara>
 		<simpara>Non-unique names causes performance degradation. An example is component resolution when searching node by URI. Look at 
-		Elem::GetNode():</simpara>
-	    <programlisting>
-		MElem* Elem::GetNode(const GUri&amp; aUri, GUri::const_elem_iter&amp; aPathBase, TBool aAnywhere, TBool aInclRm)
-		...
-		|||             Iterator it = NodesLoc_Begin(elem, aInclRm); 
-		|||             Iterator itend = NodesLoc_End(elem, aInclRm);
-		45-                     for (; it != itend; it++) {
-		456                         MElem* node = *it;
-		456                         MElem* res1 = node->GetNode(aUri, uripos, EFalse, aInclRm);
-	    </programlisting>
-	    <simpara>It is seen from this chank that for URI each unit: </simpara>
-	    <itemizedlist>
-		<listitem>We look up all components, not just selecting one. Look at Elem::Iterator mechanism.</listitem>
-		<listitem>We try to find next unit for all nodes we found for current unit. So having two same names we do remaining search twice. If next units
-		    also have say 2 same names then we have sarch branch again.
-		</listitem>
-	    </itemizedlist>
+		    Elem::GetNode():</simpara>
+		<programlisting>
+		    MElem* Elem::GetNode(const GUri&amp; aUri, GUri::const_elem_iter&amp; aPathBase, TBool aAnywhere, TBool aInclRm)
+		    ...
+		    |||             Iterator it = NodesLoc_Begin(elem, aInclRm); 
+		    |||             Iterator itend = NodesLoc_End(elem, aInclRm);
+		    45-                     for (; it != itend; it++) {
+		    456                         MElem* node = *it;
+		    456                         MElem* res1 = node->GetNode(aUri, uripos, EFalse, aInclRm);
+		</programlisting>
+		<simpara>It is seen from this chunk that for URI each unit: </simpara>
+		<itemizedlist>
+		    <listitem>We look up all components, not just selecting one. Look at Elem::Iterator mechanism.</listitem>
+		    <listitem>We try to find next unit for all nodes we found for current unit. So having two same names we do remaining search twice.
+			If next units also have say 2 same names then we have sarch branch again.
+		    </listitem>
+		</itemizedlist>
+		<simpara>Actually the implementation itself doesn't produce performance degradation. In case if there are not duplicated names the
+		    internal iterator works fast.</simpara>
+	    </sect3>
+	    <sect3><title>We also need to disable "any" name in URI unit</title>
+		<simpara>If we keep "any" name we will need to have complex Elem::IterImplBase with using iterators range. If we disable "any" then the 
+		local name iterator gets trivial so can be removed at all.</simpara>
+	    </sect3>
+	    <sect3><title>What are the use-cases preventing unique name</title>
+		<itemizedlist>
+		    <listitem>Moving node - there can be same name node in the destination. No problem - we just need to request new name.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Uri but not query</title>
+		<simpara>The current implementation is the result of attempt to implement kind of query to the tree. But URI is not query.
+		    URI main purpose is to unambiguesly identificate the node in the tree. Query purpose is to find set of nodes.</simpara>
+		<simpara>This relates also to "Anywhere" and "Any" pattern in URI. It is clear that using "Anywhere" is very ambiguous approach.
+		    This is because for URI /**/some_name if there are two nodes some_name in the system then we don't know what node is specified
+		    exactly, i.e. this URI actualy specifies set of nodes, so is query. Same is for "Any".</simpara>
+	    </sect3>
+	    <sect3><title>Unique name approach works for owning tree not for inheritance.</title>
+		<simpara>For inheritance it is not possible to meet uniqueness of name because if a1 = { Elem:a2} then
+		    a1:a1_child will also contain Elem:a2 but it is another a2.</simpara>
+	    </sect3>
+	    <sect3><title>Solution: unique name for owning hier, not unique for inheritance. URI only based on owning.</title>
+		<simpara>Taking into account that only owning hier supports unique name we can use only this hier for 
+		URI.</simpara>
 	    </sect3>
 	</sect2>
+    </sect1>
+
+    <sect1><title>Mutli-purpose optimization</title>
     </sect1>
 
     <sect1 id="ds_th"><title>To handle</title>

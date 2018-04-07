@@ -32,6 +32,7 @@
 	    typedef string TNMKey;
 	    typedef pair<TNMKey, MElem*> TNMVal;
 	    typedef multimap<string, MElem*> TNMReg;
+	    typedef map<string, MElem*> TNReg;
 	    typedef pair<TNMReg::iterator, TNMReg::iterator> TNMRegItRange;
 	    // Relation chromo to model
 	    typedef pair<MElem*, TNodeAttr> TCMRelTo;
@@ -425,7 +426,7 @@
 	    // TODO [YB] To consider removing
 	    vector<MElem*> iComps;
 	    // Components map, not owning
-	    TNMReg iMComps;
+	    TNReg iMComps;
 	    // Ifaces cache
 	    TICache iICache;
 	    // Ifaces cache query by TICMapKeyF

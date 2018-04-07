@@ -1145,27 +1145,22 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
     MElem* res = NULL;
     GUri::const_elem_iter uripos = aPathBase;
     GUri::TElem elem = *uripos;
-    TBool anywhere = aAnywhere;
+    __ASSERT(elem.rel() != GUri::EChild);
+    __ASSERT(!aAnywhere);
     if (elem.name() == "..") {
 	// Checking if mutation context is defined. Using context instead of owner if so, ref ds_daa_itn_sfo
 	MElem* top = (mContext == NULL ? iMan : mContext);
 	if (top != NULL) {
 	    if (++uripos != aUri.Elems().end()) {
 		res = top->GetNode(aUri, uripos, EFalse, aInclRm);
-	    }
-	    else {
+	    } else {
 		res = top;
 	    }
-	}
-	else {
+	} else {
 	    Logger()->Write(EErr, this, "Getting node [%s] - path to top of root", aUri.toString().c_str());
 	}
     }
     else {
-	if (!anywhere && elem.name() == GUri::KTypeAnywhere) {
-	    elem = GUri::TElem(GUri::KTypeAny, GUri::EChild, GUri::KTypeAny);
-	    anywhere = ETrue;
-	}
 	TBool isnative = elem.rel() == GUri::ENone;
 	if (isnative) {
 	    // Native node, not embedded to hier, to get from environment, ref uc_045
@@ -1175,59 +1170,17 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
 		if (node != NULL) {
 		    res = node->GetNode(aUri, uripos, EFalse, aInclRm);
 		}
-	    }
-	    else {
+	    } else {
 		res = Provider()->GetNode(elem.name());
 	    }
-	}
-	else {
-	    Iterator it = NodesLoc_Begin(elem, aInclRm);
-	    Iterator itend = NodesLoc_End(elem, aInclRm);
-	    if (it != itend) {
+	} else {
+	    if (iMComps.count(elem.name()) > 0) {
+		MElem* node = iMComps.at(elem.name());
 		uripos++;
 		if (uripos != aUri.Elems().end()) {
-		    for (; it != itend; it++) {
-			MElem* node = *it;
-			MElem* res1 = node->GetNode(aUri, uripos, EFalse, aInclRm);
-			if (res1 != NULL) {
-			    if (res == NULL) {
-				res = res1;
-			    }
-			    else {
-				res = NULL;
-				Logger()->Write(EErr, this, "Getting node [%s] - multiple choice", aUri.toString().c_str());
-				break;
-			    }
-			}
-		    }
-		}
-		else {
-		    res = *it;
-		    if (++it != itend) {
-			MElem* dup = *it;
-			Logger()->Write(EErr, this, "Getting node [%s] - multiple choice", aUri.toString().c_str());
-			res = NULL;
-		    }
-		}
-	    }
-	}
-	if (res == NULL && anywhere && uripos != aUri.Elems().end()) {
-	    // Try to search in all nodes
-	    elem = GUri::TElem(GUri::KTypeAny, GUri::EComp, GUri::KTypeAny);
-	    Iterator it = NodesLoc_Begin(elem);
-	    Iterator itend = NodesLoc_End(elem);
-	    for (; it != itend; it++) {
-		MElem* node = *it;
-		MElem* res1 = node->GetNode(aUri, uripos, anywhere, aInclRm);
-		if (res1 != NULL) {
-		    if (res == NULL) {
-			res = res1;
-		    }
-		    else {
-			res = NULL;
-			Logger()->Write(EErr, this, "Getting node [%s] - multiple choice", aUri.toString().c_str());
-			break;
-		    }
+		    res = node->GetNode(aUri, uripos, EFalse, aInclRm);
+		} else {
+		    res = node;
 		}
 	    }
 	}
@@ -2365,14 +2318,8 @@ void Elem::RemoveComp(MElem* aComp)
 TBool Elem::RegisterComp(MElem* aComp)
 {
     TBool res = ETrue;
-    MElem* node = GetComp(aComp->EType(), aComp->Name());
-    //if (node == NULL || node->IsRemoved()) {
-    if (node == NULL) {
-	iMComps.insert(TNMVal(TNMKey(aComp->Name()), aComp));
-    } else {
-	Log(TLog(EErr, this) + "Registering component [" + aComp->Name() + "] - already exists");
-	res = EFalse;
-    }
+    __ASSERT(iMComps.count(aComp->Name()) == 0);
+    iMComps.insert(TNMVal(aComp->Name(), aComp));
     return res;
 }
 
@@ -2410,17 +2357,9 @@ TBool Elem::UnregisterComp(MElem* aComp, const string& aName)
 {
     TBool res = EFalse;
     const string& name = aName.empty() ? aComp->Name() : aName;
-    assert (GetComp(aComp->EType(), name) != NULL); 
-    // Removing old name related records in register
-    TBool found = EFalse;
-    pair<TNMReg::iterator, TNMReg::iterator> range = iMComps.equal_range(TNMKey(name));
-    for (TNMReg::iterator it = range.first; it != range.second && !found; it++) {
-	if (it->second == aComp) {
-	    iMComps.erase(it);
-	    found = ETrue;
-	}
-    }
-    //__ASSERT(found); /* To avoid panic when deleting comp that hasn't been registered yet */
+    assert (iMComps.count(name) > 0); 
+    iMComps.erase(name);
+
     res = ETrue;
     return res;
 }

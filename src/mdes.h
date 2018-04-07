@@ -1,8 +1,11 @@
 #ifndef __GRAYB_MDES_H
 #define __GRAYB_MDES_H
 
-#include "plat.h"
 #include <set>
+
+#include "plat.h"
+#include "miface.h"
+#include "ifu.h"
 
 using namespace std;
 

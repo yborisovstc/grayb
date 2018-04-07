@@ -49,10 +49,6 @@ void Ut_uri::tearDown()
 void Ut_uri::test_UriParsing()
 {
     printf("\n === Test of uri parsing\n");
-    GUri uri_1("sock://localhost:12345/env_1");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get scheme", uri_1.Scheme() == "sock");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get authority", uri_1.Authority() == "localhost:12345");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get path", uri_1.Path() == "env_1");
     GUri uri_a("sock://localhost:12345/env_1#/root/root_comp");
     CPPUNIT_ASSERT_MESSAGE("Fail to get scheme", uri_a.Scheme() == "sock");
     CPPUNIT_ASSERT_MESSAGE("Fail to get authority", uri_a.Authority() == "localhost:12345");
@@ -168,27 +164,7 @@ void Ut_uri::test_UriBase()
     CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "59");
 
 
-    // Checking URI with asterisk in URI elem
-   // Elem* resdata1 = root->GetNode("Incaps:test/DataSInt:ResData/Elem:Capsule/ConnPoint:out");
-    MElem* resdata1 = root->GetNode("./(Incaps:)test/(DataSInt:)ResData/(*:)*/out");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get res data out (asterisk URI)", resdata1 != 0);
-    // Checking URI with "anywhere" pattern from root
-    MElem* node0 = root->GetNode("/testroot/test/Incr2");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get node (/testroot/test/Incr2)", node0 != 0);
-    MElem* node1 = root->GetNode("/**/Incr2");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get node (/**/Incr2)", node1 != 0 && node1->GetUri(NULL) == node0->GetUri(NULL));
-    // Checking URI with beginning "anywhere" pattern
-    MElem* node2 = root->GetNode("./**/Incr2");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get node (**/Incr2)", node2 != 0 && node2->GetUri(NULL) == node0->GetUri(NULL));
-    // Checking "anywhere" pattern for direct root comp
-    MElem* elm1 = root->GetNode("./**/SysComps");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get base elm1", elm1 != 0);
-    // Checking creation from parent specified with URI with "anywhere" pattern
-    MElem* cp1 = root->GetNode("/testroot/test/Cp1");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get base CP1", cp1 != 0);
-    MElem* cp2 = root->GetNode("/testroot/test/Cp2");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get CP2", cp2 != 0);
- 
+    MElem* resdata1 = root->GetNode("./(Incaps:)test/ResData/Capsule/out");
     // Checking getting uri basing on hier mgr
     GUri rduri;
     resdata1->GetUri(rduri, root);
@@ -213,17 +189,6 @@ void Ut_uri::test_UriBase()
     Elem* eadded = root->GetNode("(FuncComps:)new_elem1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get elem added", eadded != 0);
     */
- 
-    // Checking getting uri basing on inheritance relations
-    MElem* node_ni_1 = root->GetNode("/testroot/Modules/IncapsComps/Incaps");
-    MElem* node_ih_1 = root->GetNode(":Elem:Vert:Syst:Incaps");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get node by inh URI", node_ni_1 != NULL && node_ih_1 != NULL && node_ni_1 == node_ih_1);
-    MElem* node_ih_2 = root->GetNode(":Elem:IncapsComps/Incaps");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get node by inh URI", node_ni_1 != NULL && node_ih_2 != NULL && node_ni_1 == node_ih_2);
-    // With any pattern
-    MElem* incapsmod_ni_1 = root->GetNode("/testroot/Modules/IncapsComps");
-    MElem* incapsmod_ih_1 = root->GetNode(":Elem:IncapsComps");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get node by inh URI and -any- pattern", incapsmod_ni_1 != NULL && incapsmod_ih_1 != NULL && incapsmod_ni_1 == incapsmod_ih_1);
 }
 
 // Test of operating with chromo uris
