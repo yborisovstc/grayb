@@ -94,6 +94,7 @@ void *Vert::DoGetObj(const char *aName)
 void Vert::UpdateIfi(const string& aName, const RqContext* aCtx)
 {
     void* res = NULL;
+    TBool resg = EFalse;
     TIfRange rr;
     RqContext ctx(this, aCtx);
     TICacheRCtx rctx(aCtx);
@@ -110,6 +111,7 @@ void Vert::UpdateIfi(const string& aName, const RqContext* aCtx)
     if (res != NULL) {
 	InsertIfCache(aName, rctx, this, res);
     }
+    // TODO So if res != NULL we dont look at the agents. Why?
     // Support run-time extentions on the base layer, ref md#sec_refac_iface
     if (res == NULL) {
 	MElem* agents = GetComp("Elem", "Agents");
@@ -119,8 +121,14 @@ void Vert::UpdateIfi(const string& aName, const RqContext* aCtx)
 		if (!ctx.IsInContext(eit)) {
 		    rr = eit->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, eit, rr);
+		    resg = resg || (rr.first != rr.second);
 		}
 	    }
+	}
+	// Register self any case. We need to have at least one record because the requestor
+	// register self as provider anycase, ref ds_ifcache_refr_fpt
+	if (!resg) {
+	    InsertIfCache(aName, rctx, this, res);
 	}
     }
 }
@@ -300,8 +308,8 @@ void Vert::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
     // Disconnect the binding edges if the comp is vert connected
     MVert* vert = aComp.GetObj(vert);
     if (vert != NULL && vert->PairsCount() > 0) {
-	for (vector<MElem*>::iterator it = iComps.begin(); it != iComps.end(); it++) {
-	    MElem* comp = *it;
+	for (auto& it : iMComps) {
+	    MElem* comp = it.second;
 	    MEdge* edge = comp->GetObj(edge);
 	    if (edge != NULL && (edge->Point1() == vert || edge->Point2() == vert)) {
 		edge->Disconnect(vert);

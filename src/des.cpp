@@ -866,9 +866,7 @@ void StateAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
     else {
 	res = Elem::DoGetObj(aName.c_str());
     }
-    if (res != NULL) {
-	InsertIfCache(aName, aCtx, this, res);
-    }
+    InsertIfCache(aName, aCtx, this, res);
 }
 
 TBool StateAgent::IsActive()

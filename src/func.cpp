@@ -865,9 +865,7 @@ void AFConvInt::UpdateIfi(const string& aName, const RqContext* aCtx)
     else {
 	res = AFuncInt::DoGetObj(aName.c_str());
     }
-    if (res != NULL) {
-	InsertIfCache(aName, aCtx, this, res);
-    }
+    InsertIfCache(aName, aCtx, this, res);
 }
 
 TInt AFConvInt::GetValue()

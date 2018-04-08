@@ -124,8 +124,8 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
     }
     if (res != NULL) {
 	InsertIfCache(aName, rctx, this, res);
-    }
-    else {
+    } else {
+	bool found = false;
 	// Redirect to pairs if iface requiested is provided by this CP
 	MElem* eprov = GetNode("./(Prop:)Provided");
 	MElem* ereq = GetNode("./(Prop:)Required");
@@ -138,7 +138,7 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    MElem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
 		    rr = mgr->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, mgr, rr);
-		    resg = ETrue;
+		    resg = resg || (rr.first == rr.second);
 		}
 	    }
 	}
@@ -159,6 +159,9 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    InsertIfCache(aName, rctx, mgr, rr);
 		}
 	    }
+	}
+	if (!resg) {
+	    InsertIfCache(aName, rctx, this, res);
 	}
     }
 }
@@ -438,7 +441,7 @@ void ConnPointMc::UpdateIfi(const string& aName, const RqContext* aCtx)
     if (res != NULL) {
 	InsertIfCache(aName, rctx, this, res);
     }
-    else {
+    if (res == NULL) {
 	// Redirect to pairs if iface requiested is provided by this CP
 	if (GetProvided() == aName) {
 	    // Requested provided iface - cannot be obtain via pairs - redirect to host
@@ -447,7 +450,7 @@ void ConnPointMc::UpdateIfi(const string& aName, const RqContext* aCtx)
 		MElem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
 		rr = mgr->GetIfi(aName, &ctx);
 		InsertIfCache(aName, rctx, mgr, rr);
-		resg = ETrue;
+		resg = resg || (rr.first == rr.second);
 	    }
 	}
 	if (!resg) {
@@ -457,6 +460,7 @@ void ConnPointMc::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    if (!ctx.IsInContext(pe)) {
 			rr = pe->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, pe, rr);
+			resg = resg || (rr.first == rr.second);
 		    }
 		}
 		// Responsible pairs not found, redirect to upper layer
@@ -464,8 +468,12 @@ void ConnPointMc::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    MElem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
 		    rr = mgr->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, mgr, rr);
+		    resg = resg || (rr.first == rr.second);
 		}
 	    }
+	}
+	if (!resg) {
+	    InsertIfCache(aName, rctx, this, res);
 	}
     }
 }
@@ -764,6 +772,7 @@ void *ExtenderAgent::DoGetObj(const char *aName)
 void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 {
     void* res = NULL;
+    TBool resg = EFalse;
     TIfRange rr;
     RqContext ctx(this, aCtx);
     MElem* host = iMan->GetMan();
@@ -787,6 +796,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 	if (intcp != NULL && !ctx.IsInContext(intcp)) {
 	    rr = intcp->GetIfi(aName, &ctx);
 	    InsertIfCache(aName, rctx, intcp, rr);
+	    resg = resg || (rr.first == rr.second);
 	}
 	else {
 	    MElem* host = iMan->GetMan();
@@ -799,6 +809,7 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    if (ep != NULL && !ctx.IsInContext(ep)) {
 			rr = ep->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, ep, rr);
+			resg = resg || (rr.first == rr.second);
 		    }
 		}
 	    }
@@ -812,7 +823,11 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 	if (mgr != NULL && !ctx.IsInContext(mgr)) {
 	    rr = mgr->GetIfi(aName, &ctx);
 	    InsertIfCache(aName, rctx, mgr, rr);
+	    resg = resg || (rr.first == rr.second);
 	}
+    }
+    if (!resg) {
+	InsertIfCache(aName, rctx, this, res);
     }
 
 }
@@ -978,6 +993,7 @@ void *AExtender::DoGetObj(const char *aName)
 void AExtender::UpdateIfi(const string& aName, const RqContext* aCtx)
 {
     void* res = NULL;
+    TBool resg = EFalse;
     TIfRange rr;
     RqContext ctx(this, aCtx);
     MElem* host = iMan->GetMan();
@@ -1001,6 +1017,7 @@ void AExtender::UpdateIfi(const string& aName, const RqContext* aCtx)
 	if (intcp != NULL && !ctx.IsInContext(intcp)) {
 	    rr = intcp->GetIfi(aName, &ctx);
 	    InsertIfCache(aName, rctx, intcp, rr);
+	    resg = resg || (rr.first != rr.second);
 	}
 	else {
 	    MElem* host = iMan->GetMan();
@@ -1013,6 +1030,7 @@ void AExtender::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    if (ep != NULL && !ctx.IsInContext(ep)) {
 			rr = ep->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, ep, rr);
+			resg = resg || (rr.first != rr.second);
 		    }
 		}
 	    }
@@ -1026,7 +1044,11 @@ void AExtender::UpdateIfi(const string& aName, const RqContext* aCtx)
 	if (mgr != NULL && !ctx.IsInContext(mgr)) {
 	    rr = mgr->GetIfi(aName, &ctx);
 	    InsertIfCache(aName, rctx, mgr, rr);
+	    resg = resg || (rr.first != rr.second);
 	}
+    }
+    if (!resg) {
+	InsertIfCache(aName, rctx, this, res);
     }
 
 }
@@ -1141,7 +1163,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    if (mgr != NULL && !ctx.IsInContext(mgr)) {
 			rr = mgr->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, mgr, rr);
-			resok = ETrue;
+			resok = resok || (rr.first != rr.second);
 		    }
 		}
 	    }
@@ -1193,6 +1215,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    // Found associated pairs pin within the context, so redirect to it's pair in current socket
 		    rr = pcomp->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, pcomp, rr);
+		    resok = resok || (rr.first != rr.second);
 		}
 	    }
 	    // Redirect to pair. 
@@ -1209,6 +1232,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 			if (!ctx.IsInContext(pe)) {
 			    rr = pe->GetIfi(aName, &ctx);
 			    InsertIfCache(aName, rctx, pe, rr);
+			    resok = resok || (rr.first != rr.second);
 			}
 		    }
 		}
@@ -1221,6 +1245,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		if (mgr != NULL && !ctx.IsInContext(mgr)) {
 		    rr = mgr->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, mgr, rr);
+		    resok = resok || (rr.first != rr.second);
 		}
 	    }
 	}
@@ -1235,6 +1260,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    if (!ctx.IsInContext(eit) && eit != iMan) {
 			rr = eit->GetIfi(aName, &ctx);
 			InsertIfCache(aName, rctx, eit, rr);
+			resok = resok || (rr.first != rr.second);
 		    }
 		}
 	    }
@@ -1252,6 +1278,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 			if (!ctx.IsInContext(pe)) {
 			    rr = pe->GetIfi(aName, &ctx);
 			    InsertIfCache(aName, rctx, pe, rr);
+			    resok = resok || (rr.first != rr.second);
 			}
 		    }
 		}
@@ -1264,9 +1291,13 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		if (mgr != NULL && !ctx.IsInContext(mgr)) {
 		    rr = mgr->GetIfi(aName, &ctx);
 		    InsertIfCache(aName, rctx, mgr, rr);
+		    resok = resok || (rr.first != rr.second);
 		}
 	    }
 	}
+    }
+    if (!resok) {
+	InsertIfCache(aName, rctx, this, res);
     }
 }
 

@@ -474,7 +474,6 @@ Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMa
     ChromoNode croot = iChromo->Root();
     croot.SetAttr(ENa_Id, iName);
     SetParent(Type());
-    iComps.reserve(100);
     InsertContent(KCont_About);
     //InsertContent(KCont_Categories);
     //InsertContent(KCont_Ctg_Readonly);
@@ -522,12 +521,11 @@ Elem::~Elem()
     // Unregigster ifaces providers
     UnregAllIfRel();
     // Remove the comps, using iterator refresh because the map is updated on each comp deletion
-    vector<MElem*>::reverse_iterator it = iComps.rbegin();
-    while (it != iComps.rend()) {
-	delete *it;
-	it = iComps.rbegin();
+    auto it = iMComps.begin();
+    while (it != iMComps.end()) {
+	delete it->second;
+	it = iMComps.begin();
     }
-    iComps.clear();
     iMComps.clear();
     // TODO [YB] OnCompDeleting called only here, i.e. after Elem derivation desctuctor completed
     // This means that the ovner notified will not be able to understand what agent is deleted
@@ -574,11 +572,6 @@ string Elem::PName() const
 {
     ChromoNode croot = iChromo->Root();
     return croot.Attr(ENa_Parent);
-}
-
-const vector<MElem*>& Elem::Comps() const
-{
-    return iComps;
 }
 
 void Elem::SetParent(const string& aParent)
@@ -688,9 +681,6 @@ Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
 	    Logger()->Write(EInfo, this, "Iface [%s]: -->", aName.c_str());
 	}
 	// Invalid cache, update cache
-	// Register the request with local provider anycase to create relation. 
-	// This is required for correct invalidation.
-	InsertIfQm(aName, req, this);
 	UpdateIfi(aName, ctx);
 	beg = IfIter(this, aName, req);
 	end = IfIter(this, aName, req, ETrue);
@@ -768,13 +758,11 @@ void Elem::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MElem* aP
     // that for single request here, i.e. resolved by one provider, this provider can 
     // have more that one requests, i.e multiple providers. So it is possible that
     // provider requests unreg request but it is already unreged
-
-    //for (TICacheQFIter it = rg.first; it != rg.second; it++) {
     TICacheQFIter it = rg.first; 
     while (it != rg.second) {
 	Base* cnd = it->second.second;
 	MElem* cnde = cnd->GetObj(cnde);
-	if (it->second.second == aProv || aInv) {
+	if (it->second.second == aProv) {
 	    // Unregister next requestor
 	    // TODO [YB] Do we need to unregister this in requestor. In fact this
 	    // is not invalidated but caller of UnregIfProv does
@@ -788,12 +776,47 @@ void Elem::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MElem* aP
 	    }
 	    iICache.erase(it->second);
 	    iICacheQF.erase(it);
-	    if (!aInv) break;
 	    rg = iICacheQF.equal_range(query);
 	    it = rg.first; 
 	}
 	else {
 	    it++; 
+	}
+    }
+    if (aInv) {
+	// Invalidate the interface, ref ds_u_20180408
+	InvalidateIfCache(aIfName);
+    }
+}
+
+void Elem::InvalidateIfCache(const string& aIfName)
+{
+    auto it = iICacheQF.begin();
+    while (it != iICacheQF.end()) {
+	if (it->first.first == aIfName) {
+	    // Unreg self as provider
+	    const TICacheRCtx& ctx = it->first.second;
+	    if (ctx.size() > 1) {
+		TICacheRCtx rctx(ctx);
+		rctx.pop_back();
+		Base* reqb = ctx.back();
+		MElem* reqe = reqb->GetObj(reqe);
+		reqe->UnregIfProv(it->first.first, rctx, this, true);
+	    }
+	    // Unreg self as requestor
+	    Base* prov = it->second.second;
+	    MElem* prove = prov->GetObj(prove);
+	    if (prove != this) {
+		const TICacheRCtx& ctx = it->first.second;
+		TICacheRCtx rctx(ctx);
+		rctx.push_back(this);
+		prove->UnregIfReq(it->first.first, rctx);
+	    }
+	    iICache.erase(it->second);
+	    iICacheQF.erase(it);
+	    it = iICacheQF.begin();
+	} else {
+	    it++;
 	}
     }
 }
@@ -878,7 +901,7 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
     for (TIfIter it = aRg.first; it != aRg.second; it++) {
 	InsertIfCache(aName, aReq, aProv, *it);
     }
-    // Register the request in the map even if result is empty
+    // Register the request in the map even if result is empty, ref ds_ifcache_refr_fpt
     if (aRg.first == aRg.second) {
 	InsertIfQm(aName, aReq, aProv);
     }
@@ -904,9 +927,7 @@ Elem* Elem::GetIcCtxComp(const TICacheRCtx& aCtx, TInt aInd)
 void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
 {
     void* res = DoGetObj(aName.c_str());
-    if (res != NULL) {
-	InsertIfCache(aName, aCtx, this, res);
-    }
+    InsertIfCache(aName, aCtx, this, res);
 }
 
 void Elem::LogIfReqs()
@@ -928,6 +949,28 @@ void Elem::LogIfReqs()
 	}
     }
     Logger()->Write(EInfo, this, "Ifaces requests: END");
+}
+
+void Elem::DumpIfReqs() const
+{
+    cout << "<< Ifaces requests: START >>" << endl;
+    for (auto it : iICacheQF) {
+	const TICacheRCtx& ctx = it.first.second;
+	Base* provb = it.second.second;
+	Elem* prov = provb->GetObj(prov);
+	if (!ctx.empty()) {
+	    cout << "[" << it.first.first << "], [" << ctx.size() << "]:" << endl;
+	    for (auto* reqb : ctx) {
+		Elem* reqe = reqb == NULL ? NULL : reqb->GetObj(reqe);
+		cout << reqb << "~" << reqe << ": " << (reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue)) << endl;
+	    }
+	    cout << "==> [" << provb << "~" << prov << "," << prov->GetUri(NULL, ETrue) << "]" << endl << endl;
+	}
+	else {
+	    cout << "If: [" << it.first.first << "], [none] - [" << provb << "~" << prov << "," << prov->GetUri(NULL, ETrue) << "]" << endl;
+	}
+    }
+    cout << "<< Ifaces requests: END >>" << endl;
 }
 
 string Elem::EType(TBool aShort) const
@@ -1186,11 +1229,6 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
 	}
     }
     return res;
-}
-
-vector<MElem*>& Elem::Comps()
-{
-    return iComps;
 }
 
 void Elem::SetMutation(const ChromoNode& aMuta)
@@ -2288,7 +2326,6 @@ TBool Elem::AppendComp(MElem* aComp, TBool aRt)
     TBool res = RegisterComp(aComp);
     if (res)
     {
-	iComps.push_back(aComp);
 	// Propagate notification only if self is the component of owner, ref ds_di_cnfr
 	if (iMan != NULL && iMan->GetComp(string(), Name()) == this) {
 	    iMan->OnCompAdding(*aComp, aRt);
@@ -2307,11 +2344,6 @@ void Elem::RemoveComp(MElem* aComp)
     TBool res = UnregisterComp(aComp);
     if (res) {
 	aComp->SetMan(NULL);
-	for (vector<MElem*>::iterator oit = iComps.begin(); oit != iComps.end(); oit++) {
-	    if (*oit == aComp) {
-		iComps.erase(oit); break;
-	    }
-	}
     }
 }
 
@@ -2399,12 +2431,6 @@ void Elem::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
 	if (!aSoft) {
 	    // Unregister first
 	    UnregisterComp(&aComp);
-	    // Then remove from comps
-	    for (vector<MElem*>::iterator oit = iComps.begin(); oit != iComps.end(); oit++) {
-		if (*oit == &aComp) {
-		    iComps.erase(oit); break;
-		}
-	    }
 	}
     }
 }
@@ -2469,9 +2495,7 @@ TBool Elem::OnCompRenamed(MElem& aComp, const string& aOldName)
     TBool res = EFalse;
     if (aComp.GetMan() == this) {
 	// Unregister the comp with its old name
-	//res = UnregisterComp(&aComp, aOldName);
-	// Applying multi-name approach, ref ds_mut_rn
-	res = ETrue; 
+	res = UnregisterComp(&aComp, aOldName);
 	if (res) {
 	    // Register the comp again with its current name
 	    res = RegisterComp(&aComp);
@@ -3243,8 +3267,8 @@ void Elem::GetMajorDep(TMDep& aDep, TBool aUp, TBool aDown)
 	    child->GetMajorDep(aDep, EFalse, ETrue);
 	}
 	// Components
-	for (vector<MElem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
-	    MElem* comp = *it;
+	for (auto& it : iMComps) {
+	    MElem* comp = it.second;
 	    comp->GetMajorDep(aDep, EFalse, ETrue);
 	}
     }
@@ -3296,8 +3320,8 @@ void Elem::GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDPath aDpath, MChr
 	    child->GetMajorDep(aDep, aMut, MChromo::EDp_Child, aLevel, EFalse, ETrue);
 	}
 	// Components
-	for (vector<MElem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
-	    MElem* comp = *it;
+	for (auto& it : iMComps) {
+	    MElem* comp = it.second;
 	    comp->GetMajorDep(aDep, aMut, MChromo::EDp_Comps, aLevel, EFalse, ETrue);
 	}
     }
@@ -3357,21 +3381,10 @@ void Elem::SetRemoved(TBool aModif)
     if (iObserver != NULL) {
 	iObserver->OnCompDeleting(*this, ETrue, aModif);
     }
-#if 0 // Regular iteration is to be used because no real removal happens, but just "soft", ref ds_mut_rm_appr2
-    // Mark the comps as removed, using iterator refresh because the map is updated on each comp deletion
-    vector<Elem*>::reverse_iterator it = iComps.rbegin();
-    while (it != iComps.rend()) {
-	Elem* comp = *it;
-	comp->SetRemoved();
-	it = iComps.rbegin();
-    }
-#else
-    // Removing comps in reverce order
-    for (vector<MElem*>::reverse_iterator it = iComps.rbegin(); it != iComps.rend(); it++) {
-	MElem* comp = *it;
+    for (auto& it : iMComps) {
+	MElem* comp = it.second;
 	comp->SetRemoved(ETrue);
     }
-#endif
     // Mark node as removed from hative hier
     isRemoved = ETrue;
 }
@@ -3583,8 +3596,8 @@ TBool Elem::RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr, const MElem* aConte
 	res = ETrue;
     }
     else {
-	for (vector<MElem*>::const_iterator it = iComps.begin(); it != iComps.end() && !res; it++) {
-	    MElem* comp = *it;
+	for (auto& it : iMComps) {
+	    MElem* comp = it.second;
 	    res = comp->RmCMDep(aMut, aAttr);
 	}
     }
@@ -3594,22 +3607,12 @@ TBool Elem::RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr, const MElem* aConte
 TInt Elem::GetCapacity() const
 {
     TInt res = 0;
-    for (vector<MElem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
+    for (auto& it : iMComps) {
 	res++;
-	MElem* comp = *it;
+	MElem* comp = it.second;
 	res += comp->GetCapacity();
     }
     return res;
-}
-
-// TODO [YB] To move to MElem and remove ToElem
-void Elem::LogComps() const
-{
-    for (vector<MElem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
-	Elem* comp = ToElem(*it);
-	Logger()->Write(EInfo, comp, ">");
-	comp->LogComps();
-    }
 }
 
 // This variant is for using env imports manager
@@ -3630,12 +3633,14 @@ TBool Elem::ImportNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode
 
 TInt Elem::CompsCount() const
 {
-    return iComps.size();
+    return iMComps.size();
 }
 
 MElem* Elem::GetComp(TInt aInd)
 {
-    return iComps.at(aInd);
+    auto it = iMComps.begin();
+    for (TInt i = 0; i < aInd; i++, it++);
+    return it->second;
 }
 
 string Elem::Mid() const
@@ -3963,11 +3968,6 @@ void Elem::DumpChilds() const
 
 void Elem::DumpComps() const
 {
-    cout << "<< List of components >>" << endl << endl;
-    for (vector<MElem*>::const_iterator it = iComps.begin(); it != iComps.end(); it++) {
-	MElem* comp = *it;
-	cout << "ptr: " << (void*) comp << ", name: " << comp->Name() << endl;
-    }
     cout << endl << "<< Named register of components >>" << endl << endl;
     for (TNMReg::const_iterator it = iMComps.begin(); it != iMComps.end(); it++) {
 	MElem* comp = it->second;

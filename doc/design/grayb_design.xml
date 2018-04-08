@@ -215,7 +215,7 @@
 	</sect2>
     </sect1>
 
-    <sect1 id="ds_ifcache"><title>Interfaces cache</title>
+    <sect1 id="ds_ifcache"><title>Interfaces provider. Interfaces cache</title>
 	<sect2 id="ds_ifcache_01"><title>DS_IFCACHE_01 Key scheme for cache</title>
 	    <sect3><title>Description</title>
 		<simpara>Current solution [6d15a3f2] uses key [Name, Requestor, Provider] where Requestor and Provider are pointers. This makes some limitation in
@@ -260,7 +260,7 @@
 		    Socket's pin requested for this iface, gets pair and redirect iface request to it. </simpara>
 	    </sect3>
 	</sect2>
-	<sect2 id="ds_ifcache_refr"><title>Refreshing cache on node change.</title>
+	<sect2 id="ds_ifcache_refr"><title>Refreshing cache on node change. Cache invalidation.</title>
 	    <sect3><title>Introduction</title>
 		<simpara>Ref to <ulink url="../requirements/index.html#uc_010"/> for use-case related.</simpara>
 		<simpara>Ifaces cache needs to be updated properly if some new ifaces got appeared or disappeared in result of mutations. 
@@ -273,10 +273,11 @@
 		    there is no back relations from service node to requesters. 
 		    This is because unsuccessful request doesn't go to chache so the node doesn't know of the requester further.</simpara>
 	    </sect3>
-	    <sect3><title>Proposed solution</title>
+	    <sect3 id="ds_ifcache_refr_fpt"><title>Proposed solution: having full provders topology in cache.</title>
 		<itemizedlist>
-		    <listitem>To register requests anycase in order to keep all relations requestor-provider even if
-			provider couldn't resolve the request this time. This will allow to subsequently invalidate caches by the
+		    <listitem>To register requests anycase (i.e. even provider returns null) in order to keep all relations requestor-provider even if
+			provider couldn't resolve the request this time. This will "register" provider in the cache, so if "not successul" provider
+			changes to be sucessful it can invalidate requestor's cache. This will allow to subsequently invalidate caches by the
 			chain from provider to all requestors. So the requestor will re-request iface.</listitem>
 		    <listitem>To implement mechanism of unregistering of requests. This is required to keep the relations
 			acutal, for instance if some node is deleted, all the corresponding requests needs to be unregistered.</listitem>
@@ -285,6 +286,13 @@
 			node of this propagation chain not only requests corresponding to given provider but all the requests with that context.
 			In this case we simply unregister the whole request that depends on the initial invalidated provider.  </listitem>
 		</itemizedlist>
+		<para id="ds_u_20180408">[u_20180408] "all the requests with that context" below is incorrect. In when propagating from provider to requestors
+		    we need to invalidate the cache for given interface. This means that if some node gets request "Unregister me as provider from your cache,
+		    and yes, I'd actually do it for invalidation" then it's not enough just to unregister the provider. We need also to cleanup cache for 
+		    given interface, otherwise the cache will not invalidated. It is important that this "cleanup" means that for each cache record
+		    corresponding to given iface we need to unregister the node upward and downward, i.e. as provider and as requestor. This needs to
+		    keep the caches consistency.
+		</para>
 	    </sect3>
 	</sect2>
     </sect1>
@@ -4144,6 +4152,8 @@
 	    <sect3><title>Solution: unique name for owning hier, not unique for inheritance. URI only based on owning.</title>
 		<simpara>Taking into account that only owning hier supports unique name we can use only this hier for 
 		URI.</simpara>
+	    </sect3>
+	    <sect3 id="ds_prfopt_un_icr"><title>iComps register can be removed now</title>
 	    </sect3>
 	</sect2>
     </sect1>

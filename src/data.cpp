@@ -272,9 +272,7 @@ void DInt::UpdateIfi(const string& aName, const RqContext* aCtx)
     else {
 	res = DataBase::DoGetObj(aName.c_str());
     }
-    if (res != NULL) {
-	InsertIfCache(aName, aCtx, this, res);
-    }
+    InsertIfCache(aName, aCtx, this, res);
 }
 
 TInt DInt::Data() const
@@ -385,9 +383,7 @@ void DNInt::UpdateIfi(const string& aName, const RqContext* aCtx)
     else {
 	res = DInt::DoGetObj(aName.c_str());
     }
-    if (res != NULL) {
-	InsertIfCache(aName, aCtx, this, res);
-    }
+    InsertIfCache(aName, aCtx, this, res);
 }
 
 void DNInt::Set(TInt aData)

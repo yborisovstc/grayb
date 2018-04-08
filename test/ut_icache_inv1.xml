@@ -28,15 +28,9 @@
 		    <cont node="./(Prop:)P2" ref="/(Elem:)Root/(Incaps:)IncapsRoot/(Des:)DesRoot/(StateVar:)st/Add/Capsule/Out"/>
 		    <cont node="./(Prop:)P1" ref="/(Elem:)Root/(Incaps:)IncapsRoot/(Des:)DesRoot/(StateVar:)st/(DataSCVar:)Prepared/Capsule/Inp"/>
 		</node>
-		<node id="Const" parent="/(Elem:)Root/(Elem:)Modules/(Elem:)DataComps/(DataSU:)DataSUInt"/>
-		<node id="969163775" parent="Edge">
-		    <cont node="./(Prop:)P2" ref="/(Elem:)Root/(Incaps:)IncapsRoot/(Des:)DesRoot/(StateVar:)st/(DataSUInt:)Const/Capsule/out"/>
-		</node>
-		<rm node="./(DataSUInt:)Const"/>
 		<node id="Const1" parent="/(Elem:)Root/(Elem:)Modules/(Elem:)DataComps/(DataSU:)DataSUVar">
 		    <cont node="./Value" val="F 0.1"/>
 		</node>
-		<rm node="./969163775"/>
 		<node id="969163776" parent="Edge">
 		    <cont node="./(Prop:)P2" ref="/(Elem:)Root/(Incaps:)IncapsRoot/(Des:)DesRoot/(StateVar:)st/(DataSUVar:)Const1/Capsule/out"/>
 		    <cont node="./(Prop:)P1" ref="/(Elem:)Root/(Incaps:)IncapsRoot/(Des:)DesRoot/(StateVar:)st/Add/Capsule/Inp"/>

@@ -283,8 +283,6 @@
 	    virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MElem* aCtx = NULL);
 	    virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse);
 	    virtual TBool ImportNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse);
-	    virtual vector<MElem*>& Comps();
-	    virtual const vector<MElem*>& Comps() const;
 	    // From MChild
 	    virtual MElem* GetParent();
 	    virtual const MElem* GetParent() const;
@@ -311,6 +309,7 @@
 	    virtual void UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx);
 	    virtual void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MElem* aProv, TBool aInv = EFalse);
 	    void InvalidateIfCache();
+	    void InvalidateIfCache(const string& aIfName);
 	    void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, void* aVal);
 	    void InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv, void* aVal);
 	    void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg);
@@ -345,7 +344,6 @@
 	    virtual MIface* Call(const string& aSpec, string& aRes);
 	    virtual string Mid() const;
 	    // Utils
-	    void LogComps() const;
 	    Elem* GetNodeE(const string& aUri) {return ToElem(GetNode(aUri));};
 	    Elem* GetNodeE(const GUri& aUri) {return ToElem(GetNode(aUri));};
 	    virtual TInt CompsCount() const;
@@ -399,6 +397,7 @@
 	    virtual void DumpComps() const;
 	    virtual void DumpChilds() const;
 	    virtual void DumpContent() const;
+	    virtual void DumpIfReqs() const override;
 	public:
 	    // TODO [YB] To move to Ifu ?
 	    static const char KContentStart = '{';
@@ -422,9 +421,6 @@
 	    Chromo* iChromo;
 	    // Mutation
 	    Chromo* iMut;
-	    // Components, owninig container
-	    // TODO [YB] To consider removing
-	    vector<MElem*> iComps;
 	    // Components map, not owning
 	    TNReg iMComps;
 	    // Ifaces cache

@@ -986,7 +986,7 @@ void Ut_mut::test_Compact3()
     root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root after compacting", root != 0);
     v3 = root->GetNode("./(Vert:)v3");
-    TInt compsnum = root->Comps().size();
+    TInt compsnum = root->CompsCount();
     CPPUNIT_ASSERT_MESSAGE("V3 is not removed", v3 == NULL);
     CPPUNIT_ASSERT_MESSAGE("Mut of creation v3 is missing in opt disabling mode", compsnum == 5);
     delete iEnv;
