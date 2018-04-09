@@ -229,7 +229,7 @@ string GUri::toString(const_elem_iter aStart, const_elem_iter aEnd, TBool aShort
 
 bool GUri::operator==(const GUri& s) const
 {
-    return iUri == s.iUri && iScheme == s.iScheme && iAuthority == s.iAuthority &&
+    return iScheme == s.iScheme && iAuthority == s.iAuthority &&
 	iPath == s.iPath && iBase == s.iBase && iElems == s.iElems && iErr == s.iErr;
 }
 

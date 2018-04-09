@@ -101,63 +101,6 @@
 	};
 
 	public:
-	    // TODO [YB] Do we need polymorphic comps iterator ?
-	    // Components iterator interface
-	    class MIterImpl {
-		public:
-		    virtual ~MIterImpl() {};
-		    virtual MIterImpl* Clone() = 0;
-		    virtual void Set(const MIterImpl& aImpl) = 0;
-		    virtual void PostIncr() = 0;
-		    virtual TBool IsEqual(const MIterImpl& aImpl) const = 0;
-		    virtual TBool IsCompatible(const MIterImpl& aImpl) const = 0;
-		    virtual MElem*  GetElem() = 0;
-	    };
-
-	    class IterImplBase: public MIterImpl {
-		friend class Elem;
-		public:
-		IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd = EFalse, TBool aInclRm = EFalse);
-		IterImplBase(Elem& aElem);
-		IterImplBase(const IterImplBase& aImpl);
-		char SRel() const;
-		virtual ~IterImplBase();
-		virtual MIterImpl* Clone();
-		virtual void Set(const MIterImpl& aImpl);
-		virtual void PostIncr();
-		virtual TBool IsEqual(const MIterImpl& aImpl) const;
-		virtual TBool IsCompatible(const MIterImpl& aImpl) const;
-		virtual MElem*  GetElem();
-		public:
-		Elem& iElem;
-		GUri::TElem iId;
-		char iExtsrel;
-		string iExt;
-		TNMReg::iterator iCIter; // Comps iter
-		pair<TNMReg::iterator, TNMReg::iterator> iCIterRange;
-		TNMReg::iterator iChildsIter;
-		pair<TNMReg::iterator, TNMReg::iterator> iChildsRange;
-		TBool mInclRm; // Filter: include removed comps lookup
-	    };
-
-	    class Iterator: public iterator<input_iterator_tag, Elem*> {
-		friend class Elem;
-		public:
-		Iterator(): iImpl(NULL) {};
-		Iterator(MIterImpl* aImpl): iImpl(aImpl) {};
-		~Iterator() { delete iImpl; iImpl = NULL;};
-		Iterator(const Iterator& aIt): iImpl(NULL) { if (aIt.iImpl != NULL) iImpl = aIt.iImpl->Clone(); };
-		Iterator& operator=(const Iterator& aIt) { iImpl->Set(*(aIt.iImpl)); return *this;};
-		Iterator& operator++() { iImpl->PostIncr(); return *this;};
-		Iterator operator++(int) { Iterator tmp(*this); operator++(); return tmp; };
-		TBool operator==(const Iterator& aIt) { return iImpl->IsEqual((*aIt.iImpl));};
-		TBool operator!=(const Iterator& aIt) { return !operator==(aIt);};
-		MElem*  operator*() { return iImpl->GetElem();};
-		public:
-		MIterImpl* iImpl;
-	    };
-
-	public:
 	    // Formatter
 	    class Fmt
 	    {
@@ -189,14 +132,12 @@
 	    virtual TBool AppendMutation(const string& aFileName);
 	    virtual void AppendMutation(const TMut& aMut);
 	    string PName() const;
-	    //static void ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct);
 	public:
 	    virtual MElem* CreateHeir(const string& aName, MElem* aMan, MElem* aContext);
 	    virtual unique_ptr<MChromo> GetFullChromo() const;
 	    virtual string GetChromoSpec() const;
 	    virtual const MChromo& Chromos() const { return *iChromo;};
 	    virtual MChromo& Chromos() { return *iChromo;};
-	    //virtual MChromo& Mutation() { return *iMut;};
 	    // Gets the comp with given type and owning given element
 	    virtual MElem* GetCompOwning(const string& aParent, MElem* aElem);
 	    virtual MElem* GetCompOwning(MElem* aElem);
@@ -225,8 +166,6 @@
 	    virtual MElem* GetNodeS(const char* aUri);
 	    TBool IsName(const char* aName);
 	    virtual TBool IsHeirOf(const string& aParent) const;
-	    virtual Iterator NodesLoc_Begin(const GUri::TElem& aElem, TBool aInclRm = EFalse);
-	    virtual Iterator NodesLoc_End(const GUri::TElem& aElem, TBool aInclRm = EFalse);
 	    // From MIfProv Iface provider
 	    virtual void* GetSIfiC(const string& aName, Base* aRequestor = NULL);
 	    virtual void* GetSIfi(const string& aName, const RqContext* aCtx = NULL);

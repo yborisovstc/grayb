@@ -286,158 +286,6 @@ void*  Elem::IfIter::operator*()
 }
 
 
-Elem::IterImplBase::IterImplBase(Elem& aElem, GUri::TElem aId, TBool aToEnd, TBool aInclRm): iElem(aElem), iId(aId), iExt(GUri::KTypeAny), mInclRm(aInclRm)
-{
-    char rel = SRel();
-    if (!iId.ext().empty()) {
-	iExtsrel = iId.ext().at(iId.ext().size() - 1);
-	if (iExtsrel == GUri::KParentSep || iExtsrel == GUri::KNodeSep) {
-	    iExt = iId.ext().substr(0, iId.ext().size() - 1);
-	}
-    }
-    if (rel == GUri::KNodeSep) {
-	if (iId.name() == GUri::KTypeAny) {
-	    iCIterRange = TNMRegItRange(iElem.iMComps.begin(), iElem.iMComps.end());
-	} else {
-	    iCIterRange = iElem.iMComps.equal_range(iId.name());
-	}
-	if (aToEnd) {
-	    iCIter = iCIterRange.second;
-	}
-	else {
-	    if (iId.ext().empty() || iExtsrel !=  GUri::KParentSep || iExt.empty() || iExt == GUri::KTypeAny) {
-		iCIter = iCIterRange.first;
-		if (!mInclRm) for (; iCIter != iCIterRange.second && iCIter->second->IsRemoved(); iCIter++); 
-	    } 
-	    else {
-		for (iCIter = iCIterRange.first; iCIter != iCIterRange.second; iCIter++) {
-		    MElem* comp = iCIter->second;
-		    if (comp->GetParent()->Name() == iExt && (mInclRm || !comp->IsRemoved())) {
-			break;
-		    }
-		}
-	    }
-	}
-    }
-    else if (rel == GUri::KParentSep) {
-	if (iId.name() == GUri::KTypeAny) {
-	    iChildsRange = TNMRegItRange(iElem.iChilds.begin(), iElem.iChilds.end());
-	} else {
-	    iChildsRange = iElem.iChilds.equal_range(iId.name());
-	}
-	if (aToEnd) {
-	    iChildsIter = iChildsRange.second;
-	}
-	else {
-	    if (iId.ext().empty() || iExtsrel !=  GUri::KNodeSep || iExt.empty() || iExt == GUri::KTypeAny) {
-		iChildsIter = iChildsRange.first;
-		if (!mInclRm) for (; iChildsIter != iChildsRange.second && iChildsIter->second->IsRemoved(); iChildsIter++); 
-	    }
-	    else {
-		for (iChildsIter = iChildsRange.first; iChildsIter != iChildsRange.second; iChildsIter++) {
-		    MElem* comp = iChildsIter->second;
-		    MElem* cowner = comp->GetMan();
-		    if (cowner->Name() == iExt && (mInclRm || !comp->IsRemoved())) {
-			break;
-		    }
-		}
-	    }
-	}
-    }
-};
-
-Elem::IterImplBase::IterImplBase(const IterImplBase& aIt): 
-    iElem(aIt.iElem), iId(aIt.iId), iCIterRange(aIt.iCIterRange), iCIter(aIt.iCIter), iChildsIter(aIt.iChildsIter), 
-    iExtsrel(aIt.iExtsrel), iExt(aIt.iExt), mInclRm(aIt.mInclRm)
-{
-};
-
-Elem::IterImplBase::~IterImplBase()
-{
-}
-
-Elem::MIterImpl* Elem::IterImplBase::Clone()
-{
-    return new IterImplBase(*this);
-}
-
-void Elem::IterImplBase::Set(const MIterImpl& aImpl)
-{
-    const IterImplBase& impl = dynamic_cast<const IterImplBase&>(aImpl);
-    iElem = impl.iElem;
-    iId = impl.iId;
-    iCIterRange = impl.iCIterRange;
-    iCIter = impl.iCIter; 
-    iChildsIter = impl.iChildsIter;
-    mInclRm = impl.mInclRm;
-}
-
-char Elem::IterImplBase::SRel() const
-{
-    return iId.relChar();
-}
-
-void Elem::IterImplBase::PostIncr()
-{
-    if (SRel() == GUri::KNodeSep) {
-	iCIter++;
-	// Omit removed comps from the look
-	if (!mInclRm) for (; iCIter != iCIterRange.second && iCIter->second->IsRemoved(); iCIter++); 
-	if (!iId.ext().empty() && iExtsrel == GUri::KParentSep && !iExt.empty() && iExt != GUri::KTypeAny) {
-	    for (; iCIter != iCIterRange.second; iCIter++) {
-		MElem* comp = iCIter->second;
-		if (comp->GetParent()->Name() == iExt && (mInclRm || !comp->IsRemoved())) {
-		    break;
-		}
-	    }
-	}
-    }
-    else {
-	iChildsIter++;
-	// Omit removed children from the look
-	if (!mInclRm) for (; iChildsIter != iChildsRange.second && iChildsIter->second->IsRemoved(); iChildsIter++); 
-	if (!iId.ext().empty() && iExtsrel == GUri::KNodeSep && !iExt.empty() && iExt != GUri::KTypeAny) {
-	    for (;iChildsIter != iChildsRange.second; iChildsIter++) {
-		MElem* comp = iChildsIter->second;
-		MElem* cowner = comp->GetMan();
-		if (cowner->Name() == iExt && (mInclRm || !comp->IsRemoved())) {
-		    break;
-		}
-	    }
-	}
-    }
-}
-
-TBool Elem::IterImplBase::IsCompatible(const MIterImpl& aImpl) const
-{
-    return ETrue;
-}
-
-TBool Elem::IterImplBase::IsEqual(const MIterImpl& aImplm) const
-{
-    const IterImplBase& aImpl = dynamic_cast<const IterImplBase&>(aImplm);
-    TBool res = EFalse;
-    if (IsCompatible(aImpl) && aImpl.IsCompatible(*this)) {
-	res = &iElem == &(aImpl.iElem) && iId == aImpl.iId && iCIter == aImpl.iCIter && iChildsIter == aImpl.iChildsIter
-	    && mInclRm == aImpl.mInclRm;
-    }
-    return res;
-}
-
-MElem*  Elem::IterImplBase::GetElem()
-{
-    MElem* res = NULL;
-    if (SRel() == GUri::KNodeSep) {
-	if (iCIter != iCIterRange.second) {
-	    res = iCIter->second;
-	}
-    }
-    else if (SRel() == GUri::KParentSep) {
-	res = iChildsIter->second;
-    }
-    return res;
-}
-
 void Elem::Delay(long us)
 {
     struct timeval tp;
@@ -1021,21 +869,20 @@ TBool Elem::RebaseUri(const GUri& aUri, const MElem* aBase, GUri& aRes)
     GUri::const_elem_iter it = aUri.Elems().begin();
     if (it != aUri.Elems().end()) {
 	TBool anywhere = it->name() == GUri::KTypeAnywhere;
-	if (it->name().empty() || anywhere) {
+	__ASSERT(!anywhere);
+	if (it->name().empty()) {
 	    MElem* root = NULL;
 	    if (it->rel() == GUri::EComp) {
 		root = GetRoot();
 	    } else if (it->rel() == GUri::EChild) {
 		root = GetInhRoot();
 	    }
-	    if (!anywhere) {
-		it++;
-		GUri::TElem elem = *it;
-		anywhere = elem.name() == GUri::KTypeAnywhere;
-		TBool any = elem.name() == GUri::KTypeAny;
-		if (!anywhere && !any && root->Name() != elem.name()) {
-		    root = NULL;
-		}
+	    it++;
+	    GUri::TElem elem = *it;
+	    anywhere = elem.name() == GUri::KTypeAnywhere;
+	    TBool any = elem.name() == GUri::KTypeAny;
+	    if (!anywhere && !any && root->Name() != elem.name()) {
+		root = NULL;
 	    }
 	    if (root == aBase) {
 		aRes.AppendTail(aUri, ++it);
@@ -1053,6 +900,7 @@ TBool Elem::RebaseUri(const GUri& aUri, const MElem* aBase, GUri& aRes)
 
 TBool Elem::RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere, const MElem* aBase, GUri& aRes)
 {
+    __ASSERT(!aAnywhere);
     TBool res = EFalse;
     GUri::const_elem_iter uripos = aPathBase;
     GUri::TElem elem = *uripos;
@@ -1068,12 +916,13 @@ TBool Elem::RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool 
 	    }
 	} else {
 	    __ASSERT(EFalse);
-	    Logger()->Write(EErr, this, "Revasing uri [%s] - path to top of root", aUri.toString().c_str());
+	    Logger()->Write(EErr, this, "Rebasing uri [%s] - path to top of root", aUri.toString().c_str());
 	}
     } else {
 	if (!anywhere && elem.name() == GUri::KTypeAnywhere) {
 	    elem = GUri::TElem(GUri::KTypeAny, GUri::EChild, GUri::KTypeAny);
 	    anywhere = ETrue;
+	    __ASSERT(!anywhere);
 	}
 	TBool isnative = elem.rel() == GUri::ENone;
 	if (isnative) {
@@ -1090,34 +939,16 @@ TBool Elem::RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool 
 		}
 	    }
 	} else {
-	    Iterator it = NodesLoc_Begin(elem);
-	    Iterator itend = NodesLoc_End(elem);
-	    if (it != itend) {
+	    if (iMComps.count(elem.name()) > 0) {
+		MElem* node = iMComps.at(elem.name());
 		uripos++;
 		if (uripos != aUri.Elems().end()) {
-		    for (; it != itend && !res; it++) {
-			MElem* node = *it;
-			if (node == aBase) {
-			    aRes.AppendTail(aUri, uripos);
-			    return ETrue;
-			}
-			res = node->RebaseUri(aUri, uripos, EFalse, aBase, aRes);
+		    if (node == aBase) {
+			aRes.AppendTail(aUri, uripos);
+			return ETrue;
 		    }
+		    res = node->RebaseUri(aUri, uripos, EFalse, aBase, aRes);
 		}
-	    }
-	}
-	if (!res && anywhere && uripos != aUri.Elems().end()) {
-	    // Try to search in all nodes
-	    elem = GUri::TElem(GUri::KTypeAny, GUri::EComp, GUri::KTypeAny);
-	    Iterator it = NodesLoc_Begin(elem);
-	    Iterator itend = NodesLoc_End(elem);
-	    for (; it != itend && !res; it++) {
-		MElem* node = *it;
-		if (node == aBase) {
-		    aRes.AppendTail(aUri, uripos);
-		    return ETrue;
-		}
-		res = node->RebaseUri(aUri, uripos, anywhere, aBase, aRes);
 	    }
 	}
     }
@@ -1171,16 +1002,6 @@ MElem* Elem::GetNodeS(const char* aUri)
 {
     MElem* mel = GetNode(aUri, ETrue);
     return mel;
-}
-
-Elem::Iterator Elem::NodesLoc_Begin(const GUri::TElem& aId, TBool aInclRm)
-{
-    return Iterator(new IterImplBase(*this, aId, EFalse, aInclRm));
-}
-
-Elem::Iterator Elem::NodesLoc_End(const GUri::TElem& aId, TBool aInclRm)
-{
-    return Iterator(new IterImplBase(*this, aId, ETrue, aInclRm));
 }
 
 MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere, TBool aInclRm) 

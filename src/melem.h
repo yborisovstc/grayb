@@ -237,8 +237,6 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
     virtual TInt GetCapacity() const = 0;
     virtual TBool IsHeirOf(const string& aParent) const = 0;
     virtual MElem* GetNodeS(const char* aUri) = 0;
-    // TODO [YB] To replace Comps APIs with local nodes APIs (NodesLoc_Begin etc.)
-    // or general nodes APIs (GetNode). This will allow proper iteration with excluding removed nodes
     virtual TInt CompsCount() const = 0;
     virtual MElem* GetComp(TInt aInd) = 0;
     virtual void SaveChromo(const char* aPath) const = 0;

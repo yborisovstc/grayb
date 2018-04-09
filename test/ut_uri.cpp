@@ -18,6 +18,7 @@ class Ut_uri : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_UriParsing);
     CPPUNIT_TEST(test_UriOpr);
     CPPUNIT_TEST(test_UriBase);
+    CPPUNIT_TEST(test_UriRebase);
     //CPPUNIT_TEST(test_UriChromo_1);
     CPPUNIT_TEST_SUITE_END();
 public:
@@ -27,6 +28,7 @@ private:
     void test_UriParsing();
     void test_UriOpr();
     void test_UriBase();
+    void test_UriRebase();
     void test_UriChromo_1();
 private:
     Env* iEnv;
@@ -215,4 +217,23 @@ void Ut_uri::test_UriChromo_1()
 
 }
 
+void Ut_uri::test_UriRebase()
+{
+    printf("\n === Test of rebase uri\n");
 
+    iEnv = new Env("ut_uri_base.xml", "ut_uri_base.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths(KModulesPath);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+
+    GUri uri("/testroot/Modules/DataComps/(DataS:)DataSInt");
+    MElem* base = root->GetNode("/testroot/Modules");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get base", base != NULL);
+    GUri ures;
+    root->RebaseUri(uri, base, ures);
+    GUri uritest("./DataComps/(DataS:)DataSInt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to rebase uri#1", ures == uritest);
+}
