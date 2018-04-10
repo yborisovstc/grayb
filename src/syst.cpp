@@ -845,7 +845,7 @@ TBool ExtenderAgent::IsCompatible(MElem* aPair, TBool aExt)
 
 MElem* ExtenderAgent::GetExtd()
 {
-    return GetNodeE("./../../Int");
+    return GetNode("./../../Int");
 }
 
 MCompatChecker::TDir ExtenderAgent::GetDir() const
@@ -1066,7 +1066,7 @@ TBool AExtender::IsCompatible(MElem* aPair, TBool aExt)
 
 MElem* AExtender::GetExtd()
 {
-    return GetNodeE("./../../Int");
+    return GetNode("./../../Int");
 }
 
 MCompatChecker::TDir AExtender::GetDir() const

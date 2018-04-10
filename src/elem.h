@@ -34,11 +34,6 @@
 	    typedef multimap<string, MElem*> TNMReg;
 	    typedef map<string, MElem*> TNReg;
 	    typedef pair<TNMReg::iterator, TNMReg::iterator> TNMRegItRange;
-	    // Relation chromo to model
-	    typedef pair<MElem*, TNodeAttr> TCMRelTo;
-	    typedef pair<void*, TNodeAttr> TCMRelFrom;
-	    typedef pair<TCMRelFrom, MElem*> TCMRel;
-	    typedef map<TCMRelFrom, MElem*> TCMRelReg;
 	    // Type of content elements
 	    typedef enum 
 	    {
@@ -145,7 +140,6 @@
 	    virtual MElem* GetRoot() const;
 	    virtual MElem* GetInhRoot() const;
 	    virtual MElem* GetCommonOwner(MElem* aElem);
-	    MElem* GetCommonAowner(MElem* aElem);
 	    virtual MElem* GetCompAowner(const MElem* aComp);
 	    virtual const MElem* GetCompAowner(const MElem* aComp) const;
 	    virtual TBool IsAownerOf(const MElem* aElem) const;
@@ -253,38 +247,17 @@
 	    void InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv, void* aVal);
 	    void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg);
 	    void InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv, TIfRange aRg);
-	    // Deps
-	    virtual TMDeps& GetMDeps() { return iMDeps;};
-	    virtual void AddMDep(MElem* aNode, const ChromoNode& aMut, TNodeAttr aAttr);
-	    virtual void RemoveMDep(const TMDep& aDep, const MElem* aContext = NULL);
-	    void RmMCDeps();
-	    static void GetDepRank(const TMDep& aDep, Rank& aRank);
-	    static TBool IsDepActive(const TMDep& aDep);
-	    // Adding two directions chromo-model dependencies
-	    virtual void AddCMDep(const ChromoNode& aMut, TNodeAttr aAttr, MElem* aNode);
-	    virtual TBool RmCMDep(const ChromoNode& aMut, TNodeAttr aAttr, const MElem* aContext = NULL);
-	    void RmCMDep(const ChromoNode& aMut);
-	    void RmCMDeps();
-	    virtual void GetDep(TMDep& aDep, TNodeAttr aAttr, TBool aLocalOnly = EFalse, TBool aAnyType = EFalse) const;
-	    void GetDepRank(Rank& aRank, TNodeAttr aAttr);
-	    virtual TMDep GetMajorDep();
-	    virtual void GetMajorDep(TMDep& aDep, TBool aUp = EFalse, TBool aDown = ETrue);
-	    virtual TMDep GetMajorDep(TNodeType aMut, MChromo::TDepsLevel aLevel);
-	    virtual void GetMajorDep(TMDep& aDep, TNodeType aMut, MChromo::TDPath aDpath, MChromo::TDepsLevel aLevel, TBool aUp = ETrue, TBool aDown = ETrue);
 	    // Chromo
 	    ChromoNode GetChNode(const GUri& aUri) const;
-	    virtual TBool CompactChromo();
-	    virtual TBool CompactChromo(const ChromoNode& aNode);
-	    void UndoCompactChromo();
+	    virtual TBool CompactChromo() override { return EFalse;}
+	    virtual TBool CompactChromo(const ChromoNode& aNode) override { return EFalse;}
+	    void UndoCompactChromo() {}
 	    inline MLogRec* Logger() const;
 	    inline void Log(const TLog& aRec) const;
 	    inline TBool IsIftEnabled() const;
 	    // From MIface
 	    virtual MIface* Call(const string& aSpec, string& aRes);
 	    virtual string Mid() const;
-	    // Utils
-	    Elem* GetNodeE(const string& aUri) {return ToElem(GetNode(aUri));};
-	    Elem* GetNodeE(const GUri& aUri) {return ToElem(GetNode(aUri));};
 	    virtual TInt CompsCount() const;
 	    virtual MElem* GetComp(TInt aInd);
 	    static string ContentCompId(const string& aOwnerName, const string& aCompName);
@@ -297,7 +270,6 @@
 	    void InsertContentComp(const string& aContName, const string& aCompName);
 	    void InsertContCompsRec(const string& aName, const string& aComp);
 	    TBool ContentHasComps(const string& aContName) const;
-	    static Elem* ToElem(MElem* aMelem) { Elem* res = (aMelem == NULL) ? NULL: aMelem->GetObj(res); return res;};
 	    inline MProvider* Provider() const;
 	    virtual TBool AppendComp(MElem* aComp, TBool aRt = EFalse);
 	    virtual void RemoveComp(MElem* aComp);
@@ -316,8 +288,6 @@
 	    virtual TBool HasInherDeps(const MElem* aScope) const;
 	    void InsertIfQm(const string& aName, const TICacheRCtx& aReq, Base* aProv);
 	    void UnregAllIfRel(TBool aInv = EFalse);
-	    // ICache helpers, for debug only
-	    Elem* GetIcCtxComp(const TICacheRCtx& aCtx, TInt aInd);
 	    void LogIfReqs();
 	    static string ContentKey(const string& aBase, const string& aSuffix);
 	    static string ContentValueKey(const string& aId);
@@ -330,8 +300,6 @@
 	    // Visual client debugging, ref ds_visdbg
 	    virtual string GetAssociatedData(const string& aUri) const;
 	    // Debugging
-	    virtual void DumpMcDeps() const;
-	    virtual void DumpCmDeps() const;
 	    virtual void SaveChromo(const char* aPath) const;
 	    virtual void DumpComps() const;
 	    virtual void DumpChilds() const;
@@ -370,10 +338,6 @@
 	    TNMReg iChilds;
 	    // Parent
 	    MElem* iParent;
-	    // Dependent nodes, relations to keep model consistent on mutations, ref uc_028, ds_mut
-	    TMDeps iMDeps;
-	    // Mutation to model node relation, required for chromo squeezing, ref ds_mut_sqeezing
-	    TCMRelReg iCMRelReg;
 	    // Sign of that node is removed
 	    TBool isRemoved;
 	    string iName;

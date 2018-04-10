@@ -125,12 +125,12 @@ class AFunc: public Elem, public MACompsObserver, public MDataObserver
     protected:
 	void NotifyUpdate();
 	TBool IsLogeventUpdate();
-	inline Elem* Host();
+	inline MElem* Host();
     public:
 	static const string KDiagErr;
 };
 
-inline Elem* AFunc::Host() { return ToElem(iMan->GetMan());};
+inline MElem* AFunc::Host() { return (iMan == NULL) ? NULL : iMan->GetMan(); };
 
 class AFuncInt: public AFunc, public MDIntGet
 {

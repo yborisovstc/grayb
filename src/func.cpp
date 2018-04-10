@@ -3606,18 +3606,6 @@ void AFAtVar::Init(const string& aIfaceName)
     }
 }
 
-/*
-   Elem::TIfRange AFAtVar::GetInps(TInt aId)
-   {
-   __ASSERT(aId == Func::EInp1 || aId == Func::EInp2);
-   Elem* inp = NULL;
-   inp = GetNodeE(aId == Func::EInp1 ? "./../../Capsule/Inp" : "./../../Capsule/Index");
-   __ASSERT(inp != NULL);
-   RqContext cont(this);
-   return inp->GetIfi(MDVarGet::Type(), &cont);
-   }
-   */
-
 string AFAtVar::GetInpUri(TInt aId) const
 {
     if (aId == Func::EInp1) return "Inp";
@@ -3915,24 +3903,6 @@ string AFSwitchVar::GetInpUri(TInt aId) const
 	return ss.str();
     }
 }
-
-// TODO [YB] It is simpler to use just mapping Func::EInp* to inputs uris
-/*
-   Elem::TIfRange AFSwitchVar::GetInps(TInt aId)
-   {
-   Elem* inp = NULL;
-   string inp_uri = "./../../Capsule/Sel";
-   if (aId != Func::EInp1) {
-   stringstream ss;
-   ss <<  "./../../Capsule/Inp" << (aId - Func::EInp1);
-   inp_uri = ss.str();
-   }
-   inp = GetNodeE(inp_uri);
-   __ASSERT(inp != NULL);
-   RqContext cont(this);
-   return inp->GetIfi(MDVarGet::Type(), &cont);
-   }
-   */
 
 // Case - commutation of inputs
 Func* FSwitchBool::Create(Host* aHost, const string& aOutIid, const string& aInpIid)

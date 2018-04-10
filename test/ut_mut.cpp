@@ -55,7 +55,7 @@ private:
     void test_MutRmRecr();
     void test_MutRmRecrInh();
     void test_MutDepsRm();
-    void test_MutDepsRm2();
+    //void test_MutDepsRm2();
     void test_MutDepsChilds1();
     void test_MutDepsRmRef();
     void test_MutInv1();
@@ -401,6 +401,7 @@ void Ut_mut::test_MutDepsRm()
 
 // Preventing of mutation braking model consistency
 // Mutation - rm, dependency - object of change
+#if 0
 void Ut_mut::test_MutDepsRm2()
 {
     printf("\n === Test of mutation consistency, mut -rm-, dep - object \n");
@@ -434,6 +435,7 @@ void Ut_mut::test_MutDepsRm2()
     e2 = root->GetNode("./elem1/elem2");
     CPPUNIT_ASSERT_MESSAGE("Root mutation -rm- of elem2 is refused", e2 == NULL);
 }
+#endif
 
 // Mutation consistency
 // Dependency - via childs
