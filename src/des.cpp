@@ -849,26 +849,6 @@ void *StateAgent::DoGetObj(const char *aName)
     return res;
 }
 
-void StateAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
-{
-    void* res = NULL;
-    TIfRange rr;
-    RqContext ctx(this, aCtx);
-    if (strcmp(aName.c_str(), Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName.c_str(), MDesObserver::Type()) == 0) {
-	res = (MDesObserver*) this;
-    }
-    else if (strcmp(aName.c_str(), MDesSyncable::Type()) == 0) {
-	res = (MDesSyncable*) this;
-    }
-    else {
-	res = Elem::DoGetObj(aName.c_str());
-    }
-    InsertIfCache(aName, aCtx, this, res);
-}
-
 TBool StateAgent::IsActive()
 {
     return iActive;

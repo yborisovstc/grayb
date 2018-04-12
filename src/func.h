@@ -238,8 +238,6 @@ class AFConvInt: public AFuncInt
 	virtual void *DoGetObj(const char *aName);
 	// From MDIntGet
 	virtual TInt GetValue();
-	// Ifaces cache
-	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
     private:
 	Sample iSampleHolder;
 	TInt iSample;

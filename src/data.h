@@ -61,8 +61,6 @@ class DInt: public DataBase, public MDInt, public MDIntGet, public MDIntSet
 	virtual bool ToString(string& aData); 
 	// From MUpdatable
 	virtual TBool Update();
-	// From Elem
-	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
     protected:
 	TInt mData;
 };
@@ -79,8 +77,6 @@ class DNInt: public DInt
 	virtual void *DoGetObj(const char *aName);
 	// From MDInt
 	virtual void Set(TInt aData);
-	// From Elem
-	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
 };
 
 // Variant data. Supports multiple data types. The actual data type is configured on init phase

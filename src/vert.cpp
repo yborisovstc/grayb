@@ -78,59 +78,7 @@ void *Vert::DoGetObj(const char *aName)
     else {
 	res = Elem::DoGetObj(aName);
     }
-    // Added looing at the embedded agents also, ref ds_mi_rm
-    if (res == NULL) {
-	MElem* agents = GetComp("Elem", "Agents");
-	if (agents != NULL) {
-	    for (TInt ci = 0; ci < agents->CompsCount() && res == NULL; ci++) {
-		MElem* eit = agents->GetComp(ci);
-		res = eit->DoGetObj(aName);
-	    }
-	}
-    }
     return res;
-}
-
-void Vert::UpdateIfi(const string& aName, const RqContext* aCtx)
-{
-    void* res = NULL;
-    TBool resg = EFalse;
-    TIfRange rr;
-    RqContext ctx(this, aCtx);
-    TICacheRCtx rctx(aCtx);
-    //ToCacheRCtx(aCtx, rctx);
-    if (strcmp(aName.c_str(), Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName.c_str(), MVert::Type()) == 0) {
-	res = (MVert*) this;
-    }
-    else {
-	res = Elem::DoGetObj(aName.c_str());
-    }
-    if (res != NULL) {
-	InsertIfCache(aName, rctx, this, res);
-    }
-    // TODO So if res != NULL we dont look at the agents. Why?
-    // Support run-time extentions on the base layer, ref md#sec_refac_iface
-    if (res == NULL) {
-	MElem* agents = GetComp("Elem", "Agents");
-	if (agents != NULL) {
-	    for (TInt ci = 0; ci < agents->CompsCount() && res == NULL; ci++) {
-		MElem* eit = agents->GetComp(ci);
-		if (!ctx.IsInContext(eit)) {
-		    rr = eit->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, rctx, eit, rr);
-		    resg = resg || (rr.first != rr.second);
-		}
-	    }
-	}
-	// Register self any case. We need to have at least one record because the requestor
-	// register self as provider anycase, ref ds_ifcache_refr_fpt
-	if (!resg) {
-	    InsertIfCache(aName, rctx, this, res);
-	}
-    }
 }
 
 Vert::~Vert()

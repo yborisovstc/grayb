@@ -252,29 +252,6 @@ void *DInt::DoGetObj(const char *aName)
     return res;
 }
 
-void DInt::UpdateIfi(const string& aName, const RqContext* aCtx)
-{
-    void* res = NULL;
-    TIfRange rr;
-    RqContext ctx(this, aCtx);
-    if (strcmp(aName.c_str(), Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName.c_str(), MACompsObserver::Type()) == 0) {
-	res = (MACompsObserver*) this;
-    }
-    else if (strcmp(aName.c_str(), MDIntGet::Type()) == 0) {
-	res = (MDIntGet*) this;
-    }
-    else if (strcmp(aName.c_str(), MDIntSet::Type()) == 0) {
-	res = (MDIntSet*) this;
-    }
-    else {
-	res = DataBase::DoGetObj(aName.c_str());
-    }
-    InsertIfCache(aName, aCtx, this, res);
-}
-
 TInt DInt::Data() const
 {
     return mData;
@@ -370,20 +347,6 @@ void *DNInt::DoGetObj(const char *aName)
 	res = DInt::DoGetObj(aName);
     }
     return res;
-}
-
-void DNInt::UpdateIfi(const string& aName, const RqContext* aCtx)
-{
-    void* res = NULL;
-    TIfRange rr;
-    RqContext ctx(this, aCtx);
-    if (strcmp(aName.c_str(), Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = DInt::DoGetObj(aName.c_str());
-    }
-    InsertIfCache(aName, aCtx, this, res);
 }
 
 void DNInt::Set(TInt aData)

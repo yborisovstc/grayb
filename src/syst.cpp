@@ -160,9 +160,6 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 		}
 	    }
 	}
-	if (!resg) {
-	    InsertIfCache(aName, rctx, this, res);
-	}
     }
 }
 
@@ -427,7 +424,6 @@ void ConnPointMc::UpdateIfi(const string& aName, const RqContext* aCtx)
     TBool resg = EFalse;
     RqContext ctx(this, aCtx);
     TICacheRCtx rctx(aCtx);
-    //ToCacheRCtx(aCtx, rctx);
     Base* rqstr = aCtx != NULL ? aCtx->Requestor() : NULL;
     if (strcmp(aName.c_str(), Type()) == 0) {
 	res = this;
@@ -471,9 +467,6 @@ void ConnPointMc::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    resg = resg || (rr.first == rr.second);
 		}
 	    }
-	}
-	if (!resg) {
-	    InsertIfCache(aName, rctx, this, res);
 	}
     }
 }
@@ -826,10 +819,6 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    resg = resg || (rr.first == rr.second);
 	}
     }
-    if (!resg) {
-	InsertIfCache(aName, rctx, this, res);
-    }
-
 }
 
 TBool ExtenderAgent::IsCompatible(MElem* aPair, TBool aExt)
@@ -1047,10 +1036,6 @@ void AExtender::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    resg = resg || (rr.first != rr.second);
 	}
     }
-    if (!resg) {
-	InsertIfCache(aName, rctx, this, res);
-    }
-
 }
 
 TBool AExtender::IsCompatible(MElem* aPair, TBool aExt)
@@ -1295,9 +1280,6 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		}
 	    }
 	}
-    }
-    if (!resok) {
-	InsertIfCache(aName, rctx, this, res);
     }
 }
 

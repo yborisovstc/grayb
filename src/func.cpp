@@ -850,24 +850,6 @@ void *AFConvInt::DoGetObj(const char *aName)
     return res;
 }
 
-void AFConvInt::UpdateIfi(const string& aName, const RqContext* aCtx)
-{
-    void* res = NULL;
-    TIfRange rr;
-    TBool resg = EFalse;
-    RqContext ctx(this, aCtx);
-    if (strcmp(aName.c_str(), Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName.c_str(), MDIntGet::Type()) == 0) {
-	res = (MDIntGet*) this;
-    }
-    else {
-	res = AFuncInt::DoGetObj(aName.c_str());
-    }
-    InsertIfCache(aName, aCtx, this, res);
-}
-
 TInt AFConvInt::GetValue()
 {
     TInt val = 0;

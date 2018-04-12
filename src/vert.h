@@ -31,8 +31,6 @@ class Vert: public Elem, public MVert
 	// From Elem
 	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse);
 	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
-	// Iface cache
-	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);
 	virtual string Mid() const;

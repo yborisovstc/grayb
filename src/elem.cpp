@@ -529,6 +529,13 @@ Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
 	UpdateIfi(aName, ctx);
 	beg = IfIter(this, aName, req);
 	end = IfIter(this, aName, req, ETrue);
+	// Register the request with local provider in case of no iface resolved (in case of iface 
+	// resolved, the request got already registered).
+	// This creates relation chain anycase, registering all potential requesters for the providers
+	// This allows to do correct invalidation of iface cache from any provider to its requestors
+	if (beg == end) {
+	    InsertIfQm(aName, req, this);
+	}
     } else {
 	if (IsIftEnabled()) {
 	    Logger()->Write(EInfo, this, "Iface [%s]: resolved from cache", aName.c_str());
@@ -754,15 +761,35 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
 
 void Elem::InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv, TIfRange aRg)
 {
+    __ASSERT(false);
     TICacheRCtx req(aCtx);
-    //ToCacheRCtx(aCtx, req);
     InsertIfCache(aName, req, aProv, aRg);
 }
 
 void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
 {
+    TBool resg = EFalse;
+    TIfRange rr;
+    RqContext ctx(this, aCtx);
+    TICacheRCtx rctx(aCtx);
+    // Try local ifaces first
     void* res = DoGetObj(aName.c_str());
-    InsertIfCache(aName, aCtx, this, res);
+    if (res != NULL) {
+	InsertIfCache(aName, aCtx, this, res);
+    } else {
+	// Support run-time extentions on the base layer, ref md#sec_refac_iface
+	MElem* agents = GetComp("Elem", "Agents");
+	if (agents != NULL) {
+	    for (TInt ci = 0; ci < agents->CompsCount(); ci++) {
+		MElem* eit = agents->GetComp(ci);
+		if (!ctx.IsInContext(eit)) {
+		    rr = eit->GetIfi(aName, &ctx);
+		    InsertIfCache(aName, rctx, eit, rr);
+		    resg = resg || (rr.first != rr.second);
+		}
+	    }
+	}
+    }
 }
 
 void Elem::LogIfReqs()

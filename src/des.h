@@ -296,8 +296,6 @@ class StateAgent: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd
 	virtual void OnActivated();
 	virtual MIface* MDesObserver_Call(const string& aSpec, string& aRes);
 	virtual string MDesObserver_Mid() const;
-	// Iface provider
-	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
     private:
 	TBool iActive;
 	TBool iUpdated;
