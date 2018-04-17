@@ -305,6 +305,7 @@
 	    virtual void DumpChilds() const;
 	    virtual void DumpContent() const;
 	    virtual void DumpIfReqs() const override;
+	    virtual void DumpIfCache() const override;
 	public:
 	    // TODO [YB] To move to Ifu ?
 	    static const char KContentStart = '{';

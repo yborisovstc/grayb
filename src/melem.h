@@ -6,6 +6,7 @@
 #include "mmuta.h"
 #include "miface.h"
 #include "ifu.h"
+#include "ifu.h"
 #include <set>
 
 
@@ -20,6 +21,18 @@ class TICacheRCtx: public vector<Base*>
     public:
 	TICacheRCtx();
 	TICacheRCtx(const RqContext* aCtx);
+};
+
+
+/**
+ * @brief Interface of agent - element that handles managing requests
+ */
+class MAgent: public MIfaceProv
+{
+    public:
+	static const char* Type() { return "MAgent";}
+	MIface* DoGetIface(const string& aName) override { return MAgent_DoGetIface(aName);}
+	virtual MIface* MAgent_DoGetIface(const string& aName) = 0;
 };
 
 // Cloned from MCompsObserver in order to avoid MCompsObserver be MIface
@@ -244,6 +257,7 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
     virtual void DumpComps() const = 0;
     virtual void DumpContent() const = 0;
     virtual void DumpIfReqs() const = 0;
+    virtual void DumpIfCache() const = 0;
     // From MIface
     virtual string Uid() const { return Mid() + "%" + Type();};
     // Helpers

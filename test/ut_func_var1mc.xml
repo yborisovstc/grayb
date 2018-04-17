@@ -14,17 +14,17 @@
 	<import id="/FuncComps/FuncIntRes" />
     </node>
     <node id="Start" parent="Elem">
-	<node id="Incaps_root" parent="/(Elem:)Root/(Elem:)Modules/(Elem:)IncapsComps/(Syst:)Incaps">
+	<node id="Incaps_root" parent="/Root/Modules/IncapsComps/Incaps">
 	    <node id="Dt" parent="/Root/Modules/DataComps/DataTVar">
 		<cont node="./Value" val="F 0"/>
 	    </node>
-	    <node id="Add" parent="/(Elem:)Root/(Elem:)Modules/(Elem:)FuncComps/(FuncVar:)FAddVar"/>
+	    <node id="Add" parent="/Root/Modules/FuncComps/FAddVar"/>
 	    <node id="Inp_data1" parent="/Root/Modules/DataComps/DataSVarMc">
 		<cont id="Value" val="I 4"/>
 	    </node>
 	    <node id="e1" parent="Edge">
-		<cont node="./(Prop:)P2" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(DataTVar:)Dt/Capsule/inp"/>
-		<cont node="./(Prop:)P1" ref="/(Elem:)Root/(Elem:)Start/(Incaps:)Incaps_root/(FAddVar:)Add/Capsule/(Out_FVar:)out"/>
+		<cont node="./P2" ref="/Root/Start/Incaps_root/Dt/Capsule/inp"/>
+		<cont node="./P1" ref="/Root/Start/Incaps_root/Add/Capsule/out"/>
 	    </node>
 	    <node id="e2" parent="Edge">
 		<cont node="./P2" ref="/Root/Start/Incaps_root/Add/Capsule/Inp"/>

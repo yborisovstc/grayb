@@ -3,7 +3,7 @@
 
 #include "syst.h"
 
-class Incaps: public Elem, public MACompsObserver
+class Incaps: public Elem, public MACompsObserver, public MAgent
 {
     public:
 	static const char* Type() { return "IncapsAgent";};
@@ -14,6 +14,8 @@ class Incaps: public Elem, public MACompsObserver
 	virtual void *DoGetObj(const char *aName);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
+	// From MAgent
+	MIface* MAgent_DoGetIface(const string& aName) override;
     protected:
 	TBool IsPtOk(MElem& aContext, MElem* aPt);
 };

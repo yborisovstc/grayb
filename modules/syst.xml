@@ -38,37 +38,37 @@
 	 -->
     <node id="ExtenderBase" parent="Vert"> 
 	<!--node id="Int" -->
-	<node node="./(Elem:)Agents" id="MAExteder" parent="ExtenderAgent"/> 
+	<node id="MAExteder" parent="ExtenderAgent"/> 
     </node>
 
     <node id="Extender" parent="Vert"> 
 	<node id="Int" parent="./../ConnPoint"/>
-	<node node="./(Elem:)Agents" id="MAExteder" parent="ExtenderAgent"/> 
+	<node id="MAExteder" parent="ExtenderAgent"/> 
     </node>
 
     <node id="ExtenderInpBase" parent="Vert"> 
 	<!--node id="Int"-->
-	<node node="./(Elem:)Agents" id="MAExteder" parent="ExtenderAgentInp"/> 
+	<node id="MAExteder" parent="ExtenderAgentInp"/> 
     </node>
 
     <node id="ExtenderInp" parent="Vert"> 
 	<node id="Int" parent="./../ConnPoint"/>
-	<node node="./(Elem:)Agents" id="MAExteder" parent="ExtenderAgentInp"/> 
+	<node id="MAExteder" parent="ExtenderAgentInp"/> 
     </node>
 
     <node id="ExtenderOutBase" parent="Vert"> 
 	<!--node id="Int"-->
-	<node node="./(Elem:)Agents" id="MAExteder" parent="ExtenderAgentOut"/> 
+	<node id="MAExteder" parent="ExtenderAgentOut"/> 
     </node>
 
     <node id="ExtenderOut" parent="Vert"> 
 	<node id="Int" parent="./../ConnPoint"/>
-	<node node="./(Elem:)Agents" id="MAExteder" parent="ExtenderAgentOut"/> 
+	<node id="MAExteder" parent="ExtenderAgentOut"/> 
     </node>
 
     <node id="ExtenderMc" parent="Vert"> 
 	<cont id="About" val="Base extender. Need to add internal connectable named Int"/>
-	<node node="./(Elem:)Agents" id="MAExteder" parent="AExtender"/> 
+	<node id="MAExteder" parent="AExtender"/> 
     </node>
 
     <node id="ExtenderInpMc" parent="./ExtenderMc"> 
@@ -82,7 +82,7 @@
     <node id="CpExtenderMc" parent="Vert"> 
 	<cont id="About" val="Extender of simple connpoint."/>
 	<node id="Int" parent="./../ConnPoint"/>
-	<node node="./(Elem:)Agents" id="MAExteder" parent="AExtender"/> 
+	<node id="MAExteder" parent="AExtender"/> 
     </node>
 
     <node id="CpExtenderInpMc" parent="./CpExtenderMc"> 
@@ -96,21 +96,21 @@
 
     <!-- Socket -->
     <node id="Socket" parent="Vert"> 
-	<node node="./Agents" id="Sock" parent="ASocket"/> 
+	<node id="Sock" parent="ASocket"/> 
     </node>
 
     <!-- Input Socket -->
     <node id="SocketInp" parent="Vert"> 
-	<node node="./Agents" id="Sock" parent="ASocketInp"/> 
+	<node id="Sock" parent="ASocketInp"/> 
     </node>
 
     <!-- Output Socket -->
     <node id="SocketOut" parent="Vert"> 
-	<node node="./Agents" id="Sock" parent="ASocketOut"/> 
+	<node id="Sock" parent="ASocketOut"/> 
     </node>
 
     <node id="SocketMc" parent="Vert"> 
-	<node node="./Agents" id="Sock" parent="ASocketMc"/> 
+	<node id="Sock" parent="ASocketMc"/> 
     </node>
 
     <node id="SocketInpMc" parent="./SocketMc">

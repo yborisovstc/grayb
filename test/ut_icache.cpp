@@ -17,12 +17,14 @@ class Ut_icache : public CPPUNIT_NS::TestFixture
 {
     CPPUNIT_TEST_SUITE(Ut_icache);
     CPPUNIT_TEST(test_Inv1);
+    CPPUNIT_TEST(test_InvMAgent);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
     virtual void tearDown();
 private:
     void test_Inv1();
+    void test_InvMAgent();
 private:
     Env* iEnv;
 };
@@ -100,3 +102,53 @@ void Ut_icache::test_Inv1()
     delete iEnv;
 }
 
+/**
+ * @brief Verifies if iface cache invalidates for MAgent when MAgent comp adding/deleting
+ */
+void Ut_icache::test_InvMAgent()
+{
+    printf("\n === Tests invalidation for MAgent when MAgent comp adding/deleting\n");
+
+    iEnv = new Env("ut_icache_inv_magent.xml", "ut_icache_inv_magent.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+
+    // Mutate the input data first
+    MElem* test = root->GetNode("./test");
+    ChromoNode madd = test->AppendMutation(ENt_Node);
+    madd.SetAttr(ENa_Id, "MAExteder");
+    madd.SetAttr(ENa_Parent, "ExtenderAgent");
+
+    // Cache contains only one item - incaps agent
+    RqContext mctx(NULL);
+    MIfProv::TIfRange rg = test->GetIfi(MAgent::Type(), &mctx);
+    TInt cnt = 0;
+    for (MIfProv::TIfIter it = rg.first; it != rg.second; it++, cnt++);
+    CPPUNIT_ASSERT_MESSAGE("Wrong number of MAgent ifaces on first request", cnt == 1);
+    MAgent* agt = (MAgent*) *rg.first;
+    MElem* agte = dynamic_cast<MElem*>(agt->DoGetIface(MElem::Type()));
+    CPPUNIT_ASSERT_MESSAGE("Wrong MAgent iface on first request", agte->GetUri(NULL,true) == "/testroot/test/MACompsObserver");
+
+    test->Mutate();
+
+    // Cache should be invalidated here, so GetIfi refreshes cache and add two agetns to cache - incaps and extender
+    rg = test->GetIfi(MAgent::Type(), &mctx);
+    cnt = 0;
+    for (MIfProv::TIfIter it = rg.first; it != rg.second; it++, cnt++);
+    CPPUNIT_ASSERT_MESSAGE("Wrong number of MAgent ifaces on second request", cnt == 2);
+    MIfProv::TIfIter it = rg.first;
+    agt = (MAgent*) *it;
+    agte = dynamic_cast<MElem*>(agt->DoGetIface(MElem::Type()));
+    CPPUNIT_ASSERT_MESSAGE("Wrong MAgent 1-st iface on second request", agte->GetUri(NULL,true) == "/testroot/test/MACompsObserver");
+    it++;
+    agt = (MAgent*) *it;
+    agte = dynamic_cast<MElem*>(agt->DoGetIface(MElem::Type()));
+    CPPUNIT_ASSERT_MESSAGE("Wrong MAgent 2-nd iface on second request", agte->GetUri(NULL,true) == "/testroot/test/MAExteder");
+
+
+    delete iEnv;
+}

@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for simple event system. It contains simple incrementor state.
+     -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="testroot" parent="Elem">
+    <node id="Modules" parent="AImports">
+	<import id="/IncapsComps/Incaps"/>
+	<import id="/DataComps/DataSInt"/>
+	<import id="/DataComps/DataInt"/>
+	<import id="/FuncComps/FuncIncInt"/>
+    </node>
+
+    <node id="test" parent="./Modules/IncapsComps/Incaps">
+    </node>
+
+</node>
+

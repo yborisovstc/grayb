@@ -54,12 +54,21 @@ void *ATrBase::DoGetObj(const char *aName)
     if (strcmp(aName, Type()) == 0) {
 	res = this;
     }
-    else if (strcmp(aName, MACompsObserver::Type()) == 0) {
+    else if (strcmp(aName, MACompsObserver::Type()) == 0)
 	res = (MACompsObserver*) this;
-    }
+    else if (strcmp(aName, MAgent::Type()) == 0)
+	res = dynamic_cast<MAgent*>(this);
     else {
 	res = Elem::DoGetObj(aName);
     }
+    return res;
+}
+
+MIface* ATrBase::MAgent_DoGetIface(const string& aName)
+{
+    MIface* res = NULL;
+    if (aName == MElem::Type())
+	res = dynamic_cast<MElem*>(this);
     return res;
 }
 
@@ -116,7 +125,7 @@ MDIntGet* ATrInt::GetInp(const string& aInpName)
 Elem::TIfRange ATrInt::GetInpRg(const string& aInpName)
 {
     TIfRange res;
-    string uri = "./../../" + aInpName;
+    string uri = "./../" + aInpName;
     MElem* einp = GetNode(uri);
     if (einp != NULL) {
 	RqContext cont(this);
@@ -407,7 +416,7 @@ string ATrVar::GetInpUri(TInt aId) const
 Elem::TIfRange ATrVar::GetInps(TInt aId, TBool aOpt)
 {
     TIfRange res;
-    MElem* inp = GetNode("./../../" + GetInpUri(aId));
+    MElem* inp = GetNode("./../" + GetInpUri(aId));
     if (inp != NULL) {
 	RqContext cont(this);
 	res =  inp->GetIfi(MDVarGet::Type(), &cont);
@@ -843,9 +852,19 @@ void *StateAgent::DoGetObj(const char *aName)
     else if (strcmp(aName, MDesObserver::Type()) == 0) {
 	res = (MDesObserver*) this;
     }
+    else if (strcmp(aName, MAgent::Type()) == 0)
+	res = dynamic_cast<MAgent*>(this);
     else {
 	res = Elem::DoGetObj(aName);
     }
+    return res;
+}
+
+MIface* StateAgent::MAgent_DoGetIface(const string& aName)
+{
+    MIface* res = NULL;
+    if (aName == MElem::Type())
+	res = dynamic_cast<MElem*>(this);
     return res;
 }
 
@@ -866,8 +885,8 @@ void StateAgent::ResetActive()
 
 void StateAgent::Update()
 {
-    TBool cdata = GetNode("./../../Data") != NULL;
-    MElem* eprepu = GetNode(cdata ? "./../../Data/Prepared/Capsule/Upd" : "./../../Prepared/Capsule/Upd");
+    TBool cdata = GetNode("./../Data") != NULL;
+    MElem* eprepu = GetNode(cdata ? "./../Data/Prepared/Capsule/Upd" : "./../Prepared/Capsule/Upd");
     if (eprepu != NULL) {
 	MUpdatable* upd = (MUpdatable*) eprepu->GetSIfiC(MUpdatable::Type(), this);
 	if (upd != NULL) {
@@ -885,14 +904,14 @@ void StateAgent::Update()
 
 void StateAgent::Confirm()
 {
-    TBool cdata = GetNode("./../../Data") != NULL;
-    MElem* econfu = GetNode(cdata ? "./../../Data/Confirmed/Capsule/Upd" : "./../../Confirmed/Capsule/Upd");
+    TBool cdata = GetNode("./../Data") != NULL;
+    MElem* econfu = GetNode(cdata ? "./../Data/Confirmed/Capsule/Upd" : "./../Confirmed/Capsule/Upd");
     if (econfu != NULL) {
 	MUpdatable* upd = (MUpdatable*) econfu->GetSIfiC(MUpdatable::Type(), this);
 	if (upd != NULL) {
 	    if (upd->Update()) {
 		// Activate dependencies
-		MElem* eobs = GetNode("./../../Capsule/Out/Int/PinObs");
+		MElem* eobs = GetNode("./../Capsule/Out/Int/PinObs");
 		RqContext ctx(this);
 		// Request w/o context because of possible redirecting request to itself
 		// TODO [YB] To check if iterator is not damage during the cycle, to cache to vector if so
@@ -1032,9 +1051,19 @@ void *ADes::DoGetObj(const char *aName)
     else if (strcmp(aName, MDesObserver::Type()) == 0) {
 	res = (MDesObserver*) this;
     }
+    else if (strcmp(aName, MAgent::Type()) == 0)
+	res = dynamic_cast<MAgent*>(this);
     else {
 	res = Elem::DoGetObj(aName);
     }
+    return res;
+}
+
+MIface* ADes::MAgent_DoGetIface(const string& aName)
+{
+    MIface* res = NULL;
+    if (aName == MElem::Type())
+	res = dynamic_cast<MElem*>(this);
     return res;
 }
 
@@ -1056,10 +1085,11 @@ void ADes::ResetActive()
 void ADes::Update()
 {
     // Update all the DES components avoiding agents and capsule
-    MElem* host = iMan->GetMan();
+    // TODO Why not using local Iface cache for MDesSyncable ?
+    MElem* host = iMan;
     for (TInt ci = 0; ci < host->CompsCount(); ci++) {
 	MElem* eit = host->GetComp(ci);
-	if (eit != iMan && eit->Name() != "Capsule") {
+	if (eit != this && eit->Name() != "Capsule") {
 	    MDesSyncable* msync = (MDesSyncable*) eit->GetSIfiC(MDesSyncable::Type(), this);
 	    if (msync != NULL) {
 		if (msync->IsActive()) {
@@ -1078,14 +1108,16 @@ void ADes::Update()
 void ADes::Confirm()
 {
     // Confirm all the DES components
-    MElem* host = iMan->GetMan();
+    MElem* host = iMan;
     for (TInt ci = 0; ci < host->CompsCount(); ci++) {
 	MElem* eit = host->GetComp(ci);
-	MDesSyncable* msync = (MDesSyncable*) eit->GetSIfiC(MDesSyncable::Type(), this);
-	if (msync != NULL) {
-	    if (msync->IsUpdated()) {
-		msync->Confirm();
-		ResetUpdated();
+	if (eit != this && eit->Name() != "Capsule") {
+	    MDesSyncable* msync = (MDesSyncable*) eit->GetSIfiC(MDesSyncable::Type(), this);
+	    if (msync != NULL) {
+		if (msync->IsUpdated()) {
+		    msync->Confirm();
+		    ResetUpdated();
+		}
 	    }
 	}
     }

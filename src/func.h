@@ -23,7 +23,7 @@ class FuncBase: public Elem, public MACompsObserver, public MDataObserver
 };
 
 // Agent base of Int function
-class AFunInt: public FuncBase, public MDIntGet
+class AFunInt: public FuncBase, public MDIntGet, public MAgent
 {
     public:
 	static const char* Type() { return "AFunInt";};
@@ -33,7 +33,11 @@ class AFunInt: public FuncBase, public MDIntGet
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MDIntGet
-	virtual TInt Value();
+	TInt Value() override;
+	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
+	string MDIntGet_Mid() const override { return Elem::Mid();}
+	// From MAgent
+	MIface* MAgent_DoGetIface(const string& aName) override;
     protected:
 	void SetRes(TInt aData);
 	MDIntGet* GetInp(const string& aInpName);
@@ -108,7 +112,7 @@ class ACountCritInt: public AFunInt
 
 // Function agent base without result caching
 // It implements elem content methods in purpose of monitoring the value from client side
-class AFunc: public Elem, public MACompsObserver, public MDataObserver
+class AFunc: public Elem, public MACompsObserver, public MDataObserver, public MAgent
 {
 
     public:
@@ -122,6 +126,8 @@ class AFunc: public Elem, public MACompsObserver, public MDataObserver
 	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
 	// From MDataObserver
 	virtual void OnDataChanged();
+	// From MAgent
+	MIface* MAgent_DoGetIface(const string& aName) override;
     protected:
 	void NotifyUpdate();
 	TBool IsLogeventUpdate();
@@ -145,7 +151,9 @@ class AFuncInt: public AFunc, public MDIntGet
 	// From MElem
 	virtual TBool GetCont(string& aValue, const string& aName=string()) const; 
 	// From MDIntGet
-	virtual TInt Value();
+	TInt Value() override;
+	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
+	string MDIntGet_Mid() const override { return Elem::Mid();}
     protected:
 	TInt mData;
 };
@@ -160,7 +168,9 @@ class AFAddInt: public AFunc, public MDIntGet
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MDIntGet
-	virtual TInt Value();
+	TInt Value() override;
+	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
+	string MDIntGet_Mid() const override { return Elem::Mid();}
 };
 
 class AFSubInt: public AFuncInt
@@ -186,7 +196,9 @@ class AFLimInt: public AFunc, public MDIntGet
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MDIntGet
-	virtual TInt Value();
+	TInt Value() override;
+	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
+	string MDIntGet_Mid() const override { return Elem::Mid();}
 };
 
 // Division
@@ -200,7 +212,9 @@ class AFDivInt: public AFunc, public MDIntGet
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MDIntGet
-	virtual TInt Value();
+	TInt Value() override;
+	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
+	string MDIntGet_Mid() const override { return Elem::Mid();}
 };
 
 
@@ -226,7 +240,10 @@ class AFConvInt: public AFuncInt
 	    friend class AFConvInt;
 	    public:
 		Sample(): iHost(NULL) {};
-		virtual TInt Value() { return iHost->iSample;};
+		MIface* Call(const string& aSpec, string& aRes) override { return NULL;}
+		TInt Value() override { return iHost->iSample;};
+		MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
+		string MDIntGet_Mid() const override { return iHost->Elem::Mid();}
 		AFConvInt* iHost;
 	};
     public:
@@ -314,7 +331,9 @@ class AFBoolToInt: public AFunc, public MDIntGet
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MDIntGet
-	virtual TInt Value();
+	TInt Value() override;
+	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
+	string MDIntGet_Mid() const override { return Elem::Mid();}
 };
 
 // Executive part of function 
@@ -403,7 +422,10 @@ class FAddInt: public FAddBase, public MDIntGet {
 	FAddInt(Host& aHost): FAddBase(aHost) {};
 	virtual void *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDIntGet::Type();};
-	virtual TInt Value();
+	// From MDIntGet
+	TInt Value() override;
+	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
+	string MDIntGet_Mid() const override { return mHost.GetAgent()->Elem::Mid();}
 };
 
 class FAddFloat: public FAddBase, public MDFloatGet {

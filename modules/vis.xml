@@ -16,7 +16,7 @@
     <cont node="./Provided" val="MDIntGet" />
   </node>
   <node id="Window" parent="Syst" >
-    <node id="WinAgent" parent="AWindow" node="./Agents" />
+    <node id="WinAgent" parent="AWindow" />
     <node id="Parent" parent="/*/Modules/SysComps/ConnPoint" >
       <cont node="./Required" val="MVisChild" />
       <cont node="./Provided" val="MVisContainer" />
@@ -101,7 +101,7 @@
     <node id="Allocation" parent="/Root/Modules/DesComps/StVarOut" />
   </node>
   <node id="Fixed" parent="Syst" >
-    <node id="WinAgent" parent="AVisFixed" node="./Agents" />
+    <node id="WinAgent" parent="AVisFixed" />
     <node id="Child" parent="/*/Modules/SysComps/ConnPoint" >
       <cont node="./Required" val="MVisContainer" />
       <cont node="./Provided" val="MVisChild" />
@@ -112,14 +112,14 @@
     </node>
   </node>
   <node id="Drawing" parent="./Widget" >
-    <node id="WinAgent" parent="AVisDrawing" node="./Agents" />
+    <node id="WinAgent" parent="AVisDrawing" />
     <node id="DrawingArea" parent="/Root/Modules/(Elem:)SysComps/(ConnPointBase:)ConnPoint" >
       <cont node="./Required" val="MVisDrawingElem" />
       <cont node="./Provided" val="MVisDrawingArea" />
     </node>
   </node>
   <node id="DrawingV" parent="./WidgetV" >
-    <node id="WinAgent" parent="AVisDrawing" node="./Agents" />
+    <node id="WinAgent" parent="AVisDrawing" />
     <node id="DrawingArea" parent="/Root/Modules/(Elem:)SysComps/(ConnPointBase:)ConnPoint" >
       <cont node="./Required" val="MVisDrawingElem" />
       <cont node="./Provided" val="MVisDrawingArea" />
@@ -247,7 +247,7 @@
       <cont node="./Provided" val="MVisDrawingElem" />
       <cont node="./Required" val="MVisDrawingArea" />
     </node>
-    <node id="VisAgent" parent="AVisDrawingElem" node="./Agents" />
+    <node id="VisAgent" parent="AVisDrawingElem" />
   </node>
   <node id="WidgetVc" parent="./(Des:)DrawingVc" >
     <rm node="./(DrawingV:)Drw" />

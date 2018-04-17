@@ -210,6 +210,16 @@ void Ut_cre::test_CreSyst()
     MElem* e1 = root->GetNode("./E1");
     string cont_e1 = e1->GetContent();
 
+    // Checking extenstion agent
+    MElem* ep = root->GetNode("./Syst1/ep");
+    MCompatChecker* ep_cchk = (MCompatChecker*) ep->GetSIfiC(MCompatChecker::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get MCompatChecker from ep", ep_cchk != 0);
+    MElem* cp3 = root->GetNode("./cp3");
+    MVert* cp3v = cp3->GetObj(cp3v);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get cp3", cp3 != 0);
+    MVert* cp3v_pair = cp3v->GetPair(0);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get pair of cp3", cp3v_pair != 0);
+
     delete iEnv;
 }
 
@@ -257,7 +267,8 @@ void Ut_cre::test_CreData()
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
     MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 34);
+    TInt val = doutpget->Value();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", val == 34);
     MVert* mdoutpv = doutp->GetObj(mdoutpv);
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out vertex", mdoutpv != 0);
     MVert* pair = mdoutpv->GetPair(0);
@@ -273,15 +284,6 @@ void Ut_cre::test_CreData()
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
     TInt fres = foutpget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result", fres == 35);
-
-    // Check getting node via edge
-    // TODO [YB] Incorrect URI, this is hier URI, no possibility to access CP thru edge
-//    Elem* fdoutp = root->GetNode("test/Incr/Capsule/inp/Edge:*/ConnPoint:*");
-//    CPPUNIT_ASSERT_MESSAGE("Fail to get data out via func-data connection", fdoutp != 0);
-
-    // Check serching node, one level search
-    MElem* srdoutp = root->GetNode("./test/Incr/*/inp");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get data out via func-data connection", srdoutp != 0);
 
     delete iEnv;
 

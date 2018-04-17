@@ -7,7 +7,7 @@
 #include "func.h"
 
 // Transition function agent base. 
-class ATrBase: public Elem, public MACompsObserver
+class ATrBase: public Elem, public MACompsObserver, public MAgent
 {
     public:
 	static const char* Type() { return "ATrBase";};
@@ -18,6 +18,8 @@ class ATrBase: public Elem, public MACompsObserver
 	virtual void *DoGetObj(const char *aName);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
+	// From MAgent
+	MIface* MAgent_DoGetIface(const string& aName) override;
 };
 
 // Agent base of Int transition function
@@ -31,7 +33,9 @@ class ATrInt: public ATrBase, public MDIntGet
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MDIntGet
-	virtual TInt Value();
+	TInt Value() override;
+	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
+	string MDIntGet_Mid() const override { return Elem::Mid();}
     protected:
 	MDIntGet* GetInp(const string& aInpName);
 	TIfRange GetInpRg(const string& aInpName);
@@ -271,7 +275,7 @@ class MDesObserver_Imd: public MDesObserver
 };
 
 // State base agent
-class StateAgent: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd
+class StateAgent: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd, public MAgent
 {
     public:
 	static const char* Type() { return "StateAgent";};
@@ -296,13 +300,15 @@ class StateAgent: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd
 	virtual void OnActivated();
 	virtual MIface* MDesObserver_Call(const string& aSpec, string& aRes);
 	virtual string MDesObserver_Mid() const;
+	// From MAgent
+	MIface* MAgent_DoGetIface(const string& aName) override;
     private:
 	TBool iActive;
 	TBool iUpdated;
 };
 
 // DES base agent
-class ADes: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd
+class ADes: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd, public MAgent
 {
     public:
 	static const char* Type() { return "ADes";};
@@ -327,6 +333,8 @@ class ADes: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd
 	virtual void OnActivated();
 	virtual MIface* MDesObserver_Call(const string& aSpec, string& aRes);
 	virtual string MDesObserver_Mid() const;
+	// From MAgent
+	MIface* MAgent_DoGetIface(const string& aName) override;
     private:
 	TBool iActive;
 	TBool iUpdated;

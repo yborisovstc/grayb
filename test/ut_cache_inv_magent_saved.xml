@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for invalidating iface cache for MAgent on adding/deleting MAgent comp -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+
+<node id="testroot" parent="Elem">
+    <node id="Modules" parent="AImports">
+	<import id="/IncapsComps/Incaps"/>
+    </node>
+
+    <node id="test" parent="./Modules/IncapsComps/Incaps">
+    </node>
+
+</node>
+

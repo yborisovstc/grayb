@@ -4,7 +4,7 @@
 #include "elem.h"
 #include "mdata.h"
 
-class DataBase: public Elem, public MACompsObserver, public MUpdatable, public MDataObserver
+class DataBase: public Elem, public MACompsObserver, public MUpdatable, public MDataObserver, public MAgent
 {
     public:
 	static const char* Type() { return "DataBase";};
@@ -27,6 +27,8 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable, public M
 	virtual void OnDataChanged();
 	// From MUpdatable
 	virtual TBool Update();
+	// From MIfaceProv
+	virtual MIface* MAgent_DoGetIface(const string& aUid);
     protected:
 	void UpdateProp();
 	void NotifyUpdate();
@@ -35,13 +37,21 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable, public M
 	static const string KCont_Value;
 };
 
-inline MElem* DataBase::Context() { return iMan == NULL ? NULL: iMan->GetMan();};
+inline MElem* DataBase::Context() { return iMan == NULL ? NULL: iMan;};
 
 // Data is representing some static model
 //
 // Data of integer
-class DInt: public DataBase, public MDInt, public MDIntGet, public MDIntSet
+class DInt: public DataBase, public MDInt, public MDIntSet, public MDIntGet
 {
+    /*
+    private:
+	class DIntGet: public MDIntGet { public: DInt& mHost; DIntGet(DInt& aHost): mHost(aHost) {}
+	    MIface* Call(const string& aSpec, string& aRes) override { return mHost.MDIntGet_Call(aSpec, aRes);}
+	    string Mid() const override { return mHost.Mid();}
+	    TInt Value() override { return mHost.Value();}
+	};
+	*/
     public:
 	static const char* Type() { return "DInt";};
 	static string PEType();
@@ -53,7 +63,9 @@ class DInt: public DataBase, public MDInt, public MDIntGet, public MDIntSet
 	virtual TInt Data() const;
 	virtual void Set(TInt aData);
 	// From MDIntGet
-	virtual TInt Value();
+	TInt Value() override;
+	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override;
+	string MDIntGet_Mid() const override { return Elem::Mid();}
 	// From MDIntSet
 	virtual void SetValue(TInt aData);
 	// From Data
@@ -61,7 +73,10 @@ class DInt: public DataBase, public MDInt, public MDIntGet, public MDIntSet
 	virtual bool ToString(string& aData); 
 	// From MUpdatable
 	virtual TBool Update();
+	// From MIfaceProv
+	virtual MIface* MAgent_DoGetIface(const string& aUid);
     protected:
+	//DIntGet mDIntGet;
 	TInt mData;
 };
 
@@ -119,7 +134,11 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		virtual TInt Data() const;
 		virtual void Set(TInt aData);
 		virtual TBool Set(MDVarGet* aInp);
-		virtual TInt Value();
+		// From MDIntGet
+		TInt Value() override;
+		MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
+		string MDIntGet_Mid() const override { return mHost.Elem::Mid();}
+		// From MDIntSet
 		virtual void SetValue(TInt aData);
 		virtual TBool FromString(const string& aString);
 		virtual void ToString(string& aString);

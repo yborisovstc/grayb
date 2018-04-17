@@ -31,6 +31,14 @@ DataBase::DataBase(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
     }
 }
 
+MIface* DataBase::MAgent_DoGetIface(const string& aName)
+{
+    MIface* res = NULL;
+    if (aName == MElem::Type())
+	res = dynamic_cast<MElem*>(this);
+    return res;
+}
+
 // TODO [YB] Bug ds_di_wsucv: Wrong scheme of using content "Value" in DataBase
 // To fix
 TBool DataBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
@@ -91,7 +99,7 @@ TBool DataBase::HandleIoChanged(MElem& aContext, MElem* aCp)
 
 void DataBase::NotifyUpdate()
 {
-    MElem* eout = GetNode("./../../Capsule/out");
+    MElem* eout = GetNode("./../Capsule/out");
     // TODO [YB] Scheme of getting iface should be enough to get MDataObserver directly from eout. Seems the chunk below is redundant.
     if (eout != NULL) {
 	RqContext ctx(this);
@@ -122,6 +130,9 @@ void *DataBase::DoGetObj(const char *aName)
     else if (strcmp(aName, MACompsObserver::Type()) == 0) {
 	res = (MACompsObserver*) this;
     }
+    else if (strcmp(aName, MAgent::Type()) == 0) {
+	res = dynamic_cast<MAgent*>(this);
+    }
     else {
 	res = Elem::DoGetObj(aName);
     }
@@ -130,9 +141,9 @@ void *DataBase::DoGetObj(const char *aName)
 
 void DataBase::UpdateProp()
 {
-    MElem* eprop = GetNode("./../../Value");
+    MElem* eprop = GetNode("./../Value");
     if (eprop != NULL) {
-	MElem* etype = GetNode("./../../Type");
+	MElem* etype = GetNode("./../Type");
 	if (etype == NULL) {
 	    string res;
 	    ToString(res);
@@ -155,7 +166,7 @@ void DataBase::UpdateProp()
 	
 TBool DataBase::IsLogeventUpdate() 
 {
-    MElem* node = GetNode("./../../Logspec/Update");
+    MElem* node = GetNode("./../Logspec/Update");
     string upd = iMan->GetMan()->GetContent("Debug.Update");
     return node != NULL || upd == "y";
 }
@@ -221,7 +232,7 @@ string DInt::PEType()
     return DataBase::PEType() + GUri::KParentSep + Type();
 }
 
-DInt::DInt(const string& aName, MElem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(0)
+DInt::DInt(const string& aName, MElem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv)/*, mDIntGet(*this)*/, mData(0)
 {
     SetParent(Type());
 }
@@ -229,6 +240,16 @@ DInt::DInt(const string& aName, MElem* aMan, MEnv* aEnv): DataBase(aName, aMan, 
 DInt::DInt(MElem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(0)
 {
     SetParent(DataBase::PEType());
+}
+
+MIface* DInt::MAgent_DoGetIface(const string& aName)
+{
+    MIface* res = NULL;
+    if (aName == MDIntGet::Type())
+	res = dynamic_cast<MDIntGet*>(this);
+    else 
+	res = DataBase::MAgent_DoGetIface(aName);
+    return res;
 }
 
 void *DInt::DoGetObj(const char *aName)
@@ -241,7 +262,7 @@ void *DInt::DoGetObj(const char *aName)
 	res = (MACompsObserver*) this;
     }
     else if (strcmp(aName, MDIntGet::Type()) == 0) {
-	res = (MDIntGet*) this;
+	res = dynamic_cast<MDIntGet*>(this);
     }
     else if (strcmp(aName, MDIntSet::Type()) == 0) {
 	res = (MDIntSet*) this;
@@ -261,6 +282,7 @@ void DInt::Set(TInt aData)
 {
     if (mData != aData) {
 	mData = aData;
+	// TODO if set on Value property change, then UpdateProp causes same property change again. To avoid
 	UpdateProp();
 	NotifyUpdate();
     }
@@ -295,9 +317,9 @@ TBool DInt::Update()
 {
     TBool res = EFalse;
     MDIntGet* inp = NULL;
-    MElem* einp = GetNode("./../../Capsule/inp");
+    MElem* einp = GetNode("./../Capsule/inp");
     if (einp == NULL) {
-	einp = GetNode("./../../Capsule/Inp");
+	einp = GetNode("./../Capsule/Inp");
     }
     if (einp != NULL) {
 	Vert* vert = einp->GetObj(vert);
@@ -318,6 +340,26 @@ TBool DInt::Update()
     return res;
 }
 
+MIface* DInt::MDIntGet_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MCompatChecker::mIfu.CheckMname(name);
+    if (!name_ok)
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MCompatChecker::mIfu.CheckMpars(name, args.size());
+    if (!args_ok)
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "Value") {
+	TInt rr = Value();
+	aRes = Ifu::FromInt(rr);
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
 
 
 // Data of integer. Doesn't support nofification of change
@@ -544,9 +586,9 @@ TBool DVar::Update()
 
 MElem* DVar::GetInp()
 {
-    MElem* einp = GetNode("./../../Capsule/inp");
+    MElem* einp = GetNode("./../Capsule/inp");
     if (einp == NULL) {
-	einp = GetNode("./../../Capsule/Inp");
+	einp = GetNode("./../Capsule/Inp");
     }
     return einp;
 }

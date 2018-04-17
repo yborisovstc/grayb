@@ -4159,6 +4159,12 @@
 	<sect2><title>To get rid of Agents special container.</title>
 	    <simpara>Ref <xref linkend="ds_dla"/></simpara>
 	</sect2>
+	<sect2><title>TODO</title>
+	    <orderedlist>
+		<listitem>To avoid handling notifs from comp on all levels. Maybe direct owner handling is enough</listitem>
+		<listitem>To reimplement content as tree</listitem>
+	    </orderedlist>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_dla"><title>Directly located agents instead of using Agents special container </title>

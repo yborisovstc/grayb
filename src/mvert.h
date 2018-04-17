@@ -32,7 +32,7 @@ class MCompatChecker: public MIface
 //	virtual vector<Elem*> GetAssoc(RqContext* aCtx) = 0;
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};
-    protected:
+    public:
 	class EIfu: public Ifu {
 	    public:
 		EIfu();

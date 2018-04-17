@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include "rdata.h"
+#include "miface.h"
 
 using namespace std;
 
@@ -47,11 +48,16 @@ class MDFloat
 	virtual void Set(float aData) = 0;
 };
 
-class MDIntGet
+class MDIntGet: public MIface
 {
     public:
 	static const char* Type() { return "MDIntGet";};
 	virtual TInt Value() = 0;
+	virtual MIface* MDIntGet_Call(const string& aSpec, string& aRes) = 0;
+	virtual string MDIntGet_Mid() const = 0;
+	MIface* Call(const string& aSpec, string& aRes) override {return MDIntGet_Call(aSpec, aRes);}
+	string Mid() const override { return MDIntGet_Mid();}
+	string Uid() const override { return Mid() + "%" + Type();};
 };
 
 class MDFloatGet

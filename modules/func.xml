@@ -208,7 +208,7 @@
 
     <node id="FuncIncInt" parent="/*/Modules/IncapsComps/Incaps"> 
 
-	<node node="./Agents" id="func_agt" parent="AIncInt"/> 
+	<node id="func_agt" parent="AIncInt"/> 
 
 	<node node="./Capsule" id="inp" parent="/*/Modules/SysComps/ConnPointInp"> 
 	    <cont node="./Required" val="MDIntGet"/>
@@ -222,7 +222,7 @@
 
     <!-- Function of integer result -->
     <node id="FuncIntRes" parent="/*/Modules/IncapsComps/Incaps"> 
-	<node node="./Agents" id="func_agt" parent="AFunIntRes"/> 
+	<node id="func_agt" parent="AFunIntRes"/> 
 	<node node="./Capsule" id="inp" parent="/*/Modules/SysComps/ConnPointInp"> 
 	    <cont node="./Required" val="MDIntGet"/>
 	    <cont node="./Provided" val="MDataObserver"/>
@@ -234,35 +234,35 @@
 
     <!-- Function of integer addition -->
     <node id="FuncAddInt" parent="./FuncIntSi"> 
-	<node node="./Agents" id="func_agt" parent="AAddInt"/> 
+	<node id="func_agt" parent="AAddInt"/> 
     </node>
 
     <!-- Function of integer addition wo caching -->
     <node id="FAddInt" parent="./FuncIntSi"> 
-	<node node="./Agents" id="func_agt" parent="AFAddInt"/>
+	<node id="func_agt" parent="AFAddInt"/>
     </node>
 
     <!-- Function of var addition wo caching -->
     <node id="FAddVar" parent="./FuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFAddVar"/>
+	<node id="func_agt" parent="AFAddVar"/>
 	<!-- Input positives -->
 	<node node="./Capsule" id="Inp" parent="./../Inp_FVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
     <!-- Function of var addition wo caching, multicontent -->
     <node id="FAddVarMc" parent="./FuncVarMc"> 
-	<node node="./Agents" id="func_agt" parent="AFAddVar"/>
+	<node id="func_agt" parent="AFAddVar"/>
 	<!-- Input positives -->
 	<node node="./Capsule" id="Inp" parent="./../Inp_FVarMc"/> 
-	<cont id="ViewData.Res" ref="./Agents/func_agt"/>
-	<cont id="SpAgent" ref="./Agents/func_agt"/>
+	<cont id="ViewData.Res" ref="./func_agt"/>
+	<cont id="SpAgent" ref="./func_agt"/>
     </node>
 
 
     <!-- Function of integer addition wo caching -->
     <node id="FSubInt" parent="./FuncInt"> 
-	<node node="./Agents" id="func_agt" parent="AFSubInt"/>
+	<node id="func_agt" parent="AFSubInt"/>
 	<!-- Input positives -->
 	<node node="./Capsule" id="InpP" parent="./../Inp_FInt"/> 
 	<!-- Input negatives -->
@@ -271,7 +271,7 @@
 
     <!-- Function of restriction to upper and lower limits -->
     <node id="FLimInt" parent="./FuncInt"> 
-	<node node="./Agents" id="func_agt" parent="AFLimInt"/>
+	<node id="func_agt" parent="AFLimInt"/>
 	<!-- Input  -->
 	<node node="./Capsule" id="Inp" parent="./../Inp_FInt"/> 
 	<!-- Input positives -->
@@ -282,7 +282,7 @@
 
     <!-- Function of division -->
     <node id="FDivInt" parent="./FuncInt"> 
-	<node node="./Agents" id="func_agt" parent="AFDivInt"/>
+	<node id="func_agt" parent="AFDivInt"/>
 	<!-- Divided  -->
 	<node node="./Capsule" id="Inp_DD" parent="./../Inp_FInt"/> 
 	<!-- Divisor -->
@@ -293,7 +293,7 @@
 
     <!-- Function of convolution. Working function is external -->
     <node id="FConvInt" parent="./FuncIntSi"> 
-	<node node="./Agents" id="func_agt" parent="AFConvInt"/>
+	<node id="func_agt" parent="AFConvInt"/>
 	<!-- Output for passing argunent to Working function  -->
 	<node node="./Capsule" id="Out_WFarg" parent="./../Out_FEInt"/> 
 	<!-- Input for getting result from Working function  -->
@@ -313,14 +313,14 @@
 
     <!-- Function Inp1 GT Inp2  -->
     <node id="FGTInt" parent="./FuncBoolSi"> 
-	<node node="./Agents" id="func_agt" parent="AFGTInt"/>
+	<node id="func_agt" parent="AFGTInt"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_FInt"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_FInt"/> 
     </node>
 
     <!-- Function Bool to Int  -->
     <node id="FBoolToInt" parent="./FuncInt"> 
-	<node node="./Agents" id="func_agt" parent="AFBoolToInt"/>
+	<node id="func_agt" parent="AFBoolToInt"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_FBool"/> 
     </node>
 
@@ -356,13 +356,13 @@
 
     <!-- Function of integer addition wo caching -->
     <node id="TFAddInt" parent="./TFuncInt"> 
-	<node node="./Agents" id="func_agt" parent="AFAddInt"/>
+	<node id="func_agt" parent="AFAddInt"/>
 	<node node="./Capsule" id="inp" parent="./../Inp_TFInt"/> 
     </node>
 
     <!-- Function of integer addition wo caching -->
     <node id="TFSubInt" parent="./TFuncInt"> 
-	<node node="./Agents" id="func_agt" parent="AFSubInt"/>
+	<node id="func_agt" parent="AFSubInt"/>
 	<!-- Input positives -->
 	<node node="./Capsule" id="InpP" parent="./../Inp_TFInt"/> 
 	<!-- Input negatives -->
@@ -371,7 +371,7 @@
 
     <!-- Function of restriction to upper and lower limits -->
     <node id="TFLimInt" parent="./TFuncInt"> 
-	<node node="./Agents" id="func_agt" parent="AFLimInt"/>
+	<node id="func_agt" parent="AFLimInt"/>
 	<!-- Input  -->
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFInt"/> 
 	<!-- Input positives -->
@@ -382,7 +382,7 @@
 
     <!-- Function of division -->
     <node id="TFDivInt" parent="./TFuncInt"> 
-	<node node="./Agents" id="func_agt" parent="AFDivInt"/>
+	<node id="func_agt" parent="AFDivInt"/>
 	<!-- Divided  -->
 	<node node="./Capsule" id="Inp_DD" parent="./../Inp_TFInt"/> 
 	<!-- Divisor -->
@@ -392,7 +392,7 @@
 
     <!-- Function of convolution. Working function is external -->
     <node id="TFConvInt" parent="./TFuncInt"> 
-	<node node="./Agents" id="func_agt" parent="AFConvInt"/>
+	<node id="func_agt" parent="AFConvInt"/>
 	<node node="./Capsule" id="inp" parent="./../Inp_TFInt"/> 
 	<!-- Output for passing argunent to Working function  -->
 	<node node="./Capsule" id="Out_WFarg" parent="./../Out_TFEInt"/> 
@@ -405,123 +405,123 @@
 
     <!-- Function Inp1 GT Inp2  -->
     <node id="TFGTInt" parent="./TFuncBool"> 
-	<node node="./Agents" id="func_agt" parent="AFGTInt"/>
+	<node id="func_agt" parent="AFGTInt"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_TFInt"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_TFInt"/> 
     </node>
 
     <!-- Transition Function EQ  -->
     <node id="TFEQVar" parent="./TFuncVar"> 
-	<node node="./Agents" id="AF_Eq" parent="AFCmpVar"/>
+	<node id="AF_Eq" parent="AFCmpVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_TFVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/AF_Eq"/>
+	<cont node="./ViewData/Res" ref="./../../AF_Eq"/>
     </node>
  
     <!-- Transition Function GE  -->
     <node id="TFGEVar" parent="./TFuncVar"> 
-	<node node="./Agents" id="AF_Ge" parent="AFCmpVar"/>
+	<node id="AF_Ge" parent="AFCmpVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_TFVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/AF_Ge"/>
+	<cont node="./ViewData/Res" ref="./../../AF_Ge"/>
     </node>
  
     <!-- Transition Function LT  -->
     <node id="TFLTVar" parent="./TFuncVar"> 
-	<node node="./Agents" id="AF_Lt" parent="AFCmpVar"/>
+	<node id="AF_Lt" parent="AFCmpVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_TFVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/AF_Lt"/>
+	<cont node="./ViewData/Res" ref="./../../AF_Lt"/>
     </node>
 
     <!-- Transition Function of variable adding -->
     <node id="TFAddVar" parent="./TFuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFAddVar"/>
+	<node id="func_agt" parent="AFAddVar"/>
 	<!-- Input positives -->
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
     <!-- Transition Function of variable adding -->
     <node id="TFAddVarMc" parent="./TFuncVarMc"> 
 	<cont id="About" val="Transition Function of variable adding"/>
-	<node node="./Agents" id="func_agt" parent="AFAddVar"/>
+	<node id="func_agt" parent="AFAddVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVarMc"/> 
-	<cont id="ViewData.Res" ref="./Agents/func_agt"/>
-	<cont id="SpAgent" ref="./Agents/func_agt"/>
+	<cont id="ViewData.Res" ref="./func_agt"/>
+	<cont id="SpAgent" ref="./func_agt"/>
     </node>
 
     <!-- Transition Function of variable adding and substraction -->
     <node id="TFAddNVar" parent="./TFuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFAddVar"/>
+	<node id="func_agt" parent="AFAddVar"/>
 	<!-- Input positives -->
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
 	<!-- Input negative -->
 	<node node="./Capsule" id="InpN" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
 
     <!-- Transition Function of variable multiplication -->
     <node id="TFMplVar" parent="./TFuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFMplVar"/>
+	<node id="func_agt" parent="AFMplVar"/>
 	<!-- Input positives -->
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
     <!-- Transition Function of variable mutltiplication, non commutative -->
     <node id="TFMplncVar" parent="./TFuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFMplncVar"/>
+	<node id="func_agt" parent="AFMplncVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_TFVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
     <!-- Transition Function of variable mutltiplicationi inversion -->
     <node id="TFMplinvVar" parent="./TFuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFMplinvVar"/>
+	<node id="func_agt" parent="AFMplinvVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
     <!-- Transition Function of variable creation of diag matrix -->
     <node id="TFCpsMtrdVar" parent="./TFuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFCpsMtrdVar"/>
+	<node id="func_agt" parent="AFCpsMtrdVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
     <!-- Transition Function of composing of vector from comps, variable -->
     <node id="TFCpsVectVar" parent="./TFuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFCpsVectVar"/>
+	<node id="func_agt" parent="AFCpsVectVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_TFVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
 
     <!-- Transition Function of variable casting -->
     <node id="TFCastVar" parent="./TFuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFCastVar"/>
+	<node id="func_agt" parent="AFCastVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
 	<node id="InpType" parent="Prop"/>
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
     <!-- Transition Function of getting component of containter  -->
     <node id="TFAtVar" parent="./TFuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFAtVar"/>
+	<node id="func_agt" parent="AFAtVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
 	<node node="./Capsule" id="Index" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
     <!-- Transition Function of boolean negation -->
     <node id="TFNegVar" parent="./TFuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFBoolNegVar"/>
+	<node id="func_agt" parent="AFBoolNegVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
 
@@ -533,7 +533,7 @@
 	<node id="E1" parent="Edge"> <cont node="./P1" ref="./../../Capsule/Inp/Int"/> <cont node="./P2" ref="./../../At/Capsule/Inp"/> </node>
 	<node id="E2" parent="Edge"> <cont node="./P1" ref="./../../At/Capsule/Out"/> <cont node="./P2" ref="./../../Capsule/Out/Int"/> </node>
 	<node id="E3" parent="Edge"> <cont node="./P1" ref="./../../Index/Capsule/Out"/> <cont node="./P2" ref="./../../At/Capsule/Index"/> </node>
-	<cont node="./ViewData/Res" ref="./../../At/Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../At/func_agt"/>
     </node>
 
 
@@ -543,46 +543,46 @@
 
     <!-- Function Inp1 LT Inp2  -->
     <node id="FLTVar" parent="./FuncVar"> 
-	<node node="./Agents" id="AF_Lt" parent="AFBcmpVar"/>
+	<node id="AF_Lt" parent="AFBcmpVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_FVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_FVar"/> 
     </node>
 
     <!-- Function Inp1 LE Inp2  -->
     <node id="FLEVar" parent="./FuncVar"> 
-	<node node="./Agents" id="AF_Le" parent="AFBcmpVar"/>
+	<node id="AF_Le" parent="AFBcmpVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_FVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_FVar"/> 
     </node>
 
     <!-- Function Inp1 EQ Inp2  -->
     <node id="FEQVar" parent="./FuncVar"> 
-	<node node="./Agents" id="AF_Eq" parent="AFCmpVar"/>
+	<node id="AF_Eq" parent="AFCmpVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_FVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_FVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/AF_Eq"/>
+	<cont node="./ViewData/Res" ref="./../../AF_Eq"/>
     </node>
 
     <!-- Function Inp1 GT Inp2  -->
     <node id="FGTVar" parent="./FuncVar"> 
-	<node node="./Agents" id="AF_Gt" parent="AFBcmpVar"/>
+	<node id="AF_Gt" parent="AFBcmpVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_FVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_FVar"/> 
     </node>
 
     <!-- Function Inp1 GE Inp2  -->
     <node id="FGEVar" parent="./FuncVar"> 
-	<node node="./Agents" id="AF_Ge" parent="AFBcmpVar"/>
+	<node id="AF_Ge" parent="AFBcmpVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_FVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_FVar"/> 
     </node>
 
     <!-- Function of getting component of containter  -->
     <node id="FAtVar" parent="./FuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFAtVar"/>
+	<node id="func_agt" parent="AFAtVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_FVar"/> 
 	<node node="./Capsule" id="Index" parent="./../Inp_FVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
     <!-- Function of getting component of containter, reduced by index  -->
@@ -593,7 +593,7 @@
 	<node id="E1" parent="Edge"> <cont node="./P1" ref="./../../Capsule/Inp/Int"/> <cont node="./P2" ref="./../../At/Capsule/Inp"/> </node>
 	<node id="E2" parent="Edge"> <cont node="./P1" ref="./../../At/Capsule/out"/> <cont node="./P2" ref="./../../Capsule/Out/Int"/> </node>
 	<node id="E3" parent="Edge"> <cont node="./P1" ref="./../../Index/Capsule/out"/> <cont node="./P2" ref="./../../At/Capsule/Index"/> </node>
-	<cont node="./ViewData/Res" ref="./../../At/Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../At/func_agt"/>
     </node>
 
     <node id="FAtVar_0" parent="./FAtVarI"> <cont node="./Index/Value" val="SI 0"/> </node>
@@ -602,7 +602,7 @@
 
     <!-- Function of swithching  -->
     <node id="FSwitchVar" parent="./FuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFSwitchVar"/>
+	<node id="func_agt" parent="AFSwitchVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_FVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_FVar"/> 
 	<node node="./Capsule" id="Sel" parent="./../Inp_FVar"/> 
@@ -610,7 +610,7 @@
 
     <!-- Transition Function of switching  -->
     <node id="TFSwitchVar" parent="./TFuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFSwitchVar"/>
+	<node id="func_agt" parent="AFSwitchVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_TFVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_TFVar"/> 
 	<node node="./Capsule" id="Sel" parent="./../Inp_TFVar"/> 
@@ -622,57 +622,57 @@
 
     <!-- Function Bool to Int  -->
     <node id="TFBoolToInt" parent="./TFuncInt"> 
-	<node node="./Agents" id="func_agt" parent="AFBoolToInt"/>
+	<node id="func_agt" parent="AFBoolToInt"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFBool"/> 
     </node>
 
     <!-- Function of var multiplication wo caching -->
     <node id="FMplVar" parent="./FuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFMplVar"/>
+	<node id="func_agt" parent="AFMplVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_FVar"/> 
     </node>
 
     <!-- Function of var non commutative multiplication wo caching -->
     <node id="FMplncVar" parent="./FuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFMplncVar"/>
+	<node id="func_agt" parent="AFMplncVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_FVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_FVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
     <!-- Function of variable mutltiplicationi inversion -->
     <node id="FMplinvVar" parent="./FuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFMplinvVar"/>
+	<node id="func_agt" parent="AFMplinvVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_FVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
     <!-- Function of variable casting -->
     <node id="FCastVar" parent="./FuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFCastVar"/>
+	<node id="func_agt" parent="AFCastVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_FVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
 
     <!-- Function of variable creation of diag matrix -->
     <node id="FCpsMtrdVar" parent="./FuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFCpsMtrdVar"/>
+	<node id="func_agt" parent="AFCpsMtrdVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_FVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
     <!-- Function of composing of vector from comps, variable -->
     <node id="FCpsVectVar" parent="./FuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFCpsVectVar"/>
+	<node id="func_agt" parent="AFCpsVectVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_FVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_FVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/func_agt"/>
+	<cont node="./ViewData/Res" ref="./../../func_agt"/>
     </node>
 
     <!-- Function of var dividing wo caching -->
     <node id="FDivVar" parent="./FuncVar"> 
-	<node node="./Agents" id="func_agt" parent="AFDivVar"/>
+	<node id="func_agt" parent="AFDivVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_FVar"/> 
 	<node node="./Capsule" id="Inp_Dvs" parent="./../Inp_FVar"/> 
     </node>

@@ -5,10 +5,20 @@
 
 using namespace std;
 
-/*
- * Interface of interface. Support unified invocation of methods
- */
+class MIface;
 
+/**
+ * @brief Interface provider
+ */
+class MIfaceProv
+{
+    public:
+	virtual MIface* DoGetIface(const string& aName) = 0;
+};
+
+/**
+ * @brief Interface of interface. Support unified invocation of methods
+ */
 class MIface
 {
     public:

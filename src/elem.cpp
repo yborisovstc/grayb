@@ -776,6 +776,7 @@ void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
     void* res = DoGetObj(aName.c_str());
     if (res != NULL) {
 	InsertIfCache(aName, aCtx, this, res);
+#if 0
     } else {
 	// Support run-time extentions on the base layer, ref md#sec_refac_iface
 	MElem* agents = GetComp("Elem", "Agents");
@@ -790,6 +791,41 @@ void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    }
 	}
     }
+#else
+    } else if (aName == MAgent::Type()) {
+	for (auto it : iMComps) {
+	    MElem* comp = it.second;
+	    // Use DoGetObj to avoid recurive look up for iface
+	    res = comp->DoGetObj(aName.c_str());
+	    if (res != NULL) {
+		RqContext mctx(this);
+		InsertIfCache(aName, rctx, comp, res);
+		// Also register iface in provider because of used DoGetObj doesn't register
+		Elem* ecomp = comp->GetObj(ecomp); // TODO!! hack, to remove
+		ecomp->InsertIfCache(aName, &ctx, comp, res);
+	    }
+	}
+    } else {
+	RqContext mctx(this);
+	// Using anonymous context to avoid requesting from itself
+	TIfRange rg = GetIfi(MAgent::Type(), &mctx);
+	// Using cache of agents because iterators will be broken
+	vector<MElem*> ca;
+	for (TIfIter it = rg.first; it != rg.second; it++) {
+	    MAgent* ait = (MAgent*) (*it);
+	    MIface* iit = ait->DoGetIface(MElem::Type());
+	    MElem* eit = dynamic_cast<MElem*>(iit);
+	    ca.push_back(eit);
+	}
+	for (MElem* agent : ca) {
+	    if (!ctx.IsInContext(agent)) {
+		rr = agent->GetIfi(aName, &ctx);
+		InsertIfCache(aName, rctx, agent, rr);
+		resg = resg || (rr.first != rr.second);
+	    }
+	}
+    }
+#endif
 }
 
 void Elem::LogIfReqs()
@@ -833,6 +869,29 @@ void Elem::DumpIfReqs() const
 	}
     }
     cout << "<< Ifaces requests: END >>" << endl;
+}
+
+void Elem::DumpIfCache() const
+{
+    cout << "<< Ifaces cache: START >>" << endl;
+    for (auto it : iICache) {
+	const TICacheRCtx& ctx = it.first.first.second;
+	void* iface = it.second;
+	Base* provb = it.first.second;
+	Elem* prov = provb->GetObj(prov);
+	if (!ctx.empty()) {
+	    cout << "[" << it.first.first.first << "], [" << ctx.size() << "]:" << endl;
+	    for (auto* reqb : ctx) {
+		Elem* reqe = reqb == NULL ? NULL : reqb->GetObj(reqe);
+		cout << reqb << "~" << reqe << ": " << (reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue)) << endl;
+	    }
+	    cout << "==> [" << provb << "~" << prov << "," << prov->GetUri(NULL, ETrue) << "] -> [" << iface << "]" << endl << endl;
+	}
+	else {
+	    cout << "If: [" << it.first.first.first << "], [none] - [" << provb << "~" << prov << "," << prov->GetUri(NULL, ETrue) << "] -> [" << iface << "]" << endl;
+	}
+    }
+    cout << "<< Ifaces cache: END >>" << endl;
 }
 
 string Elem::EType(TBool aShort) const
@@ -1849,6 +1908,8 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 		// Mark change as persistent (not run-time) only if the change affects model chromo
 		// TODO [YB] To cleanup, to remove run-time arg from notifications
 		TBool persist = ETrue;
+		// TODO actually the node content will be changed even if returned false. This is design issue.
+		// We need to not perform actual change is owner doesn't accept the changhe
 		res = node->ChangeCont(mval, !persist, cname);
 		if (res) {
 		    if (!aRunTime) {
@@ -2153,6 +2214,12 @@ TBool Elem::AppendComp(MElem* aComp, TBool aRt)
     TBool res = RegisterComp(aComp);
     if (res)
     {
+	// Invalidate iface cache in case if agents has been deleted
+	MAgent* iagt = aComp->GetObj(iagt);
+	if (iagt != NULL) {
+	    InvalidateIfCache(MAgent::Type());
+	}
+
 	// Propagate notification only if self is the component of owner, ref ds_di_cnfr
 	if (iMan != NULL && iMan->GetComp(string(), Name()) == this) {
 	    iMan->OnCompAdding(*aComp, aRt);
@@ -2168,10 +2235,16 @@ void Elem::RemoveComp(MElem* aComp)
 {
     MElem* cowner = aComp->GetMan();
     __ASSERT(cowner == this);
+    MAgent* iagt = aComp->GetObj(iagt);
     TBool res = UnregisterComp(aComp);
     if (res) {
 	aComp->SetMan(NULL);
     }
+    // Invalidate iface cache in case if agents has been added
+    if (iagt != NULL) {
+	InvalidateIfCache(MAgent::Type());
+    }
+
 }
 
 TBool Elem::RegisterComp(MElem* aComp)
@@ -2290,6 +2363,7 @@ void Elem::OnCompAdding(MElem& aComp, TBool aModif)
 // to implement cache update notification. Ref UC_010 
 TBool Elem::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 {
+#if 0
     MElem* agents = GetComp("Elem", "Agents");
     TBool res = ETrue;
     if (agents != NULL) {
@@ -2304,6 +2378,30 @@ TBool Elem::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 	    }
 	}
     }
+#else
+    TBool res = ETrue;
+    RqContext mctx(this);
+    // Using anonymous context to avoid requesting from itself
+    TIfRange rg = GetIfi(MAgent::Type(), &mctx);
+    // Using cache of agents because iterators will be broken
+    vector<MElem*> ca;
+    for (TIfIter it = rg.first; it != rg.second; it++) {
+	MAgent* ait = (MAgent*) (*it);
+	MIface* iit = ait->DoGetIface(MElem::Type());
+	MElem* eit = dynamic_cast<MElem*>(iit);
+	ca.push_back(eit);
+    }
+    for (MElem* agent : ca) {
+	MACompsObserver* iagent = agent->GetObj(iagent);
+	if (iagent != NULL) {
+	    res = iagent->HandleCompChanged(*this, aComp, aContName);
+	    if (!res) {
+		iagent->HandleCompChanged(*this, aComp, aContName);
+	    }
+	}
+    }
+#endif
+
     // Propagate to upper layer if the notification wasn't denied
     // TODO To consider if the event is to be propagated to upper level even if it has been already handled
     // Enable propagation from attached node only, ref ds_di_cnfr_snpn
@@ -2342,6 +2440,7 @@ TBool Elem::OnCompRenamed(MElem& aComp, const string& aOldName)
 TBool Elem::OnChanged(MElem& aComp)
 {
     TBool res = ETrue;
+#if 0
     MElem* agents = GetComp("Elem", "Agents");
     if (agents != NULL) {
 	for (TInt ci = 0; ci < agents->CompsCount() && res; ci++) {
@@ -2352,6 +2451,30 @@ TBool Elem::OnChanged(MElem& aComp)
 	    }
 	}
     }
+#else
+    RqContext mctx(this);
+    // Using anonymous context to avoid requesting from itself
+    TIfRange rg = GetIfi(MAgent::Type(), &mctx);
+    // Using cache of agents because iterators will be broken
+    vector<MElem*> ca;
+    for (TIfIter it = rg.first; it != rg.second; it++) {
+	MAgent* ait = (MAgent*) (*it);
+	MIface* iit = ait->DoGetIface(MElem::Type());
+	MElem* eit = dynamic_cast<MElem*>(iit);
+	ca.push_back(eit);
+    }
+    for (MElem* agent : ca) {
+	MACompsObserver* iagent = agent->GetObj(iagent);
+	if (iagent != NULL) {
+	    res = iagent->HandleCompChanged(*this, aComp);
+	    if (!res) {
+		iagent->HandleCompChanged(*this, aComp);
+	    }
+	}
+    }
+#endif
+
+
     // Enable propagation from attached node only, ref ds_di_cnfr_snpn
     if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
 	res = iMan->OnChanged(aComp);

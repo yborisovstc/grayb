@@ -25,6 +25,7 @@ string Vert::PEType()
 Vert::Vert(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
+#if 0
     // Create component for run-time extentions
     Elem* agents = Provider()->CreateNode("Elem", "Agents", this, iEnv);
     __ASSERT(agents != NULL);
@@ -35,11 +36,13 @@ Vert::Vert(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv
     // To consider the standard approach of deferred construction.
     TBool res = AppendComp(agents, ETrue);
     __ASSERT(res);
+#endif
 }
 
 Vert::Vert(MElem* aMan, MEnv* aEnv):Elem(Type(), aMan, aEnv)
 {
     SetParent(Elem::PEType());
+#if 0
     // Create component for run-time extentions
     //Elem* parent = Provider()->GetNode("Elem");
     Elem* agents = Provider()->CreateNode("Elem", "Agents", this, iEnv);
@@ -51,7 +54,7 @@ Vert::Vert(MElem* aMan, MEnv* aEnv):Elem(Type(), aMan, aEnv)
     __ASSERT(agents != NULL);
     TBool res = AppendComp(agents, ETrue);
     __ASSERT(res);
-
+#endif
 }
 
 MIface* Vert::MVert_DoGetObj(const char *aName)

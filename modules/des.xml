@@ -82,7 +82,7 @@
 
     <!-- Input of standard variable State -->
     <node id="StVarInp" parent="Vert">
-	<node node="./Agents" id="MAExteder" parent="ExtenderAgentInp"/>
+	<node id="MAExteder" parent="ExtenderAgentInp"/>
 	<node id="Int" parent="./../StInpSocket"> 
 	    <cont node="./PinData/Provided" val="MDVarGet"/>
 	</node>
@@ -90,7 +90,7 @@
 
     <!-- Output of standard variable State -->
     <node id="StVarOut" parent="Vert">
-	<node node="./Agents" id="MAExteder" parent="ExtenderAgentOut"/>
+	<node id="MAExteder" parent="ExtenderAgentOut"/>
 	<node id="Int" parent="./../StOutSocket"> 
 	    <cont node="./PinData/Required" val="MDVarGet"/>
 	</node>
@@ -138,23 +138,23 @@
 
     <!-- Transition of integer data : Increment -->
     <node id="TrIncInt" parent="./TrInt"> 
-	<node node="./Agents" id="TrAgt" parent="ATrIncInt"/> 
+	<node id="TrAgt" parent="ATrIncInt"/> 
     </node>
 
     <!-- Transition of integer data : Multiplication -->
     <node id="TrMplInt" parent="./TrInt"> 
-	<node node="./Agents" id="TrAgt" parent="ATrMplInt"/> 
+	<node id="TrAgt" parent="ATrMplInt"/> 
     </node>
 
     <!-- Transition of integer data : Division -->
     <node id="TrDivInt" parent="./TrInt"> 
-	<node node="./Agents" id="TrAgt" parent="ATrDivInt"/> 
+	<node id="TrAgt" parent="ATrDivInt"/> 
 	<node id="Inp_DR" parent="./../TrIntInp"/> 
     </node>
 
     <!-- Transition of integer data : Subtraction -->
     <node id="TrSubInt" parent="./TrInt"> 
-	<node node="./Agents" id="TrAgt" parent="ATrSubInt"/> 
+	<node id="TrAgt" parent="ATrSubInt"/> 
 	<node id="Inp_Sub" parent="./../TrIntInp"/> 
     </node>
 
@@ -171,40 +171,31 @@
 	</node>
     </node>
 
-    
-    <!-- Transition of variable data : Addition 
-    <node id="TrAddVar" parent="TrVar"> 
-	<node node="./Agents" id="TrAgt" parent="ATrAddVar"/> 
-	<node id="InpN" parent="./../TrVarInp"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/TrAgt"/>
-    </node>
-	 -->
-
     <!-- Transition of variable data : Multiplication -->
     <node id="TrMplVar" parent="./TrVar"> 
-	<node node="./Agents" id="TrAgt" parent="ATrMplVar"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/TrAgt"/>
+	<node id="TrAgt" parent="ATrMplVar"/> 
+	<cont node="./ViewData/Res" ref="./../../TrAgt"/>
     </node>
 
     <!-- Transition of variable data : Division -->
     <node id="TrDivVar" parent="./TrVar"> 
-	<node node="./Agents" id="TrAgt" parent="ATrDivVar"/> 
+	<node id="TrAgt" parent="ATrDivVar"/> 
 	<node id="Inp_Dvs" parent="./../TrVarInp"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/TrAgt"/>
+	<cont node="./ViewData/Res" ref="./../../TrAgt"/>
     </node>
 
     <!-- Transition of variable data : Composing vector -->
     <node id="TrCpsVectVar" parent="./TrVar"> 
-	<node node="./Agents" id="TrAgt" parent="ATrCpsVectVar"/> 
+	<node id="TrAgt" parent="ATrCpsVectVar"/> 
 	<change node="./Inp" attr="id" val="Inp0"/>
 	<node id="Inp1" parent="./../TrVarInp"/> 
 	<node id="Inp2" parent="./../TrVarInp"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/TrAgt"/>
+	<cont node="./ViewData/Res" ref="./../../TrAgt"/>
     </node>
 
     <!-- Transition of variable data : Switch -->
     <node id="TrSwitchVar" parent="./TrVar"> 
-	<node node="./Agents" id="TrAgt" parent="ATrSwitchVar"/> 
+	<node id="TrAgt" parent="ATrSwitchVar"/> 
 	<change node="./Inp" attr="id" val="Sel"/>
 	<node id="Inp1" parent="./../TrVarInp"/> 
 	<node id="Inp2" parent="./../TrVarInp"/> 
@@ -212,48 +203,48 @@
 
     <!-- Transition of variable data : Getting coord of vector -->
     <node id="TrAtVar" parent="./TrVar"> 
-	<node node="./Agents" id="TrAgt" parent="ATrAtVar"/> 
+	<node id="TrAgt" parent="ATrAtVar"/> 
 	<node id="Index" parent="./../TrIntInp"/> 
     </node>
 
     <!-- Transition of variable data : Boolean comparition -->
     <node id="TrLTVar" parent="./TrVar"> 
-	<node node="./Agents" id="AF_Lt" parent="ATrBcmpVar"/> 
+	<node id="AF_Lt" parent="ATrBcmpVar"/> 
 	<change node="./Inp" attr="id" val="Inp1"/>
 	<node id="Inp2" parent="./../TrVarInp"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/AF_Lt"/>
+	<cont node="./ViewData/Res" ref="./../../AF_Lt"/>
     </node>
 
     <!-- Transition of variable data : Boolean comparition -->
     <node id="TrLEVar" parent="./TrVar"> 
-	<node node="./Agents" id="AF_Le" parent="ATrBcmpVar"/> 
+	<node id="AF_Le" parent="ATrBcmpVar"/> 
 	<change node="./Inp" attr="id" val="Inp1"/>
 	<node id="Inp2" parent="./../TrVarInp"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/AF_Le"/>
+	<cont node="./ViewData/Res" ref="./../../AF_Le"/>
     </node>
 
     <!-- Transition of variable data : Boolean comparition -->
     <node id="TrEQVar" parent="./TrVar"> 
-	<node node="./Agents" id="AF_Eq" parent="ATrBcmpVar"/> 
+	<node id="AF_Eq" parent="ATrBcmpVar"/> 
 	<change node="./Inp" attr="id" val="Inp1"/>
 	<node id="Inp2" parent="./../TrVarInp"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/AF_Eq"/>
+	<cont node="./ViewData/Res" ref="./../../AF_Eq"/>
     </node>
 
     <!-- Transition of variable data : Boolean comparition -->
     <node id="TrGTVar" parent="./TrVar"> 
-	<node node="./Agents" id="AF_Gt" parent="ATrBcmpVar"/> 
+	<node id="AF_Gt" parent="ATrBcmpVar"/> 
 	<change node="./Inp" attr="id" val="Inp1"/>
 	<node id="Inp2" parent="./../TrVarInp"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/AF_Gt"/>
+	<cont node="./ViewData/Res" ref="./../../AF_Gt"/>
     </node>
 
     <!-- Transition of variable data : Boolean comparition -->
     <node id="TrGEVar" parent="./TrVar"> 
-	<node node="./Agents" id="AF_Ge" parent="ATrBcmpVar"/> 
+	<node id="AF_Ge" parent="ATrBcmpVar"/> 
 	<change node="./Inp" attr="id" val="Inp1"/>
 	<node id="Inp2" parent="./../TrVarInp"/> 
-	<cont node="./ViewData/Res" ref="./../../Agents/AF_Ge"/>
+	<cont node="./ViewData/Res" ref="./../../AF_Ge"/>
     </node>
 
 
@@ -263,7 +254,7 @@
     <!-- State base -->
     <node id="State" parent="/*/Modules/IncapsComps/Incaps"> 
 
-	<node node="./Agents" id="StateAgt" parent="StateAgent"/> 
+	<node id="StateAgt" parent="StateAgent"/> 
 
 	<!-- TODO [YB] Do we need dedicated CP or component has to notify it's mgr? -->
 	<node node="./Capsule" id="Sync" parent="/*/Modules/SysComps/ConnPoint"> 
@@ -282,7 +273,7 @@
     <!-- State base, multicontent -->
     <node id="StateMc" parent="/*/Modules/IncapsComps/Incaps"> 
 	<cont id="About" val="DES state multicontent base"/>
-	<node node="./Agents" id="StateAgt" parent="StateAgent"/> 
+	<node id="StateAgt" parent="StateAgent"/> 
 	<node node="./Capsule" id="Sync" parent="ConnPointMc"> 
 	    <cont id="Provided" val="MDesSyncable"/>
 	</node>
@@ -442,7 +433,7 @@
 
     <!-- DES base -->
     <node id="Des" parent="/*/Modules/IncapsComps/Incaps"> 
-	<node node="./Agents" id="DesAgt" parent="ADes"/> 
+	<node id="DesAgt" parent="ADes"/> 
 	<node node="./Capsule" id="Sync" parent="/*/Modules/SysComps/ConnPoint"> 
 	    <cont node="./Provided" val="MDesSyncable"/>
 	</node>
@@ -451,7 +442,7 @@
     <!-- DES base, multicontent -->
     <node id="DesMc" parent="/*/Modules/IncapsComps/Incaps"> 
 	<cont id="About" val="Discrete Events System (DES) multicontent base"/>
-	<node node="./Agents" id="DesAgt" parent="ADes"/> 
+	<node id="DesAgt" parent="ADes"/> 
 	<node node="./Capsule" id="Sync" parent="ConnPointMc"> 
 	    <cont id="Provided" val="MDesSyncable"/>
 	</node>
@@ -462,7 +453,7 @@
 	<node node="./Capsule" id="Out" parent="/*/Modules/SysComps/ConnPointOut"> 
 	    <cont node="./Required" val="MDesSyncable"/>
 	</node>
-	<node node="./Agents" id="DesSyncAgent" parent="ADesSync"/> 
+	<node id="DesSyncAgent" parent="ADesSync"/> 
     </node>
 
     <!-- DES ticks source, multicontent -->
@@ -471,7 +462,7 @@
 	<node node="./Capsule" id="Out" parent="/*/Modules/SysComps/ConnPointOutMc"> 
 	    <cont id="Required" val="MDesSyncable"/>
 	</node>
-	<node node="./Agents" id="DesSyncAgent" parent="ADesSync"/> 
+	<node id="DesSyncAgent" parent="ADesSync"/> 
     </node>
 
 </node>

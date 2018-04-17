@@ -139,8 +139,20 @@ class ConnPointBaseOut: public ConnPointBase
 };
 
 // Extention agent. Redirects request for iface to internal CP of extention.
-class ExtenderAgent: public Elem, public MCompatChecker_Imd
+class ExtenderAgent: public Elem, public MAgent
 {
+    public:
+	class CompatChecker: public MCompatChecker { public:
+	    ExtenderAgent& mHost;
+	    CompatChecker(ExtenderAgent& aHost): mHost(aHost) {}
+	    // From MCompatChecker MIface
+	    virtual MIface* Call(const string& aSpec, string& aRes) override { return mHost.MCompatChecker_Call(aSpec, aRes);}
+	    virtual string Mid() const override { return mHost.Mid();}
+	    virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse) override { return mHost.IsCompatible(aPair, aExt);}
+	    virtual MElem* GetExtd() override { return mHost.GetExtd();}
+	    virtual TDir GetDir() const override {return mHost.GetDir();}
+
+	};
     public:
 	static const char* Type() { return "ExtenderAgent";};
 	static string PEType();
@@ -151,12 +163,16 @@ class ExtenderAgent: public Elem, public MCompatChecker_Imd
 	// From MCompatChecker
 	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
 	virtual MElem* GetExtd();
-	virtual TDir GetDir() const;
-	// From Elem
-	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
-	// From MCompatChecker MIface
+	virtual MCompatChecker::TDir GetDir() const;
 	virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes);
 	virtual string MCompatChecker_Mid() const;
+	// From Elem
+	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
+	// From MIfaceProv
+	virtual MIface* MAgent_DoGetIface(const string& aUid);
+    protected:
+	CompatChecker mCompatChecker;
+	inline MElem* Host() const { return iMan;}
 };
 
 // Input Extender agent
@@ -168,7 +184,7 @@ class ExtenderAgentInp: public ExtenderAgent
 	ExtenderAgentInp(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ExtenderAgentInp(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual void *DoGetObj(const char *aName);
-	virtual TDir GetDir() const;
+	virtual MCompatChecker::TDir GetDir() const;
 };
 
 // Output Extender agent
@@ -180,11 +196,11 @@ class ExtenderAgentOut: public ExtenderAgent
 	ExtenderAgentOut(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ExtenderAgentOut(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual void *DoGetObj(const char *aName);
-	virtual TDir GetDir() const;
+	virtual MCompatChecker::TDir GetDir() const;
 };
 
 // Extention agent (multicontent). Redirects request for iface to internal CP of extention.
-class AExtender: public Elem, public MCompatChecker
+class AExtender: public Elem, public MCompatChecker, public MAgent
 {
     public:
 	static const char* Type() { return "AExtender";};
@@ -202,11 +218,11 @@ class AExtender: public Elem, public MCompatChecker
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);
 	virtual string Mid() const;
+	// From MAgent
+	MIface* MAgent_DoGetIface(const string& aName) override;
     protected:
-	inline MElem* Host() const;
+	inline MElem* Host() const { return iMan;}
 };
-
-MElem* AExtender::Host() const { return (iMan == NULL) ? NULL : iMan->GetMan(); };
 
 
 // Iface stub to avoid clashing MIface methods
@@ -220,7 +236,7 @@ class MSocket_Imd: public MSocket
 };
 
 // Socket agent: redirects iface requests to pins
-class ASocket: public Elem, public MCompatChecker_Imd, public MSocket_Imd
+class ASocket: public Elem, public MCompatChecker_Imd, public MSocket_Imd, public MAgent
 {
     public:
 	static const char* Type() { return "ASocket";};
@@ -244,6 +260,8 @@ class ASocket: public Elem, public MCompatChecker_Imd, public MSocket_Imd
 	virtual MElem* GetPin(TInt aInd);
 	virtual MIface* MSocket_Call(const string& aSpec, string& aRes);
 	virtual string MSocket_Mid() const;
+	// From MAgent
+	virtual MIface* MAgent_DoGetIface(const string& aUid);
     protected:
 	inline MElem* Host() const;
 };
