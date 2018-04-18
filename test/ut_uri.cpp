@@ -113,7 +113,7 @@ void Ut_uri::test_UriBase()
 
     MElem* doutp = root->GetNode("./(Incaps:)test/(DataSInt:)DataS_Int_1/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
-    MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type(), NULL);
+    MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 34);
     MVert* mdoutpv = doutp->GetObj(mdoutpv);
@@ -127,14 +127,14 @@ void Ut_uri::test_UriBase()
 
     MElem* foutp = root->GetNode("./test/Incr2/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
-    MDIntGet* foutpget = (MDIntGet*) foutp->GetSIfi(MDIntGet::Type(), NULL);
+    MDIntGet* foutpget = (MDIntGet*) foutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
     TInt fres = foutpget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result", fres == 36);
 
     MElem* resdata = root->GetNode("./(Incaps:)test/ResData/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out", resdata != 0);
-    MDIntGet* rdataget = (MDIntGet*) resdata->GetSIfi(MDIntGet::Type(), NULL);
+    MDIntGet* rdataget = (MDIntGet*) resdata->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget != 0);
     TInt rdataval = rdataget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval == 36);
@@ -154,7 +154,7 @@ void Ut_uri::test_UriBase()
     // Check the function output
     MElem* foutp1 = root->GetNode("./test/Incr2/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out when inp data changed", foutp1 != 0);
-    MDIntGet* foutpget1 = (MDIntGet*) foutp1->GetSIfi(MDIntGet::Type(), NULL);
+    MDIntGet* foutpget1 = (MDIntGet*) foutp1->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface when input data changed", foutpget1 != 0);
     TInt fres1 = foutpget1->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result after input data change", fres1 == 59);

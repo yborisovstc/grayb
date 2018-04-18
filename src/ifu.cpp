@@ -226,21 +226,6 @@ template<> string Ifu::Pack<const TICacheRCtx&>(const TICacheRCtx& aArg)
     return res;
 }
 
-template<> string Ifu::Pack<const RqContext*>(const RqContext* aArg)
-{
-    string res;
-    const RqContext* cct(aArg);
-    while (cct != NULL) {
-	Base* rq = cct->Requestor();
-	if (rq == NULL) break;
-	MElem* re = rq->GetObj(re);
-	string reuri = re->GetUri(NULL, ETrue);
-	res += reuri + Ifu::KArraySep;
-	cct = cct->Ctx();
-    }
-    return res;
-}
-
 template<> string Ifu::Pack<TICacheRCtx&>(TICacheRCtx& aArg)
 {
     string res;

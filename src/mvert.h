@@ -28,8 +28,6 @@ class MCompatChecker: public MIface
 	virtual MElem* GetExtd() = 0;
 	// Direction
 	virtual TDir GetDir() const = 0;
-	// Getting associated point
-//	virtual vector<Elem*> GetAssoc(RqContext* aCtx) = 0;
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};
     public:

@@ -11,25 +11,6 @@
 
 using namespace std;
 
-class Base;
-
-// Request connext
-// TODO [YB] To consider migration to TICacheRCtx
-class RqContext
-{
-    public:
-	RqContext(Base* aRequestor, const RqContext* aRequestorCtx = NULL): iRequestor(aRequestor), iRequestorCtx(aRequestorCtx) {};
-	TBool IsInContext(const Base* aElem) const {
-	    return (iRequestor == NULL) ? EFalse: ((aElem == iRequestor) ? ETrue : 
-		    (iRequestorCtx == NULL ? EFalse : iRequestorCtx->IsInContext(aElem))); }
-	Base* Requestor() const { return iRequestor;}
-	const RqContext* Ctx() const { return iRequestorCtx;}
-    private:
-	Base* iRequestor;
-	// Requestor context
-	const RqContext* iRequestorCtx;
-};
-
 // Base supporting iface provider
 class Base
 {

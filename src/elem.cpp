@@ -159,24 +159,6 @@ string MElem::GetContentLName(const string& aName)
     return res;
 }
 
-TICacheRCtx::TICacheRCtx(): vector<Base*>() {}
-
-TICacheRCtx::TICacheRCtx(const RqContext* aCtx)
-{
-    TICacheRCtx res;
-    const RqContext* cct(aCtx);
-    while (cct != NULL) {
-	Base* rq = cct->Requestor();
-	res.push_back(rq);
-	cct = cct->Ctx();
-    }
-    TInt size = res.size();
-    reserve(size);
-    for (TICacheRCtx::const_reverse_iterator it = res.rbegin(); it != res.rend(); it++) {
-	Base* rr = *it;
-	push_back(rr);
-    }
-}
 
 
 
@@ -184,25 +166,6 @@ string Elem::PEType()
 {
     return string() + GUri::KParentSep + Elem::Type();
 }
-
-/*
-void Elem::ToCacheRCtx(const RqContext* aCtx, TICacheRCtx& aCct) 
-{
-    TICacheRCtx res;
-    const RqContext* cct(aCtx);
-    while (cct != NULL) {
-	Base* rq = cct->Requestor();
-	res.push_back(rq);
-	cct = cct->Ctx();
-    }
-    TInt size = res.size();
-    aCct.reserve(size);
-    for (TICacheRCtx::const_reverse_iterator it = res.rbegin(); it != res.rend(); it++) {
-	Base* rr = *it;
-	aCct.push_back(rr);
-    }
-}
-*/
 
 Elem::IfIter::IfIter(Elem* aHost, const string& aIName, const TICacheRCtx& aReq, TBool aToEnd): iHost(aHost), iIName(aIName), iReq(aReq) 
 {
@@ -279,9 +242,9 @@ TBool Elem::IfIter::operator==(const MIfIter& aIt)
     return res;
 }
 
-void*  Elem::IfIter::operator*()
+MIface*  Elem::IfIter::operator*()
 {
-    void* res = iCacheIter->second;
+    MIface* res = iCacheIter->second;
     return res;
 }
 
@@ -491,6 +454,7 @@ void *Elem::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, Type()) == 0) {
+	//__ASSERT(false);
 	res = this;
     } else if (strcmp(aName, MOwner::Type()) == 0) {
 	res = (MOwner*) this;
@@ -506,7 +470,7 @@ void *Elem::DoGetObj(const char *aName)
     return res;
 }
 
-Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
+Elem::TIfRange Elem::GetIfi(const string& aName, const TICacheRCtx& aCtx)
 {
     // Get from cache first
     // Add NULL to context in case of anonymous context
@@ -515,26 +479,26 @@ Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
     // So on invalidation provider checks if context is initial (size == 1), if so it ignore relation
     // But it is possible that size == 1 for second requestor if the initial makes anonimous request
     // To avoid this inconsistance we need to explicitly register even anonymous requestor
-    RqContext newctx(NULL);
-    const RqContext* ctx(aCtx == NULL ? &newctx: aCtx);
-    TICacheRCtx req(ctx);
-    //ToCacheRCtx(ctx, req);
-    IfIter beg(this, aName, req);
-    IfIter end(this, aName, req, ETrue);
+    TICacheRCtx ctx(aCtx);
+    if (ctx.empty()) {
+	ctx.push_back(NULL);
+    }
+    IfIter beg(this, aName, ctx);
+    IfIter end(this, aName, ctx, ETrue);
     if (beg == end) {
 	if (IsIftEnabled()) {
 	    Logger()->Write(EInfo, this, "Iface [%s]: -->", aName.c_str());
 	}
 	// Invalid cache, update cache
 	UpdateIfi(aName, ctx);
-	beg = IfIter(this, aName, req);
-	end = IfIter(this, aName, req, ETrue);
+	beg = IfIter(this, aName, ctx);
+	end = IfIter(this, aName, ctx, ETrue);
 	// Register the request with local provider in case of no iface resolved (in case of iface 
 	// resolved, the request got already registered).
 	// This creates relation chain anycase, registering all potential requesters for the providers
 	// This allows to do correct invalidation of iface cache from any provider to its requestors
 	if (beg == end) {
-	    InsertIfQm(aName, req, this);
+	    InsertIfQm(aName, ctx, this);
 	}
     } else {
 	if (IsIftEnabled()) {
@@ -544,30 +508,13 @@ Elem::TIfRange Elem::GetIfi(const string& aName, const RqContext* aCtx)
     return TIfRange(TIfIter(beg), TIfIter(end));
 }
 
-void* Elem::GetSIfiC(const string& aName, Base* aRequestor)
+MIface* Elem::GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert) 
 {
-    RqContext ctx(aRequestor);
-    return GetSIfi(aName, &ctx);
-}
-
-void* Elem::GetSIfi(const string& aName, const RqContext* aCtx)
-{
-    void* res = NULL;
-    TIfRange rg = GetIfi(aName, aCtx);
-    if (rg.first != rg.second) {
-	res = *(rg.first);
-    }
-    return res;
-}
-
-void* Elem::GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert) 
-{
-    void* res = NULL;
-    RqContext ctx(this);
+    MIface* res = NULL;
     MElem* req = GetNode(aReqUri);
     __ASSERT(aReqAssert || (req != NULL));
     if (req != NULL) {
-	TIfRange rg = req->GetIfi(aName, &ctx);
+	TIfRange rg = req->GetIfi(aName, this);
 	if (rg.first != rg.second) {
 	    res = *(rg.first);
 	}
@@ -727,7 +674,7 @@ void Elem::InsertIfQm(const string& aName, const TICacheRCtx& aReq, Base* aProv)
     }
 }
 
-void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, void* aVal)
+void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, MIface* aVal)
 {
     TICacheKeyF keyf(aName, aReq);
     TICacheKey key(keyf, aProv);
@@ -735,17 +682,10 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
 	if (IsIftEnabled()) {
 	    Logger()->Write(EInfo, this, "Iface [%s]: resolved [%x], caching", aName.c_str(), aVal);
 	}
-	pair<TICacheKey, void*> val(key, aVal);
+	pair<TICacheKey, MIface*> val(key, aVal);
 	TICacheCIter res = iICache.insert(val);
     }
     InsertIfQm(aName, aReq, aProv);
-}
-
-void Elem::InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv, void* aVal)
-{
-    TICacheRCtx req(aCtx);
-    //ToCacheRCtx(aCtx, req);
-    InsertIfCache(aName, req, aProv, aVal);
 }
 
 void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg)
@@ -759,56 +699,29 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
     }
 }
 
-void Elem::InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv, TIfRange aRg)
+void Elem::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 {
-    __ASSERT(false);
-    TICacheRCtx req(aCtx);
-    InsertIfCache(aName, req, aProv, aRg);
-}
-
-void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
-{
-    TBool resg = EFalse;
     TIfRange rr;
-    RqContext ctx(this, aCtx);
-    TICacheRCtx rctx(aCtx);
+    TICacheRCtx ctx(aCtx);
+    ctx.push_back(this);
     // Try local ifaces first
-    void* res = DoGetObj(aName.c_str());
+    MIface* res = (MIface*) DoGetObj(aName.c_str());
     if (res != NULL) {
 	InsertIfCache(aName, aCtx, this, res);
-#if 0
-    } else {
-	// Support run-time extentions on the base layer, ref md#sec_refac_iface
-	MElem* agents = GetComp("Elem", "Agents");
-	if (agents != NULL) {
-	    for (TInt ci = 0; ci < agents->CompsCount(); ci++) {
-		MElem* eit = agents->GetComp(ci);
-		if (!ctx.IsInContext(eit)) {
-		    rr = eit->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, rctx, eit, rr);
-		    resg = resg || (rr.first != rr.second);
-		}
-	    }
-	}
-    }
-#else
     } else if (aName == MAgent::Type()) {
 	for (auto it : iMComps) {
 	    MElem* comp = it.second;
 	    // Use DoGetObj to avoid recurive look up for iface
-	    res = comp->DoGetObj(aName.c_str());
+	    res = (MIface*) comp->DoGetObj(aName.c_str());
 	    if (res != NULL) {
-		RqContext mctx(this);
-		InsertIfCache(aName, rctx, comp, res);
+		InsertIfCache(aName, aCtx, comp, res);
 		// Also register iface in provider because of used DoGetObj doesn't register
 		Elem* ecomp = comp->GetObj(ecomp); // TODO!! hack, to remove
-		ecomp->InsertIfCache(aName, &ctx, comp, res);
+		ecomp->InsertIfCache(aName, ctx, comp, res);
 	    }
 	}
     } else {
-	RqContext mctx(this);
-	// Using anonymous context to avoid requesting from itself
-	TIfRange rg = GetIfi(MAgent::Type(), &mctx);
+	TIfRange rg = GetIfi(MAgent::Type(), this);
 	// Using cache of agents because iterators will be broken
 	vector<MElem*> ca;
 	for (TIfIter it = rg.first; it != rg.second; it++) {
@@ -819,13 +732,11 @@ void Elem::UpdateIfi(const string& aName, const RqContext* aCtx)
 	}
 	for (MElem* agent : ca) {
 	    if (!ctx.IsInContext(agent)) {
-		rr = agent->GetIfi(aName, &ctx);
-		InsertIfCache(aName, rctx, agent, rr);
-		resg = resg || (rr.first != rr.second);
+		rr = agent->GetIfi(aName, ctx);
+		InsertIfCache(aName, aCtx, agent, rr);
 	    }
 	}
     }
-#endif
 }
 
 void Elem::LogIfReqs()
@@ -876,7 +787,7 @@ void Elem::DumpIfCache() const
     cout << "<< Ifaces cache: START >>" << endl;
     for (auto it : iICache) {
 	const TICacheRCtx& ctx = it.first.first.second;
-	void* iface = it.second;
+	MIface* iface = it.second;
 	Base* provb = it.first.second;
 	Elem* prov = provb->GetObj(prov);
 	if (!ctx.empty()) {
@@ -885,7 +796,7 @@ void Elem::DumpIfCache() const
 		Elem* reqe = reqb == NULL ? NULL : reqb->GetObj(reqe);
 		cout << reqb << "~" << reqe << ": " << (reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue)) << endl;
 	    }
-	    cout << "==> [" << provb << "~" << prov << "," << prov->GetUri(NULL, ETrue) << "] -> [" << iface << "]" << endl << endl;
+	    cout << "==> [" << provb << "~" << prov << "," << prov->GetUri(NULL, ETrue) << "] -> [" << iface << ": " << iface->Uid() << "]" << endl << endl;
 	}
 	else {
 	    cout << "If: [" << it.first.first.first << "], [none] - [" << provb << "~" << prov << "," << prov->GetUri(NULL, ETrue) << "] -> [" << iface << "]" << endl;
@@ -2363,26 +2274,8 @@ void Elem::OnCompAdding(MElem& aComp, TBool aModif)
 // to implement cache update notification. Ref UC_010 
 TBool Elem::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 {
-#if 0
-    MElem* agents = GetComp("Elem", "Agents");
     TBool res = ETrue;
-    if (agents != NULL) {
-	for (TInt ci = 0; ci < agents->CompsCount() && res; ci++) {
-	    MElem* acomp = agents->GetComp(ci);
-	    MACompsObserver* iagent = acomp->GetObj(iagent);
-	    if (iagent != NULL) {
-		res = iagent->HandleCompChanged(*this, aComp, aContName);
-		if (!res) {
-		    iagent->HandleCompChanged(*this, aComp, aContName);
-		}
-	    }
-	}
-    }
-#else
-    TBool res = ETrue;
-    RqContext mctx(this);
-    // Using anonymous context to avoid requesting from itself
-    TIfRange rg = GetIfi(MAgent::Type(), &mctx);
+    TIfRange rg = GetIfi(MAgent::Type(), this);
     // Using cache of agents because iterators will be broken
     vector<MElem*> ca;
     for (TIfIter it = rg.first; it != rg.second; it++) {
@@ -2400,7 +2293,6 @@ TBool Elem::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 	    }
 	}
     }
-#endif
 
     // Propagate to upper layer if the notification wasn't denied
     // TODO To consider if the event is to be propagated to upper level even if it has been already handled
@@ -2440,21 +2332,7 @@ TBool Elem::OnCompRenamed(MElem& aComp, const string& aOldName)
 TBool Elem::OnChanged(MElem& aComp)
 {
     TBool res = ETrue;
-#if 0
-    MElem* agents = GetComp("Elem", "Agents");
-    if (agents != NULL) {
-	for (TInt ci = 0; ci < agents->CompsCount() && res; ci++) {
-	    MElem* acomp = agents->GetComp(ci);
-	    MACompsObserver* iagent = acomp->GetObj(iagent);
-	    if (iagent != NULL) {
-		res = iagent->HandleCompChanged(*this, aComp);
-	    }
-	}
-    }
-#else
-    RqContext mctx(this);
-    // Using anonymous context to avoid requesting from itself
-    TIfRange rg = GetIfi(MAgent::Type(), &mctx);
+    TIfRange rg = GetIfi(MAgent::Type(), this);
     // Using cache of agents because iterators will be broken
     vector<MElem*> ca;
     for (TIfIter it = rg.first; it != rg.second; it++) {
@@ -2472,8 +2350,6 @@ TBool Elem::OnChanged(MElem& aComp)
 	    }
 	}
     }
-#endif
-
 
     // Enable propagation from attached node only, ref ds_di_cnfr_snpn
     if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
@@ -2958,39 +2834,6 @@ TBool Elem::IsMutAttached(const ChromoNode& aMut) const
     return IsChromoAttached();
 }
 
-// Getting owner that is attached. It can differ from owner that attaches the node
-// For owner attaching the node, use
-#if 0
-MElem* Elem::GetAttachedMgr() 
-{
-    MElem* res = NULL;
-    MElem* cand = this;
-    while (res == NULL && cand != NULL) {
-	if (cand->IsChromoAttached()) {
-	    res = cand;
-	} else {
-	    cand = cand->GetMan();
-	}
-    }
-    return res;
-}
-
-const MElem* Elem::GetAttachedMgr() const
-{
-    const MElem* res = NULL;
-    const MElem* cand = this;
-    while (res == NULL && cand != NULL) {
-	// Attached or root
-	if (cand->IsChromoAttached() || iMan == NULL) {
-	    res = cand;
-	} else {
-	    cand = cand->GetMan();
-	}
-    }
-    return res;
-}
-#endif
-
 MElem* Elem::GetAttachedMgr() 
 {
     MElem* res = GetRoot();
@@ -3337,10 +3180,11 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	if (!args.at(1).empty()) {
 	    Ifu::ToStringArray(args.at(1), ctxe);
 	}
-	RqContext* ctx(NULL);
+	TICacheRCtx ctx;
 	for (vector<string>::iterator it = ctxe.begin(); it != ctxe.end(); it++) {
 	    string suri = *it;
 	    MElem* elem = GetNode(suri);
+	    ctx.push_back(elem);
 	}
 	TIfRange rg = GetIfi(name, ctx);
 	res = NULL;
@@ -3357,10 +3201,11 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	if (!args.at(1).empty()) {
 	    Ifu::ToStringArray(args.at(1), ctxe);
 	}
-	RqContext* ctx(NULL);
+	TICacheRCtx ctx;
 	for (vector<string>::iterator it = ctxe.begin(); it != ctxe.end(); it++) {
 	    string suri = *it;
 	    MElem* elem = GetNode(suri);
+	    ctx.push_back(elem);
 	}
 	TIfRange rg = GetIfi(name, ctx);
 	TInt ind = Ifu::ToInt(args.at(2));
@@ -3371,10 +3216,11 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	if (!args.at(1).empty()) {
 	    Ifu::ToStringArray(args.at(1), ctxe);
 	}
-	RqContext* ctx(NULL);
+	TICacheRCtx ctx;
 	for (vector<string>::iterator it = ctxe.begin(); it != ctxe.end(); it++) {
 	    string suri = *it;
 	    MElem* elem = GetNode(suri);
+	    ctx.push_back(elem);
 	}
 	TIfRange rg = GetIfi(name, ctx);
 	TInt isize = IfRangeSize(rg);

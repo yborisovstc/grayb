@@ -46,7 +46,7 @@ class ConnPointBase: public Vert, public MConnPoint_Imd, public MCompatChecker_I
 	ConnPointBase(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ConnPointBase(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// Iface provider
-	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
+	void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
@@ -75,7 +75,7 @@ class ConnPointMc: public Vert, public MConnPoint_Imd, public MCompatChecker_Imd
 	ConnPointMc(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ConnPointMc(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// Iface provider
-	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
+	void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MElem
@@ -167,7 +167,7 @@ class ExtenderAgent: public Elem, public MAgent
 	virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes);
 	virtual string MCompatChecker_Mid() const;
 	// From Elem
-	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
+	void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
 	// From MIfaceProv
 	virtual MIface* MAgent_DoGetIface(const string& aUid);
     protected:
@@ -214,7 +214,7 @@ class AExtender: public Elem, public MCompatChecker, public MAgent
 	virtual MElem* GetExtd();
 	virtual TDir GetDir() const;
 	// From Elem
-	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
+	void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);
 	virtual string Mid() const;
@@ -244,7 +244,7 @@ class ASocket: public Elem, public MCompatChecker_Imd, public MSocket_Imd, publi
 	ASocket(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ASocket(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// Get pin existing in context
-	MElem* GetPin(const RqContext* aCtx);
+	MElem* GetPin(const TICacheRCtx& aCtx);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
@@ -254,7 +254,7 @@ class ASocket: public Elem, public MCompatChecker_Imd, public MSocket_Imd, publi
 	virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes);
 	virtual string MCompatChecker_Mid() const;
 	// From Elem
-	virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
+	void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
 	// From MSocket
 	virtual TInt PinsCount() const;
 	virtual MElem* GetPin(TInt aInd);

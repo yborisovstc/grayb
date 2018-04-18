@@ -128,8 +128,7 @@ Elem::TIfRange ATrInt::GetInpRg(const string& aInpName)
     string uri = "./../" + aInpName;
     MElem* einp = GetNode(uri);
     if (einp != NULL) {
-	RqContext cont(this);
-	res = einp->GetIfi(MDIntGet::Type(), &cont);
+	res = einp->GetIfi(MDIntGet::Type(), this);
     }
     else {
 	Logger()->Write(EErr, this, "Cannot get input [%s]", uri.c_str());
@@ -418,8 +417,7 @@ Elem::TIfRange ATrVar::GetInps(TInt aId, TBool aOpt)
     TIfRange res;
     MElem* inp = GetNode("./../" + GetInpUri(aId));
     if (inp != NULL) {
-	RqContext cont(this);
-	res =  inp->GetIfi(MDVarGet::Type(), &cont);
+	res =  inp->GetIfi(MDVarGet::Type(), this);
     }
     else if (!aOpt) {
 	Logger()->Write(EErr, this, "Cannot get input [%s]", GetInpUri(aId).c_str());
@@ -912,10 +910,9 @@ void StateAgent::Confirm()
 	    if (upd->Update()) {
 		// Activate dependencies
 		MElem* eobs = GetNode("./../Capsule/Out/Int/PinObs");
-		RqContext ctx(this);
 		// Request w/o context because of possible redirecting request to itself
 		// TODO [YB] To check if iterator is not damage during the cycle, to cache to vector if so
-		TIfRange range = eobs->GetIfi(MDesObserver::Type(), NULL);
+		TIfRange range = eobs->GetIfi(MDesObserver::Type());
 		for (TIfIter it = range.first; it != range.second; it++) {
 		    MDesObserver* mobs = (MDesObserver*) (*it);
 		    if (mobs != NULL) {

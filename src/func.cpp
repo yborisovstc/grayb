@@ -288,8 +288,7 @@ void AFunIntRes::OnDataChanged()
 //    MDIntGet* mget = GetInp("inp");
     MElem* einp = GetNode("./../Capsule/inp");
     __ASSERT(einp != NULL);
-    RqContext cont(this);
-    MDIntGet* mget = (MDIntGet*) einp->GetSIfi(MDIntGet::Type(), &cont);
+    MDIntGet* mget = (MDIntGet*) einp->GetSIfi(MDIntGet::Type(), this);
     // It is possible that MDIntGet is missing in cases of connection process ongoing
     if (mget != NULL) {
 	TInt val = mget->Value();
@@ -332,8 +331,7 @@ TBool AAddInt::HandleIoChanged(MElem& aContext, MElem* aCp)
     TBool res = ETrue;
     // Checking input change
     if (aCp->Name() == "inp") {
-	RqContext cont(this);
-	TIfRange range = aCp->GetIfi("MDIntGet", &cont);
+	TIfRange range = aCp->GetIfi("MDIntGet", this);
 	TInt val = 0;
 	for (TIfIter it = range.first; it != range.second; it++) {
 	    MDIntGet* dget = (MDIntGet*) (*it);
@@ -349,8 +347,7 @@ TBool AAddInt::HandleIoChanged(MElem& aContext, MElem* aCp)
 void AAddInt::OnDataChanged()
 {
     MElem* einp = GetNode("./../Capsule/inp");
-    RqContext cont(this);
-    TIfRange range = einp->GetIfi("MDIntGet", &cont);
+    TIfRange range = einp->GetIfi("MDIntGet", this);
     TInt val = 0;
     for (TIfIter it = range.first; it != range.second; it++) {
 	MDIntGet* dget = (MDIntGet*) (*it);
@@ -391,8 +388,7 @@ TBool ACountCritInt::HandleIoChanged(MElem& aContext, MElem* aCp)
     TBool res = ETrue;
     // Checking input change
     if (aCp->Name() == "inp") {
-	RqContext cont(this);
-	TIfRange range = aCp->GetIfi("MDIntGet", &cont);
+	TIfRange range = aCp->GetIfi("MDIntGet", this);
 	TInt val = 0;
 	for (TIfIter it = range.first; it != range.second; it++) {
 	    MDIntGet* dget = (MDIntGet*) (*it);
@@ -408,8 +404,7 @@ TBool ACountCritInt::HandleIoChanged(MElem& aContext, MElem* aCp)
 void ACountCritInt::OnDataChanged()
 {
     MElem* einp = GetNode("./../Capsule/inp");
-    RqContext cont(this);
-    TIfRange range = einp->GetIfi("MDIntGet", &cont);
+    TIfRange range = einp->GetIfi("MDIntGet", this);
     TInt val = 0;
     for (TIfIter it = range.first; it != range.second; it++) {
 	MDIntGet* dget = (MDIntGet*) (*it);
@@ -596,8 +591,7 @@ void *AFAddInt::DoGetObj(const char *aName)
 TInt AFAddInt::Value()
 {
     MElem* einp = GetNode("./../Capsule/inp");
-    RqContext cont(this);
-    TIfRange range = einp->GetIfi("MDIntGet", &cont);
+    TIfRange range = einp->GetIfi("MDIntGet", this);
     TInt val = 0;
     for (TIfIter it = range.first; it != range.second; it++) {
 	MDIntGet* dget = (MDIntGet*) (*it);
@@ -640,11 +634,10 @@ void *AFSubInt::DoGetObj(const char *aName)
 
 TInt AFSubInt::GetValue()
 {
-    RqContext cont(this);
     TInt val = 0;
     // Positives
     MElem* einp = GetNode("./../Capsule/InpP");
-    TIfRange range = einp->GetIfi("MDIntGet", &cont);
+    TIfRange range = einp->GetIfi("MDIntGet", this);
     for (TIfIter it = range.first; it != range.second; it++) {
 	MDIntGet* dget = (MDIntGet*) (*it);
 	if (dget != NULL) {
@@ -653,7 +646,7 @@ TInt AFSubInt::GetValue()
     }
     // Negatives
     einp = GetNode("./../Capsule/InpN");
-    range = einp->GetIfi("MDIntGet", &cont);
+    range = einp->GetIfi("MDIntGet", this);
     for (TIfIter it = range.first; it != range.second; it++) {
 	MDIntGet* dget = (MDIntGet*) (*it);
 	if (dget != NULL) {
@@ -820,8 +813,7 @@ vector<TInt> AFIntToVect::Value()
     vector<TInt> res;
     MElem* einp = GetNode("./../Capsule/inp");
     __ASSERT(einp != NULL);
-    RqContext cont(this);
-    TIfRange range = einp->GetIfi("MDIntGet", &cont);
+    TIfRange range = einp->GetIfi("MDIntGet", this);
     for (TIfIter it = range.first; it != range.second; it++) {
 	MDIntGet* dget = (MDIntGet*) (*it);
 	if (dget != NULL) {
@@ -874,9 +866,8 @@ TInt AFConvInt::GetValue()
     __ASSERT(einpwf != NULL);
     MElem* eargwf = GetNode("./../WFArg/Capsule/inp");
     __ASSERT(eargwf != NULL);
-    RqContext cont(this);
-    MDIntSet* wfarg = (MDIntSet*) eargwf->GetSIfi(MDIntSet::Type(), &cont);
-    MDIntGet* wfres = (MDIntGet*) einpwf->GetSIfi("MDIntGet", &cont);
+    MDIntSet* wfarg = (MDIntSet*) eargwf->GetSIfi(MDIntSet::Type(), this);
+    MDIntGet* wfres = (MDIntGet*) einpwf->GetSIfi("MDIntGet", this);
     if (wfres != NULL && wfarg != NULL) {
 	TBool lupd = IsLogeventUpdate();
 	GUri fullpath;
@@ -884,7 +875,7 @@ TInt AFConvInt::GetValue()
 	    MElem* host = iMan->GetMan();
 	    host->GetUri(fullpath);
 	}
-	TIfRange range = einp->GetIfi("MDIntGet", &cont);
+	TIfRange range = einp->GetIfi("MDIntGet", this);
 	for (TIfIter it = range.first; it != range.second; it++) {
 	    MDIntGet* dget = (MDIntGet*) (*it);
 	    if (dget != NULL) {
@@ -1001,8 +992,7 @@ void *AFuncmAdd::DoGetObj(const char *aName)
 TInt AFuncmAdd::ExcInt::Value()
 {
     MElem* einp = mHost.GetNode("./../Capsule/inp");
-    RqContext cont(&mHost);
-    TIfRange range = einp->GetIfi("MDIntGet", &cont);
+    TIfRange range = einp->GetIfi("MDIntGet", &mHost);
     TInt val = 0;
     for (TIfIter it = range.first; it != range.second; it++) {
 	MDIntGet* dget = (MDIntGet*) (*it);
@@ -1050,9 +1040,8 @@ TBool AFGTInt::Value()
     MElem* einp1 = GetNode("./../Capsule/Inp1");
     MElem* einp2 = GetNode("./../Capsule/Inp2");
     __ASSERT(einp1 != NULL && einp2 != NULL);
-    RqContext cont(this);
-    MDIntGet* minp1 = (MDIntGet*) einp1->GetSIfi("MDIntGet", &cont);
-    MDIntGet* minp2 = (MDIntGet*) einp2->GetSIfi("MDIntGet", &cont);
+    MDIntGet* minp1 = (MDIntGet*) einp1->GetSIfi("MDIntGet", this);
+    MDIntGet* minp2 = (MDIntGet*) einp2->GetSIfi("MDIntGet", this);
     TBool res = EFalse;
     if (minp1 != NULL && minp2 != NULL) {
 	res = (minp1->Value() > minp2->Value());
@@ -1097,8 +1086,7 @@ TInt AFBoolToInt::Value()
 {
     MElem* einp = GetNode("./../Capsule/Inp");
     __ASSERT(einp != NULL);
-    RqContext cont(this);
-    MDBoolGet* minp = (MDBoolGet*) einp->GetSIfi("MDBoolGet", &cont);
+    MDBoolGet* minp = (MDBoolGet*) einp->GetSIfi("MDBoolGet", this);
     TInt res = 0;
     if (minp != NULL) {
 	res = minp->Value() ? 1 : 0;
@@ -1226,8 +1214,7 @@ Elem::TIfRange AFunVar::GetInps(TInt aId, TBool aOpt)
     TIfRange res;
     MElem* inp = GetNode("./../Capsule/" + GetInpUri(aId));
     if (inp != NULL) {
-	RqContext cont(this);
-	res =  inp->GetIfi(MDVarGet::Type(), &cont);
+	res =  inp->GetIfi(MDVarGet::Type(), this);
     }
     else if (!aOpt) {
 	Logger()->Write(EErr, this, "Cannot get input [%s]", GetInpUri(aId).c_str());

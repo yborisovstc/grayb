@@ -57,7 +57,7 @@
 	    // Iface cache key: [[iface name, requestor], provider]
 	    typedef pair<TICacheKeyF, Base*> TICacheKey;
 	    // Iface cache
-	    typedef multimap<TICacheKey, void*> TICache;
+	    typedef multimap<TICacheKey, MIface*> TICache;
 	    // Iface cache query by TICMapKeyF (iface, requestor)
 	    typedef multimap<TICacheKeyF, TICacheKey> TICacheQF;
 	    // Iface cache iterator
@@ -84,7 +84,7 @@
 	    virtual MIfIter& operator=(const MIfIter& aIt);
 	    virtual MIfIter& operator++();
 	    virtual TBool operator==(const MIfIter& aIt);
-	    virtual void*  operator*();
+	    MIface* operator*() override;
 	    public:
 	    Elem* iHost;
 	    string iIName; // Iface name
@@ -161,10 +161,8 @@
 	    TBool IsName(const char* aName);
 	    virtual TBool IsHeirOf(const string& aParent) const;
 	    // From MIfProv Iface provider
-	    virtual void* GetSIfiC(const string& aName, Base* aRequestor = NULL);
-	    virtual void* GetSIfi(const string& aName, const RqContext* aCtx = NULL);
-	    virtual void* GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert = ETrue);
-	    virtual TIfRange GetIfi(const string& aName, const RqContext* aCtx = NULL);
+	    virtual MIface* GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert = ETrue);
+	    TIfRange GetIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
 	    TInt IfRangeSize(const TIfRange& aRange) const;
 	    void* GetIfind(TIfRange& aRange, TInt aInd);
 	    // From Base
@@ -237,16 +235,15 @@
 	    virtual void OnNodeMutated(const MElem* aNode, const TMut& aMut, const MElem* aCtx);
 	    virtual void OnParentMutated(MElem* aParent, const TMut& aMut);
 	    // Ifaces cache
-	    virtual void UpdateIfi(const string& aName, const RqContext* aCtx);
+	    virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx());
 	    void RmIfCache(IfIter& aIt);
 	    virtual void UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx);
 	    virtual void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MElem* aProv, TBool aInv = EFalse);
 	    void InvalidateIfCache();
 	    void InvalidateIfCache(const string& aIfName);
-	    void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, void* aVal);
-	    void InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv, void* aVal);
+	    void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, MIface* aVal);
 	    void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg);
-	    void InsertIfCache(const string& aName, const RqContext* aCtx, Base* aProv, TIfRange aRg);
+	    //static TBool InInIfRctx(, TIMElem* aReq);
 	    // Chromo
 	    ChromoNode GetChNode(const GUri& aUri) const;
 	    virtual TBool CompactChromo() override { return EFalse;}

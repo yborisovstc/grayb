@@ -13,14 +13,20 @@
 class ChromoNode;
 class Base;
 class MElem;
-class RqContext;
 class Rank;
 
 class TICacheRCtx: public vector<Base*>
 {
     public:
-	TICacheRCtx();
-	TICacheRCtx(const RqContext* aCtx);
+	TICacheRCtx(): vector<Base*>() {}
+	TICacheRCtx(Base* aElem): TICacheRCtx() { push_back(aElem);}
+	TBool IsInContext(Base* aReq) const { 
+	    TBool res = EFalse;
+	    for (auto* req : *this) {
+		if (req == aReq) { res = ETrue; break;}
+	    }
+	    return res;
+	}
 };
 
 
@@ -116,18 +122,18 @@ class MIfProv
 	static const char* Type() { return "MIfProv";};
     public:
 	// Iface of Cooperative Ifaces provider iterator
-	class MIfIter : public iterator<input_iterator_tag, void*> {
+	class MIfIter : public iterator<input_iterator_tag, MIface*> {
 	    public:
 		virtual ~MIfIter() {};
 		virtual MIfIter* Clone() const { return NULL;};
 		virtual MIfIter& operator=(const MIfIter& aIt) { return *this;};
 		virtual MIfIter& operator++() { return *this;};
 		virtual TBool operator==(const MIfIter& aIt) { return EFalse;};
-		virtual void*  operator*() {return NULL;};
+		virtual MIface*  operator*() {return NULL;};
 	};
 
 	// Envelop of Cooperative Ifaces provider iterator 
-	class TIfIter : public iterator<input_iterator_tag, void*> {
+	class TIfIter : public iterator<input_iterator_tag, MIface*> {
 	    public:
 		TIfIter(): mImpl(NULL), mCloned(EFalse) {};
 		TIfIter(MIfIter& aImpl): mImpl(&aImpl), mCloned(EFalse) {};
@@ -139,7 +145,7 @@ class MIfProv
 		    TIfIter operator++(int) { TIfIter tmp(*this); operator++(); return tmp; };
 		    TBool operator==(const TIfIter& aIt) { return (mImpl != NULL && aIt.mImpl != NULL) ? mImpl->operator==((*aIt.mImpl)) : mImpl == aIt.mImpl;};
 		    TBool operator!=(const TIfIter& aIt) { return !operator==(aIt);};
-		    virtual void*  operator*() { return mImpl->operator*();};
+		    virtual MIface*  operator*() { return mImpl->operator*();};
 	    protected:
 		    MIfIter* mImpl;
 		    TBool mCloned;
@@ -147,10 +153,12 @@ class MIfProv
 
 	typedef pair<TIfIter, TIfIter> TIfRange;
     public:
-	virtual void* GetSIfiC(const string& aName, Base* aRequestor = NULL) = 0;
-	virtual void* GetSIfi(const string& aName, const RqContext* aCtx = NULL) = 0;
-	virtual void* GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert = ETrue) = 0;
-	virtual TIfRange GetIfi(const string& aName, const RqContext* aCtx = NULL) = 0;
+	MIface* GetSIfiC(const string& aName, Base* aRequestor = NULL) { return GetSIfi(aName, aRequestor); }
+	MIface* GetSIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) { TIfRange rg = GetIfi(aName, aCtx);
+	    return (rg.first != rg.second) ? *(rg.first) : NULL;
+	}
+	virtual MIface* GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert = ETrue) = 0;
+	virtual TIfRange GetIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) = 0;
 	virtual void UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx) = 0;
 	virtual void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MElem* aProv, TBool aInv = EFalse) = 0;
 };

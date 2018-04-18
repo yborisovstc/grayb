@@ -104,16 +104,14 @@ void *ConnPointBase::DoGetObj(const char *aName)
     return res;
 }
 
-void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
+void ConnPointBase::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 {
-    void* res = NULL;
     TIfRange rr;
     TBool resg = EFalse;
-    RqContext ctx(this, aCtx);
-    TICacheRCtx rctx(aCtx);
-    res = DoGetObj(aName.c_str());
+    TICacheRCtx ctx(aCtx); ctx.push_back(this);
+    MIface* res = (MIface*) DoGetObj(aName.c_str());
     if (res != NULL) {
-	InsertIfCache(aName, rctx, this, res);
+	InsertIfCache(aName, aCtx, this, res);
     } else {
 	bool found = false;
 	// Redirect to pairs if iface requiested is provided by this CP
@@ -126,8 +124,8 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 		if (iMan != NULL && !ctx.IsInContext(iMan)) {
 		    // TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
 		    MElem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
-		    rr = mgr->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, rctx, mgr, rr);
+		    rr = mgr->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, mgr, rr);
 		    resg = resg || (rr.first == rr.second);
 		}
 	    }
@@ -138,15 +136,15 @@ void ConnPointBase::UpdateIfi(const string& aName, const RqContext* aCtx)
 		for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
 		    MElem* pe = (*it)->GetObj(pe);
 		    if (!ctx.IsInContext(pe)) {
-			rr = pe->GetIfi(aName, &ctx);
-			InsertIfCache(aName, rctx, pe, rr);
+			rr = pe->GetIfi(aName, ctx);
+			InsertIfCache(aName, aCtx, pe, rr);
 		    }
 		}
 		// Responsible pairs not found, redirect to upper layer
 		if ((rr.first == rr.second) && iMan != NULL && !ctx.IsInContext(iMan)) {
 		    MElem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
-		    rr = mgr->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, rctx, mgr, rr);
+		    rr = mgr->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, mgr, rr);
 		}
 	    }
 	}
@@ -361,16 +359,14 @@ void *ConnPointMc::DoGetObj(const char *aName)
     return res;
 }
 
-void ConnPointMc::UpdateIfi(const string& aName, const RqContext* aCtx)
+void ConnPointMc::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 {
-    void* res = NULL;
     TIfRange rr;
     TBool resg = EFalse;
-    RqContext ctx(this, aCtx);
-    TICacheRCtx rctx(aCtx);
-    res = DoGetObj(aName.c_str());
+    TICacheRCtx ctx(aCtx); ctx.push_back(this);
+    MIface* res = (MIface*) DoGetObj(aName.c_str());
     if (res != NULL) {
-	InsertIfCache(aName, rctx, this, res);
+	InsertIfCache(aName, aCtx, this, res);
     }
     if (res == NULL) {
 	// Redirect to pairs if iface requiested is provided by this CP
@@ -379,8 +375,8 @@ void ConnPointMc::UpdateIfi(const string& aName, const RqContext* aCtx)
 	    if (iMan != NULL && !ctx.IsInContext(iMan)) {
 		// TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
 		MElem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
-		rr = mgr->GetIfi(aName, &ctx);
-		InsertIfCache(aName, rctx, mgr, rr);
+		rr = mgr->GetIfi(aName, ctx);
+		InsertIfCache(aName, aCtx, mgr, rr);
 		resg = resg || (rr.first == rr.second);
 	    }
 	}
@@ -389,16 +385,16 @@ void ConnPointMc::UpdateIfi(const string& aName, const RqContext* aCtx)
 		for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
 		    MElem* pe = (*it)->GetObj(pe);
 		    if (!ctx.IsInContext(pe)) {
-			rr = pe->GetIfi(aName, &ctx);
-			InsertIfCache(aName, rctx, pe, rr);
+			rr = pe->GetIfi(aName, ctx);
+			InsertIfCache(aName, aCtx, pe, rr);
 			resg = resg || (rr.first == rr.second);
 		    }
 		}
 		// Responsible pairs not found, redirect to upper layer
 		if ((rr.first == rr.second) && iMan != NULL && !ctx.IsInContext(iMan)) {
 		    MElem* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
-		    rr = mgr->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, rctx, mgr, rr);
+		    rr = mgr->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, mgr, rr);
 		    resg = resg || (rr.first == rr.second);
 		}
 	    }
@@ -652,23 +648,21 @@ void *ExtenderAgent::DoGetObj(const char *aName)
     return res;
 }
 
-void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
+void ExtenderAgent::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 {
-    void* res = NULL;
     TBool resg = EFalse;
     TIfRange rr;
-    RqContext ctx(this, aCtx);
-    TICacheRCtx rctx(aCtx);
-    res = DoGetObj(aName.c_str());
+    TICacheRCtx ctx(aCtx); ctx.push_back(this);
+    MIface* res = (MIface*) DoGetObj(aName.c_str());
     if (res != NULL) {
-	InsertIfCache(aName, rctx, this, res);
+	InsertIfCache(aName, aCtx, this, res);
     }
     if (res == NULL) {
 	// Redirect to internal point or pair depending on the requiestor
 	MElem* intcp = GetExtd();
 	if (intcp != NULL && !ctx.IsInContext(intcp)) {
-	    rr = intcp->GetIfi(aName, &ctx);
-	    InsertIfCache(aName, rctx, intcp, rr);
+	    rr = intcp->GetIfi(aName, ctx);
+	    InsertIfCache(aName, aCtx, intcp, rr);
 	    resg = resg || (rr.first == rr.second);
 	}
 	else {
@@ -679,8 +673,8 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    MVert* pair = vhost->GetPair(ct);
 		    MElem* ep = pair->GetObj(ep);
 		    if (ep != NULL && !ctx.IsInContext(ep)) {
-			rr = ep->GetIfi(aName, &ctx);
-			InsertIfCache(aName, rctx, ep, rr);
+			rr = ep->GetIfi(aName, ctx);
+			InsertIfCache(aName, aCtx, ep, rr);
 			resg = resg || (rr.first == rr.second);
 		    }
 		}
@@ -692,8 +686,8 @@ void ExtenderAgent::UpdateIfi(const string& aName, const RqContext* aCtx)
 	MElem* hostmgr = Host() != NULL ? Host()->GetMan() : NULL;
 	MElem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
 	if (mgr != NULL && !ctx.IsInContext(mgr)) {
-	    rr = mgr->GetIfi(aName, &ctx);
-	    InsertIfCache(aName, rctx, mgr, rr);
+	    rr = mgr->GetIfi(aName, ctx);
+	    InsertIfCache(aName, aCtx, mgr, rr);
 	    resg = resg || (rr.first == rr.second);
 	}
     }
@@ -876,23 +870,21 @@ MIface* AExtender::MAgent_DoGetIface(const string& aName)
     return res;
 }
 
-void AExtender::UpdateIfi(const string& aName, const RqContext* aCtx)
+void AExtender::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 {
-    void* res = NULL;
     TBool resg = EFalse;
     TIfRange rr;
-    RqContext ctx(this, aCtx);
-    TICacheRCtx rctx(aCtx);
-    res = DoGetObj(aName.c_str());
+    TICacheRCtx ctx(aCtx); ctx.push_back(this);
+    MIface* res = (MIface*) DoGetObj(aName.c_str());
     if (res != NULL) {
-	InsertIfCache(aName, rctx, this, res);
+	InsertIfCache(aName, aCtx, this, res);
     }
     if (res == NULL) {
 	// Redirect to internal point or pair depending on the requiestor
 	MElem* intcp = GetExtd();
 	if (intcp != NULL && !ctx.IsInContext(intcp)) {
-	    rr = intcp->GetIfi(aName, &ctx);
-	    InsertIfCache(aName, rctx, intcp, rr);
+	    rr = intcp->GetIfi(aName, ctx);
+	    InsertIfCache(aName, aCtx, intcp, rr);
 	    resg = resg || (rr.first != rr.second);
 	}
 	else {
@@ -903,8 +895,8 @@ void AExtender::UpdateIfi(const string& aName, const RqContext* aCtx)
 		    MVert* pair = vhost->GetPair(ct);
 		    MElem* ep = pair->GetObj(ep);
 		    if (ep != NULL && !ctx.IsInContext(ep)) {
-			rr = ep->GetIfi(aName, &ctx);
-			InsertIfCache(aName, rctx, ep, rr);
+			rr = ep->GetIfi(aName, ctx);
+			InsertIfCache(aName, aCtx, ep, rr);
 			resg = resg || (rr.first != rr.second);
 		    }
 		}
@@ -916,8 +908,8 @@ void AExtender::UpdateIfi(const string& aName, const RqContext* aCtx)
 	MElem* hostmgr = Host()->GetMan();
 	MElem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
 	if (mgr != NULL && !ctx.IsInContext(mgr)) {
-	    rr = mgr->GetIfi(aName, &ctx);
-	    InsertIfCache(aName, rctx, mgr, rr);
+	    rr = mgr->GetIfi(aName, ctx);
+	    InsertIfCache(aName, aCtx, mgr, rr);
 	    resg = resg || (rr.first != rr.second);
 	}
     }
@@ -1007,26 +999,23 @@ MIface* ASocket::MAgent_DoGetIface(const string& aUid)
     return res;
 }
 
-void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
+void ASocket::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 {
     // TODO [YB] the current routing model is not optimal. Socket doesn't known itself if
     // it supports iface or not (only pins know). So socket routes to pins first in hope
     // they redirect properly. But what if not? Pin routes back to host, so loop happens, that stops 
     // further routing.
-    void* res = NULL;
     TIfRange rr;
     TBool resok = EFalse;
-    RqContext ctx(this, aCtx);
-    TICacheRCtx rctx(aCtx);
-    res = DoGetObj(aName.c_str());
+    TICacheRCtx ctx(aCtx); ctx.push_back(this);
+    MIface* res = (MIface*) DoGetObj(aName.c_str());
     if (res != NULL) {
-	InsertIfCache(aName, rctx, this, res);
+	InsertIfCache(aName, aCtx, this, res);
     }
-    if (res == NULL && aCtx != NULL) {
-	Base* master = aCtx->Requestor();
+    if (res == NULL && !aCtx.empty()) {
+	Base* master = aCtx.back();
 	MElem* emaster = master->GetObj(emaster);
-	const RqContext* hostctx = aCtx->Ctx();
-	Base* rqst = aCtx->Ctx() != NULL ? aCtx->Ctx()->Requestor(): NULL;
+	Base* rqst = aCtx.size() > 1 ? aCtx.at(aCtx.size() - 2): NULL;
 	if (rqst != NULL) {
 	    // Requestor is specified, so try to redirect basing on it
 	    MElem* erqst = rqst->GetObj(erqst);
@@ -1036,8 +1025,8 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		if (iMan != NULL && !ctx.IsInContext(iMan)) {
 		    MElem* mgr =  GetMan()->GetMan();
 		    if (mgr != NULL && !ctx.IsInContext(mgr)) {
-			rr = mgr->GetIfi(aName, &ctx);
-			InsertIfCache(aName, rctx, mgr, rr);
+			rr = mgr->GetIfi(aName, ctx);
+			InsertIfCache(aName, aCtx, mgr, rr);
 			resok = resok || (rr.first != rr.second);
 		    }
 		}
@@ -1048,7 +1037,7 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		Base* apair = NULL;
 		MElem* pcomp = NULL;
 		Base* ctxe = rqst;
-		const RqContext* cct = aCtx->Ctx();
+		TICacheRCtx cct(aCtx); if (!cct.empty()) cct.pop_back();
 		MElem* host = GetMan();
 		TBool isextd = EFalse;
 		// TODO [YB] To cleanup
@@ -1066,9 +1055,9 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 			}
 		    }
 		    ctxe = NULL;
-		    if (cct != NULL) {
-			cct = cct->Ctx();
-			ctxe = cct != NULL ? cct->Requestor() : NULL;
+		    if (!cct.empty()) {
+			cct.pop_back();
+			ctxe = !cct.empty() ? cct.back() : NULL;
 		    }
 		    if (apair != NULL && ctxe != NULL) {
 			// Find associated pairs pin within the context
@@ -1088,8 +1077,8 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		}
 		if (pcomp != NULL && !ctx.IsInContext(pcomp)) {
 		    // Found associated pairs pin within the context, so redirect to it's pair in current socket
-		    rr = pcomp->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, rctx, pcomp, rr);
+		    rr = pcomp->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, pcomp, rr);
 		    resok = resok || (rr.first != rr.second);
 		}
 	    }
@@ -1105,8 +1094,8 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 			MVert* pair = vman->GetPair(ct);
 			MElem* pe = pair->GetObj(pe);
 			if (!ctx.IsInContext(pe)) {
-			    rr = pe->GetIfi(aName, &ctx);
-			    InsertIfCache(aName, rctx, pe, rr);
+			    rr = pe->GetIfi(aName, ctx);
+			    InsertIfCache(aName, aCtx, pe, rr);
 			    resok = resok || (rr.first != rr.second);
 			}
 		    }
@@ -1118,8 +1107,8 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		MElem* hostmgr = host->GetMan();
 		MElem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
 		if (mgr != NULL && !ctx.IsInContext(mgr)) {
-		    rr = mgr->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, rctx, mgr, rr);
+		    rr = mgr->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, mgr, rr);
 		    resok = resok || (rr.first != rr.second);
 		}
 	    }
@@ -1133,8 +1122,8 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		for (TInt ci = 0; ci < man->CompsCount() && res == NULL; ci++) {
 		    MElem* eit = man->GetComp(ci);
 		    if (!ctx.IsInContext(eit) && eit != iMan) {
-			rr = eit->GetIfi(aName, &ctx);
-			InsertIfCache(aName, rctx, eit, rr);
+			rr = eit->GetIfi(aName, ctx);
+			InsertIfCache(aName, aCtx, eit, rr);
 			resok = resok || (rr.first != rr.second);
 		    }
 		}
@@ -1151,8 +1140,8 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 			MVert* pair = vman->GetPair(ct);
 			MElem* pe = pair->GetObj(pe);
 			if (!ctx.IsInContext(pe)) {
-			    rr = pe->GetIfi(aName, &ctx);
-			    InsertIfCache(aName, rctx, pe, rr);
+			    rr = pe->GetIfi(aName, ctx);
+			    InsertIfCache(aName, aCtx, pe, rr);
 			    resok = resok || (rr.first != rr.second);
 			}
 		    }
@@ -1164,8 +1153,8 @@ void ASocket::UpdateIfi(const string& aName, const RqContext* aCtx)
 		MElem* hostmgr = host->GetMan();
 		MElem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
 		if (mgr != NULL && !ctx.IsInContext(mgr)) {
-		    rr = mgr->GetIfi(aName, &ctx);
-		    InsertIfCache(aName, rctx, mgr, rr);
+		    rr = mgr->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, mgr, rr);
 		    resok = resok || (rr.first != rr.second);
 		}
 	    }
@@ -1223,14 +1212,14 @@ MElem* ASocket::GetExtd()
     return NULL;
 }
 
-MElem* ASocket::GetPin(const RqContext* aCtx)
+MElem* ASocket::GetPin(const TICacheRCtx& aCtx)
 {
     MElem* res = NULL;
     MElem* host = GetMan();
     for (TInt ci = 0; ci < host->CompsCount() && res == NULL; ci++) {
 	MElem *comp = host->GetComp(ci);
 	if (comp != this && comp->Name() != "Logspec") {
-	    if (aCtx->IsInContext(comp)) {
+	    if (aCtx.IsInContext(comp)) {
 		res = comp;
 	    }
 	}

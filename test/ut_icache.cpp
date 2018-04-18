@@ -65,7 +65,7 @@ void Ut_icache::test_Inv1()
     // Sync the state
     MElem* esync = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != 0);
-    MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type(), NULL);
+    MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
 
     // Do some ticks just to fillout ifaces caches
@@ -124,8 +124,7 @@ void Ut_icache::test_InvMAgent()
     madd.SetAttr(ENa_Parent, "ExtenderAgent");
 
     // Cache contains only one item - incaps agent
-    RqContext mctx(NULL);
-    MIfProv::TIfRange rg = test->GetIfi(MAgent::Type(), &mctx);
+    MIfProv::TIfRange rg = test->GetIfi(MAgent::Type());
     TInt cnt = 0;
     for (MIfProv::TIfIter it = rg.first; it != rg.second; it++, cnt++);
     CPPUNIT_ASSERT_MESSAGE("Wrong number of MAgent ifaces on first request", cnt == 1);
@@ -136,7 +135,7 @@ void Ut_icache::test_InvMAgent()
     test->Mutate();
 
     // Cache should be invalidated here, so GetIfi refreshes cache and add two agetns to cache - incaps and extender
-    rg = test->GetIfi(MAgent::Type(), &mctx);
+    rg = test->GetIfi(MAgent::Type());
     cnt = 0;
     for (MIfProv::TIfIter it = rg.first; it != rg.second; it++, cnt++);
     CPPUNIT_ASSERT_MESSAGE("Wrong number of MAgent ifaces on second request", cnt == 2);
