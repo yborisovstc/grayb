@@ -29,9 +29,7 @@ Prop::Prop(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 void *Prop::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else if (strcmp(aName, MProp::Type()) == 0) {
+    if (strcmp(aName, MProp::Type()) == 0) {
 	res = (MProp*) this;
     } else {
 	res = Elem::DoGetObj(aName);
@@ -110,9 +108,7 @@ Description::Description(MElem* aMan, MEnv* aEnv): Prop(Type(), aMan, aEnv)
 void *Description::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else if (strcmp(aName, MProp::Type()) == 0) {
+    if (strcmp(aName, MProp::Type()) == 0) {
 	res = (MProp*) this;
     } else {
 	res = Prop::DoGetObj(aName);

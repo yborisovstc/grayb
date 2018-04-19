@@ -21,7 +21,7 @@ class GFactory: public Base, public MProvider
 	void AddProvider(MProvider* aProv);
 	void RemoveProvider(MProvider* aProv);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual void *DoGetObj(const char *aName) override { return NULL;}
 	// From MProvider
 	virtual const string& Name() const { return iName;};
 	virtual Elem* CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv);

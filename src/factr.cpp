@@ -25,11 +25,6 @@ GFactory::~GFactory()
     }
 }
 
-void *GFactory::DoGetObj(const char *aName)
-{
-    return (strcmp(aName, Type()) == 0) ? this : NULL;
-}
-
 Elem* GFactory::CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv)
 {
     Elem* res = NULL;

@@ -29,9 +29,7 @@ AMod::~AMod()
 void* AMod::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else if (strcmp(aName, MMod::Type()) == 0) {
+    if (strcmp(aName, MMod::Type()) == 0) {
 	res = (MMod*) this;
     } else {
 	res = Elem::DoGetObj(aName);

@@ -117,10 +117,7 @@ void DataBase::NotifyUpdate()
 void *DataBase::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MUpdatable::Type()) == 0) {
+    if (strcmp(aName, MUpdatable::Type()) == 0) {
 	res = (MUpdatable*) this;
     }
     else if (strcmp(aName, MDataObserver::Type()) == 0) {
@@ -254,10 +251,7 @@ MIface* DInt::MAgent_DoGetIface(const string& aName)
 void *DInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MACompsObserver::Type()) == 0) {
+    if (strcmp(aName, MACompsObserver::Type()) == 0) {
 	res = (MACompsObserver*) this;
     }
     else if (strcmp(aName, MDIntGet::Type()) == 0) {
@@ -321,7 +315,7 @@ TBool DInt::Update()
 	einp = GetNode("./../Capsule/Inp");
     }
     if (einp != NULL) {
-	Vert* vert = einp->GetObj(vert);
+	MVert* vert = einp->GetObj(vert);
 	MVert* pair = vert->GetPair(0);
 	if (pair != NULL) {
 	    MElem* inpe = pair->GetObj(inpe);
@@ -378,18 +372,6 @@ DNInt::DNInt(MElem* aMan, MEnv* aEnv): DInt(Type(), aMan, aEnv)
     SetParent(DInt::PEType());
 }
 
-void *DNInt::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = DInt::DoGetObj(aName);
-    }
-    return res;
-}
-
 void DNInt::Set(TInt aData)
 {
     if (mData != aData) {
@@ -419,10 +401,7 @@ DVar::DVar(MElem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(NULL)
 void *DVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MDVar::Type()) == 0) {
+    if (strcmp(aName, MDVar::Type()) == 0) {
 	res = (MDVar*) this;
     }
     else if (strcmp(aName, MDVarGet::Type()) == 0) {
@@ -434,16 +413,6 @@ void *DVar::DoGetObj(const char *aName)
     else {
 	res = DataBase::DoGetObj(aName);
     }
-    /* TODO [YB] Avoid init internal data via obj resolver, do we need to keep access at least?
-    if (res == NULL) {
-	if (mData == NULL) {
-	    Init(aName);
-	}
-	if (mData != NULL) {
-	    res = mData->DoGetObj(aName, aIncUpHier);
-	}
-    }
-    */
     return res;
 }
 
@@ -1198,8 +1167,6 @@ template<class T> void DVar::HMtr<T>::MtrGet(Mtr<T>& aData)
 }
 
 // Generic data
-
-//template<class T> const string MDtGet<T>::mType = string("MDtGet_") + T::TypeSig();
 
 
 template<class T> void *DVar::HDt<T>::DoGetObj(const char *aName)

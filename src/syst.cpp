@@ -24,14 +24,6 @@ ACapsule::ACapsule(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
     SetParent(Elem::PEType());
 }
 
-void *ACapsule::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) res = this;
-    else res = Elem::DoGetObj(aName);
-    return res;
-}
-
 TBool ACapsule::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 {
     if (!aModif) { // Don't care of modifications
@@ -92,9 +84,7 @@ ConnPointBase::ConnPointBase(MElem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
 void *ConnPointBase::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
+    if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
     } else if (strcmp(aName, MConnPoint::Type()) == 0) {
 	res = (MConnPoint*) this;
@@ -347,9 +337,7 @@ ConnPointMc::ConnPointMc(MElem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
 void *ConnPointMc::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
+    if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
     } else if (strcmp(aName, MConnPoint::Type()) == 0) {
 	res = (MConnPoint*) this;
@@ -566,17 +554,6 @@ ConnPointBaseInp::ConnPointBaseInp(MElem* aMan, MEnv* aEnv): ConnPointBase(Type(
     SetParent(ConnPointBase::PEType());
 }
 
-void *ConnPointBaseInp::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else {
-	res = ConnPointBase::DoGetObj(aName);
-    }
-    return res;
-}
-
 MCompatChecker::TDir ConnPointBaseInp::GetDir() const
 {
     return EInp;
@@ -597,17 +574,6 @@ ConnPointBaseOut::ConnPointBaseOut(const string& aName, MElem* aMan, MEnv* aEnv)
 ConnPointBaseOut::ConnPointBaseOut(MElem* aMan, MEnv* aEnv): ConnPointBase(Type(), aMan, aEnv)
 {
     SetParent(ConnPointBase::PEType());
-}
-
-void *ConnPointBaseOut::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else {
-	res = ConnPointBase::DoGetObj(aName);
-    }
-    return res;
 }
 
 MCompatChecker::TDir ConnPointBaseOut::GetDir() const
@@ -636,9 +602,7 @@ ExtenderAgent::ExtenderAgent(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv),
 void *ExtenderAgent::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
+    if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = dynamic_cast<MCompatChecker*>(&mCompatChecker);
     } else if (strcmp(aName, MAgent::Type()) == 0) {
 	res = (MAgent*) this;
@@ -778,17 +742,6 @@ ExtenderAgentInp::ExtenderAgentInp(MElem* aMan, MEnv* aEnv): ExtenderAgent(Type(
     SetParent(ExtenderAgent::PEType());
 }
 
-void *ExtenderAgentInp::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else {
-	res = ExtenderAgent::DoGetObj(aName);
-    }
-    return res;
-}
-
 MCompatChecker::TDir ExtenderAgentInp::GetDir() const
 {
     return MCompatChecker::EInp;
@@ -809,17 +762,6 @@ ExtenderAgentOut::ExtenderAgentOut(const string& aName, MElem* aMan, MEnv* aEnv)
 ExtenderAgentOut::ExtenderAgentOut(MElem* aMan, MEnv* aEnv): ExtenderAgent(Type(), aMan, aEnv)
 {
     SetParent(ExtenderAgent::PEType());
-}
-
-void *ExtenderAgentOut::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else {
-	res = ExtenderAgent::DoGetObj(aName);
-    }
-    return res;
 }
 
 MCompatChecker::TDir ExtenderAgentOut::GetDir() const
@@ -850,9 +792,7 @@ AExtender::AExtender(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 void *AExtender::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
+    if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
     } else if (strcmp(aName, MAgent::Type()) == 0) {
 	res = dynamic_cast<MAgent*>(this);
@@ -973,9 +913,7 @@ ASocket::ASocket(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 void *ASocket::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
+    if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
     } else if (strcmp(aName, MSocket::Type()) == 0) {
 	res = (MSocket*) this;
@@ -1063,7 +1001,7 @@ void ASocket::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 			// Find associated pairs pin within the context
 			// TODO [YB] Checking pair for being ASocket (implemenetation) is wrong way
 			// We need to use ifaces instead of impl. Knowledge of impl should be denied.
-			ASocket* psock = apair->GetObj(psock);
+			MSocket* psock = apair->GetObj(psock);
 			if (psock != NULL) {
 			    MElem* pereq = psock->GetPin(cct);
 			    if (pereq != NULL) {
@@ -1352,17 +1290,6 @@ ASocketInp::ASocketInp(MElem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
     SetParent(ASocket::PEType());
 }
 
-void *ASocketInp::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else {
-	res = ASocket::DoGetObj(aName);
-    }
-    return res;
-}
-
 MCompatChecker::TDir ASocketInp::GetDir() const
 {
     return EInp;
@@ -1385,17 +1312,6 @@ ASocketOut::ASocketOut(MElem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
     SetParent(ASocket::PEType());
 }
 
-void *ASocketOut::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else {
-	res = ASocket::DoGetObj(aName);
-    }
-    return res;
-}
-
 MCompatChecker::TDir ASocketOut::GetDir() const
 {
     return EOut;
@@ -1416,17 +1332,6 @@ ASocketMc::ASocketMc(const string& aName, MElem* aMan, MEnv* aEnv): ASocket(aNam
 ASocketMc::ASocketMc(MElem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
 {
     SetParent(ASocket::PEType());
-}
-
-void *ASocketMc::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else {
-	res = ASocket::DoGetObj(aName);
-    }
-    return res;
 }
 
 MCompatChecker::TDir ASocketMc::GetDir() const
@@ -1453,18 +1358,6 @@ Syst::Syst(const string& aName, MElem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv
 Syst::Syst(MElem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
 {
     SetParent(Vert::PEType());
-}
-
-void *Syst::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    if (res == NULL) {
-	res = Vert::DoGetObj(aName);
-    }
-    return res;
 }
 
 void Syst::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)

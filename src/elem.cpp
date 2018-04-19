@@ -453,10 +453,7 @@ unique_ptr<MChromo> Elem::GetFullChromo() const
 void *Elem::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	//__ASSERT(false);
-	res = this;
-    } else if (strcmp(aName, MOwner::Type()) == 0) {
+    if (strcmp(aName, MOwner::Type()) == 0) {
 	res = (MOwner*) this;
     } else if (strcmp(aName, MElem::Type()) == 0) {
 	void* vv = (MElem*) this;
@@ -699,6 +696,26 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
     }
 }
 
+void Elem::UpdateIfiLocal(const string& aName, const TICacheRCtx& aCtx)
+{
+    TIfRange rr;
+    TICacheRCtx ctx(aCtx);
+    ctx.push_back(this);
+    MIface* res = (MIface*) DoGetObj(aName.c_str());
+    if (res != NULL) {
+	InsertIfCache(aName, aCtx, this, res);
+    }
+}
+
+MIface* Elem::getLocalIface(const string& aName, const TICacheRCtx& aCtx)
+{
+    MIface* res = (MIface*) DoGetObj(aName.c_str());
+    if (res != NULL) {
+	InsertIfCache(aName, aCtx, this, res);
+    }
+    return res;
+}
+
 void Elem::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 {
     TIfRange rr;
@@ -711,13 +728,9 @@ void Elem::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     } else if (aName == MAgent::Type()) {
 	for (auto it : iMComps) {
 	    MElem* comp = it.second;
-	    // Use DoGetObj to avoid recurive look up for iface
-	    res = (MIface*) comp->DoGetObj(aName.c_str());
+	    res = comp->getLocalIface(aName, ctx);
 	    if (res != NULL) {
 		InsertIfCache(aName, aCtx, comp, res);
-		// Also register iface in provider because of used DoGetObj doesn't register
-		Elem* ecomp = comp->GetObj(ecomp); // TODO!! hack, to remove
-		ecomp->InsertIfCache(aName, ctx, comp, res);
 	    }
 	}
     } else {

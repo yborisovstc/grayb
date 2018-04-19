@@ -25,10 +25,7 @@ FuncBase::FuncBase(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 void *FuncBase::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MACompsObserver::Type()) == 0) {
+    if (strcmp(aName, MACompsObserver::Type()) == 0) {
 	res = (MACompsObserver*) this;
     }
     else if (strcmp(aName, MDataObserver::Type()) == 0) {
@@ -110,10 +107,7 @@ MIface* AFunInt::MAgent_DoGetIface(const string& aName)
 void *AFunInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MDIntGet::Type()) == 0) {
+    if (strcmp(aName, MDIntGet::Type()) == 0) {
 	res = (MDIntGet*) this;
     }
     else if (strcmp(aName, MAgent::Type()) == 0) {
@@ -150,7 +144,7 @@ MDIntGet* AFunInt::GetInp(const string& aInpName)
     MDIntGet* res = NULL;
     MElem* einp = GetNode("./../Capsule/" + aInpName);
     if (einp != NULL) {
-	Vert* vert = einp->GetObj(vert);
+	MVert* vert = einp->GetObj(vert);
 	MVert* pair = vert->GetPair(0);
 	if (pair != NULL) {
 	    MElem* epair = pair->GetObj(epair);
@@ -176,18 +170,6 @@ AIncInt::AIncInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunInt(aName, a
 AIncInt::AIncInt(MElem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
 {
     SetParent(AFunInt::PEType());
-}
-
-void *AIncInt::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = AFunInt::DoGetObj(aName);
-    }
-    return res;
 }
 
 TBool AIncInt::HandleIoChanged(MElem& aContext, MElem* aCp)
@@ -229,16 +211,6 @@ AFunIntRes::AFunIntRes(const string& aName, MElem* aMan, MEnv* aEnv): AFunInt(aN
 AFunIntRes::AFunIntRes(MElem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
 {
     SetParent(AFunInt::PEType());
-}
-
-void *AFunIntRes::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0)
-	res = this;
-    else
-	res = AFunInt::DoGetObj(aName);
-    return res;
 }
 
 TBool AFunIntRes::HandleIoChanged(MElem& aContext, MElem* aCp)
@@ -314,18 +286,6 @@ AAddInt::AAddInt(MElem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
     SetParent(AFunInt::PEType());
 }
 
-void *AAddInt::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = AFunInt::DoGetObj(aName);
-    }
-    return res;
-}
-
 TBool AAddInt::HandleIoChanged(MElem& aContext, MElem* aCp)
 {
     TBool res = ETrue;
@@ -369,18 +329,6 @@ string ACountCritInt::PEType()
 ACountCritInt::ACountCritInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
     SetParent(Type());
-}
-
-void *ACountCritInt::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = AFunInt::DoGetObj(aName);
-    }
-    return res;
 }
 
 TBool ACountCritInt::HandleIoChanged(MElem& aContext, MElem* aCp)
@@ -437,10 +385,7 @@ AFunc::AFunc(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 void *AFunc::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MACompsObserver::Type()) == 0)
+    if (strcmp(aName, MACompsObserver::Type()) == 0)
 	res = (MACompsObserver*) this;
     else if (strcmp(aName, MDataObserver::Type()) == 0)
 	res = (MDataObserver*) this;
@@ -521,10 +466,7 @@ AFuncInt::AFuncInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv), mData(0)
 void *AFuncInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MDIntGet::Type()) == 0) {
+    if (strcmp(aName, MDIntGet::Type()) == 0) {
 	res = (MDIntGet*) this;
     }
     else {
@@ -576,10 +518,7 @@ AFAddInt::AFAddInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
 void *AFAddInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MDIntGet::Type()) == 0) {
+    if (strcmp(aName, MDIntGet::Type()) == 0) {
 	res = (MDIntGet*) this;
     }
     else {
@@ -617,19 +556,6 @@ AFSubInt::AFSubInt(const string& aName, MElem* aMan, MEnv* aEnv): AFuncInt(aName
 AFSubInt::AFSubInt(MElem* aMan, MEnv* aEnv): AFuncInt(Type(), aMan, aEnv)
 {
     SetParent(AFuncInt::PEType());
-}
-
-
-void *AFSubInt::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = AFuncInt::DoGetObj(aName);
-    }
-    return res;
 }
 
 TInt AFSubInt::GetValue()
@@ -678,10 +604,7 @@ AFLimInt::AFLimInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
 void *AFLimInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MDIntGet::Type()) == 0) {
+    if (strcmp(aName, MDIntGet::Type()) == 0) {
 	res = (MDIntGet*) this;
     }
     else {
@@ -738,10 +661,7 @@ AFDivInt::AFDivInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
 void *AFDivInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MDIntGet::Type()) == 0) {
+    if (strcmp(aName, MDIntGet::Type()) == 0) {
 	res = (MDIntGet*) this;
     }
     else {
@@ -796,10 +716,7 @@ AFIntToVect::AFIntToVect(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aN
 void *AFIntToVect::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MVIntGet::Type()) == 0) {
+    if (strcmp(aName, MVIntGet::Type()) == 0) {
 	res = (MVIntGet*) this;
     }
     else {
@@ -847,9 +764,7 @@ AFConvInt::AFConvInt(MElem* aMan, MEnv* aEnv): AFuncInt(Type(), aMan, aEnv)
 void *AFConvInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else if (strcmp(aName, MDIntGet::Type()) == 0) {
+    if (strcmp(aName, MDIntGet::Type()) == 0) {
 	res = (MDIntGet*) this;
     } else {
 	res = AFuncInt::DoGetObj(aName);
@@ -909,10 +824,7 @@ AFuncm::AFuncm(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, 
 void *AFuncm::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MACompsObserver::Type()) == 0) {
+    if (strcmp(aName, MACompsObserver::Type()) == 0) {
 	res = (MACompsObserver*) this;
     }
     else if (strcmp(aName, MDataObserver::Type()) == 0) {
@@ -977,18 +889,6 @@ AFuncmAdd::AFuncmAdd(const string& aName, MElem* aMan, MEnv* aEnv): AFuncm(aName
     SetParent(Type());
 }
 
-void *AFuncmAdd::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = AFuncm::DoGetObj(aName);
-    }
-   return res;
-}
-
 TInt AFuncmAdd::ExcInt::Value()
 {
     MElem* einp = mHost.GetNode("./../Capsule/inp");
@@ -1023,10 +923,7 @@ AFGTInt::AFGTInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
 void *AFGTInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MDBoolGet::Type()) == 0) {
+    if (strcmp(aName, MDBoolGet::Type()) == 0) {
 	res = (MDBoolGet*) this;
     }
     else {
@@ -1070,10 +967,7 @@ AFBoolToInt::AFBoolToInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
 void *AFBoolToInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MDIntGet::Type()) == 0) {
+    if (strcmp(aName, MDIntGet::Type()) == 0) {
 	res = (MDIntGet*) this;
     }
     else {
@@ -1119,44 +1013,17 @@ AFunVar::AFunVar(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv), mFunc(NULL
 
 void AFunVar::Construct()
 {
-    /*
-    if (!ContentExists(KCont_Debug)) {
-	InsertContent("KCont_Debug");
-    }
-    */
 }
 
 void *AFunVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MDVarGet::Type()) == 0) {
+    if (strcmp(aName, MDVarGet::Type()) == 0) {
 	res = (MDVarGet*) this;
     }
     else {
 	res = AFunc::DoGetObj(aName);
     }
-    /* TODO [YB] Avoid init internal data via obj resolver, do we need to keep access at least?
-    if (res == NULL) {
-	if (mFunc == NULL) {
-	    Init(aName);
-	    if (mFunc != NULL) {
-		res = mFunc->DoGetObj(aName, aIncUpHier);
-	    }
-	}
-	else {
-	    res = mFunc->DoGetObj(aName, aIncUpHier);
-	    if (res == NULL) {
-		Init(aName);
-		if (mFunc != NULL) {
-		    res = mFunc->DoGetObj(aName, aIncUpHier);
-		}
-	    }
-	}
-    }
-    */
     return res;
 }
 
@@ -1532,18 +1399,6 @@ AFAddVar::AFAddVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
     ChangeCont(KContVal_About, ETrue, KCont_About);
-}
-
-void *AFAddVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = AFunVar::DoGetObj(aName);
-    }
-    return res;
 }
 
 void AFAddVar::Init(const string& aIfaceName)
@@ -2055,18 +1910,6 @@ AFCpsVectVar::AFCpsVectVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFCpsVectVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = AFunVar::DoGetObj(aName);
-    }
-    return res;
-}
-
 void AFCpsVectVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
@@ -2162,18 +2005,6 @@ AFMplVar::AFMplVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName,
 AFMplVar::AFMplVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
-}
-
-void *AFMplVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = AFunVar::DoGetObj(aName);
-    }
-    return res;
 }
 
 void AFMplVar::Init(const string& aIfaceName)
@@ -2335,18 +2166,6 @@ AFMplncVar::AFMplncVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aN
 AFMplncVar::AFMplncVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
-}
-
-void *AFMplncVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = AFunVar::DoGetObj(aName);
-    }
-    return res;
 }
 
 void AFMplncVar::Init(const string& aIfaceName)
@@ -2696,18 +2515,6 @@ AFMplinvVar::AFMplinvVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFMplinvVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = AFunVar::DoGetObj(aName);
-    }
-    return res;
-}
-
 void AFMplinvVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
@@ -2925,14 +2732,6 @@ AFCastVar::AFCastVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFCastVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) { res = this; }
-    else { res = AFunVar::DoGetObj(aName); }
-    return res;
-}
-
 void AFCastVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
@@ -3034,18 +2833,6 @@ AFCpsMtrdVar::AFCpsMtrdVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFCpsMtrdVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = AFunVar::DoGetObj(aName);
-    }
-    return res;
-}
-
 void AFCpsMtrdVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
@@ -3141,18 +2928,6 @@ AFDivVar::AFDivVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName,
 AFDivVar::AFDivVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
-}
-
-void *AFDivVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = AFunVar::DoGetObj(aName);
-    }
-    return res;
 }
 
 void AFDivVar::Init(const string& aIfaceName)
@@ -3346,18 +3121,6 @@ AFBcmpVar::AFBcmpVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFBcmpVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = AFunVar::DoGetObj(aName);
-    }
-    return res;
-}
-
 void AFBcmpVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
@@ -3407,18 +3170,6 @@ AFCmpVar::AFCmpVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName,
 AFCmpVar::AFCmpVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
-}
-
-void *AFCmpVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = AFunVar::DoGetObj(aName);
-    }
-    return res;
 }
 
 void AFCmpVar::Init(const string& aIfaceName)
@@ -3556,18 +3307,6 @@ AFAtVar::AFAtVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, a
 AFAtVar::AFAtVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
-}
-
-void *AFAtVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = AFunVar::DoGetObj(aName);
-    }
-    return res;
 }
 
 void AFAtVar::Init(const string& aIfaceName)
@@ -3835,17 +3574,6 @@ AFSwitchVar::AFSwitchVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
     SetParent(AFunVar::PEType());
 }
 
-void *AFSwitchVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else {
-	res = AFunVar::DoGetObj(aName);
-    }
-    return res;
-}
-
 void *AFSwitchVar::DoGetDObj(const char *aName)
 {
     void* res = NULL;
@@ -3980,17 +3708,6 @@ AFBoolNegVar::AFBoolNegVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVa
 AFBoolNegVar::AFBoolNegVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
 {
     SetParent(AFunVar::PEType());
-}
-
-void *AFBoolNegVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else {
-	res = AFunVar::DoGetObj(aName);
-    }
-    return res;
 }
 
 void AFBoolNegVar::Init(const string& aIfaceName)

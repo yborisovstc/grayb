@@ -25,36 +25,11 @@ string Vert::PEType()
 Vert::Vert(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
-#if 0
-    // Create component for run-time extentions
-    Elem* agents = Provider()->CreateNode("Elem", "Agents", this, iEnv);
-    __ASSERT(agents != NULL);
-    // TODO [YB] Early construction in this place creates the problem:
-    // AppendComp sends notificaion of comps added thru owning chain
-    // But this instance of Vert is not registered by owner yet, so
-    // if observer tries to get comp added then null will be returned
-    // To consider the standard approach of deferred construction.
-    TBool res = AppendComp(agents, ETrue);
-    __ASSERT(res);
-#endif
 }
 
 Vert::Vert(MElem* aMan, MEnv* aEnv):Elem(Type(), aMan, aEnv)
 {
     SetParent(Elem::PEType());
-#if 0
-    // Create component for run-time extentions
-    //Elem* parent = Provider()->GetNode("Elem");
-    Elem* agents = Provider()->CreateNode("Elem", "Agents", this, iEnv);
-    /*
-    if (parent != NULL) {
-	parent->AppendChild(agents);
-    }
-    */
-    __ASSERT(agents != NULL);
-    TBool res = AppendComp(agents, ETrue);
-    __ASSERT(res);
-#endif
 }
 
 MIface* Vert::MVert_DoGetObj(const char *aName)
@@ -72,13 +47,9 @@ MIface* Vert::MVert_DoGetObj(const char *aName)
 void *Vert::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MVert::Type()) == 0) {
+    if (strcmp(aName, MVert::Type()) == 0) {
 	res = (MVert*) this;
-    }
-    else {
+    } else {
 	res = Elem::DoGetObj(aName);
     }
     return res;

@@ -88,8 +88,6 @@ class DNInt: public DInt
 	static string PEType();
 	DNInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	DNInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
-	// From Base
-	virtual void *DoGetObj(const char *aName);
 	// From MDInt
 	virtual void Set(TInt aData);
 };

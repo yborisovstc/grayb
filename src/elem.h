@@ -163,6 +163,7 @@
 	    // From MIfProv Iface provider
 	    virtual MIface* GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert = ETrue);
 	    TIfRange GetIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
+	    MIface* getLocalIface(const string& aName, const TICacheRCtx& aCtx) override;
 	    TInt IfRangeSize(const TIfRange& aRange) const;
 	    void* GetIfind(TIfRange& aRange, TInt aInd);
 	    // From Base
@@ -236,6 +237,7 @@
 	    virtual void OnParentMutated(MElem* aParent, const TMut& aMut);
 	    // Ifaces cache
 	    virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx());
+	    void UpdateIfiLocal(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx());
 	    void RmIfCache(IfIter& aIt);
 	    virtual void UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx);
 	    virtual void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MElem* aProv, TBool aInv = EFalse);

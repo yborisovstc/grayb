@@ -22,7 +22,7 @@ class ImportsMgr: public Base, public MImportMgr
     ImportsMgr(Env& aHost);
     virtual ~ImportsMgr();
     // From Base
-    virtual void *DoGetObj(const char *aName);
+    virtual void *DoGetObj(const char *aName) override { return NULL;}
     public:
     // From MImportMgr
     virtual void GetModulesNames(vector<string>& aModules) const;
@@ -53,7 +53,7 @@ class ChromoMgr: public Base, public MChromoMgr
     virtual ~ChromoMgr();
     public:
     // From Base
-    virtual void *DoGetObj(const char *aName);
+    virtual void *DoGetObj(const char *aName) override { return NULL;}
     // Form MChromoMgr
     virtual int GetSpecMaxOrder() const;
     virtual int GetMaxOrder() const;

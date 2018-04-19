@@ -51,10 +51,7 @@ string ATrBase::PEType()
 void *ATrBase::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MACompsObserver::Type()) == 0)
+    if (strcmp(aName, MACompsObserver::Type()) == 0)
 	res = (MACompsObserver*) this;
     else if (strcmp(aName, MAgent::Type()) == 0)
 	res = dynamic_cast<MAgent*>(this);
@@ -100,13 +97,9 @@ string ATrInt::PEType()
 void *ATrInt::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MDIntGet::Type()) == 0) {
+    if (strcmp(aName, MDIntGet::Type()) == 0) {
 	res = (MDIntGet*) this;
-    }
-    else {
+    } else {
 	res = ATrBase::DoGetObj(aName);
     }
     return res;
@@ -160,18 +153,6 @@ string ATrIncInt::PEType()
     return ATrInt::PEType() + GUri::KParentSep + Type();
 }
 
-void *ATrIncInt::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = ATrInt::DoGetObj(aName);
-    }
-    return res;
-}
-
 TInt ATrIncInt::Value()
 {
     MDIntGet* mget = GetInp("Inp");
@@ -200,18 +181,6 @@ ATrSubInt::ATrSubInt(MElem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
 string ATrSubInt::PEType()
 {
     return ATrInt::PEType() + GUri::KParentSep + Type();
-}
-
-void *ATrSubInt::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = ATrInt::DoGetObj(aName);
-    }
-    return res;
 }
 
 TInt ATrSubInt::Value()
@@ -255,18 +224,6 @@ string ATrMplInt::PEType()
     return ATrInt::PEType() + GUri::KParentSep + Type();
 }
 
-void *ATrMplInt::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = ATrInt::DoGetObj(aName);
-    }
-    return res;
-}
-
 TInt ATrMplInt::Value()
 {
     TInt res = 1;
@@ -295,18 +252,6 @@ ATrDivInt::ATrDivInt(MElem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
 string ATrDivInt::PEType()
 {
     return ATrInt::PEType() + GUri::KParentSep + Type();
-}
-
-void *ATrDivInt::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = ATrInt::DoGetObj(aName);
-    }
-    return res;
 }
 
 TInt ATrDivInt::Value()
@@ -348,10 +293,7 @@ ATrVar::ATrVar(MElem* aMan, MEnv* aEnv): ATrBase(Type(), aMan, aEnv), mFunc(NULL
 void *ATrVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MDVarGet::Type()) == 0) {
+    if (strcmp(aName, MDVarGet::Type()) == 0) {
 	res = (MDVarGet*) this;
     }
     else {
@@ -463,18 +405,6 @@ ATrAddVar::ATrAddVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrAddVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = ATrVar::DoGetObj(aName);
-    }
-    return res;
-}
-
 void ATrAddVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
@@ -511,18 +441,6 @@ ATrMplVar::ATrMplVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrMplVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = ATrVar::DoGetObj(aName);
-    }
-    return res;
-}
-
 void ATrMplVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
@@ -552,18 +470,6 @@ ATrDivVar::ATrDivVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName
 ATrDivVar::ATrDivVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 {
     SetParent(ATrVar::PEType());
-}
-
-void *ATrDivVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = ATrVar::DoGetObj(aName);
-    }
-    return res;
 }
 
 void ATrDivVar::Init(const string& aIfaceName)
@@ -602,11 +508,8 @@ ATrSwitchVar::ATrSwitchVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 void *ATrSwitchVar::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
     // Needs to redirect request for MDVarGet to func
-    else if (strcmp(aName, MDVarGet::Type()) == 0) {
+    if (strcmp(aName, MDVarGet::Type()) == 0) {
 	if (mFunc == NULL) {
 	    Init(aName);
 	    if (mFunc != NULL) {
@@ -672,18 +575,6 @@ ATrAtVar::ATrAtVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrAtVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-     }
-     else {
-	res = ATrVar::DoGetObj(aName);
-    }
-    return res;
-} 
-
 void ATrAtVar::Init(const string& aIfaceName)
 { 
     if (mFunc != NULL) {
@@ -723,18 +614,6 @@ ATrCpsVectVar::ATrCpsVectVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv
     SetParent(ATrVar::PEType());
 }
 
-void *ATrCpsVectVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = ATrVar::DoGetObj(aName);
-    }
-    return res;
-}
-
 void ATrCpsVectVar::Init(const string& aIfaceName)
 {
     if (mFunc != NULL) {
@@ -766,18 +645,6 @@ ATrBcmpVar::ATrBcmpVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aNa
 ATrBcmpVar::ATrBcmpVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
 {
     SetParent(ATrVar::PEType());
-}
-
-void *ATrBcmpVar::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else {
-	res = ATrVar::DoGetObj(aName);
-    }
-    return res;
 }
 
 string ATrBcmpVar::VarGetIfid()
@@ -841,10 +708,7 @@ string StateAgent::PEType()
 void *StateAgent::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MDesSyncable::Type()) == 0) {
+    if (strcmp(aName, MDesSyncable::Type()) == 0) {
 	res = (MDesSyncable*) this;
     }
     else if (strcmp(aName, MDesObserver::Type()) == 0) {
@@ -1039,10 +903,7 @@ ADes::ADes(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iActive(ETrue)
 void *ADes::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    }
-    else if (strcmp(aName, MDesSyncable::Type()) == 0) {
+    if (strcmp(aName, MDesSyncable::Type()) == 0) {
 	res = (MDesSyncable*) this;
     }
     else if (strcmp(aName, MDesObserver::Type()) == 0) {

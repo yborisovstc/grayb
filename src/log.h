@@ -13,7 +13,7 @@
 	    virtual ~GLogRec();
 	public:
 	    // From Base
-	    virtual void *DoGetObj(const char *aName);
+	    virtual void *DoGetObj(const char *aName) override { return NULL;}
 	    // From MLogRec
 	    virtual void WriteFormat(const char* aFmt,...);
 	    virtual void Write(TLogRecCtg aCtg, const MElem* aNode, const char* aFmt,...);

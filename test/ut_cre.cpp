@@ -314,9 +314,9 @@ void Ut_cre::test_BaseApis1()
     // Make illegal modif and enable transformation
     MElem* vb = root->GetNode("./VB");
     MElem* va1b1 = root->GetNode("./VB/VA_1/VA_1_B1");
-    Elem* evb = vb->GetObj(evb);
-    bool isdirinh1 = evb->IsDirectInheritedComp(va1b1);
-    CPPUNIT_ASSERT_MESSAGE("Wrong result of IsDirectInheritedComp for VA_1_B1", !isdirinh1);
+    //Elem* evb = vb->GetObj(evb);
+    //bool isdirinh1 = evb->IsDirectInheritedComp(va1b1);
+    //CPPUNIT_ASSERT_MESSAGE("Wrong result of IsDirectInheritedComp for VA_1_B1", !isdirinh1);
 
     delete iEnv;
 }

@@ -40,11 +40,6 @@ ImportsMgr::~ImportsMgr()
 {
 }
 
-void *ImportsMgr::DoGetObj(const char *aName)
-{
-    return (strcmp(aName, Type()) == 0) ? this : NULL;
-}
-
 void ImportsMgr::AddImportModulesInfo(const string& aPath)
 {
     const string& dirpath = aPath;
@@ -221,11 +216,6 @@ ChromoMgr::ChromoMgr(Env& aHost): Base(), mHost(aHost), mLim(0),
 
 ChromoMgr::~ChromoMgr()
 {
-}
-
-void *ChromoMgr::DoGetObj(const char *aName)
-{
-    return (strcmp(aName, Type()) == 0) ? this : NULL;
 }
 
 int ChromoMgr::GetMaxOrder() const
@@ -435,8 +425,7 @@ void Env::RemoveProvider(MProvider* aProv)
 void *Env::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0) res = this;
-    else if (strcmp(aName, MEnv::Type()) == 0) res = (MEnv*) this;
+    if (strcmp(aName, MEnv::Type()) == 0) res = (MEnv*) this;
     return res;
 }
 

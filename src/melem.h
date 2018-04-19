@@ -161,6 +161,7 @@ class MIfProv
 	virtual TIfRange GetIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) = 0;
 	virtual void UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx) = 0;
 	virtual void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MElem* aProv, TBool aInv = EFalse) = 0;
+	virtual MIface* getLocalIface(const string& aName, const TICacheRCtx& aCtx) = 0;
 };
 
 // Agent - comps observer

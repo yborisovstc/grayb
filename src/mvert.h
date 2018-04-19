@@ -111,6 +111,8 @@ class MSocket: public MIface
 	static const char* Type() { return "MSocket";};
 	virtual TInt PinsCount() const = 0;
 	virtual MElem* GetPin(TInt aInd) = 0;
+	// Get pin existing in context
+	virtual MElem* GetPin(const TICacheRCtx& aCtx) = 0;
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};
     protected:

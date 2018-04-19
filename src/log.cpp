@@ -122,11 +122,6 @@ GLogRec::~GLogRec()
 	fclose(iLogFile);
 }
 
-void *GLogRec::DoGetObj(const char *aName)
-{
-    return (strcmp(aName, Type()) == 0) ? this : NULL;
-}
-
 void GLogRec::WriteRecord(const char* aText)
 {
     if (iLogFile)

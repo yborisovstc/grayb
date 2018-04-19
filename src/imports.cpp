@@ -21,20 +21,6 @@ AImports::~AImports()
 {
 }
 
-
-void* AImports::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, Type()) == 0) {
-	res = this;
-    } else if (strcmp(aName, MImports::Type()) == 0) {
-	res = (MImports*) this;
-    } else {
-	res = Elem::DoGetObj(aName);
-    }
-    return res;
-}
-
 TBool AImports::Import(const string& aUri)
 {
     TBool res = ETrue;

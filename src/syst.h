@@ -11,8 +11,6 @@ class ACapsule: public Elem
 	static string PEType();
 	ACapsule(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ACapsule(MElem* aMan = NULL, MEnv* aEnv = NULL);
-	// From Base
-	virtual void *DoGetObj(const char *aName);
 	// From MOwner
 	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse);
 };
@@ -118,8 +116,6 @@ class ConnPointBaseInp: public ConnPointBase
 	static string PEType();
 	ConnPointBaseInp(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ConnPointBaseInp(MElem* aMan = NULL, MEnv* aEnv = NULL);
-	// From Base
-	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
 	virtual TDir GetDir() const;
 };
@@ -132,8 +128,6 @@ class ConnPointBaseOut: public ConnPointBase
 	static string PEType();
 	ConnPointBaseOut(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ConnPointBaseOut(MElem* aMan = NULL, MEnv* aEnv = NULL);
-	// From Base
-	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
 	virtual TDir GetDir() const;
 };
@@ -183,7 +177,6 @@ class ExtenderAgentInp: public ExtenderAgent
 	static string PEType();
 	ExtenderAgentInp(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ExtenderAgentInp(MElem* aMan = NULL, MEnv* aEnv = NULL);
-	virtual void *DoGetObj(const char *aName);
 	virtual MCompatChecker::TDir GetDir() const;
 };
 
@@ -195,7 +188,6 @@ class ExtenderAgentOut: public ExtenderAgent
 	static string PEType();
 	ExtenderAgentOut(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ExtenderAgentOut(MElem* aMan = NULL, MEnv* aEnv = NULL);
-	virtual void *DoGetObj(const char *aName);
 	virtual MCompatChecker::TDir GetDir() const;
 };
 
@@ -243,8 +235,6 @@ class ASocket: public Elem, public MCompatChecker_Imd, public MSocket_Imd, publi
 	static string PEType();
 	ASocket(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ASocket(MElem* aMan = NULL, MEnv* aEnv = NULL);
-	// Get pin existing in context
-	MElem* GetPin(const TICacheRCtx& aCtx);
 	// From Base
 	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
@@ -258,6 +248,7 @@ class ASocket: public Elem, public MCompatChecker_Imd, public MSocket_Imd, publi
 	// From MSocket
 	virtual TInt PinsCount() const;
 	virtual MElem* GetPin(TInt aInd);
+	MElem* GetPin(const TICacheRCtx& aCtx) override;
 	virtual MIface* MSocket_Call(const string& aSpec, string& aRes);
 	virtual string MSocket_Mid() const;
 	// From MAgent
@@ -276,7 +267,6 @@ class ASocketInp: public ASocket
 	static string PEType();
 	ASocketInp(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ASocketInp(MElem* aMan = NULL, MEnv* aEnv = NULL);
-	virtual void *DoGetObj(const char *aName);
 	virtual TDir GetDir() const;
 };
 
@@ -288,7 +278,6 @@ class ASocketOut: public ASocket
 	static string PEType();
 	ASocketOut(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ASocketOut(MElem* aMan = NULL, MEnv* aEnv = NULL);
-	virtual void *DoGetObj(const char *aName);
 	virtual TDir GetDir() const;
 };
 
@@ -300,8 +289,6 @@ class ASocketMc: public ASocket
 	static string PEType();
 	ASocketMc(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ASocketMc(MElem* aMan = NULL, MEnv* aEnv = NULL);
-	// From Base
-	virtual void *DoGetObj(const char *aName);
 	// From MCompatChecker
 	virtual TDir GetDir() const;
 };
@@ -314,8 +301,6 @@ class Syst: public Vert
 	static string PEType();
 	Syst(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	Syst(MElem* aMan = NULL, MEnv* aEnv = NULL);
-	// From Base
-	virtual void *DoGetObj(const char *aName);
 	// From MOwner
 	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
 	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse);

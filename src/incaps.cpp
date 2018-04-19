@@ -36,9 +36,7 @@ Incaps::Incaps(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 void *Incaps::DoGetObj(const char *aName)
 {
     void* res = NULL;
-    if (strcmp(aName, Type()) == 0)
-	res = this;
-    else if (strcmp(aName, MACompsObserver::Type()) == 0)
+    if (strcmp(aName, MACompsObserver::Type()) == 0)
 	res = (MACompsObserver*) this;
     else if (strcmp(aName, MAgent::Type()) == 0)
 	res = dynamic_cast<MAgent*>(this);
