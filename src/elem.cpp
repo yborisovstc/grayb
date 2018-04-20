@@ -647,7 +647,7 @@ void Elem::InvalidateIfCache()
     UnregAllIfRel(ETrue);
 }
 
-void Elem::InsertIfQm(const string& aName, const TICacheRCtx& aReq, Base* aProv)
+void Elem::InsertIfQm(const string& aName, const TICacheRCtx& aReq, MElem* aProv)
 {
     TICacheKeyF keyf(aName, aReq);
     TICacheKey key(keyf, aProv);
@@ -665,7 +665,7 @@ void Elem::InsertIfQm(const string& aName, const TICacheRCtx& aReq, Base* aProv)
     }
 }
 
-void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, MIface* aVal)
+void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, MElem* aProv, MIface* aVal)
 {
     TICacheKeyF keyf(aName, aReq);
     TICacheKey key(keyf, aProv);
@@ -679,7 +679,7 @@ void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aPr
     InsertIfQm(aName, aReq, aProv);
 }
 
-void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg)
+void Elem::InsertIfCache(const string& aName, const TICacheRCtx& aReq, MElem* aProv, TIfRange aRg)
 {
     for (TIfIter it = aRg.first; it != aRg.second; it++) {
 	InsertIfCache(aName, aReq, aProv, *it);
@@ -773,17 +773,16 @@ void Elem::DumpIfReqs() const
     for (auto it : iICacheQF) {
 	const TICacheRCtx& ctx = it.first.second;
 	Base* provb = it.second.second;
-	Elem* prov = provb->GetObj(prov);
+	MElem* prov = provb->GetObj(prov);
 	if (!ctx.empty()) {
 	    cout << "[" << it.first.first << "], [" << ctx.size() << "]:" << endl;
-	    for (auto* reqb : ctx) {
-		Elem* reqe = reqb == NULL ? NULL : reqb->GetObj(reqe);
-		cout << reqb << "~" << reqe << ": " << (reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue)) << endl;
+	    for (auto* reqe : ctx) {
+		cout << reqe << ": " << (reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue)) << endl;
 	    }
-	    cout << "==> [" << provb << "~" << prov << "," << prov->GetUri(NULL, ETrue) << "]" << endl << endl;
+	    cout << "==> [" << prov << "," << prov->GetUri(NULL, ETrue) << "]" << endl << endl;
 	}
 	else {
-	    cout << "If: [" << it.first.first << "], [none] - [" << provb << "~" << prov << "," << prov->GetUri(NULL, ETrue) << "]" << endl;
+	    cout << "If: [" << it.first.first << "], [none] - [" << prov << "," << prov->GetUri(NULL, ETrue) << "]" << endl;
 	}
     }
     cout << "<< Ifaces requests: END >>" << endl;
@@ -795,18 +794,16 @@ void Elem::DumpIfCache() const
     for (auto it : iICache) {
 	const TICacheRCtx& ctx = it.first.first.second;
 	MIface* iface = it.second;
-	Base* provb = it.first.second;
-	Elem* prov = provb->GetObj(prov);
+	MElem* prov = it.first.second;
 	if (!ctx.empty()) {
 	    cout << "[" << it.first.first.first << "], [" << ctx.size() << "]:" << endl;
-	    for (auto* reqb : ctx) {
-		Elem* reqe = reqb == NULL ? NULL : reqb->GetObj(reqe);
-		cout << reqb << "~" << reqe << ": " << (reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue)) << endl;
+	    for (auto* reqe : ctx) {
+		cout << reqe << ": " << (reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue)) << endl;
 	    }
-	    cout << "==> [" << provb << "~" << prov << "," << prov->GetUri(NULL, ETrue) << "] -> [" << iface << ": " << iface->Uid() << "]" << endl << endl;
+	    cout << "==> [" << prov << "," << prov->GetUri(NULL, ETrue) << "] -> [" << iface << ": " << iface->Uid() << "]" << endl << endl;
 	}
 	else {
-	    cout << "If: [" << it.first.first.first << "], [none] - [" << provb << "~" << prov << "," << prov->GetUri(NULL, ETrue) << "] -> [" << iface << "]" << endl;
+	    cout << "If: [" << it.first.first.first << "], [none] - [" << prov << "," << prov->GetUri(NULL, ETrue) << "] -> [" << iface << "]" << endl;
 	}
     }
     cout << "<< Ifaces cache: END >>" << endl;

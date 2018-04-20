@@ -15,12 +15,12 @@ class Base;
 class MElem;
 class Rank;
 
-class TICacheRCtx: public vector<Base*>
+class TICacheRCtx: public vector<MElem*>
 {
     public:
-	TICacheRCtx(): vector<Base*>() {}
-	TICacheRCtx(Base* aElem): TICacheRCtx() { push_back(aElem);}
-	TBool IsInContext(Base* aReq) const { 
+	TICacheRCtx(): vector<MElem*>() {}
+	TICacheRCtx(MElem* aElem): TICacheRCtx() { push_back(aElem);}
+	TBool IsInContext(MElem* aReq) const { 
 	    TBool res = EFalse;
 	    for (auto* req : *this) {
 		if (req == aReq) { res = ETrue; break;}
@@ -156,7 +156,7 @@ class MIfProv
 
 	typedef pair<TIfIter, TIfIter> TIfRange;
     public:
-	MIface* GetSIfiC(const string& aName, Base* aRequestor = NULL) { return GetSIfi(aName, aRequestor); }
+	MIface* GetSIfiC(const string& aName, MElem* aRequestor = NULL) { return GetSIfi(aName, aRequestor); }
 	MIface* GetSIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) { TIfRange rg = GetIfi(aName, aCtx);
 	    return (rg.first != rg.second) ? *(rg.first) : NULL;
 	}

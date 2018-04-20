@@ -55,7 +55,7 @@
 	    // Iface cache key first part: [iface name, requestor]
 	    typedef pair<string, TICacheRCtx> TICacheKeyF;
 	    // Iface cache key: [[iface name, requestor], provider]
-	    typedef pair<TICacheKeyF, Base*> TICacheKey;
+	    typedef pair<TICacheKeyF, MElem*> TICacheKey;
 	    // Iface cache
 	    typedef multimap<TICacheKey, MIface*> TICache;
 	    // Iface cache query by TICMapKeyF (iface, requestor)
@@ -243,8 +243,8 @@
 	    virtual void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MElem* aProv, TBool aInv = EFalse);
 	    void InvalidateIfCache();
 	    void InvalidateIfCache(const string& aIfName);
-	    void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, MIface* aVal);
-	    void InsertIfCache(const string& aName, const TICacheRCtx& aReq, Base* aProv, TIfRange aRg);
+	    void InsertIfCache(const string& aName, const TICacheRCtx& aReq, MElem* aProv, MIface* aVal);
+	    void InsertIfCache(const string& aName, const TICacheRCtx& aReq, MElem* aProv, TIfRange aRg);
 	    //static TBool InInIfRctx(, TIMElem* aReq);
 	    // Chromo
 	    ChromoNode GetChNode(const GUri& aUri) const;
@@ -285,7 +285,7 @@
 	    TBool IsLogeventCreOn();
 	    TBool HasChilds() const;
 	    virtual TBool HasInherDeps(const MElem* aScope) const;
-	    void InsertIfQm(const string& aName, const TICacheRCtx& aReq, Base* aProv);
+	    void InsertIfQm(const string& aName, const TICacheRCtx& aReq, MElem* aProv);
 	    void UnregAllIfRel(TBool aInv = EFalse);
 	    void LogIfReqs();
 	    static string ContentKey(const string& aBase, const string& aSuffix);

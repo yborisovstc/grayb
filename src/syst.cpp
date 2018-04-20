@@ -1175,7 +1175,7 @@ TInt ASocket::PinsCount() const
     __ASSERT(host != NULL);
     for (TInt ci = 0; ci < host->CompsCount() && res; ci++) {
 	MElem *comp = host->GetComp(ci);
-	MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), (Base*) this);
+	MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), (MElem*) this);
 	if (checker != NULL) {
 	    res++;
 	}
@@ -1190,7 +1190,7 @@ MElem* ASocket::GetPin(TInt aInd)
     __ASSERT(host != NULL);
     for (TInt ci = 0, ct = 0; ci < host->CompsCount() && res; ci++) {
 	MElem *comp = host->GetComp(ci);
-	MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), (Base*) this);
+	MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), this);
 	if (checker != NULL) {
 	    if (ct == aInd) {
 		res = comp; break;
