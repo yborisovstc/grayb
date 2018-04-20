@@ -33,9 +33,9 @@ Incaps::Incaps(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
     SetParent(Elem::PEType());
 }
 
-void *Incaps::DoGetObj(const char *aName)
+MIface *Incaps::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MACompsObserver::Type()) == 0)
 	res = (MACompsObserver*) this;
     else if (strcmp(aName, MAgent::Type()) == 0)

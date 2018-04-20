@@ -56,13 +56,12 @@ Edge::~Edge()
     Disconnect();
 }
 
-void* Edge::DoGetObj(const char *aName)
+MIface* Edge::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MEdge::Type()) == 0) {
-	res = (MEdge*) this;
-    }
-    else {
+	res = dynamic_cast<MEdge*>(this);
+    } else {
 	res = Elem::DoGetObj(aName);
     }
     return res;
@@ -419,11 +418,6 @@ MIface* Edge::Call(const string& aSpec, string& aRes)
     return res;
 }
 
-string Edge::Mid() const
-{
-    return Elem::Mid();
-}
-
 void Edge::SetPoint1(const string& aRef)
 {
     MElem* p = Point1p();
@@ -468,11 +462,11 @@ Aedge::~Aedge()
     Disconnect();
 }
 
-void* Aedge::DoGetObj(const char *aName)
+MIface* Aedge::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MEdge::Type()) == 0) {
-	res = (MEdge*) this;
+	res = dynamic_cast<MEdge*>(this);
     } else {
 	res = Elem::DoGetObj(aName);
     }
@@ -659,11 +653,6 @@ MIface* Aedge::Call(const string& aSpec, string& aRes)
 	throw (runtime_error("Unhandled method: " + name));
     }
     return res;
-}
-
-string Aedge::Mid() const
-{
-    return Elem::Mid();
 }
 
 MVert* Aedge::Ref1() const

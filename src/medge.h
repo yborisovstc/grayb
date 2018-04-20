@@ -26,8 +26,6 @@ class MEdge: public MIface
 	virtual MVert* Ref2() const = 0;
 	virtual void SetPoint1(const string& aRef) = 0;
 	virtual void SetPoint2(const string& aRef) = 0;
-	// From MIface
-	virtual string Uid() const { return Mid() + "%" + Type();};
     protected:
 	class EIfu: public Ifu {
 	    public:

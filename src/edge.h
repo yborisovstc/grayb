@@ -33,7 +33,7 @@ class Edge: public Elem, public MEdge
 	TBool Connect(MElem* aCp);
 	void Disconnect(MElem* aCp);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MEdge
 	virtual TBool ConnectP1(MVert* aPoint);
 	virtual TBool ConnectP2(MVert* aPoint);
@@ -51,7 +51,7 @@ class Edge: public Elem, public MEdge
 	virtual void SetRemoved(TBool aModif);
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);
-	virtual string Mid() const;
+	string Mid() const override { return Elem::Mid();}
     protected:
 	// Just one-way relation to vert. It does't mean the full point to point relation is established.
 	MVert* iPoint1;
@@ -77,7 +77,7 @@ class Aedge: public Elem, public MEdge
 	const string& Point1u() const;
 	const string& Point2u() const;
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MEdge
 	virtual Base* EBase();
 	virtual const Base* EBase() const;
@@ -99,7 +99,7 @@ class Aedge: public Elem, public MEdge
 	virtual TInt GetContCount(const string& aName=string()) const {return ECnt_Num_;};
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);
-	virtual string Mid() const;
+	string Mid() const override { return Elem::Mid();}
     public:
 	static const string& mP1ContName;
 	static const string& mP2ContName;

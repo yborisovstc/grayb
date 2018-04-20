@@ -26,11 +26,11 @@ AMod::~AMod()
 }
 
 
-void* AMod::DoGetObj(const char *aName)
+MIface* AMod::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MMod::Type()) == 0) {
-	res = (MMod*) this;
+	res = (MIface*) (MMod*) this;
     } else {
 	res = Elem::DoGetObj(aName);
     }

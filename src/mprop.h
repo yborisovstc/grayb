@@ -15,7 +15,10 @@ class MProp: public MIface
 	static const char* Type() { return "MProp";};
 	virtual const string& Value() const = 0;
 	// From MIface
-	virtual string Uid() const { return Mid() + "%" + Type();};
+	virtual MIface* MProp_Call(const string& aSpec, string& aRes) { return NULL;}
+	virtual string MProp_Mid() const {return "?";}
+	MIface* Call(const string& aSpec, string& aRes) override {return MProp_Call(aSpec, aRes);}
+	string Mid() const override { return MProp_Mid();}
     protected:
 	class EIfu: public Ifu {
 	    public:

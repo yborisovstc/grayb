@@ -48,9 +48,9 @@ string ATrBase::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-void *ATrBase::DoGetObj(const char *aName)
+MIface *ATrBase::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MACompsObserver::Type()) == 0)
 	res = (MACompsObserver*) this;
     else if (strcmp(aName, MAgent::Type()) == 0)
@@ -94,9 +94,9 @@ string ATrInt::PEType()
     return ATrBase::PEType() + GUri::KParentSep + Type();
 }
 
-void *ATrInt::DoGetObj(const char *aName)
+MIface *ATrInt::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MDIntGet::Type()) == 0) {
 	res = (MDIntGet*) this;
     } else {
@@ -290,9 +290,9 @@ ATrVar::ATrVar(MElem* aMan, MEnv* aEnv): ATrBase(Type(), aMan, aEnv), mFunc(NULL
     SetParent(ATrBase::PEType());
 }
 
-void *ATrVar::DoGetObj(const char *aName)
+MIface *ATrVar::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MDVarGet::Type()) == 0) {
 	res = (MDVarGet*) this;
     }
@@ -326,7 +326,7 @@ string ATrVar::VarGetIfid()
 
 void *ATrVar::DoGetDObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (mFunc == NULL) {
 	Init(aName);
 	if (mFunc != NULL) {
@@ -505,9 +505,9 @@ ATrSwitchVar::ATrSwitchVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
     SetParent(ATrVar::PEType());
 }
 
-void *ATrSwitchVar::DoGetObj(const char *aName)
+MIface *ATrSwitchVar::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     // Needs to redirect request for MDVarGet to func
     if (strcmp(aName, MDVarGet::Type()) == 0) {
 	if (mFunc == NULL) {
@@ -705,9 +705,9 @@ string StateAgent::PEType()
     return StateAgent::PEType() + GUri::KParentSep + Type();
 }
 
-void *StateAgent::DoGetObj(const char *aName)
+MIface *StateAgent::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MDesSyncable::Type()) == 0) {
 	res = (MDesSyncable*) this;
     }
@@ -900,9 +900,9 @@ ADes::ADes(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iActive(ETrue)
     SetParent(Elem::PEType());
 }
 
-void *ADes::DoGetObj(const char *aName)
+MIface *ADes::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MDesSyncable::Type()) == 0) {
 	res = (MDesSyncable*) this;
     }

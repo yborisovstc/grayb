@@ -19,7 +19,7 @@ class Vert: public Elem, public MVert
 	Vert(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~Vert();
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface* DoGetObj(const char *aName);
 	// From MVert
 	virtual TBool Connect(MVert* aPair);
 	virtual void Disconnect(MVert* aPair);
@@ -33,7 +33,7 @@ class Vert: public Elem, public MVert
 	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);
-	virtual string Mid() const;
+	string Mid() const override { return Elem::Mid();}
     protected:
 	void Disconnect();
     protected:

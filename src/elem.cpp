@@ -450,19 +450,13 @@ unique_ptr<MChromo> Elem::GetFullChromo() const
     return unique_ptr<MChromo>(spec);
 }
 
-void *Elem::DoGetObj(const char *aName)
+MIface *Elem::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MOwner::Type()) == 0) {
-	res = (MOwner*) this;
+	res = (MIface*)(MOwner*) this;
     } else if (strcmp(aName, MElem::Type()) == 0) {
-	void* vv = (MElem*) this;
-	MElem* me = (MElem*) this;
-	MIface* mei = (MIface*) me;
-	MElem* mev = (MElem*) vv;
-	MIface* meiv = (MIface*) vv;
-	res = mei;
-	//res = (MElem*) this;
+	res = dynamic_cast<MElem*>(this);
     }
     return res;
 }
@@ -3076,12 +3070,6 @@ MElem* Elem::GetComp(TInt aInd)
     auto it = iMComps.begin();
     for (TInt i = 0; i < aInd; i++, it++);
     return it->second;
-}
-
-string Elem::Mid() const
-{
-    // Generating Mid as relative UID from local root, ref ds_daa_pxdup_birc
-    return GetUri(iEnv->Root(), ETrue);
 }
 
 MIface* Elem::Call(const string& aSpec, string& aRes)

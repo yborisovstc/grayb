@@ -33,12 +33,15 @@ class TICacheRCtx: public vector<Base*>
 /**
  * @brief Interface of agent - element that handles managing requests
  */
-class MAgent: public MIfaceProv
+class MAgent: public MIfaceProv, public MIface
 {
     public:
 	static const char* Type() { return "MAgent";}
 	MIface* DoGetIface(const string& aName) override { return MAgent_DoGetIface(aName);}
 	virtual MIface* MAgent_DoGetIface(const string& aName) = 0;
+	virtual string MAgent_Mid() const {return "?";}
+	virtual MIface* Call(const string& aSpec, string& aRes) override { return NULL;}
+	virtual string Mid() const override { return MAgent_Mid();}
 };
 
 // Cloned from MCompsObserver in order to avoid MCompsObserver be MIface
@@ -165,11 +168,15 @@ class MIfProv
 };
 
 // Agent - comps observer
-class MACompsObserver
+class MACompsObserver: public MIface
 {
     public:
 	static const char* Type() { return "MACompsObserver";};
 	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string()) = 0;
+	virtual MIface* MACompsObserver_Call(const string& aSpec, string& aRes) { return NULL;}
+	virtual string MACompsObserver_Mid() const { return "?";}
+	MIface* Call(const string& aSpec, string& aRes) override {return MACompsObserver_Call(aSpec, aRes);}
+	string Mid() const override { return MACompsObserver_Mid();}
 };
 
 // Composite interface of Element (node) of native graph hierarchy

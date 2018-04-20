@@ -26,11 +26,11 @@ Prop::Prop(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
     SetParent(Elem::PEType());
 }
 
-void *Prop::DoGetObj(const char *aName)
+MIface *Prop::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MProp::Type()) == 0) {
-	res = (MProp*) this;
+	res = dynamic_cast<MProp*>(this);
     } else {
 	res = Elem::DoGetObj(aName);
     }
@@ -103,17 +103,6 @@ Description::Description(const string& aName, MElem* aMan, MEnv* aEnv): Prop(aNa
 Description::Description(MElem* aMan, MEnv* aEnv): Prop(Type(), aMan, aEnv)
 {
     SetParent(Prop::PEType());
-}
-
-void *Description::DoGetObj(const char *aName)
-{
-    void* res = NULL;
-    if (strcmp(aName, MProp::Type()) == 0) {
-	res = (MProp*) this;
-    } else {
-	res = Prop::DoGetObj(aName);
-    }
-    return res;
 }
 
 

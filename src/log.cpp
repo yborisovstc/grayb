@@ -249,11 +249,6 @@ TInt GLogRec::GetStat(TLogRecCtg aCtg) const
     return mStat[aCtg];
 }
 
-string GLogRec::Mid() const
-{
-    return string();
-}
-
 MIface* GLogRec::Call(const string& aSpec, string& aRes)
 {
     MIface* res = NULL;

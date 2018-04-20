@@ -46,7 +46,7 @@ class ConnPointBase: public Vert, public MConnPoint_Imd, public MCompatChecker_I
 	// Iface provider
 	void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MCompatChecker
 	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
 	virtual MElem* GetExtd();
@@ -75,7 +75,7 @@ class ConnPointMc: public Vert, public MConnPoint_Imd, public MCompatChecker_Imd
 	// Iface provider
 	void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MElem
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()); 
 	// From MCompatChecker
@@ -141,7 +141,7 @@ class ExtenderAgent: public Elem, public MAgent
 	    CompatChecker(ExtenderAgent& aHost): mHost(aHost) {}
 	    // From MCompatChecker MIface
 	    virtual MIface* Call(const string& aSpec, string& aRes) override { return mHost.MCompatChecker_Call(aSpec, aRes);}
-	    virtual string Mid() const override { return mHost.Mid();}
+	    virtual string Mid() const override { return mHost.MElem::Mid();}
 	    virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse) override { return mHost.IsCompatible(aPair, aExt);}
 	    virtual MElem* GetExtd() override { return mHost.GetExtd();}
 	    virtual TDir GetDir() const override {return mHost.GetDir();}
@@ -153,7 +153,7 @@ class ExtenderAgent: public Elem, public MAgent
 	ExtenderAgent(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ExtenderAgent(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MCompatChecker
 	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
 	virtual MElem* GetExtd();
@@ -200,7 +200,7 @@ class AExtender: public Elem, public MCompatChecker, public MAgent
 	AExtender(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	AExtender(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MCompatChecker
 	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
 	virtual MElem* GetExtd();
@@ -209,7 +209,7 @@ class AExtender: public Elem, public MCompatChecker, public MAgent
 	void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);
-	virtual string Mid() const;
+	string Mid() const override { return GetUri(iEnv->Root(), ETrue);}
 	// From MAgent
 	MIface* MAgent_DoGetIface(const string& aName) override;
     protected:
@@ -236,7 +236,7 @@ class ASocket: public Elem, public MCompatChecker_Imd, public MSocket_Imd, publi
 	ASocket(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ASocket(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MCompatChecker
 	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
 	virtual MElem* GetExtd();

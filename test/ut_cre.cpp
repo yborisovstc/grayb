@@ -21,8 +21,8 @@ class AgentObserver: public MAgentObserver
 	virtual TBool OnChanged(MElem& aComp);
 	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName);
 	virtual void OnCompMutated(const MElem* aNode);
-	virtual MIface* Call(const string& aSpec, string& aRes) {};
-	virtual string Mid() const { return string();};
+	MIface* Call(const string& aSpec, string& aRes) override { return NULL;};
+	string Mid() const override { return string();};
     private:
 	MEnv* mEnv; 
 };

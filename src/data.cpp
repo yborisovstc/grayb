@@ -114,9 +114,9 @@ void DataBase::NotifyUpdate()
     }
 }
 
-void *DataBase::DoGetObj(const char *aName)
+MIface *DataBase::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MUpdatable::Type()) == 0) {
 	res = (MUpdatable*) this;
     }
@@ -248,11 +248,11 @@ MIface* DInt::MAgent_DoGetIface(const string& aName)
     return res;
 }
 
-void *DInt::DoGetObj(const char *aName)
+MIface *DInt::DoGetObj(const char *aName)
 {
-    void* res = NULL;
-    if (strcmp(aName, MACompsObserver::Type()) == 0) {
-	res = (MACompsObserver*) this;
+    MIface* res = NULL;
+    if (strcmp(aName, MDInt::Type()) == 0) {
+	res = (MDInt*) this;
     }
     else if (strcmp(aName, MDIntGet::Type()) == 0) {
 	res = dynamic_cast<MDIntGet*>(this);
@@ -398,9 +398,9 @@ DVar::DVar(MElem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(NULL)
     SetParent(DataBase::PEType());
 }
 
-void *DVar::DoGetObj(const char *aName)
+MIface *DVar::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MDVar::Type()) == 0) {
 	res = (MDVar*) this;
     }
@@ -579,9 +579,9 @@ string DVar::GetContent(const string& aName, TBool aFull) const
 
 
 // Bool data
-void *DVar::HBool::DoGetObj(const char *aName)
+MIface *DVar::HBool::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MDBoolGet::Type()) == 0) res = (MDBoolGet*) this;
     return res;
 }
@@ -649,9 +649,9 @@ TBool DVar::HBool::Value()
 
 
 // Int data
-void *DVar::HInt::DoGetObj(const char *aName)
+MIface *DVar::HInt::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MDInt::Type()) == 0) res = (MDInt*) this;
     else if (strcmp(aName, MDIntGet::Type()) == 0) res = (MDIntGet*) this;
     else if (strcmp(aName, MDIntSet::Type()) == 0)  res = (MDIntSet*) this;
@@ -729,9 +729,9 @@ void DVar::HInt::SetValue(TInt aData)
 }
 
 // Float data
-void *DVar::HFloat::DoGetObj(const char *aName)
+MIface *DVar::HFloat::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MDFloat::Type()) == 0) res = (MDFloat*) this;
     else if (strcmp(aName, MDFloatGet::Type()) == 0) res = (MDFloatGet*) this;
     else if (strcmp(aName, MDFloatSet::Type()) == 0)  res = (MDFloatSet*) this;
@@ -816,7 +816,7 @@ template<> const char* MDataGet<float>::TypeSig() { return "DF";};
 
 template<> string DVar::HData<float>::mId = "DF";
 
-template<class T> void *DVar::HData<T>::DoGetObj(const char *aName)
+template<class T> MIface *DVar::HData<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDataGet<T>::Type()) == 0) res = (MDataGet<T>*) this;
@@ -896,7 +896,7 @@ template<class T> DVar::HVect<T>::HVect(DVar* aHost): HBase(aHost), mValid(EFals
 {
 };
 
-template<class T> void *DVar::HVect<T>::DoGetObj(const char *aName)
+template<class T> MIface *DVar::HVect<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MVectGet<T>::Type()) == 0) res = (MVectGet<T>*) this;
@@ -998,7 +998,7 @@ template<> const char* MMtrdGet<float>::TypeSig() { return  "MDF";};
 
 template<> string DVar::HMtrd<float>::mId = "MDF";
 
-template<class T> void *DVar::HMtrd<T>::DoGetObj(const char *aName)
+template<class T> MIface *DVar::HMtrd<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MMtrdGet<T>::Type()) == 0) res = (MMtrdGet<T>*) this;
@@ -1102,7 +1102,7 @@ template<> const char* MMtrGet<float>::Type() { return "MMtrGet_float";};
 
 template<> const char* MMtrGet<float>::TypeSig() { return  Mtr<float>::TypeSig();};
 
-template<class T> void *DVar::HMtr<T>::DoGetObj(const char *aName)
+template<class T> MIface *DVar::HMtr<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MMtrGet<T>::Type()) == 0) res = (MMtrGet<T>*) this;
@@ -1169,9 +1169,9 @@ template<class T> void DVar::HMtr<T>::MtrGet(Mtr<T>& aData)
 // Generic data
 
 
-template<class T> void *DVar::HDt<T>::DoGetObj(const char *aName)
+template<class T> MIface *DVar::HDt<T>::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
     return res;
 }

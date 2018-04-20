@@ -28,8 +28,6 @@ class MCompatChecker: public MIface
 	virtual MElem* GetExtd() = 0;
 	// Direction
 	virtual TDir GetDir() const = 0;
-	// From MIface
-	virtual string Uid() const { return Mid() + "%" + Type();};
     public:
 	class EIfu: public Ifu {
 	    public:
@@ -57,8 +55,6 @@ class MVert: public MIface
 	// Possible to use Uid() instead and introduce MCompatChecker getter
 	virtual MIface* MVert_DoGetObj(const char *aName) = 0;
 	template <class T> T* GetObj(T* aInst) {return aInst = dynamic_cast<T*>(MVert_DoGetObj(aInst->Type()));};
-	// From MIface
-	virtual string Uid() const { return Mid() + "%" + Type();};
     protected:
 	class EIfu: public Ifu {
 	    public:
@@ -78,8 +74,6 @@ class MConnPoint: public MIface
 	virtual TBool IsRequired(const string& aIfName) const = 0;
 	virtual string Provided() const = 0;
 	virtual string Required() const = 0;
-	// From MIface
-	virtual string Uid() const { return Mid() + "%" + Type();};
     protected:
 	class EIfu: public Ifu {
 	    public:
@@ -99,8 +93,6 @@ class MConnPointm: public MIface
 	virtual TBool IsRequired(const string& aIfName) const = 0;
 	virtual void GetProvided(set<string>& aIfNames) const = 0;
 	virtual void GetRequired(set<string>& aIfNames) const = 0;
-	// From MIface
-	virtual string Uid() const { return Mid() + "%" + Type();};
 };
 
 // Socket
@@ -113,8 +105,6 @@ class MSocket: public MIface
 	virtual MElem* GetPin(TInt aInd) = 0;
 	// Get pin existing in context
 	virtual MElem* GetPin(const TICacheRCtx& aCtx) = 0;
-	// From MIface
-	virtual string Uid() const { return Mid() + "%" + Type();};
     protected:
 	class EIfu: public Ifu {
 	    public:

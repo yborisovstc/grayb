@@ -15,7 +15,7 @@ class ATrBase: public Elem, public MACompsObserver, public MAgent
 	ATrBase(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrBase(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface* DoGetObj(const char *aName);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
 	// From MAgent
@@ -31,7 +31,7 @@ class ATrInt: public ATrBase, public MDIntGet
 	ATrInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface* DoGetObj(const char *aName);
 	// From MDIntGet
 	TInt Value() override;
 	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
@@ -102,7 +102,7 @@ class ATrVar: public ATrBase, public MDVarGet, public Func::Host
 	ATrVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface* DoGetObj(const char *aName);
 	// From MDVarGet
 	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
@@ -176,7 +176,7 @@ class ATrSwitchVar: public ATrVar
 	ATrSwitchVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ATrSwitchVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface* DoGetObj(const char *aName);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
 	virtual string GetInpUri(TInt aId) const;
@@ -263,7 +263,7 @@ class StateAgent: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd,
 	StateAgent(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	StateAgent(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface* DoGetObj(const char *aName);
 	// From MDesSyncable
 	virtual void Update();
 	virtual void Confirm();
@@ -296,7 +296,7 @@ class ADes: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 	ADes(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	ADes(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface* DoGetObj(const char *aName);
 	// From MDesSyncable
 	virtual void Update();
 	virtual void Confirm();

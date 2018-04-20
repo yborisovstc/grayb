@@ -167,7 +167,7 @@
 	    TInt IfRangeSize(const TIfRange& aRange) const;
 	    void* GetIfind(TIfRange& aRange, TInt aInd);
 	    // From Base
-	    virtual void *DoGetObj(const char *aName);
+	    virtual MIface *DoGetObj(const char *aName);
 	    // From MElem
 	    virtual string EType(TBool aShort = ETrue) const;
 	    virtual MElem* GetMan();
@@ -256,7 +256,7 @@
 	    inline TBool IsIftEnabled() const;
 	    // From MIface
 	    virtual MIface* Call(const string& aSpec, string& aRes);
-	    virtual string Mid() const;
+	    string Mid() const override { return GetUri(iEnv->Root(), ETrue);}
 	    virtual TInt CompsCount() const;
 	    virtual MElem* GetComp(TInt aInd);
 	    static string ContentCompId(const string& aOwnerName, const string& aCompName);

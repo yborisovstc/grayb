@@ -14,16 +14,21 @@ class Base;
 
 // Data interfaces
 //
-class MUpdatable
+class MUpdatable: public MIface
 {
     public:
 	static const char* Type() { return "MUpdatable";};
 	virtual TBool Update() = 0;
+	// From MIface
+	virtual MIface* MUpdatable_Call(const string& aSpec, string& aRes) { return NULL;}
+	virtual string MUpdatable_Mid() const {return "?";}
+	MIface* Call(const string& aSpec, string& aRes) override {return MUpdatable_Call(aSpec, aRes);}
+	string Mid() const override { return MUpdatable_Mid();}
 };
 
 // Confirmable data. For instance the double buffered data where the first part
 // of data (intermediate result) can become final via confirmation
-class MConfirmable
+class MConfirmable: public MIfaceStub
 {
     public:
 	static const char* Type() { return "MConfirmable";};
@@ -31,16 +36,20 @@ class MConfirmable
 };
 
 
-class MDInt
+class MDInt: public MIface
 {
     public:
 	static const char* Type() { return "MDInt";};
 	virtual TInt Data() const = 0;
 	virtual void Set(TInt aData) = 0;
-//	virtual void Update() = 0;
+	// From MIface
+	virtual MIface* MDInt_Call(const string& aSpec, string& aRes) { return NULL;}
+	virtual string MDInt_Mid() const {return "?";}
+	MIface* Call(const string& aSpec, string& aRes) override {return MDInt_Call(aSpec, aRes);}
+	string Mid() const override { return MDInt_Mid();}
 };
 
-class MDFloat
+class MDFloat: public MIfaceStub
 {
     public:
 	static const char* Type() { return "MDFloat";};
@@ -57,31 +66,35 @@ class MDIntGet: public MIface
 	virtual string MDIntGet_Mid() const = 0;
 	MIface* Call(const string& aSpec, string& aRes) override {return MDIntGet_Call(aSpec, aRes);}
 	string Mid() const override { return MDIntGet_Mid();}
-	string Uid() const override { return Mid() + "%" + Type();};
 };
 
-class MDFloatGet
+class MDFloatGet: public MIfaceStub
 {
     public:
 	static const char* Type() { return "MDFloatGet";};
 	virtual float Value() = 0;
 };
 
-class MDBoolGet
+class MDBoolGet: public MIfaceStub
 {
     public:
 	static const char* Type() { return "MDBoolGet";};
 	virtual TBool Value() = 0;
 };
 
-class MDIntSet
+class MDIntSet: public MIface
 {
     public:
 	static const char* Type() { return "MDIntSet";};
 	virtual void SetValue(TInt aData) = 0;
+	// From MIface
+	virtual MIface* MDIntSet_Call(const string& aSpec, string& aRes) { return NULL;}
+	virtual string MDIntSet_Mid() const {return "?";}
+	MIface* Call(const string& aSpec, string& aRes) override {return MDIntSet_Call(aSpec, aRes);}
+	string Mid() const override { return MDIntSet_Mid();}
 };
 
-class MDFloatSet
+class MDFloatSet: public MIfaceStub 
 {
     public:
 	static const char* Type() { return "MDFloatSet";};
@@ -89,7 +102,7 @@ class MDFloatSet
 };
 
 // Vector Int getting iface
-class MVIntGet
+class MVIntGet: public MIfaceStub
 {
     public:
 	static const char* Type() { return "MVIntGet";};
@@ -98,21 +111,31 @@ class MVIntGet
 
 
 
-class MDataObserver
+class MDataObserver: public MIface
 {
     public:
 	static const char* Type() { return "MDataObserver";};
 	virtual void OnDataChanged() = 0;
+	// From MIface
+	virtual MIface* MDataObserver_Call(const string& aSpec, string& aRes) { return NULL;}
+	virtual string MDataObserver_Mid() const {return "?";}
+	MIface* Call(const string& aSpec, string& aRes) override {return MDataObserver_Call(aSpec, aRes);}
+	string Mid() const override { return MDataObserver_Mid();}
 };
 
-class MDVar
+class MDVar: public MIface
 {
     public:
 	static const char* Type() { return "MDVar";};
+	// From MIface
+	virtual MIface* MDVar_Call(const string& aSpec, string& aRes) { return NULL;}
+	virtual string MDVar_Mid() const {return "?";}
+	MIface* Call(const string& aSpec, string& aRes) override {return MDVar_Call(aSpec, aRes);}
+	string Mid() const override { return MDVar_Mid();}
 };
 
 class Elem;
-class MDVarGet
+class MDVarGet: public MIface
 {
     public:
 	static const char* Type() { return "MDVarGet";};
@@ -121,17 +144,27 @@ class MDVarGet
 	virtual void *DoGetDObj(const char *aName) { return NULL;};
 	// Get iface id. Is used for type negotiation from root to leafs
 	virtual string VarGetIfid() = 0;
+	// From MIface
+	virtual MIface* MDVarGet_Call(const string& aSpec, string& aRes) { return NULL;}
+	virtual string MDVarGet_Mid() const {return "?";}
+	MIface* Call(const string& aSpec, string& aRes) override {return MDVarGet_Call(aSpec, aRes);}
+	string Mid() const override { return MDVarGet_Mid();}
 };
 
-class MDVarSet
+class MDVarSet: public MIface
 {
     public:
 	static const char* Type() { return "MDVarSet";};
 	virtual Elem* VarSetBase() = 0;
+	// From MIface
+	virtual MIface* MDVarSet_Call(const string& aSpec, string& aRes) { return NULL;}
+	virtual string MDVarSet_Mid() const {return "?";}
+	MIface* Call(const string& aSpec, string& aRes) override {return MDVarSet_Call(aSpec, aRes);}
+	string Mid() const override { return MDVarSet_Mid();}
 };
 
 // Simple scalar data
-template <class T> class MDataGet
+template <class T> class MDataGet: public MIfaceStub
 {
     public:
 	static const char* Type();
@@ -141,7 +174,7 @@ template <class T> class MDataGet
 
 // Generic data
 
-class MDtGetBase
+class MDtGetBase: public MIfaceStub
 {
     public:
 	static const char* TypeBase() { return "MDtGet";};
@@ -166,7 +199,7 @@ template<class T> struct Vect: public std::vector<T> { };
 //typedef std::vector<class T> Vect;
 //template<class T> struct Vect { typedef std::vector<T> Type; };
 
-template <class T> class MVectGet
+template <class T> class MVectGet: public MIfaceStub
 {
     public:
 	static const char* Type();
@@ -178,7 +211,7 @@ template <class T> class MVectGet
 // Daigonal matrix
 template<class T> struct Mtrd: public vector<T> { };
 
-template <class T> class MMtrdGet
+template <class T> class MMtrdGet: public MIfaceStub
 {
     public:
 	static const char* Type();
@@ -187,7 +220,7 @@ template <class T> class MMtrdGet
 };
 
 // Matrix
-template <class T> class MMtrGet
+template <class T> class MMtrGet: public MIfaceStub
 {
     public:
 	static const char* Type();

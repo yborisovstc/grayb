@@ -22,14 +22,24 @@ class MIfaceProv
 class MIface
 {
     public:
-//	static const char* Type() { return "MIface";};
 	// Invocation of iface method: aRes - data of result, returns context or NULL otherwise
 	virtual MIface* Call(const string& aSpec, string& aRes) = 0;
 	// Getting UID - id unique in the scope of env
-	virtual string Uid() const { return string();};
-	virtual string Mid() const = 0;
+	virtual string Uid() const { return string();}
+	virtual string Mid() const { return string();}
 	// TODO to introduce GUID - ID unique in the scope of the whole model
 };
+
+/**
+ * @brief Interface of interface. Stub
+ */
+class MIfaceStub: public MIface
+{
+    public:
+	MIface* Call(const string& aSpec, string& aRes) override { return NULL;}
+	string Mid() const override { return "?";}
+};
+
 
 class MIfaceResolver
 {

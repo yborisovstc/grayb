@@ -12,7 +12,7 @@ class FuncBase: public Elem, public MACompsObserver, public MDataObserver
 	FuncBase(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	FuncBase(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
 	// From MDataObserver
@@ -31,7 +31,7 @@ class AFunInt: public FuncBase, public MDIntGet, public MAgent
 	AFunInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	AFunInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MDIntGet
 	TInt Value() override;
 	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
@@ -113,7 +113,7 @@ class AFunc: public Elem, public MACompsObserver, public MDataObserver, public M
 	AFunc(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	AFunc(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
 	// From MDataObserver
@@ -139,7 +139,7 @@ class AFuncInt: public AFunc, public MDIntGet
 	AFuncInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual TInt GetValue();
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MElem
 	virtual TBool GetCont(string& aValue, const string& aName=string()) const; 
 	// From MDIntGet
@@ -158,7 +158,7 @@ class AFAddInt: public AFunc, public MDIntGet
 	AFAddInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	AFAddInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MDIntGet
 	TInt Value() override;
 	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
@@ -184,7 +184,7 @@ class AFLimInt: public AFunc, public MDIntGet
 	AFLimInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	AFLimInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MDIntGet
 	TInt Value() override;
 	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
@@ -200,7 +200,7 @@ class AFDivInt: public AFunc, public MDIntGet
 	AFDivInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	AFDivInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MDIntGet
 	TInt Value() override;
 	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
@@ -217,7 +217,7 @@ class AFIntToVect: public AFunc, public MVIntGet
 	static string PEType();
 	AFIntToVect(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MDIntGet
 	virtual vector<TInt> Value();
 };
@@ -242,7 +242,7 @@ class AFConvInt: public AFuncInt
 	AFConvInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	AFConvInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MDIntGet
 	virtual TInt GetValue();
     private:
@@ -269,7 +269,7 @@ class AFuncm: public Elem, public MACompsObserver, public MDataObserver, public 
 	static string PEType();
 	AFuncm(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
 	// From MDataObserver
@@ -303,7 +303,7 @@ class AFGTInt: public AFunc, public MDBoolGet
 	AFGTInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	AFGTInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MDBoolGet
 	virtual TBool Value();
 };
@@ -317,7 +317,7 @@ class AFBoolToInt: public AFunc, public MDIntGet
 	AFBoolToInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	AFBoolToInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MDIntGet
 	TInt Value() override;
 	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
@@ -364,7 +364,7 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	AFunVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	void Construct();
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MDVarGet
 	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
@@ -408,7 +408,7 @@ class FAddInt: public FAddBase, public MDIntGet {
     public:
 	static Func* Create(Host* aHost, const string& aString);
 	FAddInt(Host& aHost): FAddBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDIntGet::Type();};
 	// From MDIntGet
 	TInt Value() override;
@@ -420,7 +420,7 @@ class FAddFloat: public FAddBase, public MDFloatGet {
     public:
 	static Func* Create(Host* aHost, const string& aString);
 	FAddFloat(Host& aHost): FAddBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDFloatGet::Type();};
 	virtual float Value();
 	virtual void GetResult(string& aResult) const;
@@ -435,7 +435,7 @@ template <class T> class FAddData: public FAddBase, public MDataGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aString);
 	FAddData(Host& aHost): FAddBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDataGet<T>::Type();};
 	virtual void DataGet(T& aData);
 	virtual void GetResult(string& aResult) const;
@@ -446,7 +446,7 @@ template <class T> class FAddVect: public FAddBase, public MVectGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aString);
 	FAddVect(Host& aHost): FAddBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MVectGet<T>::Type();};
 	virtual void VectGet(Vect<T>& aData);
 	virtual void GetResult(string& aResult) const;
@@ -457,7 +457,7 @@ template <class T> class FAddMtrd: public FAddBase, public MMtrdGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aString);
 	FAddMtrd(Host& aHost): FAddBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MMtrdGet<T>::Type();};
 	virtual void MtrdGet(Mtrd<T>& aData);
 };
@@ -466,7 +466,7 @@ template <class T> class FAddMtr: public FAddBase, public MMtrGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aString);
 	FAddMtr(Host& aHost): FAddBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MMtrGet<T>::Type();};
 	virtual void MtrGet(Mtr<T>& aData);
 	virtual void GetResult(string& aResult) const;
@@ -478,7 +478,7 @@ template <class T> class FAddDt: public FAddBase, public MDtGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aString);
 	FAddDt(Host& aHost): FAddBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDtGet<T>::Type();};
 	virtual void DtGet(T& aData);
 	virtual void GetResult(string& aResult) const;
@@ -515,7 +515,7 @@ class FMplFloat: public FMplBase, public MDFloatGet {
     public:
 	static Func* Create(Host* aHost, const string& aString);
 	FMplFloat(Host& aHost): FMplBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDFloatGet::Type();};
 	virtual float Value();
 	virtual void GetResult(string& aResult) const;
@@ -527,7 +527,7 @@ template <class T> class FMplDt: public FMplBase, public MDtGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aString);
 	FMplDt(Host& aHost): FMplBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDtGet<T>::Type();};
 	virtual void DtGet(T& aData);
 	virtual void GetResult(string& aResult) const;
@@ -566,7 +566,7 @@ template <class T> class FMplMtrdVect: public FMplncBase, public MVectGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aIfaceName);
 	FMplMtrdVect(Host& aHost): FMplncBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDFloatGet::Type();};
 	virtual void VectGet(Vect<T>& aData);
 	virtual void GetResult(string& aResult) const;
@@ -578,7 +578,7 @@ template <class T> class FMplMtr: public FMplncBase, public MMtrGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aIfaceName);
 	FMplMtr(Host& aHost): FMplncBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDFloatGet::Type();};
 	virtual void MtrGet(Mtr<T>& aData);
 	virtual void GetResult(string& aResult) const;
@@ -590,7 +590,7 @@ template <class T> class FMplncDt: public FMplncBase, public MDtGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aIfaceName);
 	FMplncDt(Host& aHost): FMplncBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDtGet<T>::Type();};
 	virtual void DtGet(T& aData);
 	virtual void GetResult(string& aResult) const;
@@ -603,7 +603,7 @@ template <class T> class FMplncScMtr: public FMplncBase, public MDtGet<Mtr<T> > 
     public:
 	static Func* Create(Host* aHost, const string& aIfaceName);
 	FMplncScMtr(Host& aHost): FMplncBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDtGet<Mtr<T> >::Type();};
 	virtual void DtGet(Mtr<T>& aData);
 	virtual void GetResult(string& aResult) const;
@@ -638,7 +638,7 @@ template <class T> class FMplinvMtrd: public FMplinvBase, public MMtrdGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aOutIfaceName);
 	FMplinvMtrd(Host& aHost): FMplinvBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MMtrdGet<T>::Type();};
 	virtual void MtrdGet(Mtrd<T>& aData);
 	virtual void GetResult(string& aResult) const;
@@ -649,7 +649,7 @@ template <class T> class FMplinvMtr: public FMplinvBase, public MMtrGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aString);
 	FMplinvMtr(Host& aHost): FMplinvBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MMtrGet<T>::Type();};
 	virtual void MtrGet(Mtr<T>& aData);
 	virtual void GetResult(string& aResult) const;
@@ -661,7 +661,7 @@ template <class T> class FMplinvDt: public FMplinvBase, public MDtGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aString);
 	FMplinvDt(Host& aHost): FMplinvBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDtGet<T>::Type();};
 	virtual void DtGet(T& aData);
 	virtual void GetResult(string& aResult) const;
@@ -703,7 +703,7 @@ template <class T, class TA> class FCastDt: public Func, public MDtGet<T> {
     public:
 	static Func* Create(Host* aHost, const string& aTypeId, const string& aArtTypeId);
 	FCastDt(Host& aHost): Func(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDtGet<T>::Type();};
 	virtual void DtGet(T& aData);
 	virtual void GetResult(string& aResult) const;
@@ -720,7 +720,7 @@ template <class T> class FCpsMtrdVect: public Func, public MDtGet<Mtr<T> > {
     public:
 	static Func* Create(Host* aHost, const string& aString, MDVarGet* aInp1Var);
 	FCpsMtrdVect(Host& aHost): Func(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDtGet<Mtr<T> >::Type();};
 	virtual void DtGet(Mtr<T>& aData);
 	virtual void GetResult(string& aResult) const {mRes.ToString(aResult);};
@@ -759,7 +759,7 @@ class FDivFloat: public FDivBase, public MDFloatGet {
     public:
 	static Func* Create(Host* aHost, const string& aString);
 	FDivFloat(Host& aHost): FDivBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDFloatGet::Type();};
 	virtual float Value();
 	virtual void GetResult(string& aResult) const;
@@ -797,7 +797,7 @@ class FBcmpFloat: public FBcmpBase, public MDBoolGet {
     public:
 	static Func* Create(Host* aHost, const string& aOutIid, MDVarGet* aInp1Var, MDVarGet* aInp2Var, TFType aFType);
 	FBcmpFloat(Host& aHost, TFType aFType): FBcmpBase(aHost, aFType) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDBoolGet::Type();};
 	virtual TBool Value();
     protected:
@@ -831,7 +831,7 @@ class FCmpBase: public Func, public MDtGet<Sdata<bool> >
 	virtual ~FCmpBase();
 	virtual string IfaceGetId() const;
 	virtual void GetResult(string& aResult) const;
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual void DtGet(Sdata<bool>& aData);
     protected:
 	TFType mFType;
@@ -888,7 +888,7 @@ template <class T> class FAtMVect: public FAtBase, public MDtGet<Sdata<T> > {
     public:
 	static Func* Create(Host* aHost, const string& aOutIid, const string& aInp1Id);
 	FAtMVect(Host& aHost): FAtBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDtGet<Sdata<T> >::Type();};
 	virtual void DtGet(Sdata<T>& aData);
 	virtual void GetResult(string& aResult) const {mRes.ToString(aResult);};
@@ -911,14 +911,14 @@ class FAtNTuple: public FAtBase  {
 	    public:
 	    IfProxy(FAtNTuple* aHost): IfProxyBase(aHost) {};
 	    virtual void GetIfaceId(string& aId) const { aId = MDtGet<T>::Type();};
-	    virtual void *DoGetObj(const char *aName);
+	    virtual MIface *DoGetObj(const char *aName);
 	    virtual void DtGet(T& aData);
 	};
     public:
 	static Func* Create(Host* aHost, const string& aInpId, const string& aInpIndId);
 	FAtNTuple(Host& aHost): FAtBase(aHost), mRes(NULL), mIfProxy(NULL) {};
 	void Init();
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const;
 	virtual void GetResult(string& aResult) const {if (mRes != NULL) mRes->ToString(aResult);};
 	virtual string GetInpExpType(TInt aId) const;
@@ -947,7 +947,7 @@ template <class T> class FCpsVect: public Func, public MDtGet<Mtr<T> > {
     public:
 	static Func* Create(Host* aHost, const string& aOutIid);
 	FCpsVect(Host& aHost): Func(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDtGet<Mtr<T> >::Type();};
 	virtual void DtGet(Mtr<T>& aData);
 	virtual void GetResult(string& aResult) const {mRes.ToString(aResult);};
@@ -986,7 +986,7 @@ class FSwitchBool: public FSwithcBase, public MDVarGet
     public:
 	static Func* Create(Func::Host* aHost, const string& aOutIid, const string& aInp1Id);
 	FSwitchBool(Func::Host& aHost): FSwithcBase(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	    virtual string IfaceGetId() const { return MDVarGet::Type();};
 	MDVarGet* GetCase() const;
 	virtual string GetInpExpType(TInt aId) const;
@@ -1018,7 +1018,7 @@ class FBnegDt: public Func, public MDtGet<Sdata<bool> >
     public:
 	static Func* Create(Func::Host* aHost);
 	FBnegDt(Func::Host& aHost): Func(aHost) {};
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDtGet<Sdata<bool> >::Type();};
 	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
 	virtual void GetResult(string& aResult) const;

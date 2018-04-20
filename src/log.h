@@ -13,7 +13,7 @@
 	    virtual ~GLogRec();
 	public:
 	    // From Base
-	    virtual void *DoGetObj(const char *aName) override { return NULL;}
+	    virtual MIface *DoGetObj(const char *aName) override { return NULL;}
 	    // From MLogRec
 	    virtual void WriteFormat(const char* aFmt,...);
 	    virtual void Write(TLogRecCtg aCtg, const MElem* aNode, const char* aFmt,...);
@@ -27,7 +27,7 @@
 	    // From MIface
 	    virtual MIface* Call(const string& aSpec, string& aRes);
 	    virtual string Uid() const { return Mid() + "%" + Type();};
-	    virtual string Mid() const;
+	    string Mid() const override { return string();}
 	protected:
 	    void WriteRecord(const char* aText);
 	    void WriteRecord(const string& aText);

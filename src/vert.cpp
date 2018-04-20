@@ -44,11 +44,11 @@ MIface* Vert::MVert_DoGetObj(const char *aName)
     return res;
 }
 
-void *Vert::DoGetObj(const char *aName)
+MIface *Vert::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MVert::Type()) == 0) {
-	res = (MVert*) this;
+	res = dynamic_cast<MVert*>(this);
     } else {
 	res = Elem::DoGetObj(aName);
     }
@@ -218,11 +218,6 @@ MIface* Vert::Call(const string& aSpec, string& aRes)
 	throw (runtime_error("Unhandled method: " + name));
     }
     return res;
-}
-
-string Vert::Mid() const
-{
-    return Elem::Mid();
 }
 
 void Vert::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)

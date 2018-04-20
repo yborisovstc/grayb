@@ -22,7 +22,7 @@ class ImportsMgr: public Base, public MImportMgr
     ImportsMgr(Env& aHost);
     virtual ~ImportsMgr();
     // From Base
-    virtual void *DoGetObj(const char *aName) override { return NULL;}
+    virtual MIface *DoGetObj(const char *aName) override { return NULL;}
     public:
     // From MImportMgr
     virtual void GetModulesNames(vector<string>& aModules) const;
@@ -53,7 +53,7 @@ class ChromoMgr: public Base, public MChromoMgr
     virtual ~ChromoMgr();
     public:
     // From Base
-    virtual void *DoGetObj(const char *aName) override { return NULL;}
+    virtual MIface *DoGetObj(const char *aName) override { return NULL;}
     // Form MChromoMgr
     virtual int GetSpecMaxOrder() const;
     virtual int GetMaxOrder() const;
@@ -104,7 +104,7 @@ class Env: public Base, public MEnv
     void SetExtIfProv(MExtIfProv* aProv);
     public:
     // From Base
-    virtual void *DoGetObj(const char *aName);
+    virtual MIface *DoGetObj(const char *aName);
     // From MEnv
     virtual MProvider *Provider() const;
     virtual MLogRec *Logger();
@@ -121,7 +121,7 @@ class Env: public Base, public MEnv
     virtual void OnRootDeleted();
     // From MIface
     virtual MIface* Call(const string& aSpec, string& aRes);
-    virtual string Mid() const;
+    string Mid() const override { return string();}
 
     protected:
     class EIfu: public Ifu {

@@ -18,9 +18,7 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable, public M
 	virtual TBool HandleIoChanged(MElem& aContext, MElem* aCp);
 	bool ToString(string& aType, string& aData);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
-	// From MElem
-	//virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()); 
+	virtual MIface *DoGetObj(const char *aName);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
 	// From MDataObserver
@@ -58,7 +56,7 @@ class DInt: public DataBase, public MDInt, public MDIntSet, public MDIntGet
 	DInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	DInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MDInt
 	virtual TInt Data() const;
 	virtual void Set(TInt aData);
@@ -114,7 +112,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	    public:
 		HBool(DVar* aHost): HBase(aHost), mData(EFalse) {};
 		static HBase* Create(DVar* aHost, const string& aString, MDVarGet* aInp = NULL);
-		virtual void *DoGetObj(const char *aName);
+		virtual MIface *DoGetObj(const char *aName);
 		virtual string IfaceGetId() const { return MDBoolGet::Type();};
 		virtual void Set(TBool aData);
 		virtual TBool Set(MDVarGet* aInp);
@@ -127,7 +125,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	    public:
 		HInt(DVar* aHost): HBase(aHost), mData(0) {};
 		static HBase* Create(DVar* aHost, const string& aString, MDVarGet* aInp = NULL);
-		virtual void *DoGetObj(const char *aName);
+		virtual MIface *DoGetObj(const char *aName);
 		virtual string IfaceGetId() const { return MDIntGet::Type();};
 		virtual TInt Data() const;
 		virtual void Set(TInt aData);
@@ -146,7 +144,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	    public:
 		HFloat(DVar* aHost): HBase(aHost), mData(0) {};
 		static HBase* Create(DVar* aHost, const string& aString, MDVarGet* aInp = NULL);
-		virtual void *DoGetObj(const char *aName);
+		virtual MIface *DoGetObj(const char *aName);
 		virtual string IfaceGetId() const { return MDFloatGet::Type();};
 		virtual float Data() const;
 		virtual void Set(float aData);
@@ -161,7 +159,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	    public:
 		HData(DVar* aHost);
 		static HBase* Create(DVar* aHost, const string& aString, MDVarGet* aInp = NULL);
-		virtual void *DoGetObj(const char *aName);
+		virtual MIface *DoGetObj(const char *aName);
 		virtual string IfaceGetId() const { return MVectGet<T>::Type();};
 		// From MDataGet
 		virtual void DataGet(T& aData);
@@ -176,7 +174,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	    public:
 		HVect(DVar* aHost);
 		static HBase* Create(DVar* aHost, const string& aString, MDVarGet* aInp = NULL);
-		virtual void *DoGetObj(const char *aName);
+		virtual MIface *DoGetObj(const char *aName);
 		virtual string IfaceGetId() const { return MVectGet<T>::Type();};
 		// From MVFloatGet
 		virtual void VectGet(Vect<T>& aData);
@@ -193,7 +191,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	    public:
 		HMtrd(DVar* aHost);
 		static HBase* Create(DVar* aHost, const string& aString, MDVarGet* aInp = NULL);
-		virtual void *DoGetObj(const char *aName);
+		virtual MIface *DoGetObj(const char *aName);
 		virtual string IfaceGetId() const { return MMtrdGet<T>::Type();};
 		// From MMtrdGet
 		virtual void MtrdGet(Mtrd<T>& aData);
@@ -210,7 +208,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		HMtr(DVar* aHost, const string& aCont);
 		HMtr(DVar* aHost, const Mtr<T>& aData);
 		static HBase* Create(DVar* aHost, const string& aString, MDVarGet* aInp = NULL);
-		virtual void *DoGetObj(const char *aName);
+		virtual MIface *DoGetObj(const char *aName);
 		virtual string IfaceGetId() const { return MMtrdGet<T>::Type();};
 		// From MMtrdGet
 		virtual void MtrGet(Mtr<T>& aData);
@@ -229,7 +227,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		HDt(DVar* aHost, const string& aCont);
 		HDt(DVar* aHost, const T& aData);
 		static HBase* Create(DVar* aHost, const string& aString, MDVarGet* aInp = NULL);
-		virtual void *DoGetObj(const char *aName);
+		virtual MIface *DoGetObj(const char *aName);
 		virtual string IfaceGetId() const { return MDtGet<T>::Type();};
 		// From MMtrdGet
 		virtual void DtGet(T& aData);
@@ -251,7 +249,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
 	virtual TBool HandleIoChanged(MElem& aContext, MElem* aCp);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MUpdatable
 	virtual TBool Update();
 	// From DataBase
@@ -283,7 +281,7 @@ class ConfDVar: public DataBase, public MDVar, public MDVarGet, public MDVarSet,
 	ConfDVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~ConfDVar();
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MConfirmable
 	virtual TBool Confirm();
     protected:

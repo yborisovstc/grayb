@@ -81,9 +81,9 @@ ConnPointBase::ConnPointBase(MElem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
     SetParent(Vert::PEType());
 }
 
-void *ConnPointBase::DoGetObj(const char *aName)
+MIface *ConnPointBase::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
     } else if (strcmp(aName, MConnPoint::Type()) == 0) {
@@ -334,9 +334,9 @@ ConnPointMc::ConnPointMc(MElem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
     ChangeCont(ConnPointMc::KContDir_Val_Regular, ETrue, ConnPointMc::KContDir);
 }
 
-void *ConnPointMc::DoGetObj(const char *aName)
+MIface *ConnPointMc::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
     } else if (strcmp(aName, MConnPoint::Type()) == 0) {
@@ -599,9 +599,9 @@ ExtenderAgent::ExtenderAgent(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv),
     SetParent(Elem::PEType());
 }
 
-void *ExtenderAgent::DoGetObj(const char *aName)
+MIface *ExtenderAgent::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = dynamic_cast<MCompatChecker*>(&mCompatChecker);
     } else if (strcmp(aName, MAgent::Type()) == 0) {
@@ -719,7 +719,7 @@ MIface* ExtenderAgent::MAgent_DoGetIface(const string& aUid)
 {
     MIface* res = NULL;
     if (aUid == MElem::Type())
-	res = this;
+	res = (MElem*) this;
     else if (aUid == MCompatChecker::Type())
 	res = &mCompatChecker;
     return res;
@@ -789,9 +789,9 @@ AExtender::AExtender(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
     ChangeCont(ConnPointMc::KContDir_Val_Regular, ETrue, ConnPointMc::KContDir);
 }
 
-void *AExtender::DoGetObj(const char *aName)
+MIface *AExtender::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
     } else if (strcmp(aName, MAgent::Type()) == 0) {
@@ -886,12 +886,6 @@ MIface* AExtender::Call(const string& aSpec, string& aRes)
     return  NULL;
 }
 
-string AExtender::Mid() const
-{
-    return GetUri(iEnv->Root(), ETrue);
-}
-
-
 
 
 // Socket agent: redirects iface requests to pins
@@ -910,9 +904,9 @@ ASocket::ASocket(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
     SetParent(Elem::PEType());
 }
 
-void *ASocket::DoGetObj(const char *aName)
+MIface *ASocket::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MCompatChecker::Type()) == 0) {
 	res = (MCompatChecker*) this;
     } else if (strcmp(aName, MSocket::Type()) == 0) {

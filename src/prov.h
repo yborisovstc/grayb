@@ -18,7 +18,7 @@ class GProvider: public Base, public MProvider
 	GProvider(const string& aName, MEnv* aEnv);
 	virtual ~GProvider();
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MProvider
 	virtual const string& Name() const { return iName;}
 	virtual Elem* CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv);

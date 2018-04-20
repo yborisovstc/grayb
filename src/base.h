@@ -11,14 +11,16 @@
 
 using namespace std;
 
+class MIface;
+
 // Base supporting iface provider
 class Base
 {
     public:
 	virtual ~Base() {};
 	template <class T> T* GetObj(T* aInst) {return aInst = static_cast<T*>(DoGetObj(aInst->Type()));};
-	void* GetObj(const char *aType) {return DoGetObj(aType); };
-	virtual void *DoGetObj(const char *aName) = 0;
+	MIface* GetObj(const char *aType) {return DoGetObj(aType); };
+	virtual MIface *DoGetObj(const char *aName) = 0;
 };
 
 #endif

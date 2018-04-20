@@ -422,10 +422,10 @@ void Env::RemoveProvider(MProvider* aProv)
     iProvider->RemoveProvider(aProv);
 }
 
-void *Env::DoGetObj(const char *aName)
+MIface *Env::DoGetObj(const char *aName)
 {
-    void* res = NULL;
-    if (strcmp(aName, MEnv::Type()) == 0) res = (MEnv*) this;
+    MIface* res = NULL;
+    if (strcmp(aName, MEnv::Type()) == 0) res = dynamic_cast<MEnv*>(this);
     return res;
 }
 
@@ -473,11 +473,6 @@ MIface* Env::Call(const string& aSpec, string& aRes)
 	throw (runtime_error("Unhandled method: " + name));
     }
     return res;
-}
-
-string Env::Mid() const
-{
-    return string();
 }
 
 void Env::SetEVar(const string& aName, const string& aValue)

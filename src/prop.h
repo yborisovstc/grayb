@@ -25,7 +25,7 @@ class Prop: public Elem, public MProp_Imd
 	Prop(MElem* aMan, MEnv* aEnv);
     public:
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MProp
 	virtual const string& Value() const;
 	// From MElem
@@ -46,9 +46,6 @@ class Description: public Prop
 	static string PEType();
 	Description(const string& aName, MElem* aMan, MEnv* aEnv);
 	Description(MElem* aMan, MEnv* aEnv);
-    public:
-	// From Base
-	virtual void *DoGetObj(const char *aName);
 };
 
 #endif

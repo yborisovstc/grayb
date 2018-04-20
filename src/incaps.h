@@ -11,7 +11,7 @@ class Incaps: public Elem, public MACompsObserver, public MAgent
 	Incaps(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	Incaps(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
-	virtual void *DoGetObj(const char *aName);
+	virtual MIface *DoGetObj(const char *aName);
 	// From MACompsObserver
 	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
 	// From MAgent

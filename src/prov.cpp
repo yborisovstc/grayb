@@ -22,11 +22,11 @@ void GProvider::SetEnv(MEnv* aEnv)
     iEnv = aEnv;
 }
 
-void *GProvider::DoGetObj(const char *aName)
+MIface *GProvider::DoGetObj(const char *aName)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     if (strcmp(aName, MProvider::Type()) == 0) {
-	res = (MProvider*) this;
+	res = (MIface*) (MProvider*) this;
     }
     return res;
 }
