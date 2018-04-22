@@ -1144,7 +1144,7 @@
 		<listitem>Hierarchical chromo, mutation in hierarchy order
 		    <para>This is what is implemented currently. This scheme doesn't natively secure the assembling order equivalent to constructing order.
 			Model's consistency is secured by the series of mechanism. The key mechanism is detection of order breaking and then correction of
-			chromo.</para>
+			chromo. This mechanism is very complicated and doesn't work well actually.</para>
 		</listitem>
 		<listitem>Using mutation order attributes, ref <xref linkend="ds_mut_osm_iop_ord"/></listitem>
 		<listitem>Using linear chromo in root agent, ref <xref linkend="ds_mut_osm_linchr"/></listitem>
@@ -1157,6 +1157,13 @@
 	    <simpara>Can additional linear list of mutations be used in order to have quick access to the next mutation? Not actually, because the 
 		current implementation does full mutation with all the mutations of nodes chromo. It cannot stop on the given mutation and then return 
 		to continue.</simpara>
+	    <para id="ds_mut_osm_iop_ord_20180421">[20180421] There is specific algorithm of how to search next mutation.
+		Mutating node needs to call back "Mutate item #N+1" to owner if
+		the node completed mutation #N and founds that next mutation's order is not N+1 but say M. The node indicates same time that it is ready
+		to mutate item M. The owner traverses all it's components to check if some is ready to mutate N+1. If the owner cannot find one than it
+		in turn calls back to it's owner. So each time of breaking linear sequence we do native hier tree traverse in orider to find node ready
+		for next mutation.
+	    not follow order</para>
 	</sect2>
 	<sect2 id="ds_mut_osm_linchr"><title>Implementation option: linear chromo of root agent</title>
 	    <sect3 id="ds_mut_osm_linchr_bc"><title>The base concept</title>
@@ -1197,7 +1204,10 @@
 			that current inheritance mechanism works properly.</listitem>
 		    <listitem>Implement mechanism of transforming any hierarchical mut into root linear chromo mut. This can be done via notifying
 			root on applying new mutation to chromo of internal node: root needs to add corresponding mut with the proper target to the roots chromo.
-			This allows simple transforming heirarchical chromo to OSM linear chromo - we just need to "load" hier chromo and then save it.</listitem>
+			This allows simple transforming heirarchical chromo to OSM linear chromo - we just need to "load" hier chromo and then save it.
+			<simpara>[20180421] This approach implies mutation propagation from mutated node to root, that can cause overhead,
+			    ref <xref linkend="ds_mut_osm_crit_upr"/></simpara>
+		    </listitem>
 		</orderedlist>
 	    </sect3>
 	    <sect3 id="ds_mut_osm_linchr_lce"><title>Linear chromo on each model's level of hierarcy</title>
@@ -1447,6 +1457,14 @@
 		<simpara>It is not possible to find dedicated node for given URI but it is possible to filter out all mutations related to the node.
 		    This filter can be applied to attribute "target" of the mutations in given chromo. So in result we can have chromo containing all the
 		mutation for the given node.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mut_osm_crit"><title>[20180421] Criticizm</title>
+	    <sect3 id="ds_mut_osm_crit_upr"><title>OSM causes mutation upward propagation to root</title>
+		<simpara>Ref <xref linkend="ds_prfopt_osmlp"/></simpara>. This is actually against currently approach <xref linkend="ds_mut_osm_linchr"/>
+		plus mechanism that allows propagate local mutation to root chromo (aka mechanism supporting ability for OSM to handle hier chromo as well),
+		ref <xref linkend="ds_mut_osm_linchr_cmpt"/>. Also propagation to children is used.
+		Probably we need to consider the option <xref linkend="ds_mut_osm_iop_ord_20180421"/>
 	    </sect3>
 	</sect2>
     </sect1>
@@ -4164,6 +4182,25 @@
 		<listitem>To avoid handling notifs from comp on all levels. Maybe direct owner handling is enough</listitem>
 		<listitem>To reimplement content as tree</listitem>
 	    </orderedlist>
+	</sect2>
+	<sect2 id="ds_prfopt_ahn"><title>To avoid handling notifs from comp on all levels</title>
+	    <sect3><title>Intro</title>
+		<simpara>Ref <xref linkend="ds_hsc"/> for observers design.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_prfopt_osmlp"><title>OSM mutation approach causes long chain of propagations.</title>
+	    <sect3><title>Intro</title>
+		<simpara>Ref <xref linkend="ds_mut_osm"/> for OSM mutation approach.</simpara>
+		<simpara>20180421 Look at Elem::NotifyNodeMutated(). It is seen that the mutation causes propagation upwards to root.
+		    Comparing to hiearchical chromosome approach in OSM any node contains it's full chromo whereas in hier chromo the node contains only
+		local chromo - the full node's chromo can be combined from chromos of its components.</simpara>
+	    </sect3>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_hsc"><title>Handling of system change. Observers</title>
+	<sect2><title>Intro</title>
+	    <simpara>Ref <xref linkend="ds_prfopt_ahn"/> for handling the changes discussion in the scope of performance optimization.</simpara>
 	</sect2>
     </sect1>
 

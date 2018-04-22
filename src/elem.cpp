@@ -264,7 +264,7 @@ void Elem::Delay(long us)
 // Element
 
 Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMan), iEnv(aEnv),
-    iObserver(NULL), iParent(NULL), isRemoved(EFalse), mContext(NULL)
+    iParent(NULL), isRemoved(EFalse), mContext(NULL)
 {
     /*
     stringstream ss;
@@ -291,7 +291,7 @@ Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMa
 }
 
 Elem::Elem(Elem* aMan, MEnv* aEnv): iName(Type()), iMan(aMan), iEnv(aEnv),
-    iObserver(NULL), iParent(NULL), isRemoved(EFalse), mContext(NULL)
+    iParent(NULL), isRemoved(EFalse), mContext(NULL)
 {
     /*
     stringstream ss;
@@ -344,8 +344,8 @@ Elem::~Elem()
     if (iMan != NULL) {
 	iMan->OnCompDeleting(*this, EFalse, ETrue);
     }
-    if (iObserver != NULL) {
-	iObserver->OnCompDeleting(*this, EFalse, ETrue);
+    for (auto observer : iObservers) {
+	observer->OnCompDeleting(*this, EFalse, ETrue);
     }
 
     // Disconnect from the childs
@@ -397,8 +397,27 @@ void Elem::SetMan(MElem* aMan)
 
 void Elem::SetObserver(MAgentObserver* aObserver)
 {
-    __ASSERT(iObserver == NULL && aObserver != NULL || iObserver != NULL && aObserver == NULL);
-    iObserver = aObserver;
+    __ASSERT(aObserver != NULL);
+    TBool found = EFalse;
+    for (auto observer : iObservers) {
+	if (observer == aObserver) {
+	    found = ETrue; break;
+	}
+    }
+    __ASSERT(!found);
+    iObservers.push_back(aObserver);
+}
+
+void Elem::UnsetObserver(MAgentObserver* aObserver)
+{
+    __ASSERT(aObserver != NULL);
+    TBool found = EFalse;
+    for (auto it = iObservers.begin(); it != iObservers.end(); it++) {
+	if (*it == aObserver) {
+	    iObservers.erase(it); found = ETrue; break;
+	}
+    }
+    __ASSERT(found);
 }
 
 MElem* Elem::GetMan()
@@ -2139,8 +2158,8 @@ TBool Elem::AppendComp(MElem* aComp, TBool aRt)
 	if (iMan != NULL && iMan->GetComp(string(), Name()) == this) {
 	    iMan->OnCompAdding(*aComp, aRt);
 	}
-	if (iObserver != NULL) {
-	    iObserver->OnCompAdding(*aComp, aRt);
+	for (auto observer : iObservers) {
+	    observer->OnCompAdding(*aComp, aRt);
 	}
     }
     return res;
@@ -2231,8 +2250,8 @@ void Elem::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
     if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
 	iMan->OnCompDeleting(aComp, aSoft, aModif);
     }
-    if (iObserver != NULL) {
-	iObserver->OnCompDeleting(aComp, aSoft, aModif);
+    for (auto observer : iObservers) {
+	observer->OnCompDeleting(aComp, aSoft, aModif);
     }
     // Handle for direct child
     if (aComp.GetMan() == this) {
@@ -2263,8 +2282,8 @@ void Elem::OnCompAdding(MElem& aComp, TBool aModif)
     if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
 	iMan->OnCompAdding(aComp, aModif);
     }
-    if (iObserver != NULL) {
-	iObserver->OnCompAdding(aComp, aModif);
+    for (auto observer : iObservers) {
+	observer->OnCompAdding(aComp, aModif);
     }
 }
 
@@ -2305,8 +2324,8 @@ TBool Elem::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 	res = iMan->OnCompChanged(aComp, aContName, aModif);
     }
     // Notify observer
-    if (iObserver != NULL) {
-	iObserver->OnCompChanged(aComp, aContName, aModif);
+    for (auto observer : iObservers) {
+	observer->OnCompChanged(aComp, aContName, aModif);
     }
     return res;
 }
@@ -2327,8 +2346,8 @@ TBool Elem::OnCompRenamed(MElem& aComp, const string& aOldName)
     if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
 	iMan->OnCompRenamed(aComp, aOldName);
     }
-    if (iObserver != NULL) {
-	iObserver->OnCompRenamed(aComp, aOldName);
+    for (auto observer : iObservers) {
+	observer->OnCompRenamed(aComp, aOldName);
     }
     return res;
 }
@@ -2359,8 +2378,8 @@ TBool Elem::OnChanged(MElem& aComp)
     if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
 	res = iMan->OnChanged(aComp);
     }
-    if (iObserver != NULL) {
-	iObserver->OnChanged(aComp);
+    for (auto observer : iObservers) {
+	observer->OnChanged(aComp);
     }
     return res;
 }
@@ -3000,8 +3019,8 @@ void Elem::SetRemoved(TBool aModif)
     if (iMan != NULL) {
 	iMan->OnCompDeleting(*this, ETrue, aModif);
     }
-    if (iObserver != NULL) {
-	iObserver->OnCompDeleting(*this, ETrue, aModif);
+    for (auto observer : iObservers) {
+	observer->OnCompDeleting(*this, ETrue, aModif);
     }
     for (auto& it : iMComps) {
 	MElem* comp = it.second;
@@ -3422,8 +3441,8 @@ void Elem::OnNodeMutated(const MElem* aNode, const TMut& aMut, const MElem* aCtx
 	string nuri = aNode->GetUri(this, ETrue);
 	ChromoNode anode = iChromo->Root().AddChild(aMut);
 	anode.SetAttr(ENa_Targ, nuri);
-	if (iObserver != NULL) {
-	    iObserver->OnCompMutated(aNode);
+	for (auto observer : iObservers) {
+	    observer->OnCompMutated(aNode);
 	}
     }
     if (this != root) {

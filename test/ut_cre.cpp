@@ -417,7 +417,7 @@ void Ut_cre::test_Notif()
     root->AppendMutation(TMut("node,id:Syst2,parent:./Syst1"));
     root->Mutate();
 
-    root->SetObserver(NULL);
+    root->UnsetObserver(mAgtObs);
     delete mAgtObs;
     delete iEnv;
 }
