@@ -161,9 +161,17 @@
 	<cont node="./Int/Provided" val="MDVarGet"/>
     </node>
 
+    <node id="Inp_TFEVarMc" parent="/*/Modules/SysComps/CpExtenderInpMc"> 
+	<cont id="Provided" node="./Int" val="MDVarGet"/>
+    </node>
+
     <!-- Extended Output of Transition Func with Var arg/res -->
     <node id="Out_TFEVar" parent="/*/Modules/SysComps/ExtenderOut"> 
 	<cont node="./Int/Required" val="MDVarGet"/>
+    </node>
+
+    <node id="Out_TFEVarMc" parent="/*/Modules/SysComps/CpExtenderOutMc"> 
+	<cont id="Required" node="./Int" val="MDVarGet"/>
     </node>
 
 
@@ -180,11 +188,11 @@
     <!-- Composed/Reduced Var transition function wo inputs  -->
     <node id="TFuncVarC" parent="/*/Modules/IncapsComps/Incaps"> 
 	<node node="./Capsule" id="Out" parent="./../Out_TFEVar"/> 
-	<node id="ViewData" parent="Vert">
-	    <node id="Res" parent="Prop"/>
-	</node>
     </node>
 
+    <node id="TFuncVarCMc" parent="/*/Modules/IncapsComps/Incaps"> 
+	<node node="./Capsule" id="Out" parent="./../Out_TFEVarMc"/> 
+    </node>
 
 
     <!-- Int function with single input  -->
@@ -339,9 +347,6 @@
     <!-- Var Transition function wo inputs  -->
     <node id="TFuncVar" parent="/*/Modules/IncapsComps/Incaps"> 
 	<node node="./Capsule" id="Out" parent="./../Out_TFVar"/> 
-	<node id="ViewData" parent="Vert">
-	    <node id="Res" parent="Prop"/>
-	</node>
     </node>
 
     <!-- Var Transition function wo inputs  -->
@@ -439,7 +444,9 @@
 	<node id="func_agt" parent="AFAddVar"/>
 	<!-- Input positives -->
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../func_agt"/>
+	<!-- <cont node="./ViewData/Res" ref="./../../func_agt"/> -->
+	<cont id="ViewData.Res" ref="./func_agt"/>
+
     </node>
 
     <!-- Transition Function of variable adding -->
@@ -475,21 +482,34 @@
 	<node id="func_agt" parent="AFMplncVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_TFVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../func_agt"/>
+	<cont id="ViewData.Res" ref="./func_agt"/>
+    </node>
+
+    <node id="TFMplncVarMc" parent="./TFuncVarMc"> 
+	<node id="func_agt" parent="AFMplncVar"/>
+	<node node="./Capsule" id="Inp1" parent="./../Inp_TFVarMc"/> 
+	<node node="./Capsule" id="Inp2" parent="./../Inp_TFVarMc"/> 
+	<cont id="ViewData.Res" ref="./func_agt"/>
     </node>
 
     <!-- Transition Function of variable mutltiplicationi inversion -->
     <node id="TFMplinvVar" parent="./TFuncVar"> 
 	<node id="func_agt" parent="AFMplinvVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../func_agt"/>
+	<cont id="ViewData.Res" ref="./func_agt"/>
     </node>
 
     <!-- Transition Function of variable creation of diag matrix -->
     <node id="TFCpsMtrdVar" parent="./TFuncVar"> 
 	<node id="func_agt" parent="AFCpsMtrdVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../func_agt"/>
+	<cont id="ViewData.Res" ref="./func_agt"/>
+    </node>
+
+    <node id="TFCpsMtrdVarMc" parent="./TFuncVarMc"> 
+	<node id="func_agt" parent="AFCpsMtrdVar"/>
+	<node node="./Capsule" id="Inp" parent="./../Inp_TFVarMc"/> 
+	<cont id="ViewData.Res" ref="./func_agt"/>
     </node>
 
     <!-- Transition Function of composing of vector from comps, variable -->
@@ -497,7 +517,7 @@
 	<node id="func_agt" parent="AFCpsVectVar"/>
 	<node node="./Capsule" id="Inp1" parent="./../Inp_TFVar"/> 
 	<node node="./Capsule" id="Inp2" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../func_agt"/>
+	<cont id="ViewData.Res" ref="./func_agt"/>
     </node>
 
 
@@ -506,7 +526,7 @@
 	<node id="func_agt" parent="AFCastVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
 	<node id="InpType" parent="Prop"/>
-	<cont node="./ViewData/Res" ref="./../../func_agt"/>
+	<cont id="ViewData.Res" ref="./func_agt"/>
     </node>
 
     <!-- Transition Function of getting component of containter  -->
@@ -514,7 +534,14 @@
 	<node id="func_agt" parent="AFAtVar"/>
 	<node node="./Capsule" id="Inp" parent="./../Inp_TFVar"/> 
 	<node node="./Capsule" id="Index" parent="./../Inp_TFVar"/> 
-	<cont node="./ViewData/Res" ref="./../../func_agt"/>
+	<cont id="ViewData.Res" ref="./func_agt"/>
+    </node>
+
+    <node id="TFAtVarMc" parent="./TFuncVarMc"> 
+	<node id="func_agt" parent="AFAtVar"/>
+	<node node="./Capsule" id="Inp" parent="./../Inp_TFVarMc"/> 
+	<node node="./Capsule" id="Index" parent="./../Inp_TFVarMc"/> 
+	<cont id="ViewData.Res" ref="./func_agt"/>
     </node>
 
     <!-- Transition Function of boolean negation -->
@@ -533,9 +560,18 @@
 	<node id="E1" parent="Edge"> <cont node="./P1" ref="./../../Capsule/Inp/Int"/> <cont node="./P2" ref="./../../At/Capsule/Inp"/> </node>
 	<node id="E2" parent="Edge"> <cont node="./P1" ref="./../../At/Capsule/Out"/> <cont node="./P2" ref="./../../Capsule/Out/Int"/> </node>
 	<node id="E3" parent="Edge"> <cont node="./P1" ref="./../../Index/Capsule/Out"/> <cont node="./P2" ref="./../../At/Capsule/Index"/> </node>
-	<cont node="./ViewData/Res" ref="./../../At/func_agt"/>
+	<cont id="ViewData.Res" ref="./At/func_agt"/>
     </node>
 
+    <node id="TFAtVarIMc" parent="./TFuncVarCMc"> 
+	<node id="At" parent="./../TFAtVarMc"/>
+	<node id="Index" parent="/*/Modules/DataComps/DataSCVarMc"/>
+	<node node="./Capsule" id="Inp" parent="./../Inp_TFEVarMc"/> 
+	<node id="E1" parent="Aedge"> <cont id="P1" ref="./../Capsule/Inp/Int"/> <cont id="P2" ref="./../At/Capsule/Inp"/> </node>
+	<node id="E2" parent="Aedge"> <cont id="P1" ref="./../At/Capsule/Out"/> <cont id="P2" ref="./../Capsule/Out/Int"/> </node>
+	<node id="E3" parent="Aedge"> <cont id="P1" ref="./../Index/Capsule/Out"/> <cont id="P2" ref="./../At/Capsule/Index"/> </node>
+	<cont id="ViewData.Res" ref="./At/func_agt"/>
+    </node>
 
 
 

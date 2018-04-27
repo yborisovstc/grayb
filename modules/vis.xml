@@ -5,6 +5,10 @@
     <cont node="./Required" val="MVisChild" />
     <cont node="./Provided" val="MVisContainer" />
   </node>
+  <node id="ParentMc" parent="ConnPointMc" >
+    <cont id="Required" val="MVisChild" />
+    <cont id="Provided" val="MVisContainer" />
+  </node>
   <node id="Child" parent="/*/Modules/SysComps/ConnPoint" >
     <cont node="./Required" val="MVisContainer" />
     <cont node="./Provided" val="MVisChild" />
@@ -12,16 +16,21 @@
   <node id="ChildE" parent="/*/Modules/SysComps/ExtenderBase" >
     <node id="Int" parent="./../Parent" />
   </node>
+  <node id="ChildEMc" parent="/*/Modules/SysComps/ExtenderMc" >
+    <node id="Int" parent="./../ParentMc" />
+  </node>
   <node id="DIntProv" parent="/*/Modules/SysComps/ConnPoint" >
     <cont node="./Provided" val="MDIntGet" />
   </node>
+
   <node id="Window" parent="Syst" >
     <node id="WinAgent" parent="AWindow" />
-    <node id="Parent" parent="/*/Modules/SysComps/ConnPoint" >
-      <cont node="./Required" val="MVisChild" />
-      <cont node="./Provided" val="MVisContainer" />
+    <node id="Parent" parent="ConnPointMc" >
+      <cont id="Required" val="MVisChild" />
+      <cont id="Provided" val="MVisContainer"/>
     </node>
   </node>
+
   <node id="Widget_common" parent="Vert" >
     <node id="Btn_event_Press" parent="/Root/Modules/(Elem:)DataComps/(DataSC:)DataSCVar" >
       <cont node="./Value" val="SI 4" />
@@ -76,6 +85,7 @@
     <node id="Prov_PW" parent="/*/Modules/DesComps/StIntOut" />
     <node id="Prov_PH" parent="/*/Modules/DesComps/StIntOut" />
   </node>
+
   <node id="WidgetV" parent="Syst" >
     <node id="Child" parent="/*/Modules/SysComps/ConnPoint" >
       <cont node="./Required" val="MVisContainer" />
@@ -100,6 +110,29 @@
     <node id="BtnReleaseEvent" parent="/Root/Modules/(Elem:)DesComps/StVarOut" />
     <node id="Allocation" parent="/Root/Modules/DesComps/StVarOut" />
   </node>
+
+  <node id="WidgetVMc" parent="Syst" >
+    <node id="Child" parent="ConnPointMc" >
+      <cont id="Required" val="MVisContainer" />
+      <cont id="Provided" val="MVisChild" />
+    </node>
+    <node id="Inp_X" parent="/*/Modules/DesComps/StVarInpMc" />
+    <node id="Inp_Y" parent="/*/Modules/DesComps/StVarInpMc" />
+    <node id="Inp_W" parent="/*/Modules/DesComps/StVarInpMc" />
+    <node id="Inp_H" parent="/*/Modules/DesComps/StVarInpMc" />
+    <node id="Prov_PW" parent="/*/Modules/DesComps/StVarOutMc" />
+    <node id="Prov_PH" parent="/*/Modules/DesComps/StVarOutMc" />
+    <node id="BtnPressEvent" parent="/Root/Modules/DesComps/StVarOutMc" />
+    <cont id="Note_1" val="BtnPressEvent: tuple, TPL,SI:Type,SI:State,SI:Button" />
+    <node id="Inp_State" parent="/Root/Modules/(Elem:)DesComps/StVarInpMc" >
+        <cont id="About" val="This in input for widget state" />
+    </node>
+    <node id="MotionEvent" parent="/Root/Modules/(Elem:)DesComps/StVarOutMc" />
+    <node id="BtnReleaseEvent" parent="/Root/Modules/(Elem:)DesComps/StVarOutMc" />
+    <node id="Allocation" parent="/Root/Modules/DesComps/StVarOutMc" />
+  </node>
+
+
   <node id="Fixed" parent="Syst" >
     <node id="WinAgent" parent="AVisFixed" />
     <node id="Child" parent="/*/Modules/SysComps/ConnPoint" >
@@ -111,6 +144,21 @@
       <cont node="./Provided" val="MVisContainer" />
     </node>
   </node>
+
+  <node id="FixedMc" parent="Syst" >
+    <node id="WinAgent" parent="AVisFixed" />
+    <node id="Child" parent="ConnPointMc" >
+      <cont id="Required" val="MVisContainer" />
+      <cont id="Provided" val="MVisChild" />
+    </node>
+    <node id="Parent" parent="ConnPointMc" >
+      <cont id="Required" val="MVisChild" />
+      <cont id="Provided" val="MVisContainer" />
+    </node>
+  </node>
+
+
+
   <node id="Drawing" parent="./Widget" >
     <node id="WinAgent" parent="AVisDrawing" />
     <node id="DrawingArea" parent="/Root/Modules/(Elem:)SysComps/(ConnPointBase:)ConnPoint" >
@@ -118,13 +166,145 @@
       <cont node="./Provided" val="MVisDrawingArea" />
     </node>
   </node>
+
   <node id="DrawingV" parent="./WidgetV" >
     <node id="WinAgent" parent="AVisDrawing" />
-    <node id="DrawingArea" parent="/Root/Modules/(Elem:)SysComps/(ConnPointBase:)ConnPoint" >
-      <cont node="./Required" val="MVisDrawingElem" />
-      <cont node="./Provided" val="MVisDrawingArea" />
+    <node id="DrawingArea" parent="ConnPointMc" >
+      <cont id="Required" val="MVisDrawingElem" />
+      <cont id="Provided" val="MVisDrawingArea" />
     </node>
   </node>
+
+  <node id="DrawingVMc" parent="./WidgetVMc" >
+    <node id="WinAgent" parent="AVisDrawing" />
+    <node id="DrawingArea" parent="ConnPointMc" >
+      <cont id="Required" val="MVisDrawingElem" />
+      <cont id="Provided" val="MVisDrawingArea" />
+    </node>
+  </node>
+
+
+
+  <node id="DrawingVcMc" parent="/*/Modules/DesComps/Des" >
+    <node id="VectComp" parent="/*/Modules/DesComps/StateVarCMc" >
+      <cont id="Value" node="./Data/Prepared" val="SI 0" />
+      <cont id="Value" node="./Data/Confirmed" val="SI 0" />
+      <node id="At" parent="/*/Modules/FuncComps/TFAtVarIMc" />
+      <node id="E1" parent="Aedge" >
+        <cont id="P1" ref="./../Capsule/Inp/Int/PinData" />
+        <cont id="P2" ref="./../At/Capsule/Inp" />
+      </node>
+      <node id="E2" parent="Aedge" >
+        <cont id="P1" ref="./../At/Capsule/Out" />
+        <cont id="P2" ref="./../Data/Capsule/Inp" />
+      </node>
+    </node>
+    <node id="PWHtoV" parent="/*/Modules/DesComps/StateVarCMc" >
+      <node id="Inp2" parent="/*/Modules/DesComps/StVarInpMc" node="./Capsule" />
+      <cont id="Value" node="./Data/Prepared" val="MI,V,2 0 0" />
+      <cont id="Value" node="./Data/Confirmed" val="MI,V,2 0 0" />
+      <node id="Composer" parent="/*/Modules/FuncComps/TFCpsVectVar" />
+      <node id="E1" parent="Aedge" >
+        <cont id="P1" ref="./../Capsule/Inp/Int/PinData" />
+        <cont id="P2" ref="./../Composer/Capsule/Inp1" />
+      </node>
+      <node id="E2" parent="Aedge" >
+        <cont id="P1" ref="./../Capsule/Inp2/Int/PinData" />
+        <cont id="P2" ref="./../Composer/Capsule/Inp2" />
+      </node>
+      <node id="E3" parent="Aedge" >
+        <cont id="P1" ref="./../Composer/Capsule/Out" />
+        <cont id="P2" ref="./../Data/Capsule/Inp" />
+      </node>
+    </node>
+    <node id="Child" parent="./../(ExtenderBase:)ChildEMc" node="./Capsule" />
+    <node id="Drw" parent="./../DrawingVMc" />
+    <node id="Inp_XY" parent="/*/Modules/DesComps/StVarInpMc" node="./Capsule" />
+    <node id="Inp_WH" parent="/*/Modules/DesComps/StVarInpMc" node="./Capsule" />
+    <node id="Prov_PWH" parent="/*/Modules/DesComps/StVarOutMc" node="./Capsule" />
+    <node id="ECH" parent="Aedge" >
+      <cont id="P1" ref="./../Drw/Child" />
+      <cont id="P2" ref="./../Capsule/Child/Int" />
+    </node>
+    <node id="XYtoX" parent="./VectComp" >
+      <cont id="Value" node="./At/Index" val="SI 0" />
+    </node>
+    <node id="EX1" parent="Aedge" >
+      <cont id="P1" ref="./../Capsule/Inp_XY/Int" />
+      <cont id="P2" ref="./../XYtoX/Capsule/Inp" />
+    </node>
+    <node id="EX2" parent="Aedge" >
+      <cont id="P1" ref="./../XYtoX/Capsule/Out" />
+      <cont id="P2" ref="./../Drw/Inp_X" />
+    </node>
+    <node id="XYtoY" parent="./VectComp" >
+      <cont id="Value" node="./At/Index" val="SI 1" />
+    </node>
+    <node id="EY1" parent="Aedge" >
+      <cont id="P1" ref="./../Capsule/Inp_XY/Int" />
+      <cont id="P2" ref="./../XYtoY/Capsule/Inp" />
+    </node>
+    <node id="EY2" parent="Aedge" >
+      <cont id="P1" ref="./../XYtoY/Capsule/Out" />
+      <cont id="P2" ref="./../Drw/Inp_Y" />
+    </node>
+    <node id="WHtoW" parent="./VectComp" >
+      <cont id="Value" node="./At/Index" val="SI 0" />
+    </node>
+    <node id="EW1" parent="Aedge" >
+      <cont id="P1" ref="./../Capsule/Inp_WH/Int" />
+      <cont id="P2" ref="./../WHtoW/Capsule/Inp" />
+    </node>
+    <node id="EW2" parent="Aedge" >
+      <cont id="P1" ref="./../WHtoW/Capsule/Out" />
+      <cont id="P2" ref="./../Drw/Inp_W" />
+    </node>
+    <node id="WHtoH" parent="./VectComp" >
+      <cont id="Value" node="./At/Index" val="SI 1" />
+    </node>
+    <node id="EH1" parent="Aedge" >
+      <cont id="P1" ref="./../Capsule/Inp_WH/Int" />
+      <cont id="P2" ref="./../WHtoH/Capsule/Inp" />
+    </node>
+    <node id="EH2" parent="Aedge" >
+      <cont id="P1" ref="./../WHtoH/Capsule/Out" />
+      <cont id="P2" ref="./../Drw/Inp_H" />
+    </node>
+    <node id="EP1" parent="Aedge" >
+      <cont id="P1" ref="./../Drw/Prov_PW" />
+      <cont id="P2" ref="./../PWHtoV/Capsule/Inp" />
+    </node>
+    <node id="EP2" parent="Aedge" >
+      <cont id="P1" ref="./../Drw/Prov_PH" />
+      <cont id="P2" ref="./../PWHtoV/Capsule/Inp2" />
+    </node>
+    <node id="EP3" parent="Aedge" >
+      <cont id="P1" ref="./../PWHtoV/Capsule/Out" />
+      <cont id="P2" ref="./../Capsule/Prov_PWH/Int" />
+    </node>
+    <node id="BtnPressEvent" parent="/Root/Modules/DesComps/StVarOutMc" node="./Capsule" />
+    <node id="1429823494" parent="Aedge" >
+      <cont id="P2" ref="./../Drw/BtnPressEvent" />
+      <cont id="P1" ref="./../Capsule/BtnPressEvent/Int" />
+    </node>
+    <node id="Inp_State" parent="/Root/Modules/(Elem:)DesComps/StVarInpMc" node="./Capsule" />
+    <node id="8562650" parent="Aedge" >
+      <cont id="P2" ref="./../Drw/Inp_State" />
+      <cont id="P1" ref="./../Capsule/Inp_State/Int" />
+    </node>
+    <node id="DrawingArea" parent="/Root/Modules/SysComps/CpExtenderMc" node="./Capsule" >
+      <cont id="Required" node="./Int" val="MVisDrawingArea" />
+      <cont id="Provided" node="./Int" val="MVisDrawingElem" />
+    </node>
+    <node id="1570127320" parent="Aedge" >
+      <cont id="P2" ref="./../Drw/DrawingArea" />
+      <cont id="P1" ref="./../Capsule/DrawingArea/Int" />
+    </node>
+  </node>
+
+
+
+
   <node id="DrawingVc" parent="/*/Modules/DesComps/Des" >
     <node id="VectComp" parent="/*/Modules/DesComps/StateVarC" >
       <cont node="./Data/Prepared/Value" val="SI 0" />
@@ -242,6 +422,7 @@
       <cont node="./P1" ref="./../../Capsule/DrawingArea/Int" />
     </node>
   </node>
+
   <node id="DrawingElemV" parent="/Root/Modules/(Elem:)VisComps/(Syst:)WidgetV" >
     <node id="DrawingElem" parent="/Root/Modules/(Elem:)SysComps/(ConnPointBase:)ConnPoint" >
       <cont node="./Provided" val="MVisDrawingElem" />

@@ -4196,6 +4196,23 @@
 		local chromo - the full node's chromo can be combined from chromos of its components.</simpara>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_prfopt_mnn"><title>Attempt of optimization: Minimize the number of nodes.</title>
+	    <sect3><title>Performing reference optimization of model "rock_al_vis_phd" from studio eamples.</title>
+		<simpara>Currently, before opt the model is not using multi-content. There are 12081 nodes, creation time is 2102105 microseconds.</simpara>
+		<simpara>After optimization (using multicontent agents): 6244 nodes, creation time 1271800 microsecond.</simpara>
+		<simpara>Further optimization requires re-design to deep using of content instead of embedded agents, ref <xref linkend="ds_upea"/>.
+		    This can significantly reduce the number of nodes. As I see from root dump, the major number of nodes is from socket connpoints
+		    - states inputs/outputs.</simpara>
+	    </sect3>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_upea"><title>Re-design: using properties instead of embedded agents</title>
+	<sect2><title>Intro</title>
+	    <simpara>Ref <xref linkend="ds_prfopt_mnn"/> for example of one model optimization - it shows that the major part of nodes is of 
+		complex connection points. It also shows that the currently developed set of multicontent agents doesn't allow to properly optimize the 
+		complexity of the model.</simpara>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_hsc"><title>Handling of system change. Observers</title>

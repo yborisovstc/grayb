@@ -271,7 +271,7 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
     virtual MElem* GetComp(TInt aInd) = 0;
     virtual void SaveChromo(const char* aPath) const = 0;
     virtual void DumpChilds() const = 0;
-    virtual void DumpComps() const = 0;
+    virtual void DumpComps(TBool aRecurs = EFalse) const = 0;
     virtual void DumpContent() const = 0;
     virtual void DumpIfReqs() const = 0;
     virtual void DumpIfCache() const = 0;

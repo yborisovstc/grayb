@@ -3408,12 +3408,13 @@ void Elem::DumpChilds() const
     }
 }
 
-void Elem::DumpComps() const
+void Elem::DumpComps(TBool aRecurs) const
 {
-    cout << endl << "<< Named register of components >>" << endl << endl;
     for (TNMReg::const_iterator it = iMComps.begin(); it != iMComps.end(); it++) {
 	MElem* comp = it->second;
-	cout << "name: " << it->first << ", ptr: " << (void*) comp << endl;
+	cout << comp->GetUri(NULL, ETrue) << ": " << (void*) comp << endl;
+	if (aRecurs)
+	    comp->DumpComps(aRecurs);
     }
 }
 

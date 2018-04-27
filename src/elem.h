@@ -301,7 +301,7 @@
 	    virtual string GetAssociatedData(const string& aUri) const;
 	    // Debugging
 	    virtual void SaveChromo(const char* aPath) const;
-	    virtual void DumpComps() const;
+	    virtual void DumpComps(TBool aRecurs = EFalse) const;
 	    virtual void DumpChilds() const;
 	    virtual void DumpContent() const;
 	    virtual void DumpIfReqs() const override;

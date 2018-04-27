@@ -81,7 +81,7 @@
 
     <node id="CpExtenderMc" parent="Vert"> 
 	<cont id="About" val="Extender of simple connpoint."/>
-	<node id="Int" parent="./../ConnPoint"/>
+	<node id="Int" parent="ConnPointMc"/>
 	<node id="MAExteder" parent="AExtender"/> 
     </node>
 

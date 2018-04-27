@@ -88,11 +88,26 @@
 	</node>
     </node>
 
+    <node id="StVarInpMc" parent="Vert">
+	<node id="MAExteder" parent="AExtender"/>
+	<node id="Int" parent="./../StInpSocketMc"> 
+	    <cont id="Provided" node="./PinData" val="MDVarGet"/>
+	</node>
+    </node>
+
     <!-- Output of standard variable State -->
     <node id="StVarOut" parent="Vert">
 	<node id="MAExteder" parent="ExtenderAgentOut"/>
 	<node id="Int" parent="./../StOutSocket"> 
 	    <cont node="./PinData/Required" val="MDVarGet"/>
+	</node>
+    </node>
+
+    <node id="StVarOutMc" parent="Vert">
+	<node id="MAExteder" parent="AExtender"/>
+	<cont id="Direction" val="Out"/>
+	<node id="Int" parent="./../StOutSocketMc"> 
+	    <cont id="Required" node="./PinData" val="MDVarGet"/>
 	</node>
     </node>
 
@@ -384,6 +399,47 @@
 		<cont ref="./../../Data/Confirmed/Value"/>
 	    </node>
 	</node>
+    </node>
+
+    <!-- Multicontent variant -->
+    <node id="StateVarCMc" parent="./StateMc"> 
+	<cont id="About" val="DES state with variable type data, combined data is used instead of prepared + confirmed, multicontent"/>
+
+	<node id="Data" parent="/*/Modules/IncapsComps/Incaps">
+	    <node id="Confirmed" parent="/*/Modules/DataComps/DataSCVarMc"/>
+	    <node id="Prepared" parent="/*/Modules/DataComps/DataSCVarMc"/>
+	    <node node="./Capsule" id="Inp" parent="/*/Modules/SysComps/ExtenderInpMc">
+		<node id="Int" parent="ConnPointMc"/>
+		<cont targ="./Int" id="Provided" val="MDVarGet"/>
+	    </node>
+	    <node node="./Capsule" id="Out" parent="/*/Modules/SysComps/ExtenderOutMc">
+		<node id="Int" parent="ConnPointMc"/>
+		<cont targ="./Int" id="Required" val="MDVarGet"/>
+	    </node>
+	    <node id="E_Inp_Prep" parent="Aedge"> 
+		<cont id="P1" ref="./../Capsule/Inp/Int"/> 
+		<cont id="P2" ref="./../Prepared/Capsule/Inp"/> 
+	    </node>
+	    <node id="E_Prep_Conf" parent="Aedge">
+		<cont id="P1" ref="./../Prepared/Capsule/Out"/> 
+		<cont id="P2" ref="./../Confirmed/Capsule/Inp"/> 
+	    </node>
+	    <node id="E_Conf_Out" parent="Aedge"> 
+		<cont id="P1" ref="./../Confirmed/Capsule/Out"/> 
+		<cont id="P2" ref="./../Capsule/Out/Int"/> 
+	    </node>
+	    <cont id="ViewData.Val" val="./Confirmed/ADVar"/>
+	</node>
+
+	<cont node="./Capsule/Inp/Int/PinData" id="Provided" val="MDVarGet"/>
+	<cont node="./Capsule/Out/Int/PinData" id="Required" val="MDVarGet"/>
+
+	<node id="E_Data_Out" parent="Aedge"> 
+	    <cont id="P1" ref="./../Data/Capsule/Out"/> 
+	    <cont id="P2" ref="./../Capsule/Out/Int/PinData"/> 
+	</node>
+
+	<cont id="ViewData.Val" val="./Data/Confirmed/ADVar"/>
     </node>
 
 
