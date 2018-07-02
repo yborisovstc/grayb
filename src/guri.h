@@ -93,6 +93,8 @@
 	    TBool IsErr() const { return iErr;};
 	    TBool IsAbsolute() const;
 	    TBool IsNil() const;
+	    TBool IsContent() const { return !mContent.empty();}
+	    string GetContent() const { return mContent;}
 	    static char GetExtFirstPart(const string& aExt, string& aPart);
 	    TBool Compare(const_elem_iter aStart, const GUri& aUri, const_elem_iter& aResPos) const;
 	    GUri operator+(const GUri& aUri);
@@ -108,6 +110,7 @@
 	    string iScheme;
 	    string iAuthority;
 	    string iPath;
+	    string mContent;
 	    // Nw hier part
 	    string iBase;
 	    vector<TElem> iElems;
@@ -125,6 +128,7 @@
 	    static const char KSepNone;
 	    static const char KBaseSep;
 	    static const char KIfaceSep;
+	    static const char KContentSep;
 	    static const string KIfaceSepS;
 	    static const char KCurUnit;
 	    static const string KNativeNil; // Predefined name of not existent native agent

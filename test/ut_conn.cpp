@@ -15,6 +15,8 @@
 class Ut_conn : public CPPUNIT_NS::TestFixture
 {
     CPPUNIT_TEST_SUITE(Ut_conn);
+    CPPUNIT_TEST(test_Vertp);
+    CPPUNIT_TEST(test_Systp);
     CPPUNIT_TEST(test_Sock);
     CPPUNIT_TEST(test_Sock2);
     CPPUNIT_TEST(test_Reconn);
@@ -24,6 +26,8 @@ public:
     virtual void setUp();
     virtual void tearDown();
 private:
+    void test_Vertp();
+    void test_Systp();
     void test_Sock();
     void test_Sock2();
     void test_Reconn();
@@ -32,7 +36,7 @@ private:
     Env* iEnv;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( Ut_conn );
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(Ut_conn, "Ut_conn");
 
 
 void Ut_conn::setUp()
@@ -43,6 +47,54 @@ void Ut_conn::tearDown()
 {
 //    delete iEnv;
     CPPUNIT_ASSERT_EQUAL_MESSAGE("tearDown", 0, 0);
+}
+
+// Test of Vertp connection
+void Ut_conn::test_Vertp()
+{
+    printf("\n === Test of Vertp connection\n");
+
+    iEnv = new Env("ut_conn_vertp_1.xml", "ut_conn_vertp_1.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Verify that v1 and v2 are connected
+    MElem* ev1 = root->GetNode("./test/v1");
+    MVert* mv1 = ev1->GetObj(mv1);
+    MElem* ev2 = root->GetNode("./test/v2");
+    MVert* mv2 = ev2->GetObj(mv2);
+    int pnum1 = mv1->PairsCount();
+    int pnum2 = mv2->PairsCount();
+    bool v2ispair = mv1->IsPair(mv2);
+    CPPUNIT_ASSERT_MESSAGE("v1 and v2 aren't connected", pnum1 == 1 && pnum2 && v2ispair);
+ 
+    /*
+   // Disconnect one point of edge e2
+    MElem* e2 = root->GetNode("./e2");
+    ChromoNode mutn = e2->AppendMutation(ENt_Cont);
+    mutn.SetAttr(ENa_MutNode, "./P1");
+    mutn.SetAttr(ENa_Ref, "");
+    e2->Mutate();
+    // Verify that v1 and v2 are still connected
+    MElem* ev1 = root->GetNode("./v1");
+    MVert* mv1 = ev1->GetObj(mv1);
+    int pnum1 = mv1->PairsCount();
+    CPPUNIT_ASSERT_MESSAGE("Wrong number of v1 pairs after e2 disconnection", pnum1 == 1);
+    */
+}
+
+// Test of Systp connection
+void Ut_conn::test_Systp()
+{
+    printf("\n === Test of Systp connection\n");
+
+    iEnv = new Env("ut_conn_systp_1.xml", "ut_conn_systp_1.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+
 }
 
 void Ut_conn::test_Sock()

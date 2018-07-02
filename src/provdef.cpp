@@ -1,9 +1,11 @@
 #include "provdef.h"
 #include "chromox.h"
 #include "vert.h"
+#include "vertp.h"
 #include "edge.h"
 #include "prop.h"
 #include "syst.h"
+#include "systp.h"
 #include "incaps.h"
 #include "data.h"
 #include "func.h"
@@ -27,6 +29,12 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, MElem* aMan,
     Elem* res = NULL;
     if (aType.compare(Vert::Type()) == 0) {
 	res = new Vert(aName, aMan, aEnv);
+    }
+    else if (aType.compare(Vertp::Type()) == 0) {
+	res = new Vertp(aName, aMan, aEnv);
+    }
+    else if (aType.compare(Systp::Type()) == 0) {
+	res = new Systp(aName, aMan, aEnv);
     }
     else if (aType.compare(Edge::Type()) == 0) {
 	res = new Edge(aName, aMan, aEnv);
@@ -234,6 +242,14 @@ Elem* ProvDef::GetNode(const string& aUri)
 	Elem* parent = NULL;
 	if (aUri.compare(Elem::Type()) == 0) {
 	    res = new Elem(NULL, iEnv);
+	}
+	else if (aUri.compare(Vertp::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new Vertp(NULL, iEnv);
+	}
+	else if (aUri.compare(Systp::Type()) == 0) {
+	    parent = GetNode("Vertp");
+	    res = new Systp(NULL, iEnv);
 	}
 	else if (aUri.compare(Vert::Type()) == 0) {
 	    parent = GetNode("Elem");
@@ -540,6 +556,7 @@ void ProvDef::AppendNodesInfo(vector<string>& aInfo)
     aInfo.push_back(Edge::Type());
     aInfo.push_back(Aedge::Type());
     aInfo.push_back(Vert::Type());
+    aInfo.push_back(Vertp::Type());
     aInfo.push_back(Prop::Type());
     aInfo.push_back(Description::Type());
     aInfo.push_back(ConnPointBase::Type());

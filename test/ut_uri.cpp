@@ -34,7 +34,7 @@ private:
     Env* iEnv;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( Ut_uri );
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(Ut_uri, "Ut_uri");
 
 const string KModulesPath = "../modules/";
 
@@ -51,10 +51,11 @@ void Ut_uri::tearDown()
 void Ut_uri::test_UriParsing()
 {
     printf("\n === Test of uri parsing\n");
-    GUri uri_a("sock://localhost:12345/env_1#/root/root_comp");
+    GUri uri_a("sock://localhost:12345/env_1#/root/root_comp~Content");
     CPPUNIT_ASSERT_MESSAGE("Fail to get scheme", uri_a.Scheme() == "sock");
     CPPUNIT_ASSERT_MESSAGE("Fail to get authority", uri_a.Authority() == "localhost:12345");
     CPPUNIT_ASSERT_MESSAGE("Fail to get path", uri_a.Path() == "env_1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get content", uri_a.IsContent() && uri_a.GetContent() == "Content");
 }
 
 void Ut_uri::test_UriOpr()

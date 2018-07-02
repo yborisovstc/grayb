@@ -55,6 +55,11 @@ class MVert: public MIface
 	// Possible to use Uid() instead and introduce MCompatChecker getter
 	virtual MIface* MVert_DoGetObj(const char *aName) = 0;
 	template <class T> T* GetObj(T* aInst) {return aInst = dynamic_cast<T*>(MVert_DoGetObj(aInst->Type()));};
+	// From MIface
+	virtual MIface* MVert_Call(const string& aSpec, string& aRes) { return NULL;}
+	virtual string MVert_Mid() const = 0;
+	MIface* Call(const string& aSpec, string& aRes) override {return MVert_Call(aSpec, aRes);}
+	string Mid() const override { return MVert_Mid();}
     protected:
 	class EIfu: public Ifu {
 	    public:

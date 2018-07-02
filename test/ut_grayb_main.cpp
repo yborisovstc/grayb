@@ -11,6 +11,8 @@
  * Create all registered test suits automaticaly.
  * Refer to CPPUnit documentation for details
  * To run particular test suite: ./ut-grayb-lib [test_suite_name]
+ * test_suite_name is stated by named registration macro:
+ * CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(Ut_uri, "Ut_uri");
  * @return 
  */
 int main(int argc, char* argv[])

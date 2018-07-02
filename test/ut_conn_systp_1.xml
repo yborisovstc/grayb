@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="Root" parent="Elem">
+    <node id="test" parent="Systp"/>
+    <node id="s1" parent="Systp" targ="./test"/>
+    <cont id="ConnPoints.Cp1" val="{Provided:'Iface1' Required:'Iface2'}" targ="./test/s1"/>
+    <node id="s2" parent="Systp" targ="./test"/>
+    <cont id="ConnPoints.Cp1" val="{Provided:'Iface2' Required:'Iface1'}" targ="./test/s2"/>
+    <cont id="Edges.E1" val="{P1:'/Root/test/s1~ConnPoints.Cp1' P2:'/Root/test/s2~ConnPoints.Cp1'}" targ="./test"/>
+</node>

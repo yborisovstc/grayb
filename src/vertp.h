@@ -1,23 +1,26 @@
-#ifndef __GRAYB_VERT_H
-#define __GRAYB_VERT_H
+#ifndef __GRAYB_VERTP_H
+#define __GRAYB_VERTP_H
 
 #include "mvert.h"
 #include "elem.h"
 #include <set>
 
-class Edge;
-
 /**
- * @brief Vertex agent
+ * @brief Vertex agent, PIA design
  */
-class Vert: public Elem, public MVert
+class Vertp: public Elem, public MVert
 {
     public:
-	static const char* Type() { return "Vert";};
+	// Pairs registry: {pair pointer, context (URI) id}
+	typedef pair<MVert*, string> TPairsRegElem;
+	typedef map<MVert*, string> TPairsReg;
+
+    public:
+	static const char* Type() { return "Vertp";};
 	static string PEType();
-	Vert(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	Vert(MElem* aMan = NULL, MEnv* aEnv = NULL);
-	virtual ~Vert();
+	Vertp(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
+	Vertp(MElem* aMan = NULL, MEnv* aEnv = NULL);
+	virtual ~Vertp();
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);
 	// From MVert
@@ -26,7 +29,6 @@ class Vert: public Elem, public MVert
 	virtual TInt PairsCount() const;
 	virtual MVert* GetPair(TInt aInd) const;
 	virtual TBool IsPair(const MVert* aPair) const;
-	//virtual set<MVert*>& Pairs();
 	virtual MIface* MVert_DoGetObj(const char *aName);
 	// From Elem
 	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse);
@@ -34,12 +36,13 @@ class Vert: public Elem, public MVert
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);
 	string Mid() const override { return Elem::Mid();}
-	virtual string MVert_Mid() const { return Elem::Mid();}
+	string MVert_Mid() const override { return Elem::Mid();}
     protected:
-	void Disconnect();
-    protected:
-	// Cached pairs
-	set<MVert*> iPairs;
+	TPairsReg mPairs;
+	static const string& KContent_Edges;
+	static const string& KContent_Connpoints;
+	static const string& KContent_P1;
+	static const string& KContent_P2;
 };
 
 #endif

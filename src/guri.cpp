@@ -19,6 +19,7 @@ const char GUri::KQueryDelim = '?';
 const char GUri::KBaseSep = '#';
 const char GUri::KIfaceSep = '%';
 const string GUri::KIfaceSepS = "%";
+const char GUri::KContentSep = '~';
 const char GUri::KParentSep = ':';
 const char GUri::KSepNone = ' ';
 const char GUri::KNodeSep = '/';
@@ -27,6 +28,7 @@ const char KGroupEnd = ')';
 const char GUri::KCurUnit = '.';
 const string KGroupMark = "()";
 const string KRelTypesMarks = "/:";
+const string KSecRelTypesMarks = "%~"; // Secondary relation types (iface, content) marks
 
 TBool GUri::iInit = EFalse;
 
@@ -278,8 +280,8 @@ void GUri::Parse()
 	// Base part is missing
 	frag = iUri;
     }
-    size_t query_beg = frag.find_first_of('?', 0);
-    string hier = frag.substr(0, query_beg);
+    size_t sec_beg = frag.find_first_of(KSecRelTypesMarks, 0);
+    string hier = frag.substr(0, sec_beg);
     // Path
     // Check the relation symbol, if omitted that assume it's hier
     if (!hier.empty()) {
@@ -337,6 +339,12 @@ void GUri::Parse()
 		    }
 		}
 	    } while (!err && pos != string::npos && pos < hier.size());
+	}
+	if (sec_beg != string::npos) { // Secondary part exists
+	    if (frag.at(sec_beg) == KContentSep) { // Content
+		mContent = frag.substr(sec_beg + 1);
+	    } else {
+	    }
 	}
 	if (!iErr && err) {
 	    iErr = err;

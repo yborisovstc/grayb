@@ -137,6 +137,7 @@ void MElem::EIfu::ToCtx(MElem* aHost, const string& aString, TICacheRCtx& aCtx)
     } while (end != string::npos);
 }
 
+// TODO To move to elem. The method exposes knowledge of cont internals
 string MElem::GetContentOwner(const string& aCont)
 {
     string res;
@@ -1866,6 +1867,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 	Logger()->Write(EErr, this, "Changing node [%s] - cannot find node or node isn't comp", snode.c_str());
     }
     // Append mutation to chromo anytype, ref uc_043
+    // TODO To update trial logic - to refuse adding mutation if trial and mutation failed
     if (!aRunTime && !mutadded && !aTrialMode) {
 	ChromoNode mut = iChromo->Root().AddChild(aSpec);
 	NotifyNodeMutated(aSpec, aCtx);
@@ -3547,6 +3549,17 @@ string Elem::ContentValueKey(const string& aId)
 string Elem::ContentCompsKey(const string& aId)
 {
     return  aId + KContentSep + KContentKey_Comps;
+}
+
+TBool Elem::IsContentCompOf(const string& aContName, const string& aContOwner)
+{
+    TBool res = aContName.find(aContOwner) == 0;
+    return res;
+}
+
+TBool Elem::ContentHasComp(const string& aContFname, const string& aCompName) const
+{
+    return ContentExists(ContentKey(aContFname, aCompName));
 }
 
 string Elem::GetAssociatedData(const string& aUri) const

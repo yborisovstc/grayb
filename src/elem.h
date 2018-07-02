@@ -35,12 +35,14 @@
 	    typedef map<string, MElem*> TNReg;
 	    typedef pair<TNMReg::iterator, TNMReg::iterator> TNMRegItRange;
 	    // Type of content elements
+	    /*
 	    typedef enum 
 	    {
 		ECnt_Comp = 0, // Component of content
 		ECnt_Val,      // Value
 		ECnt_Ctg       // Category
 	    } TCnt;
+	    */
 	    // Content key
 	    //typedef multimap<TCntKey, string> TCntReg;
 	    typedef pair<string, string> TCntRec;
@@ -270,6 +272,8 @@
 	    void InsertContentComp(const string& aContName, const string& aCompName);
 	    void InsertContCompsRec(const string& aName, const string& aComp);
 	    TBool ContentHasComps(const string& aContName) const;
+	    static TBool IsContentCompOf(const string& aContName, const string& aContOwner);
+	    TBool ContentHasComp(const string& aContFname, const string& aCompName) const;
 	    inline MProvider* Provider() const;
 	    virtual TBool AppendComp(MElem* aComp, TBool aRt = EFalse);
 	    virtual void RemoveComp(MElem* aComp);

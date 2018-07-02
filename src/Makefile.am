@@ -51,6 +51,8 @@ libgrayb_la_SOURCES = \
 		       data.cpp \
 		       syst.h \
 		       syst.cpp \
+		       systp.h \
+		       systp.cpp \
 		       incaps.h \
 		       incaps.cpp \
 		       func.h \
@@ -62,6 +64,8 @@ libgrayb_la_SOURCES = \
 		       miface.h \
 		       mmuta.h \
 		       mplugin.h \
+		       vertp.h \
+		       vertp.cpp \
 		       mmod.h
 
 include_HEADERS = \
