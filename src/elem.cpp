@@ -1854,7 +1854,7 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
 		    }
 		} else {
 		    Logger()->Write(EErr, this, aSpec, "Changing node [%s] - failure", snode.c_str());
-		    node->ChangeCont(mval, aRunTime, cname);
+		    //node->ChangeCont(mval, aRunTime, cname);
 		}
 	    }
 	}

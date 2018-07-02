@@ -8,10 +8,21 @@ string Vertp::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
+/** \brief Structure of content */
+
+/** \brief Edge
+ *    {P1:'Uri, proposed point 1' P2:'Uri, proposed point 2Uri'
+ *         CP1:'Uri, Connected point 1' CP2:'Uri, Connected point 2'}
+ *         CP1 and CP2 are internal and cannot be changed from out of vertp
+ *         Values of paremeters are URI to vertexes.
+ */
+
 const string& Vertp::KContent_Edges = "Edges";
 const string& Vertp::KContent_Connpoints = "Connpoints";
 const string& Vertp::KContent_P1 = "P1";
 const string& Vertp::KContent_P2 = "P2";
+const string& Vertp::KContent_CP1 = "CP1";
+const string& Vertp::KContent_CP2 = "CP2";
 
 Vertp::Vertp(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
@@ -116,24 +127,58 @@ TBool Vertp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 	TBool isedge = IsContentCompOf(aContName, KContent_Edges);
 	if (isedge) {
 	    string edgeName = GetContentOwner(aContName);
-	    if (ContentHasComp(edgeName, KContent_P1) && ContentHasComp(edgeName, KContent_P2) ) {
-		string puri1 = GetContentValue(ContentKey(edgeName, KContent_P1));
-		string puri2 = GetContentValue(ContentKey(edgeName, KContent_P2));
-		MElem* e1 = GetNode(puri1);
-		MElem* e2 = GetNode(puri2);
-		MVert* v1 = e1->GetObj(v1);
-		MVert* v2 = e2->GetObj(v2);
-		if (v1 && v2) {
-		    res = v1->Connect(v2);
-		    if (!res) {
-			Logger()->Write(EErr, &aComp, "Connecting [%s - %s]: failed", puri1.c_str(), puri2.c_str());
+	    if (edgeName != KContent_Edges) { // Omitting edge itself, handling cp only
+		string namePA = GetContentLName(aContName);
+		if (namePA == KContent_P1 || namePA == KContent_P2) {
+		    string namePB = KContent_P2, nameCPA = KContent_CP1, nameCPB = KContent_CP2;
+		    if (namePA == KContent_P2) {
+			namePB = KContent_P1, nameCPA = KContent_CP2, nameCPB = KContent_CP1;
+		    } 
+		    string puria = GetContentValue(aContName);
+		    string cpuria = GetContentValue(ContentKey(edgeName, nameCPA));
+		    string cpurib = GetContentValue(ContentKey(edgeName, nameCPB));
+		    if (puria != cpuria) {
+			if (!cpuria.empty()) {
+			    // There is connection established, disconnecting
+			    string cpurib = GetContentValue(ContentKey(edgeName, nameCPB));
+			    assert(!cpurib.empty());
+			    MElem* cea = GetNode(cpuria);
+			    assert(cea != NULL);
+			    MVert* cva = cea->GetObj(cva);
+			    assert(cva != NULL);
+			    MElem* ceb = GetNode(cpurib);
+			    assert(ceb != NULL);
+			    MVert* cvb = ceb->GetObj(cvb);
+			    assert(cvb != NULL);
+			    cva->Disconnect(cvb);
+			    SetContentValue(ContentKey(edgeName, nameCPA), "");
+			    SetContentValue(ContentKey(edgeName, nameCPB), "");
+			}
+			// Establishing new connection
+			string purib = GetContentValue(ContentKey(edgeName, namePB));
+			if (!purib.empty()) {
+			    MElem* ea = GetNode(puria);
+			    assert(ea != NULL);
+			    MVert* va = ea->GetObj(va);
+			    assert(va != NULL);
+			    MElem* eb = GetNode(purib);
+			    assert(eb != NULL);
+			    MVert* vb = eb->GetObj(vb);
+			    assert(vb != NULL);
+			    res = va->Connect(vb);
+			    if (res) {
+				SetContentValue(ContentKey(edgeName, nameCPA), puria);
+				SetContentValue(ContentKey(edgeName, nameCPB), purib);
+			    }
+			}
 		    }
 		} else {
-		    Logger()->Write(EErr, &aComp, "Connecting [%s - %s]: isn't vertex", puri1.c_str(), puri2.c_str());
+		    // Wrong compoment
+		    res = false;
 		}
-	    }
-	}
-    }
+	    } // cont isn't edge itself
+	} // isedge
+    } // res of Elem::OnCompChanged
     return res;
 }
 

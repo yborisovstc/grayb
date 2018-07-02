@@ -43,6 +43,8 @@ class Vertp: public Elem, public MVert
 	static const string& KContent_Connpoints;
 	static const string& KContent_P1;
 	static const string& KContent_P2;
+	static const string& KContent_CP1;
+	static const string& KContent_CP2;
 };
 
 #endif

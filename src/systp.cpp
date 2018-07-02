@@ -1,5 +1,11 @@
 #include "systp.h"
 
+/** \brief Edge
+ *    {P1:'Uri, proposed point 1' P2:'Uri, proposed point 2Uri'
+ *         CP1:'Uri, Connected point 1' CP2:'Uri, Connected point 2'}
+ *         CP1 and CP2 are internal and cannot be changed from out of the agent
+ *         In contradiction to vertex the Values of paremeters are URI to systems connpoint.
+ */
 
 // System
 string Systp::PEType()
@@ -25,21 +31,64 @@ void Systp::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
 TBool Systp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 {
     TBool res = Vertp::OnCompChanged(aComp, aContName, aModif);
+
+
     if (res) {
-	TBool iscp = IsContentCompOf(aContName, KContent_Connpoints);
 	TBool isedge = IsContentCompOf(aContName, KContent_Edges);
 	if (isedge) {
 	    string edgeName = GetContentOwner(aContName);
-	    if (ContentHasComp(edgeName, KContent_P1) && ContentHasComp(edgeName, KContent_P2) ) {
-		string puri1 = GetContentValue(ContentKey(edgeName, KContent_P1));
-		string puri2 = GetContentValue(ContentKey(edgeName, KContent_P2));
-		MElem* e1 = GetNode(puri1);
-		MElem* e2 = GetNode(puri2);
-		MVert* v1 = e1->GetObj(v1);
-		MVert* v2 = e2->GetObj(v2);
-	    }
-	}
-    }
+	    if (edgeName != KContent_Edges) { // Omitting edge itself, handling cp only
+		string namePA = GetContentLName(aContName);
+		if (namePA == KContent_P1 || namePA == KContent_P2) {
+		    string namePB = KContent_P2, nameCPA = KContent_CP1, nameCPB = KContent_CP2;
+		    if (namePA == KContent_P2) {
+			namePB = KContent_P1, nameCPA = KContent_CP2, nameCPB = KContent_CP1;
+		    } 
+		    string puria = GetContentValue(aContName);
+		    string cpuria = GetContentValue(ContentKey(edgeName, nameCPA));
+		    string cpurib = GetContentValue(ContentKey(edgeName, nameCPB));
+		    if (puria != cpuria) {
+			if (!cpuria.empty()) {
+			    // There is connection established, disconnecting
+			    string cpurib = GetContentValue(ContentKey(edgeName, nameCPB));
+			    assert(!cpurib.empty());
+			    MElem* cea = GetNode(cpuria);
+			    assert(cea != NULL);
+			    MVert* cva = cea->GetObj(cva);
+			    assert(cva != NULL);
+			    MElem* ceb = GetNode(cpurib);
+			    assert(ceb != NULL);
+			    MVert* cvb = ceb->GetObj(cvb);
+			    assert(cvb != NULL);
+			    cva->Disconnect(cvb);
+			    SetContentValue(ContentKey(edgeName, nameCPA), "");
+			    SetContentValue(ContentKey(edgeName, nameCPB), "");
+			}
+			// Establishing new connection
+			string purib = GetContentValue(ContentKey(edgeName, namePB));
+			if (!purib.empty()) {
+			    MElem* ea = GetNode(puria);
+			    assert(ea != NULL);
+			    MVert* va = ea->GetObj(va);
+			    assert(va != NULL);
+			    MElem* eb = GetNode(purib);
+			    assert(eb != NULL);
+			    MVert* vb = eb->GetObj(vb);
+			    assert(vb != NULL);
+			    res = va->Connect(vb);
+			    if (res) {
+				SetContentValue(ContentKey(edgeName, nameCPA), puria);
+				SetContentValue(ContentKey(edgeName, nameCPB), purib);
+			    }
+			}
+		    }
+		} else {
+		    // Wrong compoment
+		    res = false;
+		}
+	    } // cont isn't edge itself
+	} // isedge
+    } // res of Elem::OnCompChanged
 
 #if 0
 	if (!res) return res;

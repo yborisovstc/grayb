@@ -1,17 +1,17 @@
 
-grayb=/home/yborisov/projects/fap/git/grayb CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in {
-autogen.sh
-Makefile.am
-configure.ac
-AUTHORS
-COPYING
-ChangeLog
-README
-NEWS
-Makefile.in
-libgrayb.pc.in
+grayb=/home/yborisov/projects/fap/grayb CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in {
+ autogen.sh
+ Makefile.am
+ configure.ac
+ AUTHORS
+ COPYING
+ ChangeLog
+ README
+ NEWS
+ Makefile.in
+ libgrayb.pc.in
 src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
- base.h
+  base.h
   chromo.h
   chromox.h
   data.h
@@ -21,21 +21,23 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   env.h
   factr.h
   func.h
-  graph.h
   guri.h
-  hnode.h
+  ifu.h
+  imports.h
   incaps.h
   log.h
   mchromo.h
-  mconn.h
   mdata.h
   mdes.h
   medge.h
   melem.h
   menv.h
-  mgraph.h
+  miface.h
   mlog.h
+  mmod.h
   mmuta.h
+  module.h
+  mplugin.h
   mprop.h
   mprov.h
   mvert.h
@@ -43,8 +45,11 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   prop.h
   prov.h
   provdef.h
+  rdata.h
   syst.h
+  systp.h
   vert.h
+  vertp.h
   base.cpp
   chromo.cpp
   chromox.cpp
@@ -55,16 +60,20 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   env.cpp
   factr.cpp
   func.cpp
-  graph.cpp
   guri.cpp
-  hnode.cpp
+  ifu.cpp
+  imports.cpp
   incaps.cpp
   log.cpp
+  module.cpp
   prop.cpp
   prov.cpp
   provdef.cpp
+  rdata.cpp
   syst.cpp
+  systp.cpp
   vert.cpp
+  vertp.cpp
   Makefile.am
 } 
 etc=etc CD=. filter="*" {

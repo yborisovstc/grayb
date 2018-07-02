@@ -68,20 +68,17 @@ void Ut_conn::test_Vertp()
     int pnum2 = mv2->PairsCount();
     bool v2ispair = mv1->IsPair(mv2);
     CPPUNIT_ASSERT_MESSAGE("v1 and v2 aren't connected", pnum1 == 1 && pnum2 && v2ispair);
- 
-    /*
    // Disconnect one point of edge e2
-    MElem* e2 = root->GetNode("./e2");
-    ChromoNode mutn = e2->AppendMutation(ENt_Cont);
-    mutn.SetAttr(ENa_MutNode, "./P1");
-    mutn.SetAttr(ENa_Ref, "");
-    e2->Mutate();
-    // Verify that v1 and v2 are still connected
-    MElem* ev1 = root->GetNode("./v1");
-    MVert* mv1 = ev1->GetObj(mv1);
-    int pnum1 = mv1->PairsCount();
-    CPPUNIT_ASSERT_MESSAGE("Wrong number of v1 pairs after e2 disconnection", pnum1 == 1);
-    */
+    ChromoNode mutn = root->AppendMutation(ENt_Cont);
+    mutn.SetAttr(ENa_Targ, "./test");
+    mutn.SetAttr(ENa_Id, "Edges.E1.P1");
+    mutn.SetAttr(ENa_MutVal, "");
+    root->Mutate();
+    // Verify that v1 and v2 are disconnected
+    ev1 = root->GetNode("./test/v1");
+    mv1 = ev1->GetObj(mv1);
+    pnum1 = mv1->PairsCount();
+    CPPUNIT_ASSERT_MESSAGE("Wrong number of v1 pairs after e2 disconnection", pnum1 == 0);
 }
 
 // Test of Systp connection

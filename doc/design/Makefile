@@ -1,5 +1,8 @@
 source = grayb_design.xml
+
+stylesheet=/usr/share/xml/docbook/stylesheet/nwalsh/html/onechunk.xsl
+
 index.html: $(source)
-	xsltproc /usr/share/xml/docbook/stylesheet/nwalsh/html/onechunk.xsl $(source)
+	xsltproc --stringparam toc.section.depth 3 $(stylesheet) $(source)
 clean:
 	rm index.html
