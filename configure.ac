@@ -6,6 +6,7 @@ AM_INIT_AUTOMAKE([-Wall])
 AC_CONFIG_FILES([
 		 Makefile
 		 src/Makefile
+		 clm/Makefile
 		 test/Makefile
 		 ])
 
@@ -39,7 +40,6 @@ CXXFLAGS="-std=c++11"
 if test x$debug = xyes; then
     CXXFLAGS="$CXXFLAGS -g -O0"
 else
-#    CXXFLAGS="-g -O2"
     CXXFLAGS="$CXXFLAGS -g -O0"
 fi
 

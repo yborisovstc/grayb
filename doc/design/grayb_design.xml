@@ -4205,11 +4205,62 @@
 	</sect2>
 	<sect2 id="ds_prfopt_mnn"><title>Attempt of optimization: Minimize the number of nodes.</title>
 	    <sect3><title>Performing reference optimization of model "rock_al_vis_phd" from studio eamples.</title>
-		<simpara>Currently, before opt the model is not using multi-content. There are 12081 nodes, creation time is 2102105 microseconds.</simpara>
+		<simpara>Currently, before opt the model is not using multi-content.
+		    There are 12081 nodes, creation time is 2102105 microseconds.</simpara>
 		<simpara>After optimization (using multicontent agents): 6244 nodes, creation time 1271800 microsecond.</simpara>
-		<simpara>Further optimization requires re-design to deep using of content instead of embedded agents, ref <xref linkend="ds_pia"/>.
-		    This can significantly reduce the number of nodes. As I see from root dump, the major number of nodes is from socket connpoints
-		    - states inputs/outputs.</simpara>
+		<simpara>Further optimization requires re-design to deep using of content instead of embedded agents,
+		    ref <xref linkend="ds_pia"/>.
+		    This can significantly reduce the number of nodes. As I see from root dump, the major number of nodes is
+		    from socket connpoints - states inputs/outputs.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2><title>Checking with command line monitor app</title>
+	    <simpara>I have added simple command line app - monitor to test the performance in simple environment. Checking the
+		model des_var_vect_1: same time in Studio and in monitor: 508 nodes at 99405 us - 196 us/node. So Studio 
+		env doesn't affect model creating performance.</simpara>
+	</sect2>
+	<sect2><title>Profiling using gperf</title>
+	    <sect3><title>Intro</title>
+		<simpara>Ref <ulink url="https://en.wikipedia.org/wiki/Gprof"/> for gperf WiKi.</simpara>
+		<simpara>Ref <ulink url="https://www.thegeekstuff.com/2012/08/gprof-tutorial/"/> for gperf tutorial.</simpara>
+	    </sect3>
+	    <sect3><title>Getting analysis</title>
+		<itemizedlist>
+		    <listitem>Added -gp to compiler and linker options in grayb and fapm CLI monitor. Run monitor
+			<programlisting>
+			    ~/projects/fap/grayb/clm$ ./fapm ../../fap2-studio-gtk/examples/des_var_vect_1.xml
+			 </programlisting>
+			 and see gmon.out file generated
+		    </listitem>
+		    <listitem>Run gprof
+			<programlisting> ~/projects/fap/grayb/clm$ gprof .libs/fapm gmon.out > gprof_out.txt </programlisting>
+			and see output file gprof_out.txt. The problem is that I cannot see profiling info for grayb so.
+		    </listitem>
+		    <listitem>To profile shared lib we need another tool - sprof. Ref 
+			<ulink url="http://greg-n-blog.blogspot.com/2010/01/profiling-shared-library-on-linux-using.html"/>:
+			<programlisting>
+			     Profiling shared library on Linux using sprof
+			     It's not as easy as one would/should expect. (Read here about valgrind if you don't want to use sprof.)
+
+			     First - FORGET ABOUT gprof. gprof is used for the applications but will NOT WORK for shared libraries.
+			     Sorry about that. I learned about it the hard way. What you need to use is sprof.
+			</programlisting>
+			Also ref <ulink url="https://stackoverflow.com/questions/1838989/gprof-how-to-generate-call-graph-for-functions-in-shared-library-that-is-linke"/>
+		    </listitem>
+		    <listitem>So I followed the last link:
+			<programlisting>
+			    1. Compiled libgrayb.so w/o -pg but just with -g.
+			    *  cd ~/projects/fap/grayb/clm
+			    2. export LD_PROFILE_OUTPUT=`pwd`
+			    3. export LD_PROFILE=libgrayb.so.0
+			    4. rm -f $LD_PROFILE.profile
+			    5. execute ./fapm ../../fap2-studio-gtk/examples/des_var_vect_1.x
+			    6. sprof ../src/.libs/$LD_PROFILE $LD_PROFILE.profile -p >log
+			</programlisting>
+			I see the error on #6: "Inconsistency detected by ld.so: dl-open.c: 718: _dl_open:
+			Assertion `_dl_debug_initialize (0, args.nsid)->r_state == RT_CONSISTENT' failed!"
+		    </listitem>
+		</itemizedlist>
 	    </sect3>
 	</sect2>
     </sect1>

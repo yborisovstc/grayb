@@ -1,17 +1,17 @@
 
 grayb=/home/yborisov/projects/fap/grayb CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in {
- autogen.sh
- Makefile.am
- configure.ac
- AUTHORS
- COPYING
- ChangeLog
- README
- NEWS
- Makefile.in
- libgrayb.pc.in
+autogen.sh
+Makefile.am
+configure.ac
+AUTHORS
+COPYING
+ChangeLog
+README
+NEWS
+Makefile.in
+libgrayb.pc.in
 src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
-  base.h
+ base.h
   chromo.h
   chromox.h
   data.h
@@ -117,7 +117,7 @@ doc=doc CD=. filter="*" {
  }
 }
 test=test CD=. filter="*.cpp *.h *.xml *.am *.txt" {
-  ut_conn.cpp
+ ut_conn.cpp
   ut_cre.cpp
   ut_des.cpp
   ut_fun.cpp
@@ -164,6 +164,12 @@ test=test CD=. filter="*.cpp *.h *.xml *.am *.txt" {
   libs=.libs CD=. filter="*" {
   }
 }
+clm=clm CD=. filter="*.cpp *.h *.xml *.am *.txt" {
+  main.cpp
+  monitor.cpp
+  monitor.h
+  Makefile.am
+}
 }
 fap2-studio-qt=/home/yborisov/projects/fap/git/fap2-studio-qt CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in *.pro {
 grayb_studio.pro
@@ -185,49 +191,96 @@ files=files CD=. filter="*" {
  empty.xml
 }
 }
-fap2=/home/yborisov/projects/fap/git/fap2 CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in {
-autogen.sh
-Makefile.am
-configure.ac
-AUTHORS
-COPYING
-ChangeLog
-README
-NEWS
-Makefile.in
-libfap2.pc.in
-src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
- base.h
-  graph.h
-  plat.h
-  base.cpp
-  graph.cpp
+fap2-srv=/home/yborisov/projects/fap/fap2-srv CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in {
+ autogen.sh
+ Makefile.am
+ configure.ac
+ AUTHORS
+ COPYING
+ ChangeLog
+ README
+ NEWS
+ Makefile.in
+ fap2srv.pc.in
+dmas=dmas CD=. filter="*.h *.cpp *.dtd Makefile.am" {
+  daaprov.h
+  daaproxy.h
+  daapxprov.h
+  mcobspx.h
+  mdespx.h
+  melempx.h
+  mipxprov.h
+  mlogrecpx.h
+  mproxy.h
+  mvertpx.h
+  renv.h
+  daaprov.cpp
+  daaproxy.cpp
+  daapxprov.cpp
+  mcobspx.cpp
+  mdespx.cpp
+  melempx.cpp
+  mlogrecpx.cpp
+  mvertpx.cpp
+  renv.cpp
   Makefile.am
 } 
-etc=etc CD=. filter="*" {
- objspec.dtd
+client=client CD=. filter="*" {
+  Makefile
+  Makefile.am
+  Makefile.in
+  bclient.cpp
+  bclient.h
+  bclient.lo
+  client_example.c
+  client_test_main.cpp
+  libfap2client.la
+  requests.lo
+  bclient.o
+  requests.o
 }
-modules=modules CD=. filter="*" {
- vector.xml
+server=server CD=. filter="*" {
+  Makefile
+  Makefile.am
+  Makefile.in
+  fapcsbase.cpp
+  fapcsbase.h
+  fapcsbase.lo
+  libfap2srv.la
+  requests.cpp
+  requests.h
+  requests.lo
+  sclient.cpp
+  sclient.h
+  sclient.lo
+  server_example.c
+  sserver.cpp
+  sserver.h
+  sserver.lo
+  sthread.cpp
+  sthread.h
+  sthread.lo
+  fapcsbase.o
+  requests.o
+  sclient.o
+  sserver.o
+  sthread.o
 }
-debian=debian CD=. filter="*" {
- README.Debian
-  changelog
-  compat
-  control
-  copyright
-  dirs
-  docs
-  fapws-dev.install
-  fapws-dev.substvars
-  fapws.install
-  fapws.postinst.debhelper
-  fapws.postrm.debhelper
-  fapws.substvars
-  files
-  rules
-  fapws-dev.debhelper.log
-  fapws.debhelper.log
+srvexe=srvexe CD=. filter="*" {
+  Env~0.log~old
+  Env~1.log~old
+  Env~2.log~old
+  Makefile
+  Makefile.am
+  Makefile.in
+  fap2-srv
+  server_main.cpp
+  Env~0.log
+  Env~1.log
+  Env~2.log
+  Env~4.log
+  Env~6.log
+  server_main.o
 }
 doc=doc CD=. filter="*" {
  requirements=requirements CD=. filter="*" {
@@ -239,7 +292,15 @@ doc=doc CD=. filter="*" {
  }
 }
 test=test CD=. filter="*.cpp *.h *.xml *.am" {
-  ut_embmod.cpp
+  ut_base.cpp
+  ut_main.cpp
+  ut_bidir_cre.xml
+  ut_bidir_cre_tr.xml
+  ut_obs_cre.xml
+  ut_renva_cre.xml
+  ut_syst_cre.xml
+  ut_temp_node.xml
+  ut_vert_cre.xml
   Makefile.am
   libs=.libs CD=. filter="*" {
    ut-fapws-lib
@@ -448,15 +509,15 @@ fap2-studio-gtk=/home/yborisov/projects/fap/git/fap2-studio-gtk CD=. filter="aut
   }
  src=src CD=. filter="*.cpp *.h *.xml *.am *.rc" {
   app.cpp
-  elemdetrp.cpp
-  hierdetailview.cpp
-  main.cpp
-  mainwnd.cpp
-  app.h
-  elemdetrp.h
-  hierdetailview.h
-  mainwnd.h
-  Makefile.am
+   elemdetrp.cpp
+   hierdetailview.cpp
+   main.cpp
+   mainwnd.cpp
+   app.h
+   elemdetrp.h
+   hierdetailview.h
+   mainwnd.h
+   Makefile.am
  }
  templates=templates CD=. filter="*" {
   empty.xml
@@ -502,12 +563,12 @@ fap-balls=/home/yborisov/projects/fap/git/fap-balls CD=. filter="*.ac *.am" {
 }
 fap-snails=/home/yborisov/projects/fap/git/fap-snails CD=. filter="*" {
  snails.cpp
- snails.h
- snails.pro
- ut_spec_ext_mut.xml
- images=images CD=. filter="*" {
-  snail.png
- }
+  snails.h
+  snails.pro
+  ut_spec_ext_mut.xml
+  images=images CD=. filter="*" {
+   snail.png
+  }
 }
 fapws=/home/yborisov/projects/fap/git/fapws CD=. filter="*" {
  AUTHORS

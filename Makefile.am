@@ -1,7 +1,7 @@
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgrayb.pc
 
-SUBDIRS = src test
+SUBDIRS = src test clm
 
 sconfdir = $(pkgdatadir)/conf
 dist_sconf_DATA = \
