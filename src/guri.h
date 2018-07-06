@@ -73,7 +73,7 @@
 	    GUri(const string& aUri);
 	    const vector<TElem>& Elems() const {return iElems;};
 	    string toString(const_elem_iter aStart, TBool aShort = EFalse) const;
-	    string toString(TBool aShort = EFalse) const { return toString(iElems.begin(), aShort);};
+	    string toString(TBool aShort = EFalse) const;
 	    const string& Scheme() const;
 	    const string& Authority() const;
 	    const string& Path() const;
@@ -103,6 +103,7 @@
 	    operator string() const { return toString(iElems.begin());}
 	protected:
 	    void Parse();
+	    // TODO Do we really need convertor of part of the chain?
 	    string toString(const_elem_iter aStart, const_elem_iter aEnd, TBool aShort = EFalse) const;
 	    static size_t FindGroup(const string& aStr, size_t aPos);
 	protected:

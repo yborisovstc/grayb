@@ -1,19 +1,19 @@
 #ifndef __GRAYB_VERTP_H
 #define __GRAYB_VERTP_H
 
-#include "mvert.h"
+#include "mvertp.h"
 #include "elem.h"
 #include <set>
 
 /**
  * @brief Vertex agent, PIA design
  */
-class Vertp: public Elem, public MVert
+class Vertp: public Elem, public MVertp
 {
     public:
-	// Pairs registry: {pair pointer, context (URI) id}
-	typedef pair<MVert*, string> TPairsRegElem;
-	typedef map<MVert*, string> TPairsReg;
+	// Pairs registry: {pair pointer, connection context (conn point URI)}
+	typedef pair<MVertp*, string> TPairsRegElem;
+	typedef map<MVertp*, string> TPairsReg;
 
     public:
 	static const char* Type() { return "Vertp";};
@@ -23,20 +23,23 @@ class Vertp: public Elem, public MVert
 	virtual ~Vertp();
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);
-	// From MVert
-	virtual TBool Connect(MVert* aPair);
-	virtual void Disconnect(MVert* aPair);
+	// From MVertp
+	virtual TBool Connect(MVertp* aPair, const string& aCp = string());
+	virtual void Disconnect(MVertp* aPair);
 	virtual TInt PairsCount() const;
-	virtual MVert* GetPair(TInt aInd) const;
-	virtual TBool IsPair(const MVert* aPair) const;
-	virtual MIface* MVert_DoGetObj(const char *aName);
+	virtual MVertp* GetPair(TInt aInd) const;
+	virtual TBool IsPair(const MVertp* aPair) const;
+	virtual MIface* MVertp_DoGetObj(const char *aName);
+	virtual void DumpCps() const;
 	// From Elem
 	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse);
 	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);
 	string Mid() const override { return Elem::Mid();}
-	string MVert_Mid() const override { return Elem::Mid();}
+	string MVertp_Mid() const override { return Elem::Mid();}
+    protected:
+	string GetPairCp(MVertp* aPair) const;
     protected:
 	TPairsReg mPairs;
 	static const string& KContent_Edges;

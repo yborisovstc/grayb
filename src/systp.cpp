@@ -7,6 +7,16 @@
  *         In contradiction to vertex the Values of paremeters are URI to systems connpoint.
  */
 
+/** Simple connection point: stated provided and required ifaces only
+ * {ConnPoint:{Provided:'Iface1' Required:'Iface2'}}"
+ */
+
+
+const string KCp_SimpleCp = "ConnPoint";
+const string KCp_SimpleCp_P = "Provided";
+const string KCp_SimpleCp_R = "Required";
+const string KCp_Extender = "Extender";
+
 // System
 string Systp::PEType()
 {
@@ -28,12 +38,11 @@ void Systp::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
     Vertp::OnCompDeleting(aComp, aSoft, aModif);
 }
 
+// TODO To consider separating of handling of content change on local level and on owner level
 TBool Systp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 {
-    TBool res = Vertp::OnCompChanged(aComp, aContName, aModif);
-
-
-    if (res) {
+    TBool res = true;
+    if (&aComp == this) {
 	TBool isedge = IsContentCompOf(aContName, KContent_Edges);
 	if (isedge) {
 	    string edgeName = GetContentOwner(aContName);
@@ -54,11 +63,11 @@ TBool Systp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 			    assert(!cpurib.empty());
 			    MElem* cea = GetNode(cpuria);
 			    assert(cea != NULL);
-			    MVert* cva = cea->GetObj(cva);
+			    MVertp* cva = cea->GetObj(cva);
 			    assert(cva != NULL);
 			    MElem* ceb = GetNode(cpurib);
 			    assert(ceb != NULL);
-			    MVert* cvb = ceb->GetObj(cvb);
+			    MVertp* cvb = ceb->GetObj(cvb);
 			    assert(cvb != NULL);
 			    cva->Disconnect(cvb);
 			    SetContentValue(ContentKey(edgeName, nameCPA), "");
@@ -66,19 +75,29 @@ TBool Systp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 			}
 			// Establishing new connection
 			string purib = GetContentValue(ContentKey(edgeName, namePB));
-			if (!purib.empty()) {
-			    MElem* ea = GetNode(puria);
-			    assert(ea != NULL);
-			    MVert* va = ea->GetObj(va);
-			    assert(va != NULL);
-			    MElem* eb = GetNode(purib);
-			    assert(eb != NULL);
-			    MVert* vb = eb->GetObj(vb);
-			    assert(vb != NULL);
-			    res = va->Connect(vb);
-			    if (res) {
-				SetContentValue(ContentKey(edgeName, nameCPA), puria);
-				SetContentValue(ContentKey(edgeName, nameCPB), purib);
+			if (!puria.empty() && !purib.empty()) {
+			    // Verifying compatibility first
+			    bool compatible = AreCpsCompatible(puria, purib);
+			    if (compatible) {
+				MElem* ea = GetNode(puria);
+				assert(ea != NULL);
+				MVertp* va = ea->GetObj(va);
+				assert(va != NULL);
+				MElem* eb = GetNode(purib);
+				assert(eb != NULL);
+				MVertp* vb = eb->GetObj(vb);
+				assert(vb != NULL);
+				string cna = GUri(puria).GetContent();
+				string cnb = GUri(purib).GetContent();
+				res = va->Connect(vb, cna);
+				res = res && vb->Connect(va, cnb);
+				if (res) {
+				    SetContentValue(ContentKey(edgeName, nameCPA), puria);
+				    SetContentValue(ContentKey(edgeName, nameCPB), purib);
+				}
+			    } else {
+				Logger()->Write(EErr, this, "Connecting [%s - %s] - incompatible", puria.c_str(), purib.c_str());
+				res = false;
 			    }
 			}
 		    }
@@ -88,62 +107,101 @@ TBool Systp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 		}
 	    } // cont isn't edge itself
 	} // isedge
-    } // res of Elem::OnCompChanged
+	if (res) {
+	    res= Vertp::OnCompChanged(aComp, aContName, aModif);
+	}
+    } // aComp == this
+    return res;
+}
 
-#if 0
-	if (!res) return res;
-	TBool hres = ETrue;
-	MEdge* edge = aComp.GetObj(edge);	
-	if (edge != NULL) {
-	    MVert* ref1 = edge->Ref1();
-	    MVert* ref2 = edge->Ref2();
-	    MVert* cp1 = edge->Point1();
-	    MVert* cp2 = edge->Point2();
-	    if (cp1 != ref1 || cp2 != ref2) {
-	    MElem* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
-	    MElem* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
-	    TBool isptok1 = (ref1 == NULL || IsPtOk(pt1));
-	    TBool isptok2 = (ref2 == NULL || IsPtOk(pt2));
-	    if (isptok1 && isptok2) {
-		if (cp1 != NULL && ref1 != cp1) edge->Disconnect(cp1);
-		if (cp2 != NULL && ref2 != cp2) edge->Disconnect(cp2);
-		if (ref1 != NULL && ref2 != NULL) {
-		    cp1 = edge->Point1();
-		    cp2 = edge->Point2();
-		    // Full connection, compatibility checking is needed
-		    MCompatChecker* pt1checker = (MCompatChecker*) pt1->GetSIfiC(MCompatChecker::Type(), this);
-		    MCompatChecker* pt2checker = (MCompatChecker*) pt2->GetSIfiC(MCompatChecker::Type(), this);
-		    TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
-		    TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
-		    if (ispt1cptb && ispt2cptb) {
-			// Are compatible - connect
-			TBool res = ETrue;
-			if (cp1 == NULL) res = edge->ConnectP1(ref1);
-			if (res && cp2 == NULL) res = edge->ConnectP2(ref2);
-			if (!res) {
-			    MElem* host = GetMan();
-			    Logger()->Write(EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
-			}
-		    }
-		    else {
-			TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
-			TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
-			MElem* host = this;
-			Logger()->Write(EErr, this, "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
-		    }
+bool Systp::AreCpsCompatible(const GUri& aCp1, const GUri& aCp2)
+{
+    bool res = true;
+    MElem* ea = GetNode(aCp1);
+    MElem* eb = GetNode(aCp2);
+    string cna = aCp1.GetContent();
+    string cnb = aCp2.GetContent();
+    string cva = ea->GetContent(cna, true);
+    string cvb = eb->GetContent(cnb, true);
+    if (ea->GetContCount(cna) == 1 && eb->GetContCount(cnb)) {
+	string cptype_a = ea->GetContComp(cna, 0);
+	string cptype_b = eb->GetContComp(cnb, 0);
+	string cptype_as = GetContentLName(cptype_a);
+	string cptype_bs = GetContentLName(cptype_b);
 
-		} else {
-		    // Partial connection, compatibility checking isn't needed
-		    if (cp1 == NULL && ref1 != NULL) edge->ConnectP1(ref1);
-		    else if (cp2 == NULL && ref2 != NULL) edge->ConnectP2(ref2);
-		}
-	    } else {
-		MElem* pt = isptok1 ? pt2 : pt1;
-		MElem* host = this;
-		Logger()->Write(EErr, this, "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
+	bool inv = false;
+
+	if (cptype_as == KCp_Extender) {
+	    res = GetExtended(ea, cptype_a, cptype_a, inv);
+	    cptype_as = GetContentLName(cptype_a);
+	}
+
+	if (cptype_bs == KCp_Extender) {
+	    res = GetExtended(eb, cptype_b, cptype_b, inv);
+	    cptype_bs = GetContentLName(cptype_b);
+	}
+	
+	if (res && cptype_as == cptype_bs) {
+	    if (cptype_as == KCp_SimpleCp) {
+		string pa = ea->GetContent(ContentKey(cptype_a, KCp_SimpleCp_P));
+		string ra = ea->GetContent(ContentKey(cptype_a, KCp_SimpleCp_R));
+		string pb = eb->GetContent(ContentKey(cptype_b, KCp_SimpleCp_P));
+		string rb = eb->GetContent(ContentKey(cptype_b, KCp_SimpleCp_R));
+		if (!inv && pa == rb && ra == pb || inv && pa == pb && ra == rb) {
+		} else res = false;
 	    }
+	} else res = false;
+    } else res = false;
+    return res;
+}
+
+void Systp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
+{
+    TIfRange rr;
+    TBool resg = EFalse;
+    TICacheRCtx ctx(aCtx); ctx.push_back(this);
+    // Don't provide local ifaces, the only contract based request is handled
+    if (!aCtx.empty()) {
+	MElem* rq = aCtx.back();
+	MVertp* rqv = rq->GetObj(rqv);
+	if (rqv != nullptr && IsPair(rqv)) {
+	    // Request from a pair
+	    string cp = GetPairCp(rqv);
+	    string cptype = GetContCount(cp) == 1 ? GetContComp(cp, 0) : string();
+	    string cptype_s = GetContentLName(cptype);
+	    if (cptype_s == KCp_SimpleCp) {
+		UpdateIfiForConnPoint(aName, aCtx, cptype);
+	    }
+	} else {
+	    // Request from non-pair, TBD
 	}
     }
-#endif
+}
+
+void Systp::UpdateIfiForConnPoint(const string& aIfName, const TICacheRCtx& aCtx, const string& aCpId)
+{
+    string prov = GetContent(ContentKey(aCpId, KCp_SimpleCp_P));
+    if (aIfName == prov) {
+	// Requested provided iface, use base resolver
+	Vertp::UpdateIfi(aIfName, aCtx);
+    }
+}
+
+bool Systp::GetExtended(MElem* aNode, const string& aExt, string& aInt, bool& aInv)
+{
+    bool res = true;
+    aInv = ~aInv;
+    if (aNode->GetContCount(aExt) == 1) {
+	string ext_int = aNode->GetContComp(aExt, 0); // Int
+	if (aNode->GetContCount(ext_int) == 1) {
+	    string ext_int_type = aNode->GetContComp(ext_int, 0); // Type of Int
+	    string ext_int_types = GetContentLName(ext_int_type);
+	    if (ext_int_types == KCp_Extender) {
+		res = GetExtended(aNode, ext_int_type, aInt, aInv);
+	    } else {
+		aInt = ext_int_type;
+	    }
+	} else res = false;
+    } else res = false;
     return res;
 }

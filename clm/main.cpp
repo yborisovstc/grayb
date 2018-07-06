@@ -2,6 +2,8 @@
 #include <string>
 #include <iostream>
 
+//#include "gperftools/profiler.h"
+
 #include "monitor.h"
 
 /* \brief FAP2 command line monitor
@@ -37,8 +39,12 @@ int main(int argc, char* argv[])
 	}
 	if (res == 0) {
 	    // Init env and run
+	    // Tried to use google profiler, ref ds_prfopt_gpprof
+	    //ProfilerStart("./google.profile");
 	    mnt.initEnv();
 	    mnt.runModel();
+	    //ProfilerFlush();
+	    //ProfilerStop();
 	}
     } else {
 	cout << help;

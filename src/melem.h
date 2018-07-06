@@ -219,6 +219,7 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
     virtual TBool ContentExists(const string& aName) const = 0;
     virtual TBool ContValueExists(const string& aName=string()) const = 0;
     virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const = 0; 
+    // TODO To add also method GetContentComp(baseId, compId)
     virtual string GetContComp(const string& aOwnerName, TInt aInd) const = 0;
     virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()) = 0; 
     virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse) = 0;

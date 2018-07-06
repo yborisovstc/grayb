@@ -64,6 +64,7 @@ libgrayb_la_SOURCES = \
 		       miface.h \
 		       mmuta.h \
 		       mplugin.h \
+		       mvertp.h \
 		       vertp.h \
 		       vertp.cpp \
 		       mmod.h

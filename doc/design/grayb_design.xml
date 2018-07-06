@@ -1746,10 +1746,10 @@
 	<sect2><title>Comparition the apporaches in case of visual debugging</title>
 	    <simpara>We will use abbreviation SC and CC for simple content and complex content correspondingly.</simpara>
 	    <orderedlist>
-		<listitem>Simplicity for agent-function: SD - to get the agent-prop and set its content; CC - to set the field. CC wins.</listitem>
-		<listitem>For visual representation: SD - simply add new props for config of displaying; CC - same, but to interpret the props as 
-		    field name. Win-win.</listitem>
-		<listitem></listitem>
+		<listitem>Simplicity for agent-function: SD - to get the agent-prop and set its content; CC - to set the field. CC wins.
+		</listitem>
+		<listitem>For visual representation: SD - simply add new props for config of displaying; CC - same,
+		    but to interpret the props as field name. Win-win.</listitem>
 	    </orderedlist>
 	</sect2> 
 	<sect2 id="ds_cplx_cont_strc"><title>Continuation. Structured content</title>
@@ -1901,6 +1901,15 @@
 			<para>Ref syscrp.cpp SysCrp::AddDataRp(). There the content is used for customization of data displaying.</para>
 		    </listitem>
 		</orderedlist>
+	    </sect3>
+	    <sect3><title>Structured content dedicated URI</title>
+		<simpara>Currently just monolitic name is used to identify content. But in fact the content is the complex
+		    tree structure, so it would be good to support navigation thru it. For that we need resource identificator (URI) more
+		    complex than simple name. It should be similar to URI used for nodes in native hierarchy.</simpara>
+		<simpara>One use-case is when system wants to identify given conn point in the connpoints. Currently the connpoint
+		    can be identified by the full name "ConnPoints.[name]" but we woudl line to use just relative name [name].
+		    URI would allow us to use operation of getting content by base and relative URI (for instance using URIs concatenation).
+		</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_cplx_cont_strcimpr">How to improve the current messy multi-content APIs
@@ -4219,12 +4228,12 @@
 		model des_var_vect_1: same time in Studio and in monitor: 508 nodes at 99405 us - 196 us/node. So Studio 
 		env doesn't affect model creating performance.</simpara>
 	</sect2>
-	<sect2><title>Profiling using gperf</title>
+	<sect2 id="ds_prfopt_gperf"><title>Profiling using gperf</title>
 	    <sect3><title>Intro</title>
 		<simpara>Ref <ulink url="https://en.wikipedia.org/wiki/Gprof"/> for gperf WiKi.</simpara>
 		<simpara>Ref <ulink url="https://www.thegeekstuff.com/2012/08/gprof-tutorial/"/> for gperf tutorial.</simpara>
 	    </sect3>
-	    <sect3><title>Getting analysis</title>
+	    <sect3><title>Log</title>
 		<itemizedlist>
 		    <listitem>Added -gp to compiler and linker options in grayb and fapm CLI monitor. Run monitor
 			<programlisting>
@@ -4258,8 +4267,78 @@
 			    6. sprof ../src/.libs/$LD_PROFILE $LD_PROFILE.profile -p >log
 			</programlisting>
 			I see the error on #6: "Inconsistency detected by ld.so: dl-open.c: 718: _dl_open:
-			Assertion `_dl_debug_initialize (0, args.nsid)->r_state == RT_CONSISTENT' failed!"
+			Assertion `_dl_debug_initialize (0, args.nsid)->r_state == RT_CONSISTENT' failed!".
+			I couldnt find any solution for that. Trying to use google pprof instead, ref
+			<xref linkend="ds_prfopt_gpprof"/>.
 		    </listitem>
+		    <listitem>google pprof doesn't work for me, ref <xref linend="ds_prfopt_gpprof"/> log -
+			I couldn't see any events. So returnign to gprof but for fap monitor statically linked to grayb lib.
+			Linker option for fapm is as:
+			<programlisting>
+			    fapm_LDFLAGS=-L../src/.libs/ -l:/usr/lib/gcc/x86_64-linux-gnu/5/libgcc.a -l:libgrayb.a -ldl -pg
+			</programlisting>	
+			Then I run the monitor:
+			<programlisting>
+			    ~/projects/fap/grayb/clm$ ./fapm ../../fap2-studio-gtk/examples/des_var_vect_1.xml
+			</programlisting>
+			and parse the profile data
+			<programlisting>gprof -b ./fapm gmon.out > perf_out.txt</programlisting>
+		    </listitem>
+		    <listitem>Summary: gprof profiling is not useful for me, the information is too scanty to be base for
+			relevant analysis.
+		    </listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_prfopt_gpprof"><title>Profiling using google pprof</title>
+	    <sect3><title>Intro</title>
+		<simpara>Looking at google pprof because of attempt of gperf profiling was not successful for me,
+		    ref <xref linkend="ds_prfopt_gperf"/></simpara>
+		<simpara>Ref <ulink url="https://stat.ethz.ch/pipermail/r-sig-debian/2009-June/000795.html"/> for initial point.
+		    Ref <ulink url="http://dirk.eddelbuettel.com/papers/bocDec2008introHPCwithR.pdf"/> for "Introduction to
+		    High-Performance Computing with R" from Dirk Eddelbuette</simpara>.
+		<simpara>The packages are google-perftools and libgoogle-perftools* on Ubuntu.</simpara>
+		<simpara>Ref <ulink url="http://goog-perftools.sourceforge.net/doc/cpu_profiler.html"/> for the manual.</simpara>
+	    </sect3>
+	    <sect3><title>Log</title>
+		<itemizedlist>
+		    <listitem>Installed packages: libgoogle-perftools-dev, libgoogle-perftools4, google-perftools</listitem>
+		    <listitem>Foolowing profiler manual, ref above.</listitem>
+		    <listitem>1. Linking in the Library. Added -lprofiler to build config. Aslo needed to create symlink to 
+			<programlisting>libprofiler.so -> libprofiler.so.0.3.2</programlisting>
+		    </listitem>
+		    <listitem>2. Running the Code. Added envvar 
+			<programlisting>export CPUPROFILE=google_perf.profile</programlisting>
+			but it doesn't work. Added to app code:
+			<programlisting>
+			    #include "gperftools/profiler.h"
+			    ...
+			    ProfilerStart("./google.profile");
+			    mnt.initEnv();
+			</programlisting>
+			Now I can see profiler log and file (the file name is acc to evvar not ProfilerStart argument).
+		    </listitem>
+		    <listitem>Analyzing the Output
+			<programlisting>
+			    google-pprof --text ../src/.libs/libgrayb.so google_perf.profile
+
+			    Using local file ../src/.libs/libgrayb.so.
+			    Using local file google_perf.profile.
+			</programlisting>
+			So I cannot see any events profiled.
+		    </listitem>
+		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_prfopt_oprofile"><title>Profiling using oprofile</title>
+	    <sect3><title>Intro</title>
+		<simpara>Ref <ulink url="https://en.wikipedia.org/wiki/OProfile"/> for WiKi</simpara>
+		<simpara>Ref <ulink url="http://people.redhat.com/wcohen/Oprofile.pdf"/> for manual.</simpara>
+	    </sect3>
+	    <sect3><title>Log</title>
+		<itemizedlist>
+		    <listitem>Installe pkg oprofile </listitem>
+		    <listitem>Stopped atm</listitem>
 		</itemizedlist>
 	    </sect3>
 	</sect2>
@@ -4268,8 +4347,8 @@
     <sect1 id="ds_pia"><title>Re-design: using properties instead of embedded auxiliary agents (<xref linkend="gls_pia"/>)</title>
 	<sect2><title>Intro</title>
 	    <simpara>Ref <xref linkend="ds_prfopt_mnn"/> for example of one model optimization - it shows that the major part of nodes is of 
-		complex connection points. It also shows that the currently developed set of multicontent agents doesn't allow to properly optimize the 
-		complexity of the model.</simpara>
+		complex connection points. It also shows that the currently developed set of multicontent agents doesn't allow
+		to properly optimize the complexity of the model.</simpara>
 	</sect2>
 	<sect2><title>Connection redesign</title>
 	    <sect3><title>Intro</title>
@@ -4280,6 +4359,13 @@
 		    <listitem>Pre-defined content node for pair URIs</listitem>
 		    <listitem>Vertex pair registry as map {pair pointer, content (URI) id}</listitem>
 		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2><title>Criticism</title>
+	    <sect3><title>Loosing mechanism of resolving iface via connpoints.</title>
+		<simpara>There is one activelly used mechanism when creating models - system request the ifaces from selected
+		    connpoint. This is core feature, it the mechanism of effective support of connections in the whole model.
+		    With <xref linkend="gls_pia"/> approach it will be system itself duty to resolve the ifaces.</simpara>
 	    </sect3>
 	</sect2>
     </sect1>

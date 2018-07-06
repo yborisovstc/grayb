@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<!-- Extension -->
+
+<node id="Root" parent="Elem">
+    <node id="test" parent="Systp"/>
+    <node id="s1" parent="Systp" targ="./test"/>
+    <node id="s1_1" parent="Systp" targ="./test/s1"/>
+    <cont id="ConnPoints.Cp1" val="{ConnPoint:{Provided:'MVertp' Required:'Iface2'}}" targ="./test/s1/s1_1"/>
+    <cont id="ConnPoints.Cp1" val="{ConnPoint:{Provided:'MVertp' Required:'Iface2'}}" targ="./test/s1"/>
+    <cont id="ConnPoints.Ext1" val="{Extender:{Int:{ConnPoint:{Provided:'Iface2' Required:'MVertp'}}}}" targ="./test/s1"/>
+    <cont id="Edges.E1" val="{P1:'./s1_1~ConnPoints.Cp1' P2:'.~ConnPoints.Ext1.Extender.Int'}" targ="./test/s1"/>
+    <node id="s2" parent="Systp" targ="./test"/>
+    <cont id="ConnPoints.Cp1" val="{ConnPoint:{Provided:'Iface2' Required:'MVertp'}}" targ="./test/s2"/>
+    <!-- Doing manually in test
+    <cont id="Edges.E1" val="{P1:'/Root/test/s1~ConnPoints.Ext1' P2:'/Root/test/s2~ConnPoints.Cp1'}" targ="./test"/> -->
+</node>

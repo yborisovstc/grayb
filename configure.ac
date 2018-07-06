@@ -39,8 +39,10 @@ CXXFLAGS="-std=c++11"
 
 if test x$debug = xyes; then
     CXXFLAGS="$CXXFLAGS -g -O0"
+#    LDFLAGS="$LDFLAGS -lprofiler -gp"
 else
     CXXFLAGS="$CXXFLAGS -g -O0"
+#    LDFLAGS="$LDFLAGS -lprofiler -gp"
 fi
 
 

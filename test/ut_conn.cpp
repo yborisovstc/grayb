@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <elem.h>
 #include <mvert.h>
+#include <mvertp.h>
 #include <mdata.h>
 #include <medge.h>
 
@@ -17,6 +18,7 @@ class Ut_conn : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST_SUITE(Ut_conn);
     CPPUNIT_TEST(test_Vertp);
     CPPUNIT_TEST(test_Systp);
+    CPPUNIT_TEST(test_Systp2);
     CPPUNIT_TEST(test_Sock);
     CPPUNIT_TEST(test_Sock2);
     CPPUNIT_TEST(test_Reconn);
@@ -28,6 +30,7 @@ public:
 private:
     void test_Vertp();
     void test_Systp();
+    void test_Systp2();
     void test_Sock();
     void test_Sock2();
     void test_Reconn();
@@ -61,9 +64,9 @@ void Ut_conn::test_Vertp()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Verify that v1 and v2 are connected
     MElem* ev1 = root->GetNode("./test/v1");
-    MVert* mv1 = ev1->GetObj(mv1);
+    MVertp* mv1 = ev1->GetObj(mv1);
     MElem* ev2 = root->GetNode("./test/v2");
-    MVert* mv2 = ev2->GetObj(mv2);
+    MVertp* mv2 = ev2->GetObj(mv2);
     int pnum1 = mv1->PairsCount();
     int pnum2 = mv2->PairsCount();
     bool v2ispair = mv1->IsPair(mv2);
@@ -82,16 +85,80 @@ void Ut_conn::test_Vertp()
 }
 
 // Test of Systp connection
+//  PIA. Simple conn point, compatibility checking, iface resolution from pairs.
 void Ut_conn::test_Systp()
 {
-    printf("\n === Test of Systp connection\n");
+    printf("\n === Test#1 of Systp connection: Simple conn point, compatibility checking, iface resolution from pairs\n");
 
     iEnv = new Env("ut_conn_systp_1.xml", "ut_conn_systp_1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Verify that s1 and s2 are connected
+    MElem* es1 = root->GetNode("./test/s1");
+    MVertp* mv1 = es1->GetObj(mv1);
+    MElem* es2 = root->GetNode("./test/s2");
+    MVertp* mv2 = es2->GetObj(mv2);
+    int pnum1 = mv1->PairsCount();
+    int pnum2 = mv2->PairsCount();
+    bool v2ispair = mv1->IsPair(mv2);
+    CPPUNIT_ASSERT_MESSAGE("v1 and v2 aren't connected", pnum1 == 1 && pnum2 && v2ispair);
+    // Test iface resolution
+    MIface* iface = es1->GetSIfi("MVertp", TICacheRCtx(es2));
+    CPPUNIT_ASSERT_MESSAGE("Incorrectly resolver MVertp iface", iface != nullptr && iface->Uid() == "./test/s1%MVertp");
+    // Disconnect one point of edge e2
+    ChromoNode mutn = root->AppendMutation(ENt_Cont);
+    mutn.SetAttr(ENa_Targ, "./test");
+    mutn.SetAttr(ENa_Id, "Edges.E1.P1");
+    mutn.SetAttr(ENa_MutVal, "");
+    root->Mutate();
+    // Verify that v1 and v2 are disconnected
+    es1 = root->GetNode("./test/s1");
+    mv1 = es1->GetObj(mv1);
+    pnum1 = mv1->PairsCount();
+    CPPUNIT_ASSERT_MESSAGE("Wrong number of v1 pairs after e2 disconnection", pnum1 == 0);
+    // Trying connect to incompatible connpoint
+    mutn = root->AppendMutation(ENt_Cont);
+    mutn.SetAttr(ENa_Targ, "./test");
+    mutn.SetAttr(ENa_Id, "Edges.E2");
+    mutn.SetAttr(ENa_MutVal, "{P1:'/Root/test/s1~ConnPoints.Cp2' P2:'/Root/test/s2~ConnPoints.Cp1'}");
+    root->Mutate();
+    // Verify that v1 and v2 are disconnected
+    es1 = root->GetNode("./test/s1");
+    mv1 = es1->GetObj(mv1);
+    pnum1 = mv1->PairsCount();
+    CPPUNIT_ASSERT_MESSAGE("s1 connects s2 even the cps are incompatible", pnum1 == 0);
+}
 
+// Test of Systp connection
+//  Extension
+void Ut_conn::test_Systp2()
+{
+    printf("\n === Test#2 of Systp connection: Extensions\n");
+
+    iEnv = new Env("ut_conn_systp_2.xml", "ut_conn_systp_2.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    Elem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Verify that s1 and s2 are connected
+    /*
+    MElem* es1 = root->GetNode("./test/s1");
+    MVertp* mv1 = es1->GetObj(mv1);
+    MElem* es2 = root->GetNode("./test/s2");
+    MVertp* mv2 = es2->GetObj(mv2);
+    int pnum1 = mv1->PairsCount();
+    int pnum2 = mv2->PairsCount();
+    bool v2ispair = mv1->IsPair(mv2);
+    CPPUNIT_ASSERT_MESSAGE("v1 and v2 aren't connected", pnum1 == 1 && pnum2 && v2ispair);
+    */
+    // Trying connect s2 to s1 ext
+    ChromoNode mutn = root->AppendMutation(ENt_Cont);
+    mutn.SetAttr(ENa_Targ, "./test");
+    mutn.SetAttr(ENa_Id, "Edges.E2");
+    mutn.SetAttr(ENa_MutVal, "{P1:'/Root/test/s1~ConnPoints.Ext1' P2:'/Root/test/s2~ConnPoints.Cp1'}");
+    root->Mutate();
 }
 
 void Ut_conn::test_Sock()

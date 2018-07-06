@@ -1,7 +1,22 @@
+#include <iostream>
+
 #include "vertp.h"
 #include <stdexcept> 
 
 // Vertex
+
+MVertp::EIfu MVertp::mIfu;
+
+// Ifu static initialisation
+MVertp::EIfu::EIfu()
+{
+    RegMethod("Connect", 1);
+    RegMethod("MVertp_DoGetObj", 1);
+    RegMethod("PairsCount", 0);
+    RegMethod("IsPair", 1);
+    RegMethod("GetPair", 1);
+}
+
 
 string Vertp::PEType()
 {
@@ -34,22 +49,11 @@ Vertp::Vertp(MElem* aMan, MEnv* aEnv):Elem(Type(), aMan, aEnv)
     SetParent(Elem::PEType());
 }
 
-MIface* Vertp::MVert_DoGetObj(const char *aName)
-{
-    MIface* res = NULL;
-    if (strcmp(aName, MElem::Type()) == 0) {
-	res = dynamic_cast<MElem*>(this);
-    } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
-	res = dynamic_cast<MCompatChecker*>(this);
-    }
-    return res;
-}
-
 MIface *Vertp::DoGetObj(const char *aName)
 {
     MIface* res = NULL;
-    if (strcmp(aName, MVert::Type()) == 0) {
-	res = dynamic_cast<MVert*>(this);
+    if (strcmp(aName, MVertp::Type()) == 0) {
+	res = dynamic_cast<MVertp*>(this);
     } else {
 	res = Elem::DoGetObj(aName);
     }
@@ -61,20 +65,23 @@ Vertp::~Vertp()
     mPairs.clear();
 }
 
-TBool Vertp::Connect(MVert* aPair)
+MIface* Vertp::MVertp_DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MElem::Type()) == 0) {
+	res = dynamic_cast<MElem*>(this);
+    }
+    return res;
+}
+
+TBool Vertp::Connect(MVertp* aPair, const string& aCp)
 {
     TBool res = ETrue;
     __ASSERT(aPair != NULL);
     if(!IsPair(aPair)) {
 	// Invalidate ifaces cache
 	InvalidateIfCache();
-	mPairs.insert(TPairsRegElem(aPair, ""));
-	// We need to two part connection here. Otherwise CompChanged handling will be incorrect
-	// owner can notify the pair and get back request for iface, so need to have full connection
-	// So request pair connection if not connected yet
-	if(!aPair->IsPair(this)) {
-	    res = aPair->Connect(this);
-	}
+	mPairs.insert(TPairsRegElem(aPair, aCp));
 	__ASSERT(iMan != NULL);
 	res = res && iMan->OnChanged(*this);
     } else {
@@ -90,9 +97,9 @@ TInt Vertp::PairsCount() const
     return mPairs.size();
 }
 
-MVert* Vertp::GetPair(TInt aInd) const
+MVertp* Vertp::GetPair(TInt aInd) const
 {
-    MVert* res = NULL;
+    MVertp* res = NULL;
     if (aInd < PairsCount()) {
 	TPairsReg::const_iterator it = mPairs.begin(); 
 	for (; it != mPairs.end() && aInd != 0; it++, aInd--) {
@@ -102,12 +109,12 @@ MVert* Vertp::GetPair(TInt aInd) const
     return res;
 }
 
-TBool Vertp::IsPair(const MVert* aPair) const
+TBool Vertp::IsPair(const MVertp* aPair) const
 {
-    return mPairs.count((MVert*) aPair) > 0;
+    return mPairs.count((MVertp*) aPair) > 0;
 }
 
-void Vertp::Disconnect(MVert* aPair)
+void Vertp::Disconnect(MVertp* aPair)
 {
     // TODO [YB] To redisign Edge (ref comment in OnCompChanged and restore assert
     // __ASSERT(aPair != NULL && mPairs.count(aPair) > 0);
@@ -144,11 +151,11 @@ TBool Vertp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 			    assert(!cpurib.empty());
 			    MElem* cea = GetNode(cpuria);
 			    assert(cea != NULL);
-			    MVert* cva = cea->GetObj(cva);
+			    MVertp* cva = cea->GetObj(cva);
 			    assert(cva != NULL);
 			    MElem* ceb = GetNode(cpurib);
 			    assert(ceb != NULL);
-			    MVert* cvb = ceb->GetObj(cvb);
+			    MVertp* cvb = ceb->GetObj(cvb);
 			    assert(cvb != NULL);
 			    cva->Disconnect(cvb);
 			    SetContentValue(ContentKey(edgeName, nameCPA), "");
@@ -159,13 +166,14 @@ TBool Vertp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 			if (!purib.empty()) {
 			    MElem* ea = GetNode(puria);
 			    assert(ea != NULL);
-			    MVert* va = ea->GetObj(va);
+			    MVertp* va = ea->GetObj(va);
 			    assert(va != NULL);
 			    MElem* eb = GetNode(purib);
 			    assert(eb != NULL);
-			    MVert* vb = eb->GetObj(vb);
+			    MVertp* vb = eb->GetObj(vb);
 			    assert(vb != NULL);
 			    res = va->Connect(vb);
+			    res = res && vb->Connect(va);
 			    if (res) {
 				SetContentValue(ContentKey(edgeName, nameCPA), puria);
 				SetContentValue(ContentKey(edgeName, nameCPB), purib);
@@ -188,11 +196,11 @@ MIface* Vertp::Call(const string& aSpec, string& aRes)
     string name, sig;
     vector<string> args;
     Ifu::ParseIcSpec(aSpec, name, sig, args);
-    TBool name_ok = MVert::mIfu.CheckMname(name);
+    TBool name_ok = MVertp::mIfu.CheckMname(name);
     if (!name_ok) {
 	return Elem::Call(aSpec, aRes);
     }
-    TBool args_ok = MVert::mIfu.CheckMpars(name, args.size());
+    TBool args_ok = MVertp::mIfu.CheckMpars(name, args.size());
     if (!args_ok) 
 	throw (runtime_error("Wrong arguments number"));
     if (name == "Connect") {
@@ -201,14 +209,14 @@ MIface* Vertp::Call(const string& aSpec, string& aRes)
 	    Logger()->Write(EErr, this, "Connecting [%s] - cannot get pair, failed", args.at(0).c_str());
 	    throw (runtime_error("Cannot get pair: " + args.at(0)));
 	}
-	MVert* vpair = pair->GetObj(vpair);
+	MVertp* vpair = pair->GetObj(vpair);
 	if (vpair == NULL) {
 	    throw (runtime_error("Pair isn't vertex: " + args.at(0)));
 	}
 	TBool rr = Connect(vpair);
 	aRes = Ifu::FromBool(rr);
-    } else if (name == "MVert_DoGetObj") {
-	res = MVert_DoGetObj(args.at(0).c_str());
+    } else if (name == "MVertp_DoGetObj") {
+	res = MVertp_DoGetObj(args.at(0).c_str());
     } else if (name == "PairsCount") {
 	TInt pc = PairsCount();
 	aRes = Ifu::FromInt(pc);
@@ -217,7 +225,7 @@ MIface* Vertp::Call(const string& aSpec, string& aRes)
 	if (earg == NULL) {
 	    throw (runtime_error("Cannot get arg: " + args.at(0)));
 	}
-	MVert* varg = earg->GetObj(varg);
+	MVertp* varg = earg->GetObj(varg);
 	if (varg == NULL) {
 	    throw (runtime_error("Arg isn't vertex: " + args.at(0)));
 	}
@@ -235,14 +243,33 @@ MIface* Vertp::Call(const string& aSpec, string& aRes)
 void Vertp::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
 {
     // Disconnect the binding edges if the comp is vert connected
-    MVert* vert = aComp.GetObj(vert);
+    MVertp* vert = aComp.GetObj(vert);
     if (vert != NULL && vert->PairsCount() > 0) {
 	TInt ind = 0;
 	while (vert->PairsCount() > 0) {
-	    MVert* pair = vert->GetPair(ind);
+	    MVertp* pair = vert->GetPair(ind);
 	    pair->Disconnect(vert);
 	    vert->Disconnect(pair);
 	}
     }
     Elem::OnCompDeleting(aComp, aSoft, aModif);
+}
+
+string Vertp::GetPairCp(MVertp* aPair) const
+{
+    string res;
+    assert(mPairs.count(aPair) > 0);
+    res = mPairs.at(aPair);
+    return res;
+}
+
+void Vertp::DumpCps() const
+{
+    cout << "== Conn points ==" << endl << "<Pair>  <Conn point>" << endl;
+    for (auto elem : mPairs) {
+	MVertp* pair = elem.first;
+	MElem* epair = pair->GetObj(epair);
+	cout << epair->GetUri() << " : " << elem.second << endl;
+    }
+    
 }

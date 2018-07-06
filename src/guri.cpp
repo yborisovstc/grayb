@@ -125,6 +125,17 @@ string GUri::toString(const_elem_iter aStart, TBool aShort) const
     return toString(aStart, iElems.end(), aShort);
 }
 
+string GUri::toString(TBool aShort) const
+{
+    // Hier chain
+    string res = toString(iElems.begin(), iElems.end(), aShort);
+    // Content
+    if (IsContent()) {
+	res += KContentSep + mContent;
+    }
+    return res;
+}
+
 char GUri::GetExtFirstPart(const string& aExt, string& aPart)
 {
     aPart.append(GUri::KTypeAny);
