@@ -19,6 +19,7 @@ fapm [options] [file]\n\
 Options:\n\
 -h - show help\n\
 -l <file> - log file\n\
+-p <file> - profiler file\n\
 \n";
 
 int main(int argc, char* argv[])
@@ -32,6 +33,21 @@ int main(int argc, char* argv[])
 	    cout << arg << endl;
 	    if (arg == "-h") {
 		cout << help;
+	    } else if (arg.compare(0, 2, "-l") == 0) {
+		// Log file
+		string path = arg.substr(2);
+		bool spres = mnt.setLogFile(path);
+		if (!spres) {
+		    cout << "Cannot open log file";
+		}
+
+	    } else if (arg.compare(0, 2, "-p") == 0) {
+		// Profile file
+		string path = arg.substr(2);
+		bool spres = mnt.setProfPath(path);
+		if (!spres) {
+		    cout << "Cannot open profiler file";
+		}
 	    } else {
 		// File name ?
 		mnt.setSpecName(arg);
@@ -43,6 +59,10 @@ int main(int argc, char* argv[])
 	    //ProfilerStart("./google.profile");
 	    mnt.initEnv();
 	    mnt.runModel();
+	    bool sdres = mnt.saveProfilerData();
+	    if (!sdres) {
+		cout << "Error on saving profile data to file";
+	    }
 	    //ProfilerFlush();
 	    //ProfilerStop();
 	}

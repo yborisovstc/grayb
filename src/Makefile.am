@@ -1,6 +1,6 @@
 includedir = @includedir@/grayb
 
-AM_CPPFLAGS = -D_PLAT_LINUX_ -g -O0
+AM_CPPFLAGS = -D_PLAT_LINUX_ -g -O0 -pthread
 
 lib_LTLIBRARIES = libgrayb.la
 
@@ -67,6 +67,9 @@ libgrayb_la_SOURCES = \
 		       mvertp.h \
 		       vertp.h \
 		       vertp.cpp \
+		       mprofiler.h \
+		       profiler.h \
+		       profiler.cpp \
 		       mmod.h
 
 include_HEADERS = \
@@ -100,6 +103,8 @@ include_HEADERS = \
 		  ifu.h \
 		  des.h \
 		  func.h \
+		  mprofiler.h \
+		  profiler.h \
 		  incaps.h
 
 

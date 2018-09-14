@@ -5,6 +5,7 @@
 #include "menv.h"
 #include "ifu.h"
 #include "guri.h"
+#include "profiler.h"
 
 class GProvider;
 class GFactory;
@@ -108,6 +109,7 @@ class Env: public Base, public MEnv
     // From MEnv
     virtual MProvider *Provider() const;
     virtual MLogRec *Logger();
+    virtual MProfiler *Profiler() override;
     virtual Elem* Root();
     virtual MChromoMgr* ChMgr();
     virtual MImportMgr* ImpsMgr();
@@ -144,6 +146,13 @@ class Env: public Base, public MEnv
     static EIfu mIfu;
     MExtIfProv* mExtIfProv;
     IfcResolver* mIfResolver;
+    /** Profiler */
+    GProfiler* mProf;
+    /** Profilers events */
+    MProfiler::TEventId mPfid_Start_Constr;
+    MProfiler::TEventId mPfid_Root_Created;
+    MProfiler::TEventId mPfid_Root_Created_From_Start;
+    MProfiler::TEventId mPfid_End_Constr;
 };
 
 

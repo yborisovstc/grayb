@@ -3,6 +3,8 @@
 
 #include <plat.h>
 #include <miface.h>
+#include <mprofiler.h>
+
 #include <vector>
 #include <string>
 
@@ -72,6 +74,7 @@ class GUri;
 	public:
 	    virtual MProvider *Provider() const = 0;
 	    virtual MLogRec *Logger() = 0;
+	    virtual MProfiler *Profiler() = 0;
 	    virtual Elem* Root() = 0;
 	    virtual MChromoMgr* ChMgr() = 0;
 	    virtual MImportMgr* ImpsMgr() = 0;
