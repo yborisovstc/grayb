@@ -2077,6 +2077,7 @@ MElem* Elem::CreateHeir(const string& aName, MElem* aMan, MElem* aContext)
     MElem* heir = NULL;
     //Logger()->Write(EInfo, this, "CreateHeir, p1 ");
     if (IsProvided()) {
+	// TODO Needs to use GetNode instead of CreateNode?
 	heir = Provider()->CreateNode(Name(), aName, aMan, iEnv);
 	// Persistently attach heir to final owner, but also set context for mutation, ref ds_daa_itn_sfo
 	aMan->AppendComp(heir);

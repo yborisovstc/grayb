@@ -100,6 +100,7 @@ include_HEADERS = \
 		  ifu.h \
 		  des.h \
 		  func.h \
+		  msyst.h \
 		  incaps.h
 
 

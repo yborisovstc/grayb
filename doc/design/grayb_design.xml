@@ -4361,10 +4361,22 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+	<sect2><title>Iface resolution in Systp as reference of desing new approach.</title>
+	    <sect3><title>Iface routing by direct request (empty request context).</title>
+		<simpara>On the one hand it is reasonable that having connection thru connpoint requesing Iface_A Systp routes the direct request to that pair.</simpara>
+		<simpara>On the other hand the Systp itself is designed as agent that exposes itself via connpoints so shouldnt handle direct request other
+		    that superclass (Vertp) does. However we can ignore the last argument thinkin it the followng manner: yes, Systp exposes via CPs but it exposes
+		    all it's complex behaviour, so if some one get direct access then Systp shall behave some way as if the request was thru CP. </simpara>
+	    </sect3>
+	    <sect3><title>How can we implement routing in Systp similar to how it works in Syst.</title>
+		<similar>In Syst the routing key part is connpoints. Exactly conn points are requested by system internal agents to get iface. For instance
+		    function-agent asked input connpont for iface MData to get input data. How can we implement this with <xref linkend="gls_pia"/> approach?</similar>
+	    </sect3>
+	</sect2>
 	<sect2><title>Criticism</title>
 	    <sect3><title>Loosing mechanism of resolving iface via connpoints.</title>
 		<simpara>There is one activelly used mechanism when creating models - system request the ifaces from selected
-		    connpoint. This is core feature, it the mechanism of effective support of connections in the whole model.
+		    connpoint. This is core feature, it creates the mechanism of effective support of connections in the whole model.
 		    With <xref linkend="gls_pia"/> approach it will be system itself duty to resolve the ifaces.</simpara>
 	    </sect3>
 	</sect2>

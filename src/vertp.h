@@ -11,11 +11,6 @@
 class Vertp: public Elem, public MVertp
 {
     public:
-	// Pairs registry: {pair pointer, connection context (conn point URI)}
-	typedef pair<MVertp*, string> TPairsRegElem;
-	typedef map<MVertp*, string> TPairsReg;
-
-    public:
 	static const char* Type() { return "Vertp";};
 	static string PEType();
 	Vertp(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
@@ -39,15 +34,17 @@ class Vertp: public Elem, public MVertp
 	string Mid() const override { return Elem::Mid();}
 	string MVertp_Mid() const override { return Elem::Mid();}
     protected:
-	string GetPairCp(MVertp* aPair) const;
+	void RemovePairFromReg(MVertp* aPair);
+    public:
+	static const string KContent_Edges;
+	static const string KContent_Connpoints;
+	static const string KContent_P1;
+	static const string KContent_P2;
+	static const string KContent_CP1;
+	static const string KContent_CP2;
     protected:
-	TPairsReg mPairs;
-	static const string& KContent_Edges;
-	static const string& KContent_Connpoints;
-	static const string& KContent_P1;
-	static const string& KContent_P2;
-	static const string& KContent_CP1;
-	static const string& KContent_CP2;
+	TPairToCpReg mPairToCpReg;
+	TCpToPairReg mCpToPairReg;
 };
 
 #endif

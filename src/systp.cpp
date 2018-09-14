@@ -163,17 +163,30 @@ void Systp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     // Don't provide local ifaces, the only contract based request is handled
     if (!aCtx.empty()) {
 	MElem* rq = aCtx.back();
-	MVertp* rqv = rq->GetObj(rqv);
+	MVertp* rqv = rq != nullptr ? rq->GetObj(rqv) : nullptr;
 	if (rqv != nullptr && IsPair(rqv)) {
 	    // Request from a pair
+	    /*
 	    string cp = GetPairCp(rqv);
 	    string cptype = GetContCount(cp) == 1 ? GetContComp(cp, 0) : string();
 	    string cptype_s = GetContentLName(cptype);
 	    if (cptype_s == KCp_SimpleCp) {
 		UpdateIfiForConnPoint(aName, aCtx, cptype);
 	    }
+	    */
+	    TCpsEr cps = GetCpsForPair(rqv);
+	    for (auto it = cps.first; it != cps.second; it++) {
+		string& cp = it->second;
+		string cptype = GetContCount(cp) == 1 ? GetContComp(cp, 0) : string();
+		string cptype_s = GetContentLName(cptype);
+		if (cptype_s == KCp_SimpleCp) {
+		    UpdateIfiForConnPoint(aName, aCtx, cptype);
+		}
+	    }
 	} else {
-	    // Request from non-pair, TBD
+	    // Request from non-pair, handling as vert
+	    // TODO The access aside CPs should be disabled
+	    Vertp::UpdateIfi(aName, aCtx);
 	}
     }
 }
@@ -203,5 +216,28 @@ bool Systp::GetExtended(MElem* aNode, const string& aExt, string& aInt, bool& aI
 	    }
 	} else res = false;
     } else res = false;
+    return res;
+}
+
+MIface *Systp::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MSyst::Type()) == 0) {
+	res = dynamic_cast<MSyst*>(this);
+    } else {
+	res = Vertp::DoGetObj(aName);
+    }
+    return res;
+}
+
+MVertp::TPairsEr Systp::GetPairsForCp(const string& aCp)
+{
+    TPairsEr res = mCpToPairReg.equal_range(aCp);
+    return res;
+}
+
+MVertp::TCpsEr Systp::GetCpsForPair(MVertp* aPair)
+{
+    TCpsEr res = mPairToCpReg.equal_range(aPair);
     return res;
 }

@@ -5,14 +5,153 @@
 #include <mvertp.h>
 #include <mdata.h>
 #include <medge.h>
+#include <msyst.h>
+#include <prov.h>
+#include <vertp.h>
+
 
 #include <cppunit/extensions/HelperMacros.h>
 
-/*
+class MTestIface1: public MIfaceStub {
+    public:
+	static const char* Type() { return "MTestIface1";}
+	virtual string Iface1_Test() = 0;
+};
+
+class MTestIface2: public MIfaceStub {
+    public:
+	static const char* Type() { return "MTestIface2";}
+	virtual string Iface2_Test() = 0;
+};
+
+/**
+ * Test agent providing the ifaces
+ */
+class TstAgt: public Elem, public MAgent
+{
+    public:
+	class TestIface1: public MTestIface1 {
+	    public:
+		TestIface1(TstAgt& aHost): mHost(aHost) {}
+		virtual ~TestIface1() {}
+		virtual string Iface1_Test() override {
+		    string res = "Error";
+		    return res;
+		}
+	    private: TstAgt& mHost;
+	};
+	class TestIface2: public MTestIface2 {
+	    public:
+		TestIface2(TstAgt& aHost): mHost(aHost) {}
+		virtual ~TestIface2() {}
+		virtual string Iface2_Test() override {
+		    string res = "Error";
+		    MElem* owner = mHost.GetMan();
+		    if (owner) {
+			MSyst* ms = owner->GetObj(ms);
+			if (ms) {
+			    string kk = mHost.ContentKey(Vertp::KContent_Connpoints, "Cp1");
+			    MVertp::TPairsEr pairs = ms->GetPairsForCp(kk);
+			    if (pairs.first != pairs.second) {
+				MVertp* pair = pairs.first->second;
+				MElem* epair = pair->GetObj(epair);
+				MIface* ifr = epair->GetSIfi(MTestIface1::Type());	
+				if (ifr) {
+				    MTestIface1* ti = dynamic_cast<MTestIface1*>(ifr);
+				    __ASSERT(ti != NULL);
+				    res = ti->Uid();
+				}
+			    }
+			}
+		    }
+		    return res;
+
+		}
+	    private: TstAgt& mHost;
+	};
+    public:
+	static const char* Type() { return "TstAgt";};
+	static string PEType() { return Elem::PEType() + GUri::KParentSep + Type(); }
+	TstAgt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL): Elem(aName, aMan, aEnv) {
+	    SetParent(Type()); mIface1 = new TestIface1(*this); mIface2 = new TestIface2(*this);}
+	TstAgt(MElem* aMan = NULL, MEnv* aEnv = NULL): Elem(Type(), aMan, aEnv) {
+	    SetParent(Elem::PEType()); mIface1 = new TestIface1(*this); mIface2 = new TestIface2(*this);}
+	virtual ~TstAgt() { delete mIface1; delete mIface2;}
+	virtual MIface* DoGetObj(const char *aName) {
+	    if (strcmp(aName, MTestIface1::Type()) == 0) return mIface1;
+	    else if (strcmp(aName, MTestIface2::Type()) == 0) return mIface2;
+	    return Elem::DoGetObj(aName);
+	}
+	// From MAgent
+	virtual MIface* MAgent_DoGetIface(const string& aName) override {return nullptr;}
+    private:
+	MTestIface1* mIface1 = nullptr;
+	MTestIface2* mIface2 = nullptr;
+};
+
+/**
+ * Agent provider for test agents
+ */
+class TstProv: public GProvider
+{
+    public:
+	TstProv(const string& aName, MEnv* aEnv): GProvider(aName, aEnv) {}
+	virtual ~TstProv() {}
+	// From MProvider
+	virtual Elem* CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv);
+	virtual Elem* GetNode(const string& aUri);
+	virtual void AppendNodesInfo(vector<string>& aInfo);
+	virtual const string& ModulesPath() const;
+};
+
+Elem* TstProv::CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv)
+{
+    Elem* res = NULL;
+    if (aType.compare(TstAgt::Type()) == 0) {
+	res = new TstAgt(aName, aMan, aEnv);
+    }
+    if (res != NULL) {
+	Elem* parent = GetNode(aType);
+	if (parent != NULL) {
+	    parent->AppendChild(res);
+	}
+    }
+
+    return res;
+}
+
+Elem* TstProv::GetNode(const string& aUri)
+{
+    Elem* res = NULL;
+    if (iReg.count(aUri) > 0) {
+	res = iReg.at(aUri);
+    } else {
+	Elem* parent = NULL;
+	if (aUri.compare(TstAgt::Type()) == 0) {
+	    parent = GetNode("Elem");
+	    res = new TstAgt(NULL, iEnv);
+	}
+	if (res != NULL) {
+	    if (parent != NULL) {
+		parent->AppendChild(res);
+	    }
+	    iReg.insert(TRegVal(aUri, res));
+	}
+    }
+    return res;
+}
+
+void TstProv::AppendNodesInfo(vector<string>& aInfo) {
+}
+
+const string& TstProv::ModulesPath() const {
+}
+
+
+
+/**
  * This test is for checking the functionality of connections
  */
-
-
 class Ut_conn : public CPPUNIT_NS::TestFixture
 {
     CPPUNIT_TEST_SUITE(Ut_conn);
@@ -24,10 +163,11 @@ class Ut_conn : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Reconn);
     CPPUNIT_TEST(test_Conn2);
     CPPUNIT_TEST_SUITE_END();
-public:
+    public:
     virtual void setUp();
     virtual void tearDown();
-private:
+
+    private:
     void test_Vertp();
     void test_Systp();
     void test_Systp2();
@@ -35,8 +175,9 @@ private:
     void test_Sock2();
     void test_Reconn();
     void test_Conn2();
-private:
+    private:
     Env* iEnv;
+    TstProv* mProv;
 };
 
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(Ut_conn, "Ut_conn");
@@ -48,7 +189,7 @@ void Ut_conn::setUp()
 
 void Ut_conn::tearDown()
 {
-//    delete iEnv;
+    //    delete iEnv;
     CPPUNIT_ASSERT_EQUAL_MESSAGE("tearDown", 0, 0);
 }
 
@@ -71,7 +212,7 @@ void Ut_conn::test_Vertp()
     int pnum2 = mv2->PairsCount();
     bool v2ispair = mv1->IsPair(mv2);
     CPPUNIT_ASSERT_MESSAGE("v1 and v2 aren't connected", pnum1 == 1 && pnum2 && v2ispair);
-   // Disconnect one point of edge e2
+    // Disconnect one point of edge e2
     ChromoNode mutn = root->AppendMutation(ENt_Cont);
     mutn.SetAttr(ENa_Targ, "./test");
     mutn.SetAttr(ENa_Id, "Edges.E1.P1");
@@ -131,6 +272,7 @@ void Ut_conn::test_Systp()
     CPPUNIT_ASSERT_MESSAGE("s1 connects s2 even the cps are incompatible", pnum1 == 0);
 }
 
+
 // Test of Systp connection
 //  Extension
 void Ut_conn::test_Systp2()
@@ -138,12 +280,29 @@ void Ut_conn::test_Systp2()
     printf("\n === Test#2 of Systp connection: Extensions\n");
 
     iEnv = new Env("ut_conn_systp_2.xml", "ut_conn_systp_2.txt");
+    mProv = new TstProv("TstProv", iEnv);
+    iEnv->AddProvider(mProv);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Verify that s1 and s2 are connected
     /*
+       MElem* es1 = root->GetNode("./test/s1");
+       MVertp* mv1 = es1->GetObj(mv1);
+       MElem* es2 = root->GetNode("./test/s2");
+       MVertp* mv2 = es2->GetObj(mv2);
+       int pnum1 = mv1->PairsCount();
+       int pnum2 = mv2->PairsCount();
+       bool v2ispair = mv1->IsPair(mv2);
+       CPPUNIT_ASSERT_MESSAGE("v1 and v2 aren't connected", pnum1 == 1 && pnum2 && v2ispair);
+       */
+    // Trying connect s2 to s1 ext
+    ChromoNode mutn = root->AppendMutation(ENt_Cont);
+    mutn.SetAttr(ENa_Targ, "./test");
+    mutn.SetAttr(ENa_Id, "Edges.E2");
+    mutn.SetAttr(ENa_MutVal, "{P1:'/Root/test/s1~ConnPoints.Ext1' P2:'/Root/test/s2~ConnPoints.Cp1'}");
+    root->Mutate();
     MElem* es1 = root->GetNode("./test/s1");
     MVertp* mv1 = es1->GetObj(mv1);
     MElem* es2 = root->GetNode("./test/s2");
@@ -151,14 +310,22 @@ void Ut_conn::test_Systp2()
     int pnum1 = mv1->PairsCount();
     int pnum2 = mv2->PairsCount();
     bool v2ispair = mv1->IsPair(mv2);
-    CPPUNIT_ASSERT_MESSAGE("v1 and v2 aren't connected", pnum1 == 1 && pnum2 && v2ispair);
-    */
-    // Trying connect s2 to s1 ext
-    ChromoNode mutn = root->AppendMutation(ENt_Cont);
-    mutn.SetAttr(ENa_Targ, "./test");
-    mutn.SetAttr(ENa_Id, "Edges.E2");
-    mutn.SetAttr(ENa_MutVal, "{P1:'/Root/test/s1~ConnPoints.Ext1' P2:'/Root/test/s2~ConnPoints.Cp1'}");
-    root->Mutate();
+    // s1 to have 2 pairs: s1_1 (internal), and s2
+    // s2 to have only one pair s1
+    CPPUNIT_ASSERT_MESSAGE("v1 and v2 aren't connected", pnum1 == 2 && pnum2 == 1 && v2ispair);
+    // 
+    // Verifying iface resolution via connection
+    MElem* es2_1 = root->GetNode("./test/s2/s2_1");
+    CPPUNIT_ASSERT_MESSAGE("Cannot get es2_1", es2_1 != NULL);
+    MTestIface2* es2_1t = es2_1->GetObj(es2_1t);
+    CPPUNIT_ASSERT_MESSAGE("Cannot get es2_1 MTestIface2", es2_1 != NULL);
+    //string ck = Vertp::KContent_Connpoints;
+    string t2res = es2_1t->Iface2_Test();
+    CPPUNIT_ASSERT_MESSAGE("Iface MIface1 is not resolved", t2res == "MTestIface1");
+
+    iEnv->RemoveProvider(mProv);
+    delete mProv;
+    delete iEnv;
 }
 
 void Ut_conn::test_Sock()
@@ -245,7 +412,7 @@ void Ut_conn::test_Reconn()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
- 
+
     // Delete v1
     ChromoNode mutn = root->AppendMutation(ENt_Rm);
     mutn.SetAttr(ENa_MutNode, "./v1");
@@ -286,8 +453,8 @@ void Ut_conn::test_Conn2()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
- 
-   // Disconnect one point of edge e2
+
+    // Disconnect one point of edge e2
     MElem* e2 = root->GetNode("./e2");
     ChromoNode mutn = e2->AppendMutation(ENt_Cont);
     mutn.SetAttr(ENa_MutNode, "./P1");

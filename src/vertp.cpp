@@ -32,12 +32,12 @@ string Vertp::PEType()
  *         Values of paremeters are URI to vertexes.
  */
 
-const string& Vertp::KContent_Edges = "Edges";
-const string& Vertp::KContent_Connpoints = "Connpoints";
-const string& Vertp::KContent_P1 = "P1";
-const string& Vertp::KContent_P2 = "P2";
-const string& Vertp::KContent_CP1 = "CP1";
-const string& Vertp::KContent_CP2 = "CP2";
+const string Vertp::KContent_Edges = "Edges";
+const string Vertp::KContent_Connpoints = "ConnPoints";
+const string Vertp::KContent_P1 = "P1";
+const string Vertp::KContent_P2 = "P2";
+const string Vertp::KContent_CP1 = "CP1";
+const string Vertp::KContent_CP2 = "CP2";
 
 Vertp::Vertp(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
@@ -62,7 +62,6 @@ MIface *Vertp::DoGetObj(const char *aName)
 
 Vertp::~Vertp()
 {
-    mPairs.clear();
 }
 
 MIface* Vertp::MVertp_DoGetObj(const char *aName)
@@ -81,7 +80,8 @@ TBool Vertp::Connect(MVertp* aPair, const string& aCp)
     if(!IsPair(aPair)) {
 	// Invalidate ifaces cache
 	InvalidateIfCache();
-	mPairs.insert(TPairsRegElem(aPair, aCp));
+	mPairToCpReg.insert(TPairToCpRegElem(aPair, aCp));
+	mCpToPairReg.insert(TCpToPairRegElem(aCp, aPair));
 	__ASSERT(iMan != NULL);
 	res = res && iMan->OnChanged(*this);
     } else {
@@ -94,15 +94,15 @@ TBool Vertp::Connect(MVertp* aPair, const string& aCp)
 
 TInt Vertp::PairsCount() const
 {
-    return mPairs.size();
+    return mPairToCpReg.size();
 }
 
 MVertp* Vertp::GetPair(TInt aInd) const
 {
     MVertp* res = NULL;
     if (aInd < PairsCount()) {
-	TPairsReg::const_iterator it = mPairs.begin(); 
-	for (; it != mPairs.end() && aInd != 0; it++, aInd--) {
+	TPairToCpReg::const_iterator it = mPairToCpReg.begin(); 
+	for (; it != mPairToCpReg.end() && aInd != 0; it++, aInd--) {
 	}
 	res = it->first;
     }
@@ -111,15 +111,15 @@ MVertp* Vertp::GetPair(TInt aInd) const
 
 TBool Vertp::IsPair(const MVertp* aPair) const
 {
-    return mPairs.count((MVertp*) aPair) > 0;
+    return mPairToCpReg.count((MVertp*) aPair) > 0;
 }
 
 void Vertp::Disconnect(MVertp* aPair)
 {
     // TODO [YB] To redisign Edge (ref comment in OnCompChanged and restore assert
     // __ASSERT(aPair != NULL && mPairs.count(aPair) > 0);
-    if (aPair != NULL && mPairs.count(aPair) > 0) {
-	mPairs.erase(aPair);
+    if (aPair != NULL && mPairToCpReg.count(aPair) > 0) {
+	RemovePairFromReg(aPair);
 	// Invalidate ifaces cache
 	InvalidateIfCache();
 	__ASSERT(iMan != NULL);
@@ -255,21 +255,21 @@ void Vertp::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
     Elem::OnCompDeleting(aComp, aSoft, aModif);
 }
 
-string Vertp::GetPairCp(MVertp* aPair) const
-{
-    string res;
-    assert(mPairs.count(aPair) > 0);
-    res = mPairs.at(aPair);
-    return res;
-}
-
 void Vertp::DumpCps() const
 {
     cout << "== Conn points ==" << endl << "<Pair>  <Conn point>" << endl;
-    for (auto elem : mPairs) {
+    for (auto elem : mPairToCpReg) {
 	MVertp* pair = elem.first;
 	MElem* epair = pair->GetObj(epair);
 	cout << epair->GetUri() << " : " << elem.second << endl;
     }
+}
     
+void Vertp::RemovePairFromReg(MVertp* aPair)
+{
+    TCpsEr er = mPairToCpReg.equal_range(aPair);
+    for (TCpsIter it = er.first; it != er.second; it++) {
+	mCpToPairReg.erase(it->second);
+    }
+    mPairToCpReg.erase(aPair);
 }

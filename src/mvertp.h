@@ -12,6 +12,17 @@
 class MVertp: public MIface
 {
     public:
+	/** ConnPoints to pairs registry */
+	typedef pair<string, MVertp*> TCpToPairRegElem;
+	typedef multimap<string, MVertp*> TCpToPairReg;
+	typedef TCpToPairReg::iterator TPairsIter;
+	typedef pair<TPairsIter, TPairsIter> TPairsEr;
+	/** Pairs to connpoint registry: {pair pointer, connection context (conn point URI)} */
+	typedef pair<MVertp*, string> TPairToCpRegElem;
+	typedef multimap<MVertp*, string> TPairToCpReg;
+	typedef TPairToCpReg::iterator TCpsIter;
+	typedef pair<TCpsIter, TCpsIter> TCpsEr;
+    public:
 	static const char* Type() { return "MVertp";};
 	/** @biref Connecting pair
 	 * @param aCp - connection point Id
