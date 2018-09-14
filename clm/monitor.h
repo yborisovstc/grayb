@@ -17,12 +17,16 @@ class Monitor
 	Monitor();
 	~Monitor();
 	void setSpecName(const string& aFileName);
+	bool setLogFile(const string& aPath);
+	bool setProfPath(const string& aPath);
 	void initEnv();
 	void runModel();
-	
+	bool saveProfilerData();
     protected:
 	string mSpecName;
 	string mLogName;
+	/** Profiler file path */
+	string mProfName;
 	Env* mEnv;
 };
 

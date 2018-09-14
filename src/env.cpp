@@ -300,7 +300,8 @@ MIface* IfcResolver::GetIfaceByUid(const string& aUid)
 
 
 Env::Env(const string& aSpecFile, const string& aLogFileName): Base(), iRoot(NULL), iLogger(NULL),
-    iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse), mExtIfProv(NULL), mIfResolver(NULL)
+    iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse), mExtIfProv(NULL), mIfResolver(NULL),
+    mProf(NULL)
 {
     iLogger = new GLogRec(aLogFileName.empty() ? KLogFileName : aLogFileName);
     iProvider = new GFactory(string(), this);
@@ -310,10 +311,17 @@ Env::Env(const string& aSpecFile, const string& aLogFileName): Base(), iRoot(NUL
     iChMgr = new ChromoMgr(*this);
     iImpMgr = new ImportsMgr(*this);
     mIfResolver = new IfcResolver(*this);    
+    mProf = new GProfiler(this);
+    // Profilers events
+    mPfid_Start_Constr = Profiler()->RegisterEvent(TPEvent("Start construction"));
+    mPfid_Root_Created = Profiler()->RegisterEvent(TPEvent("Root created"));
+    mPfid_Root_Created_From_Start = Profiler()->RegisterEvent(TPEvent("Root created from start", mPfid_Start_Constr));
+    mPfid_End_Constr = Profiler()->RegisterEvent(TPEvent("End construction"));
 }
 
 Env::Env(const string& aSpec, const string& aLogFileName, TBool aOpt): Base(), iRoot(NULL), iLogger(NULL),
-    iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse), mExtIfProv(NULL), mIfResolver(NULL)
+    iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse), mExtIfProv(NULL), mIfResolver(NULL),
+    mProf(NULL)
 {
     iLogger = new GLogRec(aLogFileName.empty() ? KLogFileName : aLogFileName);
     //iLogger = new GLogRec("Logger", aName + ".log");
@@ -324,6 +332,12 @@ Env::Env(const string& aSpec, const string& aLogFileName, TBool aOpt): Base(), i
     iChMgr = new ChromoMgr(*this);
     iImpMgr = new ImportsMgr(*this);
     mIfResolver = new IfcResolver(*this);    
+    mProf = new GProfiler(this);
+    // Profilers events
+    mPfid_Start_Constr = Profiler()->RegisterEvent(TPEvent("Start construction"));
+    mPfid_Root_Created = Profiler()->RegisterEvent(TPEvent("Root created"));
+    mPfid_Root_Created_From_Start = Profiler()->RegisterEvent(TPEvent("Root created from start", mPfid_Start_Constr));
+    mPfid_End_Constr = Profiler()->RegisterEvent(TPEvent("End construction"));
 }
 
 
@@ -340,6 +354,7 @@ Env::~Env()
     delete iProvider;
     delete iLogger;
     delete mIfResolver;
+    delete mProf;
 }
 
 // TODO [YB] To integrate into env creation
@@ -358,11 +373,14 @@ void Env::ConstructSystem()
 	} else {
 	    spec->SetFromSpec(iSpec);
 	}
+	Profiler()->Rec(mPfid_Start_Constr, iRoot);
 	const ChromoNode& root = spec->Root();
 	string sparent = root.Attr(ENa_Parent);
 	Elem* parent = iProvider->GetNode(sparent);
 	iRoot = iProvider->CreateNode(sparent, root.Name(), NULL, this);
 	if (iRoot != NULL) {
+	    Profiler()->Rec(mPfid_Root_Created, iRoot);
+	    Profiler()->Rec(mPfid_Root_Created_From_Start, iRoot);
 	    stringstream ss;
 	    struct timeval tp;
 	    gettimeofday(&tp, NULL);
@@ -375,6 +393,7 @@ void Env::ConstructSystem()
 	    ss << (fin_us - beg_us);
 	    TInt cpc = iRoot->GetCapacity();
 	    Logger()->Write(EInfo, iRoot, "Completed of creating system, nodes: %d, time, us: %s", cpc,  ss.str().c_str());
+	    Profiler()->Rec(mPfid_End_Constr, iRoot);
 	    //Logger()->Write(EInfo, iRoot, "Components");
 	    //iRoot->LogComps();
 	}
@@ -513,3 +532,7 @@ void Env::OnRootDeleted()
     iRoot = NULL;
 }
 
+MProfiler* Env::Profiler()
+{
+    return mProf;
+}

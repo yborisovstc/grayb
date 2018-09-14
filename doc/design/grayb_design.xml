@@ -4342,6 +4342,46 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_prfopt_eprof"><title>Using embedded profiler</title>
+	    <simpara>Ref <xref linkend="sec_prof"/> for details.</simpara>
+	</sect2>
+    </sect1>
+
+    <sect1 id="sec_prof"><title>Embedded profiler</title>
+	<sect2 id="sec_prof_cs"><title>What clock system to use?</title>
+	    <sect3 id="sec_prof_cs_ctime"><title>ctime clock</title>
+		<simpara>Ref <ulink url="http://www.cplusplus.com/reference/ctime/clock/"/>. The dencity of the clock can
+		    be retrieved via CLOCKS_PER_SEC. On my Ubuntu it gives 32767 ticks per second. Given into account that 
+		    currently average time of agent creation is about 200us (ref <xref linkend="ds_prfopt_mnn"/>) this value
+		    (~30us) cannot be considered as suitable).</simpara>
+	    </sect3>
+	    <sect3 id="sec_prof_cs_pclock"><title>Linux time.h clock_gettime()</title>
+		<simpara>Ref <ulink url="http://man7.org/linux/man-pages/man3/pthread_getcpuclockid.3.html"/></simpara>
+		<simpara>I checked resolution of the clock, ref
+		    <ulink url="http://man7.org/linux/man-pages/man2/clock_gettime.2.html"/>:</simpara>
+		<programlisting>
+		    #include &lt;time.h&gt;
+		    ...
+		    -       clockid_t cid;
+		    |       struct timespec ts;
+		    |       int s = pthread_getcpuclockid(pthread_self(), &amp;cid);
+		    |       if (s == 0) {
+		    |-          s = clock_getres(cid, &amp;ts);
+		    |       }
+		</programlisting>
+		<simpara>with result</simpara>
+		<programlisting>
+		    (gdb) p ts
+		    $3 = {tv_sec = 0, tv_nsec = 1}
+		</programlisting>
+		where tv_nsec is resolution in nanoseconds. So seems this API can be used.
+	    </sect3>
+	</sect2>
+	<sect2><title>Verification</title>
+	    <programlisting>
+		fapm -lclm.log -pprof.txt ../../fap2-studio-gtk/examples/syst_1.xml
+	    </programlisting>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_pia"><title>Re-design: using properties instead of embedded auxiliary agents (<xref linkend="gls_pia"/>)</title>
