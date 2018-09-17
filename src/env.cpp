@@ -312,7 +312,7 @@ Env::Env(const string& aSpecFile, const string& aLogFileName): Base(), iRoot(NUL
     iChMgr = new ChromoMgr(*this);
     iImpMgr = new ImportsMgr(*this);
     mIfResolver = new IfcResolver(*this);    
-    mProf = new GProfiler(this, PEvents::Events);
+    mProf = new GProfiler(this, KPInitData);
     // Profilers events
     /*
     mPfid_Start_Constr = Profiler()->RegisterEvent(TPEvent("Start construction"));
@@ -335,7 +335,7 @@ Env::Env(const string& aSpec, const string& aLogFileName, TBool aOpt): Base(), i
     iChMgr = new ChromoMgr(*this);
     iImpMgr = new ImportsMgr(*this);
     mIfResolver = new IfcResolver(*this);    
-    mProf = new GProfiler(this, PEvents::Events);
+    mProf = new GProfiler(this, KPInitData);
     // Profilers events
     /*
     mPfid_Start_Constr = Profiler()->RegisterEvent(TPEvent("Start construction"));
@@ -378,14 +378,13 @@ void Env::ConstructSystem()
 	} else {
 	    spec->SetFromSpec(iSpec);
 	}
-	Profiler()->Rec(PEvents::Env_Start_Constr, iRoot);
+	Rec_Clock(PEvents::Env_Start_Constr, iRoot);
 	const ChromoNode& root = spec->Root();
 	string sparent = root.Attr(ENa_Parent);
 	Elem* parent = iProvider->GetNode(sparent);
 	iRoot = iProvider->CreateNode(sparent, root.Name(), NULL, this);
 	if (iRoot != NULL) {
-	    Profiler()->Rec(PEvents::Env_Root_Created, iRoot);
-	    Profiler()->Rec(PEvents::Env_Root_Created_From_Start, iRoot);
+	    Rec_Clock(PEvents::Env_Root_Created, iRoot);
 	    stringstream ss;
 	    struct timeval tp;
 	    gettimeofday(&tp, NULL);
@@ -398,7 +397,7 @@ void Env::ConstructSystem()
 	    ss << (fin_us - beg_us);
 	    TInt cpc = iRoot->GetCapacity();
 	    Logger()->Write(EInfo, iRoot, "Completed of creating system, nodes: %d, time, us: %s", cpc,  ss.str().c_str());
-	    Profiler()->Rec(PEvents::Env_End_Constr, iRoot);
+	    Rec_Clock(PEvents::Env_End_Constr, iRoot);
 	    //Logger()->Write(EInfo, iRoot, "Components");
 	    //iRoot->LogComps();
 	}

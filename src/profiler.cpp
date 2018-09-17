@@ -8,29 +8,8 @@
 
 using namespace std;
 
-TPrec::operator string() const
-{
-    string res;
-    // Uri
-    string suri;
-    if (mNode) {
-	GUri uri;
-	mNode->GetUri(uri);
-	suri = uri.toString(ETrue);
-    }
-    res = suri;
-    res += KFieldSep;
-    // Events id
-    string eid = to_string(mEventId);
-    res += eid;
-    res += KFieldSep;
-    // Clock
-    res += to_string(mClock);
-    res += KFieldSep;
-    return res;
-}
 
-TClock Pind::getClockResolution() const
+MPind::TClock Pind::getClockResolution() const
 {
     int res = -1;
     clockid_t cid;
@@ -44,37 +23,36 @@ TClock Pind::getClockResolution() const
 }
 
 
-const int GProfiler::KBufLen = 1024;
-
 GProfiler::GProfiler(MEnv* aEnv, const TIdata& aInitData): mEnv(aEnv)
 {
     for (auto idata : aInitData) {
 	Pind* ind = nullptr; 
-	if (idata.mTid = EPiid_Clock) {
-	    ind = new PindClock(idata);
+	if (idata.first == EPiid_Clock) {
+	    ind = new PindClock(static_cast<const PindClock::Idata&>(*idata.second));
 	}
-	mPinds.insert(TPindsElem(idata.mTid, ind));
+	mPinds.insert(TPindsElem(idata.first, ind));
     }
 }
 
 GProfiler::~GProfiler()
 {
-    delete mBuf;
 }
 
 void GProfiler::Enable()
 {
 }
 
-void MPind* GProfiler::getPind(int aId)
+MPind* GProfiler::getPind(int aId)
 {
-    mPindClock
+    __ASSERT(mPinds.count(aId));
+    return mPinds.at(aId);
 }
 
 
 bool GProfiler::SaveToFile(const string& aPath)
 {
     bool res = true;
+    /*
     FILE* fp = fopen(aPath.c_str(), "w+");
     if (fp) {
 	for (int count = 0; count <= mPos; count++) {
@@ -105,25 +83,14 @@ bool GProfiler::SaveToFile(const string& aPath)
     } else {
 	res = false;
     }
+    */
     return res;
 }
 
 
-TPrec& GProfiler::GetRec()
-{
-    if (mPos < (KBufLen - 1)) {
-	mPos++;
-	TPrec& res = mBuf[mPos];
-	res.setClock(GetClock());
-    } else {
-	mCache.setClock(GetClock());
-	return mCache;
-    }
-}
-
 Pind::TClock Pind::GetClock() const
 {
-    TPrec::TClock res = -1;
+    Pind::TClock res = -1;
     clockid_t cid;
     struct timespec ts;
     int s = pthread_getcpuclockid(pthread_self(), &cid);
@@ -144,12 +111,6 @@ MProfiler::TEventId GProfiler::RegisterEvent(const TPEvent& aEvent)
 }
 */
 
-const TPEvent& GProfiler::GetEvent(TEventId aId) const
-{
-//    return mEvents.at(aId);
-    __ASSERT(mEvents.count(aId) != 0);
-    return mEvents.at(aId);
-}
 
 #if 0
 string GProfiler::ToString(const TRec& aRec) const
@@ -199,21 +160,46 @@ MProfiler::TRec* GProfiler::FindBaseRec(int aPos) const
 }
 #endif
 
-PRecClock& PindClock::NewRec()
+Pind::Pind(const string& aDescription, int aBufLenLIm, const TEvents& aEvents):
+    mBuf(nullptr), mDescription(aDescription), mBufLenLim(aBufLenLIm)
 {
-    if (mPos < (mBufLenLim - 1)) {
-	mPos++;
-	Prec& res = mBuf[mPos];
-	res.setClock(GetClock());
-    } else {
-	mCache.setClock(GetClock());
-	return mCache;
+    for (auto ev : aEvents) {
+	mEvents.insert(TEventsMapElem(ev.mId, &ev));
     }
 }
 
+const PEvent& Pind::getEvent(PEvent::TId aId) const
+{
+    __ASSERT(mEvents.count(aId));
+    return *mEvents.at(aId);
+}
+
+
+PRec* PindClock::NewRec()
+{
+    PRecClock* res = nullptr;
+    if (mPos < (mBufLenLim - 1)) {
+	mPos++;
+	PRecClock* res = static_cast<PRecClock*>(&mBuf[mPos]);
+	res->setClock(GetClock());
+    }
+    return res;
+}
+
+
 void PindClock::Rec(PEvent::TId aEventId, MElem* aNode)
 {
-    TRec& rec = NewRec();
-    rec.setEventId(aEventId);
-    rec.setNode(aNode);
+    PRec* rec = NewRec();
+    if (rec) {
+	PRecClock* pcrec = static_cast<PRecClock*>(rec);
+	rec->setEventId(aEventId);
+	pcrec->setNode(aNode);
+    }
+}
+
+string PindClock::recToString(const PRec& aRec) const
+{
+    string res;
+    res = to_string(aRec.mEventId) + PRec::KFieldSep;
+    return res;
 }
