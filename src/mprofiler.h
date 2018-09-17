@@ -14,10 +14,6 @@ class PEvent
 	/** Event identificator type */
 	using TId = int;
     public:
-	struct Idata {
-	    string mDescription;
-	};
-    public:
 	/** Undefined event id */
 	static const TId KUndefEid = -1;
 	PEvent(TId aId = KUndefEid, const string& aDescription = string()): mId(aId), mDescription(aDescription) {}
@@ -31,9 +27,7 @@ class PEvent
 class PRec
 {
     public:
-	operator string() const;
 	void setEventId(PEvent::TId aId) { mEventId = aId;}
-	virtual string toString() const { return to_string(mEventId) + KFieldSep;}
     public:
 	PEvent::TId mEventId; /** Event Id */
     public:
@@ -49,14 +43,18 @@ class MPind
     public:
 	/** Type of clock value */
 	using TClock = long int;
+	/** Id of indicator type */
+	using TTid = int;
     public:
+	virtual string getDescription() = 0;
 	virtual int getBufLen() const = 0;
 	virtual int getBufLenLimit() const = 0;
-	virtual const PEvent& GetEvent(PEvent::TId aId) const = 0;
+	virtual const PEvent& getEvent(PEvent::TId aId) const = 0;
 	/** Obtains clock resolution in nanoseconds */
 	virtual TClock getClockResolution() const =  0;
 	virtual bool saveBufToFile(const string& aFilePath) const = 0;
-	virtual PRec& NewRec() = 0;
+	virtual PRec* NewRec() = 0;
+	virtual string recToString(const PRec& aRec) const;
 };
 
 /** Profiler interface */
@@ -68,7 +66,7 @@ class MProfiler
 	/** Gets pointer to Pid by Id */
 	virtual MPind* getPind(int aId) = 0;
 	/** Get Pid */
-	template <typename T> T& Ind(const T&a) { return *dynamic_cast<T*>(getPind(T::Kid));}
+	template <typename T> T& Ind(const T&a) { return *dynamic_cast<T*>(getPind(T::KId));}
 };
 
 

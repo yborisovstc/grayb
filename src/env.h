@@ -124,6 +124,9 @@ class Env: public Base, public MEnv
     // From MIface
     virtual MIface* Call(const string& aSpec, string& aRes);
     string Mid() const override { return string();}
+    protected:
+    /** Profiler helpers */
+    void Rec_Clock(PEvent::TId aEventId, MElem* aNode) { PindClock& pi = mProf->Ind(pi); pi.Rec(aEventId, aNode);}
 
     protected:
     class EIfu: public Ifu {
