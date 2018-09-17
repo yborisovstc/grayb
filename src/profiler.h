@@ -2,16 +2,19 @@
 #define __GRAYB_PROFILER_H
 
 #include <vector>
+#include <map>
 
 #include "mprofiler.h"
 
 class MEnv;
 
+using TProfilerEvents = std::map<MProfiler::TEventId, TPEvent>;
+
 /** Default profiler */
 class GProfiler: public MProfiler
 {
     public:
-	GProfiler(MEnv* aEnv);
+	GProfiler(MEnv* aEnv, const TProfilerEvents& aEvents);
 	virtual ~GProfiler();
 	// From MProfiler
 	virtual void Enable() override;
@@ -19,7 +22,7 @@ class GProfiler: public MProfiler
 	virtual void Rec(TEventId aEventId, MElem* aNode) override;
 	virtual void CommitEvent() override;
 	virtual bool SaveToFile(const std::string& aPath) override;
-	virtual TEventId RegisterEvent(const TPEvent& aEvent) override;
+	//virtual TEventId RegisterEvent(const TPEvent& aEvent) override;
 	virtual const TEvent& GetEvent(TEventId aId) const override;
 	virtual string ToString(const TRec& aRec) const override;
     protected:
@@ -35,7 +38,8 @@ class GProfiler: public MProfiler
 	int mPos = -1;
 	TPrec mCache;
 	/** Events registered */
-	std::vector<TPEvent> mEvents;
+	//std::vector<TPEvent> mEvents;
+	const TProfilerEvents& mEvents;
 };
 
 

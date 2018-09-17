@@ -20,8 +20,7 @@ class MProfiler
 	    public:
 		/** Undefined event id */
 		static const TEventId KUndefEid = -1;
-		TEvent(const string& aDescription): mDescription(aDescription) {}
-		TEvent(const string& aDescription, TEventId aBase): mDescription(aDescription), mBaseId(aBase) {}
+		TEvent(const string& aDescription, TEventId aBase = KUndefEid): mDescription(aDescription), mBaseId(aBase) {}
 		/** Event description */
 		string mDescription;
 		/** Base event Id */
@@ -63,7 +62,7 @@ class MProfiler
 	virtual void Rec(TEventId aEventId, MElem* aNode) = 0;
 	virtual void CommitEvent() = 0;
 	virtual bool SaveToFile(const std::string& aPath) = 0;
-	virtual TEventId RegisterEvent(const TEvent& aEvent) = 0;
+	//virtual TEventId RegisterEvent(const TEvent& aEvent) = 0;
 	virtual const TEvent& GetEvent(TEventId aId) const = 0;
 	virtual string ToString(const TRec& aRec) const = 0;
 };

@@ -51,7 +51,7 @@ void TPrec::setEventId(TEventId aId)
 
 const int GProfiler::KBufLen = 1024;
 
-GProfiler::GProfiler(MEnv* aEnv): mEnv(aEnv), mPos(-1)
+GProfiler::GProfiler(MEnv* aEnv, const TProfilerEvents& aEvents): mEnv(aEnv), mEvents(aEvents),  mPos(-1)
 {
     clockid_t cid;
     struct timespec ts;
@@ -138,6 +138,7 @@ TPrec::TClock GProfiler::GetClock() const
     return res;
 }
 
+/*
 MProfiler::TEventId GProfiler::RegisterEvent(const TPEvent& aEvent)
 {
     TEventId res = 0;
@@ -145,9 +146,12 @@ MProfiler::TEventId GProfiler::RegisterEvent(const TPEvent& aEvent)
     res = mEvents.size() - 1;
     return res;
 }
+*/
 
 const TPEvent& GProfiler::GetEvent(TEventId aId) const
 {
+//    return mEvents.at(aId);
+    __ASSERT(mEvents.count(aId) != 0);
     return mEvents.at(aId);
 }
 

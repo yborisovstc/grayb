@@ -9,6 +9,7 @@
 #include <iostream> 
 #include "mmod.h"
 #include "ifu.h"
+#include "profiler_events.h"
 
 
 TBool Elem::EN_PERF_TRACE = EFalse;
@@ -276,6 +277,7 @@ Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMa
     //Logger()->Write(EInfo, this, "Elem constr p0");
     //Delay(100);
     //Logger()->Write(EInfo, this, "Elem constr p1");
+    iEnv->Profiler()->Rec(PEvents::Elem_Constr_Start, this);
     iMut = Provider()->CreateChromo();
     //Logger()->Write(EInfo, this, "Elem constr p2");
     iMut->Init(ENt_Node);
@@ -287,6 +289,8 @@ Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMa
     croot.SetAttr(ENa_Id, iName);
     SetParent(Type());
     InsertContent(KCont_About);
+    iEnv->Profiler()->Rec(PEvents::Elem_Constr_End, this);
+    iEnv->Profiler()->Rec(PEvents::Elem_Constr_Dur, this);
     //InsertContent(KCont_Categories);
     //InsertContent(KCont_Ctg_Readonly);
 }

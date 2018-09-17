@@ -70,6 +70,8 @@ libgrayb_la_SOURCES = \
 		       mprofiler.h \
 		       profiler.h \
 		       profiler.cpp \
+		       profiler_events.h \
+		       profiler_events.cpp \
 		       mmod.h
 
 include_HEADERS = \

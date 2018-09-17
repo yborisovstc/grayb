@@ -148,11 +148,6 @@ class Env: public Base, public MEnv
     IfcResolver* mIfResolver;
     /** Profiler */
     GProfiler* mProf;
-    /** Profilers events */
-    MProfiler::TEventId mPfid_Start_Constr;
-    MProfiler::TEventId mPfid_Root_Created;
-    MProfiler::TEventId mPfid_Root_Created_From_Start;
-    MProfiler::TEventId mPfid_End_Constr;
 };
 
 
