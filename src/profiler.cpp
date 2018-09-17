@@ -8,15 +8,6 @@
 
 using namespace std;
 
-void TPrec::setNodeUri(const string& aUri)
-{
-}
-
-void TPrec::setNode(MElem* aNode)
-{
-    mNode = aNode;
-}
-
 TPrec::operator string() const
 {
     string res;
@@ -39,28 +30,31 @@ TPrec::operator string() const
     return res;
 }
 
-void TPrec::setClock(TClock aClock)
+TClock Pind::getClockResolution() const
 {
-    mClock = aClock;
+    int res = -1;
+    clockid_t cid;
+    struct timespec ts;
+    int rr = pthread_getcpuclockid(pthread_self(), &cid);
+    if (rr == 0) {
+	rr = clock_getres(cid, &ts);
+	res = ts.tv_sec * 1000000000 + ts.tv_nsec;
+    }
+    return res;
 }
 
-void TPrec::setEventId(TEventId aId)
-{
-    mEventId = aId;
-}
 
 const int GProfiler::KBufLen = 1024;
 
-GProfiler::GProfiler(MEnv* aEnv, const TProfilerEvents& aEvents): mEnv(aEnv), mEvents(aEvents),  mPos(-1)
+GProfiler::GProfiler(MEnv* aEnv, const TIdata& aInitData): mEnv(aEnv)
 {
-    clockid_t cid;
-    struct timespec ts;
-    int s = pthread_getcpuclockid(pthread_self(), &cid);
-    if (s == 0) {
-	s = clock_getres(cid, &ts);
+    for (auto idata : aInitData) {
+	Pind* ind = nullptr; 
+	if (idata.mTid = EPiid_Clock) {
+	    ind = new PindClock(idata);
+	}
+	mPinds.insert(TPindsElem(idata.mTid, ind));
     }
-    int ticks = CLOCKS_PER_SEC;
-    mBuf = new TPrec[KBufLen];
 }
 
 GProfiler::~GProfiler()
@@ -71,6 +65,12 @@ GProfiler::~GProfiler()
 void GProfiler::Enable()
 {
 }
+
+void MPind* GProfiler::getPind(int aId)
+{
+    mPindClock
+}
+
 
 bool GProfiler::SaveToFile(const string& aPath)
 {
@@ -121,11 +121,7 @@ TPrec& GProfiler::GetRec()
     }
 }
 
-void GProfiler::CommitEvent()
-{
-}
-
-TPrec::TClock GProfiler::GetClock() const
+Pind::TClock Pind::GetClock() const
 {
     TPrec::TClock res = -1;
     clockid_t cid;
@@ -155,6 +151,7 @@ const TPEvent& GProfiler::GetEvent(TEventId aId) const
     return mEvents.at(aId);
 }
 
+#if 0
 string GProfiler::ToString(const TRec& aRec) const
 {
     string res;
@@ -199,4 +196,24 @@ MProfiler::TRec* GProfiler::FindBaseRec(int aPos) const
 	}
     }
     return res;
+}
+#endif
+
+PRecClock& PindClock::NewRec()
+{
+    if (mPos < (mBufLenLim - 1)) {
+	mPos++;
+	Prec& res = mBuf[mPos];
+	res.setClock(GetClock());
+    } else {
+	mCache.setClock(GetClock());
+	return mCache;
+    }
+}
+
+void PindClock::Rec(PEvent::TId aEventId, MElem* aNode)
+{
+    TRec& rec = NewRec();
+    rec.setEventId(aEventId);
+    rec.setNode(aNode);
 }
