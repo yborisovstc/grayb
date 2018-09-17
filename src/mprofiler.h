@@ -7,67 +7,69 @@ class MElem;
 
 using namespace std;
 
+/** Profilers event */
+class PEvent
+{
+    public:
+	/** Event identificator type */
+	using TId = int;
+    public:
+	struct Idata {
+	    string mDescription;
+	};
+    public:
+	/** Undefined event id */
+	static const TId KUndefEid = -1;
+	PEvent(TId aId = KUndefEid, const string& aDescription = string()): mId(aId), mDescription(aDescription) {}
+	/** Event Id */
+	TId mId = KUndefEid;
+	/** Event description */
+	string mDescription;
+};
+
+/** Profilers record, base */
+class PRec
+{
+    public:
+	operator string() const;
+	void setEventId(PEvent::TId aId) { mEventId = aId;}
+	virtual string toString() const { return to_string(mEventId) + KFieldSep;}
+    public:
+	PEvent::TId mEventId; /** Event Id */
+    public:
+	static const char KFieldSep = '\t';
+
+};
+
+/** Performance indicator. Interface.
+ * Inherited class should contain static int constant KId with unique value
+ */
+class MPind
+{
+    public:
+	/** Type of clock value */
+	using TClock = long int;
+    public:
+	virtual int getBufLen() const = 0;
+	virtual int getBufLenLimit() const = 0;
+	virtual const PEvent& GetEvent(PEvent::TId aId) const = 0;
+	/** Obtains clock resolution in nanoseconds */
+	virtual TClock getClockResolution() const =  0;
+	virtual bool saveBufToFile(const string& aFilePath) const = 0;
+	virtual PRec& NewRec() = 0;
+};
+
 /** Profiler interface */
 class MProfiler
 {
     public:
-	// Event identificator type
-	using TEventId = int;
-    public:
-	/** Profilers event */
-	class TEvent
-	{
-	    public:
-		/** Undefined event id */
-		static const TEventId KUndefEid = -1;
-		TEvent(const string& aDescription, TEventId aBase = KUndefEid): mDescription(aDescription), mBaseId(aBase) {}
-		/** Event description */
-		string mDescription;
-		/** Base event Id */
-		TEventId mBaseId = KUndefEid;
-	};
-
-	/** Profilers record */
-	class TRec
-	{
-	    public: 
-		/** Length of NodeUri field, bytes */
-		static const int KUriLen = 120;
-		/** Length of Description field, bytes */
-		static const int KDescrLen = 40;
-		using TUri = char[KUriLen];
-		using TNode = MElem*;
-		using TClock = long int;
-	    public:
-		operator string() const;
-		void setNode(MElem* aNode);
-		/** Set Uri from string. For test purpose only */
-		void setNodeUri(const string& aUri);
-		void setClock(TClock aClock);
-		void setEventId(TEventId aId);
-	    public:
-		char mNodeUri[KUriLen];
-		/** Event Id */
-		TEventId mEventId;
-		MElem* mNode = nullptr;
-		// Clock value, in ns
-		TClock mClock = 0;
-	    public:
-		static const char KFieldSep = '\t';
-	};
-    public:
 	virtual void Enable() = 0;
-	/** Get current profilers record */
-	virtual TRec& GetRec() = 0;
-	virtual void Rec(TEventId aEventId, MElem* aNode) = 0;
-	virtual void CommitEvent() = 0;
 	virtual bool SaveToFile(const std::string& aPath) = 0;
-	//virtual TEventId RegisterEvent(const TEvent& aEvent) = 0;
-	virtual const TEvent& GetEvent(TEventId aId) const = 0;
-	virtual string ToString(const TRec& aRec) const = 0;
+	/** Gets pointer to Pid by Id */
+	virtual MPind* getPind(int aId) = 0;
+	/** Get Pid */
+	template <typename T> T& Ind(const T&a) { return *dynamic_cast<T*>(getPind(T::Kid));}
 };
 
-using TPEvent = MProfiler::TEvent;
-using TPrec = MProfiler::TRec;
 
 #endif 
