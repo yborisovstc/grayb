@@ -166,21 +166,6 @@ MProfiler::TRec* GProfiler::FindBaseRec(int aPos) const
 }
 #endif
 
-Pind::Pind(const string& aDescription, int aBufLenLIm, const TEvents& aEvents):
-    mDescription(aDescription), mBufLenLim(aBufLenLIm)
-{
-    for (const PEvent& ev : aEvents) {
-	mEvents.insert(TEventsMapElem(ev.mId, &ev));
-    }
-
-}
-
-const PEvent& Pind::getEvent(PEvent::TId aId) const
-{
-    __ASSERT(mEvents.count(aId));
-    return *mEvents.at(aId);
-}
-
 bool Pind::saveToFile(const std::string& aPath)
 {
     bool res = true;
@@ -202,15 +187,24 @@ bool Pind::saveToFile(const std::string& aPath)
 }
 
 
-PindClock::PindClock(const Idata& aIdata): Pind(aIdata)
+PindClock::PindClock(const Idata& aIdata): Pind(aIdata.mDescription, aIdata.mBufLim)
 {
     __ASSERT(mBufLenLim > 0);
     mBuf = new PRecClock[mBufLenLim];
+    for (const PEvent& ev : *(aIdata.mEvents)) {
+	mEvents.insert(TEventsMapElem(ev.mId, &ev));
+    }
 }
 
 PindClock::~PindClock()
 {
     delete mBuf;
+}
+
+const PEvent& PindClock::getEvent(PEvent::TId aId) const
+{
+    __ASSERT(mEvents.count(aId));
+    return *mEvents.at(aId);
 }
 
 PRec* PindClock::NewRec()
@@ -243,4 +237,36 @@ string PindClock::recToString(int aRecNum) const
     const PEvent& event = getEvent(rec.mEventId);
     res = to_string(rec.mEventId) + PRec::KFieldSep + event.mDescription + PRec::KFieldSep + to_string(rec.mClock) + PRec::KFieldSep;
     return res;
+}
+
+
+PindDur::PindDur(const PindDur::Idata& aIdata): Pind(aIdata.mDescription, -1)
+{
+    for (const PEventDur& ev : aIdata.mEvents) {
+	mEvents.insert(TEventsMapElem(ev.mId, &ev));
+	mBuf.insert(TBufElem(ev.mId, {0,0}));
+    }
+}
+
+PindDur::~PindDur()
+{
+}
+
+const PEvent& PindDur::getEvent(PEvent::TId aId) const
+{
+    __ASSERT(mEvents.count(aId));
+    return *mEvents.at(aId);
+}
+
+void PindDur::Rec(PEvent::TId aEventId, bool aStart)
+{
+    __ASSERT(mBuf.count(aEventId) > 0);
+    Pind::TClock cl = GetClock();
+    TBufData& data = mBuf.at(aEventId);
+    if (aStart) {
+	data.mStartClock = cl;
+    } else {
+	__ASSERT(data.mStartClock != 0);
+	data.mDur = cl = data.mStartClock;
+    }
 }
