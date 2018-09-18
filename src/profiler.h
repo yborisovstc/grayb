@@ -19,12 +19,13 @@ class Pind: public MPind
 {
     public:
 	/** Type of events register */
-	using TEventsMap = std::map<PEvent::TId, PEvent*>;
-	using TEventsMapElem = std::pair<PEvent::TId, PEvent*>;
+	using TEventsMap = std::map<PEvent::TId, const PEvent*>;
+	using TEventsMapElem = std::pair<PEvent::TId, const PEvent*>;
 	using TEvents = std::vector<PEvent>;
 	/** Initialization data */
 	struct Idata {
-	    Idata(const string& aDescription, int aBufLim, const TEvents* aEvents): mDescription(aDescription), mBufLim(aBufLim), mEvents(aEvents) {}
+	    Idata(const string& aDescription, int aBufLim, const TEvents* aEvents):
+		mDescription(aDescription), mBufLim(aBufLim), mEvents(aEvents) {}
 	    string mDescription; /** Description */
 	    int mBufLim; /** Buffer size limit */
 	    const TEvents* mEvents; /** Events map */
@@ -32,7 +33,7 @@ class Pind: public MPind
     public:
 	Pind(const string& aDescription, int aBufLenLIm, const TEvents& aEvents);
 	Pind(const Idata& aIdata): Pind(aIdata.mDescription, aIdata.mBufLim, *(aIdata.mEvents)) {}
-	virtual ~Pind() { delete mBuf;}
+	virtual ~Pind() {}
     public:
 	// From MPind
 	virtual string getDescription() override { return mDescription;}
@@ -42,13 +43,13 @@ class Pind: public MPind
 	/** Obtains clock resolution in nanoseconds */
 	virtual TClock getClockResolution() const override;
 	virtual bool saveBufToFile(const string& aFilePath) const { return false;}
-	virtual PRec* NewRec() override;
+	virtual bool saveToFile(const std::string& aPath) override;
+	//virtual PRec* NewRec() override;
+	virtual void dump() const override {}
     protected:
 	/** Gets clock absolute value */
 	TClock GetClock() const;
     protected:
-	/** Events buffer */
-	PRec* mBuf;
 	/** Limit of buf len - predefined size of buffer */
 	int mBufLenLim;
 	/** Description */
@@ -77,16 +78,22 @@ class PRecClock: public PRec
 class PindClock: public Pind
 {
     public:
+	static const int KId = EPiid_Clock;
+    public:
 	struct Idata: public Pind::Idata {
 	    Idata(const string& aDescription, int aBufLim, const TEvents* aEvents): Pind::Idata(aDescription, aBufLim, aEvents) {}
 	};
     public:
-	PindClock(const Idata& aIdata): Pind(aIdata) {}
-	static const int KId = EPiid_Clock;
+	PindClock(const Idata& aIdata);
+	virtual ~PindClock();
 	void Rec(PEvent::TId aEventId, MElem* aNode);
-	virtual string recToString(const PRec& aRec) const override;
+	virtual string recToString(int aRecNum) const override;
+	virtual string getFileSuf() const override { return "clock";}
     public:
 	virtual PRec* NewRec();
+    protected:
+	/** Events buffer */
+	PRecClock* mBuf;
 };
 
 /** Performance indicator: event to event duration */

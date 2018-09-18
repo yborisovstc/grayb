@@ -49,9 +49,15 @@ MPind* GProfiler::getPind(int aId)
 }
 
 
-bool GProfiler::SaveToFile(const string& aPath)
+bool GProfiler::SaveToFile(const string& aFileName)
 {
     bool res = true;
+    for (auto indit : mPinds) {
+	Pind* ind = indit.second;
+	// Adding suffix to file name */
+	string efname = aFileName + "~" + ind->getFileSuf() + ".csv";
+	ind->saveToFile(efname);
+    }
     /*
     FILE* fp = fopen(aPath.c_str(), "w+");
     if (fp) {
@@ -161,11 +167,12 @@ MProfiler::TRec* GProfiler::FindBaseRec(int aPos) const
 #endif
 
 Pind::Pind(const string& aDescription, int aBufLenLIm, const TEvents& aEvents):
-    mBuf(nullptr), mDescription(aDescription), mBufLenLim(aBufLenLIm)
+    mDescription(aDescription), mBufLenLim(aBufLenLIm)
 {
-    for (auto ev : aEvents) {
+    for (const PEvent& ev : aEvents) {
 	mEvents.insert(TEventsMapElem(ev.mId, &ev));
     }
+
 }
 
 const PEvent& Pind::getEvent(PEvent::TId aId) const
@@ -174,13 +181,44 @@ const PEvent& Pind::getEvent(PEvent::TId aId) const
     return *mEvents.at(aId);
 }
 
+bool Pind::saveToFile(const std::string& aPath)
+{
+    bool res = true;
+    FILE* fp = fopen(aPath.c_str(), "w+");
+    if (fp) {
+	for (int count = 0; count <= mPos; count++) {
+	    // Record data
+	    string recs = recToString(count);
+	    recs += "\n";
+	    int fpres = fputs(recs.c_str(), fp);
+	    if (fpres == EOF) {
+		res = false; break;
+	    }
+	}
+    } else {
+	res = false;
+    }
+    return res;
+}
+
+
+PindClock::PindClock(const Idata& aIdata): Pind(aIdata)
+{
+    __ASSERT(mBufLenLim > 0);
+    mBuf = new PRecClock[mBufLenLim];
+}
+
+PindClock::~PindClock()
+{
+    delete mBuf;
+}
 
 PRec* PindClock::NewRec()
 {
     PRecClock* res = nullptr;
     if (mPos < (mBufLenLim - 1)) {
 	mPos++;
-	PRecClock* res = static_cast<PRecClock*>(&mBuf[mPos]);
+	res = static_cast<PRecClock*>(&mBuf[mPos]);
 	res->setClock(GetClock());
     }
     return res;
@@ -197,9 +235,12 @@ void PindClock::Rec(PEvent::TId aEventId, MElem* aNode)
     }
 }
 
-string PindClock::recToString(const PRec& aRec) const
+string PindClock::recToString(int aRecNum) const
 {
     string res;
-    res = to_string(aRec.mEventId) + PRec::KFieldSep;
+    __ASSERT(aRecNum <= mPos);
+    PRecClock& rec = mBuf[aRecNum];
+    const PEvent& event = getEvent(rec.mEventId);
+    res = to_string(rec.mEventId) + PRec::KFieldSep + event.mDescription + PRec::KFieldSep + to_string(rec.mClock) + PRec::KFieldSep;
     return res;
 }

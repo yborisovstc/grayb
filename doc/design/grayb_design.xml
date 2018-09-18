@@ -4379,7 +4379,7 @@
 	</sect2>
 	<sect2><title>Verification</title>
 	    <programlisting>
-		fapm -lclm.log -pprof.txt ../../fap2-studio-gtk/examples/syst_1.xml
+		fapm -lclm.log -pprof ../../fap2-studio-gtk/examples/syst_1.xml
 	    </programlisting>
 	</sect2>
     </sect1>
