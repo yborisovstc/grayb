@@ -378,7 +378,10 @@ void Env::ConstructSystem()
 	} else {
 	    spec->SetFromSpec(iSpec);
 	}
+	Rec_Dur(PEvents::Dur_Profiler_Dur_Start);
+	Rec_Dur(PEvents::Dur_Profiler_Dur);
 	Rec_Clock(PEvents::Env_Start_Constr, iRoot);
+	Rec_Dur(PEvents::Dur_Env_Constr_Start);
 	const ChromoNode& root = spec->Root();
 	string sparent = root.Attr(ENa_Parent);
 	Elem* parent = iProvider->GetNode(sparent);
@@ -404,6 +407,7 @@ void Env::ConstructSystem()
 	else {
 	    Logger()->WriteFormat("Env: cannot create elem [%s] of type [%s]", root.Name().c_str(), sparent.c_str());
 	}
+	Rec_Dur(PEvents::Dur_Env_Constr);
     }
 }
 

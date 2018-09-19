@@ -51,11 +51,8 @@ class MPind
 	virtual int getBufLenLimit() const = 0;
 	/** Returns file suffix */
 	virtual string getFileSuf() const = 0;
-	virtual const PEvent& getEvent(PEvent::TId aId) const = 0;
 	/** Obtains clock resolution in nanoseconds */
 	virtual TClock getClockResolution() const =  0;
-	virtual bool saveBufToFile(const string& aFilePath) const = 0;
-	virtual PRec* NewRec() = 0;
 	virtual string recToString(int aRecNum) const = 0;
 	virtual bool saveToFile(const std::string& aPath) = 0;
 	virtual void dump() const = 0;

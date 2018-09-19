@@ -9,7 +9,7 @@
 using namespace std;
 
 
-MPind::TClock Pind::getClockResolution() const
+MPind::TClock PindBase::getClockResolution() const
 {
     int res = -1;
     clockid_t cid;
@@ -22,14 +22,33 @@ MPind::TClock Pind::getClockResolution() const
     return res;
 }
 
+MPind::TClock PindBase::GetClock() const
+{
+    Pind::TClock res = -1;
+    clockid_t cid;
+    struct timespec ts;
+    int s = pthread_getcpuclockid(pthread_self(), &cid);
+    if (s == 0) {
+	s = clock_gettime(cid, &ts);
+	res = ts.tv_sec * 1000000000 + ts.tv_nsec;
+    }
+    return res;
+}
+
+
 
 GProfiler::GProfiler(MEnv* aEnv, const TIdata& aInitData): mEnv(aEnv)
 {
     for (auto idata : aInitData) {
-	Pind* ind = nullptr; 
+	PindBase* ind = nullptr; 
 	if (idata.first == EPiid_Clock) {
 	    ind = new PindClock(static_cast<const PindClock::Idata&>(*idata.second));
+	} else if (idata.first == EPiid_Dur) {
+	    ind = new PindDur(static_cast<const PindDur::Idata&>(*idata.second));
+	} else if (idata.first == EPiid_DurStat) {
+	    ind = new PindDurStat(static_cast<const PindDurStat::Idata&>(*idata.second));
 	}
+	auto resl = ind->getClockResolution();
 	mPinds.insert(TPindsElem(idata.first, ind));
     }
 }
@@ -53,118 +72,16 @@ bool GProfiler::SaveToFile(const string& aFileName)
 {
     bool res = true;
     for (auto indit : mPinds) {
-	Pind* ind = indit.second;
+	PindBase* ind = indit.second;
 	// Adding suffix to file name */
 	string efname = aFileName + "~" + ind->getFileSuf() + ".csv";
 	ind->saveToFile(efname);
     }
-    /*
-    FILE* fp = fopen(aPath.c_str(), "w+");
-    if (fp) {
-	for (int count = 0; count <= mPos; count++) {
-	    TPrec& pev = mBuf[count];
-	    // Record data
-	    string recs = ToString(pev);
-	    // Relative data
-	    TPrec* brec = FindBaseRec(count);
-	    if (brec) {
-		// Base event
-		TEventId beid = GetEvent(pev.mEventId).mBaseId;
-		const TEvent& be = GetEvent(beid);
-		recs += to_string(beid);
-		recs += TRec::KFieldSep;
-		recs +=  (beid != TEvent::KUndefEid) ?  be.mDescription : "Undefined";
-		recs += TRec::KFieldSep;
-		// Relative clock
-		recs += to_string(pev.mClock - brec->mClock);
-		recs += TRec::KFieldSep;
-	    }
-	    recs += "\n";
-	    int fpres = fputs(recs.c_str(), fp);
-	    if (fpres == EOF) {
-		res = false; break;
-	    }
-
-	}
-    } else {
-	res = false;
-    }
-    */
     return res;
 }
 
 
-Pind::TClock Pind::GetClock() const
-{
-    Pind::TClock res = -1;
-    clockid_t cid;
-    struct timespec ts;
-    int s = pthread_getcpuclockid(pthread_self(), &cid);
-    if (s == 0) {
-	s = clock_gettime(cid, &ts);
-	res = ts.tv_sec * 1000000000 + ts.tv_nsec;
-    }
-    return res;
-}
 
-/*
-MProfiler::TEventId GProfiler::RegisterEvent(const TPEvent& aEvent)
-{
-    TEventId res = 0;
-    mEvents.push_back(aEvent);
-    res = mEvents.size() - 1;
-    return res;
-}
-*/
-
-
-#if 0
-string GProfiler::ToString(const TRec& aRec) const
-{
-    string res;
-    // Event
-    TEventId eid = aRec.mEventId;
-    res += to_string(eid);
-    res += TRec::KFieldSep;
-    string descr = GetEvent(eid).mDescription;
-    res += descr;
-    res += TRec::KFieldSep;
-    // Uri
-    string suri;
-    if (aRec.mNode) {
-	GUri uri;
-	aRec.mNode->GetUri(uri);
-	suri = uri.toString(ETrue);
-    }
-    res += suri;
-    res += TRec::KFieldSep;
-    // Absolute clock
-    res += to_string(aRec.mClock);
-    res += TRec::KFieldSep;
-    return res;
-}
-
-void GProfiler::Rec(TEventId aEventId, MElem* aNode)
-{
-    TRec& rec = GetRec();
-    rec.setEventId(aEventId);
-    rec.setNode(aNode);
-}
-
-MProfiler::TRec* GProfiler::FindBaseRec(int aPos) const
-{
-    TRec* res = nullptr;
-    TRec& cur = mBuf[aPos];
-    TEventId base = GetEvent(cur.mEventId).mBaseId;
-    for (int ct = aPos - 1; ct >= 0; ct--) {
-	TRec* rec = &mBuf[ct];
-	if (rec->mEventId == base) {
-	    res = rec; break;
-	}
-    }
-    return res;
-}
-#endif
 
 bool Pind::saveToFile(const std::string& aPath)
 {
@@ -174,10 +91,12 @@ bool Pind::saveToFile(const std::string& aPath)
 	for (int count = 0; count <= mPos; count++) {
 	    // Record data
 	    string recs = recToString(count);
-	    recs += "\n";
-	    int fpres = fputs(recs.c_str(), fp);
-	    if (fpres == EOF) {
-		res = false; break;
+	    if (!recs.empty()) {
+		recs += "\n";
+		int fpres = fputs(recs.c_str(), fp);
+		if (fpres == EOF) {
+		    res = false; break;
+		}
 	    }
 	}
     } else {
@@ -207,7 +126,7 @@ const PEvent& PindClock::getEvent(PEvent::TId aId) const
     return *mEvents.at(aId);
 }
 
-PRec* PindClock::NewRec()
+PRecClock* PindClock::NewRec()
 {
     PRecClock* res = nullptr;
     if (mPos < (mBufLenLim - 1)) {
@@ -235,16 +154,22 @@ string PindClock::recToString(int aRecNum) const
     __ASSERT(aRecNum <= mPos);
     PRecClock& rec = mBuf[aRecNum];
     const PEvent& event = getEvent(rec.mEventId);
-    res = to_string(rec.mEventId) + PRec::KFieldSep + event.mDescription + PRec::KFieldSep + to_string(rec.mClock) + PRec::KFieldSep;
+    string suri;
+    if (rec.mNode) {
+	GUri uri;
+	rec.mNode->GetUri(uri);
+	suri = uri.toString(ETrue);
+    }
+    res = field(to_string(rec.mEventId)) + field(event.mDescription) + field(suri) + field(to_string(rec.mClock));
     return res;
 }
 
-
-PindDur::PindDur(const PindDur::Idata& aIdata): Pind(aIdata.mDescription, -1)
+PindDur::PindDur(const Idata& aIdata): Pind(aIdata.mDescription, aIdata.mBufLim)
 {
-    for (const PEventDur& ev : aIdata.mEvents) {
+    __ASSERT(mBufLenLim > 0);
+    mBuf = new TPRec[mBufLenLim];
+    for (const TPEvent& ev : aIdata.mEvents) {
 	mEvents.insert(TEventsMapElem(ev.mId, &ev));
-	mBuf.insert(TBufElem(ev.mId, {0,0}));
     }
 }
 
@@ -252,21 +177,133 @@ PindDur::~PindDur()
 {
 }
 
-const PEvent& PindDur::getEvent(PEvent::TId aId) const
+void PindDur::Rec(PEvent::TId aEventId, MElem* aNode)
+{
+    TPRec* rec = NewRec();
+    if (rec) {
+	rec->setEventId(aEventId);
+	rec->setNode(aNode);
+    }
+}
+
+PindDur::TPRec* PindDur::NewRec()
+{
+    TPRec* res = nullptr;
+    if (mPos < (mBufLenLim - 1)) {
+	mPos++;
+	res = &mBuf[mPos];
+	res->setClock(GetClock());
+    }
+    return res;
+}
+
+string PindDur::recToString(int aRecNum) const
+{
+    string res;
+    __ASSERT(aRecNum <= mPos);
+    TPRec& rec = mBuf[aRecNum];
+    const TPEvent& event = getEvent(rec.mEventId);
+    string suri;
+    if (event.mStartEvent != PEvent::KUndefEid) { // Omitting start events record
+	if (rec.mNode) {
+	    GUri uri;
+	    rec.mNode->GetUri(uri);
+	    suri = uri.toString(ETrue);
+	}
+	const TPRec* startrec = findStartRec(aRecNum);
+	MPind::TClock dur = rec.mClock - startrec->mClock;
+
+	res = field(to_string(rec.mEventId)) + field(event.mDescription) + field(suri) + field(to_string(dur));
+    }
+    return res;
+}
+
+PindDur::TPRec* PindDur::findStartRec(int aPos) const
+{
+    TPRec* res = nullptr;
+    TPRec& cur = mBuf[aPos];
+    PEvent::TId start = getEvent(cur.mEventId).mStartEvent;
+    for (int ct = aPos - 1; ct >= 0; ct--) {
+	TPRec* rec = &mBuf[ct];
+	if (rec->mEventId == start) {
+	    res = rec; break;
+	}
+    }
+    return res;
+}
+
+const PindDur::TPEvent& PindDur::getEvent(PEvent::TId aId) const
 {
     __ASSERT(mEvents.count(aId));
     return *mEvents.at(aId);
 }
 
-void PindDur::Rec(PEvent::TId aEventId, bool aStart)
+
+
+
+PindDurStat::PindDurStat(const PindDurStat::Idata& aIdata): PindBase(aIdata.mDescription)
+{
+    for (const TPEvent& ev : aIdata.mEvents) {
+	mEvents.insert(TEventsMapElem(ev.mId, &ev));
+	mBuf.insert(TBufElem(ev.mId, {0, 0, 0}));
+    }
+}
+
+PindDurStat::~PindDurStat()
+{
+}
+
+const PindDurStat::TPEvent& PindDurStat::getEvent(PEvent::TId aId) const
+{
+    __ASSERT(mEvents.count(aId));
+    return *mEvents.at(aId);
+}
+
+void PindDurStat::Rec(PEvent::TId aEventId, bool aStart)
 {
     __ASSERT(mBuf.count(aEventId) > 0);
     Pind::TClock cl = GetClock();
     TBufData& data = mBuf.at(aEventId);
     if (aStart) {
-	data.mStartClock = cl;
+	data.mStart = cl;
     } else {
-	__ASSERT(data.mStartClock != 0);
-	data.mDur = cl = data.mStartClock;
+	__ASSERT(data.mStart != 0);
+	data.mEventsNum++;
+	data.mCumDur += cl - data.mStart;
     }
 }
+
+string PindDurStat::recToString(PEvent::TId aRecId) const
+{
+    string res;
+    const TPRec& rec = mBuf.at(aRecId);
+    const TPEvent& event = getEvent(aRecId);
+    string avdurs = rec.mEventsNum > 0 ? to_string(rec.mCumDur/rec.mEventsNum) : "n/a";
+
+    res = field(to_string(event.mId)) + field(event.mDescription) + field(to_string(rec.mCumDur)) +
+	field(to_string(rec.mEventsNum)) + field(avdurs);
+    return res;
+}
+
+bool PindDurStat::saveToFile(const std::string& aPath)
+{
+    bool res = true;
+    FILE* fp = fopen(aPath.c_str(), "w+");
+    if (fp) {
+	for (auto irec : mBuf) {
+	    // Record data
+	    string recs = recToString(irec.first);
+	    if (!recs.empty()) {
+		recs += "\n";
+		int fpres = fputs(recs.c_str(), fp);
+		if (fpres == EOF) {
+		    res = false; break;
+		}
+	    }
+	}
+    } else {
+	res = false;
+    }
+    return res;
+}
+

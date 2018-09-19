@@ -127,6 +127,7 @@ class Env: public Base, public MEnv
     protected:
     /** Profiler helpers */
     void Rec_Clock(PEvent::TId aEventId, MElem* aNode) { PindClock& pi = mProf->Ind(pi); pi.Rec(aEventId, aNode);}
+    void Rec_Dur(PEvent::TId aEventId) { PindDur& pi = mProf->Ind(pi); pi.Rec(aEventId, nullptr);}
 
     protected:
     class EIfu: public Ifu {
