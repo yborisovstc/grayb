@@ -268,16 +268,12 @@ void Elem::Delay(long us)
 Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMan), iEnv(aEnv),
     iParent(NULL), isRemoved(EFalse), mContext(NULL)
 {
-    /*
-    stringstream ss;
-    long prt = (long) this;
-    ss << prt << ";Constr";
-    Logger()->Write(EInfo, this, ss.str().c_str());
-    */
     //Logger()->Write(EInfo, this, "Elem constr p0");
     //Delay(100);
     //Logger()->Write(EInfo, this, "Elem constr p1");
-    //iEnv->Profiler()->Rec(PEvents::Elem_Constr_Start, this);
+    Rec_Dur(PEvents::Dur_Elem_Constr_Start, this);
+    Rec_DurStat(PEvents::DurStat_Elem_Constr, true);
+    Rec_DurStat(PEvents::DurStat_Elem_Constr_Chromo, true);
     iMut = Provider()->CreateChromo();
     //Logger()->Write(EInfo, this, "Elem constr p2");
     iMut->Init(ENt_Node);
@@ -288,9 +284,10 @@ Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMa
     ChromoNode croot = iChromo->Root();
     croot.SetAttr(ENa_Id, iName);
     SetParent(Type());
+    Rec_DurStat(PEvents::DurStat_Elem_Constr_Chromo, false);
     InsertContent(KCont_About);
-    //iEnv->Profiler()->Rec(PEvents::Elem_Constr_End, this);
-    //iEnv->Profiler()->Rec(PEvents::Elem_Constr_Dur, this);
+    Rec_DurStat(PEvents::DurStat_Elem_Constr, false);
+    Rec_Dur(PEvents::Dur_Elem_Constr, this);
     //InsertContent(KCont_Categories);
     //InsertContent(KCont_Ctg_Readonly);
 }

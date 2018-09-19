@@ -8,6 +8,7 @@
 #include "mmuta.h"
 #include "base.h"
 #include "chromo.h"
+#include "profiler.h"
 #include "ifu.h"
 #include <time.h>
 
@@ -370,6 +371,10 @@
 	    // Interface methods utility
 	    static EIfu mIfu;
 	    */
+
+	    /** Profiler helpers */
+	    void Rec_Dur(PEvent::TId aEventId, MElem* aNode) { PindDur& pi = iEnv->Profiler()->Ind(pi); pi.Rec(aEventId, aNode);}
+	    void Rec_DurStat(PEvent::TId aEventId, bool aStart) { PindDurStat& pi = iEnv->Profiler()->Ind(pi); pi.Rec(aEventId, aStart);}
     };
 
     inline MLogRec* Elem::Logger() const {return iEnv ? iEnv->Logger(): NULL; }
