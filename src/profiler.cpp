@@ -271,9 +271,9 @@ void PindDurStat::Rec(PEvent::TId aEventId, bool aStart)
     __ASSERT(mBuf.count(aEventId) > 0);
     Pind::TClock cl = GetClock();
     TBufData& data = mBuf.at(aEventId);
-    if (aStart) {
+    if (aStart && data.mLevel++ == 0) {
 	data.mStart = cl;
-    } else {
+    } else if (--data.mLevel == 0) {
 	__ASSERT(data.mStart != 0);
 	data.mEventsNum++;
 	data.mCumDur += cl - data.mStart;

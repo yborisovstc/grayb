@@ -2277,6 +2277,7 @@ void Elem::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
 // missing proper mechanism of the whole model observer.
 void Elem::OnCompAdding(MElem& aComp, TBool aModif)
 {
+    Pdstat(PEvents::DurStat_OnCompAdd, true);
 #ifdef __EXT_ASSERTS__
     string url = aComp.GetUri(NULL, ETrue);
     MElem* comp = GetNode(url);
@@ -2289,6 +2290,7 @@ void Elem::OnCompAdding(MElem& aComp, TBool aModif)
     for (auto observer : iObservers) {
 	observer->OnCompAdding(aComp, aModif);
     }
+    Pdstat(PEvents::DurStat_OnCompAdd, false);
 }
 
 // TODO [YB] To include agents as member of elem. This will be more effective

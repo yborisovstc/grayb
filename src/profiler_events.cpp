@@ -37,7 +37,8 @@ const PindDurStat::Idata KPindDurStatIdata = {
     "Duration statistic indicator",
     {
 	{DurStat_Elem_Constr, "Elem constructor duration"},
-	{DurStat_Elem_Constr_Chromo, "Elem constructor: chromo creation duration"}
+	{DurStat_Elem_Constr_Chromo, "Elem constructor: chromo creation duration"},
+	{DurStat_OnCompAdd, "Elem OnCompAdding handling"},
     }
 };
 

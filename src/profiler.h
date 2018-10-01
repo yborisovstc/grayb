@@ -195,11 +195,12 @@ class PindDurStat: public PindBase, public MPDurStat
 	using TEvents = std::vector<TPEvent>;
 
 	struct TBufData {
+	    int mLevel; /** Level of resursion */
 	    Pind::TClock mStart = 0; /** Start clock */
 	    int mEventsNum = 0;  /** Num of events triggered */
 	    Pind::TClock mCumDur = 0; /** Cumulative duration */
 	    TBufData(Pind::TClock aStart, int aEventsNum, Pind::TClock aDur):
-		mStart(aStart), mEventsNum(aEventsNum), mCumDur(aDur) {}
+		mLevel(0), mStart(aStart), mEventsNum(aEventsNum), mCumDur(aDur) {}
 	};
 
 	using TPRec = TBufData;
