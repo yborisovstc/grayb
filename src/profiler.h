@@ -65,18 +65,20 @@ class Pind: public PindBase
 class PRecClock: public PRec
 {
     public:
+	PRecClock(): mClock(0), mNode(nullptr) {}
+	PRecClock(PEvent::TId aEid, MPind::TClock aClock, MElem* aNode): PRec(aEid), mClock(aClock), mNode(aNode) {}
 	void setNode(MElem* aNode) { mNode = aNode;}
 	void setClock(Pind::TClock aClock) { mClock = aClock;}
     public:
-	/** Node for that record is created */
-	MElem* mNode = nullptr;
 	// Clock value, in ns
 	Pind::TClock mClock = 0;
+	/** Node for that record is created */
+	MElem* mNode = nullptr;
 };
 
 
 /** Performance indicator: clock value */
-class PindClock: public Pind
+class PindClock: public Pind, public MPClock
 {
     public:
 	static const int KId = EPiid_Clock;
@@ -102,6 +104,8 @@ class PindClock: public Pind
 	virtual const PEvent& getEvent(PEvent::TId aId) const;
 	virtual string recToString(int aRecNum) const override;
 	virtual string getFileSuf() const override { return "clock";}
+	// From MPClock
+	virtual void operator()(PEvent::TId aEventId, MElem* aNode) { *NewRec() = {aEventId, GetClock(), aNode};}
     protected:
 	virtual PRecClock* NewRec();
     protected:
@@ -126,17 +130,8 @@ class PEventDur: public PEvent
 	PEvent::TId mStartEvent; /** Events to start duration measure */
 };
 
-
-/** Record for performance indicator 'Duration' */
-class PRecDur: public PRecClock
-{
-    public:
-	PEvent::TId mStartEvent; /** Events to start duration measure */
-};
-
-
 /** Performance indicator: event to event duration */
-class PindDur: public Pind
+class PindDur: public Pind, public MPDur
 {
     public:
 	static const int KId = EPiid_Dur;
@@ -162,6 +157,8 @@ class PindDur: public Pind
 	virtual const TPEvent& getEvent(PEvent::TId aId) const;
 	virtual string recToString(int aRecNum) const override;
 	virtual string getFileSuf() const override { return "dur";}
+	// From MPDur
+	virtual void operator()(PEvent::TId aEventId, MElem* aNode) override { *NewRec() = {aEventId, GetClock(), aNode};}
     protected:
 	virtual TPRec* NewRec();
 	/** Finds nearest lower record for start event */
@@ -188,7 +185,7 @@ class PEventDurStat: public PEvent
 };
 
 /** Performance statistical indicator: event to event duration */
-class PindDurStat: public PindBase
+class PindDurStat: public PindBase, public MPDurStat
 {
     public:
 	static const int KId = EPiid_DurStat;
@@ -227,6 +224,8 @@ class PindDurStat: public PindBase
 	virtual string getFileSuf() const override { return "durstat";}
 	virtual bool saveToFile(const std::string& aPath) override;
 	virtual string recToString(PEvent::TId aRecId) const override;
+	// From MPDurStat
+	virtual inline void operator()(PEvent::TId aEventId, bool aStart = false) override { Rec(aEventId, aStart);}
     protected:
 	/** Events registered */
 	TEventsMap mEvents;
@@ -256,14 +255,21 @@ class GProfiler: public MProfiler
 	virtual bool SaveToFile(const std::string& aPath) override;
 	/** Gets pointer to Pid by Id */
 	virtual MPind* getPind(int aId) override;
+	virtual inline MPClock& Clock() override { return *mPClock;}
+	virtual inline MPDur& Dur() override { return *mPDur;}
+	virtual MPDurStat& DurStat() override {return *mPDurStat;}
 	PindDur* getPindDur() { return mPinds.count(EPiid_Dur) > 0 ? dynamic_cast<PindDur*>(mPinds.at(EPiid_Dur)) : nullptr;}
     protected:
 	/** System environment */
 	MEnv* mEnv;
 	/** Performance indicators */
 	TPinds mPinds;
-	/** Clock indicator */
-	PindClock* mPindClock;
+	/** Clock ind recorder */
+	MPClock* mPClock;
+	/** Duration ind recorder */
+	MPDur* mPDur;
+	/** Duration stat ind recorder */
+	MPDurStat* mPDurStat;
 };
 
 

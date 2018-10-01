@@ -126,8 +126,9 @@ class Env: public Base, public MEnv
     string Mid() const override { return string();}
     protected:
     /** Profiler helpers */
-    void Rec_Clock(PEvent::TId aEventId, MElem* aNode) { PindClock& pi = mProf->Ind(pi); pi.Rec(aEventId, aNode);}
-    void Rec_Dur(PEvent::TId aEventId) { PindDur& pi = mProf->Ind(pi); pi.Rec(aEventId, nullptr);}
+    void Pclock(PEvent::TId aEventId, MElem* aNode) { Profiler()->Clock()(aEventId, aNode);}
+    void Pdur(PEvent::TId aEventId) { Profiler()->Dur()(aEventId, nullptr);}
+    void Pdstat(PEvent::TId aEventId, bool aStart) { Profiler()->DurStat()(aEventId, aStart);}
 
     protected:
     class EIfu: public Ifu {

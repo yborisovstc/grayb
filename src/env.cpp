@@ -378,16 +378,16 @@ void Env::ConstructSystem()
 	} else {
 	    spec->SetFromSpec(iSpec);
 	}
-	Rec_Dur(PEvents::Dur_Profiler_Dur_Start);
-	Rec_Dur(PEvents::Dur_Profiler_Dur);
-	Rec_Clock(PEvents::Env_Start_Constr, iRoot);
-	Rec_Dur(PEvents::Dur_Env_Constr_Start);
+	Pdur(PEvents::Dur_Profiler_Dur_Start);
+	Pdur(PEvents::Dur_Profiler_Dur);
+	Pclock(PEvents::Env_Start_Constr, iRoot);
+	Pdur(PEvents::Dur_Env_Constr_Start);
 	const ChromoNode& root = spec->Root();
 	string sparent = root.Attr(ENa_Parent);
 	Elem* parent = iProvider->GetNode(sparent);
 	iRoot = iProvider->CreateNode(sparent, root.Name(), NULL, this);
 	if (iRoot != NULL) {
-	    Rec_Clock(PEvents::Env_Root_Created, iRoot);
+	    Pclock(PEvents::Env_Root_Created, iRoot);
 	    stringstream ss;
 	    struct timeval tp;
 	    gettimeofday(&tp, NULL);
@@ -400,14 +400,14 @@ void Env::ConstructSystem()
 	    ss << (fin_us - beg_us);
 	    TInt cpc = iRoot->GetCapacity();
 	    Logger()->Write(EInfo, iRoot, "Completed of creating system, nodes: %d, time, us: %s", cpc,  ss.str().c_str());
-	    Rec_Clock(PEvents::Env_End_Constr, iRoot);
+	    Pclock(PEvents::Env_End_Constr, iRoot);
 	    //Logger()->Write(EInfo, iRoot, "Components");
 	    //iRoot->LogComps();
 	}
 	else {
 	    Logger()->WriteFormat("Env: cannot create elem [%s] of type [%s]", root.Name().c_str(), sparent.c_str());
 	}
-	Rec_Dur(PEvents::Dur_Env_Constr);
+	Pdur(PEvents::Dur_Env_Constr);
     }
 }
 

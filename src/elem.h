@@ -373,8 +373,9 @@
 	    */
 
 	    /** Profiler helpers */
-	    void Rec_Dur(PEvent::TId aEventId, MElem* aNode) { PindDur& pi = iEnv->Profiler()->Ind(pi); pi.Rec(aEventId, aNode);}
-	    void Rec_DurStat(PEvent::TId aEventId, bool aStart) { PindDurStat& pi = iEnv->Profiler()->Ind(pi); pi.Rec(aEventId, aStart);}
+	    void Pclock(PEvent::TId aEventId, MElem* aNode) { iEnv->Profiler()->Clock()(aEventId, aNode);}
+	    void Pdur(PEvent::TId aEventId, MElem* aNode) { iEnv->Profiler()->Dur()(aEventId, aNode);}
+	    void Pdstat(PEvent::TId aEventId, bool aStart) { iEnv->Profiler()->DurStat()(aEventId, aStart);}
     };
 
     inline MLogRec* Elem::Logger() const {return iEnv ? iEnv->Logger(): NULL; }

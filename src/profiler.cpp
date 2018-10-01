@@ -37,16 +37,23 @@ MPind::TClock PindBase::GetClock() const
 
 
 
-GProfiler::GProfiler(MEnv* aEnv, const TIdata& aInitData): mEnv(aEnv)
+GProfiler::GProfiler(MEnv* aEnv, const TIdata& aInitData): mEnv(aEnv),
+    mPClock(nullptr), mPDur(nullptr), mPDurStat(nullptr)
 {
     for (auto idata : aInitData) {
 	PindBase* ind = nullptr; 
 	if (idata.first == EPiid_Clock) {
 	    ind = new PindClock(static_cast<const PindClock::Idata&>(*idata.second));
+	    mPClock = dynamic_cast<MPClock*>(ind);
+	    __ASSERT(mPClock);
 	} else if (idata.first == EPiid_Dur) {
 	    ind = new PindDur(static_cast<const PindDur::Idata&>(*idata.second));
+	    mPDur = dynamic_cast<MPDur*>(ind);
+	    __ASSERT(mPClock);
 	} else if (idata.first == EPiid_DurStat) {
 	    ind = new PindDurStat(static_cast<const PindDurStat::Idata&>(*idata.second));
+	    mPDurStat = dynamic_cast<MPDurStat*>(ind);
+	    __ASSERT(mPDurStat);
 	}
 	auto resl = ind->getClockResolution();
 	mPinds.insert(TPindsElem(idata.first, ind));
@@ -131,7 +138,7 @@ PRecClock* PindClock::NewRec()
     PRecClock* res = nullptr;
     if (mPos < (mBufLenLim - 1)) {
 	mPos++;
-	res = static_cast<PRecClock*>(&mBuf[mPos]);
+	res = &mBuf[mPos];
 	res->setClock(GetClock());
     }
     return res;

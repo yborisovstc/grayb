@@ -27,6 +27,8 @@ class PEvent
 class PRec
 {
     public:
+	PRec(): mEventId(PEvent::KUndefEid) {}
+	PRec(PEvent::TId aId): mEventId(aId) {}
 	void setEventId(PEvent::TId aId) { mEventId = aId;}
     public:
 	PEvent::TId mEventId; /** Event Id */
@@ -58,14 +60,48 @@ class MPind
 	virtual void dump() const = 0;
 };
 
+/** Performace indicators recorder: Clock
+ * Records time stamps of event with assosiation to node
+*/
+class MPClock
+{
+    public:
+	virtual void operator()(PEvent::TId aEventId, MElem* aNode) = 0;
+};
+
+/** Performace indicators recorder: Duration
+ * Records duration between start and end events with assosiation to node
+*/
+class MPDur
+{
+    public:
+	virtual void operator()(PEvent::TId aEventId, MElem* aNode) = 0;
+};
+
+/** Performace indicators recorder: Duration statistic
+ * Records stat of duration between start and end events
+*/
+class MPDurStat
+{
+    public:
+	virtual void operator()(PEvent::TId aEventId, bool aStart = false) = 0;
+};
+
+
 /** Profiler interface */
 class MProfiler
 {
     public:
 	virtual void Enable() = 0;
 	virtual bool SaveToFile(const std::string& aPath) = 0;
-	/** Gets pointer to Pid by Id */
+	/** Gets pointer to indicator by Id */
 	virtual MPind* getPind(int aId) = 0;
+	/** Gets Clock ind recorder */
+	virtual MPClock& Clock() = 0;
+	/** Gets duration ind recorder */
+	virtual MPDur& Dur() = 0;
+	/** Gets duration stat ind recorder */
+	virtual MPDurStat& DurStat() = 0;
 	/** Get Pid */
 	template <typename T> T& Ind(const T&a) { return *dynamic_cast<T*>(getPind(T::KId));}
 };
