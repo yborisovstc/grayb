@@ -4345,6 +4345,48 @@
 	<sect2 id="ds_prfopt_eprof"><title>Using embedded profiler</title>
 	    <simpara>Ref <xref linkend="sec_prof"/> for details.</simpara>
 	</sect2>
+	<sect2 id="ds_prfopt_prp01"><title>20181001 Proposals for optimization</title>
+	    <sect3><title>To avoid using observers on agent level - to have observer in env (Env API extension required) </title>
+	    </sect3>
+	    <sect3> <title>To disable propagating events by default. Agent can have API to change this behavior in order to allow
+		    owner to force propagating </title>
+	    </sect3>
+	    <sect3><title>To handle pre-event and post-event notifications. Currently the only post-events are handled.</title>
+	    </sect3>
+	    <sect3 id="ds_prfopt_prp01_ipind"><title>Profiling: to introduce ifaces for Pind recorders</title>
+		<simpara>To introduce ifaces for Pind recorders and extend Profiler iface to return the recorderd. 
+		    In order to mininise recording overhead we can cache refs to recorders in profiler so recorder getters be inline.
+		    Recodred ifaces can be functors with operator () intended for creating a record. We need also to disable creating
+		    more that one recorder same time (at least at the moment)
+		</simpara>
+	    </sect3>
+	    <sect3><title>To simplify second constructor </title>
+		<simpara>To simplify second constructor (that creates genuine native agents) via delegating constructor or using
+		    aName for constructor variation. Just check in the constructor if name is passed to it. Why second
+		    constructor sets type as empty? This because second constructor creates origin agent but first constructor
+		    creates the child of origin agent.  </simpara>
+	    </sect3>
+	    <sect3><title>To simplify default provider</title>
+		<simpara>To simplify default provider: Add private method for creation of bare agent and use it within
+		    CreateNode and GetNode. Also probably virtual method is required for getting type. It is required
+		    to avoid branching by type in GetNode when getting parent. There is EType method but seems it is not we need,
+		    what we need if to get staticly assosiated parent name. Look also at PName.  </simpara>
+	    </sect3>
+	    <sect3><title>To get rid of mut </title>
+		<simpara> To get rid of mut. Just pass it as agrument of mut method. The case of async mut needs to be considered.
+		    With this case mut needs to be stored as the context of mut sequence. Also look at AppendMutation, it is used still.
+		</simpara>
+	    </sect3>
+	    <sect3><title> What to prof: GetNode, UpdateIfi, GetUri, muts </title> </sect3>
+	    <sect3><title>Prof: Needs to support prof in the case when the func is recursive </title>
+		<simpara>Prof: Needs to support prof in the case when the func is recursive. For Pindurstat we can just
+		    check if the measure for given event is completed or not. For clock pind we can postpone the
+		    filtering to processing stage. There we can filter out all method recursive calls.
+		</simpara>
+	    </sect3>
+	    <sect3><title>To optimize cont.</title> </sect3>
+	    <sect3><title>Migrate to unordered containers.</title> </sect3>
+	</sect2>
     </sect1>
 
     <sect1 id="sec_prof"><title>Embedded profiler</title>
