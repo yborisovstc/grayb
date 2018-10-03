@@ -207,8 +207,6 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
     // Support of final owner, ref ds_daa_itn_sfo
     virtual MElem* GetCtx() = 0;
     virtual void SetCtx(MElem* aOwner) = 0;
-    virtual void SetObserver(MAgentObserver* aObserver) = 0;
-    virtual void UnsetObserver(MAgentObserver* aObserver) = 0;
     virtual MElem* GetNode(const string& aUri, TBool aInclRm = EFalse) = 0;
     virtual MElem* GetNode(const GUri& aUri, TBool aInclRm = EFalse) = 0;
     virtual MElem* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere = EFalse, TBool aInclRm = EFalse) = 0;

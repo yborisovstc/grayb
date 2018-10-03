@@ -90,6 +90,30 @@ class IfcResolver: public MIfaceResolver
 	Env& mHost;
 };
 
+/** System observer 
+ * Acts as proxy between the model and observers 
+ */
+class SystemObserver: public MAgentObserver
+{
+    public:
+	SystemObserver(Env& aHost): mHost(aHost) {}
+	void SetObserver(MAgentObserver* aObserver);
+	void UnsetObserver(MAgentObserver* aObserver);
+	// From MAgentObserver
+	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue, TBool aModif = EFalse) override;
+	virtual void OnCompAdding(MElem& aComp, TBool aModif = EFalse) override;
+	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse) override;
+	virtual TBool OnChanged(MElem& aComp) override;
+	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName) override;
+	virtual void OnCompMutated(const MElem* aNode) override;
+	// From MIface
+	virtual MIface* Call(const string& aSpec, string& aRes);
+    private:
+	Env& mHost;
+	/** Model observers */
+	vector<MAgentObserver*> mObservers;
+};
+
 class Env: public Base, public MEnv
 {
     friend class ChromoMgr;
@@ -115,12 +139,15 @@ class Env: public Base, public MEnv
     virtual MImportMgr* ImpsMgr();
     virtual MExtIfProv* ExtIfProv();
     virtual MIfaceResolver* IfaceResolver();
+    virtual MAgentObserver* Observer() override { return mObserver;}
     virtual TBool GetSBool(TSBool aId) const;
     virtual void SetSBool(TSBool aId, TBool aVal);
     virtual void SetEVar(const string& aName, const string& aValue);
     virtual TBool GetEVar(const string& aName, string& aValue) const;
     virtual void ConstructSystem();
     virtual void OnRootDeleted();
+    virtual void SetObserver(MAgentObserver* aObserver) override { mObserver->SetObserver(aObserver);}
+    virtual void UnsetObserver(MAgentObserver* aObserver) override { mObserver->UnsetObserver(aObserver);}
     // From MIface
     virtual MIface* Call(const string& aSpec, string& aRes);
     string Mid() const override { return string();}
@@ -151,6 +178,8 @@ class Env: public Base, public MEnv
     static EIfu mIfu;
     MExtIfProv* mExtIfProv;
     IfcResolver* mIfResolver;
+    /** System observer */
+    SystemObserver* mObserver;
     /** Profiler */
     GProfiler* mProf;
 };

@@ -268,26 +268,20 @@ void Elem::Delay(long us)
 Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMan), iEnv(aEnv),
     iParent(NULL), isRemoved(EFalse), mContext(NULL)
 {
-    //Logger()->Write(EInfo, this, "Elem constr p0");
-    //Delay(100);
-    //Logger()->Write(EInfo, this, "Elem constr p1");
     Pdur(PEvents::Dur_Elem_Constr_Start, this);
-    Pdstat(PEvents::DurStat_Elem_Constr, true);
+    //Pdstat(PEvents::DurStat_Elem_Constr, true);
     Pdstat(PEvents::DurStat_Elem_Constr_Chromo, true);
     iMut = Provider()->CreateChromo();
-    //Logger()->Write(EInfo, this, "Elem constr p2");
     iMut->Init(ENt_Node);
-    //Logger()->Write(EInfo, this, "Elem constr p3");
     iChromo = Provider()->CreateChromo();
     iChromo->Init(ENt_Node);
-    //Logger()->Write(EInfo, this, "Elem constr p4");
     ChromoNode croot = iChromo->Root();
     croot.SetAttr(ENa_Id, iName);
     SetParent(Type());
     Pdstat(PEvents::DurStat_Elem_Constr_Chromo, false);
     InsertContent(KCont_About);
     Pdstat(PEvents::DurStat_Elem_Constr, false);
-    Pdur(PEvents::Dur_Elem_Constr, this);
+    //Pdur(PEvents::Dur_Elem_Constr, this);
     //InsertContent(KCont_Categories);
     //InsertContent(KCont_Ctg_Readonly);
 }
@@ -346,9 +340,7 @@ Elem::~Elem()
     if (iMan != NULL) {
 	iMan->OnCompDeleting(*this, EFalse, ETrue);
     }
-    for (auto observer : iObservers) {
-	observer->OnCompDeleting(*this, EFalse, ETrue);
-    }
+    iEnv->Observer()->OnCompDeleting(*this, EFalse, ETrue);
 
     // Disconnect from the childs
     for (TNMReg::iterator it = iChilds.begin(); it != iChilds.end(); it++) {
@@ -395,31 +387,6 @@ void Elem::SetMan(MElem* aMan)
     __ASSERT(iMan == NULL && aMan != NULL || aMan == NULL);
     // TODO [YB] To add notifications here
     iMan = aMan;
-}
-
-void Elem::SetObserver(MAgentObserver* aObserver)
-{
-    __ASSERT(aObserver != NULL);
-    TBool found = EFalse;
-    for (auto observer : iObservers) {
-	if (observer == aObserver) {
-	    found = ETrue; break;
-	}
-    }
-    __ASSERT(!found);
-    iObservers.push_back(aObserver);
-}
-
-void Elem::UnsetObserver(MAgentObserver* aObserver)
-{
-    __ASSERT(aObserver != NULL);
-    TBool found = EFalse;
-    for (auto it = iObservers.begin(); it != iObservers.end(); it++) {
-	if (*it == aObserver) {
-	    iObservers.erase(it); found = ETrue; break;
-	}
-    }
-    __ASSERT(found);
 }
 
 MElem* Elem::GetMan()
@@ -491,6 +458,7 @@ Elem::TIfRange Elem::GetIfi(const string& aName, const TICacheRCtx& aCtx)
     // So on invalidation provider checks if context is initial (size == 1), if so it ignore relation
     // But it is possible that size == 1 for second requestor if the initial makes anonimous request
     // To avoid this inconsistance we need to explicitly register even anonymous requestor
+    Pdstat(PEvents::DurStat_GetIfi, true);
     TICacheRCtx ctx(aCtx);
     if (ctx.empty()) {
 	ctx.push_back(NULL);
@@ -517,6 +485,7 @@ Elem::TIfRange Elem::GetIfi(const string& aName, const TICacheRCtx& aCtx)
 	    Logger()->Write(EInfo, this, "Iface [%s]: resolved from cache", aName.c_str());
 	}
     }
+    Pdstat(PEvents::DurStat_GetIfi, false);
     return TIfRange(TIfIter(beg), TIfIter(end));
 }
 
@@ -1015,6 +984,7 @@ MElem* Elem::GetNodeS(const char* aUri)
 
 MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere, TBool aInclRm) 
 {
+    Pdstat(PEvents::DurStat_GetNode, true);
     MElem* res = NULL;
     GUri::const_elem_iter uripos = aPathBase;
     GUri::TElem elem = *uripos;
@@ -1058,6 +1028,7 @@ MElem* Elem::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
 	    }
 	}
     }
+    Pdstat(PEvents::DurStat_GetNode, false);
     return res;
 }
 
@@ -1420,6 +1391,7 @@ TBool Elem::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
     }
     if (res) {
 	res = OnCompChanged(*this, aName, aRtOnly);
+	iEnv->Observer()->OnCompChanged(*this, aName, aRtOnly);
     }
     return res;
 }
@@ -1791,6 +1763,7 @@ TBool Elem::ChangeAttr(TNodeAttr aAttr, const string& aVal)
 	string sOldName(Name());
 	iName = aVal;
 	res = iMan->OnCompRenamed(*this, sOldName);
+	iEnv->Observer()->OnCompRenamed(*this, sOldName);
 	if (res && iParent != NULL) {
 	    res = iParent->OnChildRenamed(this, sOldName);
 	}
@@ -2160,10 +2133,10 @@ TBool Elem::AppendComp(MElem* aComp, TBool aRt)
 
 	// Propagate notification only if self is the component of owner, ref ds_di_cnfr
 	if (iMan != NULL && iMan->GetComp(string(), Name()) == this) {
+	    Pdstat(PEvents::DurStat_OnCompAdd, true);
 	    iMan->OnCompAdding(*aComp, aRt);
-	}
-	for (auto observer : iObservers) {
-	    observer->OnCompAdding(*aComp, aRt);
+	    Pdstat(PEvents::DurStat_OnCompAdd, false);
+	    iEnv->Observer()->OnCompAdding(*aComp, aRt);
 	}
     }
     return res;
@@ -2251,12 +2224,11 @@ void Elem::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
 {
     // Translate to hier
     // Enable propagation from attached node only, ref ds_di_cnfr_snpn
+    /*
     if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
 	iMan->OnCompDeleting(aComp, aSoft, aModif);
     }
-    for (auto observer : iObservers) {
-	observer->OnCompDeleting(aComp, aSoft, aModif);
-    }
+    */
     // Handle for direct child
     if (aComp.GetMan() == this) {
 	// Don't deattach the childs chromo. Ref UC_016. The childs chromo (childs creation mutation) needs
@@ -2277,20 +2249,19 @@ void Elem::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
 // missing proper mechanism of the whole model observer.
 void Elem::OnCompAdding(MElem& aComp, TBool aModif)
 {
-    Pdstat(PEvents::DurStat_OnCompAdd, true);
+    //Pdstat(PEvents::DurStat_OnCompAdd, true);
 #ifdef __EXT_ASSERTS__
     string url = aComp.GetUri(NULL, ETrue);
     MElem* comp = GetNode(url);
     __ASSERT(comp != NULL);
 #endif
     // Enable propagation from attached node only, ref ds_di_cnfr_snpn
+    /*
     if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
 	iMan->OnCompAdding(aComp, aModif);
     }
-    for (auto observer : iObservers) {
-	observer->OnCompAdding(aComp, aModif);
-    }
-    Pdstat(PEvents::DurStat_OnCompAdd, false);
+    */
+    //Pdstat(PEvents::DurStat_OnCompAdd, false);
 }
 
 // TODO [YB] To include agents as member of elem. This will be more effective
@@ -2327,13 +2298,11 @@ TBool Elem::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
     // Propagate to upper layer if the notification wasn't denied
     // TODO To consider if the event is to be propagated to upper level even if it has been already handled
     // Enable propagation from attached node only, ref ds_di_cnfr_snpn
+    /*
     if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
 	res = iMan->OnCompChanged(aComp, aContName, aModif);
     }
-    // Notify observer
-    for (auto observer : iObservers) {
-	observer->OnCompChanged(aComp, aContName, aModif);
-    }
+    */
     Pdstat(PEvents::DurStat_OnCompChanged, false);
     return res;
 }
@@ -2351,15 +2320,15 @@ TBool Elem::OnCompRenamed(MElem& aComp, const string& aOldName)
     }
     // Propagate the notification
     // Enable propagation from attached node only, ref ds_di_cnfr_snpn
+    /*
     if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
 	iMan->OnCompRenamed(aComp, aOldName);
     }
-    for (auto observer : iObservers) {
-	observer->OnCompRenamed(aComp, aOldName);
-    }
+    */
     return res;
 }
 
+// TODO not used, why?
 TBool Elem::OnChanged(MElem& aComp)
 {
     TBool res = ETrue;
@@ -2383,12 +2352,11 @@ TBool Elem::OnChanged(MElem& aComp)
     }
 
     // Enable propagation from attached node only, ref ds_di_cnfr_snpn
+    /*
     if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
 	res = iMan->OnChanged(aComp);
     }
-    for (auto observer : iObservers) {
-	observer->OnChanged(aComp);
-    }
+    */
     return res;
 }
 
@@ -3026,9 +2994,7 @@ void Elem::SetRemoved(TBool aModif)
     // Notify the man of deleting
     if (iMan != NULL) {
 	iMan->OnCompDeleting(*this, ETrue, aModif);
-    }
-    for (auto observer : iObservers) {
-	observer->OnCompDeleting(*this, ETrue, aModif);
+	iEnv->Observer()->OnCompDeleting(*this, ETrue, aModif);
     }
     for (auto& it : iMComps) {
 	MElem* comp = it.second;
@@ -3264,24 +3230,6 @@ MIface* Elem::Call(const string& aSpec, string& aRes)
 	MElem* prov = GetNode(args.at(2));
 	TBool inv = Ifu::ToBool(args.at(3));	
 	UnregIfProv(name, ctx, prov, inv);
-    } else if (name == "SetObserver") {
-	MExtIfProv* prov = iEnv->ExtIfProv();
-	if (args.at(0) == GUri::Nil()) {
-	    SetObserver(NULL);
-	} else {
-	    if (prov == NULL) {
-		throw (runtime_error("Cannot get ext iface provider"));
-	    }
-	    MIface* iobs = prov->GetEIface(args.at(0), MAgentObserver::Type());
-	    if (iobs == NULL) {
-		throw (runtime_error("Cannot get agent observer iface" + args.at(0)));
-	    }
-	    MAgentObserver* obs = dynamic_cast<MAgentObserver*>(iobs);
-	    if (obs == NULL) {
-		throw (runtime_error("Cannot get agent observer" + args.at(0)));
-	    }
-	    SetObserver(obs);
-	}
     } else if (name == "OnCompAdding") {
 	MElem* comp = GetNode(args.at(0));
 	if (comp == NULL) {
@@ -3428,15 +3376,18 @@ void Elem::DumpComps(TBool aRecurs) const
 
 void Elem::NotifyNodeMutated(const ChromoNode& aMut, const MElem* aCtx)
 {
+    Pdstat(PEvents::DurStat_NotifNodeMutated, true);
     if (this != GetRoot()) {
 	MElem* owner = GetMan();
 	if (aCtx != NULL && (aCtx == owner || aCtx->IsComp(owner)) || owner->IsCompAttached(this)) {
 	    owner->OnNodeMutated(this, aMut, aCtx);
+	    iEnv->Observer()->OnCompMutated(this);
 	}
 	if (HasChilds()) {
 	    NotifyParentMutated(aMut);
 	}
     } 
+    Pdstat(PEvents::DurStat_NotifNodeMutated, false);
 }
 
 void Elem::OnNodeMutated(const MElem* aNode, const TMut& aMut, const MElem* aCtx)
@@ -3450,9 +3401,6 @@ void Elem::OnNodeMutated(const MElem* aNode, const TMut& aMut, const MElem* aCtx
 	string nuri = aNode->GetUri(this, ETrue);
 	ChromoNode anode = iChromo->Root().AddChild(aMut);
 	anode.SetAttr(ENa_Targ, nuri);
-	for (auto observer : iObservers) {
-	    observer->OnCompMutated(aNode);
-	}
     }
     if (this != root) {
 	// Propagate till upper node of attaching chain, ref ds_mut_osm_linchr_lce

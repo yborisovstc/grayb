@@ -105,7 +105,7 @@ class PindClock: public Pind, public MPClock
 	virtual string recToString(int aRecNum) const override;
 	virtual string getFileSuf() const override { return "clock";}
 	// From MPClock
-	virtual void operator()(PEvent::TId aEventId, MElem* aNode) { *NewRec() = {aEventId, GetClock(), aNode};}
+	virtual void operator()(PEvent::TId aEventId, MElem* aNode) { PRecClock* rec = NewRec(); if (rec != nullptr) { *rec = {aEventId, GetClock(), aNode};}}
     protected:
 	virtual PRecClock* NewRec();
     protected:
@@ -158,7 +158,7 @@ class PindDur: public Pind, public MPDur
 	virtual string recToString(int aRecNum) const override;
 	virtual string getFileSuf() const override { return "dur";}
 	// From MPDur
-	virtual void operator()(PEvent::TId aEventId, MElem* aNode) override { *NewRec() = {aEventId, GetClock(), aNode};}
+	virtual void operator()(PEvent::TId aEventId, MElem* aNode) { PRecClock* rec = NewRec(); if (rec != nullptr) { *rec = {aEventId, GetClock(), aNode};}}
     protected:
 	virtual TPRec* NewRec();
 	/** Finds nearest lower record for start event */

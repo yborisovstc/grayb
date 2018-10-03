@@ -4,6 +4,7 @@
 #include <plat.h>
 #include <miface.h>
 #include <mprofiler.h>
+#include <melem.h>
 
 #include <vector>
 #include <string>
@@ -80,6 +81,7 @@ class GUri;
 	    virtual MImportMgr* ImpsMgr() = 0;
 	    virtual MExtIfProv* ExtIfProv() = 0;
 	    virtual MIfaceResolver* IfaceResolver() = 0;
+	    virtual MAgentObserver* Observer() = 0;
 	    virtual TBool GetSBool(TSBool aId) const = 0;
 	    virtual void SetSBool(TSBool aId, TBool aVal) = 0;
 	    virtual void SetEVar(const string& aName, const string& aValue) = 0;
@@ -87,6 +89,8 @@ class GUri;
 	    virtual void ConstructSystem() = 0;
 	    // Notification of root deleted, ref ds_daa_rdo
 	    virtual void OnRootDeleted() = 0;
+	    virtual void SetObserver(MAgentObserver* aObserver) = 0;
+	    virtual void UnsetObserver(MAgentObserver* aObserver) = 0;
 	public:
 	    // From MIface
 	    virtual MIface* Call(const string& aSpec, string& aRes) = 0;

@@ -413,11 +413,11 @@ void Ut_cre::test_Notif()
     iEnv->ConstructSystem();
     Elem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    root->SetObserver(mAgtObs);
+    iEnv->SetObserver(mAgtObs);
     root->AppendMutation(TMut("node,id:Syst2,parent:./Syst1"));
     root->Mutate();
 
-    root->UnsetObserver(mAgtObs);
+    iEnv->UnsetObserver(mAgtObs);
     delete mAgtObs;
     delete iEnv;
 }

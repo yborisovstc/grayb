@@ -38,9 +38,6 @@ TBool ACapsule::OnCompChanged(MElem& aComp, const string& aContName, TBool aModi
     if (iMan != NULL) {
 	iMan->OnCompChanged(aComp, aContName, aModif);
     }
-    for (auto observer : iObservers) {
-	observer->OnCompChanged(aComp, aContName, aModif);
-    }
     return ETrue;
 }
 

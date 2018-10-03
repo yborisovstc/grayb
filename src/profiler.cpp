@@ -200,7 +200,7 @@ PindDur::TPRec* PindDur::NewRec()
 	mPos++;
 	res = &mBuf[mPos];
 	res->setClock(GetClock());
-    }
+    } 
     return res;
 }
 

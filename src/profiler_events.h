@@ -20,7 +20,10 @@ enum {
     DurStat_Elem_Constr,
     DurStat_Elem_Constr_Chromo,
     DurStat_OnCompAdd,
-    DurStat_OnCompChanged
+    DurStat_OnCompChanged,
+    DurStat_GetNode,
+    DurStat_GetIfi,
+    DurStat_NotifNodeMutated
 };
 
 }

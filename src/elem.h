@@ -122,8 +122,6 @@
 	    virtual void SetParent(const string& aParent);
 	    virtual void SetParent(MElem* aParent);
 	    virtual void SetMan(MElem* aMan);
-	    virtual void SetObserver(MAgentObserver* aObserver);
-	    void UnsetObserver(MAgentObserver* aObserver) override;
 	    virtual void SetMutation(const ChromoNode& aMuta);
 	    virtual void SetMutation(const string& aMutSpec);
 	    virtual ChromoNode AppendMutation(const ChromoNode& aMuta);
@@ -328,8 +326,6 @@
 	    MEnv* iEnv;
 	    // Managing (higher) element of hier
 	    MElem* iMan;
-	    // Observer, mostly for root - normally elem notifies to Mgr
-	    vector<MAgentObserver*> iObservers;
 	    // Chromo
 	    Chromo* iChromo;
 	    // Mutation

@@ -299,10 +299,88 @@ MIface* IfcResolver::GetIfaceByUid(const string& aUid)
 }
 
 
+/** System observer */
+
+void SystemObserver::SetObserver(MAgentObserver* aObserver)
+{
+    __ASSERT(aObserver != NULL);
+    TBool found = EFalse;
+    for (auto observer : mObservers) {
+	if (observer == aObserver) {
+	    found = ETrue; break;
+	}
+    }
+    __ASSERT(!found);
+    mObservers.push_back(aObserver);
+}
+
+void SystemObserver::UnsetObserver(MAgentObserver* aObserver)
+{
+    __ASSERT(aObserver != NULL);
+    TBool found = EFalse;
+    for (auto it = mObservers.begin(); it != mObservers.end(); it++) {
+	if (*it == aObserver) {
+	    mObservers.erase(it); found = ETrue; break;
+	}
+    }
+    __ASSERT(found);
+}
+
+
+void SystemObserver::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
+{
+    for (auto observer : mObservers) {
+	observer->OnCompDeleting(aComp, aSoft, aModif);
+    }
+}
+
+void SystemObserver::OnCompAdding(MElem& aComp, TBool aModif)
+{
+    for (auto observer : mObservers) {
+	observer->OnCompAdding(aComp, aModif);
+    }
+}
+
+TBool SystemObserver::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
+{
+    for (auto observer : mObservers) {
+	observer->OnCompChanged(aComp, aContName, aModif);
+    }
+}
+
+TBool SystemObserver::OnChanged(MElem& aComp)
+{
+    for (auto observer : mObservers) {
+	observer->OnChanged(aComp);
+    }
+}
+
+TBool SystemObserver::OnCompRenamed(MElem& aComp, const string& aOldName)
+{
+    for (auto observer : mObservers) {
+	observer->OnCompRenamed(aComp, aOldName);
+    }
+}
+
+void SystemObserver::OnCompMutated(const MElem* aNode)
+{
+    for (auto observer : mObservers) {
+	observer->OnCompMutated(aNode);
+    }
+}
+
+
+// TODO to implement
+MIface* SystemObserver::Call(const string& aSpec, string& aRes)
+{
+    return NULL;
+}
+
+
 
 Env::Env(const string& aSpecFile, const string& aLogFileName): Base(), iRoot(NULL), iLogger(NULL),
     iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse), mExtIfProv(NULL), mIfResolver(NULL),
-    mProf(NULL)
+    mObserver(NULL), mProf(NULL)
 {
     iLogger = new GLogRec(aLogFileName.empty() ? KLogFileName : aLogFileName);
     iProvider = new GFactory(string(), this);
@@ -312,6 +390,7 @@ Env::Env(const string& aSpecFile, const string& aLogFileName): Base(), iRoot(NUL
     iChMgr = new ChromoMgr(*this);
     iImpMgr = new ImportsMgr(*this);
     mIfResolver = new IfcResolver(*this);    
+    mObserver = new SystemObserver(*this);
     mProf = new GProfiler(this, KPInitData);
     // Profilers events
     /*
@@ -324,7 +403,7 @@ Env::Env(const string& aSpecFile, const string& aLogFileName): Base(), iRoot(NUL
 
 Env::Env(const string& aSpec, const string& aLogFileName, TBool aOpt): Base(), iRoot(NULL), iLogger(NULL),
     iSpecChromo(NULL), mEnPerfTrace(EFalse), mEnIfTrace(EFalse), mExtIfProv(NULL), mIfResolver(NULL),
-    mProf(NULL)
+    mObserver(NULL), mProf(NULL)
 {
     iLogger = new GLogRec(aLogFileName.empty() ? KLogFileName : aLogFileName);
     //iLogger = new GLogRec("Logger", aName + ".log");
@@ -335,6 +414,7 @@ Env::Env(const string& aSpec, const string& aLogFileName, TBool aOpt): Base(), i
     iChMgr = new ChromoMgr(*this);
     iImpMgr = new ImportsMgr(*this);
     mIfResolver = new IfcResolver(*this);    
+    mObserver = new SystemObserver(*this);
     mProf = new GProfiler(this, KPInitData);
     // Profilers events
     /*
@@ -359,6 +439,7 @@ Env::~Env()
     delete iProvider;
     delete iLogger;
     delete mIfResolver;
+    delete mObserver;
     delete mProf;
 }
 
@@ -496,6 +577,24 @@ MIface* Env::Call(const string& aSpec, string& aRes)
 	TBool rres = GetEVar(args.at(0), aRes);
 	if (!rres) 
 	    throw (runtime_error("Cannot find variable"));
+    } else if (name == "SetObserver") {
+	MExtIfProv* prov = ExtIfProv();
+	if (args.at(0) == GUri::Nil()) {
+	    SetObserver(NULL);
+	} else {
+	    if (prov == NULL) {
+		throw (runtime_error("Cannot get ext iface provider"));
+	    }
+	    MIface* iobs = prov->GetEIface(args.at(0), MAgentObserver::Type());
+	    if (iobs == NULL) {
+		throw (runtime_error("Cannot get agent observer iface" + args.at(0)));
+	    }
+	    MAgentObserver* obs = dynamic_cast<MAgentObserver*>(iobs);
+	    if (obs == NULL) {
+		throw (runtime_error("Cannot get agent observer" + args.at(0)));
+	    }
+	    SetObserver(obs);
+	}
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }

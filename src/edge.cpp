@@ -357,9 +357,7 @@ TBool Edge::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
     if (iMan != NULL) {
 	iMan->OnCompChanged(*this, aContName, aModif);
     }
-    for (auto observer : iObservers) {
-	observer->OnCompChanged(*this, aContName, aModif);
-    }
+    iEnv->Observer()->OnCompChanged(*this, aContName, aModif);
     return ETrue;
 }
 

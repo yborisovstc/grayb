@@ -4357,7 +4357,8 @@
 	    </sect3>
 	    <sect3 id="ds_prfopt_prp01_dpe"><title>To disable propagating events by default.</title>
 		<simpara> Agent can have API to change this behavior in order to allow owner to force propagating </simpara>
-		<simpara>I measured cumulative duration of OnCompAdding handler:</simpara>
+		<simpara>Ref <xref linkend="ds_elem_iact_unl"/> for discussion regarding design of native hier events propagation.</simpara>
+		<simpara>I measured cumulative duration of OnCompAdding handler on example des_1:</simpara>
 		<programlisting>
 		    6       Env constructor duration                44300859
 
@@ -4365,7 +4366,14 @@
 		    12      Elem OnCompChanged handling     7157076 77      92949 
 		</programlisting>
 		<simpara>So two handler takes about 25% of workload.</simpara>
-		<simpara>Ref <xref linkend="ds_elem_iact_unl"/> for discussion regarding design of native hier events propagation.</simpara>
+		<simpara>After disabling propagation:</simpara>
+		<programlisting>
+		    6       Env constructor duration                49065353        
+
+		    11      Elem OnCompAdding handling      103458  261     396     
+		    12      Elem OnCompChanged handling     4822625 77      62631   
+		</programlisting>
+		<simpara>So the part of handlers decreased to about 10%</simpara>
 	    </sect3>
 	    <sect3><title>To handle pre-event and post-event notifications. Currently the only post-events are handled.</title>
 	    </sect3>
@@ -4375,6 +4383,7 @@
 		    Recodred ifaces can be functors with operator () intended for creating a record. We need also to disable creating
 		    more that one recorder same time (at least at the moment)
 		</simpara>
+		<simpara>20181001 Done</simpara>
 	    </sect3>
 	    <sect3><title>To simplify second constructor </title>
 		<simpara>To simplify second constructor (that creates genuine native agents) via delegating constructor or using
@@ -4437,7 +4446,7 @@
 	</sect2>
 	<sect2><title>Verification</title>
 	    <programlisting>
-		fapm -lclm.log -pprof ../../fap2-studio-gtk/examples/syst_1.xml
+		fapm -lclm.log -pprof ../../fap2-studio-gtk/examples/des_1.xml
 	    </programlisting>
 	</sect2>
     </sect1>
