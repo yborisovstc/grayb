@@ -2119,11 +2119,18 @@
 		owner relates to its component, not only to direct components but also to the indirect, i.e. component of deeper layers.
 		So there could be different schemes of organizing of interactions between agents related via chain of elementary relations.</simpara>
 	</sect2>
-	<sect2><title>Unlimited propagation</title>
+	<sect2 id="ds_elem_iact_unl"><title>Unlimited propagation</title>
 	    <simpara>Currently (260ee587a) the approach is used to propagate notifications from comp to owner without any limit, to the notifications 
 		achieve system root finally. This approach is simple but it causes to system getting not scalable. To have system scalable the principle of 
 		isolating any relations needs to be used. Actually the tree structure itself is good example of such isolating of relations: the 
 		number of relations is reduced from bottom (comp) to uppper layers.</simpara>
+	    <simpara>Ref <xref linkend="ds_prfopt_prp01_dpe"/> for activity in the scope of performance optimization.</simpara>
+	    <simpara>How can the propagation be restricted? In fact there is no need to propagate event till the root. The only purpose of that is 
+		the need of notify the whole system observer of the system change. For instance studio acts as such observer. But notification of
+		system observer can be implemented with another approach - we can introduce observer iface in Env, so any node in native hier will
+		directly notify observer. Env in turn can propagate the notifications to observer. Or more simpler, the observer can request env for notification, so
+		env can expose observer to the system.</simpara>
+
 	</sect2>
     </sect1>
 
@@ -4348,8 +4355,17 @@
 	<sect2 id="ds_prfopt_prp01"><title>20181001 Proposals for optimization</title>
 	    <sect3><title>To avoid using observers on agent level - to have observer in env (Env API extension required) </title>
 	    </sect3>
-	    <sect3> <title>To disable propagating events by default. Agent can have API to change this behavior in order to allow
-		    owner to force propagating </title>
+	    <sect3 id="ds_prfopt_prp01_dpe"><title>To disable propagating events by default.</title>
+		<simpara> Agent can have API to change this behavior in order to allow owner to force propagating </simpara>
+		<simpara>I measured cumulative duration of OnCompAdding handler:</simpara>
+		<programlisting>
+		    6       Env constructor duration                44300859
+
+		    11      Elem OnCompAdding handling      331774  261     1271
+		    12      Elem OnCompChanged handling     7157076 77      92949 
+		</programlisting>
+		<simpara>So two handler takes about 25% of workload.</simpara>
+		<simpara>Ref <xref linkend="ds_elem_iact_unl"/> for discussion regarding design of native hier events propagation.</simpara>
 	    </sect3>
 	    <sect3><title>To handle pre-event and post-event notifications. Currently the only post-events are handled.</title>
 	    </sect3>

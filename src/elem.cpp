@@ -845,7 +845,6 @@ string Elem::EType(TBool aShort) const
 
 // Stated restriction: name to be unique, ref. ds_mut_nm
 
-#if 0
 MElem* Elem::GetComp(const string& aParent, const string& aName) const
 {
     MElem* res = NULL;
@@ -854,9 +853,9 @@ MElem* Elem::GetComp(const string& aParent, const string& aName) const
     }
     return res;
 }
-#endif
 
 
+#if 0
 MElem* Elem::GetComp(const string& aParent, const string& aName) const
 {
     MElem* res = NULL;
@@ -869,6 +868,7 @@ MElem* Elem::GetComp(const string& aParent, const string& aName) const
     }
     return res;
 }
+#endif
 
 TBool Elem::RebaseUri(const GUri& aUri, const MElem* aBase, GUri& aRes)
 {
@@ -2303,6 +2303,7 @@ void Elem::OnCompAdding(MElem& aComp, TBool aModif)
 // to implement cache update notification. Ref UC_010 
 TBool Elem::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 {
+    Pdstat(PEvents::DurStat_OnCompChanged, true);
     TBool res = ETrue;
     TIfRange rg = GetIfi(MAgent::Type(), this);
     // Using cache of agents because iterators will be broken
@@ -2333,6 +2334,7 @@ TBool Elem::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
     for (auto observer : iObservers) {
 	observer->OnCompChanged(aComp, aContName, aModif);
     }
+    Pdstat(PEvents::DurStat_OnCompChanged, false);
     return res;
 }
 

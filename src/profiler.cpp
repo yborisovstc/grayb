@@ -269,13 +269,16 @@ const PindDurStat::TPEvent& PindDurStat::getEvent(PEvent::TId aId) const
 void PindDurStat::Rec(PEvent::TId aEventId, bool aStart)
 {
     __ASSERT(mBuf.count(aEventId) > 0);
-    Pind::TClock cl = GetClock();
     TBufData& data = mBuf.at(aEventId);
-    if (aStart && data.mLevel++ == 0) {
-	data.mStart = cl;
+    if (aStart) {
+	if (data.mLevel++ == 0) {
+	    Pind::TClock cl = GetClock();
+	    data.mStart = cl;
+	}
     } else if (--data.mLevel == 0) {
 	__ASSERT(data.mStart != 0);
 	data.mEventsNum++;
+	Pind::TClock cl = GetClock();
 	data.mCumDur += cl - data.mStart;
     }
 }

@@ -19,7 +19,8 @@ enum {
 
     DurStat_Elem_Constr,
     DurStat_Elem_Constr_Chromo,
-    DurStat_OnCompAdd
+    DurStat_OnCompAdd,
+    DurStat_OnCompChanged
 };
 
 }
