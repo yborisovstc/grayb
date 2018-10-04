@@ -265,6 +265,7 @@ void Elem::Delay(long us)
 
 // Element
 
+/** Constructor creating inherited agent: name is defined, parent is Type() */
 Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMan), iEnv(aEnv),
     iParent(NULL), isRemoved(EFalse), mContext(NULL)
 {
@@ -276,8 +277,14 @@ Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMa
     iChromo = Provider()->CreateChromo();
     iChromo->Init(ENt_Node);
     ChromoNode croot = iChromo->Root();
+    string parent;
+    if (aName.empty()) {
+	iName = Type();
+    } else {
+	parent = Type();
+    }
     croot.SetAttr(ENa_Id, iName);
-    SetParent(Type());
+    croot.SetAttr(ENa_Parent, parent);
     Pdstat(PEvents::DurStat_Elem_Constr_Chromo, false);
     InsertContent(KCont_About);
     Pdstat(PEvents::DurStat_Elem_Constr, false);
@@ -286,22 +293,18 @@ Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMa
     //InsertContent(KCont_Ctg_Readonly);
 }
 
+
+/** Constructor creating native agent: name is Type(), parent is empty */
 Elem::Elem(Elem* aMan, MEnv* aEnv): iName(Type()), iMan(aMan), iEnv(aEnv),
     iParent(NULL), isRemoved(EFalse), mContext(NULL)
 {
-    /*
-    stringstream ss;
-    long prt = (long) this;
-    ss << prt << ";Constr";
-    Logger()->Write(EInfo, this, ss.str().c_str());
-    */
     iMut = Provider()->CreateChromo();
     iMut->Init(ENt_Node);
     iChromo = Provider()->CreateChromo();
     iChromo->Init(ENt_Node);
     ChromoNode croot = iChromo->Root();
     croot.SetAttr(ENa_Id, iName);
-    SetParent(string());
+    croot.SetAttr(ENa_Parent, string());
     InsertContent(KCont_About);
     //InsertContent(KCont_Categories);
     //InsertContent(KCont_Ctg_Readonly);
@@ -2048,6 +2051,7 @@ long Elem::GetClockElapsed(long aStart)
 // Ref uc_031, ds_rn_prnt
 MElem* Elem::CreateHeir(const string& aName, MElem* aMan, MElem* aContext)
 {
+    Pdstat(PEvents::DurStat_CreateHeir, true);
     MElem* heir = NULL;
     //Logger()->Write(EInfo, this, "CreateHeir, p1 ");
     if (IsProvided()) {
@@ -2097,6 +2101,7 @@ MElem* Elem::CreateHeir(const string& aName, MElem* aMan, MElem* aContext)
 	heir->SetParent(this);
 	if (EN_PERF_TRACE) Logger()->Write(EInfo, this, "CreateHeir, p4 ");
     }
+    Pdstat(PEvents::DurStat_CreateHeir, false);
     return heir;
 }
 

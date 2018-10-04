@@ -112,6 +112,7 @@ void DataBase::NotifyUpdate()
     if (iMan != NULL) {
 	iMan->OnChanged(*this);
     }
+    iEnv->Observer()->OnChanged(*this);
 }
 
 MIface *DataBase::DoGetObj(const char *aName)
@@ -1223,6 +1224,8 @@ template<class T> TBool DVar::HDt<T>::Set(MDVarGet* aInp)
 	dget->DtGet(data);
 	if (mData != data) {
 	    mData = data;
+	    mHost.UpdateProp();
+	    mHost.NotifyUpdate();
 	    res = ETrue;
 	}
     }

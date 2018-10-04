@@ -24,7 +24,13 @@ string Vert::PEType()
 
 Vert::Vert(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetParent(Type());
+    // TODO should by Vert::PEType() instead of Type() ?
+    if (aName.empty()) {
+	iName = Type();
+	SetParent(Elem::PEType());
+    } else {
+	SetParent(Type());
+    }
 }
 
 Vert::Vert(MElem* aMan, MEnv* aEnv):Elem(Type(), aMan, aEnv)

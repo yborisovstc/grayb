@@ -43,6 +43,7 @@ const PindDurStat::Idata KPindDurStatIdata = {
 	{DurStat_GetNode, "Elem GetNode"},
 	{DurStat_GetIfi, "Elem GetIfi"},
 	{DurStat_NotifNodeMutated, "Elem NotifyNodeMutated"},
+	{DurStat_CreateHeir, "Elem CreateHeir"},
     }
 };
 

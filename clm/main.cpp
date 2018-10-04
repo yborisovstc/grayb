@@ -55,16 +55,12 @@ int main(int argc, char* argv[])
 	}
 	if (res == 0) {
 	    // Init env and run
-	    // Tried to use google profiler, ref ds_prfopt_gpprof
-	    //ProfilerStart("./google.profile");
 	    mnt.initEnv();
 	    mnt.runModel();
 	    bool sdres = mnt.saveProfilerData();
 	    if (!sdres) {
 		cout << "Error on saving profile data to file";
 	    }
-	    //ProfilerFlush();
-	    //ProfilerStop();
 	}
     } else {
 	cout << help;

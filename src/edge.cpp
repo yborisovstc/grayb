@@ -304,6 +304,7 @@ MVert* Edge::Ref1() const
 	if (pr != NULL) res = pr->GetObj(res);
 	if (res == NULL) {
 	    Logger()->Write(EErr, this, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());
+	    res = pr->GetObj(res);
 	}
     }
     return res;

@@ -241,7 +241,8 @@ Elem* ProvDef::GetNode(const string& aUri)
     else { 
 	Elem* parent = NULL;
 	if (aUri.compare(Elem::Type()) == 0) {
-	    res = new Elem(NULL, iEnv);
+	    //res = new Elem(NULL, iEnv);
+	    res = new Elem(string(), NULL, iEnv);
 	}
 	else if (aUri.compare(Vertp::Type()) == 0) {
 	    parent = GetNode("Elem");
@@ -253,7 +254,8 @@ Elem* ProvDef::GetNode(const string& aUri)
 	}
 	else if (aUri.compare(Vert::Type()) == 0) {
 	    parent = GetNode("Elem");
-	    res = new Vert(NULL, iEnv);
+	    //res = new Vert(NULL, iEnv);
+	    res = new Vert(string(), NULL, iEnv);
 	}
 	else if (aUri.compare(ACapsule::Type()) == 0) {
 	    parent = GetNode("Elem");
@@ -534,6 +536,8 @@ Elem* ProvDef::GetNode(const string& aUri)
 	else if (aUri.compare(ATrBcmpVar::Type()) == 0) {
 	    parent = GetNode("ATrVar");
 	    res = new ATrBcmpVar(NULL, iEnv);
+	} else {
+	    iEnv->Logger()->Write(EErr, NULL, "Provider, GetNode: unknown type [%s] ", aUri.c_str());
 	}
 	if (res != NULL) {
 	    if (parent != NULL) {

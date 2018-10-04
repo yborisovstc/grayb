@@ -23,7 +23,8 @@ enum {
     DurStat_OnCompChanged,
     DurStat_GetNode,
     DurStat_GetIfi,
-    DurStat_NotifNodeMutated
+    DurStat_NotifNodeMutated,
+    DurStat_CreateHeir
 };
 
 }
