@@ -24,7 +24,11 @@ enum {
     DurStat_GetNode,
     DurStat_GetIfi,
     DurStat_NotifNodeMutated,
-    DurStat_CreateHeir
+    DurStat_CreateHeir,
+    DurStat_CreateNativeAgt,
+    DurStat_MutCont,
+    DurStat_TransfOsm,
+    DurStat_MutImport
 };
 
 }

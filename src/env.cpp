@@ -476,12 +476,12 @@ void Env::ConstructSystem()
 	    Logger()->Write(EInfo, iRoot, "Started of creating system, spec [%s]", iSpecFile.c_str());
 	    iRoot->SetMutation(root);
 	    iRoot->Mutate(EFalse, EFalse, EFalse, iRoot);
+	    Pclock(PEvents::Env_End_Constr, iRoot);
 	    gettimeofday(&tp, NULL);
 	    long int fin_us = tp.tv_sec * 1000000 + tp.tv_usec;
 	    ss << (fin_us - beg_us);
 	    TInt cpc = iRoot->GetCapacity();
 	    Logger()->Write(EInfo, iRoot, "Completed of creating system, nodes: %d, time, us: %s", cpc,  ss.str().c_str());
-	    Pclock(PEvents::Env_End_Constr, iRoot);
 	    //Logger()->Write(EInfo, iRoot, "Components");
 	    //iRoot->LogComps();
 	}

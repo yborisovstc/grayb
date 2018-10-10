@@ -230,7 +230,7 @@ void Ut_mut::test_MutSyst()
     ChromoNode mdel = root->AppendMutation(ENt_Rm);
     mdel.SetAttr(ENa_MutNode, "./edge1");
     root->Mutate();
-    MElem* erem = root->GetNode("./edge1");
+    MElem* erem = root->GetNode("./edge1", false);
     CPPUNIT_ASSERT_MESSAGE("Fail to remove edge", erem == 0);
     // Adding the edge again
     ChromoNode madd = root->AppendMutation(ENt_Node);

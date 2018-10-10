@@ -44,6 +44,10 @@ const PindDurStat::Idata KPindDurStatIdata = {
 	{DurStat_GetIfi, "Elem GetIfi"},
 	{DurStat_NotifNodeMutated, "Elem NotifyNodeMutated"},
 	{DurStat_CreateHeir, "Elem CreateHeir"},
+	{DurStat_CreateNativeAgt, "Creating native agent"},
+	{DurStat_MutCont, "Content changing mutation"},
+	{DurStat_TransfOsm, "Transform mut to OSM"},
+	{DurStat_MutImport, "Importing mutation"},
     }
 };
 

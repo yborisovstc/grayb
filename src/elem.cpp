@@ -1102,6 +1102,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
     }
     for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End(); rit++, order++)
     {
+	Pdstat(PEvents::DurStat_TransfOsm, true);
 	ChromoNode rno = (*rit);
 	// Omit inactive mutations
 	if (iEnv->ChMgr()->EnableOptimization() && rno.AttrExists(ENa_Inactive)) {
@@ -1165,6 +1166,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		rno.SetAttr(ENa_Parent, spuri);
 	    }
 	}
+	Pdstat(PEvents::DurStat_TransfOsm, false);
 	if (rno.AttrExists(ENa_Targ)) {
 	    // Targeted mutation, propagate downward, i.e redirect to comp owning the target
 	    // ref ds_mut_osm_linchr_lce
@@ -1193,13 +1195,17 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		ChangeAttr(rno, aRunTime, aCheckSafety, aTrialMode, aCtx);
 	    }
 	    else if (rnotype == ENt_Cont) {
+		Pdstat(PEvents::DurStat_MutCont, true);
 		DoMutChangeCont(rno, aRunTime, aCheckSafety, aTrialMode, aCtx);
+		Pdstat(PEvents::DurStat_MutCont, false);
 	    }
 	    else if (rnotype == ENt_Move) {
 		MoveNode(rno, aRunTime, aTrialMode);
 	    }
 	    else if (rnotype == ENt_Import) {
+		Pdstat(PEvents::DurStat_MutImport, true);
 		ImportNode(rno, aRunTime, aTrialMode);
+		Pdstat(PEvents::DurStat_MutImport, false);
 	    }
 	    else if (rnotype == ENt_Rm) {
 		RmNode(rno, aRunTime, aCheckSafety, aTrialMode, aCtx);
@@ -2053,41 +2059,27 @@ MElem* Elem::CreateHeir(const string& aName, MElem* aMan, MElem* aContext)
 {
     Pdstat(PEvents::DurStat_CreateHeir, true);
     MElem* heir = NULL;
-    //Logger()->Write(EInfo, this, "CreateHeir, p1 ");
     if (IsProvided()) {
+	Pdstat(PEvents::DurStat_CreateNativeAgt, true);
 	// TODO Needs to use GetNode instead of CreateNode?
 	heir = Provider()->CreateNode(Name(), aName, aMan, iEnv);
+	Pdstat(PEvents::DurStat_CreateNativeAgt, false);
 	// Persistently attach heir to final owner, but also set context for mutation, ref ds_daa_itn_sfo
 	aMan->AppendComp(heir);
 	heir->SetCtx(aContext);
-	// TODO To move AppendComp to CreateNode: initially set two-ways ownning relateion ?
+	// TODO To move AppendComp to CreateNode: initially set two-ways ownning relation ?
 	// Using "light" one-way relation on creation phase, ref. ds_daa_hunv
 	MElem* hprnt = heir->GetParent();
 	hprnt->RemoveChild(heir);
 	heir->SetParent(hprnt);
     } else {
 	__ASSERT(iParent != NULL);
-	if (iParent->IsProvided()) {
-	    // Parent is Agent - native element. Create via provider
-	    heir = Provider()->CreateNode(EType(), aName, aMan, iEnv);
-	    // Persistently attach heir to final owner, but also set context for mutation, ref ds_daa_itn_sfo
-	    aMan->AppendComp(heir);
-	    heir->SetCtx(iMan);
-	    // Using "light" one-way relation on creation phase, ref. ds_daa_hunv
-	    MElem* hprnt = heir->GetParent();
-	    hprnt->RemoveChild(heir);
-	    heir->SetParent(hprnt);
-	}
-	else {
-	    heir = iParent->CreateHeir(aName, aMan, iMan);
-	}
-	if (EN_PERF_TRACE) Logger()->Write(EInfo, this, "CreateHeir, p2 ");
+	heir = iParent->CreateHeir(aName, aMan, iMan);
 	// Mutate bare child with original parent chromo, mutate run-time only to have clean heir's chromo
 	ChromoNode croot = iChromo->Root();
 	heir->SetMutation(croot);
 	// Mutate run-time only - !! DON'T UPDATE CHROMO, ref UC_019
 	heir->Mutate(ETrue, EFalse, EFalse, heir);
-	if (EN_PERF_TRACE) Logger()->Write(EInfo, this, "CreateHeir, p3 ");
 	// Mutated with parent's own chromo - so panent's name is the type now. Set also the parent, but it will be updated further
 	heir->SetParent(Name());
 	// Relocate heir to hier from which the request of creating heir came
@@ -2099,7 +2091,6 @@ MElem* Elem::CreateHeir(const string& aName, MElem* aMan, MElem* aContext)
 	// Using "light" one-way relation on creation phase, ref. ds_daa_hunv
 	heir->SetParent(NULL);
 	heir->SetParent(this);
-	if (EN_PERF_TRACE) Logger()->Write(EInfo, this, "CreateHeir, p4 ");
     }
     Pdstat(PEvents::DurStat_CreateHeir, false);
     return heir;
