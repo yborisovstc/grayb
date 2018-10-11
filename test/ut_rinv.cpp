@@ -27,7 +27,7 @@ private:
     Env* iEnv;
 };
 
-//CPPUNIT_TEST_SUITE_REGISTRATION( Ut_Rinv );
+CPPUNIT_TEST_SUITE_REGISTRATION( Ut_Rinv );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(Ut_Rinv, "Ut_Rinv");
 
 void Ut_Rinv::setUp()

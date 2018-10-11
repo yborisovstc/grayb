@@ -102,7 +102,16 @@ class TstProv: public GProvider
 	virtual Elem* GetNode(const string& aUri);
 	virtual void AppendNodesInfo(vector<string>& aInfo);
 	virtual const string& ModulesPath() const;
+	static string GetParentName(const string& aUri);
 };
+
+string TstProv::GetParentName(const string& aUri)
+{
+    string res;
+    size_t pos = aUri.find_last_of(GUri::KParentSep);
+    res = aUri.substr(pos + 1);
+    return res;
+}
 
 Elem* TstProv::CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv)
 {
@@ -128,10 +137,14 @@ Elem* TstProv::GetNode(const string& aUri)
     } else {
 	Elem* parent = NULL;
 	if (aUri.compare(TstAgt::Type()) == 0) {
-	    parent = GetNode("Elem");
+	    //parent = GetNode("Elem");
 	    res = new TstAgt(NULL, iEnv);
 	}
 	if (res != NULL) {
+	    if (parent == NULL) {
+		string pname = GetParentName(res->PName());
+		parent = iEnv->Provider()->GetNode(pname);
+	    }
 	    if (parent != NULL) {
 		parent->AppendChild(res);
 	    }
@@ -180,6 +193,7 @@ class Ut_conn : public CPPUNIT_NS::TestFixture
     TstProv* mProv;
 };
 
+CPPUNIT_TEST_SUITE_REGISTRATION( Ut_conn );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(Ut_conn, "Ut_conn");
 
 

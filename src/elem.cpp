@@ -12,9 +12,6 @@
 #include "profiler_events.h"
 
 
-TBool Elem::EN_PERF_TRACE = EFalse;
-TBool Elem::EN_PERF_METR = EFalse;
-TBool Elem::EN_PERF_DBG1 = ETrue;
 TBool Elem::EN_MUT_LIM = ETrue;
 
 const string Elem::KCont_About = "About";
@@ -1870,26 +1867,7 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
     TBool ecsaf = iEnv->ChMgr()->EnableCheckSafety();
     TBool mutadded = EFalse;
     TBool res = EFalse;
-    TBool ptrace = EN_PERF_TRACE;
-    TBool ptevent = EFalse;
     //Log(TLog(EInfo, this) + "Adding element [" + sname + "]");
-    //if (EN_PERF_METR && iName == "Held1" && sname == "1211685360"/* && sparent == "/(Elem:)Root/(Elem:)Modules/(Elem:)VisComps/(Extender:)DrawingElemExt"*/) {
-    //if (EN_PERF_METR && EN_PERF_DBG1 && iName == "DrawingElem" && sname == "Logspec") {
-    if (EN_PERF_METR && EN_PERF_DBG1 && iName == "Velocity_L" && sname == "448726636") {
-	Logger()->Write(EInfo, this, "Point_1");
-	ptrace = ETrue;
-	iEnv->SetSBool(MEnv::ESb_EnPerfTrace, ETrue);
-	ptevent = ETrue;
-    }
-    /* Profiling using wall-clock. It doesn't shows time interval within given thread, other threads are affecting
-       struct timeval tp;
-       gettimeofday(&tp, NULL);
-       long int t1 = tp.tv_sec * 1000000 + tp.tv_usec;
-       */
-    //timespec t1;
-    //clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t1);
-    if (ptrace) Logger()->Write(EInfo, this, "Adding node [%s], t1", sname.c_str());
-    long t1 = GetClock();
 
     __ASSERT(!sname.empty());
     /*
@@ -1932,10 +1910,7 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 	    if (parent != NULL) {
 		if (epheno || node == this || !ecsaf || IsDirectInheritedComp(node)) {
 		    // Create heir from the parent
-		    if (ptrace) { long t1_2 = GetClockElapsed(t1); Logger()->Write(EInfo, this, "Adding node, t1-t2: %d", t1_2);}
-		    long t3; if (ptrace) t3 = GetClock();
 		    elem = parent->CreateHeir(sname, node, NULL);
-		    if (ptrace) { long t3_4 = GetClockElapsed(t3); Logger()->Write(EInfo, this, "Adding node, t3-t4: %d", t3_4);}
 		    // Remove external parent from system
 		    // [YB] DON'T remove parent, otherwise the inheritance chain will be broken
 		    if (ext_parent) {
@@ -1971,10 +1946,8 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 			    }
 			    // Mutate object ignoring run-time option. This is required to keep nodes chromo even for inherited nodes
 			    // To avoid this inherited nodes chromo being attached we just don't attach inherited nodes chromo
-			    long t5; if (ptrace) t5 = GetClock();
 			    elem->SetMutation(aNode);
 			    elem->Mutate(EFalse, ecsaf, aTrialMode, aRunTime ? elem : aCtx);
-			    if (ptrace) { long t5_6 = GetClockElapsed(t3); Logger()->Write(EInfo, this, "Adding node, t5-t6: %d", t5_6);}
 			    //Logger()->Write(EInfo, this, "Added node [%s:%s]", elem->EType().c_str(), elem->Name().c_str());
 			    /*
 			       if (IsLogeventCreOn()) {
@@ -2009,25 +1982,6 @@ MElem* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
     if (!aRunTime && !mutadded && !aTrialMode) {
 	ChromoNode chn = iChromo->Root().AddChild(aNode, ETrue, EFalse);
 	NotifyNodeMutated(chn, aCtx);
-    }
-    if (EN_PERF_METR && elem != NULL) {
-	/* Profiling using wall-clock. It doesn't shows time interval within given thread, other threads are affecting
-	   gettimeofday(&tp, NULL);
-	   long int t2 = tp.tv_sec * 1000000 + tp.tv_usec;
-	   int nodes = elem->GetCapacity();
-	   long tspan = t2-t1;
-	   long tspan_n = tspan/(nodes + 1);
-	   Logger()->Write(EInfo, this, "Created comp [%s] in node [%s];%d;%d", sname.c_str(), snode.c_str(), tspan, tspan_n);
-	   */
-	timespec te;
-	//long tspan = GetClockElapsed(t1, te);
-	long tspan = GetClockElapsed(t1);
-	int nodes = elem->GetCapacity();
-	long tspan_n = tspan/(nodes + 1);
-	Logger()->Write(EInfo, this, "Created comp [%s] in node [%s];%d;%d;%d", sname.c_str(), snode.c_str(), nodes, tspan, tspan_n);
-    }
-    if (ptevent) {
-	iEnv->SetSBool(MEnv::ESb_EnPerfTrace, EFalse);
     }
     return elem;
 }

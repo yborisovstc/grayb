@@ -129,7 +129,9 @@ MElem* ImportsMgr::DoImport(const string& aUri)
 	ChromoNode sel = chromo->Root().GetNodeByMhUri(moduri);
 	if (sel.Handle() != NULL) {
 	    // Reduce chromo to target node, mutate and check
+	    mHost.Pdstat(PEvents::DurStat_ImpReduceToSel, true);
 	    chromo->ReduceToSelection(sel);
+	    mHost.Pdstat(PEvents::DurStat_ImpReduceToSel, false);
 	    ImportToNode(icontr, chromo->Root(), sel);
 	    // Rebasing uri to mut root, and get the target node
 	    GUri selr(".");
@@ -481,7 +483,8 @@ void Env::ConstructSystem()
 	    long int fin_us = tp.tv_sec * 1000000 + tp.tv_usec;
 	    ss << (fin_us - beg_us);
 	    TInt cpc = iRoot->GetCapacity();
-	    Logger()->Write(EInfo, iRoot, "Completed of creating system, nodes: %d, time, us: %s", cpc,  ss.str().c_str());
+	    TInt cpi = iImpMgr->GetImportsContainer() ? iImpMgr->GetImportsContainer()->GetCapacity() : 0;
+	    Logger()->Write(EInfo, iRoot, "Completed of creating system, nodes: %d, imported: %d, time, us: %s", cpc,  cpi, ss.str().c_str());
 	    //Logger()->Write(EInfo, iRoot, "Components");
 	    //iRoot->LogComps();
 	}

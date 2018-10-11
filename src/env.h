@@ -151,11 +151,11 @@ class Env: public Base, public MEnv
     // From MIface
     virtual MIface* Call(const string& aSpec, string& aRes);
     string Mid() const override { return string();}
-    protected:
+    public:
     /** Profiler helpers */
-    void Pclock(PEvent::TId aEventId, MElem* aNode) { Profiler()->Clock()(aEventId, aNode);}
-    void Pdur(PEvent::TId aEventId) { Profiler()->Dur()(aEventId, nullptr);}
-    void Pdstat(PEvent::TId aEventId, bool aStart) { Profiler()->DurStat()(aEventId, aStart);}
+    inline void Pclock(PEvent::TId aEventId, MElem* aNode) { Profiler()->Clock()(aEventId, aNode);}
+    inline void Pdur(PEvent::TId aEventId) { Profiler()->Dur()(aEventId, nullptr);}
+    inline void Pdstat(PEvent::TId aEventId, bool aStart) { Profiler()->DurStat()(aEventId, aStart);}
 
     protected:
     class EIfu: public Ifu {

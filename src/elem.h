@@ -353,10 +353,7 @@
 	    // Context, ref ds_daa_itn_sfo
 	    MElem* mContext;
 
-	    static TBool EN_PERF_TRACE;
-	    static TBool EN_PERF_METR;
 	    static TBool EN_MUT_LIM;
-	    static TBool EN_PERF_DBG1;
 	    static const string KCont_About;
 	    /*
 	       protected:

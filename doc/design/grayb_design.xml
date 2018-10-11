@@ -4375,6 +4375,31 @@
 		</programlisting>
 		<simpara>So the part of handlers decreased to about 10%</simpara>
 	    </sect3>
+	    <sect3><title>Optimization point: Import</title>
+		<simpara>Tracing importing process. I see that operation of reducing module's chromo to selection takes
+		    too much time, about 20%:</simpara>
+		<programlisting>
+		    6       Env constructor duration                112200342
+		    ...
+		    17      Creating native agent   13275798        470     28246
+		    18      Content changing mutation       20858270        151     138134
+		    19      Transform mut to OSM    11313569        825     13713
+		    20      Importing mutation      78922024        10      7892202
+		    21      Importing, reduce to sel        22480111        17      1322359
+		</programlisting>
+	    </sect3>
+	    <sect3><title>Optimization point: changing content</title>
+		<simpara>It takes around 20% of model creation time:</simpara>
+		<programlisting>
+		    6       Env constructor duration                112200342
+		    ...
+		    17      Creating native agent   13275798        470     28246
+		    18      Content changing mutation       20858270        151     138134
+		    19      Transform mut to OSM    11313569        825     13713
+		    20      Importing mutation      78922024        10      7892202
+		    21      Importing, reduce to sel        22480111        17      1322359
+		</programlisting>
+	    </sect3>
 	    <sect3><title>To handle pre-event and post-event notifications. Currently the only post-events are handled.</title>
 	    </sect3>
 	    <sect3 id="ds_prfopt_prp01_ipind"><title>Profiling: to introduce ifaces for Pind recorders</title>

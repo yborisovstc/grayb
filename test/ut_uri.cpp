@@ -34,6 +34,7 @@ private:
     Env* iEnv;
 };
 
+CPPUNIT_TEST_SUITE_REGISTRATION( Ut_uri );
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(Ut_uri, "Ut_uri");
 
 const string KModulesPath = "../modules/";

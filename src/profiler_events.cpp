@@ -48,6 +48,7 @@ const PindDurStat::Idata KPindDurStatIdata = {
 	{DurStat_MutCont, "Content changing mutation"},
 	{DurStat_TransfOsm, "Transform mut to OSM"},
 	{DurStat_MutImport, "Importing mutation"},
+	{DurStat_ImpReduceToSel, "Importing, reduce to sel"},
     }
 };
 

@@ -28,7 +28,8 @@ enum {
     DurStat_CreateNativeAgt,
     DurStat_MutCont,
     DurStat_TransfOsm,
-    DurStat_MutImport
+    DurStat_MutImport,
+    DurStat_ImpReduceToSel
 };
 
 }

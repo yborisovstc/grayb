@@ -16,12 +16,40 @@
 // TODO [YB] To import from build variable
 const string KModulesPath = "/usr/share/grayb/modules/";
 
+
+
+/** Generator of native agent factory registry item */
+template<typename T> pair<string, ProvDef::TFact*> Fact() {
+    return pair<string, ProvDef::TFact*>
+	(T::Type(), [](const string &name, MElem* parent, MEnv* env)->Elem* { return new T(name, parent, env);});
+}
+
+
+/** Native agents factory registry */
+const ProvDef::TReg ProvDef::mReg = {
+    /*{Elem::Type(), [](const string &name, MElem* parent, MEnv* env)->Elem* { return new Elem(name, parent, env);}},*/
+    Fact<Elem>(),
+    Fact<Vert>()
+};
+
+const unordered_map<int, string> mm = {
+    pair<int, string>(1, "fdfd")
+};
+
 ProvDef::ProvDef(const string& aName, MEnv* aEnv): GProvider(aName, aEnv)
 {
 }
 
 ProvDef::~ProvDef()
 {
+}
+
+string ProvDef::GetParentName(const string& aUri)
+{
+    string res;
+    size_t pos = aUri.find_last_of(GUri::KParentSep);
+    res = aUri.substr(pos + 1);
+    return res;
 }
 
 Elem* ProvDef::CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv)
@@ -241,305 +269,235 @@ Elem* ProvDef::GetNode(const string& aUri)
     else { 
 	Elem* parent = NULL;
 	if (aUri.compare(Elem::Type()) == 0) {
-	    //res = new Elem(NULL, iEnv);
 	    res = new Elem(string(), NULL, iEnv);
 	}
 	else if (aUri.compare(Vertp::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new Vertp(NULL, iEnv);
 	}
 	else if (aUri.compare(Systp::Type()) == 0) {
-	    parent = GetNode("Vertp");
 	    res = new Systp(NULL, iEnv);
 	}
 	else if (aUri.compare(Vert::Type()) == 0) {
-	    parent = GetNode("Elem");
-	    //res = new Vert(NULL, iEnv);
 	    res = new Vert(string(), NULL, iEnv);
 	}
 	else if (aUri.compare(ACapsule::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new ACapsule(NULL, iEnv);
 	}
 	else if (aUri.compare(Edge::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new Edge(NULL, iEnv);
 	}
 	else if (aUri.compare(Aedge::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new Aedge(NULL, iEnv);
 	}
 	else if (aUri.compare(AMod::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new AMod(NULL, iEnv);
 	}
 	else if (aUri.compare(AImports::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new AImports(NULL, iEnv);
 	}
 	else if (aUri.compare(Prop::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new Prop(NULL, iEnv);
 	}
 	else if (aUri.compare(ExtenderAgent::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new ExtenderAgent(NULL, iEnv);
 	}
 	else if (aUri.compare(ExtenderAgentInp::Type()) == 0) {
-	    parent = GetNode("ExtenderAgent");
 	    res = new ExtenderAgentInp(NULL, iEnv);
 	}
 	else if (aUri.compare(ExtenderAgentOut::Type()) == 0) {
-	    parent = GetNode("ExtenderAgent");
 	    res = new ExtenderAgentOut(NULL, iEnv);
 	}
 	else if (aUri.compare(AExtender::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new AExtender(NULL, iEnv);
 	}
 	else if (aUri.compare(ASocket::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new ASocket(NULL, iEnv);
 	}
 	else if (aUri.compare(ASocketInp::Type()) == 0) {
-	    parent = GetNode("ASocket");
 	    res = new ASocketInp(NULL, iEnv);
 	}
 	else if (aUri.compare(ASocketOut::Type()) == 0) {
-	    parent = GetNode("ASocket");
 	    res = new ASocketOut(NULL, iEnv);
 	}
 	else if (aUri.compare(ASocketMc::Type()) == 0) {
-	    parent = GetNode("ASocket");
 	    res = new ASocketMc(NULL, iEnv);
 	}
 	else if (aUri.compare(Incaps::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new Incaps(NULL, iEnv);
 	}
 	else if (aUri.compare(DataBase::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new DataBase(NULL, iEnv);
 	}
 	else if (aUri.compare(DVar::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new DVar(NULL, iEnv);
 	}
 	else if (aUri.compare(FuncBase::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new FuncBase(NULL, iEnv);
 	}
 	else if (aUri.compare(ATrBase::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new ATrBase(NULL, iEnv);
 	}
 	else if (aUri.compare(AFunc::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new AFunc(NULL, iEnv);
 	}
 	else if (aUri.compare(StateAgent::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new StateAgent(NULL, iEnv);
 	}
 	else if (aUri.compare(ADes::Type()) == 0) {
-	    parent = GetNode("Elem");
 	    res = new ADes(NULL, iEnv);
 	}
 	else if (aUri.compare(Syst::Type()) == 0) {
-	    parent = GetNode("Vert");
 	    res = new Syst(NULL, iEnv);
 	}
 	else if (aUri.compare(ConnPointBase::Type()) == 0) {
-	    parent = GetNode("Vert");
 	    res = new ConnPointBase(NULL, iEnv);
 	}
 	else if (aUri.compare(ConnPointBaseInp::Type()) == 0) {
-	    parent = GetNode("ConnPointBase");
 	    res = new ConnPointBaseInp(NULL, iEnv);
 	}
 	else if (aUri.compare(ConnPointBaseOut::Type()) == 0) {
-	    parent = GetNode("ConnPointBase");
 	    res = new ConnPointBaseOut(NULL, iEnv);
 	}
 	else if (aUri.compare(ConnPointMc::Type()) == 0) {
-	    parent = GetNode("Vert");
 	    res = new ConnPointMc(NULL, iEnv);
 	}
 	else if (aUri.compare(Description::Type()) == 0) {
-	    parent = GetNode("Prop");
 	    res = new Description(NULL, iEnv);
 	}
 	else if (aUri.compare(DInt::Type()) == 0) {
-	    parent = GetNode("DataBase");
 	    res = new DInt(NULL, iEnv);
 	}
 	else if (aUri.compare(DVar::Type()) == 0) {
-	    parent = GetNode("DataBase");
 	    res = new DVar(NULL, iEnv);
 	}
 	else if (aUri.compare(DNInt::Type()) == 0) {
-	    parent = GetNode("DInt");
 	    res = new DNInt(NULL, iEnv);
 	}
 	else if (aUri.compare(AFunInt::Type()) == 0) {
-	    parent = GetNode("FuncBase");
 	    res = new AFunInt(NULL, iEnv);
 	}
 	else if (aUri.compare(AFunVar::Type()) == 0) {
-	    parent = GetNode("FuncBase");
 	    res = new AFunVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AFAddVar::Type()) == 0) {
-	    parent = GetNode("AFunVar");
 	    res = new AFAddVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AFMplVar::Type()) == 0) {
-	    parent = GetNode("AFunVar");
 	    res = new AFMplVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AFMplncVar::Type()) == 0) {
-	    parent = GetNode("AFunVar");
 	    res = new AFMplncVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AFMplinvVar::Type()) == 0) {
-	    parent = GetNode("AFunVar");
 	    res = new AFMplinvVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AFCastVar::Type()) == 0) {
-	    parent = GetNode("AFunVar");
 	    res = new AFCastVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AFCpsMtrdVar::Type()) == 0) {
-	    parent = GetNode("AFunVar");
 	    res = new AFCpsMtrdVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AFCpsVectVar::Type()) == 0) {
-	    parent = GetNode("AFunVar");
 	    res = new AFCpsVectVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AFDivVar::Type()) == 0) {
-	    parent = GetNode("AFunVar");
 	    res = new AFDivVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AFBcmpVar::Type()) == 0) {
-	    parent = GetNode("AFunVar");
 	    res = new AFBcmpVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AFCmpVar::Type()) == 0) {
-	    parent = GetNode("AFunVar");
 	    res = new AFCmpVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AFAtVar::Type()) == 0) {
-	    parent = GetNode("AFunVar");
 	    res = new AFAtVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AFBoolNegVar::Type()) == 0) {
-	    parent = GetNode("AFunVar");
 	    res = new AFBoolNegVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AFSwitchVar::Type()) == 0) {
-	    parent = GetNode("AFunVar");
 	    res = new AFSwitchVar(NULL, iEnv);
 	}
 	else if (aUri.compare(AIncInt::Type()) == 0) {
-	    parent = GetNode("AFunInt");
 	    res = new AIncInt(NULL, iEnv);
 	}
 	else if (aUri.compare(AFunIntRes::Type()) == 0) {
-	    parent = GetNode("AFunInt");
 	    res = new AFunIntRes(NULL, iEnv);
 	}
 	else if (aUri.compare(AAddInt::Type()) == 0) {
-	    parent = GetNode("AFunInt");
 	    res = new AAddInt(NULL, iEnv);
 	}
 	else if (aUri.compare(AFuncInt::Type()) == 0) {
-	    parent = GetNode("AFunc");
 	    res = new AFuncInt(NULL, iEnv);
 	}
 	else if (aUri.compare(AFAddInt::Type()) == 0) {
-	    parent = GetNode("AFunc");
 	    res = new AFAddInt(NULL, iEnv);
 	}
 	else if (aUri.compare(AFSubInt::Type()) == 0) {
-	    parent = GetNode("AFuncInt");
 	    res = new AFSubInt(NULL, iEnv);
 	}
 	else if (aUri.compare(AFConvInt::Type()) == 0) {
-	    parent = GetNode("AFuncInt");
 	    res = new AFConvInt(NULL, iEnv);
 	}
 	else if (aUri.compare(AFLimInt::Type()) == 0) {
-	    parent = GetNode("AFunc");
 	    res = new AFLimInt(NULL, iEnv);
 	}
 	else if (aUri.compare(AFDivInt::Type()) == 0) {
-	    parent = GetNode("AFunc");
 	    res = new AFDivInt(NULL, iEnv);
 	}
 	else if (aUri.compare(AFGTInt::Type()) == 0) {
-	    parent = GetNode("AFunc");
 	    res = new AFGTInt(NULL, iEnv);
 	}
 	else if (aUri.compare(AFBoolToInt::Type()) == 0) {
-	    parent = GetNode("AFunc");
 	    res = new AFBoolToInt(NULL, iEnv);
 	}
 	else if (aUri.compare(ATrInt::Type()) == 0) {
-	    parent = GetNode("ATrBase");
 	    res = new ATrInt(NULL, iEnv);
 	}
 	else if (aUri.compare(ATrVar::Type()) == 0) {
-	    parent = GetNode("ATrBase");
 	    res = new ATrVar(NULL, iEnv);
 	}
 	else if (aUri.compare(ATrIncInt::Type()) == 0) {
-	    parent = GetNode("ATrInt");
 	    res = new ATrIncInt(NULL, iEnv);
 	}
 	else if (aUri.compare(ATrSubInt::Type()) == 0) {
-	    parent = GetNode("ATrInt");
 	    res = new ATrSubInt(NULL, iEnv);
 	}
 	else if (aUri.compare(ATrMplInt::Type()) == 0) {
-	    parent = GetNode("ATrInt");
 	    res = new ATrMplInt(NULL, iEnv);
 	}
 	else if (aUri.compare(ATrDivInt::Type()) == 0) {
-	    parent = GetNode("ATrInt");
 	    res = new ATrDivInt(NULL, iEnv);
 	}
 	else if (aUri.compare(ATrAddVar::Type()) == 0) {
-	    parent = GetNode("ATrVar");
 	    res = new ATrAddVar(NULL, iEnv);
 	}
 	else if (aUri.compare(ATrMplVar::Type()) == 0) {
-	    parent = GetNode("ATrVar");
 	    res = new ATrMplVar(NULL, iEnv);
 	}
 	else if (aUri.compare(ATrDivVar::Type()) == 0) {
-	    parent = GetNode("ATrVar");
 	    res = new ATrDivVar(NULL, iEnv);
 	}
 	else if (aUri.compare(ATrCpsVectVar::Type()) == 0) {
-	    parent = GetNode("ATrVar");
 	    res = new ATrCpsVectVar(NULL, iEnv);
 	}
 	else if (aUri.compare(ATrSwitchVar::Type()) == 0) {
-	    parent = GetNode("ATrVar");
 	    res = new ATrSwitchVar(NULL, iEnv);
 	}
 	else if (aUri.compare(ATrAtVar::Type()) == 0) {
-	    parent = GetNode("ATrVar");
 	    res = new ATrAtVar(NULL, iEnv);
 	}
 	else if (aUri.compare(ATrBcmpVar::Type()) == 0) {
-	    parent = GetNode("ATrVar");
 	    res = new ATrBcmpVar(NULL, iEnv);
 	} else {
 	    iEnv->Logger()->Write(EErr, NULL, "Provider, GetNode: unknown type [%s] ", aUri.c_str());
 	}
 	if (res != NULL) {
+	    if (parent == NULL) {
+		string pname = GetParentName(res->PName());
+		if (!pname.empty())
+		    parent = iEnv->Provider()->GetNode(pname);
+	    }
 	    if (parent != NULL) {
 		parent->AppendChild(res);
 	    }
