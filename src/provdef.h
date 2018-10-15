@@ -11,7 +11,7 @@ class ProvDef: public GProvider
 {
     public:
 	/** Native agent factory function */
-	using TFact = Elem* (const string &, MElem*, MEnv*);
+	using TFact = Elem* (const string &aName, MElem* aMan, MEnv* aEnv);
 	/** Registry of native agents factory function */
 	using TReg = unordered_map<string, TFact*>;
     public:
@@ -24,6 +24,8 @@ class ProvDef: public GProvider
 	virtual void AppendNodesInfo(vector<string>& aInfo);
 	virtual const string& ModulesPath() const;
     protected:
+	/** Creates native agent */
+	Elem* CreateAgent(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv) const;
 	static string GetParentName(const string& aUri);
     private:
 	vector<string> iNodesInfo;

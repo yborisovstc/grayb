@@ -114,6 +114,7 @@
 	    virtual const string& Name() const { return iName;}
 	    // Predefined extended type, for core elements only
 	    static string PEType();
+	    Elem(const string &aType, const string &aName, MElem* aMan, MEnv* aEnv);
 	    Elem(const string &aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	    Elem(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	    virtual void Delete();
@@ -263,6 +264,12 @@
 	    virtual MElem* GetComp(TInt aInd);
 	    static string ContentCompId(const string& aOwnerName, const string& aCompName);
 	protected:
+	    /** Helper. Sets cromo root attributes: parent, name */
+	    void SetCrAttr(const string& aEType, const string& aName);
+	    /** Helper. Gets type from extended type */
+	    string GetType(const string& aEType) const;
+	    /** Helper. Gets parent extended type from agent extended type */
+	    string GetPType(const string& aEType) const;
 	    void InsertContent(const string& aName);
 	    void RemoveContent(const string& aName);
 	    void RemoveContentComp(const string& aOwner, const string& aComp);

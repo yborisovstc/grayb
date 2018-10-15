@@ -19,7 +19,7 @@ const string KModulesPath = "/usr/share/grayb/modules/";
 
 
 /** Generator of native agent factory registry item */
-template<typename T> pair<string, ProvDef::TFact*> Fact() {
+template<typename T> pair<string, ProvDef::TFact*> Item() {
     return pair<string, ProvDef::TFact*>
 	(T::Type(), [](const string &name, MElem* parent, MEnv* env)->Elem* { return new T(name, parent, env);});
 }
@@ -28,8 +28,17 @@ template<typename T> pair<string, ProvDef::TFact*> Fact() {
 /** Native agents factory registry */
 const ProvDef::TReg ProvDef::mReg = {
     /*{Elem::Type(), [](const string &name, MElem* parent, MEnv* env)->Elem* { return new Elem(name, parent, env);}},*/
-    Fact<Elem>(),
-    Fact<Vert>()
+    Item<Elem>(), Item<Vertp>(), Item<Systp>(), Item<Vert>(), Item<ACapsule>(), Item<Edge>(), Item<Aedge>(), Item<AMod>(),
+    Item<AImports>(), Item<Prop>(), Item<ExtenderAgent>(), Item<ExtenderAgentInp>(), Item<ExtenderAgentOut>(), Item<AExtender>(),
+    Item<ASocket>(), Item<ASocketInp>(), Item<ASocketOut>(), Item<ASocketMc>(), Item<Incaps>(), Item<DataBase>(),
+    Item<DVar>(), Item<FuncBase>(), Item<ATrBase>(), Item<AFunc>(), Item<StateAgent>(), Item<ADes>(),
+    Item<DInt>(), Item<DVar>(), Item<DNInt>(), Item<AFunInt>(), Item<AFunVar>(), Item<AFAddVar>(),
+    Item<AFMplVar>(), Item<AFMplncVar>(), Item<AFMplinvVar>(), Item<AFCastVar>(), Item<AFCpsMtrdVar>(), Item<AFCpsVectVar>(),
+    Item<AFDivVar>(), Item<AFBcmpVar>(), Item<AFCmpVar>(), Item<AFAtVar>(), Item<AFBoolNegVar>(), Item<AFSwitchVar>(),
+    Item<AIncInt>(), Item<AFunIntRes>(), Item<AAddInt>(), Item<AFuncInt>(), Item<AFAddInt>(), Item<AFSubInt>(),
+    Item<AFConvInt>(), Item<AFLimInt>(), Item<AFDivInt>(), Item<AFGTInt>(), Item<AFBoolToInt>(), Item<ATrInt>(),
+    Item<ATrVar>(), Item<ATrInt>(), Item<ATrSubInt>(), Item<ATrMplInt>(), Item<ATrDivInt>(), Item<ATrAddVar>(),
+    Item<ATrMplVar>(), Item<ATrDivVar>(), Item<ATrCpsVectVar>(), Item<ATrSwitchVar>(), Item<ATrAtVar>(), Item<ATrBcmpVar>()
 };
 
 const unordered_map<int, string> mm = {
@@ -55,6 +64,7 @@ string ProvDef::GetParentName(const string& aUri)
 Elem* ProvDef::CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv)
 {
     Elem* res = NULL;
+#if 0
     if (aType.compare(Vert::Type()) == 0) {
 	res = new Vert(aName, aMan, aEnv);
     }
@@ -250,6 +260,10 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, MElem* aMan,
     else if (aType.compare(ADes::Type()) == 0) {
 	res = new ADes(aName, aMan, aEnv);
     }
+#endif
+
+    res = CreateAgent(aType, aName, aMan, iEnv);
+
     if (res != NULL) {
 	Elem* parent = GetNode(aType);
 	if (parent != NULL) {
@@ -268,6 +282,7 @@ Elem* ProvDef::GetNode(const string& aUri)
     }
     else { 
 	Elem* parent = NULL;
+#if 0
 	if (aUri.compare(Elem::Type()) == 0) {
 	    res = new Elem(string(), NULL, iEnv);
 	}
@@ -492,6 +507,10 @@ Elem* ProvDef::GetNode(const string& aUri)
 	} else {
 	    iEnv->Logger()->Write(EErr, NULL, "Provider, GetNode: unknown type [%s] ", aUri.c_str());
 	}
+#endif
+
+	res = CreateAgent(aUri, string(), NULL, iEnv);
+
 	if (res != NULL) {
 	    if (parent == NULL) {
 		string pname = GetParentName(res->PName());
@@ -552,4 +571,14 @@ void ProvDef::AppendNodesInfo(vector<string>& aInfo)
 const string& ProvDef::ModulesPath() const
 {
     return KModulesPath;
+}
+
+Elem* ProvDef::CreateAgent(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv) const
+{
+    Elem* res = NULL;
+    if (mReg.count(aType) > 0) {
+	TFact* fact = mReg.at(aType);
+	res = fact(aName, aMan, aEnv);
+    }
+    return res;
 }
