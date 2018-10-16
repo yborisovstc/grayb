@@ -16,12 +16,7 @@ string ACapsule::PEType()
 
 ACapsule::ACapsule(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ACapsule::ACapsule(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
-{
-    SetParent(Elem::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 TBool ACapsule::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
@@ -70,12 +65,7 @@ string ConnPointBase::PEType()
 
 ConnPointBase::ConnPointBase(const string& aName, MElem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ConnPointBase::ConnPointBase(MElem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
-{
-    SetParent(Vert::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *ConnPointBase::DoGetObj(const char *aName)
@@ -315,17 +305,9 @@ string ConnPointMc::PEType()
 
 ConnPointMc::ConnPointMc(const string& aName, MElem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
 {
-    SetParent(Type());
+    SetCrAttr(PEType(), aName);
     //InsertContent("Required");
     //InsertContent("Provided");
-    ChangeCont("", ETrue, "Required");
-    ChangeCont("", ETrue, "Provided");
-    ChangeCont(ConnPointMc::KContDir_Val_Regular, ETrue, ConnPointMc::KContDir);
-}
-
-ConnPointMc::ConnPointMc(MElem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
-{
-    SetParent(Vert::PEType());
     ChangeCont("", ETrue, "Required");
     ChangeCont("", ETrue, "Provided");
     ChangeCont(ConnPointMc::KContDir_Val_Regular, ETrue, ConnPointMc::KContDir);
@@ -543,12 +525,7 @@ string ConnPointBaseInp::PEType()
 
 ConnPointBaseInp::ConnPointBaseInp(const string& aName, MElem* aMan, MEnv* aEnv): ConnPointBase(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ConnPointBaseInp::ConnPointBaseInp(MElem* aMan, MEnv* aEnv): ConnPointBase(Type(), aMan, aEnv)
-{
-    SetParent(ConnPointBase::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MCompatChecker::TDir ConnPointBaseInp::GetDir() const
@@ -565,12 +542,7 @@ string ConnPointBaseOut::PEType()
 
 ConnPointBaseOut::ConnPointBaseOut(const string& aName, MElem* aMan, MEnv* aEnv): ConnPointBase(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ConnPointBaseOut::ConnPointBaseOut(MElem* aMan, MEnv* aEnv): ConnPointBase(Type(), aMan, aEnv)
-{
-    SetParent(ConnPointBase::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MCompatChecker::TDir ConnPointBaseOut::GetDir() const
@@ -588,12 +560,7 @@ string ExtenderAgent::PEType()
 
 ExtenderAgent::ExtenderAgent(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), mCompatChecker(*this)
 {
-    SetParent(Type());
-}
-
-ExtenderAgent::ExtenderAgent(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), mCompatChecker(*this)
-{
-    SetParent(Elem::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *ExtenderAgent::DoGetObj(const char *aName)
@@ -731,12 +698,7 @@ string ExtenderAgentInp::PEType()
 
 ExtenderAgentInp::ExtenderAgentInp(const string& aName, MElem* aMan, MEnv* aEnv): ExtenderAgent(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ExtenderAgentInp::ExtenderAgentInp(MElem* aMan, MEnv* aEnv): ExtenderAgent(Type(), aMan, aEnv)
-{
-    SetParent(ExtenderAgent::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MCompatChecker::TDir ExtenderAgentInp::GetDir() const
@@ -753,12 +715,7 @@ string ExtenderAgentOut::PEType()
 
 ExtenderAgentOut::ExtenderAgentOut(const string& aName, MElem* aMan, MEnv* aEnv): ExtenderAgent(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ExtenderAgentOut::ExtenderAgentOut(MElem* aMan, MEnv* aEnv): ExtenderAgent(Type(), aMan, aEnv)
-{
-    SetParent(ExtenderAgent::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MCompatChecker::TDir ExtenderAgentOut::GetDir() const
@@ -776,13 +733,7 @@ string AExtender::PEType()
 
 AExtender::AExtender(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetParent(Type());
-    ChangeCont(ConnPointMc::KContDir_Val_Regular, ETrue, ConnPointMc::KContDir);
-}
-
-AExtender::AExtender(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
-{
-    SetParent(Elem::PEType());
+    SetCrAttr(PEType(), aName);
     ChangeCont(ConnPointMc::KContDir_Val_Regular, ETrue, ConnPointMc::KContDir);
 }
 
@@ -893,12 +844,7 @@ string ASocket::PEType()
 
 ASocket::ASocket(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ASocket::ASocket(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
-{
-    SetParent(Elem::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *ASocket::DoGetObj(const char *aName)
@@ -1273,12 +1219,7 @@ string ASocketInp::PEType()
 
 ASocketInp::ASocketInp(const string& aName, MElem* aMan, MEnv* aEnv): ASocket(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ASocketInp::ASocketInp(MElem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
-{
-    SetParent(ASocket::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MCompatChecker::TDir ASocketInp::GetDir() const
@@ -1295,12 +1236,7 @@ string ASocketOut::PEType()
 
 ASocketOut::ASocketOut(const string& aName, MElem* aMan, MEnv* aEnv): ASocket(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ASocketOut::ASocketOut(MElem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
-{
-    SetParent(ASocket::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MCompatChecker::TDir ASocketOut::GetDir() const
@@ -1317,12 +1253,7 @@ string ASocketMc::PEType()
 
 ASocketMc::ASocketMc(const string& aName, MElem* aMan, MEnv* aEnv): ASocket(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ASocketMc::ASocketMc(MElem* aMan, MEnv* aEnv): ASocket(Type(), aMan, aEnv)
-{
-    SetParent(ASocket::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MCompatChecker::TDir ASocketMc::GetDir() const
@@ -1343,12 +1274,7 @@ string Syst::PEType()
 
 Syst::Syst(const string& aName, MElem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-Syst::Syst(MElem* aMan, MEnv* aEnv): Vert(Type(), aMan, aEnv)
-{
-    SetParent(Vert::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void Syst::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)

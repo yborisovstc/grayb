@@ -27,20 +27,7 @@ string Edge::PEType()
 
 Edge::Edge(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
 {
-    SetParent(Type());
-    // Adding properties "Points"
-    Elem* p1 = Provider()->CreateNode("Prop", "P1", this, iEnv);
-    Elem* p2 = Provider()->CreateNode("Prop", "P2", this, iEnv);
-    __ASSERT(p1 != NULL && p2 != NULL);
-    TBool res = AppendComp(p1);
-    __ASSERT(res);
-    res = AppendComp(p2);
-    __ASSERT(res);
-}
-
-Edge::Edge(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
-{
-    SetParent(Elem::PEType());
+    SetCrAttr(PEType(), aName);
     // Adding properties "Points"
     Elem* p1 = Provider()->CreateNode("Prop", "P1", this, iEnv);
     Elem* p2 = Provider()->CreateNode("Prop", "P2", this, iEnv);
@@ -448,12 +435,7 @@ string Aedge::PEType()
 
 Aedge::Aedge(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
 {
-    SetParent(Type());
-}
-
-Aedge::Aedge(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
-{
-    SetParent(Elem::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 Aedge::~Aedge() 

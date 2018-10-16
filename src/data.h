@@ -10,7 +10,6 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable, public M
 	static const char* Type() { return "DataBase";};
 	static string PEType();
 	DataBase(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	DataBase(MElem* aMan = NULL, MEnv* aEnv = NULL);
     protected:
 	TBool FromString(const string& aType, const string& aData); 
 	virtual TBool FromString(const string& aData); 
@@ -54,7 +53,6 @@ class DInt: public DataBase, public MDInt, public MDIntSet, public MDIntGet
 	static const char* Type() { return "DInt";};
 	static string PEType();
 	DInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	DInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MDInt
@@ -85,7 +83,6 @@ class DNInt: public DInt
 	static const char* Type() { return "DNInt";};
 	static string PEType();
 	DNInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	DNInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From MDInt
 	virtual void Set(TInt aData);
 };
@@ -244,7 +241,6 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	static const char* Type() { return "DVar";};
 	static string PEType();
 	DVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	DVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~DVar();
 	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
 	virtual TBool HandleIoChanged(MElem& aContext, MElem* aCp);

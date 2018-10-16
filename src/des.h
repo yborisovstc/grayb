@@ -13,7 +13,6 @@ class ATrBase: public Elem, public MACompsObserver, public MAgent
 	static const char* Type() { return "ATrBase";};
 	static string PEType();
 	ATrBase(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ATrBase(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);
 	// From MACompsObserver
@@ -29,7 +28,6 @@ class ATrInt: public ATrBase, public MDIntGet
 	static const char* Type() { return "ATrInt";};
 	static string PEType();
 	ATrInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ATrInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);
 	// From MDIntGet
@@ -51,7 +49,6 @@ class ATrIncInt: public ATrInt
 	static const char* Type() { return "ATrIncInt";};
 	static string PEType();
 	ATrIncInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ATrIncInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From MDIntGet
 	virtual TInt Value();
 };
@@ -63,7 +60,6 @@ class ATrSubInt: public ATrInt
 	static const char* Type() { return "ATrSubInt";};
 	static string PEType();
 	ATrSubInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ATrSubInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From MDIntGet
 	virtual TInt Value();
 };
@@ -75,7 +71,6 @@ class ATrMplInt: public ATrInt
 	static const char* Type() { return "ATrMplInt";};
 	static string PEType();
 	ATrMplInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ATrMplInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From MDIntGet
 	virtual TInt Value();
 };
@@ -87,7 +82,6 @@ class ATrDivInt: public ATrInt
 	static const char* Type() { return "ATrDivInt";};
 	static string PEType();
 	ATrDivInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ATrDivInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From MDIntGet
 	virtual TInt Value();
 };
@@ -100,7 +94,6 @@ class ATrVar: public ATrBase, public MDVarGet, public Func::Host
 	static const char* Type() { return "ATrVar";};
 	static string PEType();
 	ATrVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ATrVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);
 	// From MDVarGet
@@ -129,7 +122,6 @@ class ATrAddVar: public ATrVar
 	static const char* Type() { return "ATrAddVar";};
 	static string PEType();
 	ATrAddVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ATrAddVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
 	virtual string GetInpUri(TInt aId) const;
@@ -144,7 +136,6 @@ class ATrMplVar: public ATrVar
 	static const char* Type() { return "ATrMplVar";};
 	static string PEType();
 	ATrMplVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ATrMplVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
 	virtual string GetInpUri(TInt aId) const;
@@ -159,7 +150,6 @@ class ATrDivVar: public ATrVar
 	static const char* Type() { return "ATrDivVar";};
 	static string PEType();
 	ATrDivVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ATrDivVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
 	virtual string GetInpUri(TInt aId) const;
@@ -174,7 +164,6 @@ class ATrSwitchVar: public ATrVar
 	static const char* Type() { return "ATrSwitchVar";};
 	static string PEType();
 	ATrSwitchVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ATrSwitchVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);
 	// From ATrVar
@@ -191,7 +180,6 @@ class ATrAtVar: public ATrVar
 	static const char* Type() { return "ATrAtVar";};
 	static string PEType();
 	ATrAtVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ATrAtVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
 	virtual string GetInpUri(TInt aId) const;
@@ -206,7 +194,6 @@ class ATrCpsVectVar: public ATrVar
 	static const char* Type() { return "ATrCpsVectVar";};
 	static string PEType();
 	ATrCpsVectVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ATrCpsVectVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From ATrVar
 	virtual void Init(const string& aIfaceName);
 	virtual string GetInpUri(TInt aId) const;
@@ -221,7 +208,6 @@ class ATrBcmpVar: public ATrVar
 	static const char* Type() { return "ATrBcmpVar";};
 	static string PEType();
 	ATrBcmpVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ATrBcmpVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From MDVarGet
 	virtual string VarGetIfid();
 	// From ATrVar
@@ -261,7 +247,6 @@ class StateAgent: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd,
 	static const char* Type() { return "StateAgent";};
 	static string PEType();
 	StateAgent(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	StateAgent(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);
 	// From MDesSyncable
@@ -294,7 +279,6 @@ class ADes: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 	static const char* Type() { return "ADes";};
 	static string PEType();
 	ADes(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ADes(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);
 	// From MDesSyncable

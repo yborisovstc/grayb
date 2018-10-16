@@ -26,27 +26,30 @@ template<typename T> pair<string, ProvDef::TFact*> Item() {
 
 
 /** Native agents factory registry */
-const ProvDef::TReg ProvDef::mReg = {
-    /*{Elem::Type(), [](const string &name, MElem* parent, MEnv* env)->Elem* { return new Elem(name, parent, env);}},*/
-    Item<Elem>(), Item<Vertp>(), Item<Systp>(), Item<Vert>(), Item<ACapsule>(), Item<Edge>(), Item<Aedge>(), Item<AMod>(),
-    Item<AImports>(), Item<Prop>(), Item<ExtenderAgent>(), Item<ExtenderAgentInp>(), Item<ExtenderAgentOut>(), Item<AExtender>(),
-    Item<ASocket>(), Item<ASocketInp>(), Item<ASocketOut>(), Item<ASocketMc>(), Item<Incaps>(), Item<DataBase>(),
-    Item<DVar>(), Item<FuncBase>(), Item<ATrBase>(), Item<AFunc>(), Item<StateAgent>(), Item<ADes>(),
-    Item<DInt>(), Item<DVar>(), Item<DNInt>(), Item<AFunInt>(), Item<AFunVar>(), Item<AFAddVar>(),
-    Item<AFMplVar>(), Item<AFMplncVar>(), Item<AFMplinvVar>(), Item<AFCastVar>(), Item<AFCpsMtrdVar>(), Item<AFCpsVectVar>(),
-    Item<AFDivVar>(), Item<AFBcmpVar>(), Item<AFCmpVar>(), Item<AFAtVar>(), Item<AFBoolNegVar>(), Item<AFSwitchVar>(),
-    Item<AIncInt>(), Item<AFunIntRes>(), Item<AAddInt>(), Item<AFuncInt>(), Item<AFAddInt>(), Item<AFSubInt>(),
-    Item<AFConvInt>(), Item<AFLimInt>(), Item<AFDivInt>(), Item<AFGTInt>(), Item<AFBoolToInt>(), Item<ATrInt>(),
-    Item<ATrVar>(), Item<ATrInt>(), Item<ATrSubInt>(), Item<ATrMplInt>(), Item<ATrDivInt>(), Item<ATrAddVar>(),
-    Item<ATrMplVar>(), Item<ATrDivVar>(), Item<ATrCpsVectVar>(), Item<ATrSwitchVar>(), Item<ATrAtVar>(), Item<ATrBcmpVar>()
-};
+const ProvDef::TReg ProvDef::mReg ( {
+    Item<Elem>(), Item<Vertp>(), Item<Syst>(), Item<Systp>(), Item<Vert>(),
+    Item<ACapsule>(), Item<Edge>(), Item<Aedge>(), Item<AMod>(), Item<AImports>(),
+    Item<Prop>(), Item<Description>(), Item<ExtenderAgent>(), Item<ExtenderAgentInp>(), Item<ExtenderAgentOut>(),
+    Item<AExtender>(), Item<ASocket>(), Item<ASocketInp>(), Item<ASocketOut>(), Item<ASocketMc>(),
+    Item<Incaps>(), Item<DataBase>(), Item<DVar>(), Item<FuncBase>(), Item<ATrBase>(),
+    Item<AFunc>(), Item<StateAgent>(), Item<ADes>(), Item<DInt>(), Item<DVar>(),
+    Item<DNInt>(), Item<AFunInt>(), Item<AFunVar>(), Item<AFAddVar>(), Item<AFMplVar>(),
+    Item<AFMplncVar>(), Item<AFMplinvVar>(), Item<AFCastVar>(), Item<AFCpsMtrdVar>(), Item<AFCpsVectVar>(),
+    Item<AFDivVar>(), Item<AFBcmpVar>(), Item<AFCmpVar>(), Item<AFAtVar>(), Item<AFBoolNegVar>(),
+    Item<AFSwitchVar>(), Item<AIncInt>(), Item<AFunIntRes>(), Item<AAddInt>(), Item<AFuncInt>(),
+    Item<AFAddInt>(), Item<AFSubInt>(), Item<AFConvInt>(), Item<AFLimInt>(), Item<AFDivInt>(),
+    Item<AFGTInt>(), Item<AFBoolToInt>(), Item<ATrInt>(), Item<ATrVar>(), Item<ATrInt>(),
+    Item<ATrSubInt>(), Item<ATrMplInt>(), Item<ATrDivInt>(), Item<ATrIncInt>(), Item<ATrAddVar>(),
+    Item<ATrMplVar>(), Item<ATrDivVar>(), Item<ATrCpsVectVar>(), Item<ATrSwitchVar>(), Item<ATrAtVar>(),
+    Item<ATrBcmpVar>(), Item<ConnPointBase>(), Item<ConnPointBaseInp>(), Item<ConnPointBaseOut>(), Item<ConnPointMc>()
+});
 
-const unordered_map<int, string> mm = {
-    pair<int, string>(1, "fdfd")
-};
+
 
 ProvDef::ProvDef(const string& aName, MEnv* aEnv): GProvider(aName, aEnv)
 {
+    size_t bcount = mReg.bucket_count();
+    size_t sz = mReg.size();
 }
 
 ProvDef::~ProvDef()
@@ -64,205 +67,9 @@ string ProvDef::GetParentName(const string& aUri)
 Elem* ProvDef::CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv)
 {
     Elem* res = NULL;
-#if 0
-    if (aType.compare(Vert::Type()) == 0) {
-	res = new Vert(aName, aMan, aEnv);
-    }
-    else if (aType.compare(Vertp::Type()) == 0) {
-	res = new Vertp(aName, aMan, aEnv);
-    }
-    else if (aType.compare(Systp::Type()) == 0) {
-	res = new Systp(aName, aMan, aEnv);
-    }
-    else if (aType.compare(Edge::Type()) == 0) {
-	res = new Edge(aName, aMan, aEnv);
-    }
-    else if (aType.compare(Aedge::Type()) == 0) {
-	res = new Aedge(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AMod::Type()) == 0) {
-	res = new AMod(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AImports::Type()) == 0) {
-	res = new AImports(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ACapsule::Type()) == 0) {
-	res = new ACapsule(aName, aMan, aEnv);
-    }
-    else if (aType.compare(Prop::Type()) == 0) {
-	res = new Prop(aName, aMan, aEnv);
-    }
-    else if (aType.compare(Description::Type()) == 0) {
-	res = new Description(aName, aMan, aEnv);
-    }
-    else if (aType.compare(Elem::Type()) == 0) {
-	res = new Elem(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ConnPointBase::Type()) == 0) {
-	res = new ConnPointBase(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ConnPointBaseInp::Type()) == 0) {
-	res = new ConnPointBaseInp(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ConnPointBaseOut::Type()) == 0) {
-	res = new ConnPointBaseOut(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ConnPointMc::Type()) == 0) {
-	res = new ConnPointMc(aName, aMan, aEnv);
-    }
-    else if (aType.compare(Syst::Type()) == 0) {
-	res = new Syst(aName, aMan, aEnv);
-    }
-    else if (aType.compare(Incaps::Type()) == 0) {
-	res = new Incaps(aName, aMan, aEnv);
-    }
-    else if (aType.compare(DInt::Type()) == 0) {
-	res = new DInt(aName, aMan, aEnv);
-    }
-    else if (aType.compare(DNInt::Type()) == 0) {
-	res = new DNInt(aName, aMan, aEnv);
-    }
-    else if (aType.compare(DVar::Type()) == 0) {
-	res = new DVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AIncInt::Type()) == 0) {
-	res = new AIncInt(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AAddInt::Type()) == 0) {
-	res = new AAddInt(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFAddInt::Type()) == 0) {
-	res = new AFAddInt(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFAddVar::Type()) == 0) {
-	res = new AFAddVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFMplVar::Type()) == 0) {
-	res = new AFMplVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFMplinvVar::Type()) == 0) {
-	res = new AFMplinvVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFCastVar::Type()) == 0) {
-	res = new AFCastVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFCpsMtrdVar::Type()) == 0) {
-	res = new AFCpsMtrdVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFCpsVectVar::Type()) == 0) {
-	res = new AFCpsVectVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFMplncVar::Type()) == 0) {
-	res = new AFMplncVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFDivVar::Type()) == 0) {
-	res = new AFDivVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFCmpVar::Type()) == 0) {
-	res = new AFCmpVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFBcmpVar::Type()) == 0) {
-	res = new AFBcmpVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFAtVar::Type()) == 0) {
-	res = new AFAtVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFBoolNegVar::Type()) == 0) {
-	res = new AFBoolNegVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFSwitchVar::Type()) == 0) {
-	res = new AFSwitchVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFSubInt::Type()) == 0) {
-	res = new AFSubInt(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFLimInt::Type()) == 0) {
-	res = new AFLimInt(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFDivInt::Type()) == 0) {
-	res = new AFDivInt(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFGTInt::Type()) == 0) {
-	res = new AFGTInt(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFBoolToInt::Type()) == 0) {
-	res = new AFBoolToInt(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFConvInt::Type()) == 0) {
-	res = new AFConvInt(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFIntToVect::Type()) == 0) {
-	res = new AFIntToVect(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AFunIntRes::Type()) == 0) {
-	res = new AFunIntRes(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ExtenderAgent::Type()) == 0) {
-	res = new ExtenderAgent(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ExtenderAgentInp::Type()) == 0) {
-	res = new ExtenderAgentInp(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ExtenderAgentOut::Type()) == 0) {
-	res = new ExtenderAgentOut(aName, aMan, aEnv);
-    }
-    else if (aType.compare(AExtender::Type()) == 0) {
-	res = new AExtender(aName, aMan, aEnv);
-    }
-    else if (aType.compare(StateAgent::Type()) == 0) {
-	res = new StateAgent(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ATrIncInt::Type()) == 0) {
-	res = new ATrIncInt(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ATrSubInt::Type()) == 0) {
-	res = new ATrSubInt(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ATrMplInt::Type()) == 0) {
-	res = new ATrMplInt(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ATrDivInt::Type()) == 0) {
-	res = new ATrDivInt(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ATrAddVar::Type()) == 0) {
-	res = new ATrAddVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ATrMplVar::Type()) == 0) {
-	res = new ATrMplVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ATrDivVar::Type()) == 0) {
-	res = new ATrDivVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ATrCpsVectVar::Type()) == 0) {
-	res = new ATrCpsVectVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ATrSwitchVar::Type()) == 0) {
-	res = new ATrSwitchVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ATrAtVar::Type()) == 0) {
-	res = new ATrAtVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ATrBcmpVar::Type()) == 0) {
-	res = new ATrBcmpVar(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ASocket::Type()) == 0) {
-	res = new ASocket(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ASocketInp::Type()) == 0) {
-	res = new ASocketInp(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ASocketOut::Type()) == 0) {
-	res = new ASocketOut(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ASocketMc::Type()) == 0) {
-	res = new ASocketMc(aName, aMan, aEnv);
-    }
-    else if (aType.compare(ADes::Type()) == 0) {
-	res = new ADes(aName, aMan, aEnv);
-    }
-#endif
-
-    res = CreateAgent(aType, aName, aMan, iEnv);
+    // Using only short parent name. Full name is not supported atm
+    string pname = GetParentName(aType);
+    res = CreateAgent(pname, aName, aMan, iEnv);
 
     if (res != NULL) {
 	Elem* parent = GetNode(aType);
@@ -273,7 +80,6 @@ Elem* ProvDef::CreateNode(const string& aType, const string& aName, MElem* aMan,
     return res;
 }
 
-// TODO [YB] To create parent based on PEType
 Elem* ProvDef::GetNode(const string& aUri)
 {
     Elem* res = NULL;
@@ -282,234 +88,9 @@ Elem* ProvDef::GetNode(const string& aUri)
     }
     else { 
 	Elem* parent = NULL;
-#if 0
-	if (aUri.compare(Elem::Type()) == 0) {
-	    res = new Elem(string(), NULL, iEnv);
-	}
-	else if (aUri.compare(Vertp::Type()) == 0) {
-	    res = new Vertp(NULL, iEnv);
-	}
-	else if (aUri.compare(Systp::Type()) == 0) {
-	    res = new Systp(NULL, iEnv);
-	}
-	else if (aUri.compare(Vert::Type()) == 0) {
-	    res = new Vert(string(), NULL, iEnv);
-	}
-	else if (aUri.compare(ACapsule::Type()) == 0) {
-	    res = new ACapsule(NULL, iEnv);
-	}
-	else if (aUri.compare(Edge::Type()) == 0) {
-	    res = new Edge(NULL, iEnv);
-	}
-	else if (aUri.compare(Aedge::Type()) == 0) {
-	    res = new Aedge(NULL, iEnv);
-	}
-	else if (aUri.compare(AMod::Type()) == 0) {
-	    res = new AMod(NULL, iEnv);
-	}
-	else if (aUri.compare(AImports::Type()) == 0) {
-	    res = new AImports(NULL, iEnv);
-	}
-	else if (aUri.compare(Prop::Type()) == 0) {
-	    res = new Prop(NULL, iEnv);
-	}
-	else if (aUri.compare(ExtenderAgent::Type()) == 0) {
-	    res = new ExtenderAgent(NULL, iEnv);
-	}
-	else if (aUri.compare(ExtenderAgentInp::Type()) == 0) {
-	    res = new ExtenderAgentInp(NULL, iEnv);
-	}
-	else if (aUri.compare(ExtenderAgentOut::Type()) == 0) {
-	    res = new ExtenderAgentOut(NULL, iEnv);
-	}
-	else if (aUri.compare(AExtender::Type()) == 0) {
-	    res = new AExtender(NULL, iEnv);
-	}
-	else if (aUri.compare(ASocket::Type()) == 0) {
-	    res = new ASocket(NULL, iEnv);
-	}
-	else if (aUri.compare(ASocketInp::Type()) == 0) {
-	    res = new ASocketInp(NULL, iEnv);
-	}
-	else if (aUri.compare(ASocketOut::Type()) == 0) {
-	    res = new ASocketOut(NULL, iEnv);
-	}
-	else if (aUri.compare(ASocketMc::Type()) == 0) {
-	    res = new ASocketMc(NULL, iEnv);
-	}
-	else if (aUri.compare(Incaps::Type()) == 0) {
-	    res = new Incaps(NULL, iEnv);
-	}
-	else if (aUri.compare(DataBase::Type()) == 0) {
-	    res = new DataBase(NULL, iEnv);
-	}
-	else if (aUri.compare(DVar::Type()) == 0) {
-	    res = new DVar(NULL, iEnv);
-	}
-	else if (aUri.compare(FuncBase::Type()) == 0) {
-	    res = new FuncBase(NULL, iEnv);
-	}
-	else if (aUri.compare(ATrBase::Type()) == 0) {
-	    res = new ATrBase(NULL, iEnv);
-	}
-	else if (aUri.compare(AFunc::Type()) == 0) {
-	    res = new AFunc(NULL, iEnv);
-	}
-	else if (aUri.compare(StateAgent::Type()) == 0) {
-	    res = new StateAgent(NULL, iEnv);
-	}
-	else if (aUri.compare(ADes::Type()) == 0) {
-	    res = new ADes(NULL, iEnv);
-	}
-	else if (aUri.compare(Syst::Type()) == 0) {
-	    res = new Syst(NULL, iEnv);
-	}
-	else if (aUri.compare(ConnPointBase::Type()) == 0) {
-	    res = new ConnPointBase(NULL, iEnv);
-	}
-	else if (aUri.compare(ConnPointBaseInp::Type()) == 0) {
-	    res = new ConnPointBaseInp(NULL, iEnv);
-	}
-	else if (aUri.compare(ConnPointBaseOut::Type()) == 0) {
-	    res = new ConnPointBaseOut(NULL, iEnv);
-	}
-	else if (aUri.compare(ConnPointMc::Type()) == 0) {
-	    res = new ConnPointMc(NULL, iEnv);
-	}
-	else if (aUri.compare(Description::Type()) == 0) {
-	    res = new Description(NULL, iEnv);
-	}
-	else if (aUri.compare(DInt::Type()) == 0) {
-	    res = new DInt(NULL, iEnv);
-	}
-	else if (aUri.compare(DVar::Type()) == 0) {
-	    res = new DVar(NULL, iEnv);
-	}
-	else if (aUri.compare(DNInt::Type()) == 0) {
-	    res = new DNInt(NULL, iEnv);
-	}
-	else if (aUri.compare(AFunInt::Type()) == 0) {
-	    res = new AFunInt(NULL, iEnv);
-	}
-	else if (aUri.compare(AFunVar::Type()) == 0) {
-	    res = new AFunVar(NULL, iEnv);
-	}
-	else if (aUri.compare(AFAddVar::Type()) == 0) {
-	    res = new AFAddVar(NULL, iEnv);
-	}
-	else if (aUri.compare(AFMplVar::Type()) == 0) {
-	    res = new AFMplVar(NULL, iEnv);
-	}
-	else if (aUri.compare(AFMplncVar::Type()) == 0) {
-	    res = new AFMplncVar(NULL, iEnv);
-	}
-	else if (aUri.compare(AFMplinvVar::Type()) == 0) {
-	    res = new AFMplinvVar(NULL, iEnv);
-	}
-	else if (aUri.compare(AFCastVar::Type()) == 0) {
-	    res = new AFCastVar(NULL, iEnv);
-	}
-	else if (aUri.compare(AFCpsMtrdVar::Type()) == 0) {
-	    res = new AFCpsMtrdVar(NULL, iEnv);
-	}
-	else if (aUri.compare(AFCpsVectVar::Type()) == 0) {
-	    res = new AFCpsVectVar(NULL, iEnv);
-	}
-	else if (aUri.compare(AFDivVar::Type()) == 0) {
-	    res = new AFDivVar(NULL, iEnv);
-	}
-	else if (aUri.compare(AFBcmpVar::Type()) == 0) {
-	    res = new AFBcmpVar(NULL, iEnv);
-	}
-	else if (aUri.compare(AFCmpVar::Type()) == 0) {
-	    res = new AFCmpVar(NULL, iEnv);
-	}
-	else if (aUri.compare(AFAtVar::Type()) == 0) {
-	    res = new AFAtVar(NULL, iEnv);
-	}
-	else if (aUri.compare(AFBoolNegVar::Type()) == 0) {
-	    res = new AFBoolNegVar(NULL, iEnv);
-	}
-	else if (aUri.compare(AFSwitchVar::Type()) == 0) {
-	    res = new AFSwitchVar(NULL, iEnv);
-	}
-	else if (aUri.compare(AIncInt::Type()) == 0) {
-	    res = new AIncInt(NULL, iEnv);
-	}
-	else if (aUri.compare(AFunIntRes::Type()) == 0) {
-	    res = new AFunIntRes(NULL, iEnv);
-	}
-	else if (aUri.compare(AAddInt::Type()) == 0) {
-	    res = new AAddInt(NULL, iEnv);
-	}
-	else if (aUri.compare(AFuncInt::Type()) == 0) {
-	    res = new AFuncInt(NULL, iEnv);
-	}
-	else if (aUri.compare(AFAddInt::Type()) == 0) {
-	    res = new AFAddInt(NULL, iEnv);
-	}
-	else if (aUri.compare(AFSubInt::Type()) == 0) {
-	    res = new AFSubInt(NULL, iEnv);
-	}
-	else if (aUri.compare(AFConvInt::Type()) == 0) {
-	    res = new AFConvInt(NULL, iEnv);
-	}
-	else if (aUri.compare(AFLimInt::Type()) == 0) {
-	    res = new AFLimInt(NULL, iEnv);
-	}
-	else if (aUri.compare(AFDivInt::Type()) == 0) {
-	    res = new AFDivInt(NULL, iEnv);
-	}
-	else if (aUri.compare(AFGTInt::Type()) == 0) {
-	    res = new AFGTInt(NULL, iEnv);
-	}
-	else if (aUri.compare(AFBoolToInt::Type()) == 0) {
-	    res = new AFBoolToInt(NULL, iEnv);
-	}
-	else if (aUri.compare(ATrInt::Type()) == 0) {
-	    res = new ATrInt(NULL, iEnv);
-	}
-	else if (aUri.compare(ATrVar::Type()) == 0) {
-	    res = new ATrVar(NULL, iEnv);
-	}
-	else if (aUri.compare(ATrIncInt::Type()) == 0) {
-	    res = new ATrIncInt(NULL, iEnv);
-	}
-	else if (aUri.compare(ATrSubInt::Type()) == 0) {
-	    res = new ATrSubInt(NULL, iEnv);
-	}
-	else if (aUri.compare(ATrMplInt::Type()) == 0) {
-	    res = new ATrMplInt(NULL, iEnv);
-	}
-	else if (aUri.compare(ATrDivInt::Type()) == 0) {
-	    res = new ATrDivInt(NULL, iEnv);
-	}
-	else if (aUri.compare(ATrAddVar::Type()) == 0) {
-	    res = new ATrAddVar(NULL, iEnv);
-	}
-	else if (aUri.compare(ATrMplVar::Type()) == 0) {
-	    res = new ATrMplVar(NULL, iEnv);
-	}
-	else if (aUri.compare(ATrDivVar::Type()) == 0) {
-	    res = new ATrDivVar(NULL, iEnv);
-	}
-	else if (aUri.compare(ATrCpsVectVar::Type()) == 0) {
-	    res = new ATrCpsVectVar(NULL, iEnv);
-	}
-	else if (aUri.compare(ATrSwitchVar::Type()) == 0) {
-	    res = new ATrSwitchVar(NULL, iEnv);
-	}
-	else if (aUri.compare(ATrAtVar::Type()) == 0) {
-	    res = new ATrAtVar(NULL, iEnv);
-	}
-	else if (aUri.compare(ATrBcmpVar::Type()) == 0) {
-	    res = new ATrBcmpVar(NULL, iEnv);
-	} else {
-	    iEnv->Logger()->Write(EErr, NULL, "Provider, GetNode: unknown type [%s] ", aUri.c_str());
-	}
-#endif
-
-	res = CreateAgent(aUri, string(), NULL, iEnv);
+	// Using only short parent name. Full name is not supported atm
+	string sname = GetParentName(aUri);
+	res = CreateAgent(sname, string(), NULL, iEnv);
 
 	if (res != NULL) {
 	    if (parent == NULL) {

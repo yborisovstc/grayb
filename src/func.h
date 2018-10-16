@@ -10,7 +10,6 @@ class FuncBase: public Elem, public MACompsObserver, public MDataObserver
 	static const char* Type() { return "FuncBase";};
 	static string PEType();
 	FuncBase(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	FuncBase(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MACompsObserver
@@ -29,7 +28,6 @@ class AFunInt: public FuncBase, public MDIntGet, public MAgent
 	static const char* Type() { return "AFunInt";};
 	static string PEType();
 	AFunInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFunInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MDIntGet
@@ -52,7 +50,6 @@ class AIncInt: public AFunInt
 	static const char* Type() { return "AIncInt";};
 	static string PEType();
 	AIncInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AIncInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From FuncBase
 	virtual TBool HandleIoChanged(MElem& aContext, MElem* aCp);
 	// From MDataObserver
@@ -66,7 +63,6 @@ class AFunIntRes: public AFunInt
 	static const char* Type() { return "AFunIntRes";};
 	static string PEType();
 	AFunIntRes(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFunIntRes(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From FuncBase
 	virtual TBool HandleIoChanged(MElem& aContext, MElem* aCp);
 	// From MDataObserver
@@ -82,7 +78,6 @@ class AAddInt: public AFunInt
 	static const char* Type() { return "AAddInt";};
 	static string PEType();
 	AAddInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AAddInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From FuncBase
 	virtual TBool HandleIoChanged(MElem& aContext, MElem* aCp);
 	// From MDataObserver
@@ -111,7 +106,6 @@ class AFunc: public Elem, public MACompsObserver, public MDataObserver, public M
 	static const char* Type() { return "AFunc";};
 	static string PEType();
 	AFunc(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFunc(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MACompsObserver
@@ -136,7 +130,6 @@ class AFuncInt: public AFunc, public MDIntGet
 	static const char* Type() { return "AFuncInt";};
 	static string PEType();
 	AFuncInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFuncInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual TInt GetValue();
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
@@ -156,7 +149,6 @@ class AFAddInt: public AFunc, public MDIntGet
 	static const char* Type() { return "AFAddInt";};
 	static string PEType();
 	AFAddInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFAddInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MDIntGet
@@ -171,7 +163,6 @@ class AFSubInt: public AFuncInt
 	static const char* Type() { return "AFSubInt";};
 	static string PEType();
 	AFSubInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFSubInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual TInt GetValue();
 };
 
@@ -182,7 +173,6 @@ class AFLimInt: public AFunc, public MDIntGet
 	static const char* Type() { return "AFLimInt";};
 	static string PEType();
 	AFLimInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFLimInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MDIntGet
@@ -198,7 +188,6 @@ class AFDivInt: public AFunc, public MDIntGet
 	static const char* Type() { return "AFDivInt";};
 	static string PEType();
 	AFDivInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFDivInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MDIntGet
@@ -240,7 +229,6 @@ class AFConvInt: public AFuncInt
 	static const char* Type() { return "AFConvInt";};
 	static string PEType();
 	AFConvInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFConvInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MDIntGet
@@ -301,7 +289,6 @@ class AFGTInt: public AFunc, public MDBoolGet
 	static const char* Type() { return "AFGTInt";};
 	static string PEType();
 	AFGTInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFGTInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MDBoolGet
@@ -315,7 +302,6 @@ class AFBoolToInt: public AFunc, public MDIntGet
 	static const char* Type() { return "AFBoolToInt";};
 	static string PEType();
 	AFBoolToInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFBoolToInt(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MDIntGet
@@ -361,7 +347,6 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	static const char* Type() { return "AFunVar";};
 	static string PEType();
 	AFunVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFunVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	void Construct();
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
@@ -492,7 +477,6 @@ class AFAddVar: public AFunVar
 	static const char* Type() { return "AFAddVar";};
 	static string PEType();
 	AFAddVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFAddVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
 	virtual TInt GetInpCpsCount() const;
@@ -542,7 +526,6 @@ class AFMplVar: public AFunVar
 	static const char* Type() { return "AFMplVar";};
 	static string PEType();
 	AFMplVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFMplVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
 	virtual TInt GetInpCpsCount() const {return 1;};
@@ -617,7 +600,6 @@ class AFMplncVar: public AFunVar
 	static const char* Type() { return "AFMplncVar";};
 	static string PEType();
 	AFMplncVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFMplncVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
 	virtual TInt GetInpCpsCount() const {return 2;};
@@ -674,7 +656,6 @@ class AFMplinvVar: public AFunVar
 	static const char* Type() { return "AFMplinvVar";};
 	static string PEType();
 	AFMplinvVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFMplinvVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
 	virtual TInt GetInpCpsCount() const {return 1;};
@@ -690,7 +671,6 @@ class AFCastVar: public AFunVar
 	static const char* Type() { return "AFCastVar";};
 	static string PEType();
 	AFCastVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFCastVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
 	virtual TInt GetInpCpsCount() const {return 1;};
@@ -735,7 +715,6 @@ class AFCpsMtrdVar: public AFunVar
 	static const char* Type() { return "AFCpsMtrdVar";};
 	static string PEType();
 	AFCpsMtrdVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFCpsMtrdVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
 	virtual TInt GetInpCpsCount() const {return 1;};
@@ -772,7 +751,6 @@ class AFDivVar: public AFunVar
 	static const char* Type() { return "AFDivVar";};
 	static string PEType();
 	AFDivVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFDivVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
 	virtual TInt GetInpCpsCount() const {return 2;};
@@ -811,7 +789,6 @@ class AFBcmpVar: public AFunVar
 	static const char* Type() { return "AFBcmpVar";};
 	static string PEType();
 	AFBcmpVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFBcmpVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
 	virtual TInt GetInpCpsCount() const {return 3;};
@@ -853,7 +830,6 @@ class AFCmpVar: public AFunVar
 	static const char* Type() { return "AFCmpVar";};
 	static string PEType();
 	AFCmpVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFCmpVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	FCmpBase::TFType GetFType();
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
@@ -869,7 +845,6 @@ class AFAtVar: public AFunVar
 	static const char* Type() { return "AFAtVar";};
 	static string PEType();
 	AFAtVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFAtVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
 	virtual TInt GetInpCpsCount() const {return 2;};
@@ -936,7 +911,6 @@ class AFCpsVectVar: public AFunVar
 	static const char* Type() { return "AFCpsVectVar";};
 	static string PEType();
 	AFCpsVectVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFCpsVectVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	TInt GetInd(TInt aInpId);
     protected:
 	virtual void Init(const string& aIfaceName);
@@ -963,7 +937,6 @@ class AFSwitchVar: public AFunVar
 	static const char* Type() { return "AFSwitchVar";};
 	static string PEType();
 	AFSwitchVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFSwitchVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From AFunVar
 	virtual void *DoGetDObj(const char *aName);
 	// From Func::Host
@@ -1004,7 +977,6 @@ class AFBoolNegVar: public AFunVar
 	static const char* Type() { return "AFBoolNegVar";};
 	static string PEType();
 	AFBoolNegVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AFBoolNegVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
 	virtual TInt GetInpCpsCount() const {return 1;};

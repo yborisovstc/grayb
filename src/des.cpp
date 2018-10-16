@@ -35,12 +35,7 @@ MDesSyncable::EIfu MDesSyncable::mIfu;
 
 ATrBase::ATrBase(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ATrBase::ATrBase(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
-{
-    SetParent(Elem::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 string ATrBase::PEType()
@@ -81,12 +76,7 @@ TBool ATrBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aC
 
 ATrInt::ATrInt(const string& aName, MElem* aMan, MEnv* aEnv): ATrBase(aName, aMan, aEnv), mData(0)
 {
-    SetParent(Type());
-}
-
-ATrInt::ATrInt(MElem* aMan, MEnv* aEnv): ATrBase(Type(), aMan, aEnv), mData(0)
-{
-    SetParent(ATrBase::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 string ATrInt::PEType()
@@ -140,12 +130,7 @@ TInt ATrInt::Value()
 
 ATrIncInt::ATrIncInt(const string& aName, MElem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ATrIncInt::ATrIncInt(MElem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
-{
-    SetParent(ATrInt::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 string ATrIncInt::PEType()
@@ -170,12 +155,7 @@ TInt ATrIncInt::Value()
 
 ATrSubInt::ATrSubInt(const string& aName, MElem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ATrSubInt::ATrSubInt(MElem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
-{
-    SetParent(ATrInt::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 string ATrSubInt::PEType()
@@ -211,12 +191,7 @@ TInt ATrSubInt::Value()
 
 ATrMplInt::ATrMplInt(const string& aName, MElem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ATrMplInt::ATrMplInt(MElem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
-{
-    SetParent(ATrInt::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 string ATrMplInt::PEType()
@@ -241,12 +216,7 @@ TInt ATrMplInt::Value()
 
 ATrDivInt::ATrDivInt(const string& aName, MElem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ATrDivInt::ATrDivInt(MElem* aMan, MEnv* aEnv): ATrInt(Type(), aMan, aEnv)
-{
-    SetParent(ATrInt::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 string ATrDivInt::PEType()
@@ -282,12 +252,7 @@ string ATrVar::PEType()
 
 ATrVar::ATrVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrBase(aName, aMan, aEnv), mFunc(NULL)
 {
-    SetParent(Type());
-}
-
-ATrVar::ATrVar(MElem* aMan, MEnv* aEnv): ATrBase(Type(), aMan, aEnv), mFunc(NULL)
-{
-    SetParent(ATrBase::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *ATrVar::DoGetObj(const char *aName)
@@ -397,12 +362,7 @@ string ATrAddVar::PEType()
 
 ATrAddVar::ATrAddVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ATrAddVar::ATrAddVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
-{
-    SetParent(ATrVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void ATrAddVar::Init(const string& aIfaceName)
@@ -433,12 +393,7 @@ string ATrMplVar::PEType()
 
 ATrMplVar::ATrMplVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ATrMplVar::ATrMplVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
-{
-    SetParent(ATrVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void ATrMplVar::Init(const string& aIfaceName)
@@ -464,12 +419,7 @@ string ATrDivVar::PEType()
 
 ATrDivVar::ATrDivVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ATrDivVar::ATrDivVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
-{
-    SetParent(ATrVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void ATrDivVar::Init(const string& aIfaceName)
@@ -497,12 +447,7 @@ string ATrSwitchVar::PEType()
 
 ATrSwitchVar::ATrSwitchVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ATrSwitchVar::ATrSwitchVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
-{
-    SetParent(ATrVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *ATrSwitchVar::DoGetObj(const char *aName)
@@ -567,13 +512,8 @@ string ATrAtVar::PEType()
 
 ATrAtVar::ATrAtVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
+    SetCrAttr(PEType(), aName);
 } 
-
-ATrAtVar::ATrAtVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
-{ 
-    SetParent(ATrVar::PEType());
-}
 
 void ATrAtVar::Init(const string& aIfaceName)
 { 
@@ -606,12 +546,7 @@ string ATrCpsVectVar::PEType()
 
 ATrCpsVectVar::ATrCpsVectVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ATrCpsVectVar::ATrCpsVectVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
-{
-    SetParent(ATrVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void ATrCpsVectVar::Init(const string& aIfaceName)
@@ -639,12 +574,7 @@ string ATrBcmpVar::PEType()
 
 ATrBcmpVar::ATrBcmpVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-ATrBcmpVar::ATrBcmpVar(MElem* aMan, MEnv* aEnv): ATrVar(Type(), aMan, aEnv)
-{
-    SetParent(ATrVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 string ATrBcmpVar::VarGetIfid()
@@ -692,17 +622,12 @@ FBcmpBase::TFType ATrBcmpVar::GetFType()
 
 StateAgent::StateAgent(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
 {
-    SetParent(Type());
-}
-
-StateAgent::StateAgent(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iActive(ETrue)
-{
-    SetParent(Elem::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 string StateAgent::PEType()
 {
-    return StateAgent::PEType() + GUri::KParentSep + Type();
+    return Elem::PEType() + GUri::KParentSep + Type();
 }
 
 MIface *StateAgent::DoGetObj(const char *aName)
@@ -892,12 +817,7 @@ string ADes::PEType()
 
 ADes::ADes(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
 {
-    SetParent(Type());
-}
-
-ADes::ADes(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), iActive(ETrue)
-{
-    SetParent(Elem::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *ADes::DoGetObj(const char *aName)

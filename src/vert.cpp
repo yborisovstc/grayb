@@ -24,18 +24,7 @@ string Vert::PEType()
 
 Vert::Vert(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    // TODO should by Vert::PEType() instead of Type() ?
-    if (aName.empty()) {
-	iName = Type();
-	SetParent(Elem::PEType());
-    } else {
-	SetParent(Type());
-    }
-}
-
-Vert::Vert(MElem* aMan, MEnv* aEnv):Elem(Type(), aMan, aEnv)
-{
-    SetParent(Elem::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface* Vert::MVert_DoGetObj(const char *aName)

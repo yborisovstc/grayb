@@ -14,12 +14,7 @@ string FuncBase::PEType()
 
 FuncBase::FuncBase(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-FuncBase::FuncBase(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
-{
-    SetParent(Elem::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *FuncBase::DoGetObj(const char *aName)
@@ -88,12 +83,7 @@ string AFunInt::PEType()
 
 AFunInt::AFunInt(const string& aName, MElem* aMan, MEnv* aEnv): FuncBase(aName, aMan, aEnv), mData(0)
 {
-    SetParent(Type());
-}
-
-AFunInt::AFunInt(MElem* aMan, MEnv* aEnv): FuncBase(Type(), aMan, aEnv), mData(0)
-{
-    SetParent(FuncBase::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface* AFunInt::MAgent_DoGetIface(const string& aName)
@@ -164,12 +154,7 @@ string AIncInt::PEType()
 
 AIncInt::AIncInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AIncInt::AIncInt(MElem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
-{
-    SetParent(AFunInt::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 TBool AIncInt::HandleIoChanged(MElem& aContext, MElem* aCp)
@@ -205,12 +190,7 @@ string AFunIntRes::PEType()
 
 AFunIntRes::AFunIntRes(const string& aName, MElem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFunIntRes::AFunIntRes(MElem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
-{
-    SetParent(AFunInt::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 TBool AFunIntRes::HandleIoChanged(MElem& aContext, MElem* aCp)
@@ -278,12 +258,7 @@ string AAddInt::PEType()
 
 AAddInt::AAddInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AAddInt::AAddInt(MElem* aMan, MEnv* aEnv): AFunInt(Type(), aMan, aEnv)
-{
-    SetParent(AFunInt::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 TBool AAddInt::HandleIoChanged(MElem& aContext, MElem* aCp)
@@ -328,7 +303,7 @@ string ACountCritInt::PEType()
 
 ACountCritInt::ACountCritInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
-    SetParent(Type());
+    SetCrAttr(PEType(), aName);
 }
 
 TBool ACountCritInt::HandleIoChanged(MElem& aContext, MElem* aCp)
@@ -374,12 +349,7 @@ string AFunc::PEType()
 
 AFunc::AFunc(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFunc::AFunc(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
-{
-    SetParent(Elem::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *AFunc::DoGetObj(const char *aName)
@@ -455,12 +425,7 @@ string AFuncInt::PEType()
 
 AFuncInt::AFuncInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv), mData(0)
 {
-    SetParent(Type());
-}
-
-AFuncInt::AFuncInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv), mData(0)
-{
-    SetParent(AFunc::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *AFuncInt::DoGetObj(const char *aName)
@@ -507,12 +472,7 @@ string AFAddInt::PEType()
 
 AFAddInt::AFAddInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFAddInt::AFAddInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
-{
-    SetParent(AFunc::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *AFAddInt::DoGetObj(const char *aName)
@@ -550,12 +510,7 @@ string AFSubInt::PEType()
 
 AFSubInt::AFSubInt(const string& aName, MElem* aMan, MEnv* aEnv): AFuncInt(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFSubInt::AFSubInt(MElem* aMan, MEnv* aEnv): AFuncInt(Type(), aMan, aEnv)
-{
-    SetParent(AFuncInt::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 TInt AFSubInt::GetValue()
@@ -592,12 +547,7 @@ string AFLimInt::PEType()
 
 AFLimInt::AFLimInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFLimInt::AFLimInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
-{
-    SetParent(AFunc::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 
@@ -650,12 +600,7 @@ string AFDivInt::PEType()
 
 AFDivInt::AFDivInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFDivInt::AFDivInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
-{
-    SetParent(AFunc::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *AFDivInt::DoGetObj(const char *aName)
@@ -710,7 +655,7 @@ string AFIntToVect::PEType()
 
 AFIntToVect::AFIntToVect(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
-    SetParent(Type());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *AFIntToVect::DoGetObj(const char *aName)
@@ -751,13 +696,7 @@ string AFConvInt::PEType()
 
 AFConvInt::AFConvInt(const string& aName, MElem* aMan, MEnv* aEnv): AFuncInt(aName, aMan, aEnv)
 {
-    SetParent(Type());
-    iSampleHolder.iHost = this;
-}
-
-AFConvInt::AFConvInt(MElem* aMan, MEnv* aEnv): AFuncInt(Type(), aMan, aEnv)
-{
-    SetParent(AFuncInt::PEType());
+    SetCrAttr(PEType(), aName);
     iSampleHolder.iHost = this;
 }
 
@@ -912,12 +851,7 @@ string AFGTInt::PEType()
 
 AFGTInt::AFGTInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFGTInt::AFGTInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
-{
-    SetParent(AFunc::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *AFGTInt::DoGetObj(const char *aName)
@@ -956,12 +890,7 @@ string AFBoolToInt::PEType()
 
 AFBoolToInt::AFBoolToInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFBoolToInt::AFBoolToInt(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv)
-{
-    SetParent(AFunc::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *AFBoolToInt::DoGetObj(const char *aName)
@@ -1001,13 +930,7 @@ string AFunVar::PEType()
 
 AFunVar::AFunVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv), mFunc(NULL)
 {
-    SetParent(Type());
-    Construct();
-}
-
-AFunVar::AFunVar(MElem* aMan, MEnv* aEnv): AFunc(Type(), aMan, aEnv), mFunc(NULL)
-{
-    SetParent(AFunc::PEType());
+    SetCrAttr(PEType(), aName);
     Construct();
 }
 
@@ -1391,13 +1314,7 @@ string AFAddVar::PEType()
 
 AFAddVar::AFAddVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-    ChangeCont(KContVal_About, ETrue, KCont_About);
-}
-
-AFAddVar::AFAddVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
-{
-    SetParent(AFunVar::PEType());
+    SetCrAttr(PEType(), aName);
     ChangeCont(KContVal_About, ETrue, KCont_About);
 }
 
@@ -1902,12 +1819,7 @@ string AFCpsVectVar::PEType()
 
 AFCpsVectVar::AFCpsVectVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFCpsVectVar::AFCpsVectVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
-{
-    SetParent(AFunVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void AFCpsVectVar::Init(const string& aIfaceName)
@@ -1999,12 +1911,7 @@ string AFMplVar::PEType()
 
 AFMplVar::AFMplVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFMplVar::AFMplVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
-{
-    SetParent(AFunVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void AFMplVar::Init(const string& aIfaceName)
@@ -2160,12 +2067,7 @@ string AFMplncVar::PEType()
 
 AFMplncVar::AFMplncVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFMplncVar::AFMplncVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
-{
-    SetParent(AFunVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void AFMplncVar::Init(const string& aIfaceName)
@@ -2507,12 +2409,7 @@ string AFMplinvVar::PEType()
 
 AFMplinvVar::AFMplinvVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFMplinvVar::AFMplinvVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
-{
-    SetParent(AFunVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void AFMplinvVar::Init(const string& aIfaceName)
@@ -2724,12 +2621,7 @@ string AFCastVar::PEType()
 
 AFCastVar::AFCastVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFCastVar::AFCastVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
-{
-    SetParent(AFunVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void AFCastVar::Init(const string& aIfaceName)
@@ -2825,12 +2717,7 @@ string AFCpsMtrdVar::PEType()
 
 AFCpsMtrdVar::AFCpsMtrdVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFCpsMtrdVar::AFCpsMtrdVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
-{
-    SetParent(AFunVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void AFCpsMtrdVar::Init(const string& aIfaceName)
@@ -2922,12 +2809,7 @@ string AFDivVar::PEType()
 
 AFDivVar::AFDivVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFDivVar::AFDivVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
-{
-    SetParent(AFunVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void AFDivVar::Init(const string& aIfaceName)
@@ -3113,12 +2995,7 @@ string AFBcmpVar::PEType()
 
 AFBcmpVar::AFBcmpVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFBcmpVar::AFBcmpVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
-{
-    SetParent(AFunVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void AFBcmpVar::Init(const string& aIfaceName)
@@ -3164,12 +3041,7 @@ string AFCmpVar::PEType()
 
 AFCmpVar::AFCmpVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFCmpVar::AFCmpVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
-{
-    SetParent(AFunVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void AFCmpVar::Init(const string& aIfaceName)
@@ -3301,12 +3173,7 @@ string AFAtVar::PEType()
 
 AFAtVar::AFAtVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFAtVar::AFAtVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
-{
-    SetParent(AFunVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void AFAtVar::Init(const string& aIfaceName)
@@ -3566,12 +3433,7 @@ string AFSwitchVar::PEType()
 
 AFSwitchVar::AFSwitchVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFSwitchVar::AFSwitchVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
-{
-    SetParent(AFunVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void *AFSwitchVar::DoGetDObj(const char *aName)
@@ -3702,12 +3564,7 @@ string AFBoolNegVar::PEType()
 
 AFBoolNegVar::AFBoolNegVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-AFBoolNegVar::AFBoolNegVar(MElem* aMan, MEnv* aEnv): AFunVar(Type(), aMan, aEnv)
-{
-    SetParent(AFunVar::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void AFBoolNegVar::Init(const string& aIfaceName)

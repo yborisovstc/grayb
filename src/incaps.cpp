@@ -17,7 +17,7 @@ string Incaps::PEType()
 
 Incaps::Incaps(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetParent(Type());
+    SetCrAttr(PEType(), aName);
     /*
     // Set mutation and mutate
     ChromoNode& mut = iMut->Root();
@@ -26,11 +26,6 @@ Incaps::Incaps(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, 
     ncaps.SetAttr(ENa_Parent, "Elem");
     Mutate();
     */
-}
-
-Incaps::Incaps(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
-{
-    SetParent(Elem::PEType());
 }
 
 MIface *Incaps::DoGetObj(const char *aName)

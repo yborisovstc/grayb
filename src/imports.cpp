@@ -9,11 +9,13 @@ string AImports::PEType()
 
 AImports::AImports(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetParent(Type());
+    SetCrAttr(PEType(), aName);
+    //SetParent(Type());
 }
 
 AImports::AImports(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
+    __ASSERT(false);
     SetParent(Elem::PEType());
 }
 

@@ -114,9 +114,7 @@
 	    virtual const string& Name() const { return iName;}
 	    // Predefined extended type, for core elements only
 	    static string PEType();
-	    Elem(const string &aType, const string &aName, MElem* aMan, MEnv* aEnv);
 	    Elem(const string &aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	    Elem(Elem* aMan = NULL, MEnv* aEnv = NULL);
 	    virtual void Delete();
 	    virtual ~Elem();
 	    virtual TBool IsProvided() const;

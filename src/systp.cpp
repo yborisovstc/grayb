@@ -25,12 +25,7 @@ string Systp::PEType()
 
 Systp::Systp(const string& aName, MElem* aMan, MEnv* aEnv): Vertp(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-Systp::Systp(MElem* aMan, MEnv* aEnv): Vertp(Type(), aMan, aEnv)
-{
-    SetParent(Vertp::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void Systp::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)

@@ -15,16 +15,7 @@ string DataBase::PEType()
 
 DataBase::DataBase(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetParent(Type());
-    if (iMan != NULL) { // There is a context
-	MElem* ctx = iMan->GetMan();
-	ctx->ChangeCont("", ETrue, KCont_Value);
-    }
-}
-
-DataBase::DataBase(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
-{
-    SetParent(Elem::PEType());
+    SetCrAttr(PEType(), aName);
     if (iMan != NULL) { // There is a context
 	MElem* ctx = iMan->GetMan();
 	ctx->ChangeCont("", ETrue, KCont_Value);
@@ -231,12 +222,7 @@ string DInt::PEType()
 
 DInt::DInt(const string& aName, MElem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv)/*, mDIntGet(*this)*/, mData(0)
 {
-    SetParent(Type());
-}
-
-DInt::DInt(MElem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(0)
-{
-    SetParent(DataBase::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface* DInt::MAgent_DoGetIface(const string& aName)
@@ -365,12 +351,7 @@ string DNInt::PEType()
 
 DNInt::DNInt(const string& aName, MElem* aMan, MEnv* aEnv): DInt(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-DNInt::DNInt(MElem* aMan, MEnv* aEnv): DInt(Type(), aMan, aEnv)
-{
-    SetParent(DInt::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 void DNInt::Set(TInt aData)
@@ -391,12 +372,7 @@ string DVar::PEType()
 
 DVar::DVar(const string& aName, MElem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(NULL)
 {
-    SetParent(Type());
-}
-
-DVar::DVar(MElem* aMan, MEnv* aEnv): DataBase(Type(), aMan, aEnv), mData(NULL)
-{
-    SetParent(DataBase::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *DVar::DoGetObj(const char *aName)

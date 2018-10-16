@@ -14,7 +14,6 @@ class Vertp: public Elem, public MVertp
 	static const char* Type() { return "Vertp";};
 	static string PEType();
 	Vertp(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	Vertp(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~Vertp();
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);

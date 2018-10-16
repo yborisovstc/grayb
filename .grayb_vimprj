@@ -11,7 +11,7 @@ NEWS
 Makefile.in
 libgrayb.pc.in
 src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
- base.h
+  base.h
   chromo.h
   chromox.h
   data.h
@@ -38,10 +38,14 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   mmuta.h
   module.h
   mplugin.h
+  mprofiler.h
   mprop.h
   mprov.h
   mvert.h
+  mvertp.h
   plat.h
+  profiler.h
+  profiler_events.h
   prop.h
   prov.h
   provdef.h
@@ -66,6 +70,8 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   incaps.cpp
   log.cpp
   module.cpp
+  profiler.cpp
+  profiler_events.cpp
   prop.cpp
   prov.cpp
   provdef.cpp
@@ -117,23 +123,46 @@ doc=doc CD=. filter="*" {
  }
 }
 test=test CD=. filter="*.cpp *.h *.xml *.am *.txt" {
- ut_conn.cpp
+  ut_conn.cpp
   ut_cre.cpp
   ut_des.cpp
   ut_fun.cpp
   ut_grayb_main.cpp
+  ut_icache.cpp
+  ut_module.cpp
   ut_mut.cpp
+  ut_rinv.cpp
   ut_uri.cpp
+  ut_baseapis1.xml
+  ut_cache_inv_magent_saved.xml
+  ut_compact1.xml
+  ut_compact1_res.xml
+  ut_compact2.xml
+  ut_compact3.xml
+  ut_compact_cont.xml
+  ut_compact_ref1.xml
+  ut_compact_rmda.xml
+  ut_conn_1.xml
+  ut_conn_2.xml
   ut_conn_sock.xml
+  ut_conn_sock2.xml
+  ut_conn_systp_1.xml
+  ut_conn_systp_2.xml
+  ut_conn_vertp_1.xml
+  ut_content.xml
   ut_cre_1.xml
   ut_cre_data.xml
   ut_cre_gr.xml
+  ut_cre_iface.xml
   ut_cre_incaps.xml
   ut_cre_incaps1.xml
+  ut_cre_notif.xml
   ut_cre_syst.xml
   ut_cre_syst1.xml
   ut_cre_syst__S.xml
+  ut_dcp_chromo_1.xml
   ut_des_cre1.xml
+  ut_des_cre1vmc.xml
   ut_des_cre2.xml
   ut_des_cre3.xml
   ut_des_cre4.xml
@@ -141,25 +170,111 @@ test=test CD=. filter="*.cpp *.h *.xml *.am *.txt" {
   ut_func_seq2.xml
   ut_func_seq3.xml
   ut_func_seq4.xml
+  ut_func_var1.xml
+  ut_func_var1mc.xml
+  ut_func_var2.xml
+  ut_icache_inv1.xml
+  ut_icache_inv_magent.xml
+  ut_mod_impmgr_1.xml
+  ut_mod_impmgr_2.xml
+  ut_mod_impmgr_opt.xml
+  ut_mod_int_1.xml
+  ut_mod_int_1m.xml
+  ut_mod_int_2m.xml
+  ut_mut_dep_1.xml
+  ut_mut_dep_2.xml
+  ut_mut_dep_3.xml
+  ut_mut_dep_refs.xml
+  ut_mut_inv_1.xml
+  ut_mut_inv_impl.xml
+  ut_mut_inv_prnt.xml
+  ut_mut_inv_rnm.xml
+  ut_mut_rm_recr.xml
+  ut_mut_rm_recrinh.xml
   ut_mut_syst.xml
   ut_mutadd_1.xml
+  ut_mutmove_1.xml
+  ut_opt_rm_deps.xml
+  ut_par_mut1.xml
+  ut_par_mut2.xml
+  ut_parmod1.xml
+  ut_rinv1.xml
+  ut_transfmdf1.xml
   ut_uri_base.xml
+  ut_uri_chromo_1.xml
   Makefile.am
+  ut_baseapis1.txt
+  ut_compact1.txt
+  ut_compact1_res.txt
+  ut_compact2.txt
+  ut_compact2_res.txt
+  ut_compact3.txt
+  ut_compact3_res.txt
+  ut_compact_cont.txt
+  ut_compact_cont_res.txt
+  ut_compact_ref1.txt
+  ut_compact_ref1_res.txt
+  ut_compact_rmda.txt
+  ut_compact_rmda_res.txt
+  ut_conn_1.txt
+  ut_conn_2.txt
   ut_conn_sock.txt
+  ut_conn_sock2.txt
+  ut_conn_systp_1.txt
+  ut_conn_systp_2.txt
+  ut_conn_vertp_1.txt
+  ut_content.txt
   ut_cre_1.txt
+  ut_cre_1_saved.txt
   ut_cre_data.txt
+  ut_cre_data_saved.txt
   ut_cre_gr.txt
+  ut_cre_iface.txt
   ut_cre_incaps.txt
+  ut_cre_notif.txt
   ut_cre_syst.txt
   ut_des_cre1.txt
+  ut_des_cre1vmc.txt
   ut_des_cre2.txt
   ut_des_cre4.txt
   ut_func_seq1.txt
   ut_func_seq2.txt
   ut_func_seq3.txt
   ut_func_seq4.txt
+  ut_func_var1.txt
+  ut_func_var1mc.txt
+  ut_func_var2.txt
+  ut_icache_inv1.txt
+  ut_icache_inv_magent.txt
+  ut_mod_impmgr_2.txt
+  ut_mod_impmgr_opt.txt
+  ut_mut_dep_1.txt
+  ut_mut_dep_2.txt
+  ut_mut_dep_3.txt
+  ut_mut_dep_refs.txt
+  ut_mut_inv_1.txt
+  ut_mut_inv_1_res.txt
+  ut_mut_inv_impl.txt
+  ut_mut_inv_impl_res.txt
+  ut_mut_inv_prnt.txt
+  ut_mut_inv_prnt_res.txt
+  ut_mut_inv_rnm.txt
+  ut_mut_inv_rnm_res.txt
+  ut_mut_rm_parent.txt
+  ut_mut_rm_recr.txt
+  ut_mut_rm_recrinh.txt
+  ut_mut_rn_parent.txt
   ut_mut_syst.txt
   ut_mutadd_1.txt
+  ut_mutmove_1.txt
+  ut_opt_rm_deps.txt
+  ut_par_mut1.txt
+  ut_par_mut2.txt
+  ut_parmod1.txt
+  ut_parmod1_res.txt
+  ut_rinv1.txt
+  ut_transfmdf1.txt
+  ut_transfmdf1_res.txt
   ut_uri_base.txt
   libs=.libs CD=. filter="*" {
   }
@@ -483,17 +598,17 @@ fap-studio-gtk=/home/yborisov/projects/fap/git/fap-studio-gtk CD=. filter="autog
    rock_2.xml
  }
 }
-fap2-studio-gtk=/home/yborisov/projects/fap/git/fap2-studio-gtk CD=. filter="autogen.sh Makefile *.am *.ac *.in AUTHORS COPYING ChangeLog README NEWS" {
+fap2-studio-gtk=/home/yborisov/projects/fap/fap2-studio-gtk CD=. filter="autogen.sh Makefile *.am *.ac *.in AUTHORS COPYING ChangeLog README NEWS" {
  autogen.sh
-  Makefile
-  Makefile.am
-  configure.ac
-  Makefile.in
-  AUTHORS
-  COPYING
-  ChangeLog
-  README
-  NEWS
+ Makefile
+ Makefile.am
+ configure.ac
+ Makefile.in
+ AUTHORS
+ COPYING
+ ChangeLog
+ README
+ NEWS
   debian=debian CD=. filter="*" {
    changelog
     compat
@@ -509,22 +624,112 @@ fap2-studio-gtk=/home/yborisov/projects/fap/git/fap2-studio-gtk CD=. filter="aut
   }
  src=src CD=. filter="*.cpp *.h *.xml *.am *.rc" {
   app.cpp
-   elemdetrp.cpp
-   hierdetailview.cpp
-   main.cpp
-   mainwnd.cpp
-   app.h
-   elemdetrp.h
-   hierdetailview.h
-   mainwnd.h
-   Makefile.am
+  chromoview.cpp
+  cntview.cpp
+  cpcrp.cpp
+  cperp.cpp
+  datacrp.cpp
+  dessrv.cpp
+  dessync.cpp
+  desvis.cpp
+  dlgbase.cpp
+  edgecrp.cpp
+  elemcomprp.cpp
+  elemdetrp.cpp
+  extdcrp.cpp
+  hierdetailview.cpp
+  incapscrp.cpp
+  incapsdrp.cpp
+  logview.cpp
+  main.cpp
+  mainwnd.cpp
+  mdlprov.cpp
+  navi.cpp
+  propcrp.cpp
+  provdef.cpp
+  stenv.cpp
+  syscrp.cpp
+  sysdrp.cpp
+  toolitems.cpp
+  vertcrp.cpp
+  vertdrp.cpp
+  app.h
+  chromoview.h
+  cntview.h
+  common.h
+  cpcrp.h
+  cperp.h
+  datacrp.h
+  dessrv.h
+  dessync.h
+  desvis.h
+  dlgbase.h
+  edgecrp.h
+  elemcomprp.h
+  elemdetrp.h
+  extdcrp.h
+  hierdetailview.h
+  incapscrp.h
+  incapsdrp.h
+  logview.h
+  mainwnd.h
+  mbase.h
+  mcrp.h
+  mdeslog.h
+  mdesobs.h
+  mdlprov.h
+  mdrp.h
+  merp.h
+  mprov.h
+  msdesenv.h
+  msenv.h
+  msset.h
+  navi.h
+  propcrp.h
+  provdef.h
+  stenv.h
+  syscrp.h
+  sysdrp.h
+  toolitems.h
+  vertcrp.h
+  vertdrp.h
+  Makefile.am
  }
  templates=templates CD=. filter="*" {
   empty.xml
  }
  examples=examples CD=. filter="*" {
-  rock_1.xml
-   rock_2.xml
+  daa_func_var_1.xml
+  daa_incaps.xml
+  daa_simple.xml
+  daa_syst.xml
+  des_1.xml
+  des_var_1.xml
+  des_var_1mc.xml
+  des_var_c1.xml
+  des_var_vect_1.xml
+  func_1.xml
+  func_conv.xml
+  func_if_given_res_type.xml
+  func_var_1.xml
+  func_var_1mc.xml
+  func_var_at_vect.xml
+  func_var_enum_1.xml
+  func_var_enum_2.xml
+  func_var_gen_1.xml
+  func_var_gen_mtr.xml
+  func_var_tuple_1.xml
+  incaps_1.xml
+  incaps_1_mc.xml
+  rock_al_vis_phd.xml
+  rock_al_vis_phd_mc.xml
+  simple_elem.xml
+  simple_elem_err.xml
+  simple_vert.xml
+  snails_vis.xml
+  syst_1.xml
+  vis_intract_3.xml
+  vis_vect_1.xml
  }
 }
 fap-balls=/home/yborisov/projects/fap/git/fap-balls CD=. filter="*.ac *.am" {

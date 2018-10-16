@@ -51,7 +51,8 @@ GProfiler::GProfiler(MEnv* aEnv, const TIdata& aInitData): mEnv(aEnv),
 	    mPDur = dynamic_cast<MPDur*>(ind);
 	    __ASSERT(mPClock);
 	} else if (idata.first == EPiid_DurStat) {
-	    ind = new PindDurStat(static_cast<const PindDurStat::Idata&>(*idata.second));
+	    const PindDurStat::Idata& initd = static_cast<const PindDurStat::Idata&>(*idata.second);
+	    ind = new PindDurStat(initd);
 	    mPDurStat = dynamic_cast<MPDurStat*>(ind);
 	    __ASSERT(mPDurStat);
 	}

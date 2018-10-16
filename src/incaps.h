@@ -9,7 +9,6 @@ class Incaps: public Elem, public MACompsObserver, public MAgent
 	static const char* Type() { return "IncapsAgent";};
 	static string PEType();
 	Incaps(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	Incaps(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MACompsObserver

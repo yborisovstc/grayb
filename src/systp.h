@@ -13,7 +13,6 @@ class Systp: public Vertp, public MSyst
 	static const char* Type() { return "Systp";};
 	static string PEType();
 	Systp(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	Systp(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	bool AreCpsCompatible(const GUri& aCp1, const GUri& aCp2);
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);

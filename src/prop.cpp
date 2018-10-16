@@ -18,12 +18,7 @@ string Prop::PEType()
 
 Prop::Prop(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-Prop::Prop(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
-{
-    SetParent(Elem::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *Prop::DoGetObj(const char *aName)
@@ -98,12 +93,6 @@ string Description::PEType()
 
 Description::Description(const string& aName, MElem* aMan, MEnv* aEnv): Prop(aName, aMan, aEnv)
 {
-    SetParent(Type());
+    SetCrAttr(PEType(), aName);
 }
-
-Description::Description(MElem* aMan, MEnv* aEnv): Prop(Type(), aMan, aEnv)
-{
-    SetParent(Prop::PEType());
-}
-
 

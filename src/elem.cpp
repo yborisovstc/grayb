@@ -262,28 +262,6 @@ void Elem::Delay(long us)
 
 // Element
 
-/** Full args constructor. Can create both base and inherited agent */
-Elem::Elem(const string &aType, const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMan), iEnv(aEnv),
-    iParent(NULL), isRemoved(EFalse), mContext(NULL)
-{
-    Pdur(PEvents::Dur_Elem_Constr_Start, this);
-    //Pdstat(PEvents::DurStat_Elem_Constr, true);
-    Pdstat(PEvents::DurStat_Elem_Constr_Chromo, true);
-    iMut = Provider()->CreateChromo();
-    iMut->Init(ENt_Node);
-    iChromo = Provider()->CreateChromo();
-    iChromo->Init(ENt_Node);
-    ChromoNode croot = iChromo->Root();
-    croot.SetAttr(ENa_Id, iName);
-    croot.SetAttr(ENa_Parent, aType);
-    Pdstat(PEvents::DurStat_Elem_Constr_Chromo, false);
-    InsertContent(KCont_About);
-    Pdstat(PEvents::DurStat_Elem_Constr, false);
-    //Pdur(PEvents::Dur_Elem_Constr, this);
-    //InsertContent(KCont_Categories);
-    //InsertContent(KCont_Ctg_Readonly);
-}
-
 /** Constructor creating inherited agent: name is defined, parent is Type() */
 Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMan), iEnv(aEnv),
     iParent(NULL), isRemoved(EFalse), mContext(NULL)
@@ -295,6 +273,8 @@ Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMa
     iMut->Init(ENt_Node);
     iChromo = Provider()->CreateChromo();
     iChromo->Init(ENt_Node);
+    SetCrAttr(PEType(), aName);
+    /*
     ChromoNode croot = iChromo->Root();
     string parent;
     if (aName.empty()) {
@@ -304,28 +284,11 @@ Elem::Elem(const string &aName, MElem* aMan, MEnv* aEnv): iName(aName), iMan(aMa
     }
     croot.SetAttr(ENa_Id, iName);
     croot.SetAttr(ENa_Parent, parent);
+    */
     Pdstat(PEvents::DurStat_Elem_Constr_Chromo, false);
     InsertContent(KCont_About);
     Pdstat(PEvents::DurStat_Elem_Constr, false);
     //Pdur(PEvents::Dur_Elem_Constr, this);
-    //InsertContent(KCont_Categories);
-    //InsertContent(KCont_Ctg_Readonly);
-}
-
-
-
-/** Constructor creating native agent: name is Type(), parent is empty */
-Elem::Elem(Elem* aMan, MEnv* aEnv): iName(Type()), iMan(aMan), iEnv(aEnv),
-    iParent(NULL), isRemoved(EFalse), mContext(NULL)
-{
-    iMut = Provider()->CreateChromo();
-    iMut->Init(ENt_Node);
-    iChromo = Provider()->CreateChromo();
-    iChromo->Init(ENt_Node);
-    ChromoNode croot = iChromo->Root();
-    croot.SetAttr(ENa_Id, iName);
-    croot.SetAttr(ENa_Parent, string());
-    InsertContent(KCont_About);
     //InsertContent(KCont_Categories);
     //InsertContent(KCont_Ctg_Readonly);
 }
@@ -341,7 +304,10 @@ void Elem::SetCrAttr(const string& aEType, const string& aName)
     } else {
 	// Inherited native agent, its name is given, type is class extended type
 	iName = aName;
-	ptype = aEType;
+	// Using short type for parent to be compatible with current version
+	// Needs to consider to use full type
+	// ptype = aEType;
+	ptype = GetType(aEType);
     }
     croot.SetAttr(ENa_Id, iName);
     croot.SetAttr(ENa_Parent, ptype);
@@ -351,7 +317,7 @@ string Elem::GetType(const string& aEType) const
 {
     string res;
     size_t pos = aEType.find_last_of(GUri::KParentSep);
-    res = aEType.substr(0, pos);
+    res = aEType.substr(pos + 1);
     return res;
 }
 
@@ -359,7 +325,7 @@ string Elem::GetPType(const string& aEType) const
 {
     string res;
     size_t pos = aEType.find_last_of(GUri::KParentSep);
-    res = aEType.substr(pos + 1);
+    res = aEType.substr(0, pos);
     return res;
 }
 

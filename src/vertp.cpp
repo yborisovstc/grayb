@@ -41,12 +41,7 @@ const string Vertp::KContent_CP2 = "CP2";
 
 Vertp::Vertp(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
-    SetParent(Type());
-}
-
-Vertp::Vertp(MElem* aMan, MEnv* aEnv):Elem(Type(), aMan, aEnv)
-{
-    SetParent(Elem::PEType());
+    SetCrAttr(PEType(), aName);
 }
 
 MIface *Vertp::DoGetObj(const char *aName)

@@ -10,7 +10,6 @@ class ACapsule: public Elem
 	static const char* Type() { return "ACapsule";};
 	static string PEType();
 	ACapsule(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ACapsule(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From MOwner
 	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse);
 };
@@ -42,7 +41,6 @@ class ConnPointBase: public Vert, public MConnPoint_Imd, public MCompatChecker_I
 	static const char* Type() { return "ConnPointBase";};
 	static string PEType();
 	ConnPointBase(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ConnPointBase(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// Iface provider
 	void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
 	// From Base
@@ -71,7 +69,6 @@ class ConnPointMc: public Vert, public MConnPoint_Imd, public MCompatChecker_Imd
 	static const char* Type() { return "ConnPointMc";};
 	static string PEType();
 	ConnPointMc(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ConnPointMc(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// Iface provider
 	void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
 	// From Base
@@ -115,7 +112,6 @@ class ConnPointBaseInp: public ConnPointBase
 	static const char* Type() { return "ConnPointBaseInp";};
 	static string PEType();
 	ConnPointBaseInp(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ConnPointBaseInp(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From MCompatChecker
 	virtual TDir GetDir() const;
 };
@@ -127,7 +123,6 @@ class ConnPointBaseOut: public ConnPointBase
 	static const char* Type() { return "ConnPointBaseOut";};
 	static string PEType();
 	ConnPointBaseOut(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ConnPointBaseOut(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From MCompatChecker
 	virtual TDir GetDir() const;
 };
@@ -151,7 +146,6 @@ class ExtenderAgent: public Elem, public MAgent
 	static const char* Type() { return "ExtenderAgent";};
 	static string PEType();
 	ExtenderAgent(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ExtenderAgent(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MCompatChecker
@@ -176,7 +170,6 @@ class ExtenderAgentInp: public ExtenderAgent
 	static const char* Type() { return "ExtenderAgentInp";};
 	static string PEType();
 	ExtenderAgentInp(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ExtenderAgentInp(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual MCompatChecker::TDir GetDir() const;
 };
 
@@ -187,7 +180,6 @@ class ExtenderAgentOut: public ExtenderAgent
 	static const char* Type() { return "ExtenderAgentOut";};
 	static string PEType();
 	ExtenderAgentOut(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ExtenderAgentOut(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual MCompatChecker::TDir GetDir() const;
 };
 
@@ -198,7 +190,6 @@ class AExtender: public Elem, public MCompatChecker, public MAgent
 	static const char* Type() { return "AExtender";};
 	static string PEType();
 	AExtender(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	AExtender(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MCompatChecker
@@ -234,7 +225,6 @@ class ASocket: public Elem, public MCompatChecker_Imd, public MSocket_Imd, publi
 	static const char* Type() { return "ASocket";};
 	static string PEType();
 	ASocket(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ASocket(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MCompatChecker
@@ -266,7 +256,6 @@ class ASocketInp: public ASocket
 	static const char* Type() { return "ASocketInp";};
 	static string PEType();
 	ASocketInp(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ASocketInp(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual TDir GetDir() const;
 };
 
@@ -277,7 +266,6 @@ class ASocketOut: public ASocket
 	static const char* Type() { return "ASocketOut";};
 	static string PEType();
 	ASocketOut(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ASocketOut(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual TDir GetDir() const;
 };
 
@@ -288,7 +276,6 @@ class ASocketMc: public ASocket
 	static const char* Type() { return "ASocketMc";};
 	static string PEType();
 	ASocketMc(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ASocketMc(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From MCompatChecker
 	virtual TDir GetDir() const;
 };
@@ -300,7 +287,6 @@ class Syst: public Vert
 	static const char* Type() { return "Syst";};
 	static string PEType();
 	Syst(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	Syst(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From MOwner
 	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
 	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse);

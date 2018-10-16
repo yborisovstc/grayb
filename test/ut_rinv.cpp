@@ -65,7 +65,7 @@ void Ut_Rinv::test_Rinv1()
     MIface* v1 = NULL;
     // Get node
     try {
-	v1 = root->Call("GetNode,1,./v1", rres);
+	v1 = root->Call("GetNode,1,./v1,false", rres);
 	CPPUNIT_ASSERT_MESSAGE("Fail to get v1", v1 != NULL);
     } catch (exception& e) {
 	CPPUNIT_ASSERT_MESSAGE(string("Exception on getting v1: ") + e.what(), false);
@@ -79,7 +79,7 @@ void Ut_Rinv::test_Rinv1()
     // Verifying mutation
     MIface* v1_1 = NULL;
     try {
-	v1_1 = root->Call("GetNode,1,./v1/v1_1", rres);
+	v1_1 = root->Call("GetNode,1,./v1/v1_1,false", rres);
 	CPPUNIT_ASSERT_MESSAGE("Cannot get v1_1", v1_1 != NULL);
 	v1_1->Call("Name", rres);
 	printf("Verifying mutation -- v1_1: %s\n", rres.c_str());
@@ -89,9 +89,9 @@ void Ut_Rinv::test_Rinv1()
     // Checking GetCont
     MIface* prop1 = NULL;
     try {
-	prop1 = root->Call("GetNode,1,./Prop1", rres);
+	prop1 = root->Call("GetNode,1,./Prop1,false", rres);
 	CPPUNIT_ASSERT_MESSAGE("Fail to get Prop1", prop1 != NULL);
-	prop1->Call("GetCont,1,", rres);
+	prop1->Call("GetContent,1,,false", rres);
 	CPPUNIT_ASSERT_MESSAGE("Wrong Prop1 content", rres == "Prop1_content");
     } catch (exception& e) {
 	CPPUNIT_ASSERT_MESSAGE(string("Exception on checking GetCont: ") + e.what(), false);

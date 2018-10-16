@@ -16,7 +16,6 @@ class Vert: public Elem, public MVert
 	static const char* Type() { return "Vert";};
 	static string PEType();
 	Vert(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	Vert(MElem* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~Vert();
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);
