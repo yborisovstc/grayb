@@ -111,6 +111,7 @@ TBool ImportsMgr::Import(const string& aUri)
 // aUri - model hier uri
 MElem* ImportsMgr::DoImport(const string& aUri)
 {
+    mHost.Pdstat(PEvents::DurStat_DoImport, true);
     MElem* res = NULL;
     GUri moduri(aUri);
     GUri::const_elem_iter it = moduri.Elems().begin();
@@ -129,9 +130,8 @@ MElem* ImportsMgr::DoImport(const string& aUri)
 	ChromoNode sel = chromo->Root().GetNodeByMhUri(moduri);
 	if (sel.Handle() != NULL) {
 	    // Reduce chromo to target node, mutate and check
-	    mHost.Pdstat(PEvents::DurStat_ImpReduceToSel, true);
 	    chromo->ReduceToSelection(sel);
-	    mHost.Pdstat(PEvents::DurStat_ImpReduceToSel, false);
+	    mHost.Pdstat(PEvents::DurStat_DoImport, false);
 	    ImportToNode(icontr, chromo->Root(), sel);
 	    // Rebasing uri to mut root, and get the target node
 	    GUri selr(".");
@@ -145,10 +145,12 @@ MElem* ImportsMgr::DoImport(const string& aUri)
 		mHost.Logger()->Write(EErr, NULL, "Importing node: failed [%s]", aUri.c_str());
 	    }
 	} else {
+	    mHost.Pdstat(PEvents::DurStat_DoImport, false);
 	    mHost.Logger()->Write(EErr, NULL, "Importing to module: cannot find chromo node [%s]", aUri.c_str());
 	}
 	delete chromo;
     } else {
+	mHost.Pdstat(PEvents::DurStat_DoImport, false);
 	mHost.Logger()->Write(EErr, NULL, "Importing [%s]: cannot find module [%s]", aUri.c_str(), modname.c_str());
     }
     return res;
@@ -158,6 +160,7 @@ void ImportsMgr::ImportToNode(MElem* aNode, const ChromoNode& aMut, const Chromo
 {
     if (aMut.Type() == ENt_Import) {
     } else if (aMut.Type() == ENt_Node) {
+	mHost.Pdstat(PEvents::DurStat_MutImportToNode, true);
 	GUri uri(".");
 	uri.AppendElem(string(), aMut.Name());
 	MElem* comp = aNode->GetNode(uri);
@@ -168,6 +171,7 @@ void ImportsMgr::ImportToNode(MElem* aNode, const ChromoNode& aMut, const Chromo
 	    Chromo* mut = mHost.Provider()->CreateChromo();
 	    mut->Init(ENt_Node);
 	    mut->Root().AddChild(aMut);
+	    mHost.Pdstat(PEvents::DurStat_MutImportToNode, false);
 	    aNode->Mutate(mut->Root(), ETrue, EFalse, EFalse, aNode);
 	    delete mut;
 	} else {
@@ -178,6 +182,7 @@ void ImportsMgr::ImportToNode(MElem* aNode, const ChromoNode& aMut, const Chromo
 		}
 	    }
 	}
+	mHost.Pdstat(PEvents::DurStat_MutImportToNode, false);
     }
 }
 

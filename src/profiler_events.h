@@ -27,9 +27,10 @@ enum {
     DurStat_CreateHeir,
     DurStat_CreateNativeAgt,
     DurStat_MutCont,
+    DurStat_MutChange,
     DurStat_TransfOsm,
-    DurStat_MutImport,
-    DurStat_ImpReduceToSel
+    DurStat_MutImportToNode,
+    DurStat_DoImport
 };
 
 }

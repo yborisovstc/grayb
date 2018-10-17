@@ -4437,6 +4437,36 @@
 	    <sect3><title>To optimize cont.</title> </sect3>
 	    <sect3><title>Migrate to unordered containers.</title> </sect3>
 	</sect2>
+	<sect2 id="ds_prfopt_log"><title>Optimization log</title>
+	    <sect3><title>20181017 Measured duration statistic.</title>
+		<simpara>Defined duration statistic measurement so that the intervals are not intersected:</simpara>
+		<programlisting>
+		    grayb/clm$ ./fapm -lclm.log -pprof ../../fap2-studio-gtk/examples/des_var_vect_1.xml
+
+		    prof~durstat.csv:
+
+		    15      Elem NotifyNodeMutated                  8932406         329     27150
+		    17      Creating native agent                   14191721        470     30195
+		    18      Content changing mutation               20760228        151     137484
+		    19      Attr changing mutation                  81231           1       81231
+		    20      Transform mut to OSM                    11500538        825     13940
+		    21      Import mgr ImportToNode, excl Mutate    76970           1       76970
+		    22      Import mgr DoImport, excl ImportToNode  39393378        18      2188521
+
+		    prof~dur.csv:
+
+		    8       Profiler duration measure time          1465
+		    6       Env constructor duration                108322225
+		</programlisting>
+		<simpara>These results shows that the sum of measured intervals are 94 936 472 us, this is near to 
+		    "Env constructor duration" - 108 322 225. Most time consuming operation seems to be DoImport. Also
+		    transform mut to OSM takes a time, same for Content changing mutation. We need to focus optimization
+		    process on that targets.</simpara>
+		<simpara>The operation related to <xref linkend="gls_osm"/> are time consuming also: "Elem NotifyNodeMutated",
+		    "Transform mut to OSM" takes about 20% of total time. Needs to look at OSM design.
+		</simpara>
+	    </sect3>
+	</sect2>
     </sect1>
 
     <sect1 id="sec_prof"><title>Embedded profiler</title>

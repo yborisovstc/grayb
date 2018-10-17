@@ -46,9 +46,10 @@ const PindDurStat::Idata KPindDurStatIdata = {
 	{DurStat_CreateHeir, "Elem CreateHeir"},
 	{DurStat_CreateNativeAgt, "Creating native agent"},
 	{DurStat_MutCont, "Content changing mutation"},
+	{DurStat_MutChange, "Attr changing mutation"},
 	{DurStat_TransfOsm, "Transform mut to OSM"},
-	{DurStat_MutImport, "Importing mutation"},
-	{DurStat_ImpReduceToSel, "Importing, reduce to sel"},
+	{DurStat_MutImportToNode, "Import mgr ImportToNode, excl Mutate"},
+	{DurStat_DoImport, "Import mgr DoImport, excl ImportToNode"},
     }
 };
 

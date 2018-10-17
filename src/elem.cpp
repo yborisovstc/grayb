@@ -1211,7 +1211,9 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		AddElem(rno, aRunTime, aTrialMode, aCtx);
 	    }
 	    else if (rnotype == ENt_Change) {
+		Pdstat(PEvents::DurStat_MutChange, true);
 		ChangeAttr(rno, aRunTime, aCheckSafety, aTrialMode, aCtx);
+		Pdstat(PEvents::DurStat_MutChange, false);
 	    }
 	    else if (rnotype == ENt_Cont) {
 		Pdstat(PEvents::DurStat_MutCont, true);
@@ -1222,9 +1224,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		MoveNode(rno, aRunTime, aTrialMode);
 	    }
 	    else if (rnotype == ENt_Import) {
-		Pdstat(PEvents::DurStat_MutImport, true);
 		ImportNode(rno, aRunTime, aTrialMode);
-		Pdstat(PEvents::DurStat_MutImport, false);
 	    }
 	    else if (rnotype == ENt_Rm) {
 		RmNode(rno, aRunTime, aCheckSafety, aTrialMode, aCtx);
