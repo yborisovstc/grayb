@@ -7,8 +7,11 @@
 
 using namespace std;
 
-Monitor::Monitor(): mEnv(nullptr)
+const string Monitor::KDefPrompt = ">";
+
+Monitor::Monitor(): mEnv(nullptr), mPrompt(KDefPrompt)
 {
+
 }
 
 Monitor::~Monitor()
@@ -66,5 +69,20 @@ bool Monitor::saveProfilerData()
 {
     // Save profiler data to file
     bool res = mEnv->Profiler()->SaveToFile(mProfName);
+    return res;
+}
+
+bool Monitor::run()
+{
+    bool res = true;
+    bool end = false;
+    do {
+	cout << mPrompt;
+	string input;
+	cin >> input;
+	if (input == "exit") {
+	    end = true;
+	}
+    } while (!end);
     return res;
 }

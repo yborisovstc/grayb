@@ -7,7 +7,6 @@
 
 using namespace std;
 
-
 /**
  * \brief System movement monitor
  */
@@ -22,12 +21,27 @@ class Monitor
 	void initEnv();
 	void runModel();
 	bool saveProfilerData();
+	/** Runs user interaction loop */
+	bool run();
     protected:
 	string mSpecName;
 	string mLogName;
 	/** Profiler file path */
 	string mProfName;
 	Env* mEnv;
+	string mPrompt;
+	static const string KDefPrompt;
+};
+
+/** Input handler base */
+class InputHandler
+{
+    public:
+	InputHandler(Monitor& aHost): mHost(aHost) {}
+	virtual ~InputHandler() {}
+	virtual bool handle() = 0;
+    protected:
+	Monitor& mHost;
 };
 
 #endif // __FAPM_MONITOR__
