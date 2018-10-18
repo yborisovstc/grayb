@@ -76,7 +76,7 @@ class GUri;
 	    virtual MProvider *Provider() const = 0;
 	    virtual MLogRec *Logger() = 0;
 	    virtual MProfiler *Profiler() = 0;
-	    virtual Elem* Root() = 0;
+	    virtual MElem* Root() = 0;
 	    virtual MChromoMgr* ChMgr() = 0;
 	    virtual MImportMgr* ImpsMgr() = 0;
 	    virtual MExtIfProv* ExtIfProv() = 0;

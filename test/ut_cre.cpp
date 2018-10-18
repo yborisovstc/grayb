@@ -118,7 +118,7 @@ void Ut_cre::test_Cre()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     MElem* ee = root->GetNode(":Elem");
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     root->Chromos().Save("ut_cre_1_saved.xml_");
@@ -162,7 +162,7 @@ void Ut_cre::test_CreGr()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MElem* v1 = root->GetNode("./(Vert:)v1");
     //Elem* av1 = v1->GetNode("(Elem:)Agents");
@@ -187,7 +187,7 @@ void Ut_cre::test_CreSyst()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     root->ChangeCont("root_prop", EFalse);
     root->ChangeCont("yes", EFalse, "Debug.Enable_trace");
     root->ChangeCont("no", EFalse, "Debug.Enable_dbg");
@@ -234,7 +234,7 @@ void Ut_cre::test_CreIncaps()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MElem* cp = root->GetNode("./sysmod/ConnPoint");
     cp->Chromos().Save("ut_cre_incaps_cp_.xml_");
@@ -262,7 +262,7 @@ void Ut_cre::test_CreData()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     root->Chromos().Save("ut_cre_data_saved.xml_");
     MElem* doutp = root->GetNode("./(Incaps:)test/(DataSInt:)DataS_Int_1/Capsule/out");
@@ -311,7 +311,7 @@ void Ut_cre::test_BaseApis1()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Make illegal modif and enable transformation
     MElem* vb = root->GetNode("./VB");
@@ -332,7 +332,7 @@ void Ut_cre::test_Iface()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MElem* cp1 = root->GetNode("./cp1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get cp1", cp1 != 0);
@@ -351,7 +351,7 @@ void Ut_cre::test_Content()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Setting of content
     root->ChangeCont("debug_content", EFalse, "Debug");
@@ -413,7 +413,7 @@ void Ut_cre::test_Notif()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     iEnv->SetObserver(mAgtObs);
     root->AppendMutation(TMut("node,id:Syst2,parent:./Syst1"));

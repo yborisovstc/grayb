@@ -51,7 +51,7 @@ void Ut_icache::test_Inv1()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
     MElem* doutp = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Out/Int/PinData");
@@ -114,7 +114,7 @@ void Ut_icache::test_InvMAgent()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
     // Mutate the input data first

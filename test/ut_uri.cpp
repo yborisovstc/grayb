@@ -81,7 +81,7 @@ void Ut_uri::test_UriBase()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths(KModulesPath);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
     // Try to get node via incorrect  uri
@@ -203,7 +203,7 @@ void Ut_uri::test_UriChromo_1()
     iEnv = new Env("ut_uri_chromo_1.xml", "ut_uri_chromo_1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
 
     // Check if chromo GetNode works ok in case of node with destination
@@ -228,7 +228,7 @@ void Ut_uri::test_UriRebase()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths(KModulesPath);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
     GUri uri("/testroot/Modules/DataComps/(DataS:)DataSInt");

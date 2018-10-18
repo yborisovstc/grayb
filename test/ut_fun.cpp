@@ -60,7 +60,7 @@ void Ut_func::test_FuncSeq1()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MElem* doutp = root->GetNode("./test/DataS_Int_1/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);

@@ -229,7 +229,7 @@ ChromoMgr::~ChromoMgr()
 int ChromoMgr::GetMaxOrder() const
 {
     TInt res = 0;
-    Elem* eroot = mHost.Root();
+    MElem* eroot = mHost.Root();
     if (eroot != NULL) {
 	ChromoNode& chrroot = eroot->Chromos().Root();
 	ChromoNode sroot = *(chrroot.Root());
@@ -520,7 +520,7 @@ MLogRec *Env::Logger()
     return iLogger;
 }
 
-Elem* Env::Root() 
+MElem* Env::Root() 
 { 
     return iRoot; 
 }

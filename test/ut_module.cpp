@@ -55,7 +55,7 @@ void Ut_mod::test_ImpsMgr1()
     // Enabling mutation repositioning in order to resolve unsafety
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
     vector<string> modnames;
@@ -81,7 +81,7 @@ void Ut_mod::test_ImpsMgr2()
     // Enabling mutation repositioning in order to resolve unsafety
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
     // Verifying importing Mod2_comp_2
@@ -165,7 +165,7 @@ void Ut_mod::test_ModInt1()
     // Enabling mutation repositioning in order to resolve unsafety
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
     // Verifying importing Mod2_comp_2
@@ -197,7 +197,7 @@ void Ut_mod::test_ImpsMgrOpt()
     // Enabling mutation repositioning in order to resolve unsafety
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
     // Verifying importing Mod5_comp_2

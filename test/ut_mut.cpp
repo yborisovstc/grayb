@@ -119,7 +119,7 @@ void Ut_mut::test_Add()
     //iEnv->ChMgr()->SetEnableCheckSafety(EFalse);
     //iEnv->ChMgr()->SetEnablePhenoModif(ETrue);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Check getting chromo 
@@ -187,7 +187,7 @@ void Ut_mut::test_DcpChromo1()
     // TODO Temporarily, to remove
     //iEnv->ChMgr()->SetEnableCheckSafety(EFalse);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Check getting chromo 
@@ -213,7 +213,7 @@ void Ut_mut::test_MutSyst()
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ChMgr()->SetEnableFixErrors(ETrue);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MElem* cp1 = root->GetNode("./cp1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get cp1", cp1 != 0);
@@ -266,7 +266,7 @@ void Ut_mut::test_Move()
     iEnv = new Env("ut_mutmove_1.xml", "ut_mutmove_1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MElem* e2 = root->GetNode("./elem1/elem2");
@@ -305,7 +305,7 @@ void Ut_mut::test_MutRmRecr()
     // Enabling mutation repositioning in order to resolve unsafety
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
      // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     ChromoNode mut = root->AppendMutation(ENt_Node);
@@ -340,7 +340,7 @@ void Ut_mut::test_MutRmRecrInh()
     // Enabling mutation repositioning in order to resolve unsafety
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
      // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MElem* v1 = root->GetNode("./v1");
@@ -367,7 +367,7 @@ void Ut_mut::test_MutDepsRm()
     //iEnv->ChMgr()->SetEnableCheckSafety(ETrue);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
      // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MElem* e2 = root->GetNode("./elem1/elem2");
@@ -448,7 +448,7 @@ void Ut_mut::test_MutDepsChilds1()
     iEnv->ChMgr()->SetEnablePhenoModif(ETrue);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
      // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MElem* e2 = root->GetNode("./elem1/elem2");
@@ -477,7 +477,7 @@ void Ut_mut::test_MutDepsRmRef()
     iEnv->ChMgr()->SetEnablePhenoModif(ETrue);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
      // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MElem* v1_0 = root->GetNode("./v1/v1_0");
@@ -537,7 +537,7 @@ void Ut_mut::test_MutInv1()
     // Enabling mutation repositioning in order to resolve unsafety
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
     MElem* v1 = root->GetNode("./v1");
@@ -593,7 +593,7 @@ void Ut_mut::test_MutInvRename()
     // Enabling mutation repositioning in order to resolve unsafety
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
     MElem* v1 = root->GetNode("./v1");
@@ -650,7 +650,7 @@ void Ut_mut::test_MutInvParent()
     // Enabling mutation repositioning in order to resolve unsafety
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
     MElem* v1 = root->GetNode("./v1");
@@ -698,7 +698,7 @@ void Ut_mut::test_MutInvImplicit()
     // Enabling mutation repositioning in order to resolve unsafety
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
     MElem* ee = root->GetNode("./System/E");
@@ -753,7 +753,7 @@ void Ut_mut::test_MutRmParent()
     iEnv = new Env("ut_mutadd_1.xml", "ut_mut_rm_parent.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
      // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MElem* e2 = root->GetNode("./elem1/elem2");
@@ -809,7 +809,7 @@ void Ut_mut::test_MutRenameParent()
     iEnv = new Env("ut_mutadd_1.xml", "ut_mut_rn_parent.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
      // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MElem* e1 = root->GetNode("./elem1");
@@ -845,7 +845,7 @@ void Ut_mut::test_Compact1()
     iEnv->ChMgr()->SetEnablePhenoModif(ETrue);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
      // Check creation first
     MElem* e3 = root->GetNode("./elem3");
@@ -879,7 +879,7 @@ void Ut_mut::test_OptRmDeps()
     iEnv = new Env("ut_opt_rm_deps.xml", "ut_opt_rm_deps.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
      // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MElem* v1 = root->GetNode("./v1");
@@ -919,7 +919,7 @@ void Ut_mut::test_Compact2()
     iEnv = new Env("ut_compact2.xml", "ut_compact2.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Compact chromo
     root->CompactChromo();
@@ -954,7 +954,7 @@ void Ut_mut::test_Compact3()
     iEnv = new Env("ut_compact3.xml", "ut_compact3.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Compact chromo
     root->CompactChromo();
@@ -1002,7 +1002,7 @@ void Ut_mut::test_CompactRmDa()
     iEnv = new Env("ut_compact_rmda.xml", "ut_compact_rmda.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Compact chromo
     root->CompactChromo();
@@ -1034,7 +1034,7 @@ void Ut_mut::test_CompactRef1()
     iEnv = new Env("ut_compact_ref1.xml", "ut_compact_ref1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Compact chromo
     root->CompactChromo();
@@ -1068,7 +1068,7 @@ void Ut_mut::test_CompactCont()
     iEnv = new Env("ut_compact_cont.xml", "ut_compact_cont.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Compact chromo
     root->CompactChromo();
@@ -1115,7 +1115,7 @@ void Ut_mut::test_GetParentModifs()
     iEnv = new Env("ut_parmod1.xml", "ut_parmod1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MElem* vb1 = root->GetNode("./VB/VB_1");
     root->Chromos().Save("ut_parmod1_res.xml_");
@@ -1143,7 +1143,7 @@ void Ut_mut::test_ParentMut()
     iEnv = new Env("ut_par_mut1.xml", "ut_par_mut1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != NULL);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
     MElem* va = root->GetNode("./VA");
     /*
@@ -1176,7 +1176,7 @@ void Ut_mut::test_ParentMut2()
     iEnv = new Env("ut_par_mut2.xml", "ut_par_mut2.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != NULL);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
     root->Chromos().Save("ut_par_mut2_res.xml_");
     MElem* b1 = root->GetNode("./B1");
@@ -1196,7 +1196,7 @@ void Ut_mut::test_TransfModif1()
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Make illegal modif and enable transformation
     MElem* va = root->GetNode("./VA");

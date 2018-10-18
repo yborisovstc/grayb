@@ -54,7 +54,7 @@ void Ut_des::test_Cre1()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
     MElem* doutp = root->GetNode("./test/State1/Capsule/Out/Int/PinData");
@@ -92,7 +92,7 @@ void Ut_des::test_Cre2()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
     MElem* doutp = root->GetNode("./TestDes/Capsule/Out/Int/PinData");
@@ -130,7 +130,7 @@ void Ut_des::test_Cre4()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MDIntGet* doutpget = (MDIntGet*) root->GetSIfi("./TestDes/Snail_1/Capsule/Out_Mass/Int/PinData", MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
@@ -165,7 +165,7 @@ void Ut_des::test_Cre5mc()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
     MElem* doutp = root->GetNode("./test/State1/Capsule/Out/Int/PinData");

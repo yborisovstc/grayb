@@ -134,7 +134,7 @@ class Env: public Base, public MEnv
     virtual MProvider *Provider() const;
     virtual MLogRec *Logger();
     virtual MProfiler *Profiler() override;
-    virtual Elem* Root();
+    virtual MElem* Root();
     virtual MChromoMgr* ChMgr();
     virtual MImportMgr* ImpsMgr();
     virtual MExtIfProv* ExtIfProv();

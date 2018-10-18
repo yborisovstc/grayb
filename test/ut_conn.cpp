@@ -215,7 +215,7 @@ void Ut_conn::test_Vertp()
     iEnv = new Env("ut_conn_vertp_1.xml", "ut_conn_vertp_1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Verify that v1 and v2 are connected
     MElem* ev1 = root->GetNode("./test/v1");
@@ -248,7 +248,7 @@ void Ut_conn::test_Systp()
     iEnv = new Env("ut_conn_systp_1.xml", "ut_conn_systp_1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Verify that s1 and s2 are connected
     MElem* es1 = root->GetNode("./test/s1");
@@ -298,7 +298,7 @@ void Ut_conn::test_Systp2()
     iEnv->AddProvider(mProv);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Verify that s1 and s2 are connected
     /*
@@ -351,7 +351,7 @@ void Ut_conn::test_Sock()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MElem* doutp = root->GetNode("./test/L1/Cp1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get L1 Cp1", doutp != 0);
@@ -385,7 +385,7 @@ void Ut_conn::test_Sock2()
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
     MElem* doutp = root->GetNode("./test/L1/Cp1");
@@ -424,7 +424,7 @@ void Ut_conn::test_Reconn()
     iEnv = new Env("ut_conn_1.xml", "ut_conn_1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
     // Delete v1
@@ -465,7 +465,7 @@ void Ut_conn::test_Conn2()
     iEnv = new Env("ut_conn_2.xml", "ut_conn_2.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    Elem* root = iEnv->Root();
+    MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
     // Disconnect one point of edge e2

@@ -2,16 +2,24 @@
 #define __FAPM_MONITOR__
 
 #include <string>
+#include <map>
 
 #include <env.h>
 
 using namespace std;
+
+class InputHandler;
 
 /**
  * \brief System movement monitor
  */
 class Monitor
 {
+    public:
+	/** Input handler factory function */
+	using TIhFact = InputHandler* (Monitor& aHost);
+	/** Input handlers registry type */
+	using TIhReg = map<string, TIhFact*>;
     public:
 	Monitor();
 	~Monitor();
@@ -20,9 +28,13 @@ class Monitor
 	bool setProfPath(const string& aPath);
 	void initEnv();
 	void runModel();
+	bool saveModel(const string& aPath);
 	bool saveProfilerData();
 	/** Runs user interaction loop */
 	bool run();
+    protected:
+	/** Crates input handler for given command */
+	InputHandler* createHandler(const string& aCmd);
     protected:
 	string mSpecName;
 	string mLogName;
@@ -31,15 +43,24 @@ class Monitor
 	Env* mEnv;
 	string mPrompt;
 	static const string KDefPrompt;
+	/** Input handlers factory function registry */
+	static const TIhReg mIhReg;
 };
 
 /** Input handler base */
 class InputHandler
 {
     public:
+	/** Each handler has to include two static method 
+	 * 1. 'command' returning specific command's string
+	 * 2. "create" returning newly created instanse of handler
+	 * static const string command();
+	 * static InputHandler* create(Monitor& aHost);
+	 */
 	InputHandler(Monitor& aHost): mHost(aHost) {}
 	virtual ~InputHandler() {}
-	virtual bool handle() = 0;
+	/** Handles command with given arguments aArgs */
+	virtual bool handle(const string& aArgs) = 0;
     protected:
 	Monitor& mHost;
 };
