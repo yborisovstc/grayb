@@ -80,6 +80,14 @@
 	    <glossdef> <para>Direct Hierarchical Chromosome</para> <para>
 		    Approach of multi-agent system definition that describes the model's structure directly. 
 		    Ref <xref linkend="ds_smc"/> </para></glossdef> </glossentry>
+	<glossentry id="gls_cpa"><glossterm>CPA</glossterm> <acronym>CPA</acronym>
+	    <glossdef> <para>Connecting Proxy Agent.
+		    The approach of agents design where dedicated embedded agents play the role of 
+		    connection points of agent, i.e. doing all connecting relative work instead of agent.
+		    In contrast of <xref linkend="gls_pia"/> connecting proxy agent provides interface
+		    resolution mechanism for the client, so the mechanism is distributed between multiple
+		    connecting agents in the model.
+	</para></glossdef> </glossentry>
 	<glossentry id="gls_osm"><glossterm>OSM</glossterm> <acronym>OSM</acronym>
 	    <glossdef> <para>Original Sequence of Mutations - 
 		    The approach of models creation where the same mutation order is
@@ -90,7 +98,7 @@
 	    <glossdef> <para>Properties Instead of embedded auxiliary Agents
 		    The approach of agents design where properties are using instead of auxiliary agents
 		    in order to minimize the agents number, ref
-		    <xref linkend="ds_pia"/>
+		    <xref linkend="ds_pia"/>. Ref <xref linkend="gls_cpa"/> for another connecting solution.
 	</para></glossdef> </glossentry>
 
     </glossary>
@@ -4146,6 +4154,11 @@
     </sect1>
 
     <sect1 id="ds_prfopt"><title>Performance optimization</title>
+	<sect2><title>Intro</title>
+	    <itemizedlist>
+		<listitem>Ref <xref linkend="sec_img/"/> for design solution for creating system from image.</listitem>
+	    </itemizedlist>
+	</sect2>
 	<sect2 id="ds_prfopt_un"><title>Migrating to unique name</title>
 	    <sect3><title>Intro</title>
 		<simpara>Ref <xref linkend="ds_mut_nm"/> for the design consideration regarding unique naming.</simpara>
@@ -4501,8 +4514,16 @@
 	</sect2>
 	<sect2><title>Verification</title>
 	    <programlisting>
-		fapm -lclm.log -pprof ../../fap2-studio-gtk/examples/des_1.xml
+		cd ~/projects/fap/grayb/clm
+		./fapm -a -lclm.log -pprof -s../../fap2-studio-gtk/examples/des_var_vect_1.xm
 	    </programlisting>
+	</sect2>
+    </sect1>
+
+    <sect1 id="sec_img"><title>Using "image" for constructing system</title>
+	<sect2><title>Intro</title>
+	    <simpara>Creating model from spec takes a lot of time. This is because each mutation causes many actions not local only.
+	    </simpara>
 	</sect2>
     </sect1>
 
@@ -4531,12 +4552,49 @@
 		    all it's complex behaviour, so if some one get direct access then Systp shall behave some way as if the request was thru CP. </simpara>
 	    </sect3>
 	    <sect3><title>How can we implement routing in Systp similar to how it works in Syst.</title>
-		<similar>In Syst the routing key part is connpoints. Exactly conn points are requested by system internal agents to get iface. For instance
-		    function-agent asked input connpont for iface MData to get input data. How can we implement this with <xref linkend="gls_pia"/> approach?</similar>
+		<simpara>In Syst the routing key part is connpoints. Exactly conn points are requested by system internal
+		    agents to get iface. For instance function-agent asked input connpont for iface MData to get input data.
+		    How can we implement this with <xref linkend="gls_pia"/> approach?</simpara>
 	    </sect3>
 	</sect2>
-	<sect2><title>Criticism</title>
-	    <sect3><title>Loosing mechanism of resolving iface via connpoints.</title>
+	<sect2 id="ds_pia_cp"><title>Connection points</title>
+	    <sect3><title>Intro</title>
+		<simpara>With <xref linkend="gls_pia"/> approach the connection point of agent is not an embedded sub-agent
+		    but simply property of agent - the "contract" of connection. This requires redesign of the current
+		    "distributed" mechanism of iface resolution, ref <xref linkend="ds_pia_crit_mri"/>.</simpara>
+		<simpara>What is important here - the structure of <xref linkend="gls_pia"/> connection points should
+		help the agent to resolve ifaces.</simpara>
+	    </sect3>
+	    <sect3><title>How to implement extentions? Internal and external part of extender.</title>
+		<simpara>The key feature of connection points is extension the connection points of agents components.
+		    For instance connection point of type "Extender" or "Socket", ref <xref linkend="ds_conn"/>.
+		</simpara>
+		<simpara> In <xref linkend="gls_cpa"/> solution the extension mechanism is implemented almost "natively":
+		    there are dedicated connection points for connecting both inner component and external agent. For instance
+		    in Extender the extender itself is the point to connect external agent but "Int" component of 
+		    extender is intended for connecting internal component.  </simpara>
+		<simpara>In case of <xref linkend="gls_pia"/> ther is only agent itself but not proxy. So both internal
+		    and external connecting agents shall be connected to agent itself. So the extending connection point
+		    "contract" should specify what "part" of connection point is for external usage and what for internal.</simpara>
+		<simpara>Note: Actually even for <xref linkend="gls_cpa"/> there was the problem that
+		    external agent potentially be allowed to connect to the extender part intended for inner connection.
+		    Even this problems isn't addressed yet the solution can be simple = owning agent can disable connecting
+		    to extender internal part for external agents. This requires that the owning agent knows the type of
+		    extender. Or the extenders should be unified in terms of that the extender itself if for external connection
+		    only. There could be another problem here that the extender potentially can be "reverted". For instance
+		    the "root" part of socket can be directed for inner connection but "detailed" part - to outer. In that
+		    case the owning agent cannot understand what restriction needs to be applied. Again the solution here 
+		    could be to have specific type for such "reverted" extenders so that the owning agent can apply the
+		    specific restrictions.
+		</simpara>
+		<simpara>Why don't use the same approach as for <xref linkend=""/>. Mostly because of the problem 
+		    desctibed above that owning agent needs to clearly understand what part of extender is for external and 
+		    what for internal connection. We need to consider what solution is more effective: specific 
+		    type for reverted extender of explicit specifying what part of extender is for exteranl usage.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_pia_crit"><title>Criticism</title>
+	    <sect3 id="ds_pia_crit_mri"><title>Loosing mechanism of resolving iface via connpoints.</title>
 		<simpara>There is one activelly used mechanism when creating models - system request the ifaces from selected
 		    connpoint. This is core feature, it creates the mechanism of effective support of connections in the whole model.
 		    With <xref linkend="gls_pia"/> approach it will be system itself duty to resolve the ifaces.</simpara>
