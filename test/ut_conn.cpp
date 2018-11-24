@@ -16,12 +16,14 @@ class MTestIface1: public MIfaceStub {
     public:
 	static const char* Type() { return "MTestIface1";}
 	virtual string Iface1_Test() = 0;
+	string Uid() const override { return Type();}
 };
 
 class MTestIface2: public MIfaceStub {
     public:
 	static const char* Type() { return "MTestIface2";}
 	virtual string Iface2_Test() = 0;
+	string Uid() const override { return Type();}
 };
 
 /**
@@ -55,7 +57,7 @@ class TstAgt: public Elem, public MAgent
 			    if (pairs.first != pairs.second) {
 				MVertp* pair = pairs.first->second;
 				MElem* epair = pair->GetObj(epair);
-				MIface* ifr = epair->GetSIfi(MTestIface1::Type());	
+				MIface* ifr = epair->GetSIfi(MTestIface1::Type(), owner);
 				if (ifr) {
 				    MTestIface1* ti = dynamic_cast<MTestIface1*>(ifr);
 				    __ASSERT(ti != NULL);
@@ -78,12 +80,13 @@ class TstAgt: public Elem, public MAgent
 	    SetParent(Elem::PEType()); mIface1 = new TestIface1(*this); mIface2 = new TestIface2(*this);}
 	virtual ~TstAgt() { delete mIface1; delete mIface2;}
 	virtual MIface* DoGetObj(const char *aName) {
-	    if (strcmp(aName, MTestIface1::Type()) == 0) return mIface1;
+	    if (strcmp(aName, MAgent::Type()) == 0) return  dynamic_cast<MAgent*>(this);
+	    else if (strcmp(aName, MTestIface1::Type()) == 0) return mIface1;
 	    else if (strcmp(aName, MTestIface2::Type()) == 0) return mIface2;
 	    return Elem::DoGetObj(aName);
 	}
 	// From MAgent
-	virtual MIface* MAgent_DoGetIface(const string& aName) override {return nullptr;}
+	virtual MIface* MAgent_DoGetIface(const string& aName) override { MIface* res = NULL; if (aName == MElem::Type()) res = dynamic_cast<MElem*>(this); return res; }
     private:
 	MTestIface1* mIface1 = nullptr;
 	MTestIface2* mIface2 = nullptr;

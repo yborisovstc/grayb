@@ -51,7 +51,7 @@
 	    typedef map<string, string> TCntVals;
 	    typedef pair<string, TCntRel> TContentKey; // Content key: full name, relation
 	    typedef pair<TContentKey, string> TContentRec; // Content record: key, data
-	    typedef multimap<TContentKey, string> TContent;
+	    typedef multimap<TContentKey, string> TContent; // Content, mutlimap needs for categories and comps
 	public:
 	    // Request context
 	    //typedef vector<Base*> TICacheRCtx;

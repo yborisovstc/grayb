@@ -14,6 +14,7 @@ class MSyst: public MIfaceStub
     public:
 	virtual MVertp::TPairsEr GetPairsForCp(const string& aCp) = 0;
 	virtual MVertp::TCpsEr   GetCpsForPair(MVertp* aPair) = 0;
+	virtual TIfRange GetIfiForCp(const string& aName, const string& aCp, const TICacheRCtx& aCtx = TICacheRCtx()) = 0;
 };
 
 #endif

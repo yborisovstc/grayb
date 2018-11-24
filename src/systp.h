@@ -24,8 +24,10 @@ class Systp: public Vertp, public MSyst
 	// From MSyst
 	MVertp::TPairsEr GetPairsForCp(const string& aCp) override;
 	TCpsEr   GetCpsForPair(MVertp* aPair) override;
+	TIfRange GetIfiForCp(const string& aName, const string& aCp, const TICacheRCtx& aCtx = TICacheRCtx()) override;
     protected:
 	void UpdateIfiForConnPoint(const string& aIfName, const TICacheRCtx& aCtx, const string& aCpId);
+	void UpdateIfiForExtender(const string& aIfName, const TICacheRCtx& aCtx, const string& aCpId);
 	bool GetExtended(MElem* aNode, const string& aExt, string& aInt, bool& aInv);
 };
 

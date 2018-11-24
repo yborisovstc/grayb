@@ -16,6 +16,7 @@ const string KCp_SimpleCp = "ConnPoint";
 const string KCp_SimpleCp_P = "Provided";
 const string KCp_SimpleCp_R = "Required";
 const string KCp_Extender = "Extender";
+const string KCp_Extender_Int = "Int";
 
 // System
 string Systp::PEType()
@@ -161,14 +162,6 @@ void Systp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 	MVertp* rqv = rq != nullptr ? rq->GetObj(rqv) : nullptr;
 	if (rqv != nullptr && IsPair(rqv)) {
 	    // Request from a pair
-	    /*
-	    string cp = GetPairCp(rqv);
-	    string cptype = GetContCount(cp) == 1 ? GetContComp(cp, 0) : string();
-	    string cptype_s = GetContentLName(cptype);
-	    if (cptype_s == KCp_SimpleCp) {
-		UpdateIfiForConnPoint(aName, aCtx, cptype);
-	    }
-	    */
 	    TCpsEr cps = GetCpsForPair(rqv);
 	    for (auto it = cps.first; it != cps.second; it++) {
 		string& cp = it->second;
@@ -176,6 +169,8 @@ void Systp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 		string cptype_s = GetContentLName(cptype);
 		if (cptype_s == KCp_SimpleCp) {
 		    UpdateIfiForConnPoint(aName, aCtx, cptype);
+		} else if (cptype_s == KCp_Extender) {
+		    UpdateIfiForExtender(aName, aCtx, cptype);
 		}
 	    }
 	} else {
@@ -192,6 +187,23 @@ void Systp::UpdateIfiForConnPoint(const string& aIfName, const TICacheRCtx& aCtx
     if (aIfName == prov) {
 	// Requested provided iface, use base resolver
 	Vertp::UpdateIfi(aIfName, aCtx);
+    }
+}
+
+void Systp::UpdateIfiForExtender(const string& aIfName, const TICacheRCtx& aCtx, const string& aCpId)
+{
+    string sIntKey = ContentKey(aCpId, KCp_Extender_Int);
+    string inttype = GetContCount(sIntKey) == 1 ? GetContComp(sIntKey, 0) : string();
+    string inttype_s = GetContentLName(inttype);
+    if (inttype_s == KCp_SimpleCp) {
+	TPairsEr pairs = Systp::GetPairsForCp(sIntKey);
+	for (auto it =pairs.first; it != pairs.second; it++) {
+	    MElem* pair = it->second->MVertp::GetObj(pair);
+	    TICacheRCtx ctx(aCtx); ctx.push_back(this);
+	    TIfRange rr = pair->GetIfi(aIfName, ctx);
+	    InsertIfCache(aIfName, aCtx, pair, rr);
+	}
+	//UpdateIfiForConnPoint(aIfName, aCtx, inttype);
     }
 }
 
@@ -235,4 +247,19 @@ MVertp::TCpsEr Systp::GetCpsForPair(MVertp* aPair)
 {
     TCpsEr res = mPairToCpReg.equal_range(aPair);
     return res;
+}
+
+TIfRange Systp::GetIfiForCp(const string& aName, const string& aCp, const TICacheRCtx& aCtx)
+{
+    string kk = mHost.ContentKey(Vertp::KContent_Connpoints, aName);
+    MVertp::TPairsEr pairs = GetPairsForCp(kk);
+    if (pairs.first != pairs.second) {
+	MVertp* pair = pairs.first->second;
+	MElem* epair = pair->GetObj(epair);
+	TICacheRCtx ctx(aCtx); ctx.push_back(this);
+	TIfRange rr = pair->GetIfi(aName, ctx);
+	// TODO To consider extending context with conn point. In this case the ifaced from CP
+	// can be cached locally. Otherwise we need to collect them from pairs
+	// InsertIfCache(aIfName, aCtx, pair, rr);
+    }
 }

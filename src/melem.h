@@ -216,6 +216,7 @@ class MElem : public MIface, public Base, public MMutable, public MOwner, public
     virtual TBool IsContOfCategory(const string& aName, const string& aCategory) const = 0; 
     virtual TBool ContentExists(const string& aName) const = 0;
     virtual TBool ContValueExists(const string& aName=string()) const = 0;
+    // TODO To use content URI instead of key
     virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const = 0; 
     // TODO To add also method GetContentComp(baseId, compId)
     virtual string GetContComp(const string& aOwnerName, TInt aInd) const = 0;

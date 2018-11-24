@@ -4421,19 +4421,29 @@
 		    Recodred ifaces can be functors with operator () intended for creating a record. We need also to disable creating
 		    more that one recorder same time (at least at the moment)
 		</simpara>
-		<simpara>20181001 Done</simpara>
+		<simpara>20181001 <xref linkend="sts_done"/></simpara>
 	    </sect3>
 	    <sect3><title>To simplify second constructor </title>
-		<simpara>To simplify second constructor (that creates genuine native agents) via delegating constructor or using
-		    aName for constructor variation. Just check in the constructor if name is passed to it. Why second
-		    constructor sets type as empty? This because second constructor creates origin agent but first constructor
-		    creates the child of origin agent.  </simpara>
+		<sect4><title>Proposal</title>
+		    <simpara>To simplify second constructor (that creates genuine native agents) via delegating constructor or using
+			aName for constructor variation. Just check in the constructor if name is passed to it. Why second
+			constructor sets type as empty? This because second constructor creates origin agent but first constructor
+			creates the child of origin agent.  </simpara>
+		</sect4>
+		<sect4><title>Status</title>
+		    <simpara><xref linkend="sts_done"/> in 78d5434a0968</simpara>
+		</sect4>
 	    </sect3>
 	    <sect3><title>To simplify default provider</title>
-		<simpara>To simplify default provider: Add private method for creation of bare agent and use it within
-		    CreateNode and GetNode. Also probably virtual method is required for getting type. It is required
-		    to avoid branching by type in GetNode when getting parent. There is EType method but seems it is not we need,
-		    what we need if to get staticly assosiated parent name. Look also at PName.  </simpara>
+		<sect4><title>Proposal</title>
+		    <simpara>To simplify default provider: Add private method for creation of bare agent and use it within
+			CreateNode and GetNode. Also probably virtual method is required for getting type. It is required
+			to avoid branching by type in GetNode when getting parent. There is EType method but seems it is not we need,
+			what we need if to get staticly assosiated parent name. Look also at PName.  </simpara>
+		</sect4>
+		<sect4><title>Status</title>
+		    <simpara><xref linkend="sts_done"/> in 78d5434a0</simpara>
+		</sect4>
 	    </sect3>
 	    <sect3><title>To get rid of mut </title>
 		<simpara> To get rid of mut. Just pass it as agrument of mut method. The case of async mut needs to be considered.
@@ -4559,7 +4569,7 @@
 	</sect2>
 	<sect2 id="ds_pia_cp"><title>Connection points</title>
 	    <sect3><title>Intro</title>
-		<simpara>With <xref linkend="gls_pia"/> approach the connection point of agent is not an embedded sub-agent
+		<simpara>With <xref linkend="gls_pia"/> approach the connection point of agent is not an embedded sub-agent - proxy
 		    but simply property of agent - the "contract" of connection. This requires redesign of the current
 		    "distributed" mechanism of iface resolution, ref <xref linkend="ds_pia_crit_mri"/>.</simpara>
 		<simpara>What is important here - the structure of <xref linkend="gls_pia"/> connection points should
@@ -4591,6 +4601,16 @@
 		    desctibed above that owning agent needs to clearly understand what part of extender is for external and 
 		    what for internal connection. We need to consider what solution is more effective: specific 
 		    type for reverted extender of explicit specifying what part of extender is for exteranl usage.</simpara>
+	    </sect3>
+	    <sect3><title>How to re-use connection points spec?</title>
+		<simpara>In <xref linkend="gls_cpa"/> we can simply re-use connection point - we just create child in given place of 
+		    model. For instance if there is connection point CP1 defined as output of system S1, and CP1p defined as compatible to CP1, then
+		    heir of CP1 can be used both in extender of CP1 and final pair of CP1. Ref <ulink url="../../test/ut_conn_systp_2.xml"/>: there
+		    are two same CPs defined for ext and final pair: 
+		    <programlisting> {ConnPoint:{Provided:'MTestIface2' Required:'MTestIface1'}} </programlisting>
+		    There needs solution to avoid such duplicating of CP spec. One solution would be to support references to conn points, i.e.
+		    references to content.
+	    </simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_pia_crit"><title>Criticism</title>
@@ -4764,7 +4784,17 @@
 	<sect2><title>New chromo language</title>
 	    <simpara>Ref <xref linkend="ds_chr_nc"/></simpara>
 	</sect2>
+	<sect2><title>Current implementatin of content is inefficient</title>
+	    <sect3><title>Description</title>
+		<simpara>Currently (9fd314b78e1) the content is implemented that the content tree is simulated by map. This seems rather ineffective.
+		    Needs to redesign.</simpara>
+	    </sect3>
+	</sect2>
     </sect1>
 
+    <sect1><title>Status items</title>
+	<simpara><glossterm id="sts_done">DONE</glossterm></simpara>
+	<simpara><glossterm id="sts_progr">IN_PROGRESS</glossterm></simpara>
+    </sect1>
 
 </article>
