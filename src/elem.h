@@ -54,7 +54,6 @@
 	    typedef multimap<TContentKey, string> TContent; // Content, mutlimap needs for categories and comps
 	public:
 	    // Request context
-	    //typedef vector<Base*> TICacheRCtx;
 	    // Iface cache key first part: [iface name, requestor]
 	    typedef pair<string, TICacheRCtx> TICacheKeyF;
 	    // Iface cache key: [[iface name, requestor], provider]

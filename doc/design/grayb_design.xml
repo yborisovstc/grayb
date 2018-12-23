@@ -100,6 +100,12 @@
 		    in order to minimize the agents number, ref
 		    <xref linkend="ds_pia"/>. Ref <xref linkend="gls_cpa"/> for another connecting solution.
 	</para></glossdef> </glossentry>
+	<glossentry id="gls_uac"><glossterm>UAC</glossterm> <acronym>UAC</acronym>
+	    <glossdef> <para>Units for Auxiliary Components
+		    The approach of agents design where "passive" units are used instead of agnents as
+		    auxiliary components, ref
+		    <xref linkend="ds_uac"/>. Ref <xref linkend="gls_cpa"/>, <xref linkend="gls_pia"/> for other connecting solutions.
+	</para></glossdef> </glossentry>
 
     </glossary>
 
@@ -4533,6 +4539,8 @@
     <sect1 id="sec_img"><title>Using "image" for constructing system</title>
 	<sect2><title>Intro</title>
 	    <simpara>Creating model from spec takes a lot of time. This is because each mutation causes many actions not local only.
+		Creation time can be reduced if system is created from system "image". System image is serialized sytem so the creation from
+		image is just de-serialization of the image.
 	    </simpara>
 	</sect2>
     </sect1>
@@ -4542,6 +4550,7 @@
 	    <simpara>Ref <xref linkend="ds_prfopt_mnn"/> for example of one model optimization - it shows that the major part of nodes is of 
 		complex connection points. It also shows that the currently developed set of multicontent agents doesn't allow
 		to properly optimize the complexity of the model.</simpara>
+	    <simpara>Ref <xref linkend="ds_uac"/> for alternative solution.</simpara>
 	</sect2>
 	<sect2><title>Connection redesign</title>
 	    <sect3><title>Intro</title>
@@ -4554,17 +4563,116 @@
 		</itemizedlist>
 	    </sect3>
 	</sect2>
-	<sect2><title>Iface resolution in Systp as reference of desing new approach.</title>
+	<sect2 id="ds_pia_ifr"><title>Iface resolution in <xref linkend="gls_pia"/> system Systp</title>
 	    <sect3><title>Iface routing by direct request (empty request context).</title>
 		<simpara>On the one hand it is reasonable that having connection thru connpoint requesing Iface_A Systp routes the direct request to that pair.</simpara>
 		<simpara>On the other hand the Systp itself is designed as agent that exposes itself via connpoints so shouldnt handle direct request other
 		    that superclass (Vertp) does. However we can ignore the last argument thinkin it the followng manner: yes, Systp exposes via CPs but it exposes
 		    all it's complex behaviour, so if some one get direct access then Systp shall behave some way as if the request was thru CP. </simpara>
 	    </sect3>
-	    <sect3><title>How can we implement routing in Systp similar to how it works in Syst.</title>
-		<simpara>In Syst the routing key part is connpoints. Exactly conn points are requested by system internal
+	    <sect3 id="ds_pia_ifr_ap"><title>How can we implement routing in Systp: problem - ambiguos paths</title>
+		<simpara>In Syst the routing key part is agents-connpoints. Exactly conn points are requested by system internal
 		    agents to get iface. For instance function-agent asked input connpont for iface MData to get input data.
-		    How can we implement this with <xref linkend="gls_pia"/> approach?</simpara>
+		    The context in that case is unique "path" from requestor to responser.  </simpara>
+		<simpara> How can we implement this with <xref linkend="gls_pia"/> approach? In this case the agents in context doesn't create
+		    unambigues path from requestor to responser. Ref <xref linkend="fig_pia_ifr_ac"/> for example, S1, S2, S1a, S2a are systems.
+		    The example of routing is as following:</simpara>
+		<itemizedlist>
+		    <listitem>Embedded agent S2aa requests iface from its owner S2a conn point CP2aa1.</listitem>
+		    <listitem>S2a redirects the request to S2 because S2A connects to S2 via CP2aa.</listitem>
+		    <listitem>S2 resirects the request to S1 because CP2aa connnects via Int of E21 and S2 connects to S1 via E21</listitem>
+		    <listitem>S1 gets the request with context {S2aa, S2a, S2}. S1 needs to analyze the context to understant via what internal point of
+			socket E11 to route next. But S1 cannot make unambiguos path back usign just context. There are 2 paths:
+			<programlisting>
+			    1: S1(E11) - S2(E21) - S2a(CP2aa1) - S2aa
+			    2: S1(E21) - S2(E22) - S2a(CP2aa2) - S2aa
+			</programlisting>
+			<simpara>As it is seen, the context is same for thath 2 paths</simpara>
+		    </listitem>
+		</itemizedlist>
+		<figure id="fig_pia_ifr_ac"><title>Example of interface resolution problem</title>
+		    <imageobject> <imagedata fileref="pics/pia_iface_rsl.png"/> </imageobject></figure>
+		<simpara>What would be possible solution here?</simpara>
+		<itemizedlist>
+		    <listitem>Specific iface resolution API for system, ref <xref linkend="ds_pia_ifr_ap_sira"/></listitem>
+		</itemizedlist>
+		<sect4 id="ds_pia_ifr_ap_sira"><title>Specific iface resolution API for system</title>
+		    <simpara>Current iface resolution mechanism and API was introduced on base agent (MElem) level. This means it knows nothing
+			of agents connecting via contracts (connection points). So for <xref linkend="gls_pia"/> system it is resonable to
+			introduce specific iface resolution API. This API needs to consider the fact that contracts (connection points) are required 
+			for finding correct path back.</simpara>
+		    <simpara>There are two approaches regarding context:</simpara>
+		    <itemizedlist>
+			<listitem>This specific API needs to have extended context. This context has to include connection contracts info,
+			    ref <xref linkend="ds_pia_ifr_ap_sira_ex"/>
+			</listitem>
+			<listitem>No need to have extended context. The only additional argument in iface requesting method is enough, ref
+			    <xref linkend="ds_pia_ifr_ap_sira_aa"/></listitem>
+		    </itemizedlist>
+		    <sect5 id="ds_pia_ifr_ap_sira_aa"><title>Approach: additional argument in iface requesting method </title>
+			<simpara>Analyzing the example above we can see that in this case the additonal argument can be used. Indeed, the ambiguity in this example
+			    cand be avoided if we specify connection point S1.E11 witin the request iface from S2. In that case S1 can understand that the request
+			    is coming from S2.E21 and then create unambiguos path. This seems to be generic rule. The ambiguty happens if we don's specify the 
+			    connection point on requesting system. Specifying connection point solves this problem. The sequence of requests for
+			    example <xref linkend="fig_pia_ifr_ac"/> will be as:</simpara>
+			<programlisting>
+			    S2aa -->
+			    S2a.CP2a1
+			    S2.E21
+			    S1.E11.P1
+			    S1a.CP1a1 
+			    --> S1aa
+			</programlisting>
+			<simpara>Another design point is to how implement the extended request. Currently an agent has single ifaces cache, the key
+			    is request context (requestors) and iface provider. If we add new parameter of request - conn point then we need to 
+			    extend the cache. It can be done either extending the key (for instance combining the context with connpoint) or having separate
+			    cache for each connpoint.  </simpara>
+			<simpara>This design is incredibly similar to the iface cache design for <xref linkend="gls_cpa"/> approach:
+			    <itemizedlist>
+				<listitem> If we use conn points speciifc caches then it is as if connection point is just agent and system just do iface resolution
+				    task in place of this agent.  </listitem>
+				<listitem>If we use conn point URI as addendum to context it is as the the request path goes first to connpoint and then to system
+				    (for connpoint is not able for resolving)</listitem>
+			    </itemizedlist>
+			</simpara>
+			<simpara>Hmm, seems there is a gap in the consideration above. We are not going to extend the context. But in some cases
+			    the context is required for system to build path-back and understand how to rout forward. Let's look how S1 can route forward
+			    on the request coming from S2aa ... S2 - S1.E11. S1 needs to understand via what pin of E11 it shold route forward. So it looks
+			    back first to S2.E21. Then S1 gets S2a from context but it is not possible to resolve pin in S2.E21 because S2a connects to two pins
+			    of E21. This example shows that this approach of using only additional argument in request is not working.</simpara>
+		    </sect5>
+		    <sect5 id="ds_pia_ifr_ap_sira_ex"><title>Using extended context</title>
+			<simpara>This solution seems simpler that <xref linkend="ds_pia_ifr_ap_sira_aa"/> in the sense that system doesn't need some
+			    special iface cache.</simpara>
+			<simpara>For example on <xref linkend="fig_pia_ifr_ac"/> the request from S2aa the final context is as:</simpara>
+			<programlisting>
+			    S2aa
+			    S2a.CP2a1
+			    S2.E21
+			    S1.E11.P1
+			    S1a.CP1a1 
+			    --> S1aa
+			</programlisting>
+			<simpara>What would be solutions here?</simpara>
+			<itemizedlist>
+			    <listitem>Extending of context element. Currently it is pointer to an agent. We can add connection point to the element.  </listitem>
+			    <listitem>To introduce "context element" - special wrapper of connection point
+				<simpara>It is almost same as solution above, just small design modification.
+				    This element is the class that contains both pointer to element and "hint" (it can be conn point UID) for instance.
+				    We can introduce specific cast operator to smoothly get pointer to agent from the element in order to keep
+				    compatibility with the current code.</simpara>
+			    </listitem>
+			    <listitem>To support polymorphic context element we can introduce context element's interface. It has to include casting to base
+				agents pointer.
+				<simpara> For <xref linkend="gls_pia"/> system we need the context element that represents agents conn point. This 
+				    representation can be created for each active conn points of system.
+				    There is design option to use connection record in Vertp as context element iface implementation: it contains 
+				    conn point URI, so we just add ref to the system itself.
+				    Actually this is similar to passive "units" approach, ref <xref linkend="ds_uac"/></simpara>
+			    </listitem>
+			</itemizedlist>
+		    </sect5>
+		</sect4>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_pia_cp"><title>Connection points</title>
@@ -4573,7 +4681,7 @@
 		    but simply property of agent - the "contract" of connection. This requires redesign of the current
 		    "distributed" mechanism of iface resolution, ref <xref linkend="ds_pia_crit_mri"/>.</simpara>
 		<simpara>What is important here - the structure of <xref linkend="gls_pia"/> connection points should
-		help the agent to resolve ifaces.</simpara>
+		    help the agent to resolve ifaces.</simpara>
 	    </sect3>
 	    <sect3><title>How to implement extentions? Internal and external part of extender.</title>
 		<simpara>The key feature of connection points is extension the connection points of agents components.
@@ -4610,7 +4718,7 @@
 		    <programlisting> {ConnPoint:{Provided:'MTestIface2' Required:'MTestIface1'}} </programlisting>
 		    There needs solution to avoid such duplicating of CP spec. One solution would be to support references to conn points, i.e.
 		    references to content.
-	    </simpara>
+		</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_pia_crit"><title>Criticism</title>
@@ -4619,6 +4727,21 @@
 		    connpoint. This is core feature, it creates the mechanism of effective support of connections in the whole model.
 		    With <xref linkend="gls_pia"/> approach it will be system itself duty to resolve the ifaces.</simpara>
 	    </sect3>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_uac"><title>Re-design approach: using Units as auxiliary components.</title>
+	<sect2><title>Intro</title>
+	    <simpara>There was re-desing approach <xref inkend="gls_pia"/> that allows reduce the number of agents when creating model. According
+		to this model the agent shall not use auxiliary agents-components to distribute the functionality. For instance system agent
+		shall not use connection points agents.
+		Howewer this approach causes overcomplicating the agents. For instance system agent has to get responsibility for connecting (including 
+		connpoints compatibility verification), commutating iface resolution requests etc.</simpara>
+	    <simpara>There is another that <xref linkend="gls_pia"/> and not so radical approach - just to use "units" instead of agent for 
+		auxiliary components. Unit is like agent but doesn't have chromo, so don't need to propagate mutations. </simpara>
+	    <simpara>We come to this solution when designing <xref linkend="gls_pia"/> system agent. It evolves that implementing many
+		connections related functions in the scope of system agent inself causes to messy code. It is more simple to isolate connection point
+		functinality is dedicated class. The class is in fact kind of unit.</simpara>
 	</sect2>
     </sect1>
 

@@ -1,5 +1,6 @@
 #include "systp.h"
 
+
 /** \brief Edge
  *    {P1:'Uri, proposed point 1' P2:'Uri, proposed point 2Uri'
  *         CP1:'Uri, Connected point 1' CP2:'Uri, Connected point 2'}
@@ -17,6 +18,7 @@ const string KCp_SimpleCp_P = "Provided";
 const string KCp_SimpleCp_R = "Required";
 const string KCp_Extender = "Extender";
 const string KCp_Extender_Int = "Int";
+const string KCp_Socket = "Socket";
 
 // System
 string Systp::PEType()
@@ -72,28 +74,43 @@ TBool Systp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 			// Establishing new connection
 			string purib = GetContentValue(ContentKey(edgeName, namePB));
 			if (!puria.empty() && !purib.empty()) {
-			    // Verifying compatibility first
-			    bool compatible = AreCpsCompatible(puria, purib);
-			    if (compatible) {
-				MElem* ea = GetNode(puria);
-				assert(ea != NULL);
-				MVertp* va = ea->GetObj(va);
-				assert(va != NULL);
-				MElem* eb = GetNode(purib);
-				assert(eb != NULL);
-				MVertp* vb = eb->GetObj(vb);
-				assert(vb != NULL);
-				string cna = GUri(puria).GetContent();
-				string cnb = GUri(purib).GetContent();
-				res = va->Connect(vb, cna);
-				res = res && vb->Connect(va, cnb);
-				if (res) {
-				    SetContentValue(ContentKey(edgeName, nameCPA), puria);
-				    SetContentValue(ContentKey(edgeName, nameCPB), purib);
-				}
-			    } else {
-				Logger()->Write(EErr, this, "Connecting [%s - %s] - incompatible", puria.c_str(), purib.c_str());
+			    // Checking if specified conn points are valid
+			    GUri uria(puria);
+			    GUri urib(purib);
+			    MElem* ea = GetNode(uria);
+			    MElem* eb = GetNode(urib);
+			    string cna = uria.GetContent();
+			    string cnb = urib.GetContent();
+			    string cva = ea->GetContent(cna, true);
+			    string cvb = eb->GetContent(cnb, true);
+			    if (cva.empty() || cvb.empty()) {
+				Logger()->Write(EErr, this, "Connecting [%s - %s] - connpoint [%s] doesn't exist", puria.c_str(), purib.c_str(),
+					cva.empty() ? puria.c_str() : purib.c_str());
 				res = false;
+			    } else {
+				// Verifying compatibility
+				bool compatible = AreCpsCompatible(ea, cna, eb, cnb);
+				if (compatible) {
+				    MElem* ea = GetNode(puria);
+				    assert(ea != NULL);
+				    MVertp* va = ea->GetObj(va);
+				    assert(va != NULL);
+				    MElem* eb = GetNode(purib);
+				    assert(eb != NULL);
+				    MVertp* vb = eb->GetObj(vb);
+				    assert(vb != NULL);
+				    string cna = GUri(puria).GetContent();
+				    string cnb = GUri(purib).GetContent();
+				    res = va->Connect(vb, cna);
+				    res = res && vb->Connect(va, cnb);
+				    if (res) {
+					SetContentValue(ContentKey(edgeName, nameCPA), puria);
+					SetContentValue(ContentKey(edgeName, nameCPB), purib);
+				    }
+				} else {
+				    Logger()->Write(EErr, this, "Connecting [%s - %s] - incompatible", puria.c_str(), purib.c_str());
+				    res = false;
+				}
 			    }
 			}
 		    }
@@ -110,13 +127,13 @@ TBool Systp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
     return res;
 }
 
-bool Systp::AreCpsCompatible(const GUri& aCp1, const GUri& aCp2)
+bool Systp::AreCpsCompatible(MElem* aNode1, const string& aCp1, MElem* aNode2, const string& aCp2)
 {
     bool res = true;
-    MElem* ea = GetNode(aCp1);
-    MElem* eb = GetNode(aCp2);
-    string cna = aCp1.GetContent();
-    string cnb = aCp2.GetContent();
+    MElem* ea = aNode1;
+    MElem* eb = aNode2;
+    const string& cna = aCp1;
+    const string& cnb = aCp2;
     string cva = ea->GetContent(cna, true);
     string cvb = eb->GetContent(cnb, true);
     if (ea->GetContCount(cna) == 1 && eb->GetContCount(cnb)) {
@@ -136,16 +153,32 @@ bool Systp::AreCpsCompatible(const GUri& aCp1, const GUri& aCp2)
 	    res = GetExtended(eb, cptype_b, cptype_b, inv);
 	    cptype_bs = GetContentLName(cptype_b);
 	}
-	
+
 	if (res && cptype_as == cptype_bs) {
 	    if (cptype_as == KCp_SimpleCp) {
+		// Simple connection points
 		string pa = ea->GetContent(ContentKey(cptype_a, KCp_SimpleCp_P));
 		string ra = ea->GetContent(ContentKey(cptype_a, KCp_SimpleCp_R));
 		string pb = eb->GetContent(ContentKey(cptype_b, KCp_SimpleCp_P));
 		string rb = eb->GetContent(ContentKey(cptype_b, KCp_SimpleCp_R));
 		if (!inv && pa == rb && ra == pb || inv && pa == pb && ra == rb) {
 		} else res = false;
-	    }
+	    } else if (cptype_as == KCp_Socket) {
+		// Sockets
+		// Validate pins
+		int a_pins_count = ea->GetContCount(cptype_a);
+		int b_pins_count = eb->GetContCount(cptype_b);
+		if (a_pins_count == b_pins_count) {
+		    for (int cnt = 0; cnt < a_pins_count; cnt++) {
+			string pina = ea->GetContComp(cptype_a, cnt);
+			string pinb = eb->GetContComp(cptype_b, cnt);
+			bool pin_cptbl = AreCpsCompatible(ea, pina, eb, pinb);
+			if (! pin_cptbl) {
+			    res = false; break;
+			}
+		    }
+		} else res = false;
+	    } else res = false;
 	} else res = false;
     } else res = false;
     return res;
@@ -171,6 +204,8 @@ void Systp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 		    UpdateIfiForConnPoint(aName, aCtx, cptype);
 		} else if (cptype_s == KCp_Extender) {
 		    UpdateIfiForExtender(aName, aCtx, cptype);
+		} else if (cptype_s == KCp_Socket) {
+		    UpdateIfiForSocket(aName, aCtx, cptype);
 		}
 	    }
 	} else {
@@ -185,8 +220,21 @@ void Systp::UpdateIfiForConnPoint(const string& aIfName, const TICacheRCtx& aCtx
 {
     string prov = GetContent(ContentKey(aCpId, KCp_SimpleCp_P));
     if (aIfName == prov) {
-	// Requested provided iface, use base resolver
-	Vertp::UpdateIfi(aIfName, aCtx);
+	// Checking if connpint is socket pin
+	string pinname = GetContentOwner(aCpId);
+	string socktype = GetContentOwner(pinname);
+	string socktype_s = GetContentLName(socktype);
+	if (socktype_s == KCp_Socket) {
+	    // Get pairs
+	    string sockname = GetContentOwner(socktype);
+	    TPairsEr pairs = Systp::GetPairsForCp(sockname);
+	    for (auto it =pairs.first; it != pairs.second; it++) {
+		MElem* pair = it->second->MVertp::GetObj(pair);
+	    }
+	} else {
+	    // Requested provided iface, use base resolver
+	    Vertp::UpdateIfi(aIfName, aCtx);
+	}
     }
 }
 
@@ -205,6 +253,10 @@ void Systp::UpdateIfiForExtender(const string& aIfName, const TICacheRCtx& aCtx,
 	}
 	//UpdateIfiForConnPoint(aIfName, aCtx, inttype);
     }
+}
+
+void Systp::UpdateIfiForSocket(const string& aIfName, const TICacheRCtx& aCtx, const string& aCpId)
+{
 }
 
 bool Systp::GetExtended(MElem* aNode, const string& aExt, string& aInt, bool& aInv)
@@ -249,6 +301,11 @@ MVertp::TCpsEr Systp::GetCpsForPair(MVertp* aPair)
     return res;
 }
 
+TIfRange Systp::GetIfiCp(const string& aName, const string& aCp, const TICacheRCtx& aCtx)
+{
+}
+
+#if 0
 TIfRange Systp::GetIfiForCp(const string& aName, const string& aCp, const TICacheRCtx& aCtx)
 {
     string kk = mHost.ContentKey(Vertp::KContent_Connpoints, aName);
@@ -263,3 +320,4 @@ TIfRange Systp::GetIfiForCp(const string& aName, const string& aCp, const TICach
 	// InsertIfCache(aIfName, aCtx, pair, rr);
     }
 }
+#endif 

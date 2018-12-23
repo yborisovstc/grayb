@@ -174,6 +174,7 @@ class Ut_conn : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Vertp);
     CPPUNIT_TEST(test_Systp);
     CPPUNIT_TEST(test_Systp2);
+    CPPUNIT_TEST(test_SystpSock);
     CPPUNIT_TEST(test_Sock);
     CPPUNIT_TEST(test_Sock2);
     CPPUNIT_TEST(test_Reconn);
@@ -187,6 +188,7 @@ class Ut_conn : public CPPUNIT_NS::TestFixture
     void test_Vertp();
     void test_Systp();
     void test_Systp2();
+    void test_SystpSock();
     void test_Sock();
     void test_Sock2();
     void test_Reconn();
@@ -303,17 +305,6 @@ void Ut_conn::test_Systp2()
     iEnv->ConstructSystem();
     MElem* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    // Verify that s1 and s2 are connected
-    /*
-       MElem* es1 = root->GetNode("./test/s1");
-       MVertp* mv1 = es1->GetObj(mv1);
-       MElem* es2 = root->GetNode("./test/s2");
-       MVertp* mv2 = es2->GetObj(mv2);
-       int pnum1 = mv1->PairsCount();
-       int pnum2 = mv2->PairsCount();
-       bool v2ispair = mv1->IsPair(mv2);
-       CPPUNIT_ASSERT_MESSAGE("v1 and v2 aren't connected", pnum1 == 1 && pnum2 && v2ispair);
-       */
     // Trying connect s2 to s1 ext
     ChromoNode mutn = root->AppendMutation(ENt_Cont);
     mutn.SetAttr(ENa_Targ, "./test");
@@ -338,6 +329,50 @@ void Ut_conn::test_Systp2()
     CPPUNIT_ASSERT_MESSAGE("Cannot get es2_1 MTestIface2", es2_1 != NULL);
     //string ck = Vertp::KContent_Connpoints;
     string t2res = es2_1t->Iface2_Test();
+    CPPUNIT_ASSERT_MESSAGE("Iface MIface1 is not resolved", t2res == "MTestIface1");
+
+    iEnv->RemoveProvider(mProv);
+    delete mProv;
+    delete iEnv;
+}
+
+// Test of Systp connection: Socket
+void Ut_conn::test_SystpSock()
+{
+    printf("\n === Test#2 of Systp connection: Socket\n");
+
+    iEnv = new Env("ut_conn_systp_sock.xml", "ut_conn_systp_sock.txt");
+    mProv = new TstProv("TstProv", iEnv);
+    iEnv->AddProvider(mProv);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ConstructSystem();
+    MElem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Trying connect s2 to s1 ext
+    ChromoNode mutn = root->AppendMutation(ENt_Cont);
+    mutn.SetAttr(ENa_Targ, "./test");
+    mutn.SetAttr(ENa_Id, "Edges.E2");
+    mutn.SetAttr(ENa_MutVal, "{P1:'/Root/test/s1~ConnPoints.S1' P2:'/Root/test/s2~ConnPoints.S1'}");
+    root->Mutate();
+    MElem* es1 = root->GetNode("./test/s1");
+    MVertp* mv1 = es1->GetObj(mv1);
+    MElem* es2 = root->GetNode("./test/s2");
+    MVertp* mv2 = es2->GetObj(mv2);
+    int pnum1 = mv1->PairsCount();
+    int pnum2 = mv2->PairsCount();
+    bool v2ispair = mv1->IsPair(mv2);
+    // Verifying connection s1 - s2
+    // s1 to have 3 pairs: s1_1, s1_2 (internal), and s2
+    // s2 to have 3 pairs: s2_1, s2_2 (internal), and s1
+    CPPUNIT_ASSERT_MESSAGE("v1 and v2 aren't connected", pnum1 == 3 && pnum2 == 3 && v2ispair);
+    // 
+    // Verifying iface resolution via connection
+    MElem* es2_1_1 = root->GetNode("./test/s2/s2_1/s2_1_1");
+    CPPUNIT_ASSERT_MESSAGE("Cannot get es2_1_1", es2_1_1 != NULL);
+    MTestIface2* es2_1_1t = es2_1_1->GetObj(es2_1_1t);
+    CPPUNIT_ASSERT_MESSAGE("Cannot get es2_1 MTestIface2", es2_1_1t != NULL);
+    //string ck = Vertp::KContent_Connpoints;
+    string t2res = es2_1_1t->Iface2_Test();
     CPPUNIT_ASSERT_MESSAGE("Iface MIface1 is not resolved", t2res == "MTestIface1");
 
     iEnv->RemoveProvider(mProv);

@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<!-- Systp connection via Socket -->
+
+<node id="Root" parent="Elem">
+    <node id="test" parent="Systp"/>
+    <node id="s1" parent="Systp" targ="./test"/>
+    <node id="s1_1" parent="Systp" targ="./test/s1"/>
+    <node id="s1_1_1" parent="TstAgt" targ="./test/s1/s1_1"/>
+    <node id="s1_2" parent="Systp" targ="./test/s1"/>
+    <node id="s1_2_1" parent="TstAgt" targ="./test/s1/s1_2"/>
+    <cont id="ConnPoints.Cp1" val="{ConnPoint:{Provided:'MTestIface1' Required:'MTestIface2'}}" targ="./test/s1/s1_1"/>
+    <cont id="ConnPoints.Cp1" val="{ConnPoint:{Provided:'MTestIface2' Required:'MTestIface1'}}" targ="./test/s1/s1_2"/>
+    <cont id="ConnPoints.S1" val="{Socket:{Pin1:{ConnPoint:{Provided:'MTestIface2' Required:'MTestIface1'}} Pin2:{ConnPoint:{Provided:'MTestIface1' Required:'MTestIface2'}}}}" targ="./test/s1"/>
+    <cont id="Edges.E1" val="{P1:'./s1_1~ConnPoints.Cp1' P2:'.~ConnPoints.S1.Socket.Pin1'}" targ="./test/s1"/>
+    <cont id="Edges.E2" val="{P1:'./s1_2~ConnPoints.Cp1' P2:'.~ConnPoints.S1.Socket.Pin2'}" targ="./test/s1"/>
+    <node id="s2" parent="Systp" targ="./test"/>
+    <cont id="ConnPoints.S1" val="{Socket:{Pin1:{ConnPoint:{Provided:'MTestIface1' Required:'MTestIface2'}} Pin2:{ConnPoint:{Provided:'MTestIface2' Required:'MTestIface1'}}}}" targ="./test/s2"/>
+    <node id="s2_1" parent="Systp" targ="./test/s2"/>
+    <node id="s2_1_1" parent="TstAgt" targ="./test/s2/s2_1"/>
+    <node id="s2_2" parent="Systp" targ="./test/s2"/>
+    <node id="s2_2_1" parent="TstAgt" targ="./test/s2/s2_2"/>
+    <cont id="ConnPoints.Cp1" val="{ConnPoint:{Provided:'MTestIface2' Required:'MTestIface1'}}" targ="./test/s2/s2_1"/>
+    <cont id="ConnPoints.Cp1" val="{ConnPoint:{Provided:'MTestIface1' Required:'MTestIface2'}}" targ="./test/s2/s2_2"/>
+    <cont id="Edges.E1" val="{P1:'./s2_1~ConnPoints.Cp1' P2:'.~ConnPoints.S1.Socket.Pin1'}" targ="./test/s2"/>
+    <cont id="Edges.E2" val="{P1:'./s2_2~ConnPoints.Cp1' P2:'.~ConnPoints.S1.Socket.Pin2'}" targ="./test/s2"/>
+    <!-- Doing manually in test
+    <cont id="Edges.E1" val="{P1:'/Root/test/s1~ConnPoints.Ext1' P2:'/Root/test/s2~ConnPoints.Cp1'}" targ="./test"/> -->
+</node>

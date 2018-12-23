@@ -3462,6 +3462,7 @@ string Elem::ContentCompId(const string& aOwnerName, const string& aCompName)
     return  aOwnerName.empty() ? aCompName : aOwnerName + KContentSep + aCompName;
 }
 
+// TODO Dup of ContentCompId
 string Elem::ContentKey(const string& aBase, const string& aSuffix)
 {
     return  aBase + KContentSep + aSuffix;
