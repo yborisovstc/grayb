@@ -19,7 +19,7 @@ class MSyst: public MIfaceStub
 	 * @param aCp - UID of connection point
 	 * @param aCtx - context of the request
 	*/
-	virtual TIfRange GetIfiCp(const string& aName, const string& aCp, const TICacheRCtx& aCtx = TICacheRCtx()) = 0;
+	virtual MIfProv::TIfRange GetIfiCp(const string& aName, const string& aCp, const TICacheRCtx& aCtx = TICacheRCtx()) = 0;
 	/** Getting interface from inside of system via connection point
 	 * It is used by embedded agents
 	*/

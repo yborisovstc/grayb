@@ -12,6 +12,9 @@
 class MVertp: public MIface
 {
     public:
+	/** ConnPoint specificator (CPS): agent + content spec **/
+	typedef pair<MVertp*, string> TCps;
+	/** Connnection specificator: Agent CPS + Pair CPS **/
 	/** ConnPoints to pairs registry */
 	typedef pair<string, MVertp*> TCpToPairRegElem;
 	typedef multimap<string, MVertp*> TCpToPairReg;

@@ -4470,7 +4470,8 @@
 	    <sect3><title>20181017 Measured duration statistic.</title>
 		<simpara>Defined duration statistic measurement so that the intervals are not intersected:</simpara>
 		<programlisting>
-		    grayb/clm$ ./fapm -lclm.log -pprof ../../fap2-studio-gtk/examples/des_var_vect_1.xml
+		    grayb/clm$ ./fapm -lclm.log -pprof -s'../../fap2-studio-gtk/examples/des_var_vect_1.xml' -a
+
 
 		    prof~durstat.csv:
 
@@ -4655,7 +4656,7 @@
 			</programlisting>
 			<simpara>What would be solutions here?</simpara>
 			<itemizedlist>
-			    <listitem>Extending of context element. Currently it is pointer to an agent. We can add connection point to the element.  </listitem>
+			    <listitem>Extending of context element. Currently it is pointer to an agent. We can add connection point to the element.</listitem>
 			    <listitem>To introduce "context element" - special wrapper of connection point
 				<simpara>It is almost same as solution above, just small design modification.
 				    This element is the class that contains both pointer to element and "hint" (it can be conn point UID) for instance.
@@ -4667,8 +4668,13 @@
 				<simpara> For <xref linkend="gls_pia"/> system we need the context element that represents agents conn point. This 
 				    representation can be created for each active conn points of system.
 				    There is design option to use connection record in Vertp as context element iface implementation: it contains 
-				    conn point URI, so we just add ref to the system itself.
-				    Actually this is similar to passive "units" approach, ref <xref linkend="ds_uac"/></simpara>
+				    conn point URI, so we just add ref to the system itself.  </simpara>
+				<simpara>In fact the current context element is pointer to MElem. It can be simply migrated to Base that contains local
+				    iface resolution API. In that case the context element can be any derivation from Base. For instance it can be
+				    "PIA connection point" - wrapper of Vertp connection register record including the Vertp agent itself. 
+				</simpara>
+				<simpara>
+				    Note that this approach is similar somehow to passive "units" approach, ref <xref linkend="ds_uac"/></simpara>
 			    </listitem>
 			</itemizedlist>
 		    </sect5>
@@ -4677,11 +4683,27 @@
 	</sect2>
 	<sect2 id="ds_pia_cp"><title>Connection points</title>
 	    <sect3><title>Intro</title>
+		<simpara>The current approach (<xref linkend="gls_cpa"/>) assumes that the whole model is built from elementary
+		    agents. Connection mechaninsm is also built from such agents. This makes the approach unified and clear. The reasoning of 
+		usage of this approach is the complexity of connection mechanism (we need extentions, sockets etc.).</simpara>
 		<simpara>With <xref linkend="gls_pia"/> approach the connection point of agent is not an embedded sub-agent - proxy
 		    but simply property of agent - the "contract" of connection. This requires redesign of the current
-		    "distributed" mechanism of iface resolution, ref <xref linkend="ds_pia_crit_mri"/>.</simpara>
+		    "distributed" mechanism of iface resolution, ref <xref linkend="ds_pia_crit_mri"/>. So this approach assumes
+		    dedicated mechanism of connection.</simpara>
 		<simpara>What is important here - the structure of <xref linkend="gls_pia"/> connection points should
 		    help the agent to resolve ifaces.</simpara>
+	    </sect3>
+	    <sect3 id="ds_pia_cp_sc"><title>Scheme of connection</title>
+		<simpara>In the current apporach (<xref linkend="gls_cpa"/>) each connection is recorded in Vert register in form
+		    of pointer to pair.  With <xref linkend="gls_pia"/> approach we also need to record each connection.
+		    For vertex it can be also in form of pointer to pair. But looking forward we could introduce 
+		    the full scheme of connection directly on vertex level - using connection point spec. In this case the record needs to be in form:</simpara>
+		<programlisting>
+		    Record ::= Pair_conn_point_spec, Vertex_conn_point_spec
+		    Pair_conn_point_spec ::= &lt;pointer_to_pair, conn_point_spec&gt;
+		    Vertex_conn_point_spec ::= conn_point_spec
+		</programlisting>
+		<simpara>Where conn_point_spec is the conn point description in the vertex content.</simpara>
 	    </sect3>
 	    <sect3><title>How to implement extentions? Internal and external part of extender.</title>
 		<simpara>The key feature of connection points is extension the connection points of agents components.

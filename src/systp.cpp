@@ -301,7 +301,7 @@ MVertp::TCpsEr Systp::GetCpsForPair(MVertp* aPair)
     return res;
 }
 
-TIfRange Systp::GetIfiCp(const string& aName, const string& aCp, const TICacheRCtx& aCtx)
+MIfProv::TIfRange Systp::GetIfiCp(const string& aName, const string& aCp, const TICacheRCtx& aCtx)
 {
 }
 
