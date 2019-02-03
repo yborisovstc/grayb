@@ -21,6 +21,7 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   env.h
   factr.h
   func.h
+  gfx.h
   guri.h
   ifu.h
   imports.h
@@ -41,6 +42,7 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   mprofiler.h
   mprop.h
   mprov.h
+  msyst.h
   mvert.h
   mvertp.h
   plat.h
@@ -64,6 +66,7 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   env.cpp
   factr.cpp
   func.cpp
+  gfx.cpp
   guri.cpp
   ifu.cpp
   imports.cpp
@@ -88,11 +91,12 @@ etc=etc CD=. filter="*" {
   objspec_s2.dtd
 }
 modules=modules CD=. filter="*" {
- capsula.xml
+  capsula.xml
   data.xml
   des.xml
   func.xml
   syst.xml
+  vis.xml
 }
 debian=debian CD=. filter="*" {
  README.Debian
@@ -286,24 +290,170 @@ clm=clm CD=. filter="*.cpp *.h *.xml *.am *.txt" {
   Makefile.am
 }
 }
-fap2-studio-qt=/home/yborisov/projects/fap/git/fap2-studio-qt CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in *.pro {
-grayb_studio.pro
-src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
- capcomp.h
-  capobject.h
-  capopwnd.h
-  caqproxy.h
-  grfwidgets.h
-  mainwnd.h
-  capcomp.cpp
-  capobject.cpp
-  capopwnd.cpp
-  caqproxy.cpp
-  grfwidgets.cpp
+fap2-studio-gtk=/home/yborisov/projects/fap/fap2-studio-gtk CD=. filter="autogen.sh Makefile *.am *.ac *.in AUTHORS COPYING ChangeLog README NEWS" {
+ autogen.sh
+ Makefile
+ Makefile.am
+ configure.ac
+ Makefile.in
+ AUTHORS
+ COPYING
+ ChangeLog
+ README
+ NEWS
+ src=src CD=. filter="*.cpp *.h *.xml *.am *.rc" {
+  app.cpp
+  chromoview.cpp
+  cntview.cpp
+  cpcrp.cpp
+  cperp.cpp
+  datacrp.cpp
+  dessrv.cpp
+  dessync.cpp
+  desvis.cpp
+  dlgbase.cpp
+  edgecrp.cpp
+  elemcomprp.cpp
+  elemdetrp.cpp
+  extdcrp.cpp
+  hierdetailview.cpp
+  incapscrp.cpp
+  incapsdrp.cpp
+  logview.cpp
+  main.cpp
   mainwnd.cpp
+  mdlprov.cpp
+  navi.cpp
+  propcrp.cpp
+  provdef.cpp
+  stenv.cpp
+  syscrp.cpp
+  sysdrp.cpp
+  toolitems.cpp
+  vertcrp.cpp
+  vertdrp.cpp
+  app.h
+  chromoview.h
+  cntview.h
+  common.h
+  cpcrp.h
+  cperp.h
+  datacrp.h
+  dessrv.h
+  dessync.h
+  desvis.h
+  dlgbase.h
+  edgecrp.h
+  elemcomprp.h
+  elemdetrp.h
+  extdcrp.h
+  hierdetailview.h
+  incapscrp.h
+  incapsdrp.h
+  logview.h
+  mainwnd.h
+  mbase.h
+  mcrp.h
+  mdeslog.h
+  mdesobs.h
+  mdlprov.h
+  mdrp.h
+  merp.h
+  mprov.h
+  msdesenv.h
+  msenv.h
+  msset.h
+  navi.h
+  propcrp.h
+  provdef.h
+  stenv.h
+  syscrp.h
+  sysdrp.h
+  toolitems.h
+  vertcrp.h
+  vertdrp.h
+  Makefile.am
+ }
+  modules=modules CD=. filter="*" {
+  simple_vis.xml
+  }
+ templates=templates CD=. filter="*" {
+  empty.xml
+ }
+ examples=examples CD=. filter="*" {
+  daa_func_var_1.xml
+  daa_incaps.xml
+  daa_simple.xml
+  daa_syst.xml
+  des_1.xml
+  des_var_1.xml
+  des_var_1mc.xml
+  des_var_c1.xml
+  des_var_vect_1.xml
+  func_1.xml
+  func_conv.xml
+  func_if_given_res_type.xml
+  func_var_1.xml
+  func_var_1mc.xml
+  func_var_at_vect.xml
+  func_var_enum_1.xml
+  func_var_enum_2.xml
+  func_var_gen_1.xml
+  func_var_gen_mtr.xml
+  func_var_tuple_1.xml
+  incaps_1.xml
+  incaps_1_mc.xml
+  rock_al_vis_phd.xml
+  rock_al_vis_phd_mc.xml
+  simple_elem.xml
+  simple_elem_err.xml
+  simple_vert.xml
+  snails_vis.xml
+  syst_1.xml
+  vis_intract_3.xml
+  vis_vect_1.xml
+ }
+}
+fap2-vis=/home/yborisov/projects/fap/fap2-vis CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in {
+ autogen.sh
+ Makefile.am
+ configure.ac
+ AUTHORS
+ COPYING
+ ChangeLog
+ README
+ NEWS
+ Makefile.in
+ fap2vis.pc.in
+src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
+  gwcont.h
+  mwidget.h
+  visprov.h
+  widget.h
+  gwcont.cpp
+  plugin.cpp
+  visprov.cpp
+  widget.cpp
+  Makefile.am
 } 
-files=files CD=. filter="*" {
- empty.xml
+modules=modules CD=. filter="*" {
+  widgets.xml
+}
+test=test CD=. filter="*" {
+  Makefile
+  Makefile.am
+  Makefile.in
+  gdb_set
+  ut-fap2vis-lib
+  ut_base.cpp
+  ut_cre.cpp
+  ut_main.cpp
+  ut_swnd_1.txt
+  ut_swnd_1.txt~old
+  ut_swnd_1.xml
+  ut_fap2vis_lib-ut_base.o
+  ut_fap2vis_lib-ut_cre.o
+  ut_fap2vis_lib-ut_main.o
 }
 }
 fap2-srv=/home/yborisov/projects/fap/fap2-srv CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in {
@@ -546,18 +696,6 @@ fap-bvp-gtk=/home/yborisov/projects/fap/git/fap-bvp-gtk CD=. filter="autogen.sh 
    tbar_btn_trans.png
  }
 }
-fap-tias=/home/yborisov/projects/fap/git/fap-tias CD=. filter="README *.ac *.am" {
- README
-  configure.ac
-  Makefile.am
-  src=src CD=. filter="*.cpp *.h *.xml *.am *.rc" {
-   main.cpp
-    ut_emtran_spec_2.xml
-    ut_emtran_spec_3.xml
-    Makefile.am
-    cag_proxy.rc
-  }
-}
 fap-studio-gtk=/home/yborisov/projects/fap/git/fap-studio-gtk CD=. filter="autogen.sh Makefile *.am *.ac *.in AUTHORS COPYING ChangeLog README NEWS" {
  autogen.sh
   Makefile
@@ -596,140 +734,6 @@ fap-studio-gtk=/home/yborisov/projects/fap/git/fap-studio-gtk CD=. filter="autog
  examples=examples CD=. filter="*" {
   rock_1.xml
    rock_2.xml
- }
-}
-fap2-studio-gtk=/home/yborisov/projects/fap/fap2-studio-gtk CD=. filter="autogen.sh Makefile *.am *.ac *.in AUTHORS COPYING ChangeLog README NEWS" {
- autogen.sh
- Makefile
- Makefile.am
- configure.ac
- Makefile.in
- AUTHORS
- COPYING
- ChangeLog
- README
- NEWS
-  debian=debian CD=. filter="*" {
-   changelog
-    compat
-    control
-    copyright
-    fap-studio-gtk.install
-    rules
-    stamp-autogen
-    stamp-autotools-files
-    stamp-makefile-build
-    stamp-makefile-check
-    fap-studio-gtk.debhelper.log
-  }
- src=src CD=. filter="*.cpp *.h *.xml *.am *.rc" {
-  app.cpp
-  chromoview.cpp
-  cntview.cpp
-  cpcrp.cpp
-  cperp.cpp
-  datacrp.cpp
-  dessrv.cpp
-  dessync.cpp
-  desvis.cpp
-  dlgbase.cpp
-  edgecrp.cpp
-  elemcomprp.cpp
-  elemdetrp.cpp
-  extdcrp.cpp
-  hierdetailview.cpp
-  incapscrp.cpp
-  incapsdrp.cpp
-  logview.cpp
-  main.cpp
-  mainwnd.cpp
-  mdlprov.cpp
-  navi.cpp
-  propcrp.cpp
-  provdef.cpp
-  stenv.cpp
-  syscrp.cpp
-  sysdrp.cpp
-  toolitems.cpp
-  vertcrp.cpp
-  vertdrp.cpp
-  app.h
-  chromoview.h
-  cntview.h
-  common.h
-  cpcrp.h
-  cperp.h
-  datacrp.h
-  dessrv.h
-  dessync.h
-  desvis.h
-  dlgbase.h
-  edgecrp.h
-  elemcomprp.h
-  elemdetrp.h
-  extdcrp.h
-  hierdetailview.h
-  incapscrp.h
-  incapsdrp.h
-  logview.h
-  mainwnd.h
-  mbase.h
-  mcrp.h
-  mdeslog.h
-  mdesobs.h
-  mdlprov.h
-  mdrp.h
-  merp.h
-  mprov.h
-  msdesenv.h
-  msenv.h
-  msset.h
-  navi.h
-  propcrp.h
-  provdef.h
-  stenv.h
-  syscrp.h
-  sysdrp.h
-  toolitems.h
-  vertcrp.h
-  vertdrp.h
-  Makefile.am
- }
- templates=templates CD=. filter="*" {
-  empty.xml
- }
- examples=examples CD=. filter="*" {
-  daa_func_var_1.xml
-  daa_incaps.xml
-  daa_simple.xml
-  daa_syst.xml
-  des_1.xml
-  des_var_1.xml
-  des_var_1mc.xml
-  des_var_c1.xml
-  des_var_vect_1.xml
-  func_1.xml
-  func_conv.xml
-  func_if_given_res_type.xml
-  func_var_1.xml
-  func_var_1mc.xml
-  func_var_at_vect.xml
-  func_var_enum_1.xml
-  func_var_enum_2.xml
-  func_var_gen_1.xml
-  func_var_gen_mtr.xml
-  func_var_tuple_1.xml
-  incaps_1.xml
-  incaps_1_mc.xml
-  rock_al_vis_phd.xml
-  rock_al_vis_phd_mc.xml
-  simple_elem.xml
-  simple_elem_err.xml
-  simple_vert.xml
-  snails_vis.xml
-  syst_1.xml
-  vis_intract_3.xml
-  vis_vect_1.xml
  }
 }
 fap-balls=/home/yborisov/projects/fap/git/fap-balls CD=. filter="*.ac *.am" {
@@ -775,127 +779,6 @@ fap-snails=/home/yborisov/projects/fap/git/fap-snails CD=. filter="*" {
    snail.png
   }
 }
-fapws=/home/yborisov/projects/fap/git/fapws CD=. filter="*" {
- AUTHORS
-  COPYING
-  ChangeLog
-  INSTALL
-  Makefile
-  Makefile.am
-  Makefile.in
-  NEWS
-  README
-  aclocal.m4
-  autogen.sh
-  build-stamp
-  config.guess
-  config.status
-  config.sub
-  configure
-  configure.ac
-  depcomp
-  install-sh
-  libfapws.pc
-  libfapws.pc.in
-  libtool
-  ltmain.sh
-  missing
-  src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
-   deslbase.h
-    fapbase.h
-    fapext.h
-    fapfact.h
-    faplogger.h
-    fapplat.h
-    fapplugin.h
-    fapstext.h
-    faptran.h
-    fapws.h
-    panics.h
-    tadesl.h
-    deslbase.cpp
-    fapbase.cpp
-    fapext.cpp
-    fapfact.cpp
-    faplogger.cpp
-    fapstext.cpp
-    fapws.cpp
-    tadesl.cpp
-    Makefile.am
-  } 
- etc=etc CD=. filter="*" {
-  objspec.dtd
- }
- modules=modules CD=. filter="*" {
-  vector.xml
- }
- debian=debian CD=. filter="*" {
-  README.Debian
-   changelog
-   compat
-   control
-   copyright
-   dirs
-   docs
-   fapws-dev.install
-   fapws-dev.substvars
-   fapws.install
-   fapws.postinst.debhelper
-   fapws.postrm.debhelper
-   fapws.substvars
-   files
-   rules
-   fapws-dev.debhelper.log
-   fapws.debhelper.log
- }
- doc=doc CD=. filter="*" {
-  requirements=requirements CD=. filter="*" {
-   fap_req.xml
-    index.html
-  }
-  design=design CD=. filter="*" {
-   fap_design.xml
-  }
- }
- test=test CD=. filter="*.cpp *.h *.xml *.am" {
-  ut_conn.cpp
-   ut_control.cpp
-   ut_embmod.cpp
-   ut_emtran.cpp
-   ut_ext_mut.cpp
-   ut_fapws_main.cpp
-   ut_game_xo.cpp
-   ut_modul.cpp
-   ut_simple_increase.cpp
-   ut_spec_creat.cpp
-   ut_game_xo.h
-   ut_simple_increase.h
-   ut_spec_creat.h
-   ut_conn_spec.xml
-   ut_contr_spec.xml
-   ut_embmod_vect.xml
-   ut_emtran_spec.xml
-   ut_emtran_spec_2.xml
-   ut_emtran_spec_3.xml
-   ut_emtran_vect.xml
-   ut_emtran_vectgf.xml
-   ut_modul_base.xml
-   ut_modul_ext1.xml
-   ut_modul_incr.xml
-   ut_modul_loc.xml
-   ut_modul_loc1.xml
-   ut_modul_save_tmp.xml
-   ut_mut_deta1.xml
-   ut_mut_deta2.xml
-   ut_spec_creat_1.xml
-   ut_spec_ext_mut.xml
-   Makefile.am
-   libs=.libs CD=. filter="*" {
-    ut-fapws-lib
-   }
- }
- config.log
-}
 gravityqt=/home/yborisov/projects/fap/michael/ver1/gravity CD=. filter="*.cpp *.h *.ui" {
  GravityObject.cpp
   GravityView.cpp
@@ -913,118 +796,4 @@ gravityqt=/home/yborisov/projects/fap/michael/ver1/gravity CD=. filter="*.cpp *.
   ui_ObjectPropDlg.h
   GravityWindow.ui
   ObjectPropDlg.ui
-}
-tmp=/home/yborisov/projects/fap/tmp CD=. filter="*" {
- fapws=fapws CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in {
-  autogen.sh
-  Makefile.am
-  configure.ac
-  AUTHORS
-  COPYING
-  ChangeLog
-  README
-  NEWS
-  libfapws.pc.in
-  src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
-   deslbase.h
-    fapbase.h
-    fapext.h
-    fapfact.h
-    faplogger.h
-    fapopvi.h
-    fapplat.h
-    fapstext.h
-    faptran.h
-    fapview.h
-    fapviewprim.h
-    fapws.h
-    panics.h
-    tadesl.h
-    viewgtk.h
-    deslbase.cpp
-    fapbase.cpp
-    fapext.cpp
-    fapfact.cpp
-    faplogger.cpp
-    fapopvi.cpp
-    fapstext.cpp
-    fapviewprim.cpp
-    fapws.cpp
-    tadesl.cpp
-    viewgtk.cpp
-    objspec.dtd
-    Makefile.am
-  } 
- debian=debian CD=. filter="*" {
-  README.Debian
-   changelog
-   compat
-   control
-   copyright
-   dirs
-   docs
-   fapws-dev.install
-   fapws-dev.substvars
-   fapws.install
-   fapws.postinst.debhelper
-   fapws.postrm.debhelper
-   fapws.substvars
-   files
-   rules
-   fapws-dev.debhelper.log
-   fapws.debhelper.log
- }
- trag=trag CD=. filter="*" {
-  Makefile.am
-   tadesl=tadesl CD=. filter="*.cpp *.h *.am Makefile" {
-    tadesl.cpp
-     tadesl.h
-     Makefile.am
-     Makefile
-   }
- }
- doc=doc CD=. filter="*" {
-  requirements=requirements CD=. filter="*" {
-   fap_req.xml
-    index.html
-  }
-  design=design CD=. filter="*" {
-   fap_design.xml
-  }
- }
- test=test CD=. filter="*" {
-  Makefile
-   Makefile.am
-   Makefile.in
-   ut-fapws-lib
-   ut_conn.cpp
-   ut_conn_spec.xml
-   ut_contr_spec.xml
-   ut_control.cpp
-   ut_emtran.cpp
-   ut_emtran_spec.xml
-   ut_emtran_spec_2.xml
-   ut_emtran_spec_3.xml
-   ut_ext_mut.cpp
-   ut_fapws_main.cpp
-   ut_game_xo.cpp
-   ut_game_xo.h
-   ut_simple_increase.cpp
-   ut_simple_increase.h
-   ut_spec_creat.cpp
-   ut_spec_creat.h
-   ut_spec_creat_1.xml
-   ut_spec_ext_mut.xml
-   ut_fapws_lib-ut_conn.o
-   ut_fapws_lib-ut_control.o
-   ut_fapws_lib-ut_emtran.o
-   ut_fapws_lib-ut_ext_mut.o
-   ut_fapws_lib-ut_fapws_main.o
-   ut_fapws_lib-ut_simple_increase.o
-   ut_fapws_lib-ut_spec_creat.o
-   libs=.libs CD=. filter="*" {
-    ut-fapws-lib
-   }
- }
-}
 }

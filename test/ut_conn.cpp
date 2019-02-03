@@ -179,6 +179,7 @@ class Ut_conn : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Sock2);
     CPPUNIT_TEST(test_Reconn);
     CPPUNIT_TEST(test_Conn2);
+    CPPUNIT_TEST(test_SockMcm);
     CPPUNIT_TEST_SUITE_END();
     public:
     virtual void setUp();
@@ -193,6 +194,7 @@ class Ut_conn : public CPPUNIT_NS::TestFixture
     void test_Sock2();
     void test_Reconn();
     void test_Conn2();
+    void test_SockMcm();
     private:
     Env* iEnv;
     TstProv* mProv;
@@ -517,4 +519,37 @@ void Ut_conn::test_Conn2()
     MVert* mv1 = ev1->GetObj(mv1);
     int pnum1 = mv1->PairsCount();
     CPPUNIT_ASSERT_MESSAGE("Wrong number of v1 pairs after e2 disconnection", pnum1 == 1);
+}
+
+void Ut_conn::test_SockMcm()
+{
+    printf("\n === Test of connecting of sockets, multicontent, monolitic\n");
+
+    iEnv = new Env("ut_conn_sock_mcm.xml", "ut_conn_sock_mcm.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    MElem* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    MElem* doutp = root->GetNode("./test/L1/Cp1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get L1 Cp1", doutp != 0);
+    //MDIntGet* doutpget = doutp->GetObj(doutpget);
+    MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 3);
+
+    doutp = root->GetNode("./test/L1/Cp2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get L1 Cp2", doutp != 0);
+    doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface for Cp2", doutpget != 0);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface for Cp2", doutpget->Value() == 1);
+
+    doutp = root->GetNode("./test/L1/Cp3");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get L1 Cp3", doutp != 0);
+    doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type(), doutp);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface for Cp3", doutpget != 0);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface for Cp3", doutpget->Value() == 20);
+
+    delete iEnv;
 }

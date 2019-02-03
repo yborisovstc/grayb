@@ -48,7 +48,7 @@ TBool DataBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& a
 	    string curr;
 	    ToString(curr);
 	    if (IsLogeventUpdate()) {
-		Logger()->Write(EInfo, this, "Updated [%s <- %s]", prop->Value().c_str(), curr.c_str());
+		Logger()->Write(EInfo, this, "Updated via content [%s <- %s]", prop->Value().c_str(), curr.c_str());
 	    }
 	    MProp* ptype = etype == NULL ? NULL: etype->GetObj(ptype);
 	    string stype = ptype == NULL ? string() : ptype->Value();
@@ -59,7 +59,7 @@ TBool DataBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& a
 	if (IsLogeventUpdate()) {
 	    string curr;
 	    ToString(curr);
-	    Logger()->Write(EInfo, this, "Updated [%s <- %s]", val.c_str(), curr.c_str());
+	    Logger()->Write(EInfo, this, "Updated via content [%s <- %s]", val.c_str(), curr.c_str());
 	}
 	FromString(string(), val);
     } else {
@@ -155,7 +155,7 @@ void DataBase::UpdateProp()
 TBool DataBase::IsLogeventUpdate() 
 {
     MElem* node = GetNode("./../Logspec/Update");
-    string upd = iMan->GetMan()->GetContent("Debug.Update");
+    string upd = GetMan()->GetContent("Debug.Update");
     return node != NULL || upd == "y";
 }
 
@@ -522,6 +522,12 @@ TBool DVar::Update()
 		    }
 		}
 		*/
+		if (res && IsLogeventUpdate()) {
+		    string new_value;
+		    ToString(new_value);
+		    Logger()->Write(EInfo, this, "Updated [%s <- %s]", new_value.c_str(), old_value.c_str());
+		}
+
 	    }
 	}
     }

@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for connections -->
+<!-- Sockets -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="testroot" parent="Elem">
+    <node id="Modules" parent="AImports">
+	<!-- Module containing components of system layer -->
+	<import id="/SysComps" />
+	<!-- Module containing components of incaps layer -->
+	<import id="/IncapsComps" />
+	<!-- Module containing components of data -->
+	<import id="/DataComps" />
+    </node>
+
+    <!-- Input socket -->
+    <node id="InpSocket" parent="ASocketMcm">
+	<node id="Cp1" parent="ConnPointMc"> <cont id="Provided" val="MDIntGet"/> </node>
+	<node id="Cp2" parent="ConnPointMc"> <cont id="Provided" val="MDIntGet"/> </node>
+	<node id="Cp3" parent="ConnPointMc"> <cont id="Provided" val="MDIntGet"/> </node>
+    </node>
+
+    <!-- Test Input -->
+    <node id="TInp" parent="AExtd"> 
+	<node id="Int" parent="./../InpSocket"/> 
+    </node>
+
+    <!-- Test Output socket -->
+    <node id="OutSocket" parent="ASocketMcm">
+	<node id="Cp1" parent="ConnPointMc"> <cont id="Required" val="MDIntGet"/> </node>
+	<node id="Cp2" parent="ConnPointMc"> <cont id="Required" val="MDIntGet"/> </node>
+	<node id="Cp3" parent="ConnPointMc"> <cont id="Required" val="MDIntGet"/> </node>
+    </node>
+
+    <!-- Test Output -->
+    <node id="TOut" parent="AExtd"> 
+	<node id="Int" parent="./../OutSocket"/> 
+    </node>
+
+    <!-- Data Source -->
+    <node id="DSource" parent="/*/Modules/IncapsComps/Incaps">
+	<node node="./Capsule" id="Out" parent="./../OutSocket"/> 
+
+	<node id="Data_1" parent="/*/Modules/DataComps/DataSCInt"> <cont node="./Value" val="3"/> </node>
+	<node id="Data_2" parent="/*/Modules/DataComps/DataSCInt"> <cont node="./Value" val="1"/> </node>
+	<node id="Data_3" parent="/*/Modules/DataComps/DataSCInt"> <cont node="./Value" val="20"/> </node>
+
+	<node id="E1" parent="Aedge"> <cont val="{P1:'./../Data_1/Capsule/Out' P2:'./../Capsule/Out/Cp1'}"/> </node>
+	<node id="E2" parent="Aedge"> <cont val="{P1:'./../Data_2/Capsule/Out' P2:'./../Capsule/Out/Cp2'}"/> </node>
+	<node id="E3" parent="Aedge"> <cont val="{P1:'./../Data_3/Capsule/Out' P2:'./../Capsule/Out/Cp3'}"/> </node>
+    </node> <!-- Data source -->
+
+    <node id="test" parent="/*/Modules/IncapsComps/Incaps">
+
+	<node id="L1" parent="./../InpSocket"/>
+	<node id="Data" parent="./../DSource"/>
+
+	<node id="E4" parent="Aedge"> <cont val="{P1:'./../L1' P2:'./../Data/Capsule/Out'}"/> </node>
+
+    </node>
+
+</node>
+

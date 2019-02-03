@@ -78,7 +78,12 @@ TBool Incaps::IsPtOk(MElem& aContext, MElem* aPt) {
 TBool Incaps::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
 {
     TBool hres = ETrue;
+    // Handling both Edge (nodes - properties) and AEdge (multicontent)
     MEdge* edge = aComp.GetObj(edge);	
+    if (edge == NULL) {
+	MElem* owner = aComp.GetMan();
+	edge = owner ? owner->GetObj(edge) : NULL;
+    }
     if (edge != NULL) {
 	TBool res = ETrue;
 	MVert* ref1 = edge->Ref1();

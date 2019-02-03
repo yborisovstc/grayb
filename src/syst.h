@@ -12,6 +12,7 @@ class ACapsule: public Elem
 	ACapsule(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From MOwner
 	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse);
+	virtual TBool OnChanged(MElem& aComp);
 };
 
 // Iface stub to avoid clashing MIface methods
@@ -207,6 +208,55 @@ class AExtender: public Elem, public MCompatChecker, public MAgent
 	inline MElem* Host() const { return iMan;}
 };
 
+/**
+ * @brief Extention agent (monolitic, multicontent). Redirects request for iface to internal CP of extention.
+ */
+class AExtd: public Vert, public MCompatChecker_Imd
+{
+    public:
+	static const char* Type() { return "AExtd";};
+	static string PEType();
+	AExtd(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual MIface *DoGetObj(const char *aName);
+	// From MCompatChecker
+	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
+	virtual MElem* GetExtd();
+	virtual TDir GetDir() const;
+	// From Vert
+	void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
+	// From MIface
+	virtual MIface* Call(const string& aSpec, string& aRes);
+	string Mid() const override { return GetUri(iEnv->Root(), ETrue);}
+	// From MCompatChecker MIface
+	virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes);
+	virtual string MCompatChecker_Mid() const;
+    protected:
+	inline MElem* Host() const { return iMan;}
+};
+
+/**
+ * @brief Extention agent (monolitic, multicontent, input). Redirects request for iface to internal CP of extention.
+ */
+class AExtdInp: public AExtd
+{
+    public:
+	static const char* Type() { return "AExtdInp";};
+	static string PEType();
+	AExtdInp(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
+};
+
+/**
+ * @brief Extention agent (monolitic, multicontent, output). Redirects request for iface to internal CP of extention.
+ */
+class AExtdOut: public AExtd
+{
+    public:
+	static const char* Type() { return "AExtdOut";};
+	static string PEType();
+	AExtdOut(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
+};
+
 
 // Iface stub to avoid clashing MIface methods
 class MSocket_Imd: public MSocket
@@ -278,6 +328,49 @@ class ASocketMc: public ASocket
 	ASocketMc(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 	// From MCompatChecker
 	virtual TDir GetDir() const;
+};
+
+// Socket agent, multicontent: redirects iface requests to pins, monolitic
+class ASocketMcm: public Vert, public MCompatChecker_Imd, public MSocket_Imd
+{
+    public:
+	static const char* Type() { return "ASocketMcm";};
+	static string PEType();
+	ASocketMcm(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual MIface *DoGetObj(const char *aName);
+	// From MCompatChecker
+	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse);
+	virtual MElem* GetExtd();
+	virtual TDir GetDir() const;
+	virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes);
+	virtual string MCompatChecker_Mid() const;
+	// From Elem
+	void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
+	// From MSocket
+	virtual TInt PinsCount() const;
+	virtual MElem* GetPin(TInt aInd);
+	MElem* GetPin(const TICacheRCtx& aCtx) override;
+	virtual MIface* MSocket_Call(const string& aSpec, string& aRes);
+	virtual string MSocket_Mid() const;
+};
+
+// Socket agent, input, multicontent: redirects iface requests to pins, monolitic
+class ASocketInpMcm: public ASocketMcm
+{
+    public:
+	static const char* Type() { return "ASocketInpMcm";};
+	static string PEType();
+	ASocketInpMcm(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
+};
+
+// Socket agent, input, multicontent: redirects iface requests to pins, monolitic
+class ASocketOutMcm: public ASocketMcm
+{
+    public:
+	static const char* Type() { return "ASocketOutMcm";};
+	static string PEType();
+	ASocketOutMcm(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
 };
 
 // System: relates to others via proxies - ConnPoints, that specialized relation with roles

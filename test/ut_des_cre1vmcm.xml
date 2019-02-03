@@ -1,0 +1,68 @@
+<?xml version="1.0" ?>
+
+
+<!-- Simple test that creates sole state Incrementor looped to youself 
+     Tests: state (Confirmed, Prepared, Trans, agent), socket connection 
+     State is based on variable data. Used state with monolitic extender
+     and sockets.
+-->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="testroot" parent="Elem">
+    <node id="Modules" parent="AImports">
+	<!-- Module containing components of des layer -->
+	<import id="/DataComps/DataSUVarMc" />
+	<import id="/DesComps/StateVarMcm" />
+	<import id="/FuncComps/TFAddVarMc" />
+    </node>
+
+    <node id="test" parent="./Modules/IncapsComps/Incaps">
+	<cont id="About" val="Simple test that creates sole state DES Incrementor (var, multicontent) looped to youself"/>
+
+	<node id="State1" parent="./../Modules/DesComps/StateVarMcm">
+	    <cont id="Log.Creation" val="y"/>
+	    <cont id="Debug.Update" node="./Confirmed" val="y"/>
+	    <cont node="./Prepared" id="Value" val="I 0" />
+	    <cont node="./Confirmed" id="Value" val="I 0" />
+
+	    <!--
+	    <node node="./Capsule" id="Inp2" parent="./../../Modules/SysComps/ExtenderInpMc"> 
+		<node id="Int" parent="./../../../../Modules/DesComps/StInpSocketMc"> 
+		    <cont node="./PinData" id="Provided" val="MDVarGet"/>
+		</node>
+	    </node> -->
+
+	    <node id="Trans" parent="./../../Modules/FuncComps/TFAddVarMc"/>
+
+	    <node id="Incr" parent="./../../Modules/DataComps/DataSUVarMc">
+		<cont id="Value" val="I 1"/>
+	    </node>
+
+	    <node id="E1" parent="Aedge"> 
+		<cont val="{P1:'./../Trans/Capsule/Inp' P2:'./../Capsule/Inp/Int/PinData'}"/> 
+	    </node>
+
+	    <!--
+	    <node id="E2" parent="Aedge"> 
+		<cont val="{P1:'./../Trans/Capsule/Inp' P2:'./../Capsule/Inp2/Int/PinData'}"/> 
+	    </node> -->
+
+	    <node id="E2" parent="Aedge"> 
+		<cont val="{P1:'./../Trans/Capsule/Out' P2:'./../Prepared/Capsule/Inp'}"/> 
+	    </node>
+
+	    <node id="E3" parent="Aedge"> 
+		<cont val="{P1:'./../Incr/Capsule/out' P2:'./../Trans/Capsule/Inp'}"/> 
+	    </node>
+	</node>
+
+	<!-- Loop -->
+	<node id="E4" parent="Aedge"> 
+	    <cont val="{P1:'./../State1/Capsule/Out' P2:'./../State1/Capsule/Inp'}"/> 
+	</node>
+
+    </node>
+</node>
+

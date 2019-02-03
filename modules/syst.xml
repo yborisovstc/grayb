@@ -79,6 +79,16 @@
 	<cont id="Direction" val="Out"/>
     </node>
 
+
+    <node id="ExtenderInpMcm" parent="AExtd"> 
+	<cont id="Direction" val="Inp"/>
+    </node>
+
+    <node id="ExtenderOutMcm" parent="AExtd"> 
+	<cont id="Direction" val="Out"/>
+    </node>
+
+
     <node id="CpExtenderMc" parent="Vert"> 
 	<cont id="About" val="Extender of simple connpoint."/>
 	<node id="Int" parent="ConnPointMc"/>

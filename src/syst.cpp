@@ -1,4 +1,5 @@
 
+#include "plat.h"
 #include "syst.h"
 #include "edge.h"
 #include "prov.h"
@@ -21,6 +22,7 @@ ACapsule::ACapsule(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aM
 
 TBool ACapsule::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 {
+#if 0
     if (!aModif) { // Don't care of modifications
 	string uri = aComp.GetUri(NULL, ETrue);
 	MElem* nd = GetNode(uri, ETrue);
@@ -34,6 +36,21 @@ TBool ACapsule::OnCompChanged(MElem& aComp, const string& aContName, TBool aModi
 	iMan->OnCompChanged(aComp, aContName, aModif);
     }
     return ETrue;
+#endif
+    // Capsule doesn't assume any embedded agents/comp_observers
+    // So just redirect to owner
+    if (iMan != NULL) {
+	iMan->OnCompChanged(aComp, aContName, aModif);
+    }
+}
+
+TBool ACapsule::OnChanged(MElem& aComp)
+{
+    // Capsule doesn't assume any embedded agents/comp_observers
+    // So just redirect to owner
+    if (iMan != NULL) {
+	iMan->OnChanged(aComp);
+    }
 }
 
 // Base of ConnPoint reimplement obj provider iface to redirect the request to the hier mgr
@@ -835,6 +852,163 @@ MIface* AExtender::Call(const string& aSpec, string& aRes)
 }
 
 
+// Extender agent, monolitic, multicontent
+
+string AExtd::PEType()
+{
+    return Vert::PEType() + GUri::KParentSep + Type();
+}
+
+AExtd::AExtd(const string& aName, MElem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
+{
+    SetCrAttr(PEType(), aName);
+    ChangeCont(ConnPointMc::KContDir_Val_Regular, ETrue, ConnPointMc::KContDir);
+}
+
+MIface *AExtd::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MCompatChecker::Type()) == 0) {
+	res = (MCompatChecker*) this;
+    } else {
+	res = Vert::DoGetObj(aName);
+    }
+    return res;
+}
+
+void AExtd::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
+{
+    TBool resg = EFalse;
+    TIfRange rr;
+    TICacheRCtx ctx(aCtx); ctx.push_back(this);
+    MIface* res = (MIface*) DoGetObj(aName.c_str());
+    if (res != NULL) {
+	InsertIfCache(aName, aCtx, this, res);
+    }
+    if (res == NULL) {
+	// Redirect to internal point or pair depending on the requiestor
+	MElem* intcp = GetExtd();
+	if (intcp != NULL && !ctx.IsInContext(intcp)) {
+	    rr = intcp->GetIfi(aName, ctx);
+	    InsertIfCache(aName, aCtx, intcp, rr);
+	    resg = resg || (rr.first != rr.second);
+	}
+	else {
+	    TInt count = PairsCount();
+	    for (TInt ct = 0; ct < count; ct++) {
+		MVert* pair = GetPair(ct);
+		MElem* ep = pair->GetObj(ep);
+		if (ep != NULL && !ctx.IsInContext(ep)) {
+		    rr = ep->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, ep, rr);
+		    resg = resg || (rr.first != rr.second);
+		}
+	    }
+	}
+    }
+    // Responsible pairs not found, redirect to upper layer
+    if (rr.first == rr.second && iMan != NULL) {
+	MElem* hostmgr = GetMan();
+	MElem* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
+	if (mgr != NULL && !ctx.IsInContext(mgr)) {
+	    rr = mgr->GetIfi(aName, ctx);
+	    InsertIfCache(aName, aCtx, mgr, rr);
+	    resg = resg || (rr.first != rr.second);
+	}
+    }
+}
+
+TBool AExtd::IsCompatible(MElem* aPair, TBool aExt)
+{
+    TBool res = EFalse;
+    MElem* intcp = GetExtd();
+    MCompatChecker* mint = (intcp != NULL) ? (MCompatChecker*) intcp->GetSIfiC(MCompatChecker::Type(), this) : NULL;
+    if (mint != NULL) {
+	res = mint->IsCompatible(aPair, !aExt);
+    }
+    return res;
+}
+
+MElem* AExtd::GetExtd()
+{
+    return (iMan != NULL) ? GetNode("./Int") : NULL;
+}
+
+MCompatChecker::TDir AExtd::GetDir() const
+{
+    TDir res = ERegular;
+    string cdir = Host()->GetContent(ConnPointMc::KContDir);
+    if (cdir == ConnPointMc::KContDir_Val_Inp) res = EInp;
+    else if (cdir == ConnPointMc::KContDir_Val_Out) res = EOut;
+    return res;
+}
+
+MIface* AExtd::Call(const string& aSpec, string& aRes)
+{
+    __ASSERT(EFalse);
+    return  NULL;
+}
+
+MIface* AExtd::MCompatChecker_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MCompatChecker::mIfu.CheckMname(name);
+    if (!name_ok) 
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MCompatChecker::mIfu.CheckMpars(name, args.size());
+    if (!args_ok)
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "GetDir") {
+	TInt rr = GetDir();
+	aRes = Ifu::FromInt(rr);
+    } else if (name == "GetExtd") {
+	res = GetExtd();
+    } else if (name == "IsCompatible") {
+	MElem* pair = GetNode(args.at(0), ETrue);
+	if (pair == NULL) {
+	    throw (runtime_error("Cannot find pair: " + args.at(0)));
+	}
+	TBool ext = Ifu::ToBool(args.at(1));
+	TBool rr = IsCompatible(pair, ext);
+	aRes = Ifu::FromBool(rr);
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string AExtd::MCompatChecker_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
+// Extention agent (monolitic, multicontent, input). Redirects request for iface to internal CP of extention.
+string AExtdInp::PEType()
+{
+    return AExtd::PEType() + GUri::KParentSep + Type();
+}
+
+AExtdInp::AExtdInp(const string& aName, MElem* aMan, MEnv* aEnv): AExtd(aName, aMan, aEnv)
+{
+    SetCrAttr(PEType(), aName);
+    ChangeCont(ConnPointMc::KContDir_Val_Inp, ETrue, ConnPointMc::KContDir);
+}
+
+// Extention agent (monolitic, multicontent, input). Redirects request for iface to internal CP of extention.
+string AExtdOut::PEType()
+{
+    return AExtd::PEType() + GUri::KParentSep + Type();
+}
+
+AExtdOut::AExtdOut(const string& aName, MElem* aMan, MEnv* aEnv): AExtd(aName, aMan, aEnv)
+{
+    SetCrAttr(PEType(), aName);
+    ChangeCont(ConnPointMc::KContDir_Val_Out, ETrue, ConnPointMc::KContDir);
+}
+
 
 // Socket agent: redirects iface requests to pins
 string ASocket::PEType()
@@ -1266,6 +1440,368 @@ MCompatChecker::TDir ASocketMc::GetDir() const
 }
 
 
+
+// Socket agent multicontent, monolitic
+string ASocketMcm::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
+
+ASocketMcm::ASocketMcm(const string& aName, MElem* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv)
+{
+    SetCrAttr(PEType(), aName);
+}
+
+MIface *ASocketMcm::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MCompatChecker::Type()) == 0) {
+	res = (MCompatChecker*) this;
+    } else if (strcmp(aName, MSocket::Type()) == 0) {
+	res = (MSocket*) this;
+    } else {
+	res = Vert::DoGetObj(aName);
+    }
+    return res;
+}
+
+void ASocketMcm::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
+{
+    // TODO [YB] the current routing model is not optimal. Socket doesn't known itself if
+    // it supports iface or not (only pins know). So socket routes to pins first in hope
+    // they redirect properly. But what if not? Pin routes back to host, so loop happens, that stops 
+    // further routing.
+    TIfRange rr;
+    TBool resok = EFalse;
+    TICacheRCtx ctx(aCtx); ctx.push_back(this);
+    MIface* res = (MIface*) DoGetObj(aName.c_str());
+    if (res != NULL) {
+	InsertIfCache(aName, aCtx, this, res);
+    }
+    if (res == NULL && !aCtx.empty()) {
+	Base* rqst = aCtx.back();
+	if (rqst != NULL) {
+	    // Requestor is specified, so try to redirect basing on it
+	    MElem* erqst = rqst->GetObj(erqst);
+	    TBool iscomp = IsComp(erqst);
+	    if (iscomp) {
+		// Request comes from internal CP - forward it to upper layer
+		if (iMan != NULL && !ctx.IsInContext(iMan)) {
+		    MElem* mgr =  GetMan();
+		    if (mgr != NULL && !ctx.IsInContext(mgr)) {
+			rr = mgr->GetIfi(aName, ctx);
+			InsertIfCache(aName, aCtx, mgr, rr);
+			resok = resok || (rr.first != rr.second);
+		    }
+		}
+	    }
+	    else {
+		// Request from not internals
+		// Find associated pair in context
+		Base* apair = NULL;
+		MElem* pcomp = NULL;
+		Base* ctxe = rqst;
+		TICacheRCtx cct(aCtx);
+		TBool isextd = EFalse;
+		while (ctxe != NULL && pcomp == NULL) {
+		    // MElem* cpe = ctxe->GetObj(cpe); // Comment it out. For debug purpose only
+		    MCompatChecker* cp = ctxe->GetObj(cp);
+		    // Update extention option if met extention in context
+		    if (cp != NULL) {
+			apair = NULL;
+			if (cp->IsCompatible(this, isextd)) {
+			    isextd ^= ETrue;
+			    MElem* extd = cp->GetExtd();
+			    if (extd != this) {
+				apair = extd != NULL ? extd : ctxe;
+			    }
+			}
+		    }
+		    ctxe = NULL;
+		    if (!cct.empty()) {
+			cct.pop_back();
+			ctxe = !cct.empty() ? cct.back() : NULL;
+		    }
+		    if (apair != NULL && ctxe != NULL) {
+			// Find associated pairs pin within the context
+			// TODO [YB] Checking pair for being ASocketMcm (implemenetation) is wrong way
+			// We need to use ifaces instead of impl. Knowledge of impl should be denied.
+			MSocket* psock = apair->GetObj(psock);
+			if (psock != NULL) {
+			    MElem* pereq = psock->GetPin(cct);
+			    if (pereq != NULL) {
+				GUri uri;
+				// Using only name as signature of socket pin. This is because even the compatible types can differ
+				uri.AppendElem("*", pereq->Name());
+				pcomp = GetNode(uri);
+			    }
+			}
+		    }
+		}
+		if (pcomp != NULL && !ctx.IsInContext(pcomp)) {
+		    // Found associated pairs pin within the context, so redirect to it's pair in current socket
+		    rr = pcomp->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, pcomp, rr);
+		    resok = resok || (rr.first != rr.second);
+		}
+	    }
+	    // Redirect to pair. 
+	    // TODO [YB] To add checking if requiested iface is supported, ref md "sec_refac_conncomp"
+	    // TODO [YB] Probably routing to pair needs to be done first, before the routing to pins
+	    if (rr.first == rr.second) {
+		TInt pcount = PairsCount();
+		for (TInt ct = 0; ct < pcount && res == NULL; ct++) {
+		    MVert* pair = GetPair(ct);
+		    MElem* pe = pair->GetObj(pe);
+		    if (!ctx.IsInContext(pe)) {
+			rr = pe->GetIfi(aName, ctx);
+			InsertIfCache(aName, aCtx, pe, rr);
+			resok = resok || (rr.first != rr.second);
+		    }
+		}
+	    }
+	    // Redirect to upper layer
+	    if (rr.first == rr.second && iMan != NULL) {
+		MElem* mgr = GetMan();
+		mgr = mgr->Name() == "Capsule" ? mgr->GetMan() : mgr;
+		if (mgr != NULL && !ctx.IsInContext(mgr)) {
+		    rr = mgr->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, mgr, rr);
+		    resok = resok || (rr.first != rr.second);
+		}
+	    }
+	}
+	else {
+	    // Requestor not specified, anonymous request
+	    if (!resok) {
+		// Redirect to internal pins. Add host into context, this will prevent internals to redirect
+		// TODO [YB] To avoid routing directly from agent excluding host. This causes incorrect context
+		for (TInt ci = 0; ci < CompsCount() && res == NULL; ci++) {
+		    MElem* eit = GetComp(ci);
+		    if (!ctx.IsInContext(eit) && eit != iMan) {
+			rr = eit->GetIfi(aName, ctx);
+			InsertIfCache(aName, aCtx, eit, rr);
+			resok = resok || (rr.first != rr.second);
+		    }
+		}
+	    }
+	    // Redirect to pair. 
+	    // TODO [YB] To add checking if requiested iface is supported, ref md "sec_refac_conncomp"
+	    // TODO [YB] Probably routing to pair needs to be done first, before the routing to pins
+	    if (rr.first == rr.second) {
+		TInt pcount = PairsCount();
+		for (TInt ct = 0; ct < pcount && res == NULL; ct++) {
+		    MVert* pair = GetPair(ct);
+		    MElem* pe = pair->GetObj(pe);
+		    if (!ctx.IsInContext(pe)) {
+			rr = pe->GetIfi(aName, ctx);
+			InsertIfCache(aName, aCtx, pe, rr);
+			resok = resok || (rr.first != rr.second);
+		    }
+		}
+	    }
+	    // Redirect to upper layer
+	    if (rr.first == rr.second && iMan != NULL && !ctx.IsInContext(iMan)) {
+		MElem* mgr = GetMan();
+		mgr = mgr->Name() == "Capsule" ? mgr->GetMan() : mgr;
+		if (mgr != NULL && !ctx.IsInContext(mgr)) {
+		    rr = mgr->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, mgr, rr);
+		    resok = resok || (rr.first != rr.second);
+		}
+	    }
+	}
+    }
+}
+
+TBool ASocketMcm::IsCompatible(MElem* aPair, TBool aExt)
+{
+    // Going thru non-trivial components and check their compatibility
+    // TODO [YB] Needs to clean up this chunk
+    TBool res = ETrue;
+    TBool ext = aExt;
+    MElem *cp = aPair;
+    // Requesing anonymously because can be returned to itself vie extender
+    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type());
+    if (pchkr != NULL) {
+	MElem* ecp = pchkr->GetExtd(); 
+	// Checking if the pair is Extender
+	if (ecp != NULL ) {
+	    ext = !ext;
+	    cp = ecp;
+	}
+	if (cp != NULL) {
+	    for (TInt ci = 0; ci < CompsCount() && res; ci++) {
+		MElem *comp = GetComp(ci);
+		if (comp != this && comp->Name() != "Logspec") {
+		    MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), this);
+		    if (checker != NULL) {
+			GUri uri;
+			//	uri.AppendElem(comp->EType(), comp->Name());
+			uri.AppendElem("*", comp->Name());
+			MElem *pcomp = cp->GetNode(uri);
+			if (pcomp != NULL) {
+			    res = checker->IsCompatible(pcomp, ext);
+			}
+			else {
+			    res = EFalse;
+			}
+		    }
+		}
+	    }
+	}
+    } else {
+	res = EFalse;
+    }
+    return res;
+}
+
+MElem* ASocketMcm::GetExtd()
+{
+    return NULL;
+}
+
+MElem* ASocketMcm::GetPin(const TICacheRCtx& aCtx)
+{
+    MElem* res = NULL;
+    for (TInt ci = 0; ci < CompsCount() && res == NULL; ci++) {
+	MElem *comp = GetComp(ci);
+	if (aCtx.IsInContext(comp)) {
+	    res = comp;
+	}
+    }
+    return res;
+}
+
+
+MCompatChecker::TDir ASocketMcm::GetDir() const
+{
+    TDir res = ERegular;
+    string cdir = GetContent(ConnPointMc::KContDir);
+    if (cdir == ConnPointMc::KContDir_Val_Inp) res = EInp;
+    else if (cdir == ConnPointMc::KContDir_Val_Out) res = EOut;
+    return res;
+}
+
+TInt ASocketMcm::PinsCount() const
+{
+    TInt res = 0;
+    for (TInt ci = 0; ci < CompsCount() && res; ci++) {
+	MElem *comp = const_cast<ASocketMcm*>(this)->GetComp(ci);
+	MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), (MElem*) this);
+	if (checker != NULL) {
+	    res++;
+	}
+    }
+    return res;
+}
+
+MElem* ASocketMcm::GetPin(TInt aInd)
+{
+    MElem* res = 0;
+    for (TInt ci = 0, ct = 0; ci < CompsCount() && res; ci++) {
+	MElem *comp = GetComp(ci);
+	MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), this);
+	if (checker != NULL) {
+	    if (ct == aInd) {
+		res = comp; break;
+	    }
+	    ct++;
+	}
+    }
+    return res;
+}
+
+MIface* ASocketMcm::MSocket_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MCompatChecker::mIfu.CheckMname(name);
+    if (!name_ok)
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MCompatChecker::mIfu.CheckMpars(name, args.size());
+    if (!args_ok)
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "PinsCount") {
+	TInt rr = PinsCount();
+	aRes = Ifu::FromInt(rr);
+    } else if (name == "GetPin") {
+	TInt ind = Ifu::ToInt(args.at(0));
+	res = GetPin(ind);
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string ASocketMcm::MSocket_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
+MIface* ASocketMcm::MCompatChecker_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MCompatChecker::mIfu.CheckMname(name);
+    if (!name_ok)
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MCompatChecker::mIfu.CheckMpars(name, args.size());
+    if (!args_ok)
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "GetDir") {
+	TInt rr = GetDir();
+	aRes = Ifu::FromInt(rr);
+    } else if (name == "GetExtd") {
+	res = GetExtd();
+    } else if (name == "IsCompatible") {
+	MElem* pair = GetNode(args.at(0), ETrue);
+	if (pair == NULL) {
+	    throw (runtime_error("Cannot find pair: " + args.at(0)));
+	}
+	TBool ext = Ifu::ToBool(args.at(1));
+	TBool rr = IsCompatible(pair, ext);
+	aRes = Ifu::FromBool(rr);
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string ASocketMcm::MCompatChecker_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
+// Socket agent, input, multicontent, monolitic
+string ASocketInpMcm::PEType()
+{
+    return ASocketMcm::PEType() + GUri::KParentSep + Type();
+}
+
+ASocketInpMcm::ASocketInpMcm(const string& aName, MElem* aMan, MEnv* aEnv): ASocketMcm(aName, aMan, aEnv)
+{
+    SetCrAttr(PEType(), aName);
+    ChangeCont(ConnPointMc::KContDir_Val_Inp, ETrue, ConnPointMc::KContDir);
+}
+
+// Socket agent, output, multicontent, monolitic
+string ASocketOutMcm::PEType()
+{
+    return ASocketMcm::PEType() + GUri::KParentSep + Type();
+}
+
+ASocketOutMcm::ASocketOutMcm(const string& aName, MElem* aMan, MEnv* aEnv): ASocketMcm(aName, aMan, aEnv)
+{
+    SetCrAttr(PEType(), aName);
+    ChangeCont(ConnPointMc::KContDir_Val_Out, ETrue, ConnPointMc::KContDir);
+}
+
+
 // System
 string Syst::PEType()
 {
@@ -1299,59 +1835,67 @@ TBool Syst::IsPtOk(MElem* aPt) {
 
 TBool Syst::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 {
-    TBool res = Elem::OnCompChanged(aComp, aContName, aModif);
-    if (!res) return res;
-    TBool hres = ETrue;
-    MEdge* edge = aComp.GetObj(edge);	
-    if (edge != NULL) {
-	MVert* ref1 = edge->Ref1();
-	MVert* ref2 = edge->Ref2();
-	MVert* cp1 = edge->Point1();
-	MVert* cp2 = edge->Point2();
-	if (cp1 != ref1 || cp2 != ref2) {
-	    MElem* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
-	    MElem* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
-	    TBool isptok1 = (ref1 == NULL || IsPtOk(pt1));
-	    TBool isptok2 = (ref2 == NULL || IsPtOk(pt2));
-	    if (isptok1 && isptok2) {
-		if (cp1 != NULL && ref1 != cp1) edge->Disconnect(cp1);
-		if (cp2 != NULL && ref2 != cp2) edge->Disconnect(cp2);
-		if (ref1 != NULL && ref2 != NULL) {
-		    cp1 = edge->Point1();
-		    cp2 = edge->Point2();
-		    // Full connection, compatibility checking is needed
-		    MCompatChecker* pt1checker = (MCompatChecker*) pt1->GetSIfiC(MCompatChecker::Type(), this);
-		    MCompatChecker* pt2checker = (MCompatChecker*) pt2->GetSIfiC(MCompatChecker::Type(), this);
-		    TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
-		    TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
-		    if (ispt1cptb && ispt2cptb) {
-			// Are compatible - connect
-			TBool res = ETrue;
-			if (cp1 == NULL) res = edge->ConnectP1(ref1);
-			if (res && cp2 == NULL) res = edge->ConnectP2(ref2);
-			if (!res) {
-			    MElem* host = GetMan();
-			    Logger()->Write(EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
-			}
-		    }
-		    else {
+    TBool res = ETrue;
+    TEhr pres = Elem::ProcessCompChanged(aComp, aContName);
+    if (pres == EEHR_Ignored) {
+	// Hasn't processed by CompObservers, process locally
+	MEdge* edge = aComp.GetObj(edge);	
+	if (edge == NULL) {
+	    MElem* owner = aComp.GetMan();
+	    edge = owner ? owner->GetObj(edge) : NULL;
+	}
+	if (edge != NULL) {
+	    MVert* ref1 = edge->Ref1();
+	    MVert* ref2 = edge->Ref2();
+	    MVert* cp1 = edge->Point1();
+	    MVert* cp2 = edge->Point2();
+	    if (cp1 != ref1 || cp2 != ref2) {
+		MElem* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
+		MElem* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
+		TBool isptok1 = (ref1 == NULL || IsPtOk(pt1));
+		TBool isptok2 = (ref2 == NULL || IsPtOk(pt2));
+		if (isptok1 && isptok2) {
+		    if (cp1 != NULL && ref1 != cp1) edge->Disconnect(cp1);
+		    if (cp2 != NULL && ref2 != cp2) edge->Disconnect(cp2);
+		    if (ref1 != NULL && ref2 != NULL) {
+			cp1 = edge->Point1();
+			cp2 = edge->Point2();
+			// Full connection, compatibility checking is needed
+			MCompatChecker* pt1checker = (MCompatChecker*) pt1->GetSIfiC(MCompatChecker::Type(), this);
+			MCompatChecker* pt2checker = (MCompatChecker*) pt2->GetSIfiC(MCompatChecker::Type(), this);
 			TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
 			TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
-			MElem* host = this;
-			Logger()->Write(EErr, this, "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
-		    }
+			if (ispt1cptb && ispt2cptb) {
+			    // Are compatible - connect
+			    TBool res = ETrue;
+			    if (cp1 == NULL) res = edge->ConnectP1(ref1);
+			    if (res && cp2 == NULL) res = edge->ConnectP2(ref2);
+			    if (!res) {
+				MElem* host = GetMan();
+				Logger()->Write(EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
+			    }
+			}
+			else {
+			    TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
+			    TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
+			    MElem* host = this;
+			    Logger()->Write(EErr, this, "Connecting [%s - %s] - incompatible roles", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
+			}
 
+		    } else {
+			// Partial connection, compatibility checking isn't needed
+			if (cp1 == NULL && ref1 != NULL) edge->ConnectP1(ref1);
+			else if (cp2 == NULL && ref2 != NULL) edge->ConnectP2(ref2);
+		    }
 		} else {
-		    // Partial connection, compatibility checking isn't needed
-		    if (cp1 == NULL && ref1 != NULL) edge->ConnectP1(ref1);
-		    else if (cp2 == NULL && ref2 != NULL) edge->ConnectP2(ref2);
+		    MElem* pt = isptok1 ? pt2 : pt1;
+		    MElem* host = this;
+		    Logger()->Write(EErr, this, "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
 		}
-	    } else {
-		MElem* pt = isptok1 ? pt2 : pt1;
-		MElem* host = this;
-		Logger()->Write(EErr, this, "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
 	    }
 	}
+    } else {
+	res = (pres == EEHR_Accepted);
     }
-    return hres;
+    return res;
 }

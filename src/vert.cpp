@@ -135,34 +135,41 @@ void Vert::Disconnect(MVert* aPair)
 
 TBool Vert::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 {
-    TBool hres = Elem::OnCompChanged(aComp, aContName, aModif);
-    if (!hres) return EFalse;
-    MEdge* edge = aComp.GetObj(edge);	
-    if (edge != NULL) {
-	hres = ETrue;
-	MVert* ref1 = edge->Ref1();
-	MVert* ref2 = edge->Ref2();
-	MVert* cp1 = edge->Point1();
-	MVert* cp2 = edge->Point2();
-	if (cp1 != ref1 || cp2 != ref2) {
-	    if (cp1 != NULL && ref1 != cp1) edge->Disconnect(cp1);
-	    if (cp2 != NULL && ref2 != cp2) edge->Disconnect(cp2);
-	    cp1 = edge->Point1();
-	    cp2 = edge->Point2();
-	    TBool res = ETrue;
-	    if (cp1 == NULL && ref1 != NULL) {
-		res = edge->ConnectP1(ref1);
-	    } else if (cp2 == NULL && ref2 != NULL) {
-		res = edge->ConnectP2(ref2);
-	    }
-	    if (!res) {
-		MElem* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
-		MElem* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
-		Logger()->Write(EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri().c_str(), pt2->GetUri().c_str());
+    TBool res = ETrue;
+    TEhr pres = Elem::ProcessCompChanged(aComp, aContName);
+    if (pres == EEHR_Ignored) {
+	MEdge* edge = aComp.GetObj(edge);	
+	if (edge == NULL) {
+	    MElem* owner = aComp.GetMan();
+	    edge = owner ? owner->GetObj(edge) : NULL;
+	}
+	if (edge != NULL) {
+	    MVert* ref1 = edge->Ref1();
+	    MVert* ref2 = edge->Ref2();
+	    MVert* cp1 = edge->Point1();
+	    MVert* cp2 = edge->Point2();
+	    if (cp1 != ref1 || cp2 != ref2) {
+		if (cp1 != NULL && ref1 != cp1) edge->Disconnect(cp1);
+		if (cp2 != NULL && ref2 != cp2) edge->Disconnect(cp2);
+		cp1 = edge->Point1();
+		cp2 = edge->Point2();
+		TBool res = ETrue;
+		if (cp1 == NULL && ref1 != NULL) {
+		    res = edge->ConnectP1(ref1);
+		} else if (cp2 == NULL && ref2 != NULL) {
+		    res = edge->ConnectP2(ref2);
+		}
+		if (!res) {
+		    MElem* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
+		    MElem* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
+		    Logger()->Write(EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri().c_str(), pt2->GetUri().c_str());
+		}
 	    }
 	}
+    } else {
+	res = (pres == EEHR_Accepted);
     }
-    return hres;
+    return res;
 }
 
 MIface* Vert::Call(const string& aSpec, string& aRes)

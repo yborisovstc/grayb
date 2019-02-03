@@ -33,6 +33,19 @@
 	</node>
     </node>
 
+    <!-- State Output socket, multicontent, monolitic -->
+    <node id="StOutSocketMcm" parent="ASocketMcm">
+	<cont id="About" val="State Output socket, multicontent, monolitic"/>
+	<cont id="Direction" val="Out"/>
+	<node id="PinObs" parent="ConnPointMc"> 
+	    <cont id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>
+	    <cont id="Provided" val="MDesObserver"/>
+	</node>
+	<node id="PinData" parent="ConnPointMc"> 
+	    <cont id="About" val="Pin Data observer. Provides data interface"/>
+	</node>
+    </node>
+
     <node id="StOutSocketMcVar" parent="./StOutSocketMc">
 	<cont id="About" val="State Output socket for variable data, multicontent"/>
 	<cont node="./PinData" id="Required" val="MDVarGet"/>
@@ -52,6 +65,19 @@
     <!-- State Input socket, multicontent -->
     <node id="StInpSocketMc" parent="/*/Modules/SysComps/SocketMc">
 	<cont id="About" val="State Input socket, multicontent"/>
+	<node id="PinObs" parent="ConnPointMc"> 
+	    <cont id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>
+	    <cont id="Required" val="MDesObserver"/>
+	</node>
+	<node id="PinData" parent="ConnPointMc"> 
+	    <cont id="About" val="Pin Data observer. Provides data interface"/>
+	</node>
+    </node>
+
+    <!-- State Input socket, multicontent, monolitic -->
+    <node id="StInpSocketMcm" parent="ASocketMcm">
+	<cont id="About" val="State Input socket, multicontent, monolitic"/>
+	<cont id="Direction" val="Inp"/>
 	<node id="PinObs" parent="ConnPointMc"> 
 	    <cont id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>
 	    <cont id="Required" val="MDesObserver"/>
@@ -300,6 +326,22 @@
 	</node>
     </node>
 
+    <!-- State base, multicontent, using monolitic extenders -->
+    <node id="StateMcm" parent="/*/Modules/IncapsComps/Incaps"> 
+	<cont id="About" val="DES state multicontent base"/>
+	<node id="StateAgt" parent="StateAgent"/> 
+	<node node="./Capsule" id="Sync" parent="ConnPointMc"> 
+	    <cont id="Provided" val="MDesSyncable"/>
+	</node>
+	<node node="./Capsule" id="Inp" parent="AExtdInp"> 
+	    <node id="Int" parent="./../../../StInpSocketMcm"/> 
+	</node>
+	<node node="./Capsule" id="Out" parent="AExtdOut"> 
+	    <node id="Int" parent="./../../../StOutSocketMcm"/> 
+	</node>
+    </node>
+
+
 
     <node id="StateInt" parent="./State"> 
 
@@ -340,6 +382,24 @@
 
     <!-- State with variable type data, multicontent -->
     <node id="StateVarMc" parent="./StateMc"> 
+	<cont id="About" val="DES state with variable type data, multicontent"/>
+	<node id="Confirmed" parent="/*/Modules/DataComps/DataSCVarMc"/>
+	<node id="Prepared" parent="/*/Modules/DataComps/DataSCVarMc"/>
+	<cont node="./Capsule/Inp/Int/PinData" id="Provided" val="MDVarGet"/>
+	<cont node="./Capsule/Out/Int/PinData" id="Required" val="MDVarGet"/>
+
+	<node id="E_Conf_Out" parent="Aedge"> 
+	    <cont id="P1" ref="./../Confirmed/Capsule/Out"/> 
+	    <cont id="P2" ref="./../Capsule/Out/Int/PinData"/> 
+	</node>
+	<node id="E_PrepToConf" parent="Aedge"> 
+	    <cont id="P1" ref="./../Prepared/Capsule/Out"/> 
+	    <cont id="P2" ref="./../Confirmed/Capsule/Inp"/> 
+	</node>
+    </node>
+
+    <!-- State with variable type data, multicontent, monolitic extenders -->
+    <node id="StateVarMcm" parent="./StateMcm"> 
 	<cont id="About" val="DES state with variable type data, multicontent"/>
 	<node id="Confirmed" parent="/*/Modules/DataComps/DataSCVarMc"/>
 	<node id="Prepared" parent="/*/Modules/DataComps/DataSCVarMc"/>

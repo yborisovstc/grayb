@@ -59,6 +59,7 @@ private:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( Ut_cre );
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(Ut_cre, "Ut_cre");
 
 
 

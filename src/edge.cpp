@@ -340,13 +340,15 @@ MElem* Edge::Point2p()
 
 TBool Edge::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 {
-    Elem::OnCompChanged(aComp, aContName, aModif);
+    return Elem::OnCompChanged(aComp, aContName, aModif);
     // Propagate notification to upper level
+    /*
     if (iMan != NULL) {
 	iMan->OnCompChanged(*this, aContName, aModif);
     }
     iEnv->Observer()->OnCompChanged(*this, aContName, aModif);
     return ETrue;
+    */
 }
 
 void Edge::SetRemoved(TBool aModif)

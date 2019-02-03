@@ -15,6 +15,15 @@ class Base;
 class MElem;
 class Rank;
 
+/**
+ * @brief Events handling result
+ */
+typedef enum {
+    EEHR_Ignored = 0,
+    EEHR_Accepted = 1,
+    EEHR_Denied = 2
+} TEhr;
+
 class TICacheRCtx: public vector<MElem*>
 {
     public:
@@ -173,6 +182,7 @@ class MACompsObserver: public MIface
     public:
 	static const char* Type() { return "MACompsObserver";};
 	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string()) = 0;
+	virtual TBool HandleChanged(MElem& aContext, MElem& aComp) {return ETrue;}
 	virtual MIface* MACompsObserver_Call(const string& aSpec, string& aRes) { return NULL;}
 	virtual string MACompsObserver_Mid() const { return "?";}
 	MIface* Call(const string& aSpec, string& aRes) override {return MACompsObserver_Call(aSpec, aRes);}

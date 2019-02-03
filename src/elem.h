@@ -261,6 +261,9 @@
 	    virtual MElem* GetComp(TInt aInd);
 	    static string ContentCompId(const string& aOwnerName, const string& aCompName);
 	protected:
+	    /** Handles agent change */
+	    virtual TEhr ProcessCompChanged(MElem& aComp, const string& aContName);
+	    virtual TEhr ProcessChanged(MElem& aComp);
 	    /** Helper. Sets cromo root attributes: parent, name */
 	    void SetCrAttr(const string& aEType, const string& aName);
 	    /** Helper. Gets type from extended type */
@@ -313,6 +316,7 @@
 	    virtual void DumpContent() const;
 	    virtual void DumpIfReqs() const override;
 	    virtual void DumpIfCache() const override;
+	    void DumpIfCtx(const TICacheRCtx& aCtx) const;
 	public:
 	    // TODO [YB] To move to Ifu ?
 	    static const char KContentStart = '{';

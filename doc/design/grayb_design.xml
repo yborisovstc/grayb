@@ -94,6 +94,11 @@
 		    used for model creation as on construction phase, ref
 		    <xref linkend="ds_mut_osm"/>
 	</para></glossdef> </glossentry>
+	<glossentry id="gls_mae"><glossterm>MAE</glossterm>
+	    <glossdef> <para>Using monodilic agent instead of embedded.
+		    Optimization approach, where monolitic native agents instead of constructed agents.
+		    <xref linkend="ds_mae"/>
+	</para></glossdef> </glossentry>
 	<glossentry id="gls_pia"><glossterm>PIA</glossterm> <acronym>PIA</acronym>
 	    <glossdef> <para>Properties Instead of embedded auxiliary Agents
 		    The approach of agents design where properties are using instead of auxiliary agents
@@ -2144,7 +2149,23 @@
 		system observer can be implemented with another approach - we can introduce observer iface in Env, so any node in native hier will
 		directly notify observer. Env in turn can propagate the notifications to observer. Or more simpler, the observer can request env for notification, so
 		env can expose observer to the system.</simpara>
-
+	</sect2>
+	<sect2 id="ds_elem_iact_rdins"><title>Redesign proposal: improving notifications scheme</title>
+	    <sect3><title>Intro</title>
+		<simpara>There was the issue <xref linken="ds_i_dpe_wb"/> discovered after offhand redesign. We need to prepare the redesign of notifications
+		    carefully.</simpara>
+		<simpara>The main aim of redesign is to avoid unnecesary propagation of notification. Also there is the design gap that notifications
+		    currently doesn't allow to disable unaccepted mutation, ref <xref linkend="ds_prfopt_pepe"/>.</simpara>
+	    </sect3>
+	    <sect3><title>Using notification chan with handling confirmation</title>
+		<sect4><title>Intro</title>
+		    <simpara>The idea is to propagate notification to owner only if the agent cannot handle the event by its own. MACompsObserver API needa to
+			be modified for that: HandleCompChanged needs to return not only Accepted/Denied sign but the sign of event handling also.</simpara>
+		    <simpara>The problem here is that there can be many MACompsObserver among embedded agents. What should be the rule of decision in that
+			case? The solution can be to allow all observers to handle the event: deny if even one observer has denied, consider not-handled if
+			all observers hasn't handled. </simpara>
+		</sect4>
+	    </sect3>
 	</sect2>
     </sect1>
 
@@ -4163,6 +4184,7 @@
 	<sect2><title>Intro</title>
 	    <itemizedlist>
 		<listitem>Ref <xref linkend="sec_img/"/> for design solution for creating system from image.</listitem>
+		<listitem>Ref <xref linkend="ds_mae/"/> for optimization approach of using monolitic native agents.</listitem>
 	    </itemizedlist>
 	</sect2>
 	<sect2 id="ds_prfopt_un"><title>Migrating to unique name</title>
@@ -4393,6 +4415,7 @@
 		    12      Elem OnCompChanged handling     4822625 77      62631   
 		</programlisting>
 		<simpara>So the part of handlers decreased to about 10%</simpara>
+		<simpara>This design proposal was implemented in [326f9dfdf9b5] and caused the issue <xref linkend="ds_i_dpe_wb"/></simpara>
 	    </sect3>
 	    <sect3><title>Optimization point: Import</title>
 		<simpara>Tracing importing process. I see that operation of reducing module's chromo to selection takes
@@ -4419,7 +4442,7 @@
 		    21      Importing, reduce to sel        22480111        17      1322359
 		</programlisting>
 	    </sect3>
-	    <sect3><title>To handle pre-event and post-event notifications. Currently the only post-events are handled.</title>
+	    <sect3 id="ds_prfopt_pepe"><title>To handle pre-event and post-event notifications. Currently the only post-events are handled.</title>
 	    </sect3>
 	    <sect3 id="ds_prfopt_prp01_ipind"><title>Profiling: to introduce ifaces for Pind recorders</title>
 		<simpara>To introduce ifaces for Pind recorders and extend Profiler iface to return the recorderd. 
@@ -4478,7 +4501,7 @@
 		    15      Elem NotifyNodeMutated                  8932406         329     27150
 		    17      Creating native agent                   14191721        470     30195
 		    18      Content changing mutation               20760228        151     137484
-		    19      Attr changing mutation                  81231           1       81231
+		    19      Attr changing mutation                  81230           1       81231
 		    20      Transform mut to OSM                    11500538        825     13940
 		    21      Import mgr ImportToNode, excl Mutate    76970           1       76970
 		    22      Import mgr DoImport, excl ImportToNode  39393378        18      2188521
@@ -4495,6 +4518,61 @@
 		<simpara>The operation related to <xref linkend="gls_osm"/> are time consuming also: "Elem NotifyNodeMutated",
 		    "Transform mut to OSM" takes about 20% of total time. Needs to look at OSM design.
 		</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_prfopt_mse"><title>Optimization of socket and extender: avoid embedding agents and useing monolitic agent instead</title>
+	    <sect3><title>Intro</title>
+		<simpara>Currently [644e5f6d21] extender and socket are agents resided within wrapping Vert agent. The optimization can be to
+		use monolite extender and socket.</simpara>
+	    </sect3>
+	    <sect3 id="ds_prfopt_mse_metr"><title>Metrics of current implementation</title>
+		<sect4><title>Initial version</title>
+		    <programlisting> grayb/clm$ ./fapm -lclm.log -pprof -s'../../fap2-studio-gtk/examples/des_var_1.xml' -a </programlisting>
+		    <simpara>clm.log:</simpara>
+		    <programlisting>INF; ; /Root; Completed of creating system, nodes: 354, imported: 226, time, us: 56537</programlisting>
+		    <simpara>prof~durstat.csv:</simpara>
+		    <programlisting>
+			9       Elem constructor duration       0       0       n/a
+			10      Elem constructor: chromo creation duration      1716994 382     4494
+			11      Elem OnCompAdding handling      120181  333     360
+			12      Elem OnCompChanged handling     4797839 110     43616   
+			13      Elem GetNode    2674492 1004    2663
+			14      Elem GetIfi     2843885 183     15540
+			15      Elem NotifyNodeMutated  3509364 187     18766
+			16      Elem CreateHeir 17095184        85      201119
+			17      Creating native agent   6212249 336     18488   
+			18      Content changing mutation       7192714 79      91047   
+			19      Attr changing mutation  0       0       n/a  
+			20      Transform mut to OSM    11612718        526     22077
+			21      Import mgr ImportToNode, excl Mutate    13531   1       13531
+			22      Import mgr DoImport, excl ImportToNode  26833747        24      111807
+		    </programlisting>
+		</sect4>
+		<sect4><title>Optimized for multi-content</title>
+		    <programlisting> grayb/clm$ ./fapm -lclm.log -pprof -s'../../fap2-studio-gtk/examples/des_var_1mc.xml' -a </programlisting>
+		    <simpara>clm.log:</simpara>
+		    <programlisting> INF; ; /Root; Completed of creating system, nodes: 184, imported: 121, time, us: 50936</programlisting>
+		    <simpara>prof~durstat.csv:</simpara>
+		    <programlisting>
+			9       Elem constructor duration       0       0       n/a
+			10      Elem constructor: chromo creation duration      937754  203     4619
+			11      Elem OnCompAdding handling      85475   182     469
+			12      Elem OnCompChanged handling     6838507 385     17762   
+			13      Elem GetNode    1616552 472     3424
+			14      Elem GetIfi     4730923 394     12007
+			15      Elem NotifyNodeMutated  3303836 193     17118
+			16      Elem CreateHeir 16254743        69      235575
+			17      Creating native agent   6701947 184     36423   
+			18      Content changing mutation       7249771 194     37369   
+			19      Attr changing mutation  0       0       n/a  
+			20      Transform mut to OSM    10926474        460     23753
+			21      Import mgr ImportToNode, excl Mutate    19129   2       9564 
+			22      Import mgr DoImport, excl ImportToNode  24835791        22      1128899
+		    </programlisting>
+		    <simpara>It is seen that the multicontent approach doesn't give us valuable optimization - the agents number is reduced from 
+			354 to 184 (almost twice) but the model creation time isn't reduced significantly. The possible cause of that is that the native
+		    agent creation time has been increased (because of content is changing in constructor).</simpara>
+		</sect4>
 	    </sect3>
 	</sect2>
     </sect1>
@@ -4685,7 +4763,7 @@
 	    <sect3><title>Intro</title>
 		<simpara>The current approach (<xref linkend="gls_cpa"/>) assumes that the whole model is built from elementary
 		    agents. Connection mechaninsm is also built from such agents. This makes the approach unified and clear. The reasoning of 
-		usage of this approach is the complexity of connection mechanism (we need extentions, sockets etc.).</simpara>
+		    usage of this approach is the complexity of connection mechanism (we need extentions, sockets etc.).</simpara>
 		<simpara>With <xref linkend="gls_pia"/> approach the connection point of agent is not an embedded sub-agent - proxy
 		    but simply property of agent - the "contract" of connection. This requires redesign of the current
 		    "distributed" mechanism of iface resolution, ref <xref linkend="ds_pia_crit_mri"/>. So this approach assumes
@@ -4764,6 +4842,17 @@
 	    <simpara>We come to this solution when designing <xref linkend="gls_pia"/> system agent. It evolves that implementing many
 		connections related functions in the scope of system agent inself causes to messy code. It is more simple to isolate connection point
 		functinality is dedicated class. The class is in fact kind of unit.</simpara>
+	    <simpara>Note, that with this approach we can return to early "non-multi-content" design. If unit implementation is simple then unit can
+		keep the particular content so we can get rid of mulitcontent - content hierarchy can be supported by hier of units.</simpara>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_mae"><title>Optimization: using monolitic agents instead of embedded (<xref linkend="gls_mae"/>)</title>
+	<sect2><title>Intro</title>
+	    <simpara>To optimize the model it make sense to make frequently used agents simpler. This agents - common "building blocks" are
+		system, incaps, connpoint, extender, socket, state, des. Some of these agents are simple, for instance connpoint is just simple native agent.
+	   But some of the agents are rather complex. For instance extender is implemented as Vert with embedded agent (MAgent).</simpara>
+       <simpara>So we can propose simplification of these building block as an approach of optimization.</simpara>
 	</sect2>
     </sect1>
 
@@ -4775,6 +4864,20 @@
 
     <sect1 id="ds_dla"><title>Directly located agents instead of using Agents special container </title>
 	<sect2><title>Intro</title>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_vers"><title>Versioning</title>
+	<sect2><title>Intro</title>
+	    <simpara>Ref <ulink url="../requirements/index.html#us_069"/> for root use-case for versioning</simpara>
+	    <simpara>This section outlines design of support of versions of agents. The versioning is very important because in the agent
+	    lifecycle there are some different versions of agent used in the models. So we need mechanism that helps to resolve right version</simpara>
+	</sect2>
+	<sect2><title>How to specify version</title>
+	    <simpara>The standard approach for specifying version is to keep version spec in agent's metadata. Currently there is no metadata in 
+	    native agents.</simpara>
+	</sect2>
+	<sect2><title>Versions compatibility</title>
 	</sect2>
     </sect1>
 
@@ -4934,6 +5037,12 @@
 		<simpara>Currently (9fd314b78e1) the content is implemented that the content tree is simulated by map. This seems rather ineffective.
 		    Needs to redesign.</simpara>
 	    </sect3>
+	</sect2>
+	<sect2 id="ds_i_dpe_wb"><title>Propagation disabling caused wrong behavior</title>
+	    <simpara>There was the change made in [326f9dfdf9b5] according to design proposal <xref linkend="ds_prfopt_prp01_dpe"/>:
+		propagation was disabled. But this change caused incorrect 
+		behavior - changing point of edge isn't propagated to owning incaps so the connection is not established.</simpara>
+	    <simpara>Redesign proposal <xref linkend="ds_elem_iact_rdins"/> was created for solve this issue.</simpara>
 	</sect2>
     </sect1>
 
