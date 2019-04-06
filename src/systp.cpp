@@ -26,18 +26,18 @@ string Systp::PEType()
     return Vertp::PEType() + GUri::KParentSep + Type();
 }
 
-Systp::Systp(const string& aName, MElem* aMan, MEnv* aEnv): Vertp(aName, aMan, aEnv)
+Systp::Systp(const string& aName, MUnit* aMan, MEnv* aEnv): Vertp(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
 
-void Systp::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
+void Systp::OnCompDeleting(MUnit& aComp, TBool aSoft, TBool aModif)
 {
     Vertp::OnCompDeleting(aComp, aSoft, aModif);
 }
 
 // TODO To consider separating of handling of content change on local level and on owner level
-TBool Systp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
+TBool Systp::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
 {
     TBool res = true;
     if (&aComp == this) {
@@ -59,11 +59,11 @@ TBool Systp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 			    // There is connection established, disconnecting
 			    string cpurib = GetContentValue(ContentKey(edgeName, nameCPB));
 			    assert(!cpurib.empty());
-			    MElem* cea = GetNode(cpuria);
+			    MUnit* cea = GetNode(cpuria);
 			    assert(cea != NULL);
 			    MVertp* cva = cea->GetObj(cva);
 			    assert(cva != NULL);
-			    MElem* ceb = GetNode(cpurib);
+			    MUnit* ceb = GetNode(cpurib);
 			    assert(ceb != NULL);
 			    MVertp* cvb = ceb->GetObj(cvb);
 			    assert(cvb != NULL);
@@ -77,8 +77,8 @@ TBool Systp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 			    // Checking if specified conn points are valid
 			    GUri uria(puria);
 			    GUri urib(purib);
-			    MElem* ea = GetNode(uria);
-			    MElem* eb = GetNode(urib);
+			    MUnit* ea = GetNode(uria);
+			    MUnit* eb = GetNode(urib);
 			    string cna = uria.GetContent();
 			    string cnb = urib.GetContent();
 			    string cva = ea->GetContent(cna, true);
@@ -91,11 +91,11 @@ TBool Systp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 				// Verifying compatibility
 				bool compatible = AreCpsCompatible(ea, cna, eb, cnb);
 				if (compatible) {
-				    MElem* ea = GetNode(puria);
+				    MUnit* ea = GetNode(puria);
 				    assert(ea != NULL);
 				    MVertp* va = ea->GetObj(va);
 				    assert(va != NULL);
-				    MElem* eb = GetNode(purib);
+				    MUnit* eb = GetNode(purib);
 				    assert(eb != NULL);
 				    MVertp* vb = eb->GetObj(vb);
 				    assert(vb != NULL);
@@ -127,11 +127,11 @@ TBool Systp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
     return res;
 }
 
-bool Systp::AreCpsCompatible(MElem* aNode1, const string& aCp1, MElem* aNode2, const string& aCp2)
+bool Systp::AreCpsCompatible(MUnit* aNode1, const string& aCp1, MUnit* aNode2, const string& aCp2)
 {
     bool res = true;
-    MElem* ea = aNode1;
-    MElem* eb = aNode2;
+    MUnit* ea = aNode1;
+    MUnit* eb = aNode2;
     const string& cna = aCp1;
     const string& cnb = aCp2;
     string cva = ea->GetContent(cna, true);
@@ -191,7 +191,7 @@ void Systp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     TICacheRCtx ctx(aCtx); ctx.push_back(this);
     // Don't provide local ifaces, the only contract based request is handled
     if (!aCtx.empty()) {
-	MElem* rq = aCtx.back();
+	MUnit* rq = aCtx.back();
 	MVertp* rqv = rq != nullptr ? rq->GetObj(rqv) : nullptr;
 	if (rqv != nullptr && IsPair(rqv)) {
 	    // Request from a pair
@@ -229,7 +229,7 @@ void Systp::UpdateIfiForConnPoint(const string& aIfName, const TICacheRCtx& aCtx
 	    string sockname = GetContentOwner(socktype);
 	    TPairsEr pairs = Systp::GetPairsForCp(sockname);
 	    for (auto it =pairs.first; it != pairs.second; it++) {
-		MElem* pair = it->second->MVertp::GetObj(pair);
+		MUnit* pair = it->second->MVertp::GetObj(pair);
 	    }
 	} else {
 	    // Requested provided iface, use base resolver
@@ -246,7 +246,7 @@ void Systp::UpdateIfiForExtender(const string& aIfName, const TICacheRCtx& aCtx,
     if (inttype_s == KCp_SimpleCp) {
 	TPairsEr pairs = Systp::GetPairsForCp(sIntKey);
 	for (auto it =pairs.first; it != pairs.second; it++) {
-	    MElem* pair = it->second->MVertp::GetObj(pair);
+	    MUnit* pair = it->second->MVertp::GetObj(pair);
 	    TICacheRCtx ctx(aCtx); ctx.push_back(this);
 	    TIfRange rr = pair->GetIfi(aIfName, ctx);
 	    InsertIfCache(aIfName, aCtx, pair, rr);
@@ -259,7 +259,7 @@ void Systp::UpdateIfiForSocket(const string& aIfName, const TICacheRCtx& aCtx, c
 {
 }
 
-bool Systp::GetExtended(MElem* aNode, const string& aExt, string& aInt, bool& aInv)
+bool Systp::GetExtended(MUnit* aNode, const string& aExt, string& aInt, bool& aInv)
 {
     bool res = true;
     aInv = ~aInv;
@@ -312,7 +312,7 @@ TIfRange Systp::GetIfiForCp(const string& aName, const string& aCp, const TICach
     MVertp::TPairsEr pairs = GetPairsForCp(kk);
     if (pairs.first != pairs.second) {
 	MVertp* pair = pairs.first->second;
-	MElem* epair = pair->GetObj(epair);
+	MUnit* epair = pair->GetObj(epair);
 	TICacheRCtx ctx(aCtx); ctx.push_back(this);
 	TIfRange rr = pair->GetIfi(aName, ctx);
 	// TODO To consider extending context with conn point. In this case the ifaced from CP

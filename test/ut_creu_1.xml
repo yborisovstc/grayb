@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test of ceation of model with units -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Elem">
+    <node id="Logspec" parent="Elem"> <node id="Creation" parent="Elem"/> </node>
+    <node id="elem1" parent="Elem">
+	<node id="unit1_1" parent="Unit"> </node>
+	<node id="unit1_1_1" node="./unit1_1" parent="Unit"/>
+	<node id="elem2" parent="Elem"/>
+    </node>
+    <node id="elem3" parent="./elem1">
+	<node id="Logspec" parent="Elem"> <node id="Creation" parent="Elem"/> </node>
+	<node id="elem4" parent="./../elem1/elem2"/>
+	<node id="elem4.2" parent="./../elem1"/>
+    </node>
+    <node id="elem5" parent="./elem1/elem2"/>
+
+</node>
+

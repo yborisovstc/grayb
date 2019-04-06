@@ -46,6 +46,18 @@
 	</node>
     </node>
 
+    <!-- State Output socket, multicontent, monolitic, unit pins -->
+    <node id="StOutSocketMcmu" parent="ASocketMcm">
+	<cont id="About" val="State Output socket, multicontent, monolitic"/>
+	<cont id="Direction" val="Out"/>
+	<node id="PinObs" parent="ConnPointMc"/> 
+	<cont node="./PinObs" id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>
+	<cont node="./PinObs" id="Provided" val="MDesObserver"/>
+
+	<node id="PinData" parent="ConnPointMcu"/> 
+	<cont node="./PinData" id="About" val="Pin Data observer. Provides data interface"/>
+    </node>
+
     <node id="StOutSocketMcVar" parent="./StOutSocketMc">
 	<cont id="About" val="State Output socket for variable data, multicontent"/>
 	<cont node="./PinData" id="Required" val="MDVarGet"/>
@@ -83,6 +95,20 @@
 	    <cont id="Required" val="MDesObserver"/>
 	</node>
 	<node id="PinData" parent="ConnPointMc"> 
+	    <cont id="About" val="Pin Data observer. Provides data interface"/>
+	</node>
+    </node>
+
+    <!-- State Input socket, multicontent, monolitic, unit pins -->
+    <node id="StInpSocketMcmu" parent="ASocketMcm">
+	<cont id="About" val="State Input socket, multicontent, monolitic, unit pins"/>
+	<cont id="Direction" val="Inp"/>
+
+	<node id="PinObs" parent="ConnPointMcu"/> 
+	<cont node="./PinObs" id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>
+	<cont node="./PinObs" id="Required" val="MDesObserver"/>
+
+	<node id="PinData" parent="ConnPointMcu"> 
 	    <cont id="About" val="Pin Data observer. Provides data interface"/>
 	</node>
     </node>
@@ -341,6 +367,20 @@
 	</node>
     </node>
 
+    <!-- State base, multicontent, using monolitic extenders and unit pins in sock -->
+    <node id="StateMcmu" parent="/*/Modules/IncapsComps/Incaps"> 
+	<cont id="About" val="DES state base, multicontent, monolitic, unit pins conns "/>
+	<node id="StateAgt" parent="StateAgent"/> 
+	<node node="./Capsule" id="Sync" parent="ConnPointMcu"/> 
+	<cont node="./Capsule/Sync" id="Provided" val="MDesSyncable"/>
+	    
+	<node node="./Capsule" id="Inp" parent="AExtduInp"/> 
+	<node node="./Capsule/Inp" id="Int" parent="./../StInpSocketMcmu"/> 
+
+	<node node="./Capsule" id="Out" parent="AExtduOut"/> 
+	<node node="./Capsule/Out" id="Int" parent="./../StOutSocketMcmu"/> 
+    </node>
+
 
 
     <node id="StateInt" parent="./State"> 
@@ -401,6 +441,24 @@
     <!-- State with variable type data, multicontent, monolitic extenders -->
     <node id="StateVarMcm" parent="./StateMcm"> 
 	<cont id="About" val="DES state with variable type data, multicontent"/>
+	<node id="Confirmed" parent="/*/Modules/DataComps/DataSCVarMc"/>
+	<node id="Prepared" parent="/*/Modules/DataComps/DataSCVarMc"/>
+	<cont node="./Capsule/Inp/Int/PinData" id="Provided" val="MDVarGet"/>
+	<cont node="./Capsule/Out/Int/PinData" id="Required" val="MDVarGet"/>
+
+	<node id="E_Conf_Out" parent="Aedge"> 
+	    <cont id="P1" ref="./../Confirmed/Capsule/Out"/> 
+	    <cont id="P2" ref="./../Capsule/Out/Int/PinData"/> 
+	</node>
+	<node id="E_PrepToConf" parent="Aedge"> 
+	    <cont id="P1" ref="./../Prepared/Capsule/Out"/> 
+	    <cont id="P2" ref="./../Confirmed/Capsule/Inp"/> 
+	</node>
+    </node>
+
+    <!-- State with variable type data, multicontent, monolitic extenders, unit pins -->
+    <node id="StateVarMcmu" parent="./StateMcmu"> 
+	<cont id="About" val="DES state with variable type data, multicontent, unit pins"/>
 	<node id="Confirmed" parent="/*/Modules/DataComps/DataSCVarMc"/>
 	<node id="Prepared" parent="/*/Modules/DataComps/DataSCVarMc"/>
 	<cont node="./Capsule/Inp/Int/PinData" id="Provided" val="MDVarGet"/>

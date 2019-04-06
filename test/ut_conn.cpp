@@ -48,7 +48,7 @@ class TstAgt: public Elem, public MAgent
 		virtual ~TestIface2() {}
 		virtual string Iface2_Test() override {
 		    string res = "Error";
-		    MElem* owner = mHost.GetMan();
+		    MUnit* owner = mHost.GetMan();
 		    if (owner) {
 			MSyst* ms = owner->GetObj(ms);
 			if (ms) {
@@ -56,7 +56,7 @@ class TstAgt: public Elem, public MAgent
 			    MVertp::TPairsEr pairs = ms->GetPairsForCp(kk);
 			    if (pairs.first != pairs.second) {
 				MVertp* pair = pairs.first->second;
-				MElem* epair = pair->GetObj(epair);
+				MUnit* epair = pair->GetObj(epair);
 				MIface* ifr = epair->GetSIfi(MTestIface1::Type(), owner);
 				if (ifr) {
 				    MTestIface1* ti = dynamic_cast<MTestIface1*>(ifr);
@@ -74,9 +74,9 @@ class TstAgt: public Elem, public MAgent
     public:
 	static const char* Type() { return "TstAgt";};
 	static string PEType() { return Elem::PEType() + GUri::KParentSep + Type(); }
-	TstAgt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL): Elem(aName, aMan, aEnv) {
+	TstAgt(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL): Elem(aName, aMan, aEnv) {
 	    SetParent(Type()); mIface1 = new TestIface1(*this); mIface2 = new TestIface2(*this);}
-	TstAgt(MElem* aMan = NULL, MEnv* aEnv = NULL): Elem(Type(), aMan, aEnv) {
+	TstAgt(MUnit* aMan = NULL, MEnv* aEnv = NULL): Elem(Type(), aMan, aEnv) {
 	    SetParent(Elem::PEType()); mIface1 = new TestIface1(*this); mIface2 = new TestIface2(*this);}
 	virtual ~TstAgt() { delete mIface1; delete mIface2;}
 	virtual MIface* DoGetObj(const char *aName) {
@@ -86,7 +86,7 @@ class TstAgt: public Elem, public MAgent
 	    return Elem::DoGetObj(aName);
 	}
 	// From MAgent
-	virtual MIface* MAgent_DoGetIface(const string& aName) override { MIface* res = NULL; if (aName == MElem::Type()) res = dynamic_cast<MElem*>(this); return res; }
+	virtual MIface* MAgent_DoGetIface(const string& aName) override { MIface* res = NULL; if (aName == MUnit::Type()) res = dynamic_cast<MUnit*>(this); return res; }
     private:
 	MTestIface1* mIface1 = nullptr;
 	MTestIface2* mIface2 = nullptr;
@@ -101,8 +101,8 @@ class TstProv: public GProvider
 	TstProv(const string& aName, MEnv* aEnv): GProvider(aName, aEnv) {}
 	virtual ~TstProv() {}
 	// From MProvider
-	virtual Elem* CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv);
-	virtual Elem* GetNode(const string& aUri);
+	virtual Unit* CreateNode(const string& aType, const string& aName, MUnit* aMan, MEnv* aEnv);
+	virtual Unit* GetNode(const string& aUri);
 	virtual void AppendNodesInfo(vector<string>& aInfo);
 	virtual const string& ModulesPath() const;
 	static string GetParentName(const string& aUri);
@@ -116,29 +116,30 @@ string TstProv::GetParentName(const string& aUri)
     return res;
 }
 
-Elem* TstProv::CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv)
+Unit* TstProv::CreateNode(const string& aType, const string& aName, MUnit* aMan, MEnv* aEnv)
 {
-    Elem* res = NULL;
+    Unit* res = NULL;
     if (aType.compare(TstAgt::Type()) == 0) {
 	res = new TstAgt(aName, aMan, aEnv);
     }
     if (res != NULL) {
-	Elem* parent = GetNode(aType);
+	Unit* parent = GetNode(aType);
 	if (parent != NULL) {
-	    parent->AppendChild(res);
+	    MElem* eparent = parent->GetObj(eparent);
+	    eparent->AppendChild(res);
 	}
     }
 
     return res;
 }
 
-Elem* TstProv::GetNode(const string& aUri)
+Unit* TstProv::GetNode(const string& aUri)
 {
-    Elem* res = NULL;
+    Unit* res = NULL;
     if (iReg.count(aUri) > 0) {
 	res = iReg.at(aUri);
     } else {
-	Elem* parent = NULL;
+	Unit* parent = NULL;
 	if (aUri.compare(TstAgt::Type()) == 0) {
 	    //parent = GetNode("Elem");
 	    res = new TstAgt(NULL, iEnv);
@@ -149,7 +150,8 @@ Elem* TstProv::GetNode(const string& aUri)
 		parent = iEnv->Provider()->GetNode(pname);
 	    }
 	    if (parent != NULL) {
-		parent->AppendChild(res);
+		MElem* eparent = parent->GetObj(eparent);
+		eparent->AppendChild(res);
 	    }
 	    iReg.insert(TRegVal(aUri, res));
 	}
@@ -180,6 +182,7 @@ class Ut_conn : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Reconn);
     CPPUNIT_TEST(test_Conn2);
     CPPUNIT_TEST(test_SockMcm);
+    CPPUNIT_TEST(test_SockMcmu);
     CPPUNIT_TEST_SUITE_END();
     public:
     virtual void setUp();
@@ -195,6 +198,7 @@ class Ut_conn : public CPPUNIT_NS::TestFixture
     void test_Reconn();
     void test_Conn2();
     void test_SockMcm();
+    void test_SockMcmu();
     private:
     Env* iEnv;
     TstProv* mProv;
@@ -222,23 +226,24 @@ void Ut_conn::test_Vertp()
     iEnv = new Env("ut_conn_vertp_1.xml", "ut_conn_vertp_1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root->GetObj(eroot);
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Verify that v1 and v2 are connected
-    MElem* ev1 = root->GetNode("./test/v1");
+    MUnit* ev1 = root->GetNode("./test/v1");
     MVertp* mv1 = ev1->GetObj(mv1);
-    MElem* ev2 = root->GetNode("./test/v2");
+    MUnit* ev2 = root->GetNode("./test/v2");
     MVertp* mv2 = ev2->GetObj(mv2);
     int pnum1 = mv1->PairsCount();
     int pnum2 = mv2->PairsCount();
     bool v2ispair = mv1->IsPair(mv2);
     CPPUNIT_ASSERT_MESSAGE("v1 and v2 aren't connected", pnum1 == 1 && pnum2 && v2ispair);
     // Disconnect one point of edge e2
-    ChromoNode mutn = root->AppendMutation(ENt_Cont);
+    ChromoNode mutn = eroot->AppendMutation(ENt_Cont);
     mutn.SetAttr(ENa_Targ, "./test");
     mutn.SetAttr(ENa_Id, "Edges.E1.P1");
     mutn.SetAttr(ENa_MutVal, "");
-    root->Mutate();
+    eroot->Mutate();
     // Verify that v1 and v2 are disconnected
     ev1 = root->GetNode("./test/v1");
     mv1 = ev1->GetObj(mv1);
@@ -255,12 +260,13 @@ void Ut_conn::test_Systp()
     iEnv = new Env("ut_conn_systp_1.xml", "ut_conn_systp_1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root->GetObj(eroot);
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Verify that s1 and s2 are connected
-    MElem* es1 = root->GetNode("./test/s1");
+    MUnit* es1 = root->GetNode("./test/s1");
     MVertp* mv1 = es1->GetObj(mv1);
-    MElem* es2 = root->GetNode("./test/s2");
+    MUnit* es2 = root->GetNode("./test/s2");
     MVertp* mv2 = es2->GetObj(mv2);
     int pnum1 = mv1->PairsCount();
     int pnum2 = mv2->PairsCount();
@@ -270,22 +276,22 @@ void Ut_conn::test_Systp()
     MIface* iface = es1->GetSIfi("MVertp", TICacheRCtx(es2));
     CPPUNIT_ASSERT_MESSAGE("Incorrectly resolver MVertp iface", iface != nullptr && iface->Uid() == "./test/s1%MVertp");
     // Disconnect one point of edge e2
-    ChromoNode mutn = root->AppendMutation(ENt_Cont);
+    ChromoNode mutn = eroot->AppendMutation(ENt_Cont);
     mutn.SetAttr(ENa_Targ, "./test");
     mutn.SetAttr(ENa_Id, "Edges.E1.P1");
     mutn.SetAttr(ENa_MutVal, "");
-    root->Mutate();
+    eroot->Mutate();
     // Verify that v1 and v2 are disconnected
     es1 = root->GetNode("./test/s1");
     mv1 = es1->GetObj(mv1);
     pnum1 = mv1->PairsCount();
     CPPUNIT_ASSERT_MESSAGE("Wrong number of v1 pairs after e2 disconnection", pnum1 == 0);
     // Trying connect to incompatible connpoint
-    mutn = root->AppendMutation(ENt_Cont);
+    mutn = eroot->AppendMutation(ENt_Cont);
     mutn.SetAttr(ENa_Targ, "./test");
     mutn.SetAttr(ENa_Id, "Edges.E2");
     mutn.SetAttr(ENa_MutVal, "{P1:'/Root/test/s1~ConnPoints.Cp2' P2:'/Root/test/s2~ConnPoints.Cp1'}");
-    root->Mutate();
+    eroot->Mutate();
     // Verify that v1 and v2 are disconnected
     es1 = root->GetNode("./test/s1");
     mv1 = es1->GetObj(mv1);
@@ -305,17 +311,18 @@ void Ut_conn::test_Systp2()
     iEnv->AddProvider(mProv);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root->GetObj(eroot);
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Trying connect s2 to s1 ext
-    ChromoNode mutn = root->AppendMutation(ENt_Cont);
+    ChromoNode mutn = eroot->AppendMutation(ENt_Cont);
     mutn.SetAttr(ENa_Targ, "./test");
     mutn.SetAttr(ENa_Id, "Edges.E2");
     mutn.SetAttr(ENa_MutVal, "{P1:'/Root/test/s1~ConnPoints.Ext1' P2:'/Root/test/s2~ConnPoints.Cp1'}");
-    root->Mutate();
-    MElem* es1 = root->GetNode("./test/s1");
+    eroot->Mutate();
+    MUnit* es1 = root->GetNode("./test/s1");
     MVertp* mv1 = es1->GetObj(mv1);
-    MElem* es2 = root->GetNode("./test/s2");
+    MUnit* es2 = root->GetNode("./test/s2");
     MVertp* mv2 = es2->GetObj(mv2);
     int pnum1 = mv1->PairsCount();
     int pnum2 = mv2->PairsCount();
@@ -325,7 +332,7 @@ void Ut_conn::test_Systp2()
     CPPUNIT_ASSERT_MESSAGE("v1 and v2 aren't connected", pnum1 == 2 && pnum2 == 1 && v2ispair);
     // 
     // Verifying iface resolution via connection
-    MElem* es2_1 = root->GetNode("./test/s2/s2_1");
+    MUnit* es2_1 = root->GetNode("./test/s2/s2_1");
     CPPUNIT_ASSERT_MESSAGE("Cannot get es2_1", es2_1 != NULL);
     MTestIface2* es2_1t = es2_1->GetObj(es2_1t);
     CPPUNIT_ASSERT_MESSAGE("Cannot get es2_1 MTestIface2", es2_1 != NULL);
@@ -348,17 +355,18 @@ void Ut_conn::test_SystpSock()
     iEnv->AddProvider(mProv);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root->GetObj(eroot);
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Trying connect s2 to s1 ext
-    ChromoNode mutn = root->AppendMutation(ENt_Cont);
+    ChromoNode mutn = eroot->AppendMutation(ENt_Cont);
     mutn.SetAttr(ENa_Targ, "./test");
     mutn.SetAttr(ENa_Id, "Edges.E2");
     mutn.SetAttr(ENa_MutVal, "{P1:'/Root/test/s1~ConnPoints.S1' P2:'/Root/test/s2~ConnPoints.S1'}");
-    root->Mutate();
-    MElem* es1 = root->GetNode("./test/s1");
+    eroot->Mutate();
+    MUnit* es1 = root->GetNode("./test/s1");
     MVertp* mv1 = es1->GetObj(mv1);
-    MElem* es2 = root->GetNode("./test/s2");
+    MUnit* es2 = root->GetNode("./test/s2");
     MVertp* mv2 = es2->GetObj(mv2);
     int pnum1 = mv1->PairsCount();
     int pnum2 = mv2->PairsCount();
@@ -369,7 +377,7 @@ void Ut_conn::test_SystpSock()
     CPPUNIT_ASSERT_MESSAGE("v1 and v2 aren't connected", pnum1 == 3 && pnum2 == 3 && v2ispair);
     // 
     // Verifying iface resolution via connection
-    MElem* es2_1_1 = root->GetNode("./test/s2/s2_1/s2_1_1");
+    MUnit* es2_1_1 = root->GetNode("./test/s2/s2_1/s2_1_1");
     CPPUNIT_ASSERT_MESSAGE("Cannot get es2_1_1", es2_1_1 != NULL);
     MTestIface2* es2_1_1t = es2_1_1->GetObj(es2_1_1t);
     CPPUNIT_ASSERT_MESSAGE("Cannot get es2_1 MTestIface2", es2_1_1t != NULL);
@@ -391,9 +399,9 @@ void Ut_conn::test_Sock()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    MElem* doutp = root->GetNode("./test/L1/Cp1");
+    MUnit* doutp = root->GetNode("./test/L1/Cp1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get L1 Cp1", doutp != 0);
     //MDIntGet* doutpget = doutp->GetObj(doutpget);
     MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
@@ -425,10 +433,10 @@ void Ut_conn::test_Sock2()
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
-    MElem* doutp = root->GetNode("./test/L1/Cp1");
+    MUnit* doutp = root->GetNode("./test/L1/Cp1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get L1 Cp1", doutp != 0);
     MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface for Cp1", doutpget != 0);
@@ -464,34 +472,35 @@ void Ut_conn::test_Reconn()
     iEnv = new Env("ut_conn_1.xml", "ut_conn_1.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root->GetObj(eroot);
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
     // Delete v1
-    ChromoNode mutn = root->AppendMutation(ENt_Rm);
+    ChromoNode mutn = eroot->AppendMutation(ENt_Rm);
     mutn.SetAttr(ENa_MutNode, "./v1");
-    root->Mutate();
+    eroot->Mutate();
     // Verify the connection pair is disconnected
-    MElem* ev2 = root->GetNode("./v2");
+    MUnit* ev2 = root->GetNode("./v2");
     MVert* mv2 = ev2->GetObj(mv2);
     int pnum = mv2->PairsCount();
     CPPUNIT_ASSERT_MESSAGE("Wrong number of v2 pairs after disconnection", pnum == 0);
     // Verify edges point previously connected to v1 is disconnected
-    MElem* ee1 = root->GetNode("./e1");
+    MUnit* ee1 = root->GetNode("./e1");
     MEdge* me1 = ee1->GetObj(me1);
     MVert* p1 = me1->Point1();
     CPPUNIT_ASSERT_MESSAGE("Edges Point1 is not disconnected", p1 == 0);
     // Delete v3
-    mutn = root->AppendMutation(ENt_Rm);
+    mutn = eroot->AppendMutation(ENt_Rm);
     mutn.SetAttr(ENa_MutNode, "./v3");
-    root->Mutate();
+    eroot->Mutate();
     // Verify the connection pair is disconnected
-    MElem* ev5 = root->GetNode("./v5");
+    MUnit* ev5 = root->GetNode("./v5");
     MVert* mv5 = ev5->GetObj(mv5);
     int pnum5 = mv5->PairsCount();
     CPPUNIT_ASSERT_MESSAGE("Wrong number of v5 pairs after disconnection", pnum5 == 0);
     // Verify edges point previously connected to v1 is disconnected
-    MElem* ee2 = root->GetNode("./e2");
+    MUnit* ee2 = root->GetNode("./e2");
     MEdge* me2 = ee2->GetObj(me2);
     MVert* p2_2 = me2->Point2();
     CPPUNIT_ASSERT_MESSAGE("Edges Point2 is not disconnected within e2", p2_2 == 0);
@@ -505,17 +514,18 @@ void Ut_conn::test_Conn2()
     iEnv = new Env("ut_conn_2.xml", "ut_conn_2.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
     // Disconnect one point of edge e2
-    MElem* e2 = root->GetNode("./e2");
-    ChromoNode mutn = e2->AppendMutation(ENt_Cont);
+    MUnit* e2 = root->GetNode("./e2");
+    MElem* ee2 = e2->GetObj(ee2);
+    ChromoNode mutn = ee2->AppendMutation(ENt_Cont);
     mutn.SetAttr(ENa_MutNode, "./P1");
     mutn.SetAttr(ENa_Ref, "");
-    e2->Mutate();
+    ee2->Mutate();
     // Verify that v1 and v2 are still connected
-    MElem* ev1 = root->GetNode("./v1");
+    MUnit* ev1 = root->GetNode("./v1");
     MVert* mv1 = ev1->GetObj(mv1);
     int pnum1 = mv1->PairsCount();
     CPPUNIT_ASSERT_MESSAGE("Wrong number of v1 pairs after e2 disconnection", pnum1 == 1);
@@ -530,9 +540,42 @@ void Ut_conn::test_SockMcm()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    MElem* doutp = root->GetNode("./test/L1/Cp1");
+    MUnit* doutp = root->GetNode("./test/L1/Cp1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get L1 Cp1", doutp != 0);
+    //MDIntGet* doutpget = doutp->GetObj(doutpget);
+    MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 3);
+
+    doutp = root->GetNode("./test/L1/Cp2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get L1 Cp2", doutp != 0);
+    doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface for Cp2", doutpget != 0);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface for Cp2", doutpget->Value() == 1);
+
+    doutp = root->GetNode("./test/L1/Cp3");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get L1 Cp3", doutp != 0);
+    doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type(), doutp);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface for Cp3", doutpget != 0);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface for Cp3", doutpget->Value() == 20);
+
+    delete iEnv;
+}
+
+void Ut_conn::test_SockMcmu()
+{
+    printf("\n === Test of connecting of sockets, multicontent, monolitic, unit pins\n");
+
+    iEnv = new Env("ut_conn_sock_mcmu.xml", "ut_conn_sock_mcmu.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    MUnit* doutp = root->GetNode("./test/L1/Cp1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get L1 Cp1", doutp != 0);
     //MDIntGet* doutpget = doutp->GetObj(doutpget);
     MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());

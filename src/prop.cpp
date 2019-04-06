@@ -16,7 +16,7 @@ string Prop::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-Prop::Prop(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+Prop::Prop(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -91,7 +91,7 @@ string Description::PEType()
     return Prop::PEType() + GUri::KParentSep + Type();
 }
 
-Description::Description(const string& aName, MElem* aMan, MEnv* aEnv): Prop(aName, aMan, aEnv)
+Description::Description(const string& aName, MUnit* aMan, MEnv* aEnv): Prop(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }

@@ -13,24 +13,24 @@ class Edge: public Elem, public MEdge
     public:
 	static const char* Type() { return "Edge";};
 	static string PEType();
-	Edge(const string& aName, MElem* aMan, MEnv* aEnv);
+	Edge(const string& aName, MUnit* aMan, MEnv* aEnv);
 	virtual ~Edge();
     public:
 	const string& Point1u();
 	const string& Point2u();
-	const string& Pointu(MElem* aCp);
-	MElem* Point1p();
-	MElem* Point2p();
-	MElem* Point1r();
-	MElem* Point2r();
-	MElem* Point1rc();
-	MElem* Point2rc();
-	MElem* Pointr(MElem* aCp);
-	MVert* Pointv(MElem* aCp);
+	const string& Pointu(MUnit* aCp);
+	MUnit* Point1p();
+	MUnit* Point2p();
+	MUnit* Point1r();
+	MUnit* Point2r();
+	MUnit* Point1rc();
+	MUnit* Point2rc();
+	MUnit* Pointr(MUnit* aCp);
+	MVert* Pointv(MUnit* aCp);
 	MVert* Point1v();
 	MVert* Point2v();
-	TBool Connect(MElem* aCp);
-	void Disconnect(MElem* aCp);
+	TBool Connect(MUnit* aCp);
+	void Disconnect(MUnit* aCp);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MEdge
@@ -45,12 +45,12 @@ class Edge: public Elem, public MEdge
 	virtual void SetPoint1(const string& aRef);
 	virtual void SetPoint2(const string& aRef);
 	// From MOwner
-	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse);
+	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
 	// From Elem
 	virtual void SetRemoved(TBool aModif);
 	// From MIface
-	virtual MIface* Call(const string& aSpec, string& aRes);
-	string Mid() const override { return Elem::Mid();}
+	virtual MIface* MEdge_Call(const string& aSpec, string& aRes);
+	string MEdge_Mid() const override { return Elem::MElem_Mid();}
     protected:
 	// Just one-way relation to vert. It does't mean the full point to point relation is established.
 	MVert* iPoint1;
@@ -69,7 +69,7 @@ class Aedge: public Elem, public MEdge
     public:
 	static const char* Type() { return "Aedge";};
 	static string PEType();
-	Aedge(const string& aName, MElem* aMan, MEnv* aEnv);
+	Aedge(const string& aName, MUnit* aMan, MEnv* aEnv);
 	virtual ~Aedge();
     public:
 	const string& Point1u() const;
@@ -96,8 +96,8 @@ class Aedge: public Elem, public MEdge
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()); 
 	virtual TInt GetContCount(const string& aName=string()) const {return ECnt_Num_;};
 	// From MIface
-	virtual MIface* Call(const string& aSpec, string& aRes);
-	string Mid() const override { return Elem::Mid();}
+	virtual MIface* MEdge_Call(const string& aSpec, string& aRes);
+	string MEdge_Mid() const override { return Elem::MElem_Mid();}
     public:
 	static const string& mP1ContName;
 	static const string& mP2ContName;

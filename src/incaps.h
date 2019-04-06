@@ -8,15 +8,15 @@ class Incaps: public Elem, public MACompsObserver, public MAgent
     public:
 	static const char* Type() { return "IncapsAgent";};
 	static string PEType();
-	Incaps(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
+	Incaps(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
+	virtual TBool HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName = string());
 	// From MAgent
 	MIface* MAgent_DoGetIface(const string& aName) override;
     protected:
-	TBool IsPtOk(MElem& aContext, MElem* aPt);
+	TBool IsPtOk(MUnit& aContext, MUnit* aPt);
 };
 
 #endif

@@ -3756,10 +3756,10 @@
 		    last node can check with env (or whoever keeps the register) if this is UID of temp node registered. Advantage of this approach is that
 		    it effectively support the heir node transition to context of parents from parent's chain.</simpara>
 	    </sect3>
-	    <sect3 id="ds_daa_itn_sfo"><title> Solution: to use final owner in base agent. The final owner is the agent that initiate creation of new agent.</title>
+	    <sect3 id="ds_daa_itn_sfo"><title> Solution: to use final owner in base agent. The final owner is the agent that initiates creation of new agent.</title>
 		<simpara>
 		    The created agent is immediately registered in this final owner. The created agent also sets it's own attribute "Mutation Context" as pointer to
-		    owner used on the current stage of heir creation. This attribute is used when getting getting the nodes in the scope of the mutations.
+		    owner used on the current stage of heir creation. This attribute is used when getting the nodes in the scope of the mutations.
 		    GetNode() method needs to be updated in order to check if mutation context is defined for the node and using it if so.
 		    So the node beeing created has persistent relation to final owner. The node
 		    will seem regular node - it can be identified by persistent Uir and can be  get by this Uri. The same time the temp node will attach the
@@ -4183,8 +4183,8 @@
     <sect1 id="ds_prfopt"><title>Performance optimization</title>
 	<sect2><title>Intro</title>
 	    <itemizedlist>
-		<listitem>Ref <xref linkend="sec_img/"/> for design solution for creating system from image.</listitem>
-		<listitem>Ref <xref linkend="ds_mae/"/> for optimization approach of using monolitic native agents.</listitem>
+		<listitem>Ref <xref linkend="sec_img"/> for design solution for creating system from image.</listitem>
+		<listitem>Ref <xref linkend="ds_mae"/> for optimization approach of using monolitic native agents.</listitem>
 	    </itemizedlist>
 	</sect2>
 	<sect2 id="ds_prfopt_un"><title>Migrating to unique name</title>
@@ -4830,7 +4830,7 @@
 	</sect2>
     </sect1>
 
-    <sect1 id="ds_uac"><title>Re-design approach: using Units as auxiliary components.</title>
+    <sect1 id="ds_uac"><title>Re-design approach: <xref linkend="gls_uac"/> - chusing Units as auxiliary components.</title>
 	<sect2><title>Intro</title>
 	    <simpara>There was re-desing approach <xref inkend="gls_pia"/> that allows reduce the number of agents when creating model. According
 		to this model the agent shall not use auxiliary agents-components to distribute the functionality. For instance system agent
@@ -4844,6 +4844,25 @@
 		functinality is dedicated class. The class is in fact kind of unit.</simpara>
 	    <simpara>Note, that with this approach we can return to early "non-multi-content" design. If unit implementation is simple then unit can
 		keep the particular content so we can get rid of mulitcontent - content hierarchy can be supported by hier of units.</simpara>
+	</sect2>
+	<sect2 id="ds_uac_snmc"><title>Support of non-mutatign changes</title>
+	    <simpara>Unit shouldn't support mutation but changes instead. This means we need to restore the feature when agent can change
+		its component but keep these changes 'record' in its own mutation. Seems this functionality was modified in the scope of <xref linkend="gls_osm"/>
+		implementation.
+	    </simpara>
+	    <simpara>In the current implementation (26f2b0a1040316ab) the mutation target agent is calculated using both ENa_Targ and ENa_MutNode attrs
+		in DoMutation: </simpara>
+	    <programlisting>
+		|-         if (rno.AttrExists(ENa_MutNode)) {
+		|||             // Transform DHC mutation to OSM mutation
+		|||             // Transform ENa_Targ: enlarge to ENa_MutNode
+		...
+	    </programlisting>
+	    <simpara>So ENa_MutNode doesn't work here and is used just to keep back compatibility to old hierarchical chromo.</simpara>
+	</sect2>
+	<sect2 id="ds_uac_hte"><title>How to extend units?</title>
+	    <simpara>Unit doesn't keep its chromo, so how can it be extended via inheritance? This can be done only by using its related mutation of
+	    unit's owning agent.</simpara>
 	</sect2>
     </sect1>
 

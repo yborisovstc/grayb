@@ -12,7 +12,7 @@ string FuncBase::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-FuncBase::FuncBase(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+FuncBase::FuncBase(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -32,13 +32,13 @@ MIface *FuncBase::DoGetObj(const char *aName)
     return res;
 }
 
-TBool FuncBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
+TBool FuncBase::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName)
 {
     TBool res = ETrue;
-    MElem* caps = aContext.GetNode("./Capsule");
+    MUnit* caps = aContext.GetNode("./Capsule");
     if (caps != NULL) {
 	// TODO [YB] To optimize by using proper utility
-	MElem* cp = caps->GetCompOwning("ConnPointInp", &aComp);
+	MUnit* cp = caps->GetCompOwning("ConnPointInp", &aComp);
 	cp = cp != NULL ? cp : caps->GetCompOwning("ConnPointOut", &aComp);
 	if (cp != NULL) {
 	    res = HandleIoChanged(aContext, cp);
@@ -53,12 +53,12 @@ void FuncBase::OnDataChanged()
 
 void FuncBase::NotifyUpdate()
 {
-    MElem* eout = GetNode("./../Capsule/out");
+    MUnit* eout = GetNode("./../Capsule/out");
     if (eout != NULL) {
 	MVert* mvout = eout->GetObj(mvout);
 	MVert* mpair = mvout->GetPair(0);
 	if (mpair != NULL) {
-	    MElem* epair = mpair->GetObj(epair);
+	    MUnit* epair = mpair->GetObj(epair);
 	    if (epair != NULL) {
 		MDataObserver* obsr = (MDataObserver*) epair->GetSIfiC(MDataObserver::Type(), this);
 		if (obsr != NULL) {
@@ -69,7 +69,7 @@ void FuncBase::NotifyUpdate()
     }
 }
 
-TBool FuncBase::HandleIoChanged(MElem& aContext, MElem* aCp)
+TBool FuncBase::HandleIoChanged(MUnit& aContext, MUnit* aCp)
 {
     return ETrue;
 }
@@ -81,7 +81,7 @@ string AFunInt::PEType()
     return FuncBase::PEType() + GUri::KParentSep + Type();
 }
 
-AFunInt::AFunInt(const string& aName, MElem* aMan, MEnv* aEnv): FuncBase(aName, aMan, aEnv), mData(0)
+AFunInt::AFunInt(const string& aName, MUnit* aMan, MEnv* aEnv): FuncBase(aName, aMan, aEnv), mData(0)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -89,8 +89,8 @@ AFunInt::AFunInt(const string& aName, MElem* aMan, MEnv* aEnv): FuncBase(aName, 
 MIface* AFunInt::MAgent_DoGetIface(const string& aName)
 {
     MIface* res = NULL;
-    if (aName == MElem::Type())
-	res = dynamic_cast<MElem*>(this);
+    if (aName == MUnit::Type())
+	res = dynamic_cast<MUnit*>(this);
     return res;
 }
 
@@ -112,7 +112,7 @@ MIface *AFunInt::DoGetObj(const char *aName)
 void AFunInt::SetRes(TInt aData)
 {
     if (mData != aData) {
-	MElem* host = iMan->GetMan();
+	MUnit* host = iMan->GetMan();
 	Logger()->Write(EInfo, host, "Updated [%d <- %d]", aData, mData);
 	mData = aData;
 	NotifyUpdate();
@@ -132,12 +132,12 @@ TInt AFunInt::Value()
 MDIntGet* AFunInt::GetInp(const string& aInpName)
 {
     MDIntGet* res = NULL;
-    MElem* einp = GetNode("./../Capsule/" + aInpName);
+    MUnit* einp = GetNode("./../Capsule/" + aInpName);
     if (einp != NULL) {
 	MVert* vert = einp->GetObj(vert);
 	MVert* pair = vert->GetPair(0);
 	if (pair != NULL) {
-	    MElem* epair = pair->GetObj(epair);
+	    MUnit* epair = pair->GetObj(epair);
 	    if (epair != NULL) {
 		res = (MDIntGet*) epair->GetSIfiC(MDIntGet::Type(), this);
 	    }
@@ -152,12 +152,12 @@ string AIncInt::PEType()
     return AFunInt::PEType() + GUri::KParentSep + Type();
 }
 
-AIncInt::AIncInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
+AIncInt::AIncInt(const string& aName, MUnit* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
 
-TBool AIncInt::HandleIoChanged(MElem& aContext, MElem* aCp)
+TBool AIncInt::HandleIoChanged(MUnit& aContext, MUnit* aCp)
 {
     TBool res = ETrue;
     // Checking input change
@@ -188,18 +188,18 @@ string AFunIntRes::PEType()
     return AFunInt::PEType() + GUri::KParentSep + Type();
 }
 
-AFunIntRes::AFunIntRes(const string& aName, MElem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
+AFunIntRes::AFunIntRes(const string& aName, MUnit* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
 
-TBool AFunIntRes::HandleIoChanged(MElem& aContext, MElem* aCp)
+TBool AFunIntRes::HandleIoChanged(MUnit& aContext, MUnit* aCp)
 {
     TBool res = ETrue;
     MVert* vert = aCp->GetObj(vert);
     MVert* pair = vert->GetPair(0);
     if (pair != NULL) {
-	MElem* vpair = pair->GetObj(vpair);
+	MUnit* vpair = pair->GetObj(vpair);
 	if (aCp->Name() == "inp") {
 	    // Check input change
 	    MDIntGet* dget = (MDIntGet*) vpair->GetSIfiC(MDIntGet::Type(), this);
@@ -221,12 +221,12 @@ TBool AFunIntRes::HandleIoChanged(MElem& aContext, MElem* aCp)
 
 void AFunIntRes::UpdateOutp()
 {
-    MElem* out = GetNode("./../Capsule/out");
+    MUnit* out = GetNode("./../Capsule/out");
     if (out != NULL) {
 	MVert* vert = out->GetObj(vert);
 	MVert* pair = vert->GetPair(0);
 	if (pair != NULL) {
-	    MElem* vpair = pair->GetObj(vpair);
+	    MUnit* vpair = pair->GetObj(vpair);
 	    MDIntSet* dset = (MDIntSet*) vpair->GetSIfiC(MDIntSet::Type(), this);
 	    if (dset != NULL) {
 		dset->SetValue(mData);
@@ -238,7 +238,7 @@ void AFunIntRes::UpdateOutp()
 void AFunIntRes::OnDataChanged()
 {
 //    MDIntGet* mget = GetInp("inp");
-    MElem* einp = GetNode("./../Capsule/inp");
+    MUnit* einp = GetNode("./../Capsule/inp");
     __ASSERT(einp != NULL);
     MDIntGet* mget = (MDIntGet*) einp->GetSIfi(MDIntGet::Type(), this);
     // It is possible that MDIntGet is missing in cases of connection process ongoing
@@ -256,12 +256,12 @@ string AAddInt::PEType()
     return AFunInt::PEType() + GUri::KParentSep + Type();
 }
 
-AAddInt::AAddInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
+AAddInt::AAddInt(const string& aName, MUnit* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
 
-TBool AAddInt::HandleIoChanged(MElem& aContext, MElem* aCp)
+TBool AAddInt::HandleIoChanged(MUnit& aContext, MUnit* aCp)
 {
     TBool res = ETrue;
     // Checking input change
@@ -281,7 +281,7 @@ TBool AAddInt::HandleIoChanged(MElem& aContext, MElem* aCp)
 
 void AAddInt::OnDataChanged()
 {
-    MElem* einp = GetNode("./../Capsule/inp");
+    MUnit* einp = GetNode("./../Capsule/inp");
     TIfRange range = einp->GetIfi("MDIntGet", this);
     TInt val = 0;
     for (TIfIter it = range.first; it != range.second; it++) {
@@ -301,12 +301,12 @@ string ACountCritInt::PEType()
     return AFunInt::PEType() + GUri::KParentSep + Type();
 }
 
-ACountCritInt::ACountCritInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
+ACountCritInt::ACountCritInt(const string& aName, MUnit* aMan, MEnv* aEnv): AFunInt(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
 
-TBool ACountCritInt::HandleIoChanged(MElem& aContext, MElem* aCp)
+TBool ACountCritInt::HandleIoChanged(MUnit& aContext, MUnit* aCp)
 {
     TBool res = ETrue;
     // Checking input change
@@ -326,7 +326,7 @@ TBool ACountCritInt::HandleIoChanged(MElem& aContext, MElem* aCp)
 
 void ACountCritInt::OnDataChanged()
 {
-    MElem* einp = GetNode("./../Capsule/inp");
+    MUnit* einp = GetNode("./../Capsule/inp");
     TIfRange range = einp->GetIfi("MDIntGet", this);
     TInt val = 0;
     for (TIfIter it = range.first; it != range.second; it++) {
@@ -347,7 +347,7 @@ string AFunc::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-AFunc::AFunc(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+AFunc::AFunc(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -369,17 +369,17 @@ MIface *AFunc::DoGetObj(const char *aName)
 MIface* AFunc::MAgent_DoGetIface(const string& aName)
 {
     MIface* res = NULL;
-    if (aName == MElem::Type())
-	res = dynamic_cast<MElem*>(this);
+    if (aName == MUnit::Type())
+	res = dynamic_cast<MUnit*>(this);
     return res;
 }
 
-TBool AFunc::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
+TBool AFunc::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName)
 {
     TBool res = ETrue;
-    MElem* caps = aContext.GetNode("./Capsule");
+    MUnit* caps = aContext.GetNode("./Capsule");
     if (caps != NULL) {
-	MElem* cp = caps->GetCompOwning("ConnPointInp", &aComp);
+	MUnit* cp = caps->GetCompOwning("ConnPointInp", &aComp);
 	if (cp != NULL) {
 	    NotifyUpdate();
 	}
@@ -389,12 +389,12 @@ TBool AFunc::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aCon
 
 void AFunc::NotifyUpdate()
 {
-    MElem* eout = GetNode("./../Capsule/out");
+    MUnit* eout = GetNode("./../Capsule/out");
     __ASSERT(eout != NULL);
     MVert* mvout = eout->GetObj(mvout);
     MVert* mpair = mvout->GetPair(0);
     if (mpair != NULL) {
-	MElem* epair = mpair->GetObj(epair);
+	MUnit* epair = mpair->GetObj(epair);
 	if (epair != NULL) {
 	    MDataObserver* obsr = (MDataObserver*) epair->GetSIfiC(MDataObserver::Type(), this);
 	    if (obsr != NULL) {
@@ -411,7 +411,7 @@ void AFunc::OnDataChanged()
 
 TBool AFunc::IsLogeventUpdate()
 {
-    MElem* node = GetNode("./../Logspec/Update");
+    MUnit* node = GetNode("./../Logspec/Update");
     return node != NULL;
 }
 
@@ -423,7 +423,7 @@ string AFuncInt::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFuncInt::AFuncInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv), mData(0)
+AFuncInt::AFuncInt(const string& aName, MUnit* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv), mData(0)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -470,7 +470,7 @@ string AFAddInt::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFAddInt::AFAddInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+AFAddInt::AFAddInt(const string& aName, MUnit* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -489,7 +489,7 @@ MIface *AFAddInt::DoGetObj(const char *aName)
 
 TInt AFAddInt::Value()
 {
-    MElem* einp = GetNode("./../Capsule/inp");
+    MUnit* einp = GetNode("./../Capsule/inp");
     TIfRange range = einp->GetIfi("MDIntGet", this);
     TInt val = 0;
     for (TIfIter it = range.first; it != range.second; it++) {
@@ -508,7 +508,7 @@ string AFSubInt::PEType()
     return AFuncInt::PEType() + GUri::KParentSep + Type();
 }
 
-AFSubInt::AFSubInt(const string& aName, MElem* aMan, MEnv* aEnv): AFuncInt(aName, aMan, aEnv)
+AFSubInt::AFSubInt(const string& aName, MUnit* aMan, MEnv* aEnv): AFuncInt(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -517,7 +517,7 @@ TInt AFSubInt::GetValue()
 {
     TInt val = 0;
     // Positives
-    MElem* einp = GetNode("./../Capsule/InpP");
+    MUnit* einp = GetNode("./../Capsule/InpP");
     TIfRange range = einp->GetIfi("MDIntGet", this);
     for (TIfIter it = range.first; it != range.second; it++) {
 	MDIntGet* dget = (MDIntGet*) (*it);
@@ -545,7 +545,7 @@ string AFLimInt::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFLimInt::AFLimInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+AFLimInt::AFLimInt(const string& aName, MUnit* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -598,7 +598,7 @@ string AFDivInt::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFDivInt::AFDivInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+AFDivInt::AFDivInt(const string& aName, MUnit* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -627,7 +627,7 @@ TInt AFDivInt::Value()
 	TBool lupd = IsLogeventUpdate();
 	GUri fullpath;
 	if (lupd) {
-	    MElem* host = iMan->GetMan();
+	    MUnit* host = iMan->GetMan();
 	    host->GetUri(fullpath);
 	}
 	if (dvr != 0) {
@@ -653,7 +653,7 @@ string AFIntToVect::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFIntToVect::AFIntToVect(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+AFIntToVect::AFIntToVect(const string& aName, MUnit* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -673,7 +673,7 @@ MIface *AFIntToVect::DoGetObj(const char *aName)
 vector<TInt> AFIntToVect::Value()
 {
     vector<TInt> res;
-    MElem* einp = GetNode("./../Capsule/inp");
+    MUnit* einp = GetNode("./../Capsule/inp");
     __ASSERT(einp != NULL);
     TIfRange range = einp->GetIfi("MDIntGet", this);
     for (TIfIter it = range.first; it != range.second; it++) {
@@ -694,7 +694,7 @@ string AFConvInt::PEType()
     return AFuncInt::PEType() + GUri::KParentSep + Type();
 }
 
-AFConvInt::AFConvInt(const string& aName, MElem* aMan, MEnv* aEnv): AFuncInt(aName, aMan, aEnv)
+AFConvInt::AFConvInt(const string& aName, MUnit* aMan, MEnv* aEnv): AFuncInt(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
     iSampleHolder.iHost = this;
@@ -714,11 +714,11 @@ MIface *AFConvInt::DoGetObj(const char *aName)
 TInt AFConvInt::GetValue()
 {
     TInt val = 0;
-    MElem* einp = GetNode("./../Capsule/inp");
+    MUnit* einp = GetNode("./../Capsule/inp");
     __ASSERT(einp != NULL);
-    MElem* einpwf = GetNode("./../Capsule/Inp_WFres");
+    MUnit* einpwf = GetNode("./../Capsule/Inp_WFres");
     __ASSERT(einpwf != NULL);
-    MElem* eargwf = GetNode("./../WFArg/Capsule/inp");
+    MUnit* eargwf = GetNode("./../WFArg/Capsule/inp");
     __ASSERT(eargwf != NULL);
     MDIntSet* wfarg = (MDIntSet*) eargwf->GetSIfi(MDIntSet::Type(), this);
     MDIntGet* wfres = (MDIntGet*) einpwf->GetSIfi("MDIntGet", this);
@@ -726,7 +726,7 @@ TInt AFConvInt::GetValue()
 	TBool lupd = IsLogeventUpdate();
 	GUri fullpath;
 	if (lupd) {
-	    MElem* host = iMan->GetMan();
+	    MUnit* host = iMan->GetMan();
 	    host->GetUri(fullpath);
 	}
 	TIfRange range = einp->GetIfi("MDIntGet", this);
@@ -755,7 +755,7 @@ string AFuncm::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-AFuncm::AFuncm(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+AFuncm::AFuncm(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
@@ -781,12 +781,12 @@ MIface *AFuncm::DoGetObj(const char *aName)
     return res;
 }
 
-TBool AFuncm::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
+TBool AFuncm::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName)
 {
     TBool res = ETrue;
-    MElem* caps = aContext.GetNode("./Capsule");
+    MUnit* caps = aContext.GetNode("./Capsule");
     if (caps != NULL) {
-	MElem* cp = caps->GetCompOwning("ConnPointInp", &aComp);
+	MUnit* cp = caps->GetCompOwning("ConnPointInp", &aComp);
 	if (cp != NULL) {
 	    NotifyUpdate();
 	}
@@ -796,12 +796,12 @@ TBool AFuncm::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aCo
 
 void AFuncm::NotifyUpdate()
 {
-    MElem* eout = GetNode("./../Capsule/out");
+    MUnit* eout = GetNode("./../Capsule/out");
     if (eout != NULL) {
 	MVert* mvout = eout->GetObj(mvout);
 	MVert* mpair = mvout->GetPair(0);
 	if (mpair != NULL) {
-	    MElem* epair = mpair->GetObj(epair);
+	    MUnit* epair = mpair->GetObj(epair);
 	    if (epair != NULL) {
 		MDataObserver* obsr = (MDataObserver*) epair->GetSIfiC(MDataObserver::Type(), this);
 		if (obsr != NULL) {
@@ -823,14 +823,14 @@ string AFuncmAdd::PEType()
     return AFuncm::PEType() + GUri::KParentSep + Type();
 }
 
-AFuncmAdd::AFuncmAdd(const string& aName, MElem* aMan, MEnv* aEnv): AFuncm(aName, aMan, aEnv)
+AFuncmAdd::AFuncmAdd(const string& aName, MUnit* aMan, MEnv* aEnv): AFuncm(aName, aMan, aEnv)
 {
     SetParent(Type());
 }
 
 TInt AFuncmAdd::ExcInt::Value()
 {
-    MElem* einp = mHost.GetNode("./../Capsule/inp");
+    MUnit* einp = mHost.GetNode("./../Capsule/inp");
     TIfRange range = einp->GetIfi("MDIntGet", &mHost);
     TInt val = 0;
     for (TIfIter it = range.first; it != range.second; it++) {
@@ -849,7 +849,7 @@ string AFGTInt::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFGTInt::AFGTInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+AFGTInt::AFGTInt(const string& aName, MUnit* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -868,8 +868,8 @@ MIface *AFGTInt::DoGetObj(const char *aName)
 
 TBool AFGTInt::Value()
 {
-    MElem* einp1 = GetNode("./../Capsule/Inp1");
-    MElem* einp2 = GetNode("./../Capsule/Inp2");
+    MUnit* einp1 = GetNode("./../Capsule/Inp1");
+    MUnit* einp2 = GetNode("./../Capsule/Inp2");
     __ASSERT(einp1 != NULL && einp2 != NULL);
     MDIntGet* minp1 = (MDIntGet*) einp1->GetSIfi("MDIntGet", this);
     MDIntGet* minp2 = (MDIntGet*) einp2->GetSIfi("MDIntGet", this);
@@ -888,7 +888,7 @@ string AFBoolToInt::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFBoolToInt::AFBoolToInt(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
+AFBoolToInt::AFBoolToInt(const string& aName, MUnit* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -907,7 +907,7 @@ MIface *AFBoolToInt::DoGetObj(const char *aName)
 
 TInt AFBoolToInt::Value()
 {
-    MElem* einp = GetNode("./../Capsule/Inp");
+    MUnit* einp = GetNode("./../Capsule/Inp");
     __ASSERT(einp != NULL);
     MDBoolGet* minp = (MDBoolGet*) einp->GetSIfi("MDBoolGet", this);
     TInt res = 0;
@@ -928,7 +928,7 @@ string AFunVar::PEType()
     return AFunc::PEType() + GUri::KParentSep + Type();
 }
 
-AFunVar::AFunVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv), mFunc(NULL)
+AFunVar::AFunVar(const string& aName, MUnit* aMan, MEnv* aEnv): AFunc(aName, aMan, aEnv), mFunc(NULL)
 {
     SetCrAttr(PEType(), aName);
     Construct();
@@ -950,12 +950,12 @@ MIface *AFunVar::DoGetObj(const char *aName)
     return res;
 }
 
-TBool AFunVar::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
+TBool AFunVar::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName)
 {
     TBool res = ETrue;
-    MElem* caps = aContext.GetNode("./Capsule");
+    MUnit* caps = aContext.GetNode("./Capsule");
     if (caps != NULL) {
-	MElem* cp = caps->GetCompOwning("Inp_FVar", &aComp);
+	MUnit* cp = caps->GetCompOwning("Inp_FVar", &aComp);
 	if (cp != NULL) {
 	    NotifyUpdate();
 	}
@@ -1002,7 +1002,7 @@ void *AFunVar::DoGetDObj(const char *aName)
 Elem::TIfRange AFunVar::GetInps(TInt aId, TBool aOpt)
 {
     TIfRange res;
-    MElem* inp = GetNode("./../Capsule/" + GetInpUri(aId));
+    MUnit* inp = GetNode("./../Capsule/" + GetInpUri(aId));
     if (inp != NULL) {
 	res =  inp->GetIfi(MDVarGet::Type(), this);
     }
@@ -1312,7 +1312,7 @@ string AFAddVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFAddVar::AFAddVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFAddVar::AFAddVar(const string& aName, MUnit* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
     ChangeCont(KContVal_About, ETrue, KCont_About);
@@ -1373,7 +1373,7 @@ TInt FAddInt::Value()
 {
     Elem::TIfRange range = mHost.GetInps(EInp);
     TInt val = 0;
-    for (MElem::TIfIter it = range.first; it != range.second; it++) {
+    for (MUnit::TIfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	MDIntGet* diget = dget->GetDObj(diget);
 	if (diget != NULL) {
@@ -1412,7 +1412,7 @@ float FAddFloat::Value()
 {
     Elem::TIfRange range = mHost.GetInps(EInp);
     float val = 0;
-    for (MElem::TIfIter it = range.first; it != range.second; it++) {
+    for (MUnit::TIfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	MDFloatGet* dfget = dget->GetDObj(dfget);
 	if (dfget != NULL) {
@@ -1448,7 +1448,7 @@ TBool FAddFloat::GetCont(TInt aInd, string& aName, string& aCont) const
     else {
 	Elem::TIfRange range = mHost.GetInps(EInp);
 	TInt cnt = 1;
-	for (MElem::TIfIter it = range.first; it != range.second; it++) {
+	for (MUnit::TIfIter it = range.first; it != range.second; it++) {
 	    if (cnt == aInd) {
 		MDVarGet* dget = (MDVarGet*) (*it);
 		MDFloatGet* dfget = dget->GetDObj(dfget);
@@ -1477,7 +1477,7 @@ TInt FAddFloat::GetContCount() const
 {
     TInt res = 1;
     Elem::TIfRange range = mHost.GetInps(EInp);
-    for (MElem::TIfIter it = range.first; it != range.second; it++) {
+    for (MUnit::TIfIter it = range.first; it != range.second; it++) {
 	res++;
     }
     return res;
@@ -1505,7 +1505,7 @@ template<class T>  void FAddData<T>::DataGet(T& aData)
 {
     Elem::TIfRange range = mHost.GetInps(EInp);
     T val = 0;
-    for (MElem::TIfIter it = range.first; it != range.second; it++) {
+    for (MUnit::TIfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	MDataGet<T>* dfget = dget->GetDObj(dfget);
 	if (dfget != NULL) {
@@ -1548,7 +1548,7 @@ template<class T> void FAddVect<T>::VectGet(Vect<T>& aData)
 {
     TInt size = aData.size();
     Elem::TIfRange range = mHost.GetInps(EInp);
-    for (MElem::TIfIter it = range.first; it != range.second; it++) {
+    for (MUnit::TIfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	MVectGet<T>* dfget = dget->GetDObj(dfget);
 	if (dfget != NULL) {
@@ -1615,7 +1615,7 @@ template<class T> void FAddMtrd<T>::MtrdGet(Mtrd<T>& aData)
     TInt size = aData.size();
     Elem::TIfRange range = mHost.GetInps(EInp);
     T val = 0;
-    for (MElem::TIfIter it = range.first; it != range.second; it++) {
+    for (MUnit::TIfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	MMtrdGet<T>* dfget = dget->GetDObj(dfget);
 	if (dfget != NULL) {
@@ -1658,7 +1658,7 @@ template<class T> void FAddMtr<T>::MtrGet(Mtr<T>& aData)
     TBool res = ETrue;
     Elem::TIfRange range = mHost.GetInps(EInp);
     T val = 0;
-    for (MElem::TIfIter it = range.first; it != range.second; it++) {
+    for (MUnit::TIfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	MMtrGet<T>* dfget = dget->GetDObj(dfget);
 	if (dfget != NULL) {
@@ -1715,7 +1715,7 @@ template<class T> Func* FAddDt<T>::Create(Host* aHost, const string& aString)
 	// Weak negotiation, basing on inputs only
 	TBool inpok = ETrue;
 	Elem::TIfRange range = aHost->GetInps(EInp);
-	for (MElem::TIfIter it = range.first; it != range.second; it++) {
+	for (MUnit::TIfIter it = range.first; it != range.second; it++) {
 	    MDVarGet* dget = (MDVarGet*) (*it);
 	    MDtGet<T>* dfget = dget->GetDObj(dfget);
 	    if (dfget == 0) {
@@ -1742,7 +1742,7 @@ template<class T> void FAddDt<T>::DtGet(T& aData)
 {
     TBool res = ETrue;
     Elem::TIfRange range = mHost.GetInps(EInp);
-    for (MElem::TIfIter it = range.first; it != range.second; it++) {
+    for (MUnit::TIfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	MDtGet<T>* dfget = dget->GetDObj(dfget);
 	if (dfget != NULL) {
@@ -1768,7 +1768,7 @@ template<class T> void FAddDt<T>::DtGet(T& aData)
 	}
     }
     range = mHost.GetInps(EInpN, ETrue);
-    for (MElem::TIfIter it = range.first; it != range.second; it++) {
+    for (MUnit::TIfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	MDtGet<T>* dfget = dget->GetDObj(dfget);
 	if (dfget != NULL) {
@@ -1817,7 +1817,7 @@ string AFCpsVectVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFCpsVectVar::AFCpsVectVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFCpsVectVar::AFCpsVectVar(const string& aName, MUnit* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -1909,7 +1909,7 @@ string AFMplVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFMplVar::AFMplVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFMplVar::AFMplVar(const string& aName, MUnit* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -1950,7 +1950,7 @@ float FMplFloat::Value()
 {
     Elem::TIfRange range = mHost.GetInps(EInp);
     float val = 0;
-    for (MElem::TIfIter it = range.first; it != range.second; it++) {
+    for (MUnit::TIfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	MDFloatGet* dfget = dget->GetDObj(dfget);
 	if (dfget != NULL) {
@@ -2001,7 +2001,7 @@ template<class T> TBool FMplDt<T>::GetCont(TInt aInd, string& aName, string& aCo
 	aName = "Inp_values";
 	aCont.append(mHost.GetInpUri(EInp) + ": ");
 	Elem::TIfRange range = mHost.GetInps(EInp);
-	for (MElem::TIfIter it = range.first; it != range.second; it++) {
+	for (MUnit::TIfIter it = range.first; it != range.second; it++) {
 	    if (it != range.first) {
 		aCont.append(", ");
 	    }
@@ -2022,7 +2022,7 @@ template<class T> void FMplDt<T>::DtGet(T& aData)
 {
     TBool res = ETrue;
     Elem::TIfRange range = mHost.GetInps(EInp);
-    for (MElem::TIfIter it = range.first; it != range.second; it++) {
+    for (MUnit::TIfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	MDtGet<T>* dfget = dget->GetDObj(dfget);
 	if (dfget != NULL) {
@@ -2065,7 +2065,7 @@ string AFMplncVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFMplncVar::AFMplncVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFMplncVar::AFMplncVar(const string& aName, MUnit* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -2407,7 +2407,7 @@ string AFMplinvVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFMplinvVar::AFMplinvVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFMplinvVar::AFMplinvVar(const string& aName, MUnit* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -2619,7 +2619,7 @@ string AFCastVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFCastVar::AFCastVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFCastVar::AFCastVar(const string& aName, MUnit* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -2632,7 +2632,7 @@ void AFCastVar::Init(const string& aIfaceName)
     }
     // Checking if input type is defined explicitly
     string ifi;
-    MElem* inptd = GetNode("./../InpType");
+    MUnit* inptd = GetNode("./../InpType");
     if (inptd != NULL) {
 	ifi = inptd->GetContent();
     }
@@ -2715,7 +2715,7 @@ string AFCpsMtrdVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFCpsMtrdVar::AFCpsMtrdVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFCpsMtrdVar::AFCpsMtrdVar(const string& aName, MUnit* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -2807,7 +2807,7 @@ string AFDivVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFDivVar::AFDivVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFDivVar::AFDivVar(const string& aName, MUnit* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -2849,7 +2849,7 @@ float FDivFloat::Value()
 {
     Elem::TIfRange range = mHost.GetInps(EInp);
     float val = 0;
-    for (MElem::TIfIter it = range.first; it != range.second; it++) {
+    for (MUnit::TIfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	MDFloatGet* dfget = dget->GetDObj(dfget);
 	if (dfget != NULL) {
@@ -2863,7 +2863,7 @@ float FDivFloat::Value()
 	}
     }
     range = mHost.GetInps(EInp_Dvs);
-    for (MElem::TIfIter it = range.first; it != range.second; it++) {
+    for (MUnit::TIfIter it = range.first; it != range.second; it++) {
 	MDVarGet* dget = (MDVarGet*) (*it);
 	MDFloatGet* dfget = dget->GetDObj(dfget);
 	float dvs = 0.0;
@@ -2993,7 +2993,7 @@ string AFBcmpVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFBcmpVar::AFBcmpVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFBcmpVar::AFBcmpVar(const string& aName, MUnit* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -3039,7 +3039,7 @@ string AFCmpVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFCmpVar::AFCmpVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFCmpVar::AFCmpVar(const string& aName, MUnit* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -3171,7 +3171,7 @@ string AFAtVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFAtVar::AFAtVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFAtVar::AFAtVar(const string& aName, MUnit* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -3431,7 +3431,7 @@ string AFSwitchVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFSwitchVar::AFSwitchVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFSwitchVar::AFSwitchVar(const string& aName, MUnit* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -3562,7 +3562,7 @@ string AFBoolNegVar::PEType()
     return AFunVar::PEType() + GUri::KParentSep + Type();
 }
 
-AFBoolNegVar::AFBoolNegVar(const string& aName, MElem* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+AFBoolNegVar::AFBoolNegVar(const string& aName, MUnit* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }

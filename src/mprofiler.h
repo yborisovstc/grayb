@@ -3,6 +3,7 @@
 
 #include <string>
 
+class MUnit;
 class MElem;
 
 using namespace std;
@@ -66,7 +67,7 @@ class MPind
 class MPClock
 {
     public:
-	virtual void operator()(PEvent::TId aEventId, MElem* aNode) = 0;
+	virtual void operator()(PEvent::TId aEventId, MUnit* aNode) = 0;
 };
 
 /** Performace indicators recorder: Duration
@@ -75,7 +76,7 @@ class MPClock
 class MPDur
 {
     public:
-	virtual void operator()(PEvent::TId aEventId, MElem* aNode) = 0;
+	virtual void operator()(PEvent::TId aEventId, MUnit* aNode) = 0;
 };
 
 /** Performace indicators recorder: Duration statistic

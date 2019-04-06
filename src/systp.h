@@ -12,13 +12,13 @@ class Systp: public Vertp, public MSyst
     public:
 	static const char* Type() { return "Systp";};
 	static string PEType();
-	Systp(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	bool AreCpsCompatible(MElem* aNode1, const string& aCp1, MElem* aNode2, const string& aCp2);
+	Systp(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	bool AreCpsCompatible(MUnit* aNode1, const string& aCp1, MUnit* aNode2, const string& aCp2);
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);
 	// From MOwner
-	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
-	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse);
+	virtual void OnCompDeleting(MUnit& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
+	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
 	// From Iface provider
 	void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
 	// From MSyst
@@ -29,7 +29,7 @@ class Systp: public Vertp, public MSyst
 	void UpdateIfiForConnPoint(const string& aIfName, const TICacheRCtx& aCtx, const string& aCpId);
 	void UpdateIfiForExtender(const string& aIfName, const TICacheRCtx& aCtx, const string& aCpId);
 	void UpdateIfiForSocket(const string& aIfName, const TICacheRCtx& aCtx, const string& aCpId);
-	bool GetExtended(MElem* aNode, const string& aExt, string& aInt, bool& aInv);
+	bool GetExtended(MUnit* aNode, const string& aExt, string& aInt, bool& aInv);
 };
 
 #endif

@@ -7,13 +7,13 @@ string AImports::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-AImports::AImports(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+AImports::AImports(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
     //SetParent(Type());
 }
 
-AImports::AImports(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
+AImports::AImports(MUnit* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv)
 {
     __ASSERT(false);
     SetParent(Elem::PEType());

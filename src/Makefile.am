@@ -41,6 +41,8 @@ libgrayb_la_SOURCES = \
 		       edge.h \
 		       edge.cpp \
 		       melem.h \
+		       unit.h \
+		       unit.cpp \
 		       elem.h \
 		       elem.cpp \
 		       mprop.h \

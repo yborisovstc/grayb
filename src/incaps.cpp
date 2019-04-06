@@ -15,7 +15,7 @@ string Incaps::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-Incaps::Incaps(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+Incaps::Incaps(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
     /*
@@ -43,18 +43,18 @@ MIface *Incaps::DoGetObj(const char *aName)
 MIface* Incaps::MAgent_DoGetIface(const string& aName)
 {
     MIface* res = NULL;
-    if (aName == MElem::Type())
-	res = dynamic_cast<MElem*>(this);
+    if (aName == MUnit::Type())
+	res = dynamic_cast<MUnit*>(this);
     return res;
 }
 
-TBool Incaps::IsPtOk(MElem& aContext, MElem* aPt) {
+TBool Incaps::IsPtOk(MUnit& aContext, MUnit* aPt) {
     __ASSERT(aPt != NULL);
     TBool res = EFalse;
-    MElem* man = aContext.GetCompOwning("Incaps", aPt);
+    MUnit* man = aContext.GetCompOwning("Incaps", aPt);
     if (man != NULL) {
 	if (man->GetMan() == &aContext) {
-	    MElem* caps = man->GetNode("./Capsule");
+	    MUnit* caps = man->GetNode("./Capsule");
 	    res = caps->IsComp(aPt);
 	}
     }
@@ -63,7 +63,6 @@ TBool Incaps::IsPtOk(MElem& aContext, MElem* aPt) {
 	if ( man != NULL) {
 	    if (man->GetMan() == &aContext) {
 		// TODO What about extenders? to use more adequate restriction
-		//res = aPt->EType() == "ConnPoint";
 		MConnPoint* mcp = aPt->GetObj(mcp);
 		res = mcp != NULL;
 	    }
@@ -75,13 +74,13 @@ TBool Incaps::IsPtOk(MElem& aContext, MElem* aPt) {
     return res;
 }
 
-TBool Incaps::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
+TBool Incaps::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName)
 {
     TBool hres = ETrue;
     // Handling both Edge (nodes - properties) and AEdge (multicontent)
     MEdge* edge = aComp.GetObj(edge);	
     if (edge == NULL) {
-	MElem* owner = aComp.GetMan();
+	MUnit* owner = aComp.GetMan();
 	edge = owner ? owner->GetObj(edge) : NULL;
     }
     if (edge != NULL) {
@@ -91,8 +90,8 @@ TBool Incaps::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aCo
 	MVert* cp1 = edge->Point1();
 	MVert* cp2 = edge->Point2();
 	if (cp1 != ref1 || cp2 != ref2) {
-	    MElem* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
-	    MElem* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
+	    MUnit* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
+	    MUnit* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
 	    TBool isptok1 = (ref1 == NULL || IsPtOk(aContext, pt1));
 	    TBool isptok2 = (ref2 == NULL || IsPtOk(aContext, pt2));
 	    if (isptok1 && isptok2) {
@@ -128,7 +127,7 @@ TBool Incaps::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aCo
 		}
 	    } else {
 		res = EFalse;
-		MElem* pt = isptok1 ? pt2 : pt1;
+		MUnit* pt = isptok1 ? pt2 : pt1;
 		Logger()->Write(EErr, this, "Connecting [%s] - not allowed cp", pt->GetUri(NULL, ETrue).c_str());
 	    }
 	}

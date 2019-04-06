@@ -19,7 +19,7 @@ string TLogGetField(const string& aPack, size_t& aBeg, TBool aESep = ETrue)
     return res;
 }
 
-TLog::TLog(TLogRecCtg aCtg, const MElem* aAgt)
+TLog::TLog(TLogRecCtg aCtg, const MUnit* aAgt)
 {
     stringstream ss;
     struct timeval tp;
@@ -148,7 +148,7 @@ void GLogRec::WriteFormat(const char* aFmt,...)
     va_end(list);
 }
 
-void GLogRec::Write(TLogRecCtg aCtg, const MElem* aNode, const char* aFmt,...)
+void GLogRec::Write(TLogRecCtg aCtg, const MUnit* aNode, const char* aFmt,...)
 {
     char buf1[KLogRecBufSize] = "";
     stringstream ss;
@@ -181,7 +181,7 @@ void GLogRec::Write(TLogRecCtg aCtg, const MElem* aNode, const char* aFmt,...)
     va_end(list);
 }
 
-void GLogRec::Write(TLogRecCtg aCtg, MElem* aNode, const ChromoNode& aMut, const char* aFmt,...)
+void GLogRec::Write(TLogRecCtg aCtg, MUnit* aNode, const ChromoNode& aMut, const char* aFmt,...)
 {
     char buf1[KLogRecBufSize] = "";
     stringstream ss;

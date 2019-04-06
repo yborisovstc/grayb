@@ -51,10 +51,10 @@ void Ut_icache::test_Inv1()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
-    MElem* doutp = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Out/Int/PinData");
+    MUnit* doutp = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Out/Int/PinData");
     CPPUNIT_ASSERT_MESSAGE("Failed to get state out", doutp != 0);
     MDVarGet* doutpget = (MDVarGet*) doutp->GetSIfi(MDVarGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Failed to get data out Get iface", doutpget != 0);
@@ -63,7 +63,7 @@ void Ut_icache::test_Inv1()
     CPPUNIT_ASSERT_MESSAGE("Failed to get data iface", fget != 0);
     CPPUNIT_ASSERT_MESSAGE("Wrong value of data iface", fget->Value() == 0);
     // Sync the state
-    MElem* esync = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Sync");
+    MUnit* esync = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != 0);
     MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
@@ -80,11 +80,12 @@ void Ut_icache::test_Inv1()
     }
 
     // Connect feedback edge
-    MElem* mnode = root->GetNode("/Root/IncapsRoot/DesRoot/E_back");
-    ChromoNode mut = mnode->AppendMutation(ENt_Cont);
+    MUnit* mnode = root->GetNode("/Root/IncapsRoot/DesRoot/E_back");
+    MElem* emnode = mnode->GetObj(emnode);
+    ChromoNode mut = emnode->AppendMutation(ENt_Cont);
     mut.SetAttr(ENa_MutNode, "./P1");
     mut.SetAttr(ENa_Ref, "/Root/IncapsRoot/DesRoot/st/Capsule/Inp");
-    mnode->Mutate();
+    emnode->Mutate();
 
     // Do some ticks
     ticksnum = 5;
@@ -114,12 +115,13 @@ void Ut_icache::test_InvMAgent()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
     // Mutate the input data first
-    MElem* test = root->GetNode("./test");
-    ChromoNode madd = test->AppendMutation(ENt_Node);
+    MUnit* test = root->GetNode("./test");
+    MElem* etest = test->GetObj(etest);
+    ChromoNode madd = etest->AppendMutation(ENt_Node);
     madd.SetAttr(ENa_Id, "MAExteder");
     madd.SetAttr(ENa_Parent, "ExtenderAgent");
 
@@ -129,10 +131,10 @@ void Ut_icache::test_InvMAgent()
     for (MIfProv::TIfIter it = rg.first; it != rg.second; it++, cnt++);
     CPPUNIT_ASSERT_MESSAGE("Wrong number of MAgent ifaces on first request", cnt == 1);
     MAgent* agt = (MAgent*) *rg.first;
-    MElem* agte = dynamic_cast<MElem*>(agt->DoGetIface(MElem::Type()));
+    MUnit* agte = dynamic_cast<MUnit*>(agt->DoGetIface(MUnit::Type()));
     CPPUNIT_ASSERT_MESSAGE("Wrong MAgent iface on first request", agte->GetUri(NULL,true) == "/testroot/test/MACompsObserver");
 
-    test->Mutate();
+    etest->Mutate();
 
     // Cache should be invalidated here, so GetIfi refreshes cache and add two agetns to cache - incaps and extender
     rg = test->GetIfi(MAgent::Type());
@@ -141,11 +143,11 @@ void Ut_icache::test_InvMAgent()
     CPPUNIT_ASSERT_MESSAGE("Wrong number of MAgent ifaces on second request", cnt == 2);
     MIfProv::TIfIter it = rg.first;
     agt = (MAgent*) *it;
-    agte = dynamic_cast<MElem*>(agt->DoGetIface(MElem::Type()));
+    agte = dynamic_cast<MUnit*>(agt->DoGetIface(MUnit::Type()));
     CPPUNIT_ASSERT_MESSAGE("Wrong MAgent 1-st iface on second request", agte->GetUri(NULL,true) == "/testroot/test/MACompsObserver");
     it++;
     agt = (MAgent*) *it;
-    agte = dynamic_cast<MElem*>(agt->DoGetIface(MElem::Type()));
+    agte = dynamic_cast<MUnit*>(agt->DoGetIface(MUnit::Type()));
     CPPUNIT_ASSERT_MESSAGE("Wrong MAgent 2-nd iface on second request", agte->GetUri(NULL,true) == "/testroot/test/MAExteder");
 
 

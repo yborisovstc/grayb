@@ -25,25 +25,25 @@ GFactory::~GFactory()
     }
 }
 
-Elem* GFactory::CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv)
+Unit* GFactory::CreateNode(const string& aType, const string& aName, MUnit* aMan, MEnv* aEnv)
 {
-    Elem* res = NULL;
+    Unit* res = NULL;
     for (map<string, MProvider*>::iterator it = iProviders.begin(); it != iProviders.end() && res == NULL; it++) {
 	res = it->second->CreateNode(aType, aName, aMan, aEnv);
     }
     return res;
 }
 
-Elem* GFactory::GetNode(const string& aUri)
+Unit* GFactory::GetNode(const string& aUri)
 {
-    Elem* res = NULL;
+    Unit* res = NULL;
     for (TProviders::iterator it = iProviders.begin(); it != iProviders.end() && res == NULL; it++) {
 	res = it->second->GetNode(aUri);
     }
     return res;
 }
 
-TBool GFactory::IsProvided(const MElem* aElem) const
+TBool GFactory::IsProvided(const MUnit* aElem) const
 {
     TBool res = EFalse;
     for (TProviders::const_iterator it = iProviders.begin(); it != iProviders.end() && !res; it++) {

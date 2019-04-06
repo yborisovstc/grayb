@@ -22,10 +22,10 @@ class MCompatChecker: public MIface
     public:
 	static const char* Type() { return "MCompatChecker";};
 	// Checking
-	virtual TBool IsCompatible(MElem* aPair, TBool aExt = EFalse) = 0;
+	virtual TBool IsCompatible(MUnit* aPair, TBool aExt = EFalse) = 0;
 	// Checked
 	// In case if checked is extender, to get extended part
-	virtual MElem* GetExtd() = 0;
+	virtual MUnit* GetExtd() = 0;
 	// Direction
 	virtual TDir GetDir() const = 0;
     public:
@@ -50,8 +50,8 @@ class MVert: public MIface
 	//virtual set<MVert*>& Pairs() = 0;
 	// TODO [YB] We introduced local iface resolver here. It is restricted for some ifaces only
 	// The idea was that earlier the EBase() methos was used that return Base - not safe solution
-	// But in fact it's same, current resolver allows MElem (i.e. Base). To consider safer solution
-	// Currently MElem and MCompatChecker are allowe by resolver, MElem is used for getting Uri for logging
+	// But in fact it's same, current resolver allows MUnit (i.e. Base). To consider safer solution
+	// Currently MUnit and MCompatChecker are allowe by resolver, MUnit is used for getting Uri for logging
 	// Possible to use Uid() instead and introduce MCompatChecker getter
 	virtual MIface* MVert_DoGetObj(const char *aName) = 0;
 	template <class T> T* GetObj(T* aInst) {return aInst = dynamic_cast<T*>(MVert_DoGetObj(aInst->Type()));};
@@ -107,9 +107,9 @@ class MSocket: public MIface
     public:
 	static const char* Type() { return "MSocket";};
 	virtual TInt PinsCount() const = 0;
-	virtual MElem* GetPin(TInt aInd) = 0;
+	virtual MUnit* GetPin(TInt aInd) = 0;
 	// Get pin existing in context
-	virtual MElem* GetPin(const TICacheRCtx& aCtx) = 0;
+	virtual MUnit* GetPin(const TICacheRCtx& aCtx) = 0;
     protected:
 	class EIfu: public Ifu {
 	    public:

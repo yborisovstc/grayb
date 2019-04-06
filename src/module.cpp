@@ -8,12 +8,12 @@ string AMod::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-AMod::AMod(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), mSpec(NULL)
+AMod::AMod(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), mSpec(NULL)
 {
     SetParent(Type());
 }
 
-AMod::AMod(MElem* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), mSpec(NULL)
+AMod::AMod(MUnit* aMan, MEnv* aEnv): Elem(Type(), aMan, aEnv), mSpec(NULL)
 {
     SetParent(Elem::PEType());
 }
@@ -37,9 +37,9 @@ MIface* AMod::DoGetObj(const char *aName)
     return res;
 }
 
-MElem* AMod::Import(const GUri& aUri)
+MUnit* AMod::Import(const GUri& aUri)
 {
-    MElem* res = NULL;
+    MUnit* res = NULL;
     //TBool res1 = iMut->Set(mCont);
     TBool res1 = AppendMutation(mCont);
     ChromoNode sel = iMut->Root().GetNodeByMhUri(aUri);

@@ -97,22 +97,22 @@ string ImportsMgr::GetModulePath(const string& aModName) const
     return res;
 }
 
-MElem* ImportsMgr::GetImportsContainer() const
+MUnit* ImportsMgr::GetImportsContainer() const
 {
     return mHost.Root()->GetNode(KImportsContainerUri);
 }
 
 TBool ImportsMgr::Import(const string& aUri)
 {
-    MElem* res = DoImport(aUri);
+    MUnit* res = DoImport(aUri);
     return res != NULL;
 }
 
 // aUri - model hier uri
-MElem* ImportsMgr::DoImport(const string& aUri)
+MUnit* ImportsMgr::DoImport(const string& aUri)
 {
     mHost.Pdstat(PEvents::DurStat_DoImport, true);
-    MElem* res = NULL;
+    MUnit* res = NULL;
     GUri moduri(aUri);
     GUri::const_elem_iter it = moduri.Elems().begin();
     it++;
@@ -122,7 +122,7 @@ MElem* ImportsMgr::DoImport(const string& aUri)
     if (!modpath.empty()) {
 	// Explicit chromo uri
 	// Get the whole external chromo
-	MElem* icontr = GetImportsContainer();
+	MUnit* icontr = GetImportsContainer();
 	__ASSERT(icontr != NULL);
 	Chromo* chromo = mHost.Provider()->CreateChromo();
 	TBool res1 = chromo->Set(modpath);
@@ -138,9 +138,10 @@ MElem* ImportsMgr::DoImport(const string& aUri)
 	    GUri::const_elem_iter it = moduri.Elems().begin();
 	    it++;
 	    selr.AppendTail(moduri, it);
-	    res = icontr->GetNode(selr);
-	    if (res != NULL) {
+	    MUnit* node = icontr->GetNode(selr);
+	    if (node != NULL) {
 		mHost.Logger()->Write(EInfo, NULL, "Imported node: [%s]", aUri.c_str());
+		res = node->GetObj(res);
 	    } else {
 		mHost.Logger()->Write(EErr, NULL, "Importing node: failed [%s]", aUri.c_str());
 	    }
@@ -156,14 +157,14 @@ MElem* ImportsMgr::DoImport(const string& aUri)
     return res;
 }
 
-void ImportsMgr::ImportToNode(MElem* aNode, const ChromoNode& aMut, const ChromoNode& aSel)
+void ImportsMgr::ImportToNode(MUnit* aNode, const ChromoNode& aMut, const ChromoNode& aSel)
 {
     if (aMut.Type() == ENt_Import) {
     } else if (aMut.Type() == ENt_Node) {
 	mHost.Pdstat(PEvents::DurStat_MutImportToNode, true);
 	GUri uri(".");
 	uri.AppendElem(string(), aMut.Name());
-	MElem* comp = aNode->GetNode(uri);
+	MUnit* comp = aNode->GetNode(uri);
 	if (comp == NULL) {
 	    // Node doesn't exist yet, to mutate
 	    // Using external mut instead of nodes mut to avoid mut update
@@ -172,7 +173,12 @@ void ImportsMgr::ImportToNode(MElem* aNode, const ChromoNode& aMut, const Chromo
 	    mut->Init(ENt_Node);
 	    mut->Root().AddChild(aMut);
 	    mHost.Pdstat(PEvents::DurStat_MutImportToNode, false);
-	    aNode->Mutate(mut->Root(), ETrue, EFalse, EFalse, aNode);
+	    MElem* enode = aNode->GetObj(enode);
+	    if (enode != NULL) {
+		enode->Mutate(mut->Root(), ETrue, EFalse, EFalse, aNode);
+	    } else {
+		mHost.Logger()->Write(EErr, NULL, "Node [%s] is not mutable", aNode->GetUri(NULL, ETrue).c_str());
+	    }
 	    delete mut;
 	} else {
 	    // Node already exists, go to lower layer if sel is not achieved yet
@@ -186,10 +192,10 @@ void ImportsMgr::ImportToNode(MElem* aNode, const ChromoNode& aMut, const Chromo
     }
 }
 
-MElem* ImportsMgr::OnUriNotResolved(MElem* aNode, const GUri& aUri)
+MUnit* ImportsMgr::OnUriNotResolved(MUnit* aNode, const GUri& aUri)
 {
-    MElem* res = NULL;
-    MElem* icontr = GetImportsContainer();
+    MUnit* res = NULL;
+    MUnit* icontr = GetImportsContainer();
     if (icontr != NULL && icontr->IsComp(aNode)) {
 	GUri buri;
 	buri.AppendElem("", "");
@@ -229,7 +235,8 @@ ChromoMgr::~ChromoMgr()
 int ChromoMgr::GetMaxOrder() const
 {
     TInt res = 0;
-    MElem* eroot = mHost.Root();
+    MUnit* root = mHost.Root();
+    MElem* eroot = root->GetObj(eroot);
     if (eroot != NULL) {
 	ChromoNode& chrroot = eroot->Chromos().Root();
 	ChromoNode sroot = *(chrroot.Root());
@@ -294,7 +301,7 @@ MIface* IfcResolver::GetIfaceByUid(const string& aUid)
     Ifu::ParseUid(aUid, suri, type);
     GUri uri(suri);
     if (!uri.IsErr()) {
-	MElem* node = NULL;
+	MUnit* node = NULL;
 	__ASSERT(!uri.IsAbsolute());
 	// Uid is generated as relative UID from local root, ref ds_daa_pxdup_birc
 	node = mHost.Root()->GetNode(uri);
@@ -334,42 +341,42 @@ void SystemObserver::UnsetObserver(MAgentObserver* aObserver)
 }
 
 
-void SystemObserver::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
+void SystemObserver::OnCompDeleting(MUnit& aComp, TBool aSoft, TBool aModif)
 {
     for (auto observer : mObservers) {
 	observer->OnCompDeleting(aComp, aSoft, aModif);
     }
 }
 
-void SystemObserver::OnCompAdding(MElem& aComp, TBool aModif)
+void SystemObserver::OnCompAdding(MUnit& aComp, TBool aModif)
 {
     for (auto observer : mObservers) {
 	observer->OnCompAdding(aComp, aModif);
     }
 }
 
-TBool SystemObserver::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
+TBool SystemObserver::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
 {
     for (auto observer : mObservers) {
 	observer->OnCompChanged(aComp, aContName, aModif);
     }
 }
 
-TBool SystemObserver::OnChanged(MElem& aComp)
+TBool SystemObserver::OnChanged(MUnit& aComp)
 {
     for (auto observer : mObservers) {
 	observer->OnChanged(aComp);
     }
 }
 
-TBool SystemObserver::OnCompRenamed(MElem& aComp, const string& aOldName)
+TBool SystemObserver::OnCompRenamed(MUnit& aComp, const string& aOldName)
 {
     for (auto observer : mObservers) {
 	observer->OnCompRenamed(aComp, aOldName);
     }
 }
 
-void SystemObserver::OnCompMutated(const MElem* aNode)
+void SystemObserver::OnCompMutated(const MUnit* aNode)
 {
     for (auto observer : mObservers) {
 	observer->OnCompMutated(aNode);
@@ -472,17 +479,18 @@ void Env::ConstructSystem()
 	Pdur(PEvents::Dur_Env_Constr_Start);
 	const ChromoNode& root = spec->Root();
 	string sparent = root.Attr(ENa_Parent);
-	Elem* parent = iProvider->GetNode(sparent);
+	Unit* parent = iProvider->GetNode(sparent);
 	iRoot = iProvider->CreateNode(sparent, root.Name(), NULL, this);
-	if (iRoot != NULL) {
+	MElem* eroot = (iRoot == NULL) ? NULL : iRoot->GetObj(eroot);
+	if (eroot != NULL) {
 	    Pclock(PEvents::Env_Root_Created, iRoot);
 	    stringstream ss;
 	    struct timeval tp;
 	    gettimeofday(&tp, NULL);
 	    long int beg_us = tp.tv_sec * 1000000 + tp.tv_usec;
 	    Logger()->Write(EInfo, iRoot, "Started of creating system, spec [%s]", iSpecFile.c_str());
-	    iRoot->SetMutation(root);
-	    iRoot->Mutate(EFalse, EFalse, EFalse, iRoot);
+	    eroot->SetMutation(root);
+	    eroot->Mutate(EFalse, EFalse, EFalse, iRoot);
 	    Pclock(PEvents::Env_End_Constr, iRoot);
 	    gettimeofday(&tp, NULL);
 	    long int fin_us = tp.tv_sec * 1000000 + tp.tv_usec;
@@ -520,7 +528,7 @@ MLogRec *Env::Logger()
     return iLogger;
 }
 
-MElem* Env::Root() 
+MUnit* Env::Root() 
 { 
     return iRoot; 
 }

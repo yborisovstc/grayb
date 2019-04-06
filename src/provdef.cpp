@@ -21,13 +21,13 @@ const string KModulesPath = "/usr/share/grayb/modules/";
 /** Generator of native agent factory registry item */
 template<typename T> pair<string, ProvDef::TFact*> Item() {
     return pair<string, ProvDef::TFact*>
-	(T::Type(), [](const string &name, MElem* parent, MEnv* env)->Elem* { return new T(name, parent, env);});
+	(T::Type(), [](const string &name, MUnit* parent, MEnv* env)->Unit* { return new T(name, parent, env);});
 }
 
 
 /** Native agents factory registry */
 const ProvDef::TReg ProvDef::mReg ( {
-    Item<Elem>(), Item<Vertp>(), Item<Syst>(), Item<Systp>(), Item<Vert>(),
+    Item<Unit>(), Item<Elem>(), Item<Vertu>(), Item<Vertp>(), Item<Syst>(), Item<Systp>(), Item<Vert>(),
     Item<ACapsule>(), Item<Edge>(), Item<Aedge>(), Item<AMod>(), Item<AImports>(),
     Item<Prop>(), Item<Description>(), Item<ExtenderAgent>(), Item<ExtenderAgentInp>(), Item<ExtenderAgentOut>(),
     Item<AExtender>(), Item<ASocket>(), Item<ASocketInp>(), Item<ASocketOut>(), Item<ASocketMc>(),
@@ -42,7 +42,8 @@ const ProvDef::TReg ProvDef::mReg ( {
     Item<ATrSubInt>(), Item<ATrMplInt>(), Item<ATrDivInt>(), Item<ATrIncInt>(), Item<ATrAddVar>(),
     Item<ATrMplVar>(), Item<ATrDivVar>(), Item<ATrCpsVectVar>(), Item<ATrSwitchVar>(), Item<ATrAtVar>(),
     Item<ATrBcmpVar>(), Item<ConnPointBase>(), Item<ConnPointBaseInp>(), Item<ConnPointBaseOut>(), Item<ConnPointMc>(),
-    Item<AExtd>(), Item<AExtdInp>(), Item<AExtdOut>(), Item<ASocketMcm>(), Item<ASocketInpMcm>(), Item<ASocketOutMcm>()
+    Item<AExtd>(), Item<AExtdInp>(), Item<AExtdOut>(), Item<ASocketMcm>(), Item<ASocketInpMcm>(), Item<ASocketOutMcm>(),
+    Item<ConnPointMcu>(), Item<AExtdu>(), Item<AExtduInp>(), Item<AExtduOut>()
 });
 
 
@@ -65,30 +66,33 @@ string ProvDef::GetParentName(const string& aUri)
     return res;
 }
 
-Elem* ProvDef::CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv)
+Unit* ProvDef::CreateNode(const string& aType, const string& aName, MUnit* aMan, MEnv* aEnv)
 {
-    Elem* res = NULL;
+    Unit* res = NULL;
     // Using only short parent name. Full name is not supported atm
     string pname = GetParentName(aType);
     res = CreateAgent(pname, aName, aMan, iEnv);
 
     if (res != NULL) {
-	Elem* parent = GetNode(aType);
+	Unit* parent = GetNode(aType);
 	if (parent != NULL) {
-	    parent->AppendChild(res);
+	    MElem* eparent = parent->GetObj(eparent);
+	    if (eparent != NULL) {
+		eparent->AppendChild(res);
+	    }
 	}
     }
     return res;
 }
 
-Elem* ProvDef::GetNode(const string& aUri)
+Unit* ProvDef::GetNode(const string& aUri)
 {
-    Elem* res = NULL;
+    Unit* res = NULL;
     if (iReg.count(aUri) > 0) {
 	res = iReg.at(aUri);
     }
     else { 
-	Elem* parent = NULL;
+	Unit* parent = NULL;
 	// Using only short parent name. Full name is not supported atm
 	string sname = GetParentName(aUri);
 	res = CreateAgent(sname, string(), NULL, iEnv);
@@ -100,7 +104,10 @@ Elem* ProvDef::GetNode(const string& aUri)
 		    parent = iEnv->Provider()->GetNode(pname);
 	    }
 	    if (parent != NULL) {
-		parent->AppendChild(res);
+		MElem* eparent = parent->GetObj(eparent);
+		if (eparent != NULL) {
+		    eparent->AppendChild(res);
+		}
 	    }
 	    iReg.insert(TRegVal(aUri, res));
 	}
@@ -155,9 +162,9 @@ const string& ProvDef::ModulesPath() const
     return KModulesPath;
 }
 
-Elem* ProvDef::CreateAgent(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv) const
+Unit* ProvDef::CreateAgent(const string& aType, const string& aName, MUnit* aMan, MEnv* aEnv) const
 {
-    Elem* res = NULL;
+    Unit* res = NULL;
     if (mReg.count(aType) > 0) {
 	TFact* fact = mReg.at(aType);
 	res = fact(aName, aMan, aEnv);

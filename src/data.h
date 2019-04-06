@@ -9,17 +9,17 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable, public M
     public:
 	static const char* Type() { return "DataBase";};
 	static string PEType();
-	DataBase(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
+	DataBase(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
     protected:
 	TBool FromString(const string& aType, const string& aData); 
 	virtual TBool FromString(const string& aData); 
 	virtual bool ToString(string& aData); 
-	virtual TBool HandleIoChanged(MElem& aContext, MElem* aCp);
+	virtual TBool HandleIoChanged(MUnit& aContext, MUnit* aCp);
 	bool ToString(string& aType, string& aData);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
+	virtual TBool HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName = string());
 	// From MDataObserver
 	virtual void OnDataChanged();
 	// From MUpdatable
@@ -30,11 +30,11 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable, public M
 	void UpdateProp();
 	void NotifyUpdate();
 	TBool IsLogeventUpdate();
-	inline MElem* Context();
+	inline MUnit* Context();
 	static const string KCont_Value;
 };
 
-inline MElem* DataBase::Context() { return iMan == NULL ? NULL: iMan;};
+inline MUnit* DataBase::Context() { return iMan;};
 
 // Data is representing some static model
 //
@@ -52,7 +52,7 @@ class DInt: public DataBase, public MDInt, public MDIntSet, public MDIntGet
     public:
 	static const char* Type() { return "DInt";};
 	static string PEType();
-	DInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
+	DInt(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MDInt
@@ -61,7 +61,7 @@ class DInt: public DataBase, public MDInt, public MDIntSet, public MDIntGet
 	// From MDIntGet
 	TInt Value() override;
 	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override;
-	string MDIntGet_Mid() const override { return Elem::Mid();}
+	string MDIntGet_Mid() const override { return Elem::MElem_Mid();}
 	// From MDIntSet
 	virtual void SetValue(TInt aData);
 	// From Data
@@ -82,7 +82,7 @@ class DNInt: public DInt
     public:
 	static const char* Type() { return "DNInt";};
 	static string PEType();
-	DNInt(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
+	DNInt(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
 	// From MDInt
 	virtual void Set(TInt aData);
 };
@@ -130,7 +130,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 		// From MDIntGet
 		TInt Value() override;
 		MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
-		string MDIntGet_Mid() const override { return mHost.Elem::Mid();}
+		string MDIntGet_Mid() const override { return mHost.Elem::MElem_Mid();}
 		// From MDIntSet
 		virtual void SetValue(TInt aData);
 		virtual TBool FromString(const string& aString);
@@ -240,10 +240,10 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
     public:
 	static const char* Type() { return "DVar";};
 	static string PEType();
-	DVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
+	DVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~DVar();
-	virtual TBool HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName = string());
-	virtual TBool HandleIoChanged(MElem& aContext, MElem* aCp);
+	virtual TBool HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName = string());
+	virtual TBool HandleIoChanged(MUnit& aContext, MUnit* aCp);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MUpdatable
@@ -256,10 +256,10 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet
 	virtual void *DoGetDObj(const char *aName);
 	// From MDVarSet
 	virtual Elem* VarSetBase();
-	// From MElem
+	// From MUnit
 	virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const; 
     protected:
-	MElem* GetInp();
+	MUnit* GetInp();
 	TBool Init(const string& aString, MDVarGet* aInp = NULL);
     protected:
 	HBase* mData;
@@ -273,8 +273,8 @@ class ConfDVar: public DataBase, public MDVar, public MDVarGet, public MDVarSet,
     public:
 	static const char* Type() { return "ConfDVar";};
 	static string PEType();
-	ConfDVar(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
-	ConfDVar(MElem* aMan = NULL, MEnv* aEnv = NULL);
+	ConfDVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	ConfDVar(MUnit* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~ConfDVar();
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);

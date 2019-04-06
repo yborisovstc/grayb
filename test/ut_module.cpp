@@ -55,7 +55,7 @@ void Ut_mod::test_ImpsMgr1()
     // Enabling mutation repositioning in order to resolve unsafety
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
     vector<string> modnames;
@@ -81,24 +81,24 @@ void Ut_mod::test_ImpsMgr2()
     // Enabling mutation repositioning in order to resolve unsafety
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
     // Verifying importing Mod2_comp_2
-    MElem* mod2_c2 = root->GetNode("/test/Modules/Mod2_root_3/Mod2_comp_2");
+    MUnit* mod2_c2 = root->GetNode("/test/Modules/Mod2_root_3/Mod2_comp_2");
     CPPUNIT_ASSERT_MESSAGE("Mod2_comp_2 not imported", mod2_c2 != NULL);
     // Verifying importing Mod_comp_2
-    MElem* mod_c2 = root->GetNode("/test/Modules/Mod_root_3/Mod_comp_2");
+    MUnit* mod_c2 = root->GetNode("/test/Modules/Mod_root_3/Mod_comp_2");
     CPPUNIT_ASSERT_MESSAGE("Mod_comp_2 not imported", mod_c2 != NULL);
     // Verifying creation from imported node
-    MElem* v4 = root->GetNode("./v4");
+    MUnit* v4 = root->GetNode("./v4");
     CPPUNIT_ASSERT_MESSAGE("v4 is not created", v4 != NULL);
-    MElem* v5 = root->GetNode("./v5");
+    MUnit* v5 = root->GetNode("./v5");
     CPPUNIT_ASSERT_MESSAGE("v5 is not created", v5 != NULL);
     // Verify if node is imported with path containing nodes dest, ref ds_mod_prb_uri_chromo
-    MElem* mod3_c4_c1_c1 = root->GetNode("./Modules/Mod_root_3/Mod3_c4/Mod3_comp_int_c1/Mod3_c4_c1/Mod3_c4_c1_c1");
+    MUnit* mod3_c4_c1_c1 = root->GetNode("./Modules/Mod_root_3/Mod3_c4/Mod3_comp_int_c1/Mod3_c4_c1/Mod3_c4_c1_c1");
     CPPUNIT_ASSERT_MESSAGE("mod3_c4_c1_c1 is not created", mod3_c4_c1_c1 != NULL);
-    MElem* v6 = root->GetNode("./v6");
+    MUnit* v6 = root->GetNode("./v6");
     CPPUNIT_ASSERT_MESSAGE("v6 is not created", v6 != NULL);
     delete iEnv;
 }
@@ -165,21 +165,22 @@ void Ut_mod::test_ModInt1()
     // Enabling mutation repositioning in order to resolve unsafety
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root->GetObj(eroot);
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
     // Verifying importing Mod2_comp_2
-    MElem* mod2_c2 = root->GetNode(":Elem:AImports/Mod2_root/Mod2_comp_2");
+    MUnit* mod2_c2 = root->GetNode(":Elem:AImports/Mod2_root/Mod2_comp_2");
     CPPUNIT_ASSERT_MESSAGE("Mod2_comp_2 not imported", mod2_c2 != NULL);
     // Verifying importing Mod_comp_2
-    MElem* mod_c2 = root->GetNode(":Elem:AImports/Mod_root/Mod_comp_2");
+    MUnit* mod_c2 = root->GetNode(":Elem:AImports/Mod_root/Mod_comp_2");
     CPPUNIT_ASSERT_MESSAGE("Mod_comp_2 not imported", mod_c2 != NULL);
     // Verifying creation from imported node
-    MElem* v4 = root->GetNode("./v4");
+    MUnit* v4 = root->GetNode("./v4");
     CPPUNIT_ASSERT_MESSAGE("v4 is not created", v4 != NULL);
     
     // Save upated chromo
-    iEnv->Root()->Chromos().Save("ut_mod_int_1_res.xml_");
+    eroot->Chromos().Save("ut_mod_int_1_res.xml_");
     delete iEnv;
 }
 
@@ -197,20 +198,20 @@ void Ut_mod::test_ImpsMgrOpt()
     // Enabling mutation repositioning in order to resolve unsafety
     iEnv->ChMgr()->SetEnableReposMuts(ETrue);
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     // Check creation first
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
     // Verifying importing Mod5_comp_2
-    MElem* mod2_c2 = root->GetNode("/test/Modules/Mod5_root/Mod5_comp_2");
+    MUnit* mod2_c2 = root->GetNode("/test/Modules/Mod5_root/Mod5_comp_2");
     CPPUNIT_ASSERT_MESSAGE("Mod5_comp_2 not imported", mod2_c2 != NULL);
     // Verifying importing Mod_comp_2
-    MElem* mod_c2 = root->GetNode("/test/Modules/Mod4_root/Mod_comp_2");
+    MUnit* mod_c2 = root->GetNode("/test/Modules/Mod4_root/Mod_comp_2");
     CPPUNIT_ASSERT_MESSAGE("Mod_comp_2 not imported", mod_c2 != NULL);
     // Verifying creation from imported node
-    MElem* v4 = root->GetNode("./v4");
+    MUnit* v4 = root->GetNode("./v4");
     CPPUNIT_ASSERT_MESSAGE("v4 is not created", v4 != NULL);
     // Verifying v4/Mod5_comp_2_1/Mod5_comp_2_1_1 is resolved (no mutliple choice)
-    MElem* v4c = v4->GetNode("./Mod5_comp_2_1/Mod5_comp_2_1_1");
+    MUnit* v4c = v4->GetNode("./Mod5_comp_2_1/Mod5_comp_2_1_1");
     CPPUNIT_ASSERT_MESSAGE("v4/Mod5_comp_2_1/Mod5_comp_2_1_1 is not acessible", v4c != NULL);
     delete iEnv;
 }

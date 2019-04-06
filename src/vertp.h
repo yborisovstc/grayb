@@ -13,7 +13,7 @@ class Vertp: public Elem, public MVertp
     public:
 	static const char* Type() { return "Vertp";};
 	static string PEType();
-	Vertp(const string& aName = string(), MElem* aMan = NULL, MEnv* aEnv = NULL);
+	Vertp(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~Vertp();
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);
@@ -26,12 +26,11 @@ class Vertp: public Elem, public MVertp
 	virtual MIface* MVertp_DoGetObj(const char *aName);
 	virtual void DumpCps() const;
 	// From Elem
-	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse);
-	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
+	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
+	virtual void OnCompDeleting(MUnit& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
 	// From MIface
-	virtual MIface* Call(const string& aSpec, string& aRes);
-	string Mid() const override { return Elem::Mid();}
-	string MVertp_Mid() const override { return Elem::Mid();}
+	virtual MIface* MVertp_Call(const string& aSpec, string& aRes);
+	string MVertp_Mid() const override { return Elem::MElem_Mid();}
     protected:
 	void RemovePairFromReg(MVertp* aPair);
     public:

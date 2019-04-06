@@ -24,9 +24,9 @@ class GFactory: public Base, public MProvider
 	virtual MIface *DoGetObj(const char *aName) override { return NULL;}
 	// From MProvider
 	virtual const string& Name() const { return iName;};
-	virtual Elem* CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv);
-	virtual Elem* GetNode(const string& aUri);
-	virtual TBool IsProvided(const MElem* aElem) const;
+	virtual Unit* CreateNode(const string& aType, const string& aName, MUnit* aMan, MEnv* aEnv);
+	virtual Unit* GetNode(const string& aUri);
+	virtual TBool IsProvided(const MUnit* aElem) const;
 	virtual Chromo* CreateChromo();
 	virtual void AppendNodesInfo(vector<string>& aInfo);
 	virtual const string& ModulesPath() const;

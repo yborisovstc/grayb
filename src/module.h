@@ -12,13 +12,13 @@ class AMod: public Elem, public MMod
     public:
 	static const char* Type() { return "AMod";};
 	static string PEType();
-	AMod(const string& aName, MElem* aMan, MEnv* aEnv);
-	AMod(MElem* aMan, MEnv* aEnv);
+	AMod(const string& aName, MUnit* aMan, MEnv* aEnv);
+	AMod(MUnit* aMan, MEnv* aEnv);
 	virtual ~AMod();
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);
 	// From MMod
-	virtual MElem* Import(const GUri& aUri);
+	virtual MUnit* Import(const GUri& aUri);
 	// Fom MElem
 	virtual TBool GetCont(string& aValue, const string& aName = string()) const;
 	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string());

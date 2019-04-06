@@ -26,6 +26,11 @@ class MEdge: public MIface
 	virtual MVert* Ref2() const = 0;
 	virtual void SetPoint1(const string& aRef) = 0;
 	virtual void SetPoint2(const string& aRef) = 0;
+	// From MIface
+	virtual MIface* MEdge_Call(const string& aSpec, string& aRes) { return NULL;}
+	virtual string MEdge_Mid() const = 0;
+	MIface* Call(const string& aSpec, string& aRes) override {return MEdge_Call(aSpec, aRes);}
+	string Mid() const override { return MEdge_Mid();}
     protected:
 	class EIfu: public Ifu {
 	    public:

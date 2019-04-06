@@ -20,6 +20,7 @@ class Ut_des : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Cre4);
     CPPUNIT_TEST(test_Cre5mc);
     CPPUNIT_TEST(test_Cre6mcm);
+    CPPUNIT_TEST(test_Cre6mcmu);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -30,6 +31,7 @@ private:
     void test_Cre4();
     void test_Cre5mc();
     void test_Cre6mcm();
+    void test_Cre6mcmu();
 private:
     Env* iEnv;
 };
@@ -57,17 +59,17 @@ void Ut_des::test_Cre1()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
-    MElem* doutp = root->GetNode("./test/State1/Capsule/Out/Int/PinData");
+    MUnit* doutp = root->GetNode("./test/State1/Capsule/Out/Int/PinData");
     CPPUNIT_ASSERT_MESSAGE("Fail to get state out", doutp != 0);
 //    MDIntGet* doutpget = doutp->GetObj(doutpget);
     MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 0);
     // Sync the state
-    MElem* esync = root->GetNode("./test/State1/Capsule/Sync");
+    MUnit* esync = root->GetNode("./test/State1/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != 0);
     MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
@@ -96,17 +98,17 @@ void Ut_des::test_Cre2()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
-    MElem* doutp = root->GetNode("./TestDes/Capsule/Out/Int/PinData");
+    MUnit* doutp = root->GetNode("./TestDes/Capsule/Out/Int/PinData");
     CPPUNIT_ASSERT_MESSAGE("Fail to get DES out", doutp != 0);
     //MDIntGet* doutpget = doutp->GetObj(doutpget);
     MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get initial value of data iface", doutpget->Value() == 0);
     // Get Sync iface of DES
-    MElem* esync = root->GetNode("./TestDes/Capsule/Sync");
+    MUnit* esync = root->GetNode("./TestDes/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get DES's Syncable iface", esync != 0);
     MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
@@ -134,13 +136,13 @@ void Ut_des::test_Cre4()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MDIntGet* doutpget = (MDIntGet*) root->GetSIfi("./TestDes/Snail_1/Capsule/Out_Mass/Int/PinData", MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get initial value of data iface", doutpget->Value() == 1);
     // Get Sync iface of DES
-    MElem* esync = root->GetNode("./TestDes/Capsule/Sync");
+    MUnit* esync = root->GetNode("./TestDes/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get DES's Syncable iface", esync != 0);
     MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
@@ -169,10 +171,10 @@ void Ut_des::test_Cre5mc()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
-    MElem* doutp = root->GetNode("./test/State1/Capsule/Out/Int/PinData");
+    MUnit* doutp = root->GetNode("./test/State1/Capsule/Out/Int/PinData");
     CPPUNIT_ASSERT_MESSAGE("Fail to get state out", doutp != 0);
     MDVarGet* doutpget = (MDVarGet*) doutp->GetSIfi(MDVarGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
@@ -180,7 +182,7 @@ void Ut_des::test_Cre5mc()
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out IntGet iface", doutpgetp != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpgetp->Value() == 0);
     // Sync the state
-    MElem* esync = root->GetNode("./test/State1/Capsule/Sync");
+    MUnit* esync = root->GetNode("./test/State1/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != 0);
     MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
@@ -208,10 +210,10 @@ void Ut_des::test_Cre6mcm()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
-    MElem* doutp = root->GetNode("./test/State1/Capsule/Out/Int/PinData");
+    MUnit* doutp = root->GetNode("./test/State1/Capsule/Out/Int/PinData");
     CPPUNIT_ASSERT_MESSAGE("Fail to get state out", doutp != 0);
     MDVarGet* doutpget = (MDVarGet*) doutp->GetSIfi(MDVarGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
@@ -219,7 +221,49 @@ void Ut_des::test_Cre6mcm()
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out IntGet iface", doutpgetp != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpgetp->Value() == 0);
     // Sync the state
-    MElem* esync = root->GetNode("./test/State1/Capsule/Sync");
+    MUnit* esync = root->GetNode("./test/State1/Capsule/Sync");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != 0);
+    MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
+    // Do some ticks
+    const TInt ticksnum = 5;
+    for (TInt cnt = 0; cnt < ticksnum; cnt++) {
+	if (sync->IsActive()) {
+	    //iEnv->SetSBool(MEnv::ESb_EnIfTrace, ETrue);
+	    sync->Update();
+	    //iEnv->SetSBool(MEnv::ESb_EnIfTrace, EFalse);
+	}
+	if (sync->IsUpdated()) {
+	    sync->Confirm();
+	}
+    }
+    TInt val = doutpgetp->Value();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", val == 5);
+
+    delete iEnv;
+}
+
+void Ut_des::test_Cre6mcmu()
+{
+    printf("\n === Test of creation of simple des: var, multicontent, monolitic extd, unit pins\n");
+
+    iEnv = new Env("ut_des_cre1vmcmu.xml", "ut_des_cre1vmcmu.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
+    MUnit* doutp = root->GetNode("./test/State1/Capsule/Out/Int/PinData");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get state out", doutp != 0);
+    MDVarGet* doutpget = (MDVarGet*) doutp->GetSIfi(MDVarGet::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
+    MDIntGet* doutpgetp= (MDIntGet*) doutpget->DoGetDObj(MDIntGet::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get data out IntGet iface", doutpgetp != 0);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpgetp->Value() == 0);
+    // Sync the state
+    MUnit* esync = root->GetNode("./test/State1/Capsule/Sync");
     CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != 0);
     MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);

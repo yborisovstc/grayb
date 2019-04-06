@@ -21,7 +21,7 @@ class Prop: public Elem, public MProp_Imd
     public:
 	static const char* Type() { return "Prop";};
 	static string PEType();
-	Prop(const string& aName, MElem* aMan, MEnv* aEnv);
+	Prop(const string& aName, MUnit* aMan, MEnv* aEnv);
     public:
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
@@ -43,7 +43,7 @@ class Description: public Prop
     public:
 	static const char* Type() { return "Description";};
 	static string PEType();
-	Description(const string& aName, MElem* aMan, MEnv* aEnv);
+	Description(const string& aName, MUnit* aMan, MEnv* aEnv);
 };
 
 #endif

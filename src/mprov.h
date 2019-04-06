@@ -7,8 +7,8 @@
 
 using namespace std;
 
-class Elem;
-class MElem;
+class Unit;
+class MUnit;
 class Chromo;
 class MEnv;
 
@@ -18,9 +18,9 @@ class MProvider
 	static const char* Type() { return "MProvider";};
 	virtual ~MProvider() {};
 	virtual const string& Name() const = 0;
-	virtual Elem* CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv) = 0;
-	virtual Elem* GetNode(const string& aUri) = 0;
-	virtual TBool IsProvided(const MElem* aElem) const = 0;
+	virtual Unit* CreateNode(const string& aType, const string& aName, MUnit* aMan, MEnv* aEnv) = 0;
+	virtual Unit* GetNode(const string& aUri) = 0;
+	virtual TBool IsProvided(const MUnit* aElem) const = 0;
 	virtual Chromo* CreateChromo() = 0;
 	virtual void AppendNodesInfo(vector<string>& aInfo) = 0;
 	virtual const string& ModulesPath() const = 0;

@@ -10,7 +10,8 @@
 
 using namespace std;
 
-// Interface support utility
+/** @brief Interface support utility
+ * */
 class Ifu
 {
     public:

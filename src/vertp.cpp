@@ -39,7 +39,7 @@ const string Vertp::KContent_P2 = "P2";
 const string Vertp::KContent_CP1 = "CP1";
 const string Vertp::KContent_CP2 = "CP2";
 
-Vertp::Vertp(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+Vertp::Vertp(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -62,8 +62,8 @@ Vertp::~Vertp()
 MIface* Vertp::MVertp_DoGetObj(const char *aName)
 {
     MIface* res = NULL;
-    if (strcmp(aName, MElem::Type()) == 0) {
-	res = dynamic_cast<MElem*>(this);
+    if (strcmp(aName, MUnit::Type()) == 0) {
+	res = dynamic_cast<MUnit*>(this);
     }
     return res;
 }
@@ -80,7 +80,7 @@ TBool Vertp::Connect(MVertp* aPair, const string& aCp)
 	__ASSERT(iMan != NULL);
 	res = res && iMan->OnChanged(*this);
     } else {
-	MElem* ep = aPair->GetObj(ep);
+	MUnit* ep = aPair->GetObj(ep);
 	Logger()->Write(EErr, this, "Connecting [%s] - already connected, failed", ep->GetUri().c_str());
 	res = EFalse;
     }
@@ -122,7 +122,7 @@ void Vertp::Disconnect(MVertp* aPair)
     }
 }
 
-TBool Vertp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
+TBool Vertp::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
 {
     TBool res = Elem::OnCompChanged(aComp, aContName, aModif);
     if (res) {
@@ -144,11 +144,11 @@ TBool Vertp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 			    // There is connection established, disconnecting
 			    string cpurib = GetContentValue(ContentKey(edgeName, nameCPB));
 			    assert(!cpurib.empty());
-			    MElem* cea = GetNode(cpuria);
+			    MUnit* cea = GetNode(cpuria);
 			    assert(cea != NULL);
 			    MVertp* cva = cea->GetObj(cva);
 			    assert(cva != NULL);
-			    MElem* ceb = GetNode(cpurib);
+			    MUnit* ceb = GetNode(cpurib);
 			    assert(ceb != NULL);
 			    MVertp* cvb = ceb->GetObj(cvb);
 			    assert(cvb != NULL);
@@ -159,11 +159,11 @@ TBool Vertp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
 			// Establishing new connection
 			string purib = GetContentValue(ContentKey(edgeName, namePB));
 			if (!purib.empty()) {
-			    MElem* ea = GetNode(puria);
+			    MUnit* ea = GetNode(puria);
 			    assert(ea != NULL);
 			    MVertp* va = ea->GetObj(va);
 			    assert(va != NULL);
-			    MElem* eb = GetNode(purib);
+			    MUnit* eb = GetNode(purib);
 			    assert(eb != NULL);
 			    MVertp* vb = eb->GetObj(vb);
 			    assert(vb != NULL);
@@ -185,21 +185,18 @@ TBool Vertp::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
     return res;
 }
 
-MIface* Vertp::Call(const string& aSpec, string& aRes)
+MIface* Vertp::MVertp_Call(const string& aSpec, string& aRes)
 {
     MIface* res = NULL;
     string name, sig;
     vector<string> args;
     Ifu::ParseIcSpec(aSpec, name, sig, args);
     TBool name_ok = MVertp::mIfu.CheckMname(name);
-    if (!name_ok) {
-	return Elem::Call(aSpec, aRes);
-    }
     TBool args_ok = MVertp::mIfu.CheckMpars(name, args.size());
     if (!args_ok) 
 	throw (runtime_error("Wrong arguments number"));
     if (name == "Connect") {
-	MElem* pair = GetNode(args.at(0));
+	MUnit* pair = GetNode(args.at(0));
 	if (pair == NULL) {
 	    Logger()->Write(EErr, this, "Connecting [%s] - cannot get pair, failed", args.at(0).c_str());
 	    throw (runtime_error("Cannot get pair: " + args.at(0)));
@@ -216,7 +213,7 @@ MIface* Vertp::Call(const string& aSpec, string& aRes)
 	TInt pc = PairsCount();
 	aRes = Ifu::FromInt(pc);
     } else if (name == "IsPair") {
-	MElem* earg = GetNode(args.at(0));
+	MUnit* earg = GetNode(args.at(0));
 	if (earg == NULL) {
 	    throw (runtime_error("Cannot get arg: " + args.at(0)));
 	}
@@ -235,7 +232,7 @@ MIface* Vertp::Call(const string& aSpec, string& aRes)
     return res;
 }
 
-void Vertp::OnCompDeleting(MElem& aComp, TBool aSoft, TBool aModif)
+void Vertp::OnCompDeleting(MUnit& aComp, TBool aSoft, TBool aModif)
 {
     // Disconnect the binding edges if the comp is vert connected
     MVertp* vert = aComp.GetObj(vert);
@@ -255,7 +252,7 @@ void Vertp::DumpCps() const
     cout << "== Conn points ==" << endl << "<Pair>  <Conn point>" << endl;
     for (auto elem : mPairToCpReg) {
 	MVertp* pair = elem.first;
-	MElem* epair = pair->GetObj(epair);
+	MUnit* epair = pair->GetObj(epair);
 	cout << epair->GetUri() << " : " << elem.second << endl;
     }
 }

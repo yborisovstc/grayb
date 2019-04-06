@@ -13,11 +13,11 @@ string DataBase::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-DataBase::DataBase(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+DataBase::DataBase(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
     if (iMan != NULL) { // There is a context
-	MElem* ctx = iMan->GetMan();
+	MUnit* ctx = iMan->GetMan();
 	ctx->ChangeCont("", ETrue, KCont_Value);
     }
 }
@@ -25,19 +25,19 @@ DataBase::DataBase(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aM
 MIface* DataBase::MAgent_DoGetIface(const string& aName)
 {
     MIface* res = NULL;
-    if (aName == MElem::Type())
-	res = dynamic_cast<MElem*>(this);
+    if (aName == MUnit::Type())
+	res = dynamic_cast<MUnit*>(this);
     return res;
 }
 
 // TODO [YB] Bug ds_di_wsucv: Wrong scheme of using content "Value" in DataBase
 // To fix
-TBool DataBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
+TBool DataBase::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName)
 {
     TBool res = ETrue;
     if ((aComp.Name() == "Value" || aComp.Name() == "Type") && aComp.EType() == "Prop") {
-	MElem* etype = aContext.GetNode("./Type");
-	MElem* eval = aContext.GetNode("./Value");
+	MUnit* etype = aContext.GetNode("./Type");
+	MUnit* eval = aContext.GetNode("./Value");
 	__ASSERT(eval != NULL);
 	MProp* prop = eval->GetObj(prop);
 	if (prop == NULL) {
@@ -63,9 +63,9 @@ TBool DataBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& a
 	}
 	FromString(string(), val);
     } else {
-	MElem* caps = aContext.GetNode("./Capsule");
+	MUnit* caps = aContext.GetNode("./Capsule");
 	if (caps != NULL) {
-	    MElem* cp = caps->GetCompOwning("ConnPointInp", &aComp);
+	    MUnit* cp = caps->GetCompOwning("ConnPointInp", &aComp);
 	    if (cp == NULL) {
 		cp = caps->GetCompOwning("ConnPointOut", &aComp);
 	    }
@@ -83,14 +83,14 @@ TBool DataBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& a
     return res;
 }
 
-TBool DataBase::HandleIoChanged(MElem& aContext, MElem* aCp)
+TBool DataBase::HandleIoChanged(MUnit& aContext, MUnit* aCp)
 {
     return ETrue;
 }
 
 void DataBase::NotifyUpdate()
 {
-    MElem* eout = GetNode("./../Capsule/out");
+    MUnit* eout = GetNode("./../Capsule/out");
     // TODO [YB] Scheme of getting iface should be enough to get MDataObserver directly from eout. Seems the chunk below is redundant.
     if (eout != NULL) {
 	TIfRange rg = eout->GetIfi(MDataObserver::Type(), this);
@@ -129,9 +129,9 @@ MIface *DataBase::DoGetObj(const char *aName)
 
 void DataBase::UpdateProp()
 {
-    MElem* eprop = GetNode("./../Value");
+    MUnit* eprop = GetNode("./../Value");
     if (eprop != NULL) {
-	MElem* etype = GetNode("./../Type");
+	MUnit* etype = GetNode("./../Type");
 	if (etype == NULL) {
 	    string res;
 	    ToString(res);
@@ -154,7 +154,7 @@ void DataBase::UpdateProp()
 	
 TBool DataBase::IsLogeventUpdate() 
 {
-    MElem* node = GetNode("./../Logspec/Update");
+    MUnit* node = GetNode("./../Logspec/Update");
     string upd = GetMan()->GetContent("Debug.Update");
     return node != NULL || upd == "y";
 }
@@ -220,7 +220,7 @@ string DInt::PEType()
     return DataBase::PEType() + GUri::KParentSep + Type();
 }
 
-DInt::DInt(const string& aName, MElem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv)/*, mDIntGet(*this)*/, mData(0)
+DInt::DInt(const string& aName, MUnit* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv)/*, mDIntGet(*this)*/, mData(0)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -297,7 +297,7 @@ TBool DInt::Update()
 {
     TBool res = EFalse;
     MDIntGet* inp = NULL;
-    MElem* einp = GetNode("./../Capsule/inp");
+    MUnit* einp = GetNode("./../Capsule/inp");
     if (einp == NULL) {
 	einp = GetNode("./../Capsule/Inp");
     }
@@ -305,7 +305,7 @@ TBool DInt::Update()
 	MVert* vert = einp->GetObj(vert);
 	MVert* pair = vert->GetPair(0);
 	if (pair != NULL) {
-	    MElem* inpe = pair->GetObj(inpe);
+	    MUnit* inpe = pair->GetObj(inpe);
 	    inp = (MDIntGet*) inpe->GetSIfiC(MDIntGet::Type(), this);
 	    if (inp != NULL) {
 		TInt idata = inp->Value();
@@ -349,7 +349,7 @@ string DNInt::PEType()
     return DInt::PEType() + GUri::KParentSep + Type();
 }
 
-DNInt::DNInt(const string& aName, MElem* aMan, MEnv* aEnv): DInt(aName, aMan, aEnv)
+DNInt::DNInt(const string& aName, MUnit* aMan, MEnv* aEnv): DInt(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -370,7 +370,7 @@ string DVar::PEType()
     return DataBase::PEType() + GUri::KParentSep + Type();
 }
 
-DVar::DVar(const string& aName, MElem* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(NULL)
+DVar::DVar(const string& aName, MUnit* aMan, MEnv* aEnv): DataBase(aName, aMan, aEnv), mData(NULL)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -482,7 +482,7 @@ bool DVar::ToString(string& aData)
 
 }
 
-TBool DVar::HandleIoChanged(MElem& aContext, MElem* aCp)
+TBool DVar::HandleIoChanged(MUnit& aContext, MUnit* aCp)
 {
     TBool res = ETrue;
     if (aCp->Name() == "inp" || aCp->Name() == "Inp") {
@@ -502,7 +502,7 @@ TBool DVar::Update()
     TBool res = EFalse;
     string old_value;
     ToString(old_value);
-    MElem* inp = GetInp();
+    MUnit* inp = GetInp();
     if (inp != NULL) {
 	MDVarGet* vget = (MDVarGet*) inp->GetSIfi(MDVarGet::Type(), this);
 	if (vget != NULL) {
@@ -534,16 +534,16 @@ TBool DVar::Update()
     return res;
 }
 
-MElem* DVar::GetInp()
+MUnit* DVar::GetInp()
 {
-    MElem* einp = GetNode("./../Capsule/inp");
+    MUnit* einp = GetNode("./../Capsule/inp");
     if (einp == NULL) {
 	einp = GetNode("./../Capsule/Inp");
     }
     return einp;
 }
 
-TBool DVar::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
+TBool DVar::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName)
 {
     return DataBase::HandleCompChanged(aContext, aComp, aContName);
 }

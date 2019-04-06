@@ -4,16 +4,20 @@
 #include <plat.h>
 #include <miface.h>
 #include <mprofiler.h>
+#include <munit.h>
 #include <melem.h>
 
 #include <vector>
 #include <string>
 
-class MProvider; class MLogRec;
+class MProvider;
+class MLogRec;
+class MUnit;
 class MElem;
 class Elem;
 class MChromo;
 class GUri;
+class MAgentObserver;
 
 
     using namespace std;
@@ -37,7 +41,7 @@ class GUri;
 	    virtual void AddImportsPaths(const string& aPaths) = 0;
 	    virtual string GetModulePath(const string& aModName) const = 0;
 	    virtual TBool Import(const string& aUri) = 0;
-	    virtual MElem* OnUriNotResolved(MElem* aNode, const GUri& aUri) = 0;
+	    virtual MUnit* OnUriNotResolved(MUnit* aNode, const GUri& aUri) = 0;
     };
 
     // Chromo manager
@@ -76,7 +80,7 @@ class GUri;
 	    virtual MProvider *Provider() const = 0;
 	    virtual MLogRec *Logger() = 0;
 	    virtual MProfiler *Profiler() = 0;
-	    virtual MElem* Root() = 0;
+	    virtual MUnit* Root() = 0;
 	    virtual MChromoMgr* ChMgr() = 0;
 	    virtual MImportMgr* ImpsMgr() = 0;
 	    virtual MExtIfProv* ExtIfProv() = 0;

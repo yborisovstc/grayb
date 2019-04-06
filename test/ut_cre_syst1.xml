@@ -27,6 +27,9 @@
 	</node>
     </node>
 
+    <node node="./Syst1" id="Syst1_1" parent="Syst"/>
+    <node node="./Syst1/Syst1_1" id="Syst1_1_1" parent="Syst"/>
+
     <node id="cp1" parent="./SysComps/ConnPoint"> 
 	<cont node="./Provided" val="Role1"/> <cont node="./Required" val="Role2"/></node>
     <node id="cp2" parent="./SysComps/ConnPoint"> 

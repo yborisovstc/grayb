@@ -33,7 +33,7 @@ MDesSyncable::EIfu MDesSyncable::mIfu;
 
 
 
-ATrBase::ATrBase(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
+ATrBase::ATrBase(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -59,12 +59,12 @@ MIface *ATrBase::DoGetObj(const char *aName)
 MIface* ATrBase::MAgent_DoGetIface(const string& aName)
 {
     MIface* res = NULL;
-    if (aName == MElem::Type())
-	res = dynamic_cast<MElem*>(this);
+    if (aName == MUnit::Type())
+	res = dynamic_cast<MUnit*>(this);
     return res;
 }
 
-TBool ATrBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aContName)
+TBool ATrBase::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName)
 {
     TBool res = ETrue;
     return res;
@@ -74,7 +74,7 @@ TBool ATrBase::HandleCompChanged(MElem& aContext, MElem& aComp, const string& aC
 
 // Agent base of Int function
 
-ATrInt::ATrInt(const string& aName, MElem* aMan, MEnv* aEnv): ATrBase(aName, aMan, aEnv), mData(0)
+ATrInt::ATrInt(const string& aName, MUnit* aMan, MEnv* aEnv): ATrBase(aName, aMan, aEnv), mData(0)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -109,7 +109,7 @@ Elem::TIfRange ATrInt::GetInpRg(const string& aInpName)
 {
     TIfRange res;
     string uri = "./../" + aInpName;
-    MElem* einp = GetNode(uri);
+    MUnit* einp = GetNode(uri);
     if (einp != NULL) {
 	res = einp->GetIfi(MDIntGet::Type(), this);
     }
@@ -128,7 +128,7 @@ TInt ATrInt::Value()
 
 // Agent of function "Increment of Int data"
 
-ATrIncInt::ATrIncInt(const string& aName, MElem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
+ATrIncInt::ATrIncInt(const string& aName, MUnit* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -153,7 +153,7 @@ TInt ATrIncInt::Value()
 
 // Agent of function "Subtraction of Int data"
 
-ATrSubInt::ATrSubInt(const string& aName, MElem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
+ATrSubInt::ATrSubInt(const string& aName, MUnit* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -189,7 +189,7 @@ TInt ATrSubInt::Value()
 
 // Agent function "Multiplying of Int data"
 
-ATrMplInt::ATrMplInt(const string& aName, MElem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
+ATrMplInt::ATrMplInt(const string& aName, MUnit* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -214,7 +214,7 @@ TInt ATrMplInt::Value()
 
 // Agent function "Dividing of Int data"
 
-ATrDivInt::ATrDivInt(const string& aName, MElem* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
+ATrDivInt::ATrDivInt(const string& aName, MUnit* aMan, MEnv* aEnv): ATrInt(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -250,7 +250,7 @@ string ATrVar::PEType()
     return ATrBase::PEType() + GUri::KParentSep + Type();
 }
 
-ATrVar::ATrVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrBase(aName, aMan, aEnv), mFunc(NULL)
+ATrVar::ATrVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrBase(aName, aMan, aEnv), mFunc(NULL)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -322,7 +322,7 @@ string ATrVar::GetInpUri(TInt aId) const
 Elem::TIfRange ATrVar::GetInps(TInt aId, TBool aOpt)
 {
     TIfRange res;
-    MElem* inp = GetNode("./../" + GetInpUri(aId));
+    MUnit* inp = GetNode("./../" + GetInpUri(aId));
     if (inp != NULL) {
 	res =  inp->GetIfi(MDVarGet::Type(), this);
     }
@@ -360,7 +360,7 @@ string ATrAddVar::PEType()
     return ATrVar::PEType() + GUri::KParentSep + Type();
 } 
 
-ATrAddVar::ATrAddVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+ATrAddVar::ATrAddVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -391,7 +391,7 @@ string ATrMplVar::PEType()
     return ATrVar::PEType() + GUri::KParentSep + Type();
 } 
 
-ATrMplVar::ATrMplVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+ATrMplVar::ATrMplVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -417,7 +417,7 @@ string ATrDivVar::PEType()
     return ATrVar::PEType() + GUri::KParentSep + Type();
 } 
 
-ATrDivVar::ATrDivVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+ATrDivVar::ATrDivVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -445,7 +445,7 @@ string ATrSwitchVar::PEType()
     return ATrVar::PEType() + GUri::KParentSep + Type();
 }
 
-ATrSwitchVar::ATrSwitchVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+ATrSwitchVar::ATrSwitchVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -510,7 +510,7 @@ string ATrAtVar::PEType()
     return ATrVar::PEType() + GUri::KParentSep + Type();
 } 
 
-ATrAtVar::ATrAtVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+ATrAtVar::ATrAtVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 } 
@@ -544,7 +544,7 @@ string ATrCpsVectVar::PEType()
     return ATrVar::PEType() + GUri::KParentSep + Type();
 } 
 
-ATrCpsVectVar::ATrCpsVectVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+ATrCpsVectVar::ATrCpsVectVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -572,7 +572,7 @@ string ATrBcmpVar::PEType()
     return ATrVar::PEType() + GUri::KParentSep + Type();
 } 
 
-ATrBcmpVar::ATrBcmpVar(const string& aName, MElem* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
+ATrBcmpVar::ATrBcmpVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrVar(aName, aMan, aEnv)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -620,7 +620,7 @@ FBcmpBase::TFType ATrBcmpVar::GetFType()
 
 /* State base agent */
 
-StateAgent::StateAgent(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
+StateAgent::StateAgent(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -650,8 +650,8 @@ MIface *StateAgent::DoGetObj(const char *aName)
 MIface* StateAgent::MAgent_DoGetIface(const string& aName)
 {
     MIface* res = NULL;
-    if (aName == MElem::Type())
-	res = dynamic_cast<MElem*>(this);
+    if (aName == MUnit::Type())
+	res = dynamic_cast<MUnit*>(this);
     return res;
 }
 
@@ -673,7 +673,7 @@ void StateAgent::ResetActive()
 void StateAgent::Update()
 {
     TBool cdata = GetNode("./../Data") != NULL;
-    MElem* eprepu = GetNode(cdata ? "./../Data/Prepared/Capsule/Upd" : "./../Prepared/Capsule/Upd");
+    MUnit* eprepu = GetNode(cdata ? "./../Data/Prepared/Capsule/Upd" : "./../Prepared/Capsule/Upd");
     if (eprepu != NULL) {
 	MUpdatable* upd = (MUpdatable*) eprepu->GetSIfiC(MUpdatable::Type(), this);
 	if (upd != NULL) {
@@ -692,13 +692,13 @@ void StateAgent::Update()
 void StateAgent::Confirm()
 {
     TBool cdata = GetNode("./../Data") != NULL;
-    MElem* econfu = GetNode(cdata ? "./../Data/Confirmed/Capsule/Upd" : "./../Confirmed/Capsule/Upd");
+    MUnit* econfu = GetNode(cdata ? "./../Data/Confirmed/Capsule/Upd" : "./../Confirmed/Capsule/Upd");
     if (econfu != NULL) {
 	MUpdatable* upd = (MUpdatable*) econfu->GetSIfiC(MUpdatable::Type(), this);
 	if (upd != NULL) {
 	    if (upd->Update()) {
 		// Activate dependencies
-		MElem* eobs = GetNode("./../Capsule/Out/Int/PinObs");
+		MUnit* eobs = GetNode("./../Capsule/Out/Int/PinObs");
 		// Request w/o context because of possible redirecting request to itself
 		// TODO [YB] To check if iterator is not damage during the cycle, to cache to vector if so
 		TIfRange range = eobs->GetIfi(MDesObserver::Type());
@@ -815,7 +815,7 @@ string ADes::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-ADes::ADes(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
+ADes::ADes(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -840,8 +840,8 @@ MIface *ADes::DoGetObj(const char *aName)
 MIface* ADes::MAgent_DoGetIface(const string& aName)
 {
     MIface* res = NULL;
-    if (aName == MElem::Type())
-	res = dynamic_cast<MElem*>(this);
+    if (aName == MUnit::Type())
+	res = dynamic_cast<MUnit*>(this);
     return res;
 }
 
@@ -864,9 +864,9 @@ void ADes::Update()
 {
     // Update all the DES components avoiding agents and capsule
     // TODO Why not using local Iface cache for MDesSyncable ?
-    MElem* host = iMan;
+    MUnit* host = iMan;
     for (TInt ci = 0; ci < host->CompsCount(); ci++) {
-	MElem* eit = host->GetComp(ci);
+	MUnit* eit = host->GetComp(ci);
 	if (eit != this && eit->Name() != "Capsule") {
 	    MDesSyncable* msync = (MDesSyncable*) eit->GetSIfiC(MDesSyncable::Type(), this);
 	    if (msync != NULL) {
@@ -886,9 +886,9 @@ void ADes::Update()
 void ADes::Confirm()
 {
     // Confirm all the DES components
-    MElem* host = iMan;
+    MUnit* host = iMan;
     for (TInt ci = 0; ci < host->CompsCount(); ci++) {
-	MElem* eit = host->GetComp(ci);
+	MUnit* eit = host->GetComp(ci);
 	if (eit != this && eit->Name() != "Capsule") {
 	    MDesSyncable* msync = (MDesSyncable*) eit->GetSIfiC(MDesSyncable::Type(), this);
 	    if (msync != NULL) {

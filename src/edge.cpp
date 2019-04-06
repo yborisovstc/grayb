@@ -25,12 +25,12 @@ string Edge::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-Edge::Edge(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
+Edge::Edge(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
 {
     SetCrAttr(PEType(), aName);
     // Adding properties "Points"
-    Elem* p1 = Provider()->CreateNode("Prop", "P1", this, iEnv);
-    Elem* p2 = Provider()->CreateNode("Prop", "P2", this, iEnv);
+    Unit* p1 = Provider()->CreateNode("Prop", "P1", this, iEnv);
+    Unit* p2 = Provider()->CreateNode("Prop", "P2", this, iEnv);
     __ASSERT(p1 != NULL && p2 != NULL);
     TBool res = AppendComp(p1);
     __ASSERT(res);
@@ -100,7 +100,7 @@ TBool Edge::ConnectP2(MVert* aPoint)
     return res;
 }
 
-TBool Edge::Connect(MElem* aCp)
+TBool Edge::Connect(MUnit* aCp)
 {
     TBool res = EFalse;
     if (aCp == Point1p()) {
@@ -151,7 +151,7 @@ void Edge::Disconnect()
     }
 }
 
-void Edge::Disconnect(MElem* aCp)
+void Edge::Disconnect(MUnit* aCp)
 {
     if (aCp == Point1p()) {
 	Disconnect(iPoint1);
@@ -163,7 +163,7 @@ void Edge::Disconnect(MElem* aCp)
 
 const string& Edge::Point1u()
 {
-    MElem* pte = GetNode("./P1");
+    MUnit* pte = GetNode("./P1");
     __ASSERT(pte != NULL);
     MProp* pt = pte->GetObj(pt);
     __ASSERT(pt != NULL);
@@ -172,23 +172,23 @@ const string& Edge::Point1u()
 
 const string& Edge::Point2u()
 {
-    MElem* pte = GetNode("./P2");
+    MUnit* pte = GetNode("./P2");
     __ASSERT(pte != NULL);
     MProp* pt = pte->GetObj(pt);
     __ASSERT(pt != NULL);
     return pt->Value();
 }
 
-const string& Edge::Pointu(MElem* aCp)
+const string& Edge::Pointu(MUnit* aCp)
 {
     MProp* pt = aCp->GetObj(pt);
     __ASSERT(pt != NULL);
     return pt->Value();
 }
 
-MElem* Edge::Point1rc()
+MUnit* Edge::Point1rc()
 {
-    MElem* res = NULL;
+    MUnit* res = NULL;
     if (iPoint1 != NULL) {
 	res = iPoint1->GetObj(res);
     }
@@ -198,9 +198,9 @@ MElem* Edge::Point1rc()
     return res;
 }
 
-MElem* Edge::Point2rc()
+MUnit* Edge::Point2rc()
 {
-    MElem* res = NULL;
+    MUnit* res = NULL;
     if (iPoint2 != NULL) {
 	res = iPoint2->GetObj(res);
     }
@@ -210,10 +210,10 @@ MElem* Edge::Point2rc()
     return res;
 }
 
-MElem* Edge::Point1r()
+MUnit* Edge::Point1r()
 {
-    MElem* res = NULL;
-    MElem* pte = GetNode("./P1");
+    MUnit* res = NULL;
+    MUnit* pte = GetNode("./P1");
     __ASSERT(pte != NULL);
     MProp* pt = pte->GetObj(pt);
     __ASSERT(pt != NULL);
@@ -224,10 +224,10 @@ MElem* Edge::Point1r()
     return res;
 }
 
-MElem* Edge::Point2r()
+MUnit* Edge::Point2r()
 {
-    MElem* res = NULL;
-    MElem* pte = GetNode("./P2");
+    MUnit* res = NULL;
+    MUnit* pte = GetNode("./P2");
     __ASSERT(pte != NULL);
     MProp* pt = pte->GetObj(pt);
     __ASSERT(pt != NULL);
@@ -238,10 +238,10 @@ MElem* Edge::Point2r()
     return res;
 }
 
-MElem* Edge::Pointr(MElem* aCp)
+MUnit* Edge::Pointr(MUnit* aCp)
 {
     __ASSERT(aCp == Point1p() || aCp == Point2p());
-    MElem* res = NULL;
+    MUnit* res = NULL;
     const string& uri = Pointu(aCp);
     if (!uri.empty()) {
 	res = aCp->GetNode(uri);
@@ -253,10 +253,10 @@ MElem* Edge::Pointr(MElem* aCp)
 MVert* Edge::Point1v()
 {
     MVert* res = NULL;
-    MElem* pte = GetNode("./P1");
+    MUnit* pte = GetNode("./P1");
     const string& uri = Point1u();
     if (!uri.empty()) {
-	MElem* pr = pte->GetNode(uri);
+	MUnit* pr = pte->GetNode(uri);
 	if (pr != NULL) {
 	    res = pr->GetObj(res);
 	}
@@ -267,10 +267,10 @@ MVert* Edge::Point1v()
 MVert* Edge::Point2v()
 {
     MVert* res = NULL;
-    MElem* pte = GetNode("./P2");
+    MUnit* pte = GetNode("./P2");
     const string& uri = Point2u();
     if (!uri.empty()) {
-	MElem* pr = pte->GetNode(uri);
+	MUnit* pr = pte->GetNode(uri);
 	if (pr != NULL) {
 	    res = pr->GetObj(res);
 	}
@@ -281,17 +281,17 @@ MVert* Edge::Point2v()
 MVert* Edge::Ref1() const
 {
     MVert* res = NULL;
-    MElem* pte = ((Elem*) this)->GetNode("./P1");
+    MUnit* pte = ((Elem*) this)->GetNode("./P1");
     __ASSERT(pte != NULL);
     MProp* pt = pte->GetObj(pt);
     __ASSERT(pt != NULL);
     const string& uri = pt->Value();
     if (!uri.empty()) {
-	MElem* pr = pte->GetNode(uri);
-	if (pr != NULL) res = pr->GetObj(res);
+	MUnit* pr = pte->GetNode(uri);
+	res = (pr == NULL) ? NULL : pr->GetObj(res);
 	if (res == NULL) {
 	    Logger()->Write(EErr, this, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());
-	    res = pr->GetObj(res);
+	    res = (pr == NULL) ? NULL : pr->GetObj(res);
 	}
     }
     return res;
@@ -300,12 +300,12 @@ MVert* Edge::Ref1() const
 MVert* Edge::Ref2() const
 {
     MVert* res = NULL;
-    MElem* pte = ((Elem*) this)->GetNode("./P2");
+    MUnit* pte = ((Elem*) this)->GetNode("./P2");
     MProp* pt = pte->GetObj(pt);
     __ASSERT(pt != NULL);
     const string& uri = pt->Value();
     if (!uri.empty()) {
-	MElem* pr = pte->GetNode(uri);
+	MUnit* pr = pte->GetNode(uri);
 	if (pr != NULL) res = pr->GetObj(res);
 	if (res == NULL) {
 	    Logger()->Write(EErr, this, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());
@@ -314,13 +314,13 @@ MVert* Edge::Ref2() const
     return res;
 }
 
-MVert* Edge::Pointv(MElem* aCp)
+MVert* Edge::Pointv(MUnit* aCp)
 {
     __ASSERT(aCp == Point1p() || aCp == Point2p());
     MVert* res = NULL;
     const string& uri = Pointu(aCp);
     if (!uri.empty()) {
-	MElem* pr = aCp->GetNode(uri);
+	MUnit* pr = aCp->GetNode(uri);
 	if (pr != NULL) {
 	    res = pr->GetObj(res);
 	}
@@ -328,17 +328,17 @@ MVert* Edge::Pointv(MElem* aCp)
     return res;
 }
 
-MElem* Edge::Point1p()
+MUnit* Edge::Point1p()
 {
     return GetNode("./P1");
 }
 
-MElem* Edge::Point2p()
+MUnit* Edge::Point2p()
 {
     return GetNode("./P2");
 }
 
-TBool Edge::OnCompChanged(MElem& aComp, const string& aContName, TBool aModif)
+TBool Edge::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
 {
     return Elem::OnCompChanged(aComp, aContName, aModif);
     // Propagate notification to upper level
@@ -357,21 +357,18 @@ void Edge::SetRemoved(TBool aModif)
     Elem::SetRemoved(aModif);
 }
 
-MIface* Edge::Call(const string& aSpec, string& aRes)
+MIface* Edge::MEdge_Call(const string& aSpec, string& aRes)
 {
     MIface* res = NULL;
     string name, sig;
     vector<string> args;
     Ifu::ParseIcSpec(aSpec, name, sig, args);
     TBool name_ok = MEdge::mIfu.CheckMname(name);
-    if (!name_ok) {
-	return Elem::Call(aSpec, aRes);
-    }
     TBool args_ok = MEdge::mIfu.CheckMpars(name, args.size());
     if (!args_ok) 
 	throw (runtime_error("Wrong arguments number"));
     if (name == "ConnectP1") {
-	MElem* pair = GetNode(args.at(0));
+	MUnit* pair = GetNode(args.at(0));
 	if (pair == NULL) {
 	    throw (runtime_error("Cannot get pair: " + args.at(0)));
 	}
@@ -382,7 +379,7 @@ MIface* Edge::Call(const string& aSpec, string& aRes)
 	TBool rr = ConnectP1(vpair);
 	aRes = Ifu::FromBool(rr);
     } else if (name == "ConnectP2") {
-	MElem* pair = GetNode(args.at(0));
+	MUnit* pair = GetNode(args.at(0));
 	if (pair == NULL) {
 	    throw (runtime_error("Cannot get pair: " + args.at(0)));
 	}
@@ -408,18 +405,21 @@ MIface* Edge::Call(const string& aSpec, string& aRes)
 
 void Edge::SetPoint1(const string& aRef)
 {
-    MElem* p = Point1p();
+    MUnit* p = Point1p();
+    MElem* pe = p->GetObj(pe);
     GUri uri = GUri("./..") + aRef;
-    p->AppendMutation(TMut(ENt_Cont, ENa_Ref, uri));
-    p->Mutate(false, true, true, GetRoot());
+    // TODO Do we need mutation here, or just change?
+    pe->AppendMutation(TMut(ENt_Cont, ENa_Ref, uri));
+    pe->Mutate(false, true, true, GetRoot());
 }
 
 void Edge::SetPoint2(const string& aRef)
 {
-    MElem* p = Point2p();
+    MUnit* p = Point2p();
+    MElem* pe = p->GetObj(pe);
     GUri uri = GUri("./..") + aRef;
-    p->AppendMutation(TMut(ENt_Cont, ENa_Ref, uri));
-    p->Mutate(false, true, true, GetRoot());
+    pe->AppendMutation(TMut(ENt_Cont, ENa_Ref, uri));
+    pe->Mutate(false, true, true, GetRoot());
 }
 
 
@@ -435,7 +435,7 @@ string Aedge::PEType()
     return Elem::PEType() + GUri::KParentSep + Type();
 }
 
-Aedge::Aedge(const string& aName, MElem* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
+Aedge::Aedge(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iPoint1(NULL), iPoint2(NULL)
 {
     SetCrAttr(PEType(), aName);
 }
@@ -593,21 +593,18 @@ TBool Aedge::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
     return res;
 }
 
-MIface* Aedge::Call(const string& aSpec, string& aRes)
+MIface* Aedge::MEdge_Call(const string& aSpec, string& aRes)
 {
     MIface* res = NULL;
     string name, sig;
     vector<string> args;
     Ifu::ParseIcSpec(aSpec, name, sig, args);
     TBool name_ok = MEdge::mIfu.CheckMname(name);
-    if (!name_ok) {
-	return Elem::Call(aSpec, aRes);
-    }
     TBool args_ok = MEdge::mIfu.CheckMpars(name, args.size());
     if (!args_ok) 
 	throw (runtime_error("Wrong arguments number"));
     if (name == "ConnectP1") {
-	MElem* pair = GetNode(args.at(0));
+	MUnit* pair = GetNode(args.at(0));
 	if (pair != NULL) {
 	    throw (runtime_error("Cannot get pair: " + args.at(0)));
 	}
@@ -618,7 +615,7 @@ MIface* Aedge::Call(const string& aSpec, string& aRes)
 	TBool rr = ConnectP1(vpair);
 	aRes = Ifu::FromBool(rr);
     } else if (name == "ConnectP2") {
-	MElem* pair = GetNode(args.at(0));
+	MUnit* pair = GetNode(args.at(0));
 	if (pair != NULL) {
 	    throw (runtime_error("Cannot get pair: " + args.at(0)));
 	}
@@ -643,10 +640,11 @@ MVert* Aedge::Ref1() const
     MVert* res = NULL;
     const string& uri = Point1u();
     if (!uri.empty()) {
-	MElem* pr = ((MElem*) this)->GetNode(uri);
-	if (pr != NULL) res = pr->GetObj(res);
+	MUnit* pr = ((MUnit*) this)->GetNode(uri);
+	res = (pr == NULL) ? NULL : pr->GetObj(res);
 	if (res == NULL) {
 	    Logger()->Write(EErr, this, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());
+	    res = (pr == NULL) ? NULL : pr->GetObj(res);
 	}
     }
     return res;
@@ -658,7 +656,7 @@ MVert* Aedge::Ref2() const
     MVert* res = NULL;
     const string& uri = Point2u();
     if (!uri.empty()) {
-	MElem* pr = ((MElem*) this)->GetNode(uri);
+	MUnit* pr = ((MUnit*) this)->GetNode(uri);
 	if (pr != NULL) res = pr->GetObj(res);
 	if (res == NULL) {
 	    Logger()->Write(EErr, this, "Referencing to [%s] - cannot find or isn't vertex", uri.c_str());

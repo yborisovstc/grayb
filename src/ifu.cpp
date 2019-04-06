@@ -3,7 +3,7 @@
 #include <stdexcept> 
 #include <sstream>
 #include "ifu.h" 
-#include "melem.h" 
+#include "munit.h" 
 
 
 char Ifu::KRinvSep = ',';
@@ -184,22 +184,22 @@ template<> string Ifu::Pack<const char*>(const char* aArg)
     return string(aArg);
 }
 
-template<> string Ifu::Pack<const MElem*>(const MElem* aArg)
+template<> string Ifu::Pack<const MUnit*>(const MUnit* aArg)
 {
     return aArg == NULL ? GUri::Nil() : aArg->GetUri(NULL, ETrue);
 }
 
-template<> string Ifu::Pack<MElem&>(MElem& aArg)
+template<> string Ifu::Pack<MUnit&>(MUnit& aArg)
 {
     return aArg.GetUri(NULL, ETrue);
 }
 
-template<> string Ifu::Pack<const MElem&>(const MElem& aArg)
+template<> string Ifu::Pack<const MUnit&>(const MUnit& aArg)
 {
     return aArg.GetUri(NULL, ETrue);
 }
 
-template<> string Ifu::Pack<MElem*>(MElem* aArg)
+template<> string Ifu::Pack<MUnit*>(MUnit* aArg)
 {
     return aArg == NULL ? GUri::Nil() : aArg->GetUri(NULL, ETrue);
 }
@@ -215,7 +215,7 @@ template<> string Ifu::Pack<const TICacheRCtx&>(const TICacheRCtx& aArg)
     for (TICacheRCtx::const_iterator it = aArg.begin(); it != aArg.end(); it++) {
 	Base* rq = *it;
 	if (rq != NULL) {
-	    MElem* re = rq->GetObj(re);
+	    MUnit* re = rq->GetObj(re);
 	    if (it == aArg.begin()) {
 		res += KArraySep;
 	    }
@@ -232,7 +232,7 @@ template<> string Ifu::Pack<TICacheRCtx&>(TICacheRCtx& aArg)
     for (TICacheRCtx::const_iterator it = aArg.begin(); it != aArg.end(); it++) {
 	Base* rq = *it;
 	if (rq != NULL) {
-	    MElem* re = rq->GetObj(re);
+	    MUnit* re = rq->GetObj(re);
 	    if (it == aArg.begin()) {
 		res += KArraySep;
 	    }
@@ -249,7 +249,7 @@ template<> string Ifu::Pack<TICacheRCtx>(TICacheRCtx aArg)
     for (TICacheRCtx::const_iterator it = aArg.begin(); it != aArg.end(); it++) {
 	Base* rq = *it;
 	if (rq != NULL) {
-	    MElem* re = rq->GetObj(re);
+	    MUnit* re = rq->GetObj(re);
 	    if (it == aArg.begin()) {
 		res += KArraySep;
 	    }

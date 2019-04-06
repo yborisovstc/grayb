@@ -5,6 +5,7 @@
 #include "profiler.h"
 #include "guri.h"
 #include "melem.h"
+#include "munit.h"
 
 using namespace std;
 
@@ -146,7 +147,7 @@ PRecClock* PindClock::NewRec()
 }
 
 
-void PindClock::Rec(PEvent::TId aEventId, MElem* aNode)
+void PindClock::Rec(PEvent::TId aEventId, MUnit* aNode)
 {
     PRec* rec = NewRec();
     if (rec) {
@@ -185,7 +186,7 @@ PindDur::~PindDur()
 {
 }
 
-void PindDur::Rec(PEvent::TId aEventId, MElem* aNode)
+void PindDur::Rec(PEvent::TId aEventId, MUnit* aNode)
 {
     TPRec* rec = NewRec();
     if (rec) {

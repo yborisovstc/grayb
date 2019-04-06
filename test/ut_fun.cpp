@@ -60,9 +60,9 @@ void Ut_func::test_FuncSeq1()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    MElem* doutp = root->GetNode("./test/DataS_Int_1/Capsule/out");
+    MUnit* doutp = root->GetNode("./test/DataS_Int_1/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
     MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
@@ -71,25 +71,25 @@ void Ut_func::test_FuncSeq1()
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out vertex", mdoutpv != 0);
     MVert* pair = mdoutpv->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    MElem* efuninp = root->GetNode("./test/Incr/Capsule/inp");
+    MUnit* efuninp = root->GetNode("./test/Incr/Capsule/inp");
     CPPUNIT_ASSERT_MESSAGE("Fail to get fun inp", efuninp != NULL);
     MVert* mpairt = efuninp->GetObj(mpairt);
     CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
 
-    MElem* foutp = root->GetNode("./test/Incr2/Capsule/out");
+    MUnit* foutp = root->GetNode("./test/Incr2/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
     MDIntGet* foutpget = (MDIntGet*) foutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
     TInt fres = foutpget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result", fres == 36);
 
-    MElem* resdata = root->GetNode("./test/ResData/Capsule/out");
+    MUnit* resdata = root->GetNode("./test/ResData/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out", resdata != 0);
     MDIntGet* rdataget = (MDIntGet*) resdata->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget != 0);
     TInt rdataval = rdataget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval == 36);
-    MElem* resdataprop = root->GetNode("./test/ResData/Value");
+    MUnit* resdataprop = root->GetNode("./test/ResData/Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata value property", resdataprop != 0);
     MProp* rdmprop = resdataprop->GetObj(rdmprop);
     const string& rdval = rdmprop->Value();
@@ -97,20 +97,21 @@ void Ut_func::test_FuncSeq1()
 
     // Checking the result update on update of input
     // Mutate the input data first
-    MElem* dinp = root->GetNode("./test/DataS_Int_1");
-    ChromoNode nchange = dinp->AppendMutation(ENt_Cont);
+    MUnit* dinp = root->GetNode("./test/DataS_Int_1");
+    MElem* edinp = dinp->GetObj(edinp);
+    ChromoNode nchange = edinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./Value");
     nchange.SetAttr(ENa_MutVal, "57");
-    dinp->Mutate();
+    edinp->Mutate();
     // Check the function output
-    MElem* foutp1 = root->GetNode("./test/Incr2/Capsule/out");
+    MUnit* foutp1 = root->GetNode("./test/Incr2/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out when inp data changed", foutp1 != 0);
     MDIntGet* foutpget1 = (MDIntGet*) foutp1->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface when input data changed", foutpget1 != 0);
     TInt fres1 = foutpget1->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result after input data change", fres1 == 59);
     // Check the output data
-    MElem* resdataprop1 = root->GetNode("./test/ResData/Value");
+    MUnit* resdataprop1 = root->GetNode("./test/ResData/Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
     MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
     const string& rdval1 = rdmprop1->Value();
@@ -128,9 +129,9 @@ void Ut_func::test_FuncSeq2()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    MElem* doutp = root->GetNode("./test/DataS_Int_1/Capsule/out");
+    MUnit* doutp = root->GetNode("./test/DataS_Int_1/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
     MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
@@ -139,25 +140,25 @@ void Ut_func::test_FuncSeq2()
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out vertex", mdoutpv != 0);
     MVert* pair = mdoutpv->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    MElem* efuninp = root->GetNode("./test/Add/Capsule/inp");
+    MUnit* efuninp = root->GetNode("./test/Add/Capsule/inp");
     CPPUNIT_ASSERT_MESSAGE("Fail to get fun inp", efuninp != NULL);
     MVert* mpairt = efuninp->GetObj(mpairt);
     CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
 
-    MElem* foutp = root->GetNode("./test/Add/Capsule/out");
+    MUnit* foutp = root->GetNode("./test/Add/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
     MDIntGet* foutpget = (MDIntGet*) foutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
     TInt fres = foutpget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result", fres == 60);
 
-    MElem* resdata = root->GetNode("./test/ResData/Capsule/out");
+    MUnit* resdata = root->GetNode("./test/ResData/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out", resdata != 0);
     MDIntGet* rdataget = (MDIntGet*) resdata->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget != 0);
     TInt rdataval = rdataget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval == 60);
-    MElem* resdataprop = root->GetNode("./test/ResData/Value");
+    MUnit* resdataprop = root->GetNode("./test/ResData/Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata value property", resdataprop != 0);
     MProp* rdmprop = resdataprop->GetObj(rdmprop);
     const string& rdval = rdmprop->Value();
@@ -165,20 +166,21 @@ void Ut_func::test_FuncSeq2()
 
     // Checking the result update on update of input
     // Mutate the input data first
-    MElem* dinp = root->GetNode("./test/DataS_Int_1");
-    ChromoNode nchange = dinp->AppendMutation(ENt_Cont);
+    MUnit* dinp = root->GetNode("./test/DataS_Int_1");
+    MElem* edinp = dinp->GetObj(edinp);
+    ChromoNode nchange = edinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./Value");
     nchange.SetAttr(ENa_MutVal, "57");
-    dinp->Mutate();
+    edinp->Mutate();
     // Check the function output
-    MElem* foutp1 = root->GetNode("./test/Add/Capsule/out");
+    MUnit* foutp1 = root->GetNode("./test/Add/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out when inp data changed", foutp1 != 0);
     MDIntGet* foutpget1 = (MDIntGet*) foutp1->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface when input data changed", foutpget1 != 0);
     TInt fres1 = foutpget1->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result after input data change", fres1 == 83);
     // Check the output data
-    MElem* resdataprop1 = root->GetNode("./test/ResData/Value");
+    MUnit* resdataprop1 = root->GetNode("./test/ResData/Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
     MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
     const string& rdval1 = rdmprop1->Value();
@@ -196,9 +198,9 @@ void Ut_func::test_FuncSeq3()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    MElem* doutp = root->GetNode("./test/DataS_Int_1/Capsule/out");
+    MUnit* doutp = root->GetNode("./test/DataS_Int_1/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
     MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
@@ -207,25 +209,25 @@ void Ut_func::test_FuncSeq3()
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out vertex", mdoutpv != 0);
     MVert* pair = mdoutpv->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    MElem* efuninp = root->GetNode("./test/Add/Capsule/inp");
+    MUnit* efuninp = root->GetNode("./test/Add/Capsule/inp");
     CPPUNIT_ASSERT_MESSAGE("Fail to get fun inp", efuninp != NULL);
     MVert* mpairt = efuninp->GetObj(mpairt);
     CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
 
-    MElem* foutp = root->GetNode("./test/Add/Capsule/out");
+    MUnit* foutp = root->GetNode("./test/Add/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out", foutp != 0);
     MDIntGet* foutpget = (MDIntGet*) foutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface", foutpget != 0);
     TInt fres = foutpget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result", fres == 60);
 
-    MElem* resdata = root->GetNode("./test/ResData/Capsule/out");
+    MUnit* resdata = root->GetNode("./test/ResData/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out", resdata != 0);
     MDIntGet* rdataget = (MDIntGet*) resdata->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget != 0);
     TInt rdataval = rdataget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval == 60);
-    MElem* resdataprop = root->GetNode("./test/ResData/Value");
+    MUnit* resdataprop = root->GetNode("./test/ResData/Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata value property", resdataprop != 0);
     MProp* rdmprop = resdataprop->GetObj(rdmprop);
     const string& rdval = rdmprop->Value();
@@ -233,20 +235,21 @@ void Ut_func::test_FuncSeq3()
 
     // Checking the result update on update of input
     // Mutate the input data first
-    MElem* dinp = root->GetNode("./test/DataS_Int_1");
-    ChromoNode nchange = dinp->AppendMutation(ENt_Cont);
+    MUnit* dinp = root->GetNode("./test/DataS_Int_1");
+    MElem* edinp = dinp->GetObj(edinp);
+    ChromoNode nchange = edinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./Value");
     nchange.SetAttr(ENa_MutVal, "57");
-    dinp->Mutate();
+    edinp->Mutate();
     // Check the function output
-    MElem* foutp1 = root->GetNode("./test/Add/Capsule/out");
+    MUnit* foutp1 = root->GetNode("./test/Add/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out when inp data changed", foutp1 != 0);
     MDIntGet* foutpget1 = (MDIntGet*) foutp1->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out Get iface when input data changed", foutpget1 != 0);
     TInt fres1 = foutpget1->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect func result after input data change", fres1 == 83);
     // Check the output data
-    MElem* resdataprop1 = root->GetNode("./test/ResData/Value");
+    MUnit* resdataprop1 = root->GetNode("./test/ResData/Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
     MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
     const string& rdval1 = rdmprop1->Value();
@@ -264,16 +267,16 @@ void Ut_func::test_FuncSeq4()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
-    MElem* resdata = root->GetNode("./test/ResData/Capsule/out");
+    MUnit* resdata = root->GetNode("./test/ResData/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out", resdata != 0);
     MDIntGet* rdataget = (MDIntGet*) resdata->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget != 0);
     TInt rdataval = rdataget->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect rdata value", rdataval == 1);
-    MElem* resdataprop = root->GetNode("./test/ResData/Value");
+    MUnit* resdataprop = root->GetNode("./test/ResData/Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata value property", resdataprop != 0);
     MProp* rdmprop = resdataprop->GetObj(rdmprop);
     const string& rdval = rdmprop->Value();
@@ -281,20 +284,21 @@ void Ut_func::test_FuncSeq4()
 
     // Checking the result update on update of input
     // Mutate the input data first
-    MElem* dinp = root->GetNode("./test/Data_SelfCoord");
-    ChromoNode nchange = dinp->AppendMutation(ENt_Cont);
+    MUnit* dinp = root->GetNode("./test/Data_SelfCoord");
+    MElem* edinp = dinp->GetObj(edinp);
+    ChromoNode nchange = edinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./Value");
     nchange.SetAttr(ENa_MutVal, "80");
-    dinp->Mutate();
+    edinp->Mutate();
     // Check the output data
-    MElem* resdataprop1 = root->GetNode("./test/ResData/Value");
+    MUnit* resdataprop1 = root->GetNode("./test/ResData/Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
     MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
     const string& rdval1 = rdmprop1->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "3");
 
     // Verifying second part of test - division
-    MElem* resdata2 = root->GetNode("./test/DivResData/Capsule/out");
+    MUnit* resdata2 = root->GetNode("./test/DivResData/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get res data out", resdata2 != 0);
     MDIntGet* rdataget2 = (MDIntGet*) resdata2->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get rdata out Get iface", rdataget2 != 0);
@@ -313,22 +317,23 @@ void Ut_func::test_FuncVar1()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
-    MElem* dir = root->GetNode("./Start/Incaps_root/e2");
-    ChromoNode mut1 = dir->AppendMutation(ENt_Cont);
+    MUnit* dir = root->GetNode("./Start/Incaps_root/e2");
+    MElem* edir = dir->GetObj(edir);
+    ChromoNode mut1 = edir->AppendMutation(ENt_Cont);
     mut1.SetAttr(ENa_MutNode, "./P1");
     mut1.SetAttr(ENa_Ref, "/Root/Start/Incaps_root/Inp_data1/Capsule/out");
-    dir->Mutate();
+    edir->Mutate();
 
     // Check the output data
-    MElem* resdataprop1 = root->GetNode("/Root/Start/Incaps_root/Dt/Value");
+    MUnit* resdataprop1 = root->GetNode("/Root/Start/Incaps_root/Dt/Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
     MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
     const string& rdval1 = rdmprop1->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "F 4");
-    MElem* resdata1 = root->GetNode("/Root/Start/Incaps_root/Dt/Capsule/out");
+    MUnit* resdata1 = root->GetNode("/Root/Start/Incaps_root/Dt/Capsule/out");
     MDVarGet* resdata1g = (MDVarGet*) resdata1->GetSIfi(MDVarGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Cannot get MDVarGet from result data", resdata1g != NULL);
     MDFloatGet* resdata1f = resdata1g->GetDObj(resdata1f);
@@ -347,22 +352,23 @@ void Ut_func::test_FuncVar1mc()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
-    MElem* dir = root->GetNode("./Start/Incaps_root/e2");
-    ChromoNode mut1 = dir->AppendMutation(ENt_Cont);
+    MUnit* dir = root->GetNode("./Start/Incaps_root/e2");
+    MElem* edir = dir->GetObj(edir);
+    ChromoNode mut1 = edir->AppendMutation(ENt_Cont);
     mut1.SetAttr(ENa_MutNode, "./P1");
     mut1.SetAttr(ENa_Ref, "/Root/Start/Incaps_root/Inp_data1/Capsule/out");
-    dir->Mutate();
+    edir->Mutate();
 
     // Check the output data
-    MElem* resdataprop1 = root->GetNode("/Root/Start/Incaps_root/Dt/Value");
+    MUnit* resdataprop1 = root->GetNode("/Root/Start/Incaps_root/Dt/Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
     MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
     const string& rdval1 = rdmprop1->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "F 4");
-    MElem* resdata1 = root->GetNode("/Root/Start/Incaps_root/Dt/Capsule/out");
+    MUnit* resdata1 = root->GetNode("/Root/Start/Incaps_root/Dt/Capsule/out");
     MDVarGet* resdata1g = (MDVarGet*) resdata1->GetSIfi(MDVarGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Cannot get MDVarGet from result data", resdata1g != NULL);
     MDFloatGet* resdata1f = resdata1g->GetDObj(resdata1f);
@@ -382,11 +388,11 @@ void Ut_func::test_FuncVar2()
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
-    MElem* root = iEnv->Root();
+    MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
     /*
-    MElem* dir = root->GetNode("Start/Incaps_root");
+    MUnit* dir = root->GetNode("Start/Incaps_root");
     ChromoNode mut1 = dir->AppendMutation(ENt_Cont);
     mut1.SetAttr(ENa_MutNode, "e2/P1");
     mut1.SetAttr(ENa_Ref, "/Root/Start/Incaps_root/Inp_data1/Capsule/out");
@@ -395,12 +401,12 @@ void Ut_func::test_FuncVar2()
 
 
     // Check the output data
-    MElem* resdataprop1 = root->GetNode("/Root/Start/Incaps_root/Dt/Value");
+    MUnit* resdataprop1 = root->GetNode("/Root/Start/Incaps_root/Dt/Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
     MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
     const string& rdval1 = rdmprop1->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "B false");
-    MElem* resdata1 = root->GetNode("/Root/Start/Incaps_root/Dt/Capsule/out");
+    MUnit* resdata1 = root->GetNode("/Root/Start/Incaps_root/Dt/Capsule/out");
     MDVarGet* resdata1g = (MDVarGet*) resdata1->GetSIfi(MDVarGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Cannot get MDVarGet from result data", resdata1g != NULL);
     MDBoolGet* resdata1f = resdata1g->GetDObj(resdata1f);
@@ -410,11 +416,13 @@ void Ut_func::test_FuncVar2()
     
     // Checking the type establishing
     // Mutate the result data first
-    MElem* dinp = root->GetNode("./Start/Incaps_root/Inp_data1");
-    ChromoNode nchange = dinp->AppendMutation(ENt_Cont);
+    MUnit* dinp = root->GetNode("./Start/Incaps_root/Inp_data1");
+    MElem* edinp = dinp->GetObj(edinp);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    ChromoNode nchange = edinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./Value");
     nchange.SetAttr(ENa_MutVal, "I 80");
-    dinp->Mutate();
+    edinp->Mutate();
 
     delete iEnv;
 }

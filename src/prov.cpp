@@ -10,7 +10,7 @@ GProvider::GProvider(const string& aName, MEnv* aEnv): Base(), iName(aName), iEn
 GProvider::~GProvider() 
 {
     while (!iReg.empty()) {
-	Elem* elem = iReg.begin()->second;
+	Unit* elem = iReg.begin()->second;
 	delete elem;
 	iReg.erase(iReg.begin());
     }
@@ -31,17 +31,17 @@ MIface *GProvider::DoGetObj(const char *aName)
     return res;
 }
 
-Elem* GProvider::CreateNode(const string& aType, const string& aName, MElem* aMan, MEnv* aEnv)
+Unit* GProvider::CreateNode(const string& aType, const string& aName, MUnit* aMan, MEnv* aEnv)
 {
     return NULL;
 }
 
-Elem* GProvider::GetNode(const string& aUri)
+Unit* GProvider::GetNode(const string& aUri)
 {
     return NULL;
 }
 
-TBool GProvider::IsProvided(const MElem* aElem) const
+TBool GProvider::IsProvided(const MUnit* aElem) const
 {
     TBool res = false;
     for (TReg::const_iterator it = iReg.begin(); it != iReg.end() && !res; it++) {

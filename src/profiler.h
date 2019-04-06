@@ -66,14 +66,14 @@ class PRecClock: public PRec
 {
     public:
 	PRecClock(): mClock(0), mNode(nullptr) {}
-	PRecClock(PEvent::TId aEid, MPind::TClock aClock, MElem* aNode): PRec(aEid), mClock(aClock), mNode(aNode) {}
-	void setNode(MElem* aNode) { mNode = aNode;}
+	PRecClock(PEvent::TId aEid, MPind::TClock aClock, MUnit* aNode): PRec(aEid), mClock(aClock), mNode(aNode) {}
+	void setNode(MUnit* aNode) { mNode = aNode;}
 	void setClock(Pind::TClock aClock) { mClock = aClock;}
     public:
 	// Clock value, in ns
 	Pind::TClock mClock = 0;
 	/** Node for that record is created */
-	MElem* mNode = nullptr;
+	MUnit* mNode = nullptr;
 };
 
 
@@ -99,13 +99,13 @@ class PindClock: public Pind, public MPClock
     public:
 	PindClock(const Idata& aIdata);
 	virtual ~PindClock();
-	void Rec(PEvent::TId aEventId, MElem* aNode);
+	void Rec(PEvent::TId aEventId, MUnit* aNode);
 	// From MPind
 	virtual const PEvent& getEvent(PEvent::TId aId) const;
 	virtual string recToString(int aRecNum) const override;
 	virtual string getFileSuf() const override { return "clock";}
 	// From MPClock
-	virtual void operator()(PEvent::TId aEventId, MElem* aNode) { PRecClock* rec = NewRec(); if (rec != nullptr) { *rec = {aEventId, GetClock(), aNode};}}
+	virtual void operator()(PEvent::TId aEventId, MUnit* aNode) { PRecClock* rec = NewRec(); if (rec != nullptr) { *rec = {aEventId, GetClock(), aNode};}}
     protected:
 	virtual PRecClock* NewRec();
     protected:
@@ -152,13 +152,13 @@ class PindDur: public Pind, public MPDur
     public:
 	PindDur(const Idata& aIdata);
 	virtual ~PindDur();
-	void Rec(PEvent::TId aEventId, MElem* aNode);
+	void Rec(PEvent::TId aEventId, MUnit* aNode);
 	// From MPind
 	virtual const TPEvent& getEvent(PEvent::TId aId) const;
 	virtual string recToString(int aRecNum) const override;
 	virtual string getFileSuf() const override { return "dur";}
 	// From MPDur
-	virtual void operator()(PEvent::TId aEventId, MElem* aNode) { PRecClock* rec = NewRec(); if (rec != nullptr) { *rec = {aEventId, GetClock(), aNode};}}
+	virtual void operator()(PEvent::TId aEventId, MUnit* aNode) { PRecClock* rec = NewRec(); if (rec != nullptr) { *rec = {aEventId, GetClock(), aNode};}}
     protected:
 	virtual TPRec* NewRec();
 	/** Finds nearest lower record for start event */

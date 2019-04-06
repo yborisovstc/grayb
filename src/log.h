@@ -16,8 +16,8 @@
 	    virtual MIface *DoGetObj(const char *aName) override { return NULL;}
 	    // From MLogRec
 	    virtual void WriteFormat(const char* aFmt,...);
-	    virtual void Write(TLogRecCtg aCtg, const MElem* aNode, const char* aFmt,...);
-	    virtual void Write(TLogRecCtg aCtg, MElem* aNode, const ChromoNode& aMut, const char* aFmt,...);
+	    virtual void Write(TLogRecCtg aCtg, const MUnit* aNode, const char* aFmt,...);
+	    virtual void Write(TLogRecCtg aCtg, MUnit* aNode, const ChromoNode& aMut, const char* aFmt,...);
 	    virtual void Flush();
 	    virtual void SetContextMutId(TInt aMutId = -1);
 	    virtual TBool AddLogObserver(MLogObserver* aObs);

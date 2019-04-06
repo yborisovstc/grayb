@@ -4,7 +4,7 @@
 #include "plat.h"
 
 
-    class Elem;
+    class MUnit;
     class GUri;
 
     // Importing module
@@ -12,7 +12,7 @@
     {
 	public:
 	    static const char* Type() { return "MMod";};
-	    virtual MElem* Import(const GUri& aUri) = 0;
+	    virtual MUnit* Import(const GUri& aUri) = 0;
     };
 
     // Importing modules container

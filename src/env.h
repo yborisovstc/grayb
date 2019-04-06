@@ -9,7 +9,7 @@
 
 class GProvider;
 class GFactory;
-class Elem;
+class Unit;
 class GLogRec;
 class Env;
 class Chromo;
@@ -31,12 +31,12 @@ class ImportsMgr: public Base, public MImportMgr
     virtual void AddImportsPaths(const string& aPaths);
     virtual string GetModulePath(const string& aModName) const;
     virtual TBool Import(const string& aUri);
-    virtual MElem* OnUriNotResolved(MElem* aNode, const GUri& aUri);
+    virtual MUnit* OnUriNotResolved(MUnit* aNode, const GUri& aUri);
     private:
     void AddImportModulesInfo(const string& aPath);
-    MElem* GetImportsContainer() const;
-    void ImportToNode(MElem* aNode, const ChromoNode& aMut, const ChromoNode& aSel);
-    MElem* DoImport(const string& aUri);
+    MUnit* GetImportsContainer() const;
+    void ImportToNode(MUnit* aNode, const ChromoNode& aMut, const ChromoNode& aSel);
+    MUnit* DoImport(const string& aUri);
     private:
     Env& mHost;
     vector<string> mImportsPaths;
@@ -100,12 +100,12 @@ class SystemObserver: public MAgentObserver
 	void SetObserver(MAgentObserver* aObserver);
 	void UnsetObserver(MAgentObserver* aObserver);
 	// From MAgentObserver
-	virtual void OnCompDeleting(MElem& aComp, TBool aSoft = ETrue, TBool aModif = EFalse) override;
-	virtual void OnCompAdding(MElem& aComp, TBool aModif = EFalse) override;
-	virtual TBool OnCompChanged(MElem& aComp, const string& aContName = string(), TBool aModif = EFalse) override;
-	virtual TBool OnChanged(MElem& aComp) override;
-	virtual TBool OnCompRenamed(MElem& aComp, const string& aOldName) override;
-	virtual void OnCompMutated(const MElem* aNode) override;
+	virtual void OnCompDeleting(MUnit& aComp, TBool aSoft = ETrue, TBool aModif = EFalse) override;
+	virtual void OnCompAdding(MUnit& aComp, TBool aModif = EFalse) override;
+	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse) override;
+	virtual TBool OnChanged(MUnit& aComp) override;
+	virtual TBool OnCompRenamed(MUnit& aComp, const string& aOldName) override;
+	virtual void OnCompMutated(const MUnit* aNode) override;
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);
     private:
@@ -134,7 +134,7 @@ class Env: public Base, public MEnv
     virtual MProvider *Provider() const;
     virtual MLogRec *Logger();
     virtual MProfiler *Profiler() override;
-    virtual MElem* Root();
+    virtual MUnit* Root();
     virtual MChromoMgr* ChMgr();
     virtual MImportMgr* ImpsMgr();
     virtual MExtIfProv* ExtIfProv();
@@ -153,7 +153,7 @@ class Env: public Base, public MEnv
     string Mid() const override { return string();}
     public:
     /** Profiler helpers */
-    inline void Pclock(PEvent::TId aEventId, MElem* aNode) { Profiler()->Clock()(aEventId, aNode);}
+    inline void Pclock(PEvent::TId aEventId, MUnit* aNode) { Profiler()->Clock()(aEventId, aNode);}
     inline void Pdur(PEvent::TId aEventId) { Profiler()->Dur()(aEventId, nullptr);}
     inline void Pdstat(PEvent::TId aEventId, bool aStart) { Profiler()->DurStat()(aEventId, aStart);}
 
@@ -165,7 +165,7 @@ class Env: public Base, public MEnv
 
     private:
     GLogRec* iLogger; 
-    Elem* iRoot;
+    Unit* iRoot;
     GFactory *iProvider;
     ChromoMgr* iChMgr;
     ImportsMgr* iImpMgr;
