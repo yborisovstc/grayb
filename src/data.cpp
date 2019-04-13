@@ -562,14 +562,14 @@ string DVar::GetContent(const string& aName, TBool aFull) const
 
 
 // Bool data
-MIface *DVar::HBool::DoGetObj(const char *aName)
+MIface *HBool::DoGetObj(const char *aName)
 {
     MIface* res = NULL;
     if (strcmp(aName, MDBoolGet::Type()) == 0) res = (MDBoolGet*) this;
     return res;
 }
 
-DVar::HBase* DVar::HBool::Create(DVar* aHost, const string& aString, MDVarGet* aInp)
+HBase* HBool::Create(DHost* aHost, const string& aString, MDVarGet* aInp)
 {
     HBase* res = NULL;
     if (!aString.empty() && aString.at(0) == 'B') {
@@ -584,7 +584,7 @@ DVar::HBase* DVar::HBool::Create(DVar* aHost, const string& aString, MDVarGet* a
     return res;
 }
 
-TBool DVar::HBool::FromString(const string& aString)
+TBool HBool::FromString(const string& aString)
 {
     TBool res = EFalse;
     if (aString.at(0) == 'B') {
@@ -597,23 +597,23 @@ TBool DVar::HBool::FromString(const string& aString)
     return res;
 }
 
-void DVar::HBool::ToString(string& aString)
+void HBool::ToString(string& aString)
 {
     stringstream ss;
     ss << "B " << std::boolalpha << mData;
     aString = ss.str();
 }
 
-void DVar::HBool::Set(TBool aData)
+void HBool::Set(TBool aData)
 {
     if (mData != aData) {
 	mData = aData;
-	mHost.UpdateProp();
-	mHost.NotifyUpdate();
+	mHost.HUpdateProp();
+	mHost.HNotifyUpdate();
     }
 }
 
-TBool DVar::HBool::Set(MDVarGet* aInp)
+TBool HBool::Set(MDVarGet* aInp)
 {
     TBool res = EFalse;
     MDBoolGet* dget = aInp->GetDObj(dget);
@@ -625,14 +625,14 @@ TBool DVar::HBool::Set(MDVarGet* aInp)
     return res;
 }
 
-TBool DVar::HBool::Value()
+TBool HBool::Value()
 {
     return mData;
 }
 
 
 // Int data
-MIface *DVar::HInt::DoGetObj(const char *aName)
+MIface *HInt::DoGetObj(const char *aName)
 {
     MIface* res = NULL;
     if (strcmp(aName, MDInt::Type()) == 0) res = (MDInt*) this;
@@ -641,7 +641,7 @@ MIface *DVar::HInt::DoGetObj(const char *aName)
     return res;
 }
 
-DVar::HBase* DVar::HInt::Create(DVar* aHost, const string& aString, MDVarGet* aInp)
+HBase* HInt::Create(DHost* aHost, const string& aString, MDVarGet* aInp)
 {
     HBase* res = NULL;
     if (!aString.empty() && aString.at(0) == 'I') {
@@ -656,7 +656,7 @@ DVar::HBase* DVar::HInt::Create(DVar* aHost, const string& aString, MDVarGet* aI
     return res;
 }
 
-TBool DVar::HInt::FromString(const string& aString)
+TBool HInt::FromString(const string& aString)
 {
     TBool res = EFalse;
     TInt data;
@@ -668,28 +668,28 @@ TBool DVar::HInt::FromString(const string& aString)
     return res;
 }
 
-void DVar::HInt::ToString(string& aString)
+void HInt::ToString(string& aString)
 {
     stringstream ss;
     ss << "I " << mData;
     aString = ss.str();
 }
 
-TInt DVar::HInt::Data() const
+TInt HInt::Data() const
 {
     return mData;
 }
 
-void DVar::HInt::Set(TInt aData)
+void HInt::Set(TInt aData)
 {
     if (mData != aData) {
 	mData = aData;
-	mHost.UpdateProp();
-	mHost.NotifyUpdate();
+	mHost.HUpdateProp();
+	mHost.HNotifyUpdate();
     }
 }
 
-TBool DVar::HInt::Set(MDVarGet* aInp)
+TBool HInt::Set(MDVarGet* aInp)
 {
     TBool res = EFalse;
     MDIntGet* dget = aInp->GetDObj(dget);
@@ -701,18 +701,18 @@ TBool DVar::HInt::Set(MDVarGet* aInp)
     return res;
 }
 
-TInt DVar::HInt::Value()
+TInt HInt::Value()
 {
     return mData;
 }
 
-void DVar::HInt::SetValue(TInt aData)
+void HInt::SetValue(TInt aData)
 {
     Set(aData);
 }
 
 // Float data
-MIface *DVar::HFloat::DoGetObj(const char *aName)
+MIface *HFloat::DoGetObj(const char *aName)
 {
     MIface* res = NULL;
     if (strcmp(aName, MDFloat::Type()) == 0) res = (MDFloat*) this;
@@ -721,7 +721,7 @@ MIface *DVar::HFloat::DoGetObj(const char *aName)
     return res;
 }
 
-DVar::HBase* DVar::HFloat::Create(DVar* aHost, const string& aString, MDVarGet* aInp)
+HBase* HFloat::Create(DHost* aHost, const string& aString, MDVarGet* aInp)
 {
     HBase* res = NULL;
     if (!aString.empty() && aString.at(0) == 'F') {
@@ -736,7 +736,7 @@ DVar::HBase* DVar::HFloat::Create(DVar* aHost, const string& aString, MDVarGet* 
     return res;
 }
 
-TBool DVar::HFloat::FromString(const string& aString)
+TBool HFloat::FromString(const string& aString)
 {
     TBool res = EFalse;
     float data;
@@ -749,28 +749,28 @@ TBool DVar::HFloat::FromString(const string& aString)
     return res;
 }
 
-void DVar::HFloat::ToString(string& aString)
+void HFloat::ToString(string& aString)
 {
     stringstream ss;
     ss << "F " << mData;
     aString = ss.str();
 }
 
-float DVar::HFloat::Data() const
+float HFloat::Data() const
 {
     return mData;
 }
 
-void DVar::HFloat::Set(float aData)
+void HFloat::Set(float aData)
 {
     if (mData != aData) {
 	mData = aData;
-	mHost.UpdateProp();
-	mHost.NotifyUpdate();
+	mHost.HUpdateProp();
+	mHost.HNotifyUpdate();
     }
 }
 
-TBool DVar::HFloat::Set(MDVarGet* aInp)
+TBool HFloat::Set(MDVarGet* aInp)
 {
     TBool res = EFalse;
     MDFloatGet* dget = aInp->GetDObj(dget);
@@ -782,12 +782,12 @@ TBool DVar::HFloat::Set(MDVarGet* aInp)
     return res;
 }
 
-float DVar::HFloat::Value()
+float HFloat::Value()
 {
     return mData;
 }
 
-void DVar::HFloat::SetValue(float aData)
+void HFloat::SetValue(float aData)
 {
     Set(aData);
 }
@@ -797,16 +797,16 @@ template<> const char* MDataGet<float>::Type() { return "MDataGet_float";};
 
 template<> const char* MDataGet<float>::TypeSig() { return "DF";};
 
-template<> string DVar::HData<float>::mId = "DF";
+template<> string HData<float>::mId = "DF";
 
-template<class T> MIface *DVar::HData<T>::DoGetObj(const char *aName)
+template<class T> MIface *HData<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MDataGet<T>::Type()) == 0) res = (MDataGet<T>*) this;
     return res;
 }
 
-template<class T> DVar::HBase* DVar::HData<T>::Create(DVar* aHost, const string& aString, MDVarGet* aInp)
+template<class T> HBase* HData<T>::Create(DHost* aHost, const string& aString, MDVarGet* aInp)
 {
     HBase* res = NULL;
     if (!aString.empty()) {
@@ -825,7 +825,7 @@ template<class T> DVar::HBase* DVar::HData<T>::Create(DVar* aHost, const string&
     return res;
 }
 
-template<class T> TBool DVar::HData<T>::FromString(const string& aString)
+template<class T> TBool HData<T>::FromString(const string& aString)
 {
     TBool res = ETrue;
     T data;
@@ -847,14 +847,14 @@ template<class T> TBool DVar::HData<T>::FromString(const string& aString)
     return res;
 }
 
-template<class T> void DVar::HData<T>::ToString(string& aString)
+template<class T> void HData<T>::ToString(string& aString)
 {
     stringstream ss;
     ss << mId << " " << mData;
     aString = ss.str();
 }
 
-template<class T> TBool DVar::HData<T>::Set(MDVarGet* aInp)
+template<class T> TBool HData<T>::Set(MDVarGet* aInp)
 {
     TBool res = EFalse;
     MDataGet<T>* dget = aInp->GetDObj(dget);
@@ -873,20 +873,20 @@ template<> const char* MVectGet<float>::TypeSig() { return  "VF";};
 
 template<> const char* MVectGet<float>::Type() { return "MVectGet_float";};
 
-template<> string DVar::HVect<float>::mId = "VF";
+template<> string HVect<float>::mId = "VF";
 
-template<class T> DVar::HVect<T>::HVect(DVar* aHost): HBase(aHost), mValid(EFalse)
+template<class T> HVect<T>::HVect(DHost* aHost): HBase(aHost), mValid(EFalse)
 {
 };
 
-template<class T> MIface *DVar::HVect<T>::DoGetObj(const char *aName)
+template<class T> MIface *HVect<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MVectGet<T>::Type()) == 0) res = (MVectGet<T>*) this;
     return res;
 }
 
-template<class T> DVar::HBase* DVar::HVect<T>::Create(DVar* aHost, const string& aString, MDVarGet* aInp)
+template<class T> HBase* HVect<T>::Create(DHost* aHost, const string& aString, MDVarGet* aInp)
 {
     HBase* res = NULL;
     if (!aString.empty()) {
@@ -905,7 +905,7 @@ template<class T> DVar::HBase* DVar::HVect<T>::Create(DVar* aHost, const string&
     return res;
 }
 
-template<class T> TBool DVar::HVect<T>::FromString(const string& aString)
+template<class T> TBool HVect<T>::FromString(const string& aString)
 {
     TBool res = ETrue;
     int res1 = 0;
@@ -943,7 +943,7 @@ template<class T> TBool DVar::HVect<T>::FromString(const string& aString)
     return res;
 }
 
-template<class T> void DVar::HVect<T>::ToString(string& aString)
+template<class T> void HVect<T>::ToString(string& aString)
 {
     stringstream ss;
     ss << mId;
@@ -954,20 +954,20 @@ template<class T> void DVar::HVect<T>::ToString(string& aString)
     aString = ss.str();
 }
 
-template<class T> TBool DVar::HVect<T>::Set(MDVarGet* aInp)
+template<class T> TBool HVect<T>::Set(MDVarGet* aInp)
 {
     TBool res = EFalse;
     MVectGet<T>* dget = aInp->GetDObj(dget);
     if (dget != NULL) {
 	dget->VectGet(mData);
-	mHost.UpdateProp();
-	mHost.NotifyUpdate();
+	mHost.HUpdateProp();
+	mHost.HNotifyUpdate();
 	res = ETrue;
     }
     return res;
 }
 
-template<class T> void DVar::HVect<T>::VectGet(Vect<T>& aData)
+template<class T> void HVect<T>::VectGet(Vect<T>& aData)
 {
     aData = mData;
 }
@@ -979,16 +979,16 @@ template<> const char* MMtrdGet<float>::Type() { return "MMtrdGet_float";};
 
 template<> const char* MMtrdGet<float>::TypeSig() { return  "MDF";};
 
-template<> string DVar::HMtrd<float>::mId = "MDF";
+template<> string HMtrd<float>::mId = "MDF";
 
-template<class T> MIface *DVar::HMtrd<T>::DoGetObj(const char *aName)
+template<class T> MIface *HMtrd<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MMtrdGet<T>::Type()) == 0) res = (MMtrdGet<T>*) this;
     return res;
 }
 
-template<class T> DVar::HBase* DVar::HMtrd<T>::Create(DVar* aHost, const string& aString, MDVarGet* aInp)
+template<class T> HBase* HMtrd<T>::Create(DHost* aHost, const string& aString, MDVarGet* aInp)
 {
     HBase* res = NULL;
     if (!aString.empty()) {
@@ -1007,11 +1007,11 @@ template<class T> DVar::HBase* DVar::HMtrd<T>::Create(DVar* aHost, const string&
     return res;
 }
 
-template<class T> DVar::HMtrd<T>::HMtrd(DVar* aHost): HBase(aHost)
+template<class T> HMtrd<T>::HMtrd(DHost* aHost): HBase(aHost)
 {
 }
 
-template<class T> TBool DVar::HMtrd<T>::FromString(const string& aString)
+template<class T> TBool HMtrd<T>::FromString(const string& aString)
 {
     TBool res = ETrue;
     int res1 = 0;
@@ -1049,7 +1049,7 @@ template<class T> TBool DVar::HMtrd<T>::FromString(const string& aString)
     return res;
 }
 
-template<class T> void DVar::HMtrd<T>::ToString(string& aString)
+template<class T> void HMtrd<T>::ToString(string& aString)
 {
     stringstream ss;
     ss << mId;
@@ -1060,20 +1060,20 @@ template<class T> void DVar::HMtrd<T>::ToString(string& aString)
     aString = ss.str();
 }
 
-template<class T> TBool DVar::HMtrd<T>::Set(MDVarGet* aInp)
+template<class T> TBool HMtrd<T>::Set(MDVarGet* aInp)
 {
     TBool res = EFalse;
     MMtrdGet<T>* dget = aInp->GetDObj(dget);
     if (dget != NULL) {
 	dget->MtrdGet(mData);
-	mHost.UpdateProp();
-	mHost.NotifyUpdate();
+	mHost.HUpdateProp();
+	mHost.HNotifyUpdate();
 	res = ETrue;
     }
     return res;
 }
 
-template<class T> void DVar::HMtrd<T>::MtrdGet(Mtrd<T>& aData)
+template<class T> void HMtrd<T>::MtrdGet(Mtrd<T>& aData)
 {
     aData = mData;
 }
@@ -1085,14 +1085,14 @@ template<> const char* MMtrGet<float>::Type() { return "MMtrGet_float";};
 
 template<> const char* MMtrGet<float>::TypeSig() { return  Mtr<float>::TypeSig();};
 
-template<class T> MIface *DVar::HMtr<T>::DoGetObj(const char *aName)
+template<class T> MIface *HMtr<T>::DoGetObj(const char *aName)
 {
     void* res = NULL;
     if (strcmp(aName, MMtrGet<T>::Type()) == 0) res = (MMtrGet<T>*) this;
     return res;
 }
 
-template<class T> DVar::HBase* DVar::HMtr<T>::Create(DVar* aHost, const string& aString, MDVarGet* aInp)
+template<class T> HBase* HMtr<T>::Create(DHost* aHost, const string& aString, MDVarGet* aInp)
 {
     HBase* res = NULL;
     if (!aString.empty() && Mtr<T>::IsSrepFit(aString)) {
@@ -1111,26 +1111,26 @@ template<class T> DVar::HBase* DVar::HMtr<T>::Create(DVar* aHost, const string& 
     return res;
 }
 
-template<class T> DVar::HMtr<T>::HMtr(DVar* aHost, const string& aCont): HBase(aHost) 
+template<class T> HMtr<T>::HMtr(DHost* aHost, const string& aCont): HBase(aHost) 
 {
     mData.FromString(aCont);
 }
 
-template<class T> DVar::HMtr<T>::HMtr(DVar* aHost, const Mtr<T>& aData): HBase(aHost), mData(aData)
+template<class T> HMtr<T>::HMtr(DHost* aHost, const Mtr<T>& aData): HBase(aHost), mData(aData)
 {
 }
 
-template<class T> TBool DVar::HMtr<T>::FromString(const string& aString)
+template<class T> TBool HMtr<T>::FromString(const string& aString)
 {
     return mData.FromString(aString);
 }
 
-template<class T> void DVar::HMtr<T>::ToString(string& aString)
+template<class T> void HMtr<T>::ToString(string& aString)
 {
     mData.ToString(aString);
 }
 
-template<class T> TBool DVar::HMtr<T>::Set(MDVarGet* aInp)
+template<class T> TBool HMtr<T>::Set(MDVarGet* aInp)
 {
     TBool res = EFalse;
     MMtrGet<T>* dget = aInp->GetDObj(dget);
@@ -1144,7 +1144,7 @@ template<class T> TBool DVar::HMtr<T>::Set(MDVarGet* aInp)
     return res;
 }
 
-template<class T> void DVar::HMtr<T>::MtrGet(Mtr<T>& aData)
+template<class T> void HMtr<T>::MtrGet(Mtr<T>& aData)
 {
     aData = mData;
 }
@@ -1152,14 +1152,14 @@ template<class T> void DVar::HMtr<T>::MtrGet(Mtr<T>& aData)
 // Generic data
 
 
-template<class T> MIface *DVar::HDt<T>::DoGetObj(const char *aName)
+template<class T> MIface *HDt<T>::DoGetObj(const char *aName)
 {
     MIface* res = NULL;
     if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
     return res;
 }
 
-template<class T> DVar::HBase* DVar::HDt<T>::Create(DVar* aHost, const string& aString, MDVarGet* aInp)
+template<class T> HBase* HDt<T>::Create(DHost* aHost, const string& aString, MDVarGet* aInp)
 {
     HBase* res = NULL;
     if (!aString.empty() && T::IsSrepFit(aString)) {
@@ -1178,26 +1178,26 @@ template<class T> DVar::HBase* DVar::HDt<T>::Create(DVar* aHost, const string& a
     return res;
 }
 
-template<class T> DVar::HDt<T>::HDt(DVar* aHost, const string& aCont): HBase(aHost) 
+template<class T> HDt<T>::HDt(DHost* aHost, const string& aCont): HBase(aHost) 
 {
     mData.FromString(aCont);
 }
 
-template<class T> DVar::HDt<T>::HDt(DVar* aHost, const T& aData): HBase(aHost), mData(aData)
+template<class T> HDt<T>::HDt(DHost* aHost, const T& aData): HBase(aHost), mData(aData)
 {
 }
 
-template<class T> TBool DVar::HDt<T>::FromString(const string& aString)
+template<class T> TBool HDt<T>::FromString(const string& aString)
 {
     return mData.FromString(aString);
 }
 
-template<class T> void DVar::HDt<T>::ToString(string& aString)
+template<class T> void HDt<T>::ToString(string& aString)
 {
     mData.ToString(aString);
 }
 
-template<class T> TBool DVar::HDt<T>::Set(MDVarGet* aInp)
+template<class T> TBool HDt<T>::Set(MDVarGet* aInp)
 {
     TBool res = EFalse;
     MDtGet<T>* dget = aInp->GetDObj(dget);
@@ -1206,8 +1206,8 @@ template<class T> TBool DVar::HDt<T>::Set(MDVarGet* aInp)
 	dget->DtGet(data);
 	if (mData != data) {
 	    mData = data;
-	    mHost.UpdateProp();
-	    mHost.NotifyUpdate();
+	    mHost.HUpdateProp();
+	    mHost.HNotifyUpdate();
 	    res = ETrue;
 	}
     }
@@ -1218,8 +1218,141 @@ template<class T> TBool DVar::HDt<T>::Set(MDVarGet* aInp)
     return res;
 }
 
-template<class T> void DVar::HDt<T>::DtGet(T& aData)
+template<class T> void HDt<T>::DtGet(T& aData)
 {
     aData = mData;
 }
 
+// Variant base data
+
+BdVar::BdVar(MBdVarHost *aHost): Base(), mData(NULL), mHost(aHost)
+{
+}
+
+MIface *BdVar::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MDVar::Type()) == 0) {
+	res = dynamic_cast<MDVar*>(this);
+    } else if (strcmp(aName, MDVarGet::Type()) == 0) {
+	res = dynamic_cast<MDVarGet*>(this);
+    }
+    return res;
+}
+
+string BdVar::VarGetIfid()
+{
+    return mData != NULL ? mData->IfaceGetId() : string();
+}
+
+void *BdVar::DoGetDObj(const char *aName)
+{
+    void* res = NULL;
+    if (mData == NULL) {
+	Init(aName);
+    }
+    if (mData != NULL) {
+	res = mData->DoGetObj(aName);
+    }
+    return res;
+}
+
+BdVar::~BdVar()
+{
+    if (mData != NULL) {
+	delete mData;
+    }
+}
+
+TBool BdVar::Init(const string& aString, MDVarGet* aInpv)
+{
+    TBool res = EFalse;
+    if (mData != NULL) {
+	delete mData;
+	mData == NULL;
+    }
+    if ((mData = HInt::Create(this, aString, aInpv)) != NULL);
+    else if ((mData = HFloat::Create(this, aString, aInpv)) != NULL);
+   // else if ((mData = HMtr<float>::Create(this, aString, aInp)) != NULL);
+    else if ((mData = HDt<Sdata <int> >::Create(this, aString, aInpv)) != NULL);
+    else if ((mData = HDt<Sdata <float> >::Create(this, aString, aInpv)) != NULL);
+    else if ((mData = HDt<Sdata <bool> >::Create(this, aString, aInpv)) != NULL);
+    else if ((mData = HDt<Sdata <string> >::Create(this, aString, aInpv)) != NULL);
+    else if ((mData = HDt<Mtr <int> >::Create(this, aString, aInpv)) != NULL);
+    else if ((mData = HDt<Mtr <float> >::Create(this, aString, aInpv)) != NULL);
+    else if ((mData = HDt<NTuple>::Create(this, aString, aInpv)) != NULL);
+    else if ((mData = HDt<Enum>::Create(this, aString, aInpv)) != NULL);
+    //else if ((mData = HVect<float>::Create(this, aString, aInpv)) != NULL);
+    //else if ((mData = HMtrd<float>::Create(this, aString, aInpv)) != NULL);
+    else if ((mData = HBool::Create(this, aString, aInpv)) != NULL);
+    if (mData != NULL && !aString.empty()) {
+	res = mData->FromString(aString);
+    }
+    return res;
+}
+
+TBool BdVar::FromString(const string& aData) 
+{
+    TBool res = EFalse;
+    if (mData == NULL) {
+	res = Init(aData);
+    }
+    if (mData != NULL) {
+	res = mData->FromString(aData);
+	if (!res && !mData->IsSigOK()) {
+	    // Signature get's not fit, reinit
+	    Init(aData);
+	    res = ETrue;
+	}
+    }
+    if (res) {
+	NotifyUpdate();
+    }
+    return res;
+}
+
+bool BdVar::ToString(string& aData) 
+{
+    TBool res = EFalse;
+    if (mData == NULL) {
+	res = Init(aData);
+    }
+    if (mData != NULL) {
+	mData->ToString(aData);
+    }
+    return res;
+
+}
+
+TBool BdVar::Update()
+{
+    TBool res = EFalse;
+    string old_value;
+    ToString(old_value);
+    MDVarGet* vget = mHost->HGetInp(this);
+    if (vget != NULL) {
+	if (mData == NULL) {
+	    Init(string(), vget);
+	}
+	if (mData != NULL) {
+	    res = mData->Set(vget);
+	}
+    }
+    return res;
+}
+
+void BdVar::NotifyUpdate()
+{
+    if (mHost != NULL) {
+	mHost->HOnDataChanged(this);
+    }
+}
+
+void BdVar::HUpdateProp()
+{
+}
+
+void BdVar::HNotifyUpdate()
+{
+    NotifyUpdate();
+}

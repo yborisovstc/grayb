@@ -21,7 +21,6 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   env.h
   factr.h
   func.h
-  gfx.h
   guri.h
   ifu.h
   imports.h
@@ -43,6 +42,7 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   mprop.h
   mprov.h
   msyst.h
+  munit.h
   mvert.h
   mvertp.h
   plat.h
@@ -54,6 +54,7 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   rdata.h
   syst.h
   systp.h
+  unit.h
   vert.h
   vertp.h
   base.cpp
@@ -66,7 +67,6 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   env.cpp
   factr.cpp
   func.cpp
-  gfx.cpp
   guri.cpp
   ifu.cpp
   imports.cpp
@@ -81,6 +81,7 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   rdata.cpp
   syst.cpp
   systp.cpp
+  unit.cpp
   vert.cpp
   vertp.cpp
   Makefile.am

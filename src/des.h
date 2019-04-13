@@ -5,6 +5,7 @@
 #include "mdata.h"
 #include "mdes.h"
 #include "func.h"
+#include "vert.h"
 
 // Transition function agent base. 
 class ATrBase: public Elem, public MACompsObserver, public MAgent
@@ -270,6 +271,70 @@ class StateAgent: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd,
     private:
 	TBool iActive;
 	TBool iUpdated;
+};
+
+class BdVar;
+
+/** @brief State agent, unit, monolitic, using host unit base organs
+ *
+ * Ref ds_uac for unit based orgars, ds_mae for monolitic agents, ds_mae_scm for this agent
+ * */
+class AState: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, public MDesSyncable_Imd, public MDesObserver_Imd,
+    public MAgent, public MBdVarHost
+{
+    public:
+	static const char* Type() { return "AState";};
+	static string PEType();
+	AState(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual MIface* DoGetObj(const char *aName);
+	// From MDesSyncable
+	virtual void Update();
+	virtual void Confirm();
+	virtual TBool IsUpdated();
+	virtual void SetUpdated();
+	virtual void ResetUpdated();
+	virtual TBool IsActive();
+	virtual void SetActive();
+	virtual void ResetActive();
+	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes);
+	virtual string MDesSyncable_Mid() const;
+	// From MDesObserver
+	virtual void OnUpdated();
+	virtual void OnActivated();
+	virtual MIface* MDesObserver_Call(const string& aSpec, string& aRes);
+	virtual string MDesObserver_Mid() const;
+	// From MAgent
+	MIface* MAgent_DoGetIface(const string& aName) override;
+	// From MConnPoint
+	virtual TBool IsProvided(const string& aIfName) const;
+	virtual TBool IsRequired(const string& aIfName) const;
+	virtual string Provided() const;
+	virtual string Required() const;
+	// From MConnPoint MIface
+	virtual MIface* MConnPoint_Call(const string& aSpec, string& aRes);
+	virtual string MConnPoint_Mid() const;
+	// From MCompatChecker
+	virtual TBool IsCompatible(MUnit* aPair, TBool aExt = EFalse);
+	virtual MUnit* GetExtd();
+	virtual TDir GetDir() const;
+	virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes);
+	virtual string MCompatChecker_Mid() const;
+	// From MBdVarHost
+	virtual MDVarGet* HGetInp(const Base* aRmt) override;
+	virtual void HOnDataChanged(const Base* aRmt) override;
+
+	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
+    protected:
+	TBool IsLogeventUpdate();
+	// From MUnit
+	virtual TEhr ProcessCompChanged(MUnit& aComp, const string& aContName) override;
+    private:
+	TBool iActive;
+	TBool iUpdated;
+	BdVar* mPdata;   //<! Preparing (updating) phase data
+	BdVar* mCdata;   //<! Confirming phase data
+	static const string KContVal; //<! Content Value  name
 };
 
 // DES base agent

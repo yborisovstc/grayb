@@ -229,6 +229,14 @@ template <class T> class MMtrGet: public MIfaceStub
 };
 
 
+/** @brief Interface of variant base data host
+ * */
+class MBdVarHost
+{
+    public:
+	virtual MDVarGet* HGetInp(const Base* aRmt) = 0;
+	virtual void HOnDataChanged(const Base* aRmt) = 0;
+};
 
 
 #endif

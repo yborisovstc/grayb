@@ -15,26 +15,6 @@ class ACapsule: public Elem
 	virtual TBool OnChanged(MUnit& aComp);
 };
 
-// Iface stub to avoid clashing MIface methods
-class MCompatChecker_Imd: public MCompatChecker
-{
-    virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes) = 0;
-    virtual string MCompatChecker_Mid() const = 0;
-    // From MIface
-    virtual MIface* Call(const string& aSpec, string& aRes) { return MCompatChecker_Call(aSpec, aRes);};
-    virtual string Mid() const { return MCompatChecker_Mid();};
-};
-
-// Iface stub to avoid clashing MIface methods
-class MConnPoint_Imd: public MConnPoint
-{
-    virtual MIface* MConnPoint_Call(const string& aSpec, string& aRes) = 0;
-    virtual string MConnPoint_Mid() const = 0;
-    // From MIface
-    virtual MIface* Call(const string& aSpec, string& aRes) { return MConnPoint_Call(aSpec, aRes);};
-    virtual string Mid() const { return MConnPoint_Mid();};
-};
-
 // Base of ConnPoint reimplement obj provider iface to redirect the request to the hier mgr
 class ConnPointBase: public Vert, public MConnPoint_Imd, public MCompatChecker_Imd
 {

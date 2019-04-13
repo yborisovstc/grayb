@@ -358,7 +358,7 @@ void Vertu::Disconnect(MVert* aPair)
 TBool Vertu::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
 {
     TBool res = ETrue;
-    TEhr pres = Unit::ProcessCompChanged(aComp, aContName);
+    TEhr pres = ProcessCompChanged(aComp, aContName);
     if (pres == EEHR_Ignored) {
 	MEdge* edge = aComp.GetObj(edge);	
 	if (edge == NULL) {

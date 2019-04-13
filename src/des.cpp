@@ -5,6 +5,7 @@
 #include "menv.h"
 #include "vert.h"
 #include "mprop.h"
+#include "data.h"
 
 
 // MDesObserver metadata
@@ -807,6 +808,335 @@ string StateAgent::MDesObserver_Mid() const
 {
     return GetUri(iEnv->Root(), ETrue);
 }
+
+
+
+/* State base agent, monolitic, using unit base organs */
+
+const string AState::KContVal = "Value";
+
+AState::AState(const string& aName, MUnit* aMan, MEnv* aEnv): Vertu(aName, aMan, aEnv), iUpdated(ETrue), iActive(ETrue),
+    mPdata(NULL), mCdata(NULL)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    mPdata = new BdVar(this);
+    mCdata = new BdVar(this);
+}
+
+string AState::PEType()
+{
+    return Unit::PEType() + GUri::KParentSep + Type();
+}
+
+MIface *AState::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MDesSyncable::Type()) == 0) {
+	res = dynamic_cast<MDesSyncable*>(this);
+    } else if (strcmp(aName, MDesObserver::Type()) == 0) {
+	res = dynamic_cast<MDesObserver*>(this);
+    } else if (strcmp(aName, MAgent::Type()) == 0) {
+	res = dynamic_cast<MAgent*>(this);
+    } else if (strcmp(aName, MConnPoint::Type()) == 0) {
+	res = dynamic_cast<MConnPoint*>(this);
+    } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
+	res = dynamic_cast<MCompatChecker*>(this);
+    } else if (strcmp(aName, MDVarGet::Type()) == 0) {
+	res = dynamic_cast<MDVarGet*>(mCdata);
+    } else {
+	res = Vertu::DoGetObj(aName);
+    }
+    return res;
+}
+
+MIface* AState::MAgent_DoGetIface(const string& aName)
+{
+    MIface* res = NULL;
+    if (aName == MUnit::Type())
+	res = dynamic_cast<MUnit*>(this);
+    return res;
+}
+
+TBool AState::IsActive()
+{
+    return iActive;
+}
+
+void AState::SetActive()
+{
+    iActive = ETrue;
+}
+
+void AState::ResetActive()
+{
+    iActive = EFalse;
+}
+
+void AState::Update()
+{
+    MUpdatable* upd = mPdata;
+    if (upd != NULL) {
+	try {
+	    if (upd->Update()) {
+		SetUpdated();
+	    }
+	} catch (std::exception e) {
+	    Logger()->Write(EErr, this, "Unspecified error on update");
+	}
+	ResetActive();
+    }
+}
+
+void AState::Confirm()
+{
+    MUpdatable* upd = mCdata;
+    if (upd != NULL) {
+	string old_value;
+	mCdata->ToString(old_value);
+	if (upd->Update()) {
+	    // Activate dependencies
+	    MUnit* eobs = GetNode("./../Capsule/Out/Int/PinObs");
+	    // Request w/o context because of possible redirecting request to itself
+	    // TODO [YB] To check if iterator is not damage during the cycle, to cache to vector if so
+	    TIfRange range = eobs->GetIfi(MDesObserver::Type());
+	    for (TIfIter it = range.first; it != range.second; it++) {
+		MDesObserver* mobs = (MDesObserver*) (*it);
+		if (mobs != NULL) {
+		    mobs->OnUpdated();
+		}
+	    }
+	    if (IsLogeventUpdate()) {
+		string new_value;
+		mCdata->ToString(new_value);
+		Logger()->Write(EInfo, this, "Updated [%s <- %s]", new_value.c_str(), old_value.c_str());
+	    }
+	}
+	ResetUpdated();
+    }
+}
+
+TBool AState::IsUpdated()
+{
+    return iUpdated;
+}
+
+void AState::SetUpdated()
+{
+    iUpdated = ETrue;
+}
+
+void AState::ResetUpdated()
+{
+    iUpdated = EFalse;
+}
+
+MIface* AState::MDesSyncable_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MDesSyncable::mIfu.CheckMname(name);
+    if (!name_ok) 
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MDesSyncable::mIfu.CheckMpars(name, args.size());
+    if (!args_ok)
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "Update") {
+	Update();
+    } else if (name == "Confirm") {
+	Confirm();
+    } else if (name == "IsUpdated") {
+	TBool rr = IsUpdated();
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "SetUpdated") {
+	SetUpdated();
+    } else if (name == "ResetUpdated") {
+	ResetUpdated();
+    } else if (name == "IsActive") {
+	TBool rr = IsActive();
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "SetActive") {
+	SetActive();
+    } else if (name == "ResetActive") {
+	ResetActive();
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string AState::MDesSyncable_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
+void AState::OnUpdated()
+{
+    // Mark active
+    SetActive();
+}
+
+void AState::OnActivated()
+{
+}
+
+MIface* AState::MDesObserver_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MDesObserver::mIfu.CheckMname(name);
+    if (!name_ok) 
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MDesObserver::mIfu.CheckMpars(name, args.size());
+    if (!args_ok)
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "OnUpdated") {
+	OnUpdated();
+    } else if (name == "OnActivated") {
+	OnActivated();
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string AState::MDesObserver_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
+MDVarGet* AState::HGetInp(const Base* aRmt)
+{
+    MDVarGet* res = NULL;
+    if (aRmt == mPdata) {
+	MUnit* uinp = GetMan()->GetNode("./TransOut");
+	MVert* vinp = uinp->GetObj(vinp);
+	if (vinp->PairsCount() > 0) {
+	    MVert* pair = vinp->GetPair(0);
+	    MUnit* upair = (MUnit*) pair->MVert_DoGetObj(MUnit::Type());
+	    res = (MDVarGet*) upair->GetSIfiC(MDVarGet::Type(), this);
+	}
+    } else {
+	res = mPdata->GetObj(res);
+    }
+    return res;
+}
+
+void AState::HOnDataChanged(const Base* aRmt)
+{
+}
+
+TBool AState::IsProvided(const string& aIfName) const
+{
+    return aIfName == Provided();
+}
+
+TBool AState::IsRequired(const string& aIfName) const
+{
+    return aIfName == Required();
+}
+
+string AState::Provided() const
+{
+    return MDVarGet::Type();
+}
+
+string AState::Required() const
+{
+    return string();
+}
+
+TBool AState::IsCompatible(MUnit* aPair, TBool aExt)
+{
+    TBool res = EFalse;
+    TBool ext = aExt;
+    MUnit *cp = aPair;
+    // Checking if the pair is Extender
+    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type(), this);
+    // Consider all pairs not supporting MCompatChecker as not compatible 
+    if (pchkr != NULL) {
+	MUnit* ecp = pchkr->GetExtd(); 
+	if (ecp != NULL ) {
+	    ext = !ext;
+	    cp = ecp;
+	}
+	if (cp != NULL) {
+	    // Check roles conformance
+	    string ppt1prov = Provided();
+	    string ppt1req = Required();
+	    MConnPoint* mcp = cp->GetObj(mcp);
+	    if (mcp != NULL) {
+		if (ext) {
+		    res = mcp->IsProvided(ppt1prov) && mcp->IsRequired(ppt1req);
+		} else {
+		    res = mcp->IsProvided(ppt1req) && mcp->IsRequired(ppt1prov);
+		}
+	    }
+	}
+    }
+    return res;
+}
+
+MUnit* AState::GetExtd()
+{
+    return NULL;
+}
+
+MCompatChecker::TDir AState::GetDir() const
+{
+    return EInp;
+}
+
+MIface* AState::MCompatChecker_Call(const string& aSpec, string& aRes)
+{
+}
+
+string AState::MCompatChecker_Mid() const
+{
+}
+
+MIface* AState::MConnPoint_Call(const string& aSpec, string& aRes)
+{
+}
+
+string AState::MConnPoint_Mid() const
+{
+}
+
+TBool AState::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
+{
+    return Vertu::OnCompChanged(aComp, aContName, aModif);
+}
+
+TEhr AState::ProcessCompChanged(MUnit& aComp, const string& aContName)
+{
+    TEhr res = EEHR_Ignored;
+    if (&aComp == this && aContName == KContVal) {
+	string val = GetContent(KContVal);
+	TBool sres = mPdata->FromString(val);
+	sres = sres && mCdata->FromString(val);
+	if (sres) {
+	    res = EEHR_Accepted;
+	}  else {
+	    Logger()->Write(EErr, this, "[%s] Error on applying content [%s]", GetUri().c_str(), aContName.c_str());
+	    res = EEHR_Denied;
+	}
+    } else {
+	res = Vertu::ProcessCompChanged(aComp, aContName);
+    }
+    return res;
+}
+	
+TBool AState::IsLogeventUpdate() 
+{
+    string upd = GetContent("Debug.Update");
+    return upd == "y";
+}
+
+
 
 /* DES base agent */
 

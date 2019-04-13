@@ -4873,6 +4873,20 @@
 	   But some of the agents are rather complex. For instance extender is implemented as Vert with embedded agent (MAgent).</simpara>
        <simpara>So we can propose simplification of these building block as an approach of optimization.</simpara>
 	</sect2>
+	<sect2 id="ds_mae_scm"><title>Monolitic DES state compatible with current modelled state</title>
+	    <sect3><title>Intro</title>
+		<simpara>Currently the modelled state is used, ref StateVarMcmu in des module. The controlling agent StateAgent is used inside.</simpara>
+		<simpara>We can propose optimization in the scope of <xref linkend="gls_mae"/> approach. The scope of this optimization is:</simpara>
+		<orderedlist>
+		    <listitem>Remove prepared and confirmed data units. To implement variable data class and embed prepared and confirmed data into
+			state agent based on this class. So the controlling agent has to implement data getter iface MDVarGet.</listitem>
+		    <listitem>Keep all the interfaces of state agent: inputs and output with state socket (pin for data and pin for observing)</listitem>
+		    <listitem>State output data pin can be connected to controlling agent directly. </listitem>
+		    <listitem>Getting data from transition function can be implemented in various ways. For instance we can introduce dedicated
+		    CP for connecting. Controlling agent can use this CP as MDVarGet provider.</listitem>
+		</orderedlist>
+	    </sect3>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_hsc"><title>Handling of system change. Observers</title>
