@@ -43,7 +43,8 @@ const ProvDef::TReg ProvDef::mReg ( {
     Item<ATrMplVar>(), Item<ATrDivVar>(), Item<ATrCpsVectVar>(), Item<ATrSwitchVar>(), Item<ATrAtVar>(),
     Item<ATrBcmpVar>(), Item<ConnPointBase>(), Item<ConnPointBaseInp>(), Item<ConnPointBaseOut>(), Item<ConnPointMc>(),
     Item<AExtd>(), Item<AExtdInp>(), Item<AExtdOut>(), Item<ASocketMcm>(), Item<ASocketInpMcm>(), Item<ASocketOutMcm>(),
-    Item<ConnPointMcu>(), Item<AExtdu>(), Item<AExtduInp>(), Item<AExtduOut>(), Item<AState>()
+    Item<ConnPointMcu>(), Item<AExtdu>(), Item<AExtduInp>(), Item<AExtduOut>(), Item<AState>(), Item<AStatec>(),
+    Item<ATrcBase>(), Item<ATrcVar>(), Item<ATrcAddVar>()
 });
 
 

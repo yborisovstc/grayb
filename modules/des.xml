@@ -313,8 +313,26 @@
 	<cont node="./ViewData/Res" ref="./../../AF_Ge"/>
     </node>
 
+    <!-- Transition supported combined chain approach, ref ds_mae_scc -->
+
+    <!-- Transition of variable data -->
+    <node id="TrcVar" parent="Syst"> 
+	<node id="Inp" parent="ConnPointMcu"/> 
+	<cont node="./Inp" val="{Required:'MDVarGet' Provided:'MDesObserver'}"/>
+
+	<node id="Out" parent="ConnPointMcu"/> 
+	<cont node="./Out" val="{Required:'MDesObserver' Provided:'MDVarGet'}"/>
+    </node>
+
+    <!-- Transition of variable data : Addition -->
+    <node id="TrcAddVar" parent="./TrcVar"> 
+	<node id="TrAgt" parent="ATrcAddlVar"/> 
+	<cont node="./ViewData/Res" ref="./../../TrAgt"/>
+    </node>
 
 
+
+    <!-- END. Transition supported combined chain approach, ref ds_mae_scc -->
 
 
     <!-- State base -->

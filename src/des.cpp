@@ -619,6 +619,193 @@ FBcmpBase::TFType ATrBcmpVar::GetFType()
 }
 
 
+
+// Transition function agent base with support of 'combined chain' approach
+
+ATrcBase::ATrcBase(const string& aName, MUnit* aMan, MEnv* aEnv): Vertu(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    mOut = Provider()->CreateNode("ConnPointMcu", "Out", this, iEnv);
+    __ASSERT(mOut != NULL);
+    TBool res = AppendComp(mOut);
+    __ASSERT(res);
+    res = mOut->ChangeCont("{Required:'MDesObserver'}");
+    __ASSERT(res);
+}
+
+string ATrcBase::PEType()
+{
+    return Vertu::PEType() + GUri::KParentSep + Type();
+}
+
+void ATrcBase::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
+{
+    TIfRange rr;
+    TICacheRCtx ctx(aCtx); ctx.push_back(this);
+
+    if (aName == MDesObserver::Type()) {
+	// Redirect to output
+	rr = mOut->GetIfi(aName, ctx);
+	InsertIfCache(aName, aCtx, mOut, rr);
+    }
+    if (rr.first == rr.second) {
+	Vertu::UpdateIfi(aName, aCtx);
+    }
+}
+
+// Agent of transition of variable type with combined chain
+
+string ATrcVar::PEType()
+{
+    return ATrcBase::PEType() + GUri::KParentSep + Type();
+}
+
+ATrcVar::ATrcVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcBase(aName, aMan, aEnv), mFunc(NULL)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    TBool res = mOut->ChangeCont("{Provided:'MDVarGet'}");
+    __ASSERT(res);
+}
+
+MIface *ATrcVar::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MDVarGet::Type()) == 0) {
+	res = (MDVarGet*) this;
+    } else {
+	res = ATrcBase::DoGetObj(aName);
+    }
+    if (res == NULL) {
+	if (mFunc == NULL) {
+	    Init(aName);
+	    if (mFunc != NULL) {
+		res = mFunc->DoGetObj(aName);
+	    }
+	}
+	else {
+	    res = mFunc->DoGetObj(aName);
+	    if (res == NULL) {
+		Init(aName);
+		if (mFunc != NULL) {
+		    res = mFunc->DoGetObj(aName);
+		}
+	    }
+	}
+    }
+    return res;
+}
+
+string ATrcVar::VarGetIfid()
+{
+    return mFunc != NULL ? mFunc->IfaceGetId() : string();
+}
+
+void *ATrcVar::DoGetDObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (mFunc == NULL) {
+	Init(aName);
+	if (mFunc != NULL) {
+	    res = mFunc->DoGetObj(aName);
+	}
+    }
+    else {
+	res = mFunc->DoGetObj(aName);
+	if (res == NULL) {
+	    Init(aName);
+	    if (mFunc != NULL) {
+		res = mFunc->DoGetObj(aName);
+	    }
+	}
+    }
+    return res;
+}
+
+string ATrcVar::GetInpUri(TInt aId) const 
+{
+    if (aId == Func::EInp1) return "Inp1";
+    else if (aId == Func::EInp2) return "Inp2";
+    else if (aId == Func::EInp3) return "Inp3";
+    else if (aId == Func::EInp4) return "Inp4";
+    else return string();
+}
+
+Unit::TIfRange ATrcVar::GetInps(TInt aId, TBool aOpt)
+{
+    TIfRange res;
+    MUnit* inp = GetNode("./" + GetInpUri(aId));
+    if (inp != NULL) {
+	res =  inp->GetIfi(MDVarGet::Type(), this);
+    }
+    else if (!aOpt) {
+	Logger()->Write(EErr, this, "Cannot get input [%s]", GetInpUri(aId).c_str());
+    }
+    return res;
+}
+
+void ATrcVar::OnFuncContentChanged()
+{
+    OnChanged(*this);
+}
+
+TBool ATrcVar::GetCont(string& aCont, const string& aName) const
+{
+    TBool res = EFalse;
+    if (mFunc != NULL) {
+	mFunc->GetResult(aCont);
+	res = ETrue;
+    }
+    return res;
+}
+
+void ATrcVar::LogWrite(TLogRecCtg aCtg, const char* aFmt,...)
+{
+    va_list list;
+    va_start(list,aFmt);
+    Logger()->Write(aCtg, this, aFmt, list);
+}
+
+
+// Agent function "Addition of Var data"
+string ATrcAddVar::PEType()
+{
+    return ATrcVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrcAddVar::ATrcAddVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcVar(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    Unit* cp = Provider()->CreateNode("ConnPointMcu", "Inp", this, iEnv);
+    __ASSERT(cp != NULL);
+    TBool res = AppendComp(cp);
+    __ASSERT(res);
+    res = cp->ChangeCont("{Provided:'MDesObserver' Required:'MDVarGet'}");
+    __ASSERT(res);
+}
+
+void ATrcAddVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc = NULL;
+    }
+    if ((mFunc = FAddInt::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddFloat::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddData<float>::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddVect<float>::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddMtrd<float>::Create(this, aIfaceName)) != NULL);
+}
+
+string ATrcAddVar::GetInpUri(TInt aId) const 
+{
+    if (aId == FAddBase::EInp) return "Inp";
+    else return string();
+}
+
+
+
+
+
 /* State base agent */
 
 StateAgent::StateAgent(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
@@ -825,7 +1012,7 @@ AState::AState(const string& aName, MUnit* aMan, MEnv* aEnv): Vertu(aName, aMan,
 
 string AState::PEType()
 {
-    return Unit::PEType() + GUri::KParentSep + Type();
+    return Vertu::PEType() + GUri::KParentSep + Type();
 }
 
 MIface *AState::DoGetObj(const char *aName)
@@ -1135,6 +1322,384 @@ TBool AState::IsLogeventUpdate()
     string upd = GetContent("Debug.Update");
     return upd == "y";
 }
+
+/* State base agent, monolitic, using unit base organs, combined data-observer chain */
+
+const string AStatec::KContVal = "Value";
+
+AStatec::AStatec(const string& aName, MUnit* aMan, MEnv* aEnv): Vertu(aName, aMan, aEnv), iUpdated(ETrue), iActive(ETrue),
+    mPdata(NULL), mCdata(NULL)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    mPdata = new BdVar(this);
+    mCdata = new BdVar(this);
+    Unit* cp = Provider()->CreateNode("ConnPointMcu", "Inp", this, iEnv);
+    __ASSERT(cp != NULL);
+    TBool res = AppendComp(cp);
+    __ASSERT(res);
+    res = cp->ChangeCont("{Provided:'MDesObserver' Required:'MDVarGet'}");
+    __ASSERT(res);
+}
+
+string AStatec::PEType()
+{
+    return Vertu::PEType() + GUri::KParentSep + Type();
+}
+
+MIface *AStatec::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MDesSyncable::Type()) == 0) {
+	res = dynamic_cast<MDesSyncable*>(this);
+    } else if (strcmp(aName, MDesObserver::Type()) == 0) {
+	res = dynamic_cast<MDesObserver*>(this);
+    } else if (strcmp(aName, MConnPoint::Type()) == 0) {
+	res = dynamic_cast<MConnPoint*>(this);
+    } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
+	res = dynamic_cast<MCompatChecker*>(this);
+    } else if (strcmp(aName, MDVarGet::Type()) == 0) {
+	res = dynamic_cast<MDVarGet*>(mCdata);
+    } else {
+	res = Vertu::DoGetObj(aName);
+    }
+    return res;
+}
+
+#if 0
+void AStatec::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
+{
+    TIfRange rr;
+    TBool resg = EFalse;
+    TICacheRCtx ctx(aCtx); ctx.push_back(this);
+    MIface* res = (MIface*) DoGetObj(aName.c_str());
+    if (res != NULL) {
+	InsertIfCache(aName, aCtx, this, res);
+    }
+    if (res == NULL) {
+	// Redirect to pairs if iface requiested is provided by this CP
+	if (GetProvided() == aName) {
+	    // Requested provided iface - cannot be obtain via pairs - redirect to host
+	    if (iMan != NULL && !ctx.IsInContext(iMan)) {
+		// TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
+		MUnit* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
+		rr = mgr->GetIfi(aName, ctx);
+		InsertIfCache(aName, aCtx, mgr, rr);
+		resg = resg || (rr.first == rr.second);
+	    }
+	}
+	if (!resg) {
+	    if (GetRequired() == aName) {
+		for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
+		    MUnit* pe = (*it)->GetObj(pe);
+		    if (!ctx.IsInContext(pe)) {
+			rr = pe->GetIfi(aName, ctx);
+			InsertIfCache(aName, aCtx, pe, rr);
+			resg = resg || (rr.first == rr.second);
+		    }
+		}
+		// Responsible pairs not found, redirect to upper layer
+		if ((rr.first == rr.second) && iMan != NULL && !ctx.IsInContext(iMan)) {
+		    MUnit* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
+		    rr = mgr->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, mgr, rr);
+		    resg = resg || (rr.first == rr.second);
+		}
+	    }
+	}
+    }
+}
+#endif
+
+TBool AStatec::IsActive()
+{
+    return iActive;
+}
+
+void AStatec::SetActive()
+{
+    iActive = ETrue;
+}
+
+void AStatec::ResetActive()
+{
+    iActive = EFalse;
+}
+
+void AStatec::Update()
+{
+    MUpdatable* upd = mPdata;
+    if (upd != NULL) {
+	try {
+	    if (upd->Update()) {
+		SetUpdated();
+	    }
+	} catch (std::exception e) {
+	    Logger()->Write(EErr, this, "Unspecified error on update");
+	}
+	ResetActive();
+    }
+}
+
+void AStatec::Confirm()
+{
+    MUpdatable* upd = mCdata;
+    if (upd != NULL) {
+	string old_value;
+	mCdata->ToString(old_value);
+	if (upd->Update()) {
+	    // Activate dependencies
+	    // Request w/o context because of possible redirecting request to itself
+	    // TODO [YB] To check if iterator is not damage during the cycle, to cache to vector if so
+	    /*
+	    TIfRange range = GetIfi(MDesObserver::Type());
+	    for (TIfIter it = range.first; it != range.second; it++) {
+		MDesObserver* mobs = (MDesObserver*) (*it);
+		if (mobs != NULL) {
+		    mobs->OnUpdated();
+		}
+	    } */
+
+	    // It would be better to request MDesObserver interface from self. But there is the problem
+	    // with using this approach because self implements this iface. So accoriding to iface resolution
+	    // rules UpdateIfi has to try local ifaces first, so self will be selected. Solution here could be
+	    // not following this rule and try pairs first for MDesObserver. But we choose another solution ATM -
+	    // to request pairs directly.
+	    for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
+		MUnit* pe = (*it)->GetObj(pe);
+		TIfRange range = pe->GetIfi(MDesObserver::Type());
+		for (TIfIter it = range.first; it != range.second; it++) {
+		    MDesObserver* mobs = (MDesObserver*) (*it);
+		    if (mobs != NULL) {
+			mobs->OnUpdated();
+		    }
+		}
+	    }
+	    if (IsLogeventUpdate()) {
+		string new_value;
+		mCdata->ToString(new_value);
+		Logger()->Write(EInfo, this, "Updated [%s <- %s]", new_value.c_str(), old_value.c_str());
+	    }
+	}
+	ResetUpdated();
+    }
+}
+
+TBool AStatec::IsUpdated()
+{
+    return iUpdated;
+}
+
+void AStatec::SetUpdated()
+{
+    iUpdated = ETrue;
+}
+
+void AStatec::ResetUpdated()
+{
+    iUpdated = EFalse;
+}
+
+MIface* AStatec::MDesSyncable_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MDesSyncable::mIfu.CheckMname(name);
+    if (!name_ok) 
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MDesSyncable::mIfu.CheckMpars(name, args.size());
+    if (!args_ok)
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "Update") {
+	Update();
+    } else if (name == "Confirm") {
+	Confirm();
+    } else if (name == "IsUpdated") {
+	TBool rr = IsUpdated();
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "SetUpdated") {
+	SetUpdated();
+    } else if (name == "ResetUpdated") {
+	ResetUpdated();
+    } else if (name == "IsActive") {
+	TBool rr = IsActive();
+	aRes = Ifu::FromBool(rr);
+    } else if (name == "SetActive") {
+	SetActive();
+    } else if (name == "ResetActive") {
+	ResetActive();
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string AStatec::MDesSyncable_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
+void AStatec::OnUpdated()
+{
+    // Mark active
+    SetActive();
+}
+
+void AStatec::OnActivated()
+{
+}
+
+MIface* AStatec::MDesObserver_Call(const string& aSpec, string& aRes)
+{
+    MIface* res = NULL;
+    string name, sig;
+    vector<string> args;
+    Ifu::ParseIcSpec(aSpec, name, sig, args);
+    TBool name_ok = MDesObserver::mIfu.CheckMname(name);
+    if (!name_ok) 
+	throw (runtime_error("Wrong method name"));
+    TBool args_ok = MDesObserver::mIfu.CheckMpars(name, args.size());
+    if (!args_ok)
+	throw (runtime_error("Wrong arguments number"));
+    if (name == "OnUpdated") {
+	OnUpdated();
+    } else if (name == "OnActivated") {
+	OnActivated();
+    } else {
+	throw (runtime_error("Unhandled method: " + name));
+    }
+    return  NULL;
+}
+
+string AStatec::MDesObserver_Mid() const
+{
+    return GetUri(iEnv->Root(), ETrue);
+}
+
+MDVarGet* AStatec::HGetInp(const Base* aRmt)
+{
+    MDVarGet* res = NULL;
+    if (aRmt == mPdata) {
+	MUnit* uinp = GetNode("./Inp");
+	res = (MDVarGet*) uinp->GetSIfiC(MDVarGet::Type(), this);
+    } else {
+	res = mPdata->GetObj(res);
+    }
+    return res;
+}
+
+void AStatec::HOnDataChanged(const Base* aRmt)
+{
+}
+
+TBool AStatec::IsProvided(const string& aIfName) const
+{
+    return aIfName == Provided();
+}
+
+TBool AStatec::IsRequired(const string& aIfName) const
+{
+    return aIfName == Required();
+}
+
+string AStatec::Provided() const
+{
+    return MDVarGet::Type();
+}
+
+string AStatec::Required() const
+{
+    return MDesObserver::Type();
+}
+
+TBool AStatec::IsCompatible(MUnit* aPair, TBool aExt)
+{
+    TBool res = EFalse;
+    TBool ext = aExt;
+    MUnit *cp = aPair;
+    // Checking if the pair is Extender
+    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type(), this);
+    // Consider all pairs not supporting MCompatChecker as not compatible 
+    if (pchkr != NULL) {
+	MUnit* ecp = pchkr->GetExtd(); 
+	if (ecp != NULL ) {
+	    ext = !ext;
+	    cp = ecp;
+	}
+	if (cp != NULL) {
+	    // Check roles conformance
+	    string ppt1prov = Provided();
+	    string ppt1req = Required();
+	    MConnPoint* mcp = cp->GetObj(mcp);
+	    if (mcp != NULL) {
+		if (ext) {
+		    res = mcp->IsProvided(ppt1prov) && mcp->IsRequired(ppt1req);
+		} else {
+		    res = mcp->IsProvided(ppt1req) && mcp->IsRequired(ppt1prov);
+		}
+	    }
+	}
+    }
+    return res;
+}
+
+MUnit* AStatec::GetExtd()
+{
+    return NULL;
+}
+
+MCompatChecker::TDir AStatec::GetDir() const
+{
+    return ERegular;
+}
+
+MIface* AStatec::MCompatChecker_Call(const string& aSpec, string& aRes)
+{
+}
+
+string AStatec::MCompatChecker_Mid() const
+{
+}
+
+MIface* AStatec::MConnPoint_Call(const string& aSpec, string& aRes)
+{
+}
+
+string AStatec::MConnPoint_Mid() const
+{
+}
+
+TBool AStatec::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
+{
+    return Vertu::OnCompChanged(aComp, aContName, aModif);
+}
+
+TEhr AStatec::ProcessCompChanged(MUnit& aComp, const string& aContName)
+{
+    TEhr res = EEHR_Ignored;
+    if (&aComp == this && aContName == KContVal) {
+	string val = GetContent(KContVal);
+	TBool sres = mPdata->FromString(val);
+	sres = sres && mCdata->FromString(val);
+	if (sres) {
+	    res = EEHR_Accepted;
+	}  else {
+	    Logger()->Write(EErr, this, "[%s] Error on applying content [%s]", GetUri().c_str(), aContName.c_str());
+	    res = EEHR_Denied;
+	}
+    } else {
+	res = Vertu::ProcessCompChanged(aComp, aContName);
+    }
+    return res;
+}
+	
+TBool AStatec::IsLogeventUpdate() 
+{
+    string upd = GetContent("Debug.Update");
+    return upd == "y";
+}
+
 
 
 

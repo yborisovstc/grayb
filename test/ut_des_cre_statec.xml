@@ -1,0 +1,45 @@
+<?xml version="1.0" ?>
+
+
+<!-- Simple test that creates sole state Incrementor looped to youself 
+     Tests: statec
+-->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="testroot" parent="Elem">
+    <node id="Modules" parent="AImports">
+	<!-- Module containing components of des layer -->
+    </node>
+
+    <node id="test" parent="Syst">
+	<cont id="About" val="Simple test that creates sole state DES Incrementor (var, multicontent) looped to youself"/>
+	<cont id="Log.Creation" val="y"/>
+
+	<node id="State" parent="AStatec"/>
+	<cont node="./State" id="Value" val="I 0" />
+	<cont node="./State" id="Debug.Update" val="y"/>
+
+	<node id="Trans" parent="ATrcAddVar"/>
+
+	<node id="IncrData" parent="AStatec"/>
+	<cont node="./IncrData" id="Value" val="I 1"/>
+
+	<node id="E2" parent="Aedge"> 
+	    <cont val="{P1:'./../Trans/Out' P2:'./../State/Inp'}"/> 
+	</node>
+
+	<node id="E3" parent="Aedge"> 
+	    <cont val="{P1:'./../IncrData' P2:'./../Trans/Inp'}"/> 
+	</node>
+
+	<!-- Loop -->
+	<node id="E4" parent="Aedge"> 
+	    <cont val="{P1:'./../State' P2:'./../Trans/Inp'}"/> 
+	</node>
+
+    </node>
+
+</node>
+

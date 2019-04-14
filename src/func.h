@@ -322,11 +322,11 @@ class Func: public Base {
 	    public: 
 	    virtual TInt GetInpCpsCount() const = 0;
 	    MDVarGet* GetInp(TInt aInpId, TBool aOpt = EFalse);
-	    virtual Elem::TIfRange GetInps(TInt aId, TBool aOpt = EFalse) = 0;
+	    virtual Unit::TIfRange GetInps(TInt aId, TBool aOpt = EFalse) = 0;
 	    virtual void OnFuncContentChanged() = 0;
 	    virtual void LogWrite(TLogRecCtg aCtg, const char* aFmt,...) = 0;
 	    virtual string GetInpUri(TInt aId) const = 0;
-	    virtual Elem* GetAgent() = 0;
+	    virtual Unit* GetAgent() = 0;
 	};
     public:
     Func(Host& aHost): Base(), mHost(aHost) {};
@@ -398,7 +398,7 @@ class FAddInt: public FAddBase, public MDIntGet {
 	// From MDIntGet
 	TInt Value() override;
 	MIface* MDIntGet_Call(const string& aSpec, string& aRes) override { return NULL;}
-	string MDIntGet_Mid() const override { return mHost.GetAgent()->Elem::MElem_Mid();}
+	string MDIntGet_Mid() const override { return mHost.GetAgent()->MUnit::Mid();}
 };
 
 class FAddFloat: public FAddBase, public MDFloatGet {

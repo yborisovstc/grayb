@@ -105,6 +105,14 @@
 		    in order to minimize the agents number, ref
 		    <xref linkend="ds_pia"/>. Ref <xref linkend="gls_cpa"/> for another connecting solution.
 	</para></glossdef> </glossentry>
+	<glossentry id="gls_scc"><glossterm>SCC</glossterm> <acronym>SCC</acronym>
+	    <glossdef> <para>State with Combined Chains. DES state design where data and observing chains are same.
+		    <xref linkend="ds_mae_scc"/>. Ref <xref linkend="gls_ssc"/> for another design solution.
+	</para></glossdef> </glossentry>
+	<glossentry id="gls_ssc"><glossterm>SSC</glossterm> <acronym>SSC</acronym>
+	    <glossdef> <para>State with Separate Chains. DES state design where data and observing chains are separated.
+		    <xref linkend="ds_mae_scc"/>. Ref <xref linkend="gls_scc"/> for another design solution.
+	</para></glossdef> </glossentry>
 	<glossentry id="gls_uac"><glossterm>UAC</glossterm> <acronym>UAC</acronym>
 	    <glossdef> <para>Units for Auxiliary Components
 		    The approach of agents design where "passive" units are used instead of agnents as
@@ -4885,6 +4893,52 @@
 		    <listitem>Getting data from transition function can be implemented in various ways. For instance we can introduce dedicated
 		    CP for connecting. Controlling agent can use this CP as MDVarGet provider.</listitem>
 		</orderedlist>
+	    </sect3>
+	    <sect3><title>Status</title>
+		<simpara>Implemented in 83ae69315d35. </simpara>
+		<simpara>Comparing with modelled agent on simple incrementor test</simpara>
+		<simpara>Monolitic, ut_des_cre1vmcmau.xml:</simpara>
+		<programlisting>
+		    /testroot; Completed of creating system, nodes: 89, imported: 54, time, us: 32369
+		</programlisting>
+		<simpara>Modelled, ut_des_cre1vmcmu.xml:</simpara>
+		<programlisting>
+		    /testroot; Completed of creating system, nodes: 143, imported: 94, time, us: 41400
+		</programlisting>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mae_scc"><title>Monolitic DES state with combined data-observing chain</title>
+	    <sect3><title>Into</title>
+		<simpara>The current implementation of DES state include separate data chain (MDVarGet iface for instanse) and observing chain
+		    (MDesObserver iface). Data chain is formed by
+		    tree of nodes of transition function. Observing chain is actually not a chain but just pin in each input of state. This pin expose 
+		    controlling agent observing interface to other states connected to the current state inputs. Transition function and controlling
+		    agent are enveloped by incaps containing agent. Lets use the abbreviation <xref linkend="gls_ssc"/> for this design.</simpara>
+		<simpara>This solution seems resonable but it has some drawbacks. One of them is that we need covering agent for that state to have
+		    proper routing observing interface from controlling agent to input connecting agents. Actually this is not a big limitation, but
+		    it makes the whole solution less effective - we need to separate the whole DES to the states with states own transition. But there are
+		    the cases when some part of transition can be shared between the states. Morover there are additional extension between the state and
+		    input of next transition function.</simpara>
+		<simpara>We can consider another design solution that partially solves the drawbacks of the current design. This new design is based on using
+		    data chain for routing observing iface. Indeed the data chain form the connections chain from input state to the current state. So
+		    this data chanin can be used to route. To do that we need transition function to support routing MDesObserver from the controlling agent
+		    to input states. Let's use the abbreviation <xref linkend="gls_scc"/> for this solution. There are some benefits of this approach comparing
+		    to <xref linkend="gls_ssc"/>. The first one is that the envelop container agent is not required so the output of state can be
+		    connected directly to next state transition function input.</simpara>
+		<simpara>The disadvantage of <xref linkend="gls_scc"/> is that we need functions specific agents.</simpara>
+	    </sect3>
+	    <sect3><title>First step of optimization</title>
+		<simpara>Version fb3d88a54a8494: added AStatec with SCC support and transition func Add. UT CreStatec with ut_des_cre_statec.xml passed.</simpara>
+		<simpara>Comparing with modelled agent on simple incrementor test</simpara>
+		<simpara>Modelled, ut_des_cre1vmcmu.xml:</simpara>
+		<programlisting>
+		    /testroot; Completed of creating system, nodes: 143, imported: 94, time, us: 41400
+		</programlisting>
+		<simpara><xref linkend="gls_scc"/> phase#1, ut_des_cre_statec.xml:</simpara>
+		<programlisting>
+		    /testroot; Started of creating system, spec [ut_des_cre_statec.xml]
+		    /testroot; Completed of creating system, nodes: 12, imported: 0, time, us: 2397
+		</programlisting>
 	    </sect3>
 	</sect2>
     </sect1>

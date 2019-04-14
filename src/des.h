@@ -221,6 +221,72 @@ class ATrBcmpVar: public ATrVar
 };
 
 
+/** @brief Transition function agent base with support of 'combined chain' approach
+ *
+ * Ref ds_mae_scc for combined chain design
+ * TODO To consider another solution: to implement ConnPoint iface directly by trans
+ * as it is done for AStatec. In that case out CP is not needed.
+ * */ 
+class ATrcBase: public Vertu
+{
+    public:
+	static const char* Type() { return "ATrcBase";};
+	static string PEType();
+	ATrcBase(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From Unit
+	virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
+    protected:
+	MUnit* mOut; //!< Output conn point. Owning by hier
+};
+
+
+// Agent base of Var transition function
+class ATrcVar: public ATrcBase, public MDVarGet, public Func::Host
+{
+    public:
+	static const char* Type() { return "ATrcVar";};
+	static string PEType();
+	ATrcVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual MIface* DoGetObj(const char *aName);
+	// From MDVarGet
+	virtual string VarGetIfid();
+	virtual void *DoGetDObj(const char *aName);
+	// From Func::Host
+	virtual TIfRange GetInps(TInt aId, TBool aOpt = EFalse) override;
+	virtual void OnFuncContentChanged() override;
+	virtual void LogWrite(TLogRecCtg aCtg, const char* aFmt,...) override;
+	virtual Unit* GetAgent() override {return this;}
+	virtual TInt GetInpCpsCount() const {return 0;}
+	// From Elem
+	virtual TBool GetCont(string& aCont, const string& aName=string()) const; 
+    protected:
+	virtual void Init(const string& aIfaceName) {};
+	virtual string GetInpUri(TInt aId) const;
+    protected:
+	Func* mFunc;
+};
+
+
+/** @brief Agent function "Addition of Var data"
+ *
+ * */
+class ATrcAddVar: public ATrcVar
+{
+    public:
+	static const char* Type() { return "ATrcAddVar";};
+	static string PEType();
+	ATrcAddVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName);
+	virtual string GetInpUri(TInt aId) const;
+	// From Func::Host
+	virtual TInt GetInpCpsCount() const {return 2;};
+};
+
+
+
+
 // Iface stub to avoid clashing MIface methods
 class MDesSyncable_Imd: public MDesSyncable
 {
@@ -336,6 +402,70 @@ class AState: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, pu
 	BdVar* mCdata;   //<! Confirming phase data
 	static const string KContVal; //<! Content Value  name
 };
+
+
+/** @brief State agent, unit, monolitic, using host unit base organs, combined chain
+ *
+ * Ref ds_uac for unit based orgars, ds_mae for monolitic agents, ds_mae_scc for combined chain design
+ * */
+class AStatec: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, public MDesSyncable_Imd, public MDesObserver_Imd,
+     public MBdVarHost
+{
+    public:
+	static const char* Type() { return "AStatec";};
+	static string PEType();
+	AStatec(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual MIface* DoGetObj(const char *aName);
+	// From Unit
+	//virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
+	// From MDesSyncable
+	virtual void Update();
+	virtual void Confirm();
+	virtual TBool IsUpdated();
+	virtual void SetUpdated();
+	virtual void ResetUpdated();
+	virtual TBool IsActive();
+	virtual void SetActive();
+	virtual void ResetActive();
+	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes);
+	virtual string MDesSyncable_Mid() const;
+	// From MDesObserver
+	virtual void OnUpdated();
+	virtual void OnActivated();
+	virtual MIface* MDesObserver_Call(const string& aSpec, string& aRes);
+	virtual string MDesObserver_Mid() const;
+	// From MConnPoint
+	virtual TBool IsProvided(const string& aIfName) const;
+	virtual TBool IsRequired(const string& aIfName) const;
+	virtual string Provided() const;
+	virtual string Required() const;
+	// From MConnPoint MIface
+	virtual MIface* MConnPoint_Call(const string& aSpec, string& aRes);
+	virtual string MConnPoint_Mid() const;
+	// From MCompatChecker
+	virtual TBool IsCompatible(MUnit* aPair, TBool aExt = EFalse);
+	virtual MUnit* GetExtd();
+	virtual TDir GetDir() const;
+	virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes);
+	virtual string MCompatChecker_Mid() const;
+	// From MBdVarHost
+	virtual MDVarGet* HGetInp(const Base* aRmt) override;
+	virtual void HOnDataChanged(const Base* aRmt) override;
+
+	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
+    protected:
+	TBool IsLogeventUpdate();
+	// From MUnit
+	virtual TEhr ProcessCompChanged(MUnit& aComp, const string& aContName) override;
+    private:
+	TBool iActive;
+	TBool iUpdated;
+	BdVar* mPdata;   //<! Preparing (updating) phase data
+	BdVar* mCdata;   //<! Confirming phase data
+	static const string KContVal; //<! Content Value  name
+};
+
 
 // DES base agent
 class ADes: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd, public MAgent
