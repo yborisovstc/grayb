@@ -155,7 +155,9 @@ class MDVarSet: public MIface
 {
     public:
 	static const char* Type() { return "MDVarSet";};
-	virtual Elem* VarSetBase() = 0;
+	virtual MIface *DoGetSDObj(const char *aName) { return NULL;};
+	// Get iface id. Is used for type negotiation from root to leafs
+	virtual string VarGetSIfid() = 0;
 	// From MIface
 	virtual MIface* MDVarSet_Call(const string& aSpec, string& aRes) { return NULL;}
 	virtual string MDVarSet_Mid() const {return "?";}
@@ -191,6 +193,24 @@ template <class T> class MDtGet: public MDtGetBase
 
 template<class T> const string MDtGet<T>::mType = string(TypeBase()) + "_" + T::TypeSig();
 
+class MDtSetBase: public MIfaceStub
+{
+    public:
+	static const char* TypeBase() { return "MDtSet";};
+	static void GetType(const string& aDtTypeSig, string& aRes) { aRes = string(TypeBase()) + "_" + aDtTypeSig;};
+};
+
+/** @brief Generic data setter interface
+ * */
+template <class T> class MDtSet: public MDtSetBase
+{
+    public:
+	static const string mType;
+	static const char* Type() { return mType.c_str();};
+	virtual void DtSet(const T& aData) = 0;
+};
+
+template<class T> const string MDtSet<T>::mType = string(TypeBase()) + "_" + T::TypeSig();
 
 // TODO [YB] Obsolete, replaced ty MMtrGet, to remove
 // Vector

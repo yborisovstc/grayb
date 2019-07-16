@@ -105,17 +105,22 @@ class HBase: public Base {
 	virtual TBool FromString(const string& aString) = 0;
 	virtual void ToString(string& aString) = 0;
 	virtual TBool Set(MDVarGet* aInp) = 0;
+	//!< Gets Id of data getter iface
 	virtual string IfaceGetId() const = 0;
+	//!< Gets Id of data setter iface
+	virtual string IfaceSGetId() const = 0;
 	virtual TBool IsValid() const { return ETrue;};
 	virtual TBool IsSigOK() const { return EFalse;};
 	DHost& mHost;
 };
+
 class HBool: public HBase, public MDBoolGet {
     public:
 	HBool(DHost* aHost): HBase(aHost), mData(EFalse) {};
 	static HBase* Create(DHost* aHost, const string& aString, MDVarGet* aInp = NULL);
 	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDBoolGet::Type();};
+	virtual string IfaceSGetId() const { return string();}
 	virtual void Set(TBool aData);
 	virtual TBool Set(MDVarGet* aInp);
 	virtual TBool Value();
@@ -123,12 +128,14 @@ class HBool: public HBase, public MDBoolGet {
 	virtual void ToString(string& aString);
 	TBool mData;
 };
+
 class HInt: public HBase, public MDInt, public MDIntGet, public MDIntSet {
     public:
 	HInt(DHost* aHost): HBase(aHost), mData(0) {};
 	static HBase* Create(DHost* aHost, const string& aString, MDVarGet* aInp = NULL);
 	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDIntGet::Type();};
+	virtual string IfaceSGetId() const { return MDIntSet::Type();};
 	virtual TInt Data() const;
 	virtual void Set(TInt aData);
 	virtual TBool Set(MDVarGet* aInp);
@@ -142,12 +149,14 @@ class HInt: public HBase, public MDInt, public MDIntGet, public MDIntSet {
 	virtual void ToString(string& aString);
 	TInt mData;
 };
+
 class HFloat: public HBase, public MDFloat, public MDFloatGet, public MDFloatSet {
     public:
 	HFloat(DHost* aHost): HBase(aHost), mData(0) {};
 	static HBase* Create(DHost* aHost, const string& aString, MDVarGet* aInp = NULL);
 	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDFloatGet::Type();};
+	virtual string IfaceSGetId() const { return MDFloatSet::Type();};
 	virtual float Data() const;
 	virtual void Set(float aData);
 	virtual TBool Set(MDVarGet* aInp);
@@ -157,12 +166,14 @@ class HFloat: public HBase, public MDFloat, public MDFloatGet, public MDFloatSet
 	virtual void ToString(string& aString);
 	float mData;
 };
+
 template <class T> class HData: public HBase, public MDataGet<T> {
     public:
 	HData(DHost* aHost);
 	static HBase* Create(DHost* aHost, const string& aString, MDVarGet* aInp = NULL);
 	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MVectGet<T>::Type();};
+	virtual string IfaceSGetId() const { return string();}
 	// From MDataGet
 	virtual void DataGet(T& aData);
 	// From HBase
@@ -172,12 +183,14 @@ template <class T> class HData: public HBase, public MDataGet<T> {
 	T mData;
 	static string mId;
 };
+
 template <class T> class HVect: public HBase, public MVectGet<T> {
     public:
 	HVect(DHost* aHost);
 	static HBase* Create(DHost* aHost, const string& aString, MDVarGet* aInp = NULL);
 	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MVectGet<T>::Type();};
+	virtual string IfaceSGetId() const { return string();}
 	// From MVFloatGet
 	virtual void VectGet(Vect<T>& aData);
 	// From HBase
@@ -189,12 +202,14 @@ template <class T> class HVect: public HBase, public MVectGet<T> {
 	static string mId;
 	TBool mValid;
 };
+
 template <class T> class HMtrd: public HBase, public MMtrdGet<T> {
     public:
 	HMtrd(DHost* aHost);
 	static HBase* Create(DHost* aHost, const string& aString, MDVarGet* aInp = NULL);
 	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MMtrdGet<T>::Type();};
+	virtual string IfaceSGetId() const { return string();}
 	// From MMtrdGet
 	virtual void MtrdGet(Mtrd<T>& aData);
 	// From HBase
@@ -204,6 +219,7 @@ template <class T> class HMtrd: public HBase, public MMtrdGet<T> {
 	Mtrd<T> mData;
 	static string mId;
 };
+
 // Matrix
 template <class T> class HMtr: public HBase, public MMtrGet<T> {
     public:
@@ -212,6 +228,7 @@ template <class T> class HMtr: public HBase, public MMtrGet<T> {
 	static HBase* Create(DHost* aHost, const string& aString, MDVarGet* aInp = NULL);
 	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MMtrdGet<T>::Type();};
+	virtual string IfaceSGetId() const { return string();}
 	// From MMtrdGet
 	virtual void MtrGet(Mtr<T>& aData);
 	// From HBase
@@ -224,15 +241,18 @@ template <class T> class HMtr: public HBase, public MMtrGet<T> {
 };
 
 // Generic data
-template <class T> class HDt: public HBase, public MDtGet<T> {
+template <class T> class HDt: public HBase, public MDtGet<T>, public MDtSet<T> {
     public:
 	HDt(DHost* aHost, const string& aCont);
 	HDt(DHost* aHost, const T& aData);
 	static HBase* Create(DHost* aHost, const string& aString, MDVarGet* aInp = NULL);
 	virtual MIface *DoGetObj(const char *aName);
 	virtual string IfaceGetId() const { return MDtGet<T>::Type();};
-	// From MMtrdGet
-	virtual void DtGet(T& aData);
+	virtual string IfaceSGetId() const { return string();}
+	// From MDtGet
+	virtual void DtGet(T& aData) override;
+	// From MDtSet
+	virtual void DtSet(const T& aData) override;
 	// From HBase
 	virtual TBool FromString(const string& aString);
 	virtual void ToString(string& aString);
@@ -271,7 +291,8 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet, pu
 	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
 	// From MDVarSet
-	virtual Elem* VarSetBase();
+	virtual string VarGetSIfid();
+	virtual MIface *DoGetSDObj(const char *aName) override;
 	// From MUnit
 	virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const; 
 	// From DHost
@@ -288,7 +309,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet, pu
  *
  * This data can be used in two phase data processing, like DES state
  * */
-class BdVar:  public Base, public MUpdatable, public MDVar, public MDVarGet, public DHost
+class BdVar:  public Base, public MUpdatable, public MDVar, public MDVarGet, public MDVarSet, public DHost
 {
     public:
 	static const char* Type() { return "BdVar";};
@@ -298,6 +319,7 @@ class BdVar:  public Base, public MUpdatable, public MDVar, public MDVarGet, pub
 	bool ToString(string& aType, string& aData);
 	virtual bool FromString(const string& aData); 
 	virtual bool ToString(string& aData); 
+	virtual TBool IsValid() const { return mData != NULL ? mData->IsValid() : EFalse;};
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MUpdatable
@@ -305,6 +327,9 @@ class BdVar:  public Base, public MUpdatable, public MDVar, public MDVarGet, pub
 	// From MDVarGet
 	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
+	// From MDVarSet
+	virtual string VarGetSIfid();
+	virtual MIface *DoGetSDObj(const char *aName) override;
 	// From DHost
 	virtual void HUpdateProp();
 	virtual void HNotifyUpdate();

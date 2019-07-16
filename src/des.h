@@ -6,6 +6,7 @@
 #include "mdes.h"
 #include "func.h"
 #include "vert.h"
+#include "syst.h"
 
 // Transition function agent base. 
 class ATrBase: public Elem, public MACompsObserver, public MAgent
@@ -286,17 +287,6 @@ class ATrcAddVar: public ATrcVar
 
 
 
-
-// Iface stub to avoid clashing MIface methods
-class MDesSyncable_Imd: public MDesSyncable
-{
-    virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes) = 0;
-    virtual string MDesSyncable_Mid() const = 0;
-    // From MIface
-    virtual MIface* Call(const string& aSpec, string& aRes) { return MDesSyncable_Call(aSpec, aRes);};
-    virtual string Mid() const { return MDesSyncable_Mid();};
-};
-
 // Iface stub to avoid clashing MIface methods
 class MDesObserver_Imd: public MDesObserver
 {
@@ -403,13 +393,36 @@ class AState: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, pu
 	static const string KContVal; //<! Content Value  name
 };
 
+/** @brief Connection point - input of combined chain state AStatec
+ * Just ConnPointMcu with pre-configured prepared/required
+ * */
+class CpStatecInp: public ConnPointMcu
+{
+    public:
+	static const char* Type() { return "CpStatecInp";};
+	static string PEType();
+	CpStatecInp(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+};
+
+/** @brief Connection point - output of combined chain state AStatec
+ * Just ConnPointMcu with pre-configured prepared/required
+ * */
+class CpStatecOutp: public ConnPointMcu
+{
+    public:
+	static const char* Type() { return "CpStatecOutp";};
+	static string PEType();
+	CpStatecOutp(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+};
+
 
 /** @brief State agent, unit, monolitic, using host unit base organs, combined chain
  *
  * Ref ds_uac for unit based orgars, ds_mae for monolitic agents, ds_mae_scc for combined chain design
+ * TODO It is not obvious solution to expose MDVarSet iface, but I don't find more proper solution ATM. To redesign?
  * */
 class AStatec: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, public MDesSyncable_Imd, public MDesObserver_Imd,
-     public MBdVarHost
+     public MBdVarHost, public MDVarSet
 {
     public:
 	static const char* Type() { return "AStatec";};
@@ -452,6 +465,9 @@ class AStatec: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, p
 	// From MBdVarHost
 	virtual MDVarGet* HGetInp(const Base* aRmt) override;
 	virtual void HOnDataChanged(const Base* aRmt) override;
+	// From MDVarSet
+	virtual string VarGetSIfid();
+	virtual MIface *DoGetSDObj(const char *aName) override;
 
 	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
     protected:

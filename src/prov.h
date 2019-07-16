@@ -1,6 +1,8 @@
 #ifndef __GRAYB_PROV_H
 #define __GRAYB_PROV_H
 
+#include <unordered_map>
+
 #include "mprov.h"
 #include "base.h"
 
@@ -33,6 +35,41 @@ class GProvider: public Base, public MProvider
 	TReg iReg;
 	string iName;
 };
+
+/** @brief Provider base using factory regiser
+ * */
+class ProvBase: public GProvider
+{
+    public:
+	/** Native agent factory function */
+	using TFact = Unit* (const string &aName, MUnit* aMan, MEnv* aEnv);
+	/** Registry of native agents factory function */
+	using TFReg = unordered_map<string, TFact*>;
+    public:
+	static const char* Type() { return "ProvBase";};
+	ProvBase(const string& aName, MEnv* aEnv);
+	virtual ~ProvBase();
+	virtual const TFReg& FReg() const = 0;
+	// From MProvider
+	virtual Unit* CreateNode(const string& aType, const string& aName, MUnit* aMan, MEnv* aEnv);
+	virtual Unit* GetNode(const string& aUri);
+	virtual Chromo* CreateChromo();
+    protected:
+	/** Creates native agent */
+	Unit* CreateAgent(const string& aType, const string& aName, MUnit* aMan, MEnv* aEnv) const;
+	static string GetParentName(const string& aUri);
+	template<typename T> static pair<string, ProvBase::TFact*> Item();
+    private:
+	vector<string> iNodesInfo;
+};
+
+/** Generator of native agent factory registry item */
+template<typename T> pair<string, ProvBase::TFact*> ProvBase::Item() {
+    return pair<string, ProvBase::TFact*>
+	(T::Type(), [](const string &name, MUnit* parent, MEnv* env)->Unit* { return new T(name, parent, env);});
+}
+
+
 
 
 #endif

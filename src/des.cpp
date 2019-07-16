@@ -377,6 +377,7 @@ void ATrAddVar::Init(const string& aIfaceName)
     else if ((mFunc = FAddData<float>::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddVect<float>::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddMtrd<float>::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddDt<Sdata<int>>::Create(this, aIfaceName)) != NULL);
 }
 
 string ATrAddVar::GetInpUri(TInt aId) const 
@@ -781,6 +782,13 @@ ATrcAddVar::ATrcAddVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcVar(aN
     __ASSERT(res);
     res = cp->ChangeCont("{Provided:'MDesObserver' Required:'MDVarGet'}");
     __ASSERT(res);
+    cp = Provider()->CreateNode("ConnPointMcu", "InpN", this, iEnv);
+    __ASSERT(cp != NULL);
+    res = AppendComp(cp);
+    __ASSERT(res);
+    res = cp->ChangeCont("{Provided:'MDesObserver' Required:'MDVarGet'}");
+    __ASSERT(res);
+
 }
 
 void ATrcAddVar::Init(const string& aIfaceName)
@@ -794,11 +802,13 @@ void ATrcAddVar::Init(const string& aIfaceName)
     else if ((mFunc = FAddData<float>::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddVect<float>::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddMtrd<float>::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddDt<Sdata<int>>::Create(this, aIfaceName)) != NULL);
 }
 
 string ATrcAddVar::GetInpUri(TInt aId) const 
 {
     if (aId == FAddBase::EInp) return "Inp";
+    else if (aId == FAddBase::EInpN) return "InpN";
     else return string();
 }
 
@@ -1317,11 +1327,44 @@ TEhr AState::ProcessCompChanged(MUnit& aComp, const string& aContName)
     return res;
 }
 	
+
 TBool AState::IsLogeventUpdate() 
 {
     string upd = GetContent("Debug.Update");
     return upd == "y";
 }
+
+
+/* Connection point - input of combined chain state AStatec */
+
+string CpStatecInp::PEType()
+{
+    return ConnPointMcu::PEType() + GUri::KParentSep + Type();
+}
+
+CpStatecInp::CpStatecInp(const string& aName, MUnit* aMan, MEnv* aEnv): ConnPointMcu(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    TBool res = ChangeCont("{Provided:'MDesObserver' Required:'MDVarGet'}");
+    __ASSERT(res);
+}
+
+/* Connection point - output of combined chain state AStatec */
+
+string CpStatecOutp::PEType()
+{
+    return ConnPointMcu::PEType() + GUri::KParentSep + Type();
+}
+
+CpStatecOutp::CpStatecOutp(const string& aName, MUnit* aMan, MEnv* aEnv): ConnPointMcu(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    TBool res = ChangeCont("{Provided:'MDVarGet' Required:'MDesObserver'}");
+    __ASSERT(res);
+}
+
+
+
 
 /* State base agent, monolitic, using unit base organs, combined data-observer chain */
 
@@ -1359,6 +1402,8 @@ MIface *AStatec::DoGetObj(const char *aName)
 	res = dynamic_cast<MCompatChecker*>(this);
     } else if (strcmp(aName, MDVarGet::Type()) == 0) {
 	res = dynamic_cast<MDVarGet*>(mCdata);
+    } else if (strcmp(aName, MDVarSet::Type()) == 0) {
+	res = dynamic_cast<MDVarSet*>(mPdata);
     } else {
 	res = Vertu::DoGetObj(aName);
     }
@@ -1418,6 +1463,14 @@ TBool AStatec::IsActive()
 void AStatec::SetActive()
 {
     iActive = ETrue;
+    // Propagate activation to owner
+    MUnit* downer = iMan;
+    if (downer != NULL) {
+	MDesObserver* mobs = (MDesObserver*) downer->GetSIfi(MDesObserver::Type(), this);
+	if (mobs != NULL) {
+	    mobs->OnActivated();
+	}
+    }
 }
 
 void AStatec::ResetActive()
@@ -1492,6 +1545,14 @@ TBool AStatec::IsUpdated()
 void AStatec::SetUpdated()
 {
     iUpdated = ETrue;
+    // Propagate updation to the owner
+    MUnit* downer = iMan;
+    if (downer != NULL) {
+	MDesObserver* mobs = (MDesObserver*) downer->GetSIfi(MDesObserver::Type(), this);
+	if (mobs != NULL) {
+	    mobs->OnUpdated();
+	}
+    }
 }
 
 void AStatec::ResetUpdated()
@@ -1591,6 +1652,9 @@ MDVarGet* AStatec::HGetInp(const Base* aRmt)
 
 void AStatec::HOnDataChanged(const Base* aRmt)
 {
+    if (aRmt == mPdata) {
+	SetUpdated();
+    }
 }
 
 TBool AStatec::IsProvided(const string& aIfName) const
@@ -1682,7 +1746,7 @@ TEhr AStatec::ProcessCompChanged(MUnit& aComp, const string& aContName)
 	string val = GetContent(KContVal);
 	TBool sres = mPdata->FromString(val);
 	sres = sres && mCdata->FromString(val);
-	if (sres) {
+	if (mPdata->IsValid() && mCdata->IsValid()) {
 	    res = EEHR_Accepted;
 	}  else {
 	    Logger()->Write(EErr, this, "[%s] Error on applying content [%s]", GetUri().c_str(), aContName.c_str());
@@ -1700,6 +1764,15 @@ TBool AStatec::IsLogeventUpdate()
     return upd == "y";
 }
 
+string AStatec::VarGetSIfid()
+{
+    return mPdata == NULL ? string() : mPdata->VarGetSIfid();
+}
+
+MIface *AStatec::DoGetSDObj(const char *aName)
+{
+    return mPdata == NULL ? NULL : mPdata->DoGetSDObj(aName);
+}
 
 
 
@@ -1748,6 +1821,15 @@ TBool ADes::IsActive()
 void ADes::SetActive()
 {
     iActive = ETrue;
+    // Propagate activation to owner
+    MUnit* host = iMan;
+    MUnit* downer = host->GetMan();
+    if (downer != NULL) {
+	MDesObserver* mobs = (MDesObserver*) downer->GetSIfi(MDesObserver::Type(), this);
+	if (mobs != NULL) {
+	    mobs->OnActivated();
+	}
+    }
 }
 
 void ADes::ResetActive()
@@ -1768,7 +1850,6 @@ void ADes::Update()
 		if (msync->IsActive()) {
 		    try {
 			msync->Update();
-			SetUpdated();
 		    } catch (std::exception e) {
 			Logger()->Write(EErr, this, "Error on update [%s]", eit->GetUri().c_str());
 		    }
@@ -1776,6 +1857,8 @@ void ADes::Update()
 	    }
 	}
     }
+    SetUpdated();
+    ResetActive();
 }
 
 void ADes::Confirm()
@@ -1860,6 +1943,8 @@ void ADes::OnUpdated()
 
 void ADes::OnActivated()
 {
+    // Upstem notification, activate itself and propagate
+    SetActive();
 }
 
 MIface* ADes::MDesObserver_Call(const string& aSpec, string& aRes)

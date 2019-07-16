@@ -20,6 +20,7 @@ class MDesObserver: public MIface
     public:
 	static const char* Type() { return "MDesObserver";};
 	virtual void OnUpdated() = 0;
+	// TODO Seems it is not used anymore. To delete.
 	virtual void OnActivated() = 0;
     public:
 	// From MIface
@@ -57,5 +58,16 @@ class MDesSyncable: public MIface
 	// Interface methods utility
 	static EIfu mIfu;
 };
+
+// Iface stub to avoid clashing MIface methods
+class MDesSyncable_Imd: public MDesSyncable
+{
+    virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes) = 0;
+    virtual string MDesSyncable_Mid() const = 0;
+    // From MIface
+    virtual MIface* Call(const string& aSpec, string& aRes) { return MDesSyncable_Call(aSpec, aRes);};
+    virtual string Mid() const { return MDesSyncable_Mid();};
+};
+
 
 #endif

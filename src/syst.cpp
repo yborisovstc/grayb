@@ -1537,6 +1537,8 @@ void ASocket::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 		}
 	    }
 	    // Redirect to upper layer
+	    // TODO [YB] Wrong design - we need to redirect only if iMan is not in the context
+	    // Ref ds_di_ifsprul for this design issue analysis.
 	    if (rr.first == rr.second && iMan != NULL) {
 		MUnit* host = GetMan();
 		MUnit* hostmgr = host->GetMan();

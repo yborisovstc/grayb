@@ -82,7 +82,6 @@ void Ut_des::test_Cre1()
     for (TInt cnt = 0; cnt < ticksnum; cnt++) {
 	if (sync->IsActive()) {
 	    sync->Update();
-	    sync->Update();
 	}
 	if (sync->IsUpdated()) {
 	    sync->Confirm();
@@ -353,10 +352,27 @@ void Ut_des::test_CreStatec()
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out IntGet iface", doutpgetp != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpgetp->Value() == 0);
     // Sync the state
-    MUnit* esync = root->GetNode("./test/State");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != 0);
+    MUnit* esync = root->GetNode("./test");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != NULL);
     MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
-    CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != NULL);
+    // Natively set Incr2
+    MUnit* incr2u = root->GetNode("./test/IncrData2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get IncrData2 unit", incr2u != NULL);
+    MDVarSet* incr2s = incr2u->GetObj(incr2s);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get IncrData2 MDVarSet iface", incr2s != NULL);
+    MDIntSet* incr2is = (MDIntSet*)incr2s->DoGetSDObj(MDIntSet::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get IncrData2 MDIntSet iface", incr2is != NULL);
+    incr2is->SetValue(1);
+    // Natively set Data3
+    MUnit* d3u = root->GetNode("./test/Data3");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get Data3 unit", d3u != NULL);
+    MDVarSet* d3s = d3u->GetObj(d3s);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get Data3 MDVarSet iface", d3s != NULL);
+    MDtSet<Sdata<TInt>>* d3is = dynamic_cast<MDtSet<Sdata<TInt>>*>(d3s->DoGetSDObj(MDtSet<Sdata<TInt>>::Type()));
+    CPPUNIT_ASSERT_MESSAGE("Fail to get Data3 MDIntSet iface", d3is != NULL);
+    d3is->DtSet(5);
+
     // Do some ticks
     const TInt ticksnum = 5;
     for (TInt cnt = 0; cnt < ticksnum; cnt++) {
@@ -370,7 +386,7 @@ void Ut_des::test_CreStatec()
 	}
     }
     TInt val = doutpgetp->Value();
-    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", val == 5);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", val == 10);
 
     delete iEnv;
 }

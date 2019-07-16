@@ -3955,7 +3955,7 @@
 	</sect2>
     </sect1>
 
-    <sect1 id="ds_di"><title>Desing issues</title>
+    <sect1 id="ds_di"><title>Design issues</title>
 	<sect2 id="ds_di_nacgna"><title>Native agents cannot get node by absolute URI</title>
 	    <simpara>The origin of this behaviour it that native agents are not included into model's main native hier.
 		They have theirs own hier instead.
@@ -4110,6 +4110,31 @@
 	    </sect3>
 	    <sect3><title>Solution: adding dedicated phase for native object modifications, like "Construct". It has to be called after adding created node
 		to hier.</title>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_di_ifsprul"><title>[20190614] Iface resolution from sock pin routes to upper layer (CP owner)</title>
+	    <sect3><title>Intro</title>
+		<simpara>Reproduced on [fd506aff987]. In test Ut_des::test_Cre2 I see that on Incr2 confirmation the DES TestDes (that owns Incr2) is
+		    activated. This is incorrect because the only observers of Incr2 should be activated. I noted that there is output CP "Out" in TestDes
+		    that is connected to output of Incr2. This connection causes that resolving des observer iface from Incr2 gives des agent of TestDes.
+		    This is wrong behavior. The reason of this wrong behavior is the routing rule in ASocket::UpdateIfi, ln.1540:</simpara>
+		<programlisting>
+		    void ASocket::UpdateIfi(const string&amp; aName, const TICacheRCtx&amp; aCtx)
+		    ...
+		    // Redirect to upper layer
+		    if (rr.first == rr.second &amp;&amp; iMan != NULL) {
+		</programlisting>
+		<simpara>Again, this is wrong. I had an idea to fix this checking if iMan is in context. But it causes tests error.
+		    Actually this resolving method is required. It is used in "State" system (ref grayb/modules/des.xml) to route to
+		    state agent from input des observer pin. It is hard to make explicit connection from input to agent, so that time it
+		    was decided to use specific routing from socket. This decision was wrong  because if affect the behavior of generic socket so
+		    causes side effect. The more proper solution would be to create specific connection point for des observer pin and implement
+		    specific routing in this conn point.</simpara>
+	    </sect3>
+	    <sect3><title>Solution</title>
+		<simpara>It doesn't make sense to fix this problem now especially for DES because we already started migration to
+		    <xref linkend="ds_mae_scc"/> solution. But it is worth to fix the problem for other cases because the problem affects
+		    socket common routing.</simpara>
 	    </sect3>
 	</sect2>
     </sect1>
@@ -4928,7 +4953,7 @@
 		<simpara>The disadvantage of <xref linkend="gls_scc"/> is that we need functions specific agents.</simpara>
 	    </sect3>
 	    <sect3><title>First step of optimization</title>
-		<simpara>Version fb3d88a54a8494: added AStatec with SCC support and transition func Add. UT CreStatec with ut_des_cre_statec.xml passed.</simpara>
+		<simpara>Version fd506aff987c6: added AStatec with SCC support and transition func Add. UT CreStatec with ut_des_cre_statec.xml passed.</simpara>
 		<simpara>Comparing with modelled agent on simple incrementor test</simpara>
 		<simpara>Modelled, ut_des_cre1vmcmu.xml:</simpara>
 		<programlisting>

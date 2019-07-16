@@ -11,9 +11,10 @@
 <node id="testroot" parent="Elem">
     <node id="Modules" parent="AImports">
 	<!-- Module containing components of des layer -->
+	<import id="/DesComps/Des" />
     </node>
 
-    <node id="test" parent="Syst">
+    <node id="test" parent="./Modules/DesComps/Des">
 	<cont id="About" val="Simple test that creates sole state DES Incrementor (var, multicontent) looped to youself"/>
 	<cont id="Log.Creation" val="y"/>
 
@@ -26,12 +27,22 @@
 	<node id="IncrData" parent="AStatec"/>
 	<cont node="./IncrData" id="Value" val="I 1"/>
 
+	<node id="IncrData2" parent="AStatec"/>
+	<cont node="./IncrData2" id="Value" val="I 0"/>
+
+	<node id="Data3" parent="AStatec"/>
+	<cont node="./Data3" id="Value" val="SI 3"/>
+
 	<node id="E2" parent="Aedge"> 
 	    <cont val="{P1:'./../Trans/Out' P2:'./../State/Inp'}"/> 
 	</node>
 
 	<node id="E3" parent="Aedge"> 
 	    <cont val="{P1:'./../IncrData' P2:'./../Trans/Inp'}"/> 
+	</node>
+
+	<node id="E5" parent="Aedge"> 
+	    <cont val="{P1:'./../IncrData2' P2:'./../Trans/Inp'}"/> 
 	</node>
 
 	<!-- Loop -->

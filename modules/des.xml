@@ -682,5 +682,10 @@
 	<node id="DesSyncAgent" parent="ADesSync"/> 
     </node>
 
+    <!-- Statec out extender -->
+    <node id="StcOutExt" parent="AExtdOut">
+	<node id="Int" parent="CpStatecInp"/>
+    </node>
+
 </node>
 

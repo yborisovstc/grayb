@@ -398,6 +398,11 @@ string DVar::VarGetIfid()
     return mData != NULL ? mData->IfaceGetId() : string();
 }
 
+string DVar::VarGetSIfid()
+{
+    return mData != NULL ? mData->IfaceSGetId() : string();
+}
+
 void *DVar::DoGetDObj(const char *aName)
 {
     void* res = NULL;
@@ -410,9 +415,13 @@ void *DVar::DoGetDObj(const char *aName)
     return res;
 }
 
-Elem* DVar::VarSetBase() 
+MIface *DVar::DoGetSDObj(const char *aName)
 {
-    return this;
+    MIface* res = NULL;
+    if (mData != NULL) {
+	res = mData->DoGetObj(aName);
+    }
+    return res;
 }
 
 DVar::~DVar()
@@ -431,7 +440,7 @@ TBool DVar::Init(const string& aString, MDVarGet* aInpv)
     }
     if ((mData = HInt::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HFloat::Create(this, aString, aInpv)) != NULL);
-   // else if ((mData = HMtr<float>::Create(this, aString, aInp)) != NULL);
+    // else if ((mData = HMtr<float>::Create(this, aString, aInp)) != NULL);
     else if ((mData = HDt<Sdata <int> >::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<Sdata <float> >::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<Sdata <bool> >::Create(this, aString, aInpv)) != NULL);
@@ -443,9 +452,12 @@ TBool DVar::Init(const string& aString, MDVarGet* aInpv)
     //else if ((mData = HVect<float>::Create(this, aString, aInpv)) != NULL);
     //else if ((mData = HMtrd<float>::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HBool::Create(this, aString, aInpv)) != NULL);
-    if (mData != NULL && !aString.empty()) {
-	res = mData->FromString(aString);
-    }
+    /*
+       if (mData != NULL && !aString.empty()) {
+       res = mData->FromString(aString);
+       }
+       */
+    res = mData != NULL;
     return res;
 }
 
@@ -512,16 +524,16 @@ TBool DVar::Update()
 	    if (mData != NULL) {
 		res = mData->Set(vget);
 		/* UpdateProp and NotifyUpdate already done in Set()
-		if (res) {
-		    UpdateProp();
-		    NotifyUpdate();
-		    if (IsLogeventUpdate()) {
-			string new_value;
-			ToString(new_value);
-			Logger()->Write(EInfo, this, "Updated2 [%s <- %s]", new_value.c_str(), old_value.c_str());
-		    }
-		}
-		*/
+		   if (res) {
+		   UpdateProp();
+		   NotifyUpdate();
+		   if (IsLogeventUpdate()) {
+		   string new_value;
+		   ToString(new_value);
+		   Logger()->Write(EInfo, this, "Updated2 [%s <- %s]", new_value.c_str(), old_value.c_str());
+		   }
+		   }
+		   */
 		if (res && IsLogeventUpdate()) {
 		    string new_value;
 		    ToString(new_value);
@@ -643,11 +655,18 @@ MIface *HInt::DoGetObj(const char *aName)
 
 HBase* HInt::Create(DHost* aHost, const string& aString, MDVarGet* aInp)
 {
-    HBase* res = NULL;
+    HInt* res = NULL;
     if (!aString.empty() && aString.at(0) == 'I') {
 	res = new HInt(aHost);
+	if (res != NULL && aString.at(1) == ' ') {
+	    // Set up the value
+	    TInt data = 0;
+	    sscanf(aString.c_str(), "I %d", &data);
+	    res->Set(data);
+	}
     }
     if (res == NULL && aInp != NULL) {
+	// TODO [YB] Is this case used at all? To check up and remove if not
 	MDIntGet* dget = aInp->GetDObj(dget);
 	if (dget != NULL) {
 	    res = new HInt(aHost);
@@ -1155,7 +1174,10 @@ template<class T> void HMtr<T>::MtrGet(Mtr<T>& aData)
 template<class T> MIface *HDt<T>::DoGetObj(const char *aName)
 {
     MIface* res = NULL;
-    if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
+    if (strcmp(aName, MDtGet<T>::Type()) == 0) res = dynamic_cast<MDtGet<T>*>(this);
+    else if (strcmp(aName, MDtSet<T>::Type()) == 0) {
+	res = dynamic_cast<MDtSet<T>*>(this);
+    }
     return res;
 }
 
@@ -1223,6 +1245,15 @@ template<class T> void HDt<T>::DtGet(T& aData)
     aData = mData;
 }
 
+template<class T> void HDt<T>::DtSet(const T& aData)
+{
+    if (mData != aData) {
+	mData = aData;
+	mHost.HUpdateProp();
+	mHost.HNotifyUpdate();
+    }
+}
+
 // Variant base data
 
 BdVar::BdVar(MBdVarHost *aHost): Base(), mData(NULL), mHost(aHost)
@@ -1236,6 +1267,8 @@ MIface *BdVar::DoGetObj(const char *aName)
 	res = dynamic_cast<MDVar*>(this);
     } else if (strcmp(aName, MDVarGet::Type()) == 0) {
 	res = dynamic_cast<MDVarGet*>(this);
+    } else if (strcmp(aName, MDVarSet::Type()) == 0) {
+	res = dynamic_cast<MDVarSet*>(this);
     }
     return res;
 }
@@ -1243,6 +1276,11 @@ MIface *BdVar::DoGetObj(const char *aName)
 string BdVar::VarGetIfid()
 {
     return mData != NULL ? mData->IfaceGetId() : string();
+}
+
+string BdVar::VarGetSIfid()
+{
+    return mData != NULL ? mData->IfaceSGetId() : string();
 }
 
 void *BdVar::DoGetDObj(const char *aName)
@@ -1256,6 +1294,16 @@ void *BdVar::DoGetDObj(const char *aName)
     }
     return res;
 }
+
+MIface *BdVar::DoGetSDObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (mData != NULL) {
+	res = mData->DoGetObj(aName);
+    }
+    return res;
+}
+
 
 BdVar::~BdVar()
 {
@@ -1273,7 +1321,7 @@ TBool BdVar::Init(const string& aString, MDVarGet* aInpv)
     }
     if ((mData = HInt::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HFloat::Create(this, aString, aInpv)) != NULL);
-   // else if ((mData = HMtr<float>::Create(this, aString, aInp)) != NULL);
+    // else if ((mData = HMtr<float>::Create(this, aString, aInp)) != NULL);
     else if ((mData = HDt<Sdata <int> >::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<Sdata <float> >::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<Sdata <bool> >::Create(this, aString, aInpv)) != NULL);
@@ -1285,9 +1333,12 @@ TBool BdVar::Init(const string& aString, MDVarGet* aInpv)
     //else if ((mData = HVect<float>::Create(this, aString, aInpv)) != NULL);
     //else if ((mData = HMtrd<float>::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HBool::Create(this, aString, aInpv)) != NULL);
-    if (mData != NULL && !aString.empty()) {
-	res = mData->FromString(aString);
-    }
+    /* Seems it is not required, Value init should be done on creation phase
+       if (mData != NULL && !aString.empty()) {
+       res = mData->FromString(aString);
+       }
+       */
+    res = mData != NULL;
     return res;
 }
 
@@ -1296,10 +1347,10 @@ TBool BdVar::FromString(const string& aData)
     TBool res = EFalse;
     if (mData == NULL) {
 	res = Init(aData);
-    }
-    if (mData != NULL) {
+    } else {
+	//!! if (mData != NULL) {
 	res = mData->FromString(aData);
-	if (!res && !mData->IsSigOK()) {
+	if (!mData->IsValid() && !mData->IsSigOK()) {
 	    // Signature get's not fit, reinit
 	    Init(aData);
 	    res = ETrue;
@@ -1309,50 +1360,50 @@ TBool BdVar::FromString(const string& aData)
 	NotifyUpdate();
     }
     return res;
-}
-
-bool BdVar::ToString(string& aData) 
-{
-    TBool res = EFalse;
-    if (mData == NULL) {
-	res = Init(aData);
     }
-    if (mData != NULL) {
-	mData->ToString(aData);
-    }
-    return res;
 
-}
-
-TBool BdVar::Update()
-{
-    TBool res = EFalse;
-    string old_value;
-    ToString(old_value);
-    MDVarGet* vget = mHost->HGetInp(this);
-    if (vget != NULL) {
+    bool BdVar::ToString(string& aData) 
+    {
+	TBool res = EFalse;
 	if (mData == NULL) {
-	    Init(string(), vget);
+	    res = Init(aData);
 	}
 	if (mData != NULL) {
-	    res = mData->Set(vget);
+	    mData->ToString(aData);
+	}
+	return res;
+
+    }
+
+    TBool BdVar::Update()
+    {
+	TBool res = EFalse;
+	string old_value;
+	ToString(old_value);
+	MDVarGet* vget = mHost->HGetInp(this);
+	if (vget != NULL) {
+	    if (mData == NULL) {
+		Init(string(), vget);
+	    }
+	    if (mData != NULL) {
+		res = mData->Set(vget);
+	    }
+	}
+	return res;
+    }
+
+    void BdVar::NotifyUpdate()
+    {
+	if (mHost != NULL) {
+	    mHost->HOnDataChanged(this);
 	}
     }
-    return res;
-}
 
-void BdVar::NotifyUpdate()
-{
-    if (mHost != NULL) {
-	mHost->HOnDataChanged(this);
+    void BdVar::HUpdateProp()
+    {
     }
-}
 
-void BdVar::HUpdateProp()
-{
-}
-
-void BdVar::HNotifyUpdate()
-{
-    NotifyUpdate();
-}
+    void BdVar::HNotifyUpdate()
+    {
+	NotifyUpdate();
+    }

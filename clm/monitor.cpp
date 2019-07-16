@@ -124,7 +124,8 @@ InputHandler* Monitor::createHandler(const string& aCmd)
 bool Monitor::saveModel(const string& aPath)
 {
     bool res = false;
-    MElem* root = mEnv->Root();
+    MUnit* uroot = mEnv->Root();
+    MElem* root = uroot->GetObj(root);
     if (root != nullptr) {
 	// Check getting chromo 
 	root->Chromos().Save(aPath);

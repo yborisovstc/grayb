@@ -80,6 +80,7 @@ include_HEADERS = \
 		  plat.h \
 		  base.h \
 		  chromo.h \
+		  munit.h \
 		  melem.h \
 		  mchromo.h \
 		  medge.h \
@@ -98,6 +99,7 @@ include_HEADERS = \
 		  guri.h \
 		  mprov.h \
 		  prov.h \
+		  unit.h \
 		  elem.h \
 		  syst.h \
 		  prop.h \

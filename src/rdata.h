@@ -52,6 +52,7 @@ template<class T> class Sdata: public DtBase
 {
     public:
 	Sdata(): DtBase() {};
+	Sdata(const T& aRdata): Sdata() { mData = aRdata; mValid = ETrue;}
 	Sdata(const Sdata& d): DtBase(d), mData(d.mData) {};
 	template <class TA> Sdata(const Sdata<TA>& b): DtBase(b), mData(static_cast<T>(b.mData)) {};
 	static const char* TypeSig();
