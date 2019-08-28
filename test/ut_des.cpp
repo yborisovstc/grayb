@@ -386,7 +386,7 @@ void Ut_des::test_CreStatec()
 	}
     }
     TInt val = doutpgetp->Value();
-    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", val == 10);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", val == 9);
 
     delete iEnv;
 }

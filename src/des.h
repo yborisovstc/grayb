@@ -297,8 +297,18 @@ class MDesObserver_Imd: public MDesObserver
     virtual string Mid() const { return MDesObserver_Mid();};
 };
 
+// Iface stub to avoid clashing MIface methods
+class MDesInpObserver_Imd: public MDesInpObserver
+{
+    virtual MIface* MDesInpObserver_Call(const string& aSpec, string& aRes) = 0;
+    virtual string MDesInpObserver_Mid() const = 0;
+    // From MIface
+    virtual MIface* Call(const string& aSpec, string& aRes) { return MDesInpObserver_Call(aSpec, aRes);};
+    virtual string Mid() const { return MDesInpObserver_Mid();};
+};
+
 // State base agent
-class StateAgent: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd, public MAgent
+class StateAgent: public Elem, public MDesSyncable_Imd, public MDesInpObserver_Imd, public MAgent
 {
     public:
 	static const char* Type() { return "StateAgent";};
@@ -317,11 +327,10 @@ class StateAgent: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd,
 	virtual void ResetActive();
 	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes);
 	virtual string MDesSyncable_Mid() const;
-	// From MDesObserver
+	// From MDesInpObserver
 	virtual void OnUpdated();
-	virtual void OnActivated();
-	virtual MIface* MDesObserver_Call(const string& aSpec, string& aRes);
-	virtual string MDesObserver_Mid() const;
+	virtual MIface* MDesInpObserver_Call(const string& aSpec, string& aRes);
+	virtual string MDesInpObserver_Mid() const;
 	// From MAgent
 	MIface* MAgent_DoGetIface(const string& aName) override;
     private:
@@ -335,7 +344,7 @@ class BdVar;
  *
  * Ref ds_uac for unit based orgars, ds_mae for monolitic agents, ds_mae_scm for this agent
  * */
-class AState: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, public MDesSyncable_Imd, public MDesObserver_Imd,
+class AState: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, public MDesSyncable_Imd, public MDesInpObserver_Imd,
     public MAgent, public MBdVarHost
 {
     public:
@@ -355,11 +364,10 @@ class AState: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, pu
 	virtual void ResetActive();
 	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes);
 	virtual string MDesSyncable_Mid() const;
-	// From MDesObserver
+	// From MDesInpObserver
 	virtual void OnUpdated();
-	virtual void OnActivated();
-	virtual MIface* MDesObserver_Call(const string& aSpec, string& aRes);
-	virtual string MDesObserver_Mid() const;
+	virtual MIface* MDesInpObserver_Call(const string& aSpec, string& aRes);
+	virtual string MDesInpObserver_Mid() const;
 	// From MAgent
 	MIface* MAgent_DoGetIface(const string& aName) override;
 	// From MConnPoint
@@ -421,7 +429,7 @@ class CpStatecOutp: public ConnPointMcu
  * Ref ds_uac for unit based orgars, ds_mae for monolitic agents, ds_mae_scc for combined chain design
  * TODO It is not obvious solution to expose MDVarSet iface, but I don't find more proper solution ATM. To redesign?
  * */
-class AStatec: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, public MDesSyncable_Imd, public MDesObserver_Imd,
+class AStatec: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, public MDesSyncable_Imd, public MDesInpObserver_Imd,
      public MBdVarHost, public MDVarSet
 {
     public:
@@ -443,11 +451,10 @@ class AStatec: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, p
 	virtual void ResetActive();
 	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes);
 	virtual string MDesSyncable_Mid() const;
-	// From MDesObserver
+	// From MDesInpObserver
 	virtual void OnUpdated();
-	virtual void OnActivated();
-	virtual MIface* MDesObserver_Call(const string& aSpec, string& aRes);
-	virtual string MDesObserver_Mid() const;
+	virtual MIface* MDesInpObserver_Call(const string& aSpec, string& aRes);
+	virtual string MDesInpObserver_Mid() const;
 	// From MConnPoint
 	virtual TBool IsProvided(const string& aIfName) const;
 	virtual TBool IsRequired(const string& aIfName) const;
@@ -504,8 +511,8 @@ class ADes: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes);
 	virtual string MDesSyncable_Mid() const;
 	// From MDesObserver
-	virtual void OnUpdated();
 	virtual void OnActivated();
+	virtual void OnUpdated();
 	virtual MIface* MDesObserver_Call(const string& aSpec, string& aRes);
 	virtual string MDesObserver_Mid() const;
 	// From MAgent

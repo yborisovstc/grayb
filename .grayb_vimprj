@@ -151,8 +151,11 @@ test=test CD=. filter="*.cpp *.h *.xml *.am *.txt" {
   ut_conn_2.xml
   ut_conn_sock.xml
   ut_conn_sock2.xml
+  ut_conn_sock_mcm.xml
+  ut_conn_sock_mcmu.xml
   ut_conn_systp_1.xml
   ut_conn_systp_2.xml
+  ut_conn_systp_sock.xml
   ut_conn_vertp_1.xml
   ut_content.xml
   ut_cre_1.xml
@@ -165,12 +168,18 @@ test=test CD=. filter="*.cpp *.h *.xml *.am *.txt" {
   ut_cre_syst.xml
   ut_cre_syst1.xml
   ut_cre_syst__S.xml
+  ut_cre_systu_1.xml
+  ut_creu_1.xml
   ut_dcp_chromo_1.xml
   ut_des_cre1.xml
   ut_des_cre1vmc.xml
+  ut_des_cre1vmcm.xml
+  ut_des_cre1vmcmau.xml
+  ut_des_cre1vmcmu.xml
   ut_des_cre2.xml
   ut_des_cre3.xml
   ut_des_cre4.xml
+  ut_des_cre_statec.xml
   ut_func_seq1.xml
   ut_func_seq2.xml
   ut_func_seq3.xml
@@ -215,6 +224,7 @@ test=test CD=. filter="*.cpp *.h *.xml *.am *.txt" {
   ut_compact2_res.txt
   ut_compact3.txt
   ut_compact3_res.txt
+  ut_compact3_res2.txt
   ut_compact_cont.txt
   ut_compact_cont_res.txt
   ut_compact_ref1.txt
@@ -225,8 +235,11 @@ test=test CD=. filter="*.cpp *.h *.xml *.am *.txt" {
   ut_conn_2.txt
   ut_conn_sock.txt
   ut_conn_sock2.txt
+  ut_conn_sock_mcm.txt
+  ut_conn_sock_mcmu.txt
   ut_conn_systp_1.txt
   ut_conn_systp_2.txt
+  ut_conn_systp_sock.txt
   ut_conn_vertp_1.txt
   ut_content.txt
   ut_cre_1.txt
@@ -238,10 +251,19 @@ test=test CD=. filter="*.cpp *.h *.xml *.am *.txt" {
   ut_cre_incaps.txt
   ut_cre_notif.txt
   ut_cre_syst.txt
+  ut_cre_systu_1.txt
+  ut_cre_vert_ae1.txt
+  ut_creu_1.txt
+  ut_creu_1_saved.txt
+  ut_dcp_chromo_1.txt
   ut_des_cre1.txt
   ut_des_cre1vmc.txt
+  ut_des_cre1vmcm.txt
+  ut_des_cre1vmcmau.txt
+  ut_des_cre1vmcmu.txt
   ut_des_cre2.txt
   ut_des_cre4.txt
+  ut_des_cre_statec.txt
   ut_func_seq1.txt
   ut_func_seq2.txt
   ut_func_seq3.txt
@@ -251,11 +273,14 @@ test=test CD=. filter="*.cpp *.h *.xml *.am *.txt" {
   ut_func_var2.txt
   ut_icache_inv1.txt
   ut_icache_inv_magent.txt
+  ut_mod_impmgr_1.txt
   ut_mod_impmgr_2.txt
   ut_mod_impmgr_opt.txt
+  ut_mod_int_1.txt
   ut_mut_dep_1.txt
   ut_mut_dep_2.txt
   ut_mut_dep_3.txt
+  ut_mut_dep_ref.txt
   ut_mut_dep_refs.txt
   ut_mut_inv_1.txt
   ut_mut_inv_1_res.txt
@@ -281,6 +306,7 @@ test=test CD=. filter="*.cpp *.h *.xml *.am *.txt" {
   ut_transfmdf1.txt
   ut_transfmdf1_res.txt
   ut_uri_base.txt
+  ut_uri_chromo_1.txt
   libs=.libs CD=. filter="*" {
   }
 }
@@ -428,33 +454,39 @@ fap2-vis=/home/yborisov/projects/fap/fap2-vis CD=. filter="autogen.sh Makefile.a
  fap2vis.pc.in
 src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   gwcont.h
+  mdlvis.h
+  mmdlvis.h
+  mscel.h
+  mscene.h
+  mvisenv.h
+  mvisrepr.h
   mwidget.h
+  mwindow.h
+  sce_rect.h
+  scelem.h
+  scene.h
+  visenv.h
   visprov.h
-  widget.h
+  visrepr.h
   gwcont.cpp
+  mdlvis.cpp
   plugin.cpp
+  sce_rect.cpp
+  scelem.cpp
+  scene.cpp
+  visenv.cpp
   visprov.cpp
-  widget.cpp
+  visrepr.cpp
   Makefile.am
 } 
 modules=modules CD=. filter="*" {
   widgets.xml
 }
-test=test CD=. filter="*" {
-  Makefile
-  Makefile.am
-  Makefile.in
-  gdb_set
-  ut-fap2vis-lib
+test=test CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   ut_base.cpp
   ut_cre.cpp
   ut_main.cpp
-  ut_swnd_1.txt
-  ut_swnd_1.txt~old
-  ut_swnd_1.xml
-  ut_fap2vis_lib-ut_base.o
-  ut_fap2vis_lib-ut_cre.o
-  ut_fap2vis_lib-ut_main.o
+  Makefile.am
 }
 }
 fap2-srv=/home/yborisov/projects/fap/fap2-srv CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in {
@@ -600,85 +632,82 @@ fap-vm-gtk=/home/yborisov/projects/fap/git/fap-vm-gtk CD=. filter="*" {
    Makefile.am
  }
 }
-fap-bvp-gtk=/home/yborisov/projects/fap/git/fap-bvp-gtk CD=. filter="autogen.sh Makefile *.am *.ac *.in AUTHORS COPYING ChangeLog README NEWS" {
+fap-bvp-gtk=/home/yborisov/projects/fap/fap-bvp-gtk CD=. filter="autogen.sh Makefile *.am *.ac *.in AUTHORS COPYING ChangeLog README NEWS" {
  autogen.sh
-  Makefile
-  Makefile.am
-  configure.ac
-  Makefile.in
-  libfapbvpgtk.pc.in
-  AUTHORS
-  COPYING
-  ChangeLog
-  README
-  NEWS
-  Makefile.in
-  libfapbvpgtk.pc.in
+ Makefile.am
+ configure.ac
+ Makefile.in
+ libfapbvpgtk.pc.in
+ AUTHORS
+ COPYING
+ ChangeLog
+ README
+ NEWS
   etc=etc CD=. filter="*" {
    cag_proxy.rc
   }
  src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   cagbin.h
-   cagbox.h
-   cagbutton.h
-   cagcontainer.h
-   cagdialog.h
-   cagentry.h
-   cagimage.h
-   caglabel.h
-   caglayout.h
-   cagmenu.h
-   cagmisc.h
-   cagpaned.h
-   cagprov.h
-   cagproxy.h
-   cagstyle.h
-   cagtextview.h
-   cagtoolbar.h
-   cagwindow.h
-   capbutton.h
-   capcommon.h
-   capcomp.h
-   capcp.h
-   capcterm.h
-   capdect.h
-   caplogdlg.h
-   capmiscwid.h
-   capopwnd.h
-   capstate.h
-   capsys.h
-   mainwndiface.h
-   widgets.h
-   cagbin.cpp
-   cagbox.cpp
-   cagbutton.cpp
-   cagcontainer.cpp
-   cagdialog.cpp
-   cagentry.cpp
-   cagimage.cpp
-   caglabel.cpp
-   caglayout.cpp
-   cagmenu.cpp
-   cagmisc.cpp
-   cagpaned.cpp
-   cagprov.cpp
-   cagproxy.cpp
-   cagstyle.cpp
-   cagtextview.cpp
-   cagtoolbar.cpp
-   cagwindow.cpp
-   capbutton.cpp
-   capcomp.cpp
-   capcp.cpp
-   capcterm.cpp
-   capdect.cpp
-   caplogdlg.cpp
-   capmiscwid.cpp
-   capopwnd.cpp
-   capstate.cpp
-   capsys.cpp
-   widgets.cpp
-   Makefile.am
+  cagbox.h
+  cagbutton.h
+  cagcontainer.h
+  cagdialog.h
+  cagentry.h
+  cagimage.h
+  caglabel.h
+  caglayout.h
+  cagmenu.h
+  cagmisc.h
+  cagpaned.h
+  cagprov.h
+  cagproxy.h
+  cagstyle.h
+  cagtextview.h
+  cagtoolbar.h
+  cagwindow.h
+  capbutton.h
+  capcommon.h
+  capcomp.h
+  capcp.h
+  capcterm.h
+  capdect.h
+  caplogdlg.h
+  capmiscwid.h
+  capopwnd.h
+  capstate.h
+  capsys.h
+  mainwndiface.h
+  widgets.h
+  cagbin.cpp
+  cagbox.cpp
+  cagbutton.cpp
+  cagcontainer.cpp
+  cagdialog.cpp
+  cagentry.cpp
+  cagimage.cpp
+  caglabel.cpp
+  caglayout.cpp
+  cagmenu.cpp
+  cagmisc.cpp
+  cagpaned.cpp
+  cagprov.cpp
+  cagproxy.cpp
+  cagstyle.cpp
+  cagtextview.cpp
+  cagtoolbar.cpp
+  cagwindow.cpp
+  capbutton.cpp
+  capcomp.cpp
+  capcp.cpp
+  capcterm.cpp
+  capdect.cpp
+  caplogdlg.cpp
+  capmiscwid.cpp
+  capopwnd.cpp
+  capstate.cpp
+  capsys.cpp
+  widgets.cpp
+  Makefile.am
  } 
  debian=debian CD=. filter="*" {
   changelog
@@ -697,17 +726,18 @@ fap-bvp-gtk=/home/yborisov/projects/fap/git/fap-bvp-gtk CD=. filter="autogen.sh 
    tbar_btn_trans.png
  }
 }
-fap-studio-gtk=/home/yborisov/projects/fap/git/fap-studio-gtk CD=. filter="autogen.sh Makefile *.am *.ac *.in AUTHORS COPYING ChangeLog README NEWS" {
+fap2-vis=/home/yborisov/projects/fap/fap2-vis CD=. filter="autogen.sh Makefile *.am *.ac *.in AUTHORS COPYING ChangeLog README NEWS" {
  autogen.sh
-  Makefile
-  Makefile.am
-  configure.ac
-  Makefile.in
-  AUTHORS
-  COPYING
-  ChangeLog
-  README
-  NEWS
+ Makefile
+ Makefile.am
+ configure.ac
+ Makefile.in
+ fap2vis.pc.in
+ AUTHORS
+ COPYING
+ ChangeLog
+ README
+ NEWS
   debian=debian CD=. filter="*" {
    changelog
     compat
@@ -722,19 +752,54 @@ fap-studio-gtk=/home/yborisov/projects/fap/git/fap-studio-gtk CD=. filter="autog
     fap-studio-gtk.debhelper.log
   }
  src=src CD=. filter="*.cpp *.h *.xml *.am *.rc" {
-  app.cpp
-   main.cpp
-   mainwnd.cpp
-   app.h
-   mainwnd.h
-   Makefile.am
+  gwcont.cpp
+  mdlvis.cpp
+  plugin.cpp
+  sce_rect.cpp
+  scelem.cpp
+  scene.cpp
+  visenv.cpp
+  visprov.cpp
+  visrepr.cpp
+  gwcont.h
+  mdlvis.h
+  mmdlvis.h
+  mscel.h
+  mscene.h
+  mvisenv.h
+  mvisrepr.h
+  mwidget.h
+  mwindow.h
+  sce_rect.h
+  scelem.h
+  scene.h
+  visenv.h
+  visprov.h
+  visrepr.h
+  Makefile.am
  }
- templates=templates CD=. filter="*" {
-  empty.xml
+ modules=modules CD=. filter="*" {
+  widgets.xml
  }
  examples=examples CD=. filter="*" {
   rock_1.xml
    rock_2.xml
+ }
+ test=test CD=. filter="*" {
+  Makefile
+  Makefile.am
+  Makefile.in
+  gdb_set
+  ut_base.cpp
+  ut_cre.cpp
+  ut_main.cpp
+  ut_swnd_1.txt
+  ut_swnd_1.txt~old
+  ut_swnd_1.xml
+  ut_swnd_2.txt
+  ut_swnd_2.txt~old
+  ut_swnd_2.xml
+  ut_fap2vis_lib-ut_main.o
  }
 }
 fap-balls=/home/yborisov/projects/fap/git/fap-balls CD=. filter="*.ac *.am" {

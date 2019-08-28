@@ -14,14 +14,18 @@ class Base;
 // DES interfaces
 
 
-// Observer. Upper layer is observer of components 
+/** @brief Components Observer. Upper layer is observer of components 
+ *
+ * Components notifies upper layer of status changes
+ * */
 class MDesObserver: public MIface
 {
     public:
 	static const char* Type() { return "MDesObserver";};
-	virtual void OnUpdated() = 0;
-	// TODO Seems it is not used anymore. To delete.
+	/** @brief Notification that component was activated */
 	virtual void OnActivated() = 0;
+	/** @brief Notification that component was changed */
+	virtual void OnUpdated() = 0;
     public:
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};
@@ -33,6 +37,29 @@ class MDesObserver: public MIface
 	// Interface methods utility
 	static EIfu mIfu;
 };
+
+/** @brief Inputs Observer
+ *
+ * State is notified by its inputs of inputs update
+ * */
+class MDesInpObserver: public MIface
+{
+    public:
+	static const char* Type() { return "MDesInpObserver";};
+	/** @brief Notification that input state was changed */
+	virtual void OnUpdated() = 0;
+    public:
+	// From MIface
+	virtual string Uid() const { return Mid() + "%" + Type();};
+    protected:
+	class EIfu: public Ifu {
+	    public:
+		EIfu();
+	};
+	// Interface methods utility
+	static EIfu mIfu;
+};
+
 
 // Syncable
 class MDesSyncable: public MIface

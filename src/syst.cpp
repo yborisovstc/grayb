@@ -1113,25 +1113,44 @@ void AExtd::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     if (res == NULL) {
 	// Redirect to internal point or pair depending on the requiestor
 	MUnit* intcp = GetExtd();
-	if (intcp != NULL && !ctx.IsInContext(intcp)) {
-	    rr = intcp->GetIfi(aName, ctx);
-	    InsertIfCache(aName, aCtx, intcp, rr);
-	    resg = resg || (rr.first != rr.second);
-	}
-	else {
-	    TInt count = PairsCount();
-	    for (TInt ct = 0; ct < count; ct++) {
-		MVert* pair = GetPair(ct);
-		MUnit* ep = pair->GetObj(ep);
-		if (ep != NULL && !ctx.IsInContext(ep)) {
-		    rr = ep->GetIfi(aName, ctx);
-		    InsertIfCache(aName, aCtx, ep, rr);
-		    resg = resg || (rr.first != rr.second);
+	if (intcp != NULL) {
+	    if (!ctx.IsInContext(intcp)) {
+		// From outside to int
+		rr = intcp->GetIfi(aName, ctx);
+		InsertIfCache(aName, aCtx, intcp, rr);
+		resg = resg || (rr.first != rr.second);
+	    } else {
+		// From int to outside
+		TInt count = PairsCount();
+		if (count != 0) {
+		    // Has connections
+		    for (TInt ct = 0; ct < count; ct++) {
+			MVert* pair = GetPair(ct);
+			MUnit* ep = pair->GetObj(ep);
+			if (ep != NULL && !ctx.IsInContext(ep)) {
+			    rr = ep->GetIfi(aName, ctx);
+			    InsertIfCache(aName, aCtx, ep, rr);
+			    resg = resg || (rr.first != rr.second);
+			}
+		    }
+		} else {
+		    // Doesn't have connections so redirect to connection environment
+		    // The logic is that event there are not connection to this extender
+		    // the connection environment still can be able to provide the iface requested
+		    MUnit* hostmgr = GetMan();
+		    MUnit* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
+		    mgr = (mgr == NULL) ? NULL : mgr->GetMan();
+		    if (mgr != NULL && !ctx.IsInContext(mgr)) {
+			rr = mgr->GetIfi(aName, ctx);
+			InsertIfCache(aName, aCtx, mgr, rr);
+			resg = resg || (rr.first != rr.second);
+		    }
 		}
 	    }
 	}
     }
-    // Responsible pairs not found, redirect to upper layer
+    // Responsible pairs not found, redirect to upper level
+    // TODO consider if we need this
     if (rr.first == rr.second && iMan != NULL) {
 	MUnit* hostmgr = GetMan();
 	MUnit* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;

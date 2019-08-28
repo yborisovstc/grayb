@@ -609,7 +609,7 @@ void Unit::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 	    ca.push_back(eit);
 	}
 	for (MUnit* agent : ca) {
-	    if (!ctx.IsInContext(agent)) {
+	    if (agent != NULL && !ctx.IsInContext(agent)) {
 		rr = agent->GetIfi(aName, ctx);
 		InsertIfCache(aName, aCtx, agent, rr);
 	    }
@@ -1558,7 +1558,7 @@ TEhr Unit::ProcessCompChanged(MUnit& aComp, const string& aContName)
 	ca.push_back(eit);
     }
     for (MUnit* agent : ca) {
-	MACompsObserver* iagent = agent->GetObj(iagent);
+	MACompsObserver* iagent = agent == NULL ? NULL : agent->GetObj(iagent);
 	if (iagent != NULL) {
 	    hres = iagent->HandleCompChanged(*this, aComp, aContName);
 	    res = hres ? EEHR_Accepted : EEHR_Denied;
@@ -2130,7 +2130,7 @@ void Unit::SetCtx(MUnit* aContext)
     mContext = aContext;
 }
 
-void Unit::DumpIfCtx(const TICacheRCtx& aCtx) const
+void Unit::DumpIfCtx(const TICacheRCtx& aCtx)
 {
     cout << "<< Dump of Ifaces request context: START >>" << endl;
     for (auto item: aCtx) {
@@ -2139,6 +2139,17 @@ void Unit::DumpIfCtx(const TICacheRCtx& aCtx) const
 	cout << uri << endl;
     }
     cout << "<< Dump of Ifaces request context: END >>" << endl;
+}
+
+void Unit::DumpIfRange(const TIfRange& aRange)
+{
+    cout << "<< Dump of Ifaces range: START >>" << endl;
+    for (auto it = aRange.first; it != aRange.second; it++) {
+	const MIface* item = *it;
+	string uri = item->Uid();
+	cout << uri << endl;
+    }
+    cout << "<< Dump of Ifaces range: END >>" << endl;
 }
 
 MUnit* Unit::CreateHeir(const string& aName, MUnit* aMan, MUnit* aContext)

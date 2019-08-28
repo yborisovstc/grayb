@@ -17,7 +17,16 @@ MDesObserver::EIfu::EIfu()
 
 MDesObserver::EIfu MDesObserver::mIfu;
 
-// MDesObserver metadata
+// MDesInpCompObserver metadata
+MDesInpObserver::EIfu::EIfu()
+{
+    RegMethod("OnUpdated", 0);
+}
+
+MDesInpObserver::EIfu MDesInpObserver::mIfu;
+
+
+// MDesSyncable metadata
 MDesSyncable::EIfu::EIfu()
 {
     RegMethod("Update", 0);
@@ -630,7 +639,7 @@ ATrcBase::ATrcBase(const string& aName, MUnit* aMan, MEnv* aEnv): Vertu(aName, a
     __ASSERT(mOut != NULL);
     TBool res = AppendComp(mOut);
     __ASSERT(res);
-    res = mOut->ChangeCont("{Required:'MDesObserver'}");
+    res = mOut->ChangeCont("{Required:'MDesInpObserver'}");
     __ASSERT(res);
 }
 
@@ -644,7 +653,7 @@ void ATrcBase::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     TIfRange rr;
     TICacheRCtx ctx(aCtx); ctx.push_back(this);
 
-    if (aName == MDesObserver::Type()) {
+    if (aName == MDesInpObserver::Type()) {
 	// Redirect to output
 	rr = mOut->GetIfi(aName, ctx);
 	InsertIfCache(aName, aCtx, mOut, rr);
@@ -780,13 +789,13 @@ ATrcAddVar::ATrcAddVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcVar(aN
     __ASSERT(cp != NULL);
     TBool res = AppendComp(cp);
     __ASSERT(res);
-    res = cp->ChangeCont("{Provided:'MDesObserver' Required:'MDVarGet'}");
+    res = cp->ChangeCont("{Provided:'MDesInpObserver' Required:'MDVarGet'}");
     __ASSERT(res);
     cp = Provider()->CreateNode("ConnPointMcu", "InpN", this, iEnv);
     __ASSERT(cp != NULL);
     res = AppendComp(cp);
     __ASSERT(res);
-    res = cp->ChangeCont("{Provided:'MDesObserver' Required:'MDVarGet'}");
+    res = cp->ChangeCont("{Provided:'MDesInpObserver' Required:'MDVarGet'}");
     __ASSERT(res);
 
 }
@@ -834,8 +843,8 @@ MIface *StateAgent::DoGetObj(const char *aName)
     if (strcmp(aName, MDesSyncable::Type()) == 0) {
 	res = (MDesSyncable*) this;
     }
-    else if (strcmp(aName, MDesObserver::Type()) == 0) {
-	res = (MDesObserver*) this;
+    else if (strcmp(aName, MDesInpObserver::Type()) == 0) {
+	res = (MDesInpObserver*) this;
     }
     else if (strcmp(aName, MAgent::Type()) == 0)
 	res = dynamic_cast<MAgent*>(this);
@@ -899,9 +908,9 @@ void StateAgent::Confirm()
 		MUnit* eobs = GetNode("./../Capsule/Out/Int/PinObs");
 		// Request w/o context because of possible redirecting request to itself
 		// TODO [YB] To check if iterator is not damage during the cycle, to cache to vector if so
-		TIfRange range = eobs->GetIfi(MDesObserver::Type());
+		TIfRange range = eobs->GetIfi(MDesInpObserver::Type());
 		for (TIfIter it = range.first; it != range.second; it++) {
-		    MDesObserver* mobs = (MDesObserver*) (*it);
+		    MDesInpObserver* mobs = (MDesInpObserver*) (*it);
 		    if (mobs != NULL) {
 			mobs->OnUpdated();
 		    }
@@ -975,33 +984,27 @@ void StateAgent::OnUpdated()
     SetActive();
 }
 
-void StateAgent::OnActivated()
-{
-}
-
-MIface* StateAgent::MDesObserver_Call(const string& aSpec, string& aRes)
+MIface* StateAgent::MDesInpObserver_Call(const string& aSpec, string& aRes)
 {
     MIface* res = NULL;
     string name, sig;
     vector<string> args;
     Ifu::ParseIcSpec(aSpec, name, sig, args);
-    TBool name_ok = MDesObserver::mIfu.CheckMname(name);
+    TBool name_ok = MDesInpObserver::mIfu.CheckMname(name);
     if (!name_ok) 
 	throw (runtime_error("Wrong method name"));
-    TBool args_ok = MDesObserver::mIfu.CheckMpars(name, args.size());
+    TBool args_ok = MDesInpObserver::mIfu.CheckMpars(name, args.size());
     if (!args_ok)
 	throw (runtime_error("Wrong arguments number"));
     if (name == "OnUpdated") {
 	OnUpdated();
-    } else if (name == "OnActivated") {
-	OnActivated();
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }
     return  NULL;
 }
 
-string StateAgent::MDesObserver_Mid() const
+string StateAgent::MDesInpObserver_Mid() const
 {
     return GetUri(iEnv->Root(), ETrue);
 }
@@ -1030,8 +1033,8 @@ MIface *AState::DoGetObj(const char *aName)
     MIface* res = NULL;
     if (strcmp(aName, MDesSyncable::Type()) == 0) {
 	res = dynamic_cast<MDesSyncable*>(this);
-    } else if (strcmp(aName, MDesObserver::Type()) == 0) {
-	res = dynamic_cast<MDesObserver*>(this);
+    } else if (strcmp(aName, MDesInpObserver::Type()) == 0) {
+	res = dynamic_cast<MDesInpObserver*>(this);
     } else if (strcmp(aName, MAgent::Type()) == 0) {
 	res = dynamic_cast<MAgent*>(this);
     } else if (strcmp(aName, MConnPoint::Type()) == 0) {
@@ -1095,9 +1098,9 @@ void AState::Confirm()
 	    MUnit* eobs = GetNode("./../Capsule/Out/Int/PinObs");
 	    // Request w/o context because of possible redirecting request to itself
 	    // TODO [YB] To check if iterator is not damage during the cycle, to cache to vector if so
-	    TIfRange range = eobs->GetIfi(MDesObserver::Type());
+	    TIfRange range = eobs->GetIfi(MDesInpObserver::Type());
 	    for (TIfIter it = range.first; it != range.second; it++) {
-		MDesObserver* mobs = (MDesObserver*) (*it);
+		MDesInpObserver* mobs = (MDesInpObserver*) (*it);
 		if (mobs != NULL) {
 		    mobs->OnUpdated();
 		}
@@ -1174,33 +1177,27 @@ void AState::OnUpdated()
     SetActive();
 }
 
-void AState::OnActivated()
-{
-}
-
-MIface* AState::MDesObserver_Call(const string& aSpec, string& aRes)
+MIface* AState::MDesInpObserver_Call(const string& aSpec, string& aRes)
 {
     MIface* res = NULL;
     string name, sig;
     vector<string> args;
     Ifu::ParseIcSpec(aSpec, name, sig, args);
-    TBool name_ok = MDesObserver::mIfu.CheckMname(name);
+    TBool name_ok = MDesInpObserver::mIfu.CheckMname(name);
     if (!name_ok) 
 	throw (runtime_error("Wrong method name"));
-    TBool args_ok = MDesObserver::mIfu.CheckMpars(name, args.size());
+    TBool args_ok = MDesInpObserver::mIfu.CheckMpars(name, args.size());
     if (!args_ok)
 	throw (runtime_error("Wrong arguments number"));
     if (name == "OnUpdated") {
 	OnUpdated();
-    } else if (name == "OnActivated") {
-	OnActivated();
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }
     return  NULL;
 }
 
-string AState::MDesObserver_Mid() const
+string AState::MDesInpObserver_Mid() const
 {
     return GetUri(iEnv->Root(), ETrue);
 }
@@ -1345,7 +1342,7 @@ string CpStatecInp::PEType()
 CpStatecInp::CpStatecInp(const string& aName, MUnit* aMan, MEnv* aEnv): ConnPointMcu(aName, aMan, aEnv)
 {
     iName = aName.empty() ? GetType(PEType()) : aName;
-    TBool res = ChangeCont("{Provided:'MDesObserver' Required:'MDVarGet'}");
+    TBool res = ChangeCont("{Provided:'MDesInpObserver' Required:'MDVarGet'}");
     __ASSERT(res);
 }
 
@@ -1359,7 +1356,7 @@ string CpStatecOutp::PEType()
 CpStatecOutp::CpStatecOutp(const string& aName, MUnit* aMan, MEnv* aEnv): ConnPointMcu(aName, aMan, aEnv)
 {
     iName = aName.empty() ? GetType(PEType()) : aName;
-    TBool res = ChangeCont("{Provided:'MDVarGet' Required:'MDesObserver'}");
+    TBool res = ChangeCont("{Provided:'MDVarGet' Required:'MDesInpObserver'}");
     __ASSERT(res);
 }
 
@@ -1380,7 +1377,7 @@ AStatec::AStatec(const string& aName, MUnit* aMan, MEnv* aEnv): Vertu(aName, aMa
     __ASSERT(cp != NULL);
     TBool res = AppendComp(cp);
     __ASSERT(res);
-    res = cp->ChangeCont("{Provided:'MDesObserver' Required:'MDVarGet'}");
+    res = cp->ChangeCont("{Provided:'MDesInpObserver' Required:'MDVarGet'}");
     __ASSERT(res);
 }
 
@@ -1394,8 +1391,8 @@ MIface *AStatec::DoGetObj(const char *aName)
     MIface* res = NULL;
     if (strcmp(aName, MDesSyncable::Type()) == 0) {
 	res = dynamic_cast<MDesSyncable*>(this);
-    } else if (strcmp(aName, MDesObserver::Type()) == 0) {
-	res = dynamic_cast<MDesObserver*>(this);
+    } else if (strcmp(aName, MDesInpObserver::Type()) == 0) {
+	res = dynamic_cast<MDesInpObserver*>(this);
     } else if (strcmp(aName, MConnPoint::Type()) == 0) {
 	res = dynamic_cast<MConnPoint*>(this);
     } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
@@ -1519,9 +1516,10 @@ void AStatec::Confirm()
 	    // to request pairs directly.
 	    for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
 		MUnit* pe = (*it)->GetObj(pe);
-		TIfRange range = pe->GetIfi(MDesObserver::Type());
+		// Don't add self to if request context to enable routing back to self
+		TIfRange range = pe->GetIfi(MDesInpObserver::Type());
 		for (TIfIter it = range.first; it != range.second; it++) {
-		    MDesObserver* mobs = (MDesObserver*) (*it);
+		    MDesInpObserver* mobs = (MDesInpObserver*) (*it);
 		    if (mobs != NULL) {
 			mobs->OnUpdated();
 		    }
@@ -1607,33 +1605,27 @@ void AStatec::OnUpdated()
     SetActive();
 }
 
-void AStatec::OnActivated()
-{
-}
-
-MIface* AStatec::MDesObserver_Call(const string& aSpec, string& aRes)
+MIface* AStatec::MDesInpObserver_Call(const string& aSpec, string& aRes)
 {
     MIface* res = NULL;
     string name, sig;
     vector<string> args;
     Ifu::ParseIcSpec(aSpec, name, sig, args);
-    TBool name_ok = MDesObserver::mIfu.CheckMname(name);
+    TBool name_ok = MDesInpObserver::mIfu.CheckMname(name);
     if (!name_ok) 
 	throw (runtime_error("Wrong method name"));
-    TBool args_ok = MDesObserver::mIfu.CheckMpars(name, args.size());
+    TBool args_ok = MDesInpObserver::mIfu.CheckMpars(name, args.size());
     if (!args_ok)
 	throw (runtime_error("Wrong arguments number"));
     if (name == "OnUpdated") {
 	OnUpdated();
-    } else if (name == "OnActivated") {
-	OnActivated();
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }
     return  NULL;
 }
 
-string AStatec::MDesObserver_Mid() const
+string AStatec::MDesInpObserver_Mid() const
 {
     return GetUri(iEnv->Root(), ETrue);
 }
@@ -1674,7 +1666,7 @@ string AStatec::Provided() const
 
 string AStatec::Required() const
 {
-    return MDesObserver::Type();
+    return MDesInpObserver::Type();
 }
 
 TBool AStatec::IsCompatible(MUnit* aPair, TBool aExt)
@@ -1887,6 +1879,15 @@ TBool ADes::IsUpdated()
 void ADes::SetUpdated()
 {
     iUpdated = ETrue;
+    // Propagate updated to owner
+    MUnit* host = iMan;
+    MUnit* downer = host->GetMan();
+    if (downer != NULL) {
+	MDesObserver* mobs = (MDesObserver*) downer->GetSIfi(MDesObserver::Type(), this);
+	if (mobs != NULL) {
+	    mobs->OnUpdated();
+	}
+    }
 }
 
 void ADes::ResetUpdated()
@@ -1937,13 +1938,13 @@ string ADes::MDesSyncable_Mid() const
 
 void ADes::OnUpdated()
 {
-    // Mark active
-    SetActive();
+    // Upstem notification, mark itself updated and propagate
+    SetUpdated();
 }
 
 void ADes::OnActivated()
 {
-    // Upstem notification, activate itself and propagate
+    // Upstem notification, mark itself activated and propagate
     SetActive();
 }
 

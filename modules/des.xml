@@ -14,7 +14,7 @@
     <node id="StOutSocket" parent="/*/Modules/SysComps/SocketInp">
 	<!-- Pin Des observer. Requires DES observer interface to handle activation of the state -->
 	<node id="PinObs" parent="/*/Modules/SysComps/ConnPoint"> 
-	    <cont node="./Provided" val="MDesObserver"/>
+	    <cont node="./Provided" val="MDesInpObserver"/>
 	</node>
 	<!-- Pin Data observer. Provides data interface -->
 	<node id="PinData" parent="/*/Modules/SysComps/ConnPoint"> 
@@ -26,7 +26,7 @@
 	<cont id="About" val="State Output socket, multicontent"/>
 	<node id="PinObs" parent="ConnPointMc"> 
 	    <cont id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>
-	    <cont id="Provided" val="MDesObserver"/>
+	    <cont id="Provided" val="MDesInpObserver"/>
 	</node>
 	<node id="PinData" parent="ConnPointMc"> 
 	    <cont id="About" val="Pin Data observer. Provides data interface"/>
@@ -39,7 +39,7 @@
 	<cont id="Direction" val="Out"/>
 	<node id="PinObs" parent="ConnPointMc"> 
 	    <cont id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>
-	    <cont id="Provided" val="MDesObserver"/>
+	    <cont id="Provided" val="MDesInpObserver"/>
 	</node>
 	<node id="PinData" parent="ConnPointMc"> 
 	    <cont id="About" val="Pin Data observer. Provides data interface"/>
@@ -52,7 +52,7 @@
 	<cont id="Direction" val="Out"/>
 	<node id="PinObs" parent="ConnPointMc"/> 
 	<cont node="./PinObs" id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>
-	<cont node="./PinObs" id="Provided" val="MDesObserver"/>
+	<cont node="./PinObs" id="Provided" val="MDesInpObserver"/>
 
 	<node id="PinData" parent="ConnPointMcu"/> 
 	<cont node="./PinData" id="About" val="Pin Data observer. Provides data interface"/>
@@ -67,7 +67,7 @@
     <node id="StInpSocket" parent="/*/Modules/SysComps/SocketOut">
 	<!-- Pin Des observer. Requires DES observer interface to handle activation of the state -->
 	<node id="PinObs" parent="/*/Modules/SysComps/ConnPoint"> 
-	    <cont node="./Required" val="MDesObserver"/>
+	    <cont node="./Required" val="MDesInpObserver"/>
 	</node>
 	<!-- Pin Data observer. Provides data interface -->
 	<node id="PinData" parent="/*/Modules/SysComps/ConnPoint"> 
@@ -79,7 +79,7 @@
 	<cont id="About" val="State Input socket, multicontent"/>
 	<node id="PinObs" parent="ConnPointMc"> 
 	    <cont id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>
-	    <cont id="Required" val="MDesObserver"/>
+	    <cont id="Required" val="MDesInpObserver"/>
 	</node>
 	<node id="PinData" parent="ConnPointMc"> 
 	    <cont id="About" val="Pin Data observer. Provides data interface"/>
@@ -92,7 +92,7 @@
 	<cont id="Direction" val="Inp"/>
 	<node id="PinObs" parent="ConnPointMc"> 
 	    <cont id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>
-	    <cont id="Required" val="MDesObserver"/>
+	    <cont id="Required" val="MDesInpObserver"/>
 	</node>
 	<node id="PinData" parent="ConnPointMc"> 
 	    <cont id="About" val="Pin Data observer. Provides data interface"/>
@@ -106,7 +106,7 @@
 
 	<node id="PinObs" parent="ConnPointMcu"/> 
 	<cont node="./PinObs" id="About" val="Pin Des observer. Requires DES observer interface to handle activation of the state"/>
-	<cont node="./PinObs" id="Required" val="MDesObserver"/>
+	<cont node="./PinObs" id="Required" val="MDesInpObserver"/>
 
 	<node id="PinData" parent="ConnPointMcu"/> 
 	<cont node="./PinData" id="About" val="Pin Data observer. Provides data interface"/>
@@ -318,10 +318,10 @@
     <!-- Transition of variable data -->
     <node id="TrcVar" parent="Syst"> 
 	<node id="Inp" parent="ConnPointMcu"/> 
-	<cont node="./Inp" val="{Required:'MDVarGet' Provided:'MDesObserver'}"/>
+	<cont node="./Inp" val="{Required:'MDVarGet' Provided:'MDesInpObserver'}"/>
 
 	<node id="Out" parent="ConnPointMcu"/> 
-	<cont node="./Out" val="{Required:'MDesObserver' Provided:'MDVarGet'}"/>
+	<cont node="./Out" val="{Required:'MDesInpObserver' Provided:'MDVarGet'}"/>
     </node>
 
     <!-- Transition of variable data : Addition -->
@@ -685,6 +685,11 @@
     <!-- Statec out extender -->
     <node id="StcOutExt" parent="AExtdOut">
 	<node id="Int" parent="CpStatecInp"/>
+    </node>
+
+    <!-- Statec Inp extender -->
+    <node id="StcInpExt" parent="AExtdInp">
+	<node id="Int" parent="CpStatecOutp"/>
     </node>
 
 </node>

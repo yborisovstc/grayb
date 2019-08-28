@@ -235,7 +235,8 @@ class Unit: public MUnit
 	virtual void DumpContent() const;
 	virtual void DumpIfReqs() const override;
 	virtual void DumpIfCache() const override;
-	void DumpIfCtx(const TICacheRCtx& aCtx) const;
+	static void DumpIfCtx(const TICacheRCtx& aCtx);
+	static void DumpIfRange(const TIfRange& aCtx);
     public:
 	// TODO [YB] To move to Ifu ?
 	static const char KContentStart = '{';

@@ -4968,6 +4968,24 @@
 	</sect2>
     </sect1>
 
+    <sect1 id="ds_ns"><title>Name spaces</title>
+	<sect2><title>Intro</title>
+	    <simpara>The very annoying aspect of writing model's chromo is specifying the nodes: parents, targets, etc. The are specified using
+		URI that can include the long chain to the node and be long in description. The more convenient way would be to have simplest identification
+		of the nodes.</simpara>
+	    <simpara>One way to achieve this is using shorter names from some base nodes. These nodes can be considered as name spaces. For instance we could
+		set the node containting base components as base node. In that case we can specify the URI related to this node instead of using full path URI or 
+		URI related from current node.</simpara>
+	    <simpara>The base nodes can be specified via property of the current node. This allows changing base nodes, removing them etc.</simpara>
+	    <simpara>So the node can be specifies as shorter URI containing name of corresponding base node (explicit notation) or even avoiding specifying of base
+		node (implicit notation). Implicit notation requires checking the names clashes in name spaces and can potentially create overhead.</simpara>
+	    <simpara>The design of name spaces seems to be simple. We just need to modify GetNode() metod of Unit: get base node first and then obtaing required node
+		via path relative from base node. We can use specific relation symbol (ref <xref linkend="ds_mpo_crs"/>) for base nodes to simplify resolving them.
+	    </simpara>
+	    <simpara></simpara>
+	</sect2>
+    </sect1>
+
     <sect1 id="ds_hsc"><title>Handling of system change. Observers</title>
 	<sect2><title>Intro</title>
 	    <simpara>Ref <xref linkend="ds_prfopt_ahn"/> for handling the changes discussion in the scope of performance optimization.</simpara>
@@ -4993,7 +5011,28 @@
 	</sect2>
     </sect1>
 
-    <sect1><title>Mutli-purpose optimization</title>
+    <sect1 id="ds_mpo"><title>Mutli-purpose optimization</title>
+	<sect2 id="ds_mpo_tcm"><title>Optimization: More compact chromo using targeted compound mutations</title>
+	    <sect3><title>Intro</title>
+		<simpara><xref linkend="gls_osm"/> chromo was introduced to guarantee model integrity. With this approach chromo new attribute
+		    "targ" (target) of the mutation was added. The chromo notation however became less compact comparing to direct hierarchical chromo
+		    (<xref linkend="gls_dhc"/>). This is because the mutation of some model node N outside compoud mutation assosiated with node N creation
+		    mutation are annotated with target attribute.</simpara>
+		<simpara>It is proposed to have compound mutation that has single target attribute but number of mutations inside. This can make the chromo more
+		compact - we can combine the late mutations in one "block" avoiding annoying repeatition of "targ" attribute.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_mpo_crs"><title>Optimization: Using compact relation symbols in URI</title>
+	    <sect3><title>Intro</title>
+		<simpara>Currently the relations in URI are notated in not compact manner. For instance URI to owner is "./.." that doesn't meet the
+		    base approach that URI is the path using relations. For instance the symbol "/" designates relation "owner to owning". If we
+		    consider the symbol "\" as designation of relation owning to owner we will be able to use notation "\" instead of "./..". Note that
+		    the name ".." here is redundant here because there is only one owner for node.</simpara>
+		<simpara>The relation symbols can be used to modify the current scheme of URI. We can introduce new relations to simplify URI, for instance 
+		    we can use relation "component of native agents", let's use "~" for that. In that case the native agents can be notated as "~name" so 
+		    we can use simple name to designate direct compoments of node and avoid annoying "./name".</simpara>
+	    </sect3>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_th"><title>To handle</title>
@@ -5096,6 +5135,15 @@
 	</sect2>
 	<sect2><title>Reimplement moving node using mutation contexts.</title>
 	    <simpara>Ref <xref linkend="ds_mv_local_wkc"/></simpara>
+	</sect2>
+	<sect2><title>Combined mutations in <xref linkend="gls_osm"/> chromo</title>
+	    <simpara>Ref <xref linkend="ds_mpo_tcm"/></simpara>
+	</sect2>
+	<sect2><title>Compact relation symbols in URI</title>
+	    <simpara>Ref <xref linkend="ds_mpo_crs"/></simpara>
+	</sect2>
+	<sect2><title>Name spaces using base nodes</title>
+	    <simpara>Ref <xref linkend="ds_ns"/></simpara>
 	</sect2>
     </sect1>
 
