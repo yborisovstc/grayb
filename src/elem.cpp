@@ -247,7 +247,7 @@ ChromoNode Elem::AppendMutation(TNodeType aType)
 TBool Elem::AppendMutation(const string& aFileName)
 {
     TBool res = EFalse;
-    Chromo *spec = Provider()->CreateChromo();
+    MChromo *spec = Provider()->CreateChromo();
     res = spec->Set(aFileName);
     if (res) {
 	iMut->Root().AddChild(spec->Root(), ETrue);
@@ -576,7 +576,7 @@ MUnit* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 	    }
 	    else {
 		// TODO [YB] To add seaching the module - it will allow to specify just file of spec wo full uri
-		Chromo *spec = Provider()->CreateChromo();
+		MChromo *spec = Provider()->CreateChromo();
 		res = spec->Set(sparent);
 		if (res) {
 		    const ChromoNode& root = spec->Root();
@@ -1024,7 +1024,7 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 	}
 	else {
 	    // Remote node
-	    Chromo *spec = Provider()->CreateChromo();
+	    MChromo *spec = Provider()->CreateChromo();
 	    TBool res1 = spec->Set(srcs);
 	    if (res1) {
 		const ChromoNode& root = spec->Root();
@@ -1377,7 +1377,7 @@ MIface* Elem::MElem_Call(const string& aSpec, string& aRes)
 	TMut mut(args.at(0));
 	AppendMutation(mut);
     } else if (name == "AppendMutation#2") {
-	Chromo* mut = iEnv->Provider()->CreateChromo();
+	MChromo* mut = iEnv->Provider()->CreateChromo();
 	mut->SetFromSpec(args.at(0));
 	AppendMutation(mut->Root());
 	delete mut;

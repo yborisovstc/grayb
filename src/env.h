@@ -171,7 +171,7 @@ class Env: public Base, public MEnv
     ImportsMgr* iImpMgr;
     string iSpecFile;
     string iSpec;
-    Chromo* iSpecChromo;
+    MChromo* iSpecChromo;
     TBool mEnPerfTrace;
     TBool mEnIfTrace;
     map<string, string> mEVars;

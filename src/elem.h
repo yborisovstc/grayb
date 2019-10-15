@@ -141,9 +141,9 @@
 	public:
 	protected:
 	    // Chromo
-	    Chromo* iChromo;
+	    MChromo* iChromo;
 	    // Mutation
-	    Chromo* iMut;
+	    MChromo* iMut;
 	    // Children register
 	    TNEReg iChilds;
 	    // Parent

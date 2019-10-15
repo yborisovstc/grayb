@@ -51,7 +51,7 @@ TBool GProvider::IsProvided(const MUnit* aElem) const
     return res;
 }
 
-Chromo* GProvider::CreateChromo()
+MChromo* GProvider::CreateChromo()
 {
     return NULL;
 }
@@ -135,7 +135,7 @@ Unit* ProvBase::GetNode(const string& aUri)
     return res;
 }
 
-Chromo* ProvBase::CreateChromo()
+MChromo* ProvBase::CreateChromo()
 {
     return new ChromoX();
 }

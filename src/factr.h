@@ -27,7 +27,7 @@ class GFactory: public Base, public MProvider
 	virtual Unit* CreateNode(const string& aType, const string& aName, MUnit* aMan, MEnv* aEnv);
 	virtual Unit* GetNode(const string& aUri);
 	virtual TBool IsProvided(const MUnit* aElem) const;
-	virtual Chromo* CreateChromo();
+	virtual MChromo* CreateChromo();
 	virtual void AppendNodesInfo(vector<string>& aInfo);
 	virtual const string& ModulesPath() const;
 	virtual void SetEnv(MEnv* aEnv);

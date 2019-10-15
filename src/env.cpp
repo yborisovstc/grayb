@@ -57,8 +57,8 @@ void ImportsMgr::AddImportModulesInfo(const string& aPath)
 	    if (S_ISDIR( filestat.st_mode ))         continue;
 	    if(fname.substr(fname.find_last_of(".") + 1) != "xml") continue;
 	    // Get chromo root as the module name
-	    Chromo *spec = mHost.Provider()->CreateChromo();
-	    spec->Set(filepath.c_str());
+	    MChromo *spec = mHost.Provider()->CreateChromo();
+	    spec->SetFromFile(filepath);
 	    string rname = spec->Root().Name();
 	    mModsPaths.insert(pair<string, string>(rname, filepath));
 	    delete spec;
@@ -124,7 +124,7 @@ MUnit* ImportsMgr::DoImport(const string& aUri)
 	// Get the whole external chromo
 	MUnit* icontr = GetImportsContainer();
 	__ASSERT(icontr != NULL);
-	Chromo* chromo = mHost.Provider()->CreateChromo();
+	MChromo* chromo = mHost.Provider()->CreateChromo();
 	TBool res1 = chromo->Set(modpath);
 	// Getting chromo nodes by model hier URI, ref ds_mod_prb_uri_chromo
 	ChromoNode sel = chromo->Root().GetNodeByMhUri(moduri);
@@ -169,7 +169,7 @@ void ImportsMgr::ImportToNode(MUnit* aNode, const ChromoNode& aMut, const Chromo
 	    // Node doesn't exist yet, to mutate
 	    // Using external mut instead of nodes mut to avoid mut update
 	    // on recursive import
-	    Chromo* mut = mHost.Provider()->CreateChromo();
+	    MChromo* mut = mHost.Provider()->CreateChromo();
 	    mut->Init(ENt_Node);
 	    mut->Root().AddChild(aMut);
 	    mHost.Pdstat(PEvents::DurStat_MutImportToNode, false);
@@ -462,14 +462,14 @@ void Env::ConstructSystem()
 {
     // Create root system
     // TODO [YB] Potentially the root also can be inherited form parent
-    Chromo *spec = iProvider->CreateChromo();
+    MChromo *spec = iProvider->CreateChromo();
     iSpecChromo = spec;
     if (iSpecFile.empty() && iSpec.empty()) {
 	iRoot = new Elem(KRootName, NULL, this);
     }
     else {
 	if (!iSpecFile.empty()) {
-	    spec->Set(iSpecFile.c_str());
+	    spec->SetFromFile(iSpecFile);
 	} else {
 	    spec->SetFromSpec(iSpec);
 	}

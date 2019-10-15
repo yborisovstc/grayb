@@ -25,7 +25,7 @@ class AMod: public Elem, public MMod
 	virtual TInt GetContCount() const;
     protected:
 	string mCont;
-	Chromo* mSpec;
+	MChromo* mSpec;
 };
 
 

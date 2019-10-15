@@ -9,7 +9,7 @@ using namespace std;
 
 class Unit;
 class MUnit;
-class Chromo;
+class MChromo;
 class MEnv;
 
 class MProvider
@@ -21,7 +21,7 @@ class MProvider
 	virtual Unit* CreateNode(const string& aType, const string& aName, MUnit* aMan, MEnv* aEnv) = 0;
 	virtual Unit* GetNode(const string& aUri) = 0;
 	virtual TBool IsProvided(const MUnit* aElem) const = 0;
-	virtual Chromo* CreateChromo() = 0;
+	virtual MChromo* CreateChromo() = 0;
 	virtual void AppendNodesInfo(vector<string>& aInfo) = 0;
 	virtual const string& ModulesPath() const = 0;
 	virtual void SetEnv(MEnv* aEnv) = 0;

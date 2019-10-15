@@ -79,7 +79,12 @@
 	<glossentry id="gls_dhc"><glossterm>DHC</glossterm> <acronym>DHC</acronym>
 	    <glossdef> <para>Direct Hierarchical Chromosome</para> <para>
 		    Approach of multi-agent system definition that describes the model's structure directly. 
-		    Ref <xref linkend="ds_smc"/> </para></glossdef> </glossentry>
+		    Ref <xref linkend="ds_smc"/> for discussion regarding chromo desing approaches.
+		    Ref <xref linkend="gls_osm"/> for anoter design approach.</para></glossdef> </glossentry>
+	<glossentry id="gls_ccn"><glossterm>CCN</glossterm> <acronym>CCN</acronym>
+	    <glossdef> <para>Compact (and customized) Chromo Notation, approach that focus on having compact notation of model chromo.
+		    This allows effectivelly creating the model via 'manually' creating chromo of it. Another solution
+		    is Native Chromo Notation, ref <xref linkend="gls_ncn"/>. </para></glossdef> </glossentry>
 	<glossentry id="gls_cpa"><glossterm>CPA</glossterm> <acronym>CPA</acronym>
 	    <glossdef> <para>Connecting Proxy Agent.
 		    The approach of agents design where dedicated embedded agents play the role of 
@@ -88,11 +93,15 @@
 		    resolution mechanism for the client, so the mechanism is distributed between multiple
 		    connecting agents in the model.
 	</para></glossdef> </glossentry>
+	<glossentry id="gls_ncn"><glossterm>NCN</glossterm> <acronym>NCN</acronym>
+	    <glossdef> <para>Native Chromo Notation, approach that focus on very simple chromo notation, like
+		    assembler. It is 'universal', less readable and more suitable for creating model with IDE. Another solution
+		    is Compact Chromo Notation, ref <xref linkend="gls_ccn"/>.  </para></glossdef> </glossentry>
 	<glossentry id="gls_osm"><glossterm>OSM</glossterm> <acronym>OSM</acronym>
 	    <glossdef> <para>Original Sequence of Mutations - 
 		    The approach of models creation where the same mutation order is
 		    used for model creation as on construction phase, ref
-		    <xref linkend="ds_mut_osm"/>
+		    <xref linkend="ds_mut_osm"/>. Ref <xref linkend="gls_dhc"/> for another approach.
 	</para></glossdef> </glossentry>
 	<glossentry id="gls_mae"><glossterm>MAE</glossterm>
 	    <glossdef> <para>Using monodilic agent instead of embedded.
@@ -3812,12 +3821,19 @@
     </sect1>
 
     <sect1 id="ds_chr"><title>Chromo language. Representation, serialization etc.</title>
+	<sect2><title>Intro</title>
+	    <simpara>Chromo notation is one of key acpects that affects model development. Currently we use <xref linkend="gls_ncn"/> that
+		represents mutations in the form of mutation record defining mutation type and mutation parameters. Current form of chromo uses
+		XML representation. This notation is like assembler: relatively small number of muations can desribe any model. But this notation
+	    is not suitable for 'manual' creation of model, the notation is too verbose and less readeable.</simpara>
+	<simpara>Alternative approach (<xref linkend="gls_ccn"/>) is to have compact chromo that can be effectivelly used for direct design of model.</simpara>
+	</sect2>
 	<sect2><title>Refs</title>
 	    <biblioentry id="ref_fi"> <abbrev>FI</abbrev>
 		<productname><ulink url="https://en.wikipedia.org/wiki/Fast_Infoset"/></productname>
 		<title>Fast Infoset</title> </biblioentry>
 	</sect2>
-	<sect2 id="ds_chr_nc"><title>New compact chromo language</title>
+	<sect2 id="ds_chr_nc"><title>New compact chromo language. Proposal#1 Extending base model via relations.</title>
 	    <sect3><title>Intro</title>
 		<simpara>The current chromo language is the result of straightforward approach to chromo as spec of system mutations. So
 		    we didn't much care of such chromo language capabilities as compactness, expressivenes etc. In result the chromo itself can hardly
@@ -3849,6 +3865,203 @@
 		<programlisting> a { a1 {a11 a12}  a2 {a21 a22} } </programlisting>
 	    </simpara>
 	    </sect3>
+	</sect2>
+	<sect2><title>Proposal#2 of chromo improvement: Custom mutaion, chromos context etc.</title>
+	    <simpara>Ref <xref linkend="ds_chr2"/> for the materials.</simpara>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_chr2"><title>Chromo improvement. Proposal for chromo version #2. Custom mutaion, embedded chromos, chromos context</title>
+	<sect2><title>Intro</title>
+	    <simpara>Ref <xref linkend="ds_chr"/> for chromo base materials.</simpara>
+	    <simpara>The main idea is to have the following 'features' of chromo language as model specification: </simpara>
+	    <itemizedlist>
+		<listitem>custom mutations for scecific agents, for instance Syst agent can have mutation of connecting two components.  </listitem>
+		<listitem>blocks of mutations (embedded chromp) that are assosiated with specificied context</listitem>
+		<listitem>dependent mutations (mutations chain)</listitem>
+	    </itemizedlist>
+	</sect2>
+	<sect2 id="ds_chr2_ol"><title>Outline</title>
+	    <simpara>The following aspects of chromo improvement is proposed:</simpara>
+	    <itemizedlist>
+		<listitem><glossentry id="ds_chr2_1"><glossterm>#1 Introdce new syntax of mutation, ability of extending</glossterm></glossentry>
+		    <simpara>Base new syntax on relation between two actors. Ref <xref linkend="ds_chr2_stx"/> </simpara>
+		</listitem>
+		<listitem><glossentry id="ds_chr2_2"><glossterm>#2 Introdce agents specific mutation</glossterm></glossentry>
+		    <simpara>For instance Syst agent can have mutation 'connection' that connects two system compopnents. Particular
+			implementation depends on Syst variant. For origin Syst design it will be creating Edge and specify URIs for both points of edge.</simpara>
+		</listitem>
+		<listitem><glossentry id="ds_chr2_3"><glossterm>#3 Embedded chromo</glossterm></glossentry>
+		    <simpara>Mutation can embed chromo. This approach is used even now, both in <xref linkend="gls_osm"/> and
+			<xref linkend="gls_dhc"/> design approaches. We can consider chromo not only as chromo of some agent but
+			as intentionally combined group of mutations. This can be done in purpose of defining some special 'complex' mutation.</simpara>
+		</listitem>
+		<listitem><glossentry id="ds_chr2_4"><glossterm>#4 Chromo with context</glossterm></glossentry>
+		    <simpara>It was mentioned in <xref linkend="ds_chr2_3"/> that mutations can be grouped in chromo. To fully utilize this powerful desing point
+			and make chromo more compact we can specify context for the mutatins inside chromo. What would be this context? It fact
+			one type of context is already specified:  with <xref linkend="gls_dhc"/> chromo each embedde chromo is the cromo of
+			specified agent, i.e. the context is 'target' of chromo. We can just extend using of context. For example we can
+			specify namespace as context. In that case the group of mutation in the sketch <xref linkend="ds_chr2_scs"/>
+			<programlisting>
+			    |   Incr ~ Add : (Inp ~ Incr; Inp ~ Delta : Statec {About = "Consant - incrementor step"; Value = "SI 1"}) 
+			</programlisting>
+			grouped between round breakets can be considered as a chromo with context "namespace is heir of Add". In this particular case
+			this allows us to make the notation more compact and readable avoiding specifying heir of Add as owner in its inputs URIs.
+		    </simpara>
+		    <simpara>One more type of context can be some mutation. Lets consider the case when func Add1 input connects to many 
+			outputs. It can be notated in compact manner as:</simpara>
+		    <programlisting>
+			Add1 (Inp ~ [ State1, State2, State3])
+		    </programlisting>
+		    <simpara>Here the square bracket introduce the chromo with mutation Inp ~ * as context.</simpara>
+		    <simpara>Context can be defined both for single mutation and the chromo.</simpara>
+		    <simpara>The chromo (blocks of mutation) makes sense only with context: the block is just group of mutation with same context.</simpara>
+		</listitem>
+		<listitem><glossentry id="ds_chr2_5"><glossterm>#5 Dependent mutations (mutations chain)</glossterm></glossentry>
+		    <simpara>Ref <xref linkend="ds_chr2_scs"/> for example of such mutations: </simpara>
+		    <programlisting>
+			|   Incr ~ Add : (Inp ~ Incr; Inp ~ Delta : Statec {About = "Consant - incrementor step"; Value = "SI 1"});
+		    </programlisting>
+		    <simpara>This notation specifies complex mutation, i.e. the tree of mutations.</simpara>
+		</listitem>
+	    </itemizedlist>
+	</sect2>
+	<sect2 id="ds_chr2_stx"><title>Relations as the core of syntax.</title>
+	    <simpara>Let's consider mutation as establishing some kind of relation between two objects. Then the core of notation can be clause
+		like</simpara>
+	    <programlisting>ACTOR_P RELATION_SIGN ACTOR_Q</programlisting>
+	    <simpara>For instance the mutation of creating new agent "A_1" with parent "A" can be</simpara>
+	    <programlisting>A_1 : A</programlisting>
+	    <simpara>Where ':' is the sign of relation 'inherited'. Note that relation "component - owner' is default and doesn't need explicit
+		notations. Having mutation in the context of some agent means that this mutatin relates to the agent.</simpara>
+	    <simpara>The content value assigning can be notated as</simpara>
+	    <programlisting>A_1.About = "Model"</programlisting>
+	    <simpara>Where '=' is the relation "content - value'</simpara>
+	    <simpara>So the idea is to not to use specific action semantic for mutation but establishing specific relation.</simpara>
+	</sect2>
+	<sect2><title>Namespaces</title>
+	    <simpara>Using namespaces can radically reduce notation for URIs.</simpara>
+	    <simpara>One wariant of syntax is like '# "/Modules/DesComps/"' where relation symbol '#' means relation 'node to namespaces', i.e this
+		mutation adds node "/Modules/DesComps/" to the set of anonimous namespaces.</simpara>
+	    <simpara>What about named namespaces?</simpara>
+	</sect2>
+	<sect2 id="ds_chr2_scs"><title>Sketch of chromo syntax</title>
+	    <simpara>Let's outline the base concepts by short sketch - chromo of simple DES with just one state-incrementor:</simpara>
+	    <programlisting>
+		| # "/Modules/DesComps/" 
+		| Des1 : Des {
+		|   Incr : Statec { About = "State - incrementor" };
+		|   Incr ~ Add : (Inp ~ Incr; Inp ~ Delta : Statec {About = "Consant - incrementor step"; Value = "SI 1"});
+		|
+		| };
+		| Des1 > About = "Sketch of chromo new syntax";
+		| Nil # "/Modules/DesComps/"; 
+	    </programlisting>
+	    <simpara>Here:  <programlisting> des1 : Des { </programlisting> means create node 'Des1' from parent 'Des', i.e.
+		"mutate by establishing relation of type "heir - parent" for heir actor 'Des1' and pair actor 'Des'. Note that URI 'Des' is resolved here
+		because of proper namespace specified. '{' means entering to mutation context 'Des1' that is acting till corresponding '}'. Actually
+		the mutations within the scope is embedded chromo for 'Des1'
+	    </simpara>
+	    <simpara>Here:
+		<programlisting>
+		    Incr : Statec { About = "State - incrementor" };
+		</programlisting>
+		means creating 'Statec' heir 'Incr' and then mutate it by settig content 'About'
+	    </simpara>
+	    <simpara>Here:
+		<programlisting>
+		    Incr ~ : Add (Inp ~ Incr; Inp ~ Delta : Statec {About = "Consant - incrementor step"; Value = "SI 1"}) 
+		</programlisting>
+		means apply custom mutation - connect state Incr and instance of Add and then perform mutatin in the namespace of this instance: connect function
+		input Inp to Incr output, connect input Inp to created constant Statec 'Delta' ( for this state are set contents 'About' and 'Value')
+	    </simpara>
+	    <simpara>Here
+		<programlisting>
+		    | Nil # "/Modules/DesComps/" 
+		</programlisting>
+		just removes the node from namespaces (i.e. set the relation of node to Nil)
+	    </simpara>
+	    <simpara>Can we use notation:
+		<programlisting>
+		    |   Incr ~ Add : (Inp ~ (Incr Delta) : Statec {About = "Consant - incrementor step"; Value = "SI 1"}) 
+		</programlisting>
+		instead of 
+		<programlisting>
+		    |   Incr ~ Add : (Inp ~ Incr; Inp ~ Delta : Statec {About = "Consant - incrementor step"; Value = "SI 1"}) 
+		</programlisting>
+	    </simpara>
+	</sect2>
+	<sect2 id="ds_chr2_sns"><title>Chromo syntax notation (EBNF)</title>
+	    <simpara>Variant #1 Node-centric</simpara>
+	    <programlisting>
+		white_space = ' ';
+		end_of_line = ;
+		separator = white_space | end_of_line;
+		chromo = [context, separator, ":", separator] '{', separator,  chromo_unit , { separator, chromo_unit }, separator, '}';
+		context = context_unit { separator, context_unit };
+		chromo_node = mutation | chromo;
+	#	mutation = elem_p, mutation_id, elem_q;
+	        mutation = creation | assosiation | content_change | import | mut_extensions;
+
+		context = mutation_focus | change_focus | partial_mutation_context | context_extensions;
+		mutation_focus = mutation_target, separator, "&lt;";
+		change_focus = change_target, separator, "&lt;|";
+		partial_mutation_context = "(", partial_mutation, "), separator, "&gt;";
+	    </programlisting>
+
+	    <simpara>Variant #2 Chromo-centric</simpara>
+	    <programlisting>
+		white_space = ' ';
+		end_of_line = ;
+		separator = white_space | end_of_line;
+		chromo = chromo_node { separator, chromo_node };
+		chromo_node = [context, separator, ":", separator]  ( mutation | ('{', separator, chromo, separator, '}') );
+		context = context_unit { separator, context_unit };
+	#	mutation = elem_p, mutation_id, elem_q;
+	        mutation = creation | assosiation | content_change | import | mut_extensions;
+
+		context_unit = mutation_focus | change_focus | partial_mutation_context | context_extensions;
+		mutation_focus = mutation_target, separator, "&lt;";
+		change_focus = change_target, separator, "&lt;|";
+		partial_mutation_context = "(", partial_mutation, "), separator, "&gt;";
+	    </programlisting>
+
+	    <simpara>Variant #3 (not completed)</simpara>
+	    <programlisting>
+		white_space = ' ';
+		end_of_line = ;
+		separator = white_space | end_of_line;
+		chromo = chromo_node { separator, chromo_node };
+		chromo_node = [context, separator, ":", separator]  chromo;
+		context = context_unit { separator, context_unit };
+	#	mutation = elem_p, mutation_id, elem_q;
+	        mutation = creation | assosiation | content_change | import | mut_extensions;
+
+		context_unit = mutation_focus | change_focus | partial_mutation_context | context_extensions;
+		mutation_focus = mutation_target, separator, "&lt;";
+		change_focus = change_target, separator, "&lt;|";
+		partial_mutation_context = "(", partial_mutation, "), separator, "&gt;";
+	    </programlisting>
+
+	</sect2>
+	<sect2><title>Notes</title>
+	    <itemizedlist>
+		<listitem>Chromosome consists of single node for root agent. This root agent is created by environment and has predefined name "Root". So the chromo looks like:
+		    <programlisting>
+			Root &lt; : {
+			 root chromo node #1
+			 ...
+			|
+		    </programlisting>
+		</listitem>
+	    </itemizedlist>
+	</sect2>
+	<sect2><title>Design spots</title>
+	    <sect2><title>Cumulative context</title>
+		<simpara>The context can potentially be cumulated, for instance namespaces. The context is updated by the current context and then needs to be restored when the
+		    current context ends. How to implement it. One way is to keep the contexts assosiated to its scope. In that case when mutation machine leaves the scope of the 
+		    given context that machine just switches to the current context, i.e uses the conext assosiated to the current scope.</simpara>
+	    </sect2>
 	</sect2>
     </sect1>
 
@@ -4027,13 +4240,13 @@
 			just breaks the chaing of URI.</listitem>
 		    <listitem>To avoid the problem above we need to use just agent's local status when checking if the agent is included in the hier.
 			This can be done by using the agent's mutation context introduced in the scope of solution <xref linkend="ds_daa_itn_sfo"/>.
-		    We can consider the node is included in hier only if owner exuals mutation context or mutation context is not set at all.</listitem>
+			We can consider the node is included in hier only if owner exuals mutation context or mutation context is not set at all.</listitem>
 		</itemizedlist>
 	    </sect3>
 	    <sect3 id="ds_di_cnfr_susl"><title>Solution: to use solid relations during the process of creatin heir</title>
 		<sect4><title>Intro</title>
 		    <simpara>The idea is to establish heir solid relation to the hier when creatng heir. The only specific would be to not notify owners of
-		    that. </simpara>
+			that. </simpara>
 		</sect4>
 		<sect4><title>Analysis</title>
 		    <itemizedlist>
@@ -4079,7 +4292,7 @@
 		</sect4>
 		<sect4 id="ds_di_cnfr_susl_pfl"><title>Problem: tried, seems the limitation is fundamental</title>
 		    <simpara>The problem is that in case of remote parent the first remote call is AppendComp(). Before AppendComp() there is no
-		    valid UID in heir, but AppendComp remote call requires valid UID.</simpara>
+			valid UID in heir, but AppendComp remote call requires valid UID.</simpara>
 		</sect4>
 	    </sect3>
 	    <sect3 id="ds_di_cnfr_siurm"><title>Solution: to improve UID resolution mechanism for "temporal" nodes</title>
@@ -4109,7 +4322,7 @@
 		    agent even is not attached to the hier. So in distributed system it cannot be accessed via URI.</simpara>
 	    </sect3>
 	    <sect3><title>Solution: adding dedicated phase for native object modifications, like "Construct". It has to be called after adding created node
-		to hier.</title>
+		    to hier.</title>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_di_ifsprul"><title>[20190614] Iface resolution from sock pin routes to upper layer (CP owner)</title>
@@ -4209,7 +4422,7 @@
 		implemented as text formed request, the format of requests is specified. Agent as interface implementor is responsible for handling
 		unified call request. In order to simplify handling the helper class "ifu" is used. It provides utilities simplifying of dealing with
 		unified call request: parsing, seriaizing/deserializing, etc. However the current implemetation is rather ineffective, so agent needs
-	    quite lot of code to handle the request. We need to re-desing the interface mechanism in order to make it more effective.</simpara>
+		quite lot of code to handle the request. We need to re-desing the interface mechanism in order to make it more effective.</simpara>
 	</sect2>
     </sect1>
 
@@ -4246,7 +4459,7 @@
 	    </sect3>
 	    <sect3><title>We also need to disable "any" name in URI unit</title>
 		<simpara>If we keep "any" name we will need to have complex Elem::IterImplBase with using iterators range. If we disable "any" then the 
-		local name iterator gets trivial so can be removed at all.</simpara>
+		    local name iterator gets trivial so can be removed at all.</simpara>
 	    </sect3>
 	    <sect3><title>What are the use-cases preventing unique name</title>
 		<itemizedlist>
@@ -4266,7 +4479,7 @@
 	    </sect3>
 	    <sect3><title>Solution: unique name for owning hier, not unique for inheritance. URI only based on owning.</title>
 		<simpara>Taking into account that only owning hier supports unique name we can use only this hier for 
-		URI.</simpara>
+		    URI.</simpara>
 	    </sect3>
 	    <sect3 id="ds_prfopt_un_icr"><title>iComps register can be removed now</title>
 	    </sect3>
@@ -4290,7 +4503,7 @@
 		<simpara>Ref <xref linkend="ds_mut_osm"/> for OSM mutation approach.</simpara>
 		<simpara>20180421 Look at Elem::NotifyNodeMutated(). It is seen that the mutation causes propagation upwards to root.
 		    Comparing to hiearchical chromosome approach in OSM any node contains it's full chromo whereas in hier chromo the node contains only
-		local chromo - the full node's chromo can be combined from chromos of its components.</simpara>
+		    local chromo - the full node's chromo can be combined from chromos of its components.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_prfopt_mnn"><title>Attempt of optimization: Minimize the number of nodes.</title>
@@ -4319,8 +4532,8 @@
 		    <listitem>Added -gp to compiler and linker options in grayb and fapm CLI monitor. Run monitor
 			<programlisting>
 			    ~/projects/fap/grayb/clm$ ./fapm ../../fap2-studio-gtk/examples/des_var_vect_1.xml
-			 </programlisting>
-			 and see gmon.out file generated
+			</programlisting>
+			and see gmon.out file generated
 		    </listitem>
 		    <listitem>Run gprof
 			<programlisting> ~/projects/fap/grayb/clm$ gprof .libs/fapm gmon.out > gprof_out.txt </programlisting>
@@ -4329,11 +4542,11 @@
 		    <listitem>To profile shared lib we need another tool - sprof. Ref 
 			<ulink url="http://greg-n-blog.blogspot.com/2010/01/profiling-shared-library-on-linux-using.html"/>:
 			<programlisting>
-			     Profiling shared library on Linux using sprof
-			     It's not as easy as one would/should expect. (Read here about valgrind if you don't want to use sprof.)
+			    Profiling shared library on Linux using sprof
+			    It's not as easy as one would/should expect. (Read here about valgrind if you don't want to use sprof.)
 
-			     First - FORGET ABOUT gprof. gprof is used for the applications but will NOT WORK for shared libraries.
-			     Sorry about that. I learned about it the hard way. What you need to use is sprof.
+			    First - FORGET ABOUT gprof. gprof is used for the applications but will NOT WORK for shared libraries.
+			    Sorry about that. I learned about it the hard way. What you need to use is sprof.
 			</programlisting>
 			Also ref <ulink url="https://stackoverflow.com/questions/1838989/gprof-how-to-generate-call-graph-for-functions-in-shared-library-that-is-linke"/>
 		    </listitem>
@@ -4556,7 +4769,7 @@
 	<sect2 id="ds_prfopt_mse"><title>Optimization of socket and extender: avoid embedding agents and useing monolitic agent instead</title>
 	    <sect3><title>Intro</title>
 		<simpara>Currently [644e5f6d21] extender and socket are agents resided within wrapping Vert agent. The optimization can be to
-		use monolite extender and socket.</simpara>
+		    use monolite extender and socket.</simpara>
 	    </sect3>
 	    <sect3 id="ds_prfopt_mse_metr"><title>Metrics of current implementation</title>
 		<sect4><title>Initial version</title>
@@ -4604,7 +4817,7 @@
 		    </programlisting>
 		    <simpara>It is seen that the multicontent approach doesn't give us valuable optimization - the agents number is reduced from 
 			354 to 184 (almost twice) but the model creation time isn't reduced significantly. The possible cause of that is that the native
-		    agent creation time has been increased (because of content is changing in constructor).</simpara>
+			agent creation time has been increased (because of content is changing in constructor).</simpara>
 		</sect4>
 	    </sect3>
 	</sect2>
@@ -4895,7 +5108,7 @@
 	</sect2>
 	<sect2 id="ds_uac_hte"><title>How to extend units?</title>
 	    <simpara>Unit doesn't keep its chromo, so how can it be extended via inheritance? This can be done only by using its related mutation of
-	    unit's owning agent.</simpara>
+		unit's owning agent.</simpara>
 	</sect2>
     </sect1>
 
@@ -4903,8 +5116,8 @@
 	<sect2><title>Intro</title>
 	    <simpara>To optimize the model it make sense to make frequently used agents simpler. This agents - common "building blocks" are
 		system, incaps, connpoint, extender, socket, state, des. Some of these agents are simple, for instance connpoint is just simple native agent.
-	   But some of the agents are rather complex. For instance extender is implemented as Vert with embedded agent (MAgent).</simpara>
-       <simpara>So we can propose simplification of these building block as an approach of optimization.</simpara>
+		But some of the agents are rather complex. For instance extender is implemented as Vert with embedded agent (MAgent).</simpara>
+	    <simpara>So we can propose simplification of these building block as an approach of optimization.</simpara>
 	</sect2>
 	<sect2 id="ds_mae_scm"><title>Monolitic DES state compatible with current modelled state</title>
 	    <sect3><title>Intro</title>
@@ -4916,7 +5129,7 @@
 		    <listitem>Keep all the interfaces of state agent: inputs and output with state socket (pin for data and pin for observing)</listitem>
 		    <listitem>State output data pin can be connected to controlling agent directly. </listitem>
 		    <listitem>Getting data from transition function can be implemented in various ways. For instance we can introduce dedicated
-		    CP for connecting. Controlling agent can use this CP as MDVarGet provider.</listitem>
+			CP for connecting. Controlling agent can use this CP as MDVarGet provider.</listitem>
 		</orderedlist>
 	    </sect3>
 	    <sect3><title>Status</title>
@@ -5001,11 +5214,11 @@
 	<sect2><title>Intro</title>
 	    <simpara>Ref <ulink url="../requirements/index.html#us_069"/> for root use-case for versioning</simpara>
 	    <simpara>This section outlines design of support of versions of agents. The versioning is very important because in the agent
-	    lifecycle there are some different versions of agent used in the models. So we need mechanism that helps to resolve right version</simpara>
+		lifecycle there are some different versions of agent used in the models. So we need mechanism that helps to resolve right version</simpara>
 	</sect2>
 	<sect2><title>How to specify version</title>
 	    <simpara>The standard approach for specifying version is to keep version spec in agent's metadata. Currently there is no metadata in 
-	    native agents.</simpara>
+		native agents.</simpara>
 	</sect2>
 	<sect2><title>Versions compatibility</title>
 	</sect2>
@@ -5019,7 +5232,7 @@
 		    (<xref linkend="gls_dhc"/>). This is because the mutation of some model node N outside compoud mutation assosiated with node N creation
 		    mutation are annotated with target attribute.</simpara>
 		<simpara>It is proposed to have compound mutation that has single target attribute but number of mutations inside. This can make the chromo more
-		compact - we can combine the late mutations in one "block" avoiding annoying repeatition of "targ" attribute.</simpara>
+		    compact - we can combine the late mutations in one "block" avoiding annoying repeatition of "targ" attribute.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_mpo_crs"><title>Optimization: Using compact relation symbols in URI</title>
@@ -5145,6 +5358,9 @@
 	<sect2><title>Name spaces using base nodes</title>
 	    <simpara>Ref <xref linkend="ds_ns"/></simpara>
 	</sect2>
+	<sect2><title>New chromo language</title>
+	    <simpara>Ref <xref linkend="ds_chr_nc"/></simpara>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_i"><title>Issues</title>
@@ -5209,6 +5425,12 @@
     <sect1><title>Status items</title>
 	<simpara><glossterm id="sts_done">DONE</glossterm></simpara>
 	<simpara><glossterm id="sts_progr">IN_PROGRESS</glossterm></simpara>
+    </sect1>
+
+    <sect1 id="ds_ditsc"><title>Design items tracng to source code</title>
+	<sect2><title>Branches</title>
+	    <sect3><xref linkend="ds_chr2"/> - yb_chr2</sect3>
+	</sect2>
     </sect1>
 
 </article>

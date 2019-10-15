@@ -280,62 +280,9 @@ Rank& Rank::operator+=(const Rank& aArg)
 }
 
 
-// Chromo
+// Chromo utilities
 
-TBool Chromo::mInitiated = EFalse;
-Chromo::TDeps Chromo::mDeps;
-
-Chromo::Chromo()
-{
-    // TODO [YB] This scheme of deps is not complete. The idea was to get the map
-    // pair<mutation_being_applied_to_node, dependency_this_node_have> to level of dep
-    // but currently instead of dependency_this_node_have the only muts arg is used
-    // but not the whole dep (muts type, muts arg). To improve.
-    if (!mInitiated) {
-	mDeps.insert(TDepsElm(TDep(ENt_Node, ENa_Id, EDp_Direct), EDl_Critical));
-	mDeps.insert(TDepsElm(TDep(ENt_Node, ENa_Parent, EDp_Direct), EDl_Affecting));
-	mDeps.insert(TDepsElm(TDep(ENt_Node, ENa_Id, EDp_Child), EDl_Affecting));
-
-	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_Id, EDp_Direct), EDl_Critical));
-	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_Id, EDp_Comps), EDl_Critical));
-	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_Parent, EDp_Direct), EDl_Critical));
-	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_Parent, EDp_Comps), EDl_Critical));
-	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_Ref, EDp_Direct), EDl_Critical));
-	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_Ref, EDp_Comps), EDl_Critical));
-	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_MutNode, EDp_Direct), EDl_Critical));
-	mDeps.insert(TDepsElm(TDep(ENt_Change, ENa_MutNode, EDp_Comps), EDl_Critical));
-
-	mDeps.insert(TDepsElm(TDep(ENt_Cont, ENa_Id, EDp_Direct), EDl_Critical));
-	mDeps.insert(TDepsElm(TDep(ENt_Cont, ENa_Id, EDp_Comps), EDl_Affecting));
-	mDeps.insert(TDepsElm(TDep(ENt_Cont, ENa_Parent, EDp_Direct), EDl_Affecting));
-	mDeps.insert(TDepsElm(TDep(ENt_Cont, ENa_Ref, EDp_Direct), EDl_Affecting));
-	mDeps.insert(TDepsElm(TDep(ENt_Cont, ENa_Ref, EDp_Comps), EDl_Affecting));
-	mDeps.insert(TDepsElm(TDep(ENt_Cont, ENa_MutNode, EDp_Direct), EDl_Critical));
-	mDeps.insert(TDepsElm(TDep(ENt_Cont, ENa_MutNode, EDp_Comps), EDl_Affecting));
-
-	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_Id, EDp_Direct), EDl_Harmless));
-	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_Id, EDp_Comps), EDl_Harmless));
-	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_Parent, EDp_Direct), EDl_Critical));
-	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_Parent, EDp_Comps), EDl_Critical));
-	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_Ref, EDp_Direct), EDl_Critical));
-	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_Ref, EDp_Comps), EDl_Critical));
-	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_MutNode, EDp_Direct), EDl_Affecting));
-	mDeps.insert(TDepsElm(TDep(ENt_Rm, ENa_MutNode, EDp_Comps), EDl_Affecting));
-
-	mInitiated = ETrue;
-    }
-}
-
-TBool Chromo::IsDepOfLevel(const TDep& aDep, TDepsLevel aLevel)
-{ 
-    TDepsLevel lev = EDl_Harmless;
-    if (mDeps.count(aDep) > 0) {
-	lev = mDeps.at(aDep);
-    }
-    return (lev & aLevel) > 0;
-};
-
-void Chromo::GetPath(const string& aUri, string& aPath)
+void ChromoUtils::GetPath(const string& aUri, string& aPath)
 {
     size_t scheme_end = aUri.find_first_of(':');
     size_t hier_beg = (scheme_end != string::npos) ? scheme_end+1 : 0; 
@@ -350,7 +297,7 @@ void Chromo::GetPath(const string& aUri, string& aPath)
     }
 }
 
-void Chromo::GetFrag(const string& aUri, string& aFrag)
+void ChromoUtils::GetFrag(const string& aUri, string& aFrag)
 {
     size_t frag_beg = aUri.find_first_of('#');
     if (frag_beg != string::npos) {
@@ -551,28 +498,6 @@ TInt ChromoNode::Count() const
     return res;
 }
 
-ChromoNode ChromoNode::At(TInt aInd) const
-{
-    ChromoNode res = *End();
-    Const_Iterator it = Begin();
-    for (TInt ind = 0; it != End() && ind != aInd; it++, ind++);
-    if (it != End()) {
-	res = *it;
-    }
-    return res;
-}
-
-ChromoNode ChromoNode::At(TInt aInd, TNodeType aType) const
-{
-    ChromoNode res = *End();
-    TIter it = TBegin(aType);
-    for (TInt ind = 0; it != TEnd() && ind != aInd; it++, ind++);
-    if (it != TEnd()) {
-	res = *it;
-    }
-    return res;
-}
-
 ChromoNode ChromoNode::GetNodeByMhUri(const GUri& aUri)
 {
     if (aUri.IsErr()) return ChromoNode();
@@ -730,28 +655,6 @@ ChromoNode ChromoNode::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBas
 	} else {
 	    return *it;
 	}
-    }
-}
-
-void ChromoNode::GetRank(Rank& aRank) const
-{
-    ChromoNode prnt = *Parent();
-    if (prnt.iHandle != NULL) {
-	TInt res = 0;
-	for (Iterator it = prnt.Begin(); it != prnt.End() && !(*it == *this); it++, res++);
-	aRank.insert(aRank.begin(), res);
-	prnt.GetRank(aRank);
-    }
-}
-
-void ChromoNode::GetRank(Rank& aRank, const ChromoNode& aBase) const
-{
-    ChromoNode prnt = *Parent();
-    if (prnt.iHandle != NULL && iHandle != aBase.iHandle) {
-	TInt res = 0;
-	for (Iterator it = prnt.Begin(); it != prnt.End() && !(*it == *this); it++, res++);
-	aRank.insert(aRank.begin(), res);
-	prnt.GetRank(aRank, aBase);
     }
 }
 

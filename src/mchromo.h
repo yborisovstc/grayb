@@ -46,11 +46,8 @@ class MChromoMdl
 	virtual void* Prev(const void* aHandle, TNodeType aType = ENt_Unknown) = 0;
 	virtual void* GetFirstChild(const void* aHandle, TNodeType aType = ENt_Unknown) = 0;
 	virtual void* GetLastChild(const void* aHandle, TNodeType aType = ENt_Unknown) = 0;
-	virtual void* GetFirstTextChild(const void* aHandle) = 0;
 	virtual char* GetAttr(const void* aHandle, TNodeAttr aAttr) const = 0;
 	virtual void  GetAttr(const void* aNode, TNodeAttr aType, TInt& aVal) const = 0;
-	virtual char* GetContent(const void* aHandle) = 0;
-	virtual void  SetContent(const void* aHandle, const string& aContent) = 0;
 	virtual TBool AttrExists(const void* aHandle, TNodeAttr aAttr) const  = 0;
 	virtual void* AddChild(void* aParent, TNodeType aType) = 0;
 	virtual void* AddChild(void* aParent, const void* aHandle, TBool aCopy = ETrue, TBool aRecursively = ETrue) = 0;
@@ -84,20 +81,10 @@ class ChromoNode;
 class MChromo
 {
     public:
-	// Dependencies levels
-	enum TDepsLevel {
-	    EDl_Critical = 0x01,
-	    EDl_Affecting = 0x02,
-	    EDl_Harmless = 0x04,
-	    EDl_Any = EDl_Critical | EDl_Affecting | EDl_Harmless
-	};
-	// Dependencies path
-	enum TDPath { EDp_Direct = 0, EDp_Comps = 1, EDp_Child = 2, EDp_Owner = 3};
-    public:
 	virtual ~MChromo() {};
 	virtual ChromoNode& Root() = 0;
 	virtual const ChromoNode& Root() const= 0;
-	virtual void Set(const char *aFileName) = 0;
+	virtual void SetFromFile(const string& aFileName) = 0;
 	virtual TBool Set(const string& aUri) = 0;
 	virtual TBool SetFromSpec(const string& aSpec) = 0;
 	virtual TBool GetSpec(string& aSpec) = 0;

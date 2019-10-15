@@ -12,6 +12,7 @@
 #include "des.h"
 #include "module.h"
 #include "imports.h"
+#include "chromo2.h"
 
 // TODO [YB] To import from build variable
 const string KModulesPath = "/usr/share/grayb/modules/";
@@ -89,4 +90,9 @@ void ProvDef::AppendNodesInfo(vector<string>& aInfo)
 const string& ProvDef::ModulesPath() const
 {
     return KModulesPath;
+}
+
+MChromo* ProvDef::CreateChromo()
+{
+    return new Chromo2();
 }

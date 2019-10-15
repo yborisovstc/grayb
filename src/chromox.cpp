@@ -5,7 +5,7 @@
 
 const char* KChromoSystemId = "/usr/share/grayb/conf/objspec.dtd";
 
-ChromoMdlX::ChromoMdlX(): ChromoMdl(), iDoc(NULL), iDocOwned(EFalse)
+ChromoMdlX::ChromoMdlX(): Base(), iDoc(NULL), iDocOwned(EFalse)
 {
 };
 
@@ -63,13 +63,13 @@ void* ChromoMdlX::Find(const void* aHandle, const string& aUri)
     return fres;
 }
 
-void* ChromoMdlX::Set(const char *aFileName)
+void* ChromoMdlX::SetFromFile(const string& aFileName)
 {
     xmlNode *sEnv = NULL; // Node of environment element
     xmlNode *sRoot = NULL; // Node of root element
     // Read and parse the CAE spec file
     Reset();
-    iDoc = xmlReadFile(aFileName, NULL, XML_PARSE_DTDLOAD | XML_PARSE_DTDVALID);
+    iDoc = xmlReadFile(aFileName.c_str(), NULL, XML_PARSE_DTDLOAD | XML_PARSE_DTDVALID);
     __ASSERT(iDoc != NULL);
     // Get the node 
     sRoot = (xmlNodePtr) GetFirstChild((void *) iDoc, ENt_Node);
@@ -99,12 +99,12 @@ void* ChromoMdlX::Set(const string& aUri)
     // Read and parse the CAE spec file
     Reset();
     string path;
-    Chromo::GetPath(aUri, path);
+    ChromoUtils::GetPath(aUri, path);
     iDoc = xmlReadFile(path.c_str(), NULL, XML_PARSE_DTDLOAD | XML_PARSE_DTDVALID);
     __ASSERT(iDoc != NULL);
     // Get the node 
     string desuri;
-    Chromo::GetFrag(aUri, desuri);
+    ChromoUtils::GetFrag(aUri, desuri);
     sRoot = (xmlNodePtr) GetFirstChild((void *) iDoc, ENt_Node);
     if (!desuri.empty()) {
 	// Transform into rel uri if abs
@@ -175,18 +175,6 @@ void *ChromoMdlX::GetLastChild(const void *aHandle, TNodeType aType)
 	TNodeType type = GetType((void*) res);
 	if ((res->type != XML_ELEMENT_NODE) || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown)))
 	    res = (xmlNodePtr) Prev(res, aType);
-    }
-    return res;
-}
-
-void* ChromoMdlX::GetFirstTextChild(const void* aHandle)
-{
-    xmlNodePtr node = (xmlNodePtr) aHandle;
-    __ASSERT(node != NULL);
-    xmlNodePtr res = node->children;
-    if (res != NULL) {
-	if (res->type != XML_TEXT_NODE)
-	    res = (xmlNodePtr) NextText(res);
     }
     return res;
 }
@@ -284,21 +272,6 @@ TBool ChromoMdlX::AttrExists(const void* aHandle, TNodeAttr aAttr) const
     return res;
 }
 
-char* ChromoMdlX::GetContent(const void* aHandle)
-{
-    __ASSERT(aHandle != NULL);
-    xmlNodePtr node = (xmlNodePtr) aHandle;
-    xmlChar *cont = xmlNodeGetContent(node);
-    return (char *) cont;
-}
-
-void  ChromoMdlX::SetContent(const void* aHandle, const string& aContent)
-{
-    __ASSERT(aHandle != NULL);
-    xmlNodePtr node = (xmlNodePtr) aHandle;
-    xmlNodeSetContent(node, (const xmlChar*) aContent.c_str());
-}
-
 int ChromoMdlX::GetAttrInt(void *aHandle, const char *aName)
 {
     int res = -1;
@@ -321,17 +294,6 @@ void* ChromoMdlX::AddChild(void* aParent, TNodeType aNode)
 void* ChromoMdlX::AddChild(void* aParent, const void* aHandle, TBool aCopy, TBool aRecursively)
 {
     void* root = Root(aParent);
-    /*
-    TInt rorder = GetOrder(root, ETrue);
-    TInt order = GetOrder((void*) aHandle);
-    if (order == 0) {
-	order = rorder + 1;
-	SetOrder((void*) aHandle, order);
-    }
-    if (order > rorder) {
-	SetOrder(root, order, ETrue);
-    }
-    */
     xmlNodePtr node = aCopy ? xmlCopyNode((xmlNodePtr) aHandle, aRecursively ? 1:2) : (xmlNodePtr) aHandle;
     return xmlAddChild((xmlNodePtr) aParent, node);
 }
@@ -553,9 +515,9 @@ ChromoX::ChromoX(const ChromoX& aSrc)
     Set(aSrc.Root());
 }
 
-void ChromoX::Set(const char *aFileName)
+void ChromoX::SetFromFile(const string& aFileName)
 {
-    void *root = iMdl.Set(aFileName);
+    void *root = iMdl.SetFromFile(aFileName);
     iRootNode = ChromoNode(iMdl, root);
 }
 

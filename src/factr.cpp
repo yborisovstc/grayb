@@ -53,9 +53,9 @@ TBool GFactory::IsProvided(const MUnit* aElem) const
 
 }
 
-Chromo* GFactory::CreateChromo()
+MChromo* GFactory::CreateChromo()
 {
-    Chromo* res = NULL;
+    MChromo* res = NULL;
     for (TProviders::iterator it = iProviders.begin(); it != iProviders.end() && res == NULL; it++) {
 	res = it->second->CreateChromo();
     }

@@ -19,6 +19,9 @@ libgrayb_la_SOURCES = \
 		       chromox.cpp \
 		       chromox.h \
 		       mchromo.h \
+		       mchromo2.h \
+		       chromo2.h \
+		       chromo2.cpp \
 		       mlog.h \
 		       log.cpp \
 		       log.h \
@@ -83,6 +86,7 @@ include_HEADERS = \
 		  munit.h \
 		  melem.h \
 		  mchromo.h \
+		  mchromo2.h \
 		  medge.h \
 		  mlog.h \
 		  miface.h \
