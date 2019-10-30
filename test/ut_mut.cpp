@@ -141,10 +141,6 @@ void Ut_mut::test_Add()
     CPPUNIT_ASSERT_MESSAGE("Wrong attached owner of elem3/elem2/elem2_1", e3_2_1_ao == e3);
     MUnit* e4_ato = ee4->GetAowner();
     CPPUNIT_ASSERT_MESSAGE("Wrong attaching owner of e4", e4_ato == e3);
-    Rank rk_e4;
-    ee4->GetRank(rk_e4, ee4->Chromos().Root());
-    string srk_e4 = rk_e4.ToString();
-    CPPUNIT_ASSERT_MESSAGE("Wrong rank of e4", srk_e4 == "3.0");
     // Mutation of type "Adding node to current node"
     //root->AppendMutation(TMut(ENt_Node, ENa_Id, "new_elem1", ENa_Parent, "./elem5"));
     eroot->AppendMutation(TMut("node,id:new_elem1,parent:./elem5"));

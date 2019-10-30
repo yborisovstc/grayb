@@ -15,7 +15,10 @@
 <!ELEMENT change EMPTY >
 
 <!-- Element of base hier -->
-<!ELEMENT node (node*, rm*, change*, cont*, move*, import*)* >
+<!ELEMENT node (node*, seg*, rm*, change*, cont*, move*, import*)* >
+
+<!-- Segment of chromosome -->
+<!ELEMENT seg (node*, seg*, rm*, change*, cont*, move*, import*)* >
 
 <!-- Inherited Object  attributes:
   node - mutated node - DES URI
@@ -32,6 +35,15 @@
     tord CDATA #IMPLIED
     na CDATA #IMPLIED
 >
+
+<!ATTLIST seg 
+    targ CDATA #IMPLIED
+    node CDATA #IMPLIED
+    ord CDATA #IMPLIED
+    tord CDATA #IMPLIED
+    na CDATA #IMPLIED
+>
+
 
 <!-- Removing node attributes:
   node - mutated node - DES URI

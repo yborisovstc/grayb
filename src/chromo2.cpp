@@ -22,27 +22,29 @@ C2MdlNode::C2MdlNode()
 {
 }
 
+C2MdlNode::C2MdlNode(const C2MdlNode* aOwner): mOwner(aOwner)
+{
+}
 void C2MdlNode::AddContext(const string& aType, const string& aValue)
 {
     mContext.push_back(C2MdlCtxNode(aType, aValue));
 }
 
-C2MdlNode Chromo2Mdl::CreateNodeMut(const void* aHandle, TNodeType aR, TNodeAttr aP, TNodeAttr aQ)
+C2MdlNode Chromo2Mdl::CreateNodeMut(const THandle& aHandle, const C2MdlNode& aOwner, TNodeType aR, TNodeAttr aP, TNodeAttr aQ)
 {
-    C2MdlNode node;
+    C2MdlNode node(&aOwner);
     node.mMut.mR = KNtToR.at(aR);
     node.mMut.mP = mMdlX->GetAttr(aHandle, aP);
     node.mMut.mQ = mMdlX->GetAttr(aHandle, aQ);
     return node;
 }
 
-C2MdlNode Chromo2Mdl::CreateNodeChr(const void* aHandle)
+C2MdlNode Chromo2Mdl::CreateNodeChr(const THandle& aHandle, const C2MdlNode& aOwner)
 {
-    C2MdlNode node;
-    void* handle = mMdlX->GetFirstChild(aHandle);
+    C2MdlNode node(&aOwner);
+    THandle handle = mMdlX->GetFirstChild(aHandle);
     do {
-	C2MdlNode child_node = CreateNodeMut(handle, ENt_Node, ENa_Id, ENa_Parent);
-	node.mChromo.push_back(child_node);
+	HandleXNode(handle, node);
 	handle = mMdlX->Next(handle);
     } while (handle != NULL);
     return node;
@@ -60,7 +62,7 @@ Chromo2Mdl::~Chromo2Mdl()
     }
 }
 
-TNodeType Chromo2Mdl::GetType(const void* aHandle)
+TNodeType Chromo2Mdl::GetType(const THandle& aHandle)
 {
 }
 
@@ -68,107 +70,87 @@ TNodeType Chromo2Mdl::GetType(const string& aId)
 {
 }
 
-void* Chromo2Mdl::Root(const void* aHandle)
+THandle Chromo2Mdl::Root(const THandle& aHandle)
 {
 }
 
-void* Chromo2Mdl::Parent(const void* aHandle)
+THandle Chromo2Mdl::Parent(const THandle& aHandle)
 {
 }
 
-void* Chromo2Mdl::Next(const void* aHandle, TNodeType aType)
+THandle Chromo2Mdl::Next(const THandle& aHandle, TNodeType aType)
 {
 }
 
-void* Chromo2Mdl::NextText(const void* aHandle)
+THandle Chromo2Mdl::Prev(const THandle& aHandle, TNodeType aType)
 {
 }
 
-void* Chromo2Mdl::Prev(const void* aHandle, TNodeType aType)
+THandle Chromo2Mdl::GetFirstChild(const THandle& aHandle, TNodeType aType)
 {
 }
 
-void* Chromo2Mdl::GetFirstChild(const void* aHandle, TNodeType aType)
+THandle Chromo2Mdl::GetLastChild(const THandle& aHandle, TNodeType aType)
 {
 }
 
-void* Chromo2Mdl::GetLastChild(const void* aHandle, TNodeType aType)
+char* Chromo2Mdl::GetAttr(const THandle& aHandle, TNodeAttr aAttr) const
 {
 }
 
-char* Chromo2Mdl::GetAttr(const void* aHandle, TNodeAttr aAttr) const
+void  Chromo2Mdl::GetAttr(const THandle& aNode, TNodeAttr aType, TInt& aVal) const
 {
 }
 
-void  Chromo2Mdl::GetAttr(const void* aNode, TNodeAttr aType, TInt& aVal) const
+TBool Chromo2Mdl::AttrExists(const THandle& aHandle, TNodeAttr aAttr) const 
 {
 }
 
-TBool Chromo2Mdl::AttrExists(const void* aHandle, TNodeAttr aAttr) const 
+THandle Chromo2Mdl::AddChild(const THandle& aParent, TNodeType aType)
 {
 }
 
-void* Chromo2Mdl::AddChild(void* aParent, TNodeType aType)
+THandle Chromo2Mdl::AddChild(const THandle& aParent, const THandle& aHandle, TBool aCopy, TBool aRecursively)
 {
 }
 
-void* Chromo2Mdl::AddChild(void* aParent, const void* aHandle, TBool aCopy, TBool aRecursively)
+THandle Chromo2Mdl::AddNext(const THandle& aPrev, const THandle& aHandle, TBool aCopy)
 {
 }
 
-void* Chromo2Mdl::AddChildDef(void* aParent, const void* aHandle, TBool aCopy)
+THandle Chromo2Mdl::AddNext(const THandle& aPrev, TNodeType aNode)
 {
 }
 
-void* Chromo2Mdl::AddNext(const void* aPrev, const void* aHandle, TBool aCopy)
+THandle Chromo2Mdl::AddPrev(const THandle& aNext, const THandle& aHandle, TBool aCopy)
 {
 }
 
-void* Chromo2Mdl::AddNext(const void* aPrev, TNodeType aNode)
+void Chromo2Mdl::RmChild(const THandle& aParent, const THandle& aChild, TBool aDeattachOnly)
 {
 }
 
-void* Chromo2Mdl::AddPrev(const void* aNext, const void* aHandle, TBool aCopy)
+void Chromo2Mdl::Rm(const THandle& aHandle)
 {
 }
 
-void Chromo2Mdl::RmChild(void* aParent, void* aChild, TBool aDeattachOnly)
+void Chromo2Mdl::SetAttr(const THandle& aNode, TNodeAttr aType, const char* aVal)
 {
 }
 
-void Chromo2Mdl::Rm(void* aHandle)
+void Chromo2Mdl::SetAttr(const THandle& aNode, TNodeAttr aType, TInt aVal)
 {
 }
 
-void Chromo2Mdl::MoveNextTo(void* aHandle, void* aDest)
+void Chromo2Mdl::RmAttr(const THandle& aNode, TNodeAttr aType)
 {
 }
 
-void Chromo2Mdl::MovePrevTo(void* aHandle, void* aDest)
+void Chromo2Mdl::Dump(const THandle& aNode, MLogRec* aLogRec)
 {
 }
 
-void Chromo2Mdl::MoveToEnd(void* aHandle)
-{
-}
-
-void Chromo2Mdl::SetAttr(void* aNode, TNodeAttr aType, const char* aVal)
-{
-}
-
-void Chromo2Mdl::SetAttr(void* aNode, TNodeAttr aType, TInt aVal)
-{
-}
-
-void Chromo2Mdl::RmAttr(void* aNode, TNodeAttr aType)
-{
-}
-
-void Chromo2Mdl::Dump(void* aNode, MLogRec* aLogRec)
-{
-}
-
-TBool Chromo2Mdl::ToString(void* aNode, string& aString) const
+TBool Chromo2Mdl::ToString(const THandle& aNode, string& aString) const
 {
 }
 
@@ -176,23 +158,19 @@ void Chromo2Mdl::Save(const string& aFileName) const
 {
 }
 
-void* Chromo2Mdl::Find(const void* aHandle, const string& aUri)
+THandle Chromo2Mdl::Find(const THandle& aHandle, const string& aUri)
 {
 }
 
-TInt Chromo2Mdl::GetOrder(void* aHandle, TBool aTree) const
+TInt Chromo2Mdl::GetOrder(const THandle& aHandle, TBool aTree) const
 {
 }
 
-void Chromo2Mdl::SetOrder(void* aHandle, TInt aOrder, TBool aTree)
+void Chromo2Mdl::DeOrder(const THandle& aHandle)
 {
 }
 
-void Chromo2Mdl::DeOrder(void* aHandle)
-{
-}
-
-TInt Chromo2Mdl::GetLineId(void* aHandle) const
+TInt Chromo2Mdl::GetLineId(const THandle& aHandle) const
 {
 }
 
@@ -202,28 +180,29 @@ int Chromo2Mdl::GetAttrInt(void *aHandle, const char *aName)
 {
 }
 
-void* Chromo2Mdl::SetFromFile(const string& aFileName)
+THandle Chromo2Mdl::SetFromFile(const string& aFileName)
 {
-    void* handle = mMdlX->SetFromFile(aFileName);
+    THandle handle = mMdlX->SetFromFile(aFileName);
     if (handle != NULL && mMdlX->GetType(handle) == ENt_Node) {
 	// Root, evolve the chromo
-	HandleXNode(handle);
+	HandleXNode(handle, mRoot);
     }
+    return &mRoot;
 }
 
-void* Chromo2Mdl::Set(const string& aUri)
+THandle Chromo2Mdl::Set(const string& aUri)
 {
 }
 
-void* Chromo2Mdl::SetFromSpec(const string& aSpec)
+THandle Chromo2Mdl::SetFromSpec(const string& aSpec)
 {
 }
 
-void* Chromo2Mdl::Set(const void* aHandle)
+THandle Chromo2Mdl::Set(const THandle& aHandle)
 {
 }
 
-void* Chromo2Mdl::Init(TNodeType aRootType)
+THandle Chromo2Mdl::Init(TNodeType aRootType)
 {
 }
 
@@ -231,7 +210,7 @@ void Chromo2Mdl::Reset()
 {
 }
 
-void Chromo2Mdl::HandleXNodeCtx(C2MdlNode& aMdlNode, const void* aHandle)
+void Chromo2Mdl::HandleXNodeCtx(C2MdlNode& aMdlNode, const THandle& aHandle)
 {
     if (mMdlX->AttrExists(aHandle, ENa_Targ)) {
 	string targ = mMdlX->GetAttr(aHandle, ENa_Targ);
@@ -243,22 +222,22 @@ void Chromo2Mdl::HandleXNodeCtx(C2MdlNode& aMdlNode, const void* aHandle)
     }
 }
 
-void Chromo2Mdl::HandleXNode(const void* aHandle)
+void Chromo2Mdl::HandleXNode(const THandle& aHandle, C2MdlNode& aOwner)
 {
     TNodeType xntype = mMdlX->GetType(aHandle);
     // Mutation
     if (xntype == ENt_Node) {
-	C2MdlNode node = CreateNodeMut(aHandle, ENt_Node, ENa_Id, ENa_Parent);
+	C2MdlNode node = CreateNodeMut(aHandle, aOwner, ENt_Node, ENa_Id, ENa_Parent);
 	HandleXNodeCtx(node, aHandle);
-	mNodes.push_back(node);
-	void* child_h = mMdlX->GetFirstChild(aHandle);
+	aOwner.mChromo.push_back(node);
+	THandle child_h = mMdlX->GetFirstChild(aHandle);
 	if (child_h != NULL) {
 	    // Chromo node
-	    C2MdlNode chromo_node = CreateNodeChr(aHandle);
+	    C2MdlNode chromo_node = CreateNodeChr(aHandle, aOwner);
 	    // Add node name as target context for chromo
 	    string name = mMdlX->GetAttr(aHandle, ENa_Id);
 	    chromo_node.AddContext(C2MdlCtxNode::KT_Target, name);
-	    mNodes.push_back(chromo_node);
+	    aOwner.mChromo.push_back(chromo_node);
 	}
     }
 }
@@ -266,7 +245,7 @@ void Chromo2Mdl::HandleXNode(const void* aHandle)
 
 
 
-Chromo2::Chromo2(): mRootNode(reinterpret_cast<MChromoMdl&>(mMdl), NULL)
+Chromo2::Chromo2()
 {
 }
 
@@ -277,14 +256,14 @@ Chromo2::Chromo2(const Chromo2& aSrc)
 
 void Chromo2::SetFromFile(const string& aFileName)
 {
-    void *root = mMdl.SetFromFile(aFileName);
+    THandle root = mMdl.SetFromFile(aFileName);
     mRootNode = ChromoNode(mMdl, root);
 }
 
 TBool Chromo2::Set(const string& aUri)
 {
     TBool res = EFalse;
-    void *root = mMdl.Set(aUri);
+    THandle root = mMdl.Set(aUri);
     if (root != NULL) {
 	mRootNode = ChromoNode(mMdl, root);
 	res = ETrue;
@@ -295,7 +274,7 @@ TBool Chromo2::Set(const string& aUri)
 TBool Chromo2::SetFromSpec(const string& aSpec)
 {
     TBool res = EFalse;
-    void *root = mMdl.SetFromSpec(aSpec);
+    THandle root = mMdl.SetFromSpec(aSpec);
     if (root != NULL) {
 	mRootNode = ChromoNode(mMdl, root);
 	res = ETrue;
@@ -306,7 +285,7 @@ TBool Chromo2::SetFromSpec(const string& aSpec)
 
 void Chromo2::Set(const ChromoNode& aRoot)
 {
-    void *root = mMdl.Set(aRoot.Handle());
+    THandle root = mMdl.Set(aRoot.Handle());
     mRootNode = ChromoNode(mMdl, root);
 }
 
@@ -331,7 +310,7 @@ void Chromo2::Reset()
 
 void Chromo2::Init(TNodeType aRootType)
 {
-    void *root = mMdl.Init(aRootType);
+    THandle root = mMdl.Init(aRootType);
     mRootNode = ChromoNode(mMdl, root);
 }
 
@@ -344,7 +323,7 @@ void Chromo2::Save(const string& aFileName) const
     mdl.Save(aFileName);
 }
 
-ChromoNode Chromo2::CreateNode(void* aHandle)
+ChromoNode Chromo2::CreateNode(const THandle& aHandle)
 {
     return ChromoNode(mMdl, aHandle);
 }

@@ -43,7 +43,7 @@ MUnit* AMod::Import(const GUri& aUri)
     //TBool res1 = iMut->Set(mCont);
     TBool res1 = AppendMutation(mCont);
     ChromoNode sel = iMut->Root().GetNodeByMhUri(aUri);
-    if (sel.Handle() != NULL) {
+    if (sel.Handle() != THandle()) {
 	iMut->ReduceToSelection(sel);
 	Mutate(EFalse, ETrue, EFalse);
 	res = GetNode(aUri);

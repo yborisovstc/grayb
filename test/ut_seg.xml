@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+
+<!-- Unit test for ext chromo: segment -->
+
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+<node id="test" parent="Elem">
+    <node id="Logspec" parent="Elem"> <node id="Creation" parent="Elem"/> </node>
+    <node id="elem1" parent="Elem">
+	<node id="elem2" parent="Elem"/>
+    </node>
+    <node id="elem3" parent="./elem1"/>
+
+    <seg targ="./elem3" >
+	<node id="Logspec" parent="Elem"> <node id="Creation" parent="Elem"/> </node>
+	<node id="elem4" parent="./../elem1/elem2"/>
+	<node id="elem4.2" parent="./../elem1"/>
+    </seg>
+
+    <node id="elem5" parent="./elem1/elem2"/>
+
+</node>
+

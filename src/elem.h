@@ -86,11 +86,7 @@
 	    virtual string EType(TBool aShort = ETrue) const;
 	    MUnit* GetUnit();
 	    virtual void GetCRoot(TMut& aMut) const;
-	    virtual void GetRank(Rank& aRank) const;
-	    virtual void GetRank(Rank& aRank, const ChromoNode& aMut) const;
-	    virtual void GetCompRank(Rank& aRank, const MUnit* aComp) const;
 	    virtual TInt GetCompLrank(const MUnit* aComp) const;
-	    TInt GetLocalRank() const;
 	    virtual void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MUnit* aCtx = NULL);
 	    virtual void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MUnit* aCtx = NULL);
 	    virtual void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MUnit* aCtx = NULL);

@@ -69,9 +69,6 @@ class MElem : public MIface,  public MMutable, public MParent, public MChild
     // TODO [YB] To support returning result. Ref uc_013_dsc_01 for use-case details.
     virtual void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MUnit* aCtx = NULL) = 0;
     virtual void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MUnit* aCtx = NULL) = 0;
-    virtual void GetRank(Rank& aRank) const = 0; 
-    virtual void GetRank(Rank& aRank, const ChromoNode& aMut) const = 0;
-    virtual void GetCompRank(Rank& aRank, const MUnit* aComp) const = 0;
     virtual TInt GetCompLrank(const MUnit* aComp) const = 0;
     virtual MUnit* GetAowner() = 0;
     virtual const MUnit* GetAowner() const = 0;

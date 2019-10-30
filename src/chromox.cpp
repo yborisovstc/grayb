@@ -14,16 +14,14 @@ ChromoMdlX::~ChromoMdlX()
     Reset(); 
 }
 
-void* ChromoMdlX::Init(TNodeType aRootType)
+THandle ChromoMdlX::Init(TNodeType aRootType)
 {
     iDocOwned = ETrue;
     iDoc = xmlNewDoc((const xmlChar*) "1.0");
     string sroottype = TMut::NodeTypeName(aRootType);
     xmlNodePtr root = xmlNewNode(NULL, (const xmlChar *) sroottype.c_str());
     xmlDocSetRootElement(iDoc, root);
-    //xmlDtdPtr dtd = xmlParseDTD(NULL, (const xmlChar*) KChromoSystemId );
-    //iDoc->extSubset = dtd;
-    return root;
+    return THandle(root);
 }
 
 void ChromoMdlX::Reset()
@@ -34,12 +32,12 @@ void ChromoMdlX::Reset()
     iDoc = NULL;
 }
 
-void* ChromoMdlX::Find(const void* aHandle, const string& aUri)
+THandle ChromoMdlX::Find(const THandle& aHandle, const string& aUri)
 {
     GUri desuri(aUri);
     const vector<GUri::TElem>& elems = desuri.Elems();
     xmlNodePtr fres = NULL;
-    xmlNodePtr res = (xmlNodePtr) aHandle;
+    xmlNodePtr res = aHandle.Data(res);
     for (vector<GUri::TElem>::const_iterator it = desuri.Elems().begin(); it != desuri.Elems().end() && res != NULL; it++) {
 	GUri::TElem elem = *it;
 	while (res != NULL) {
@@ -63,39 +61,36 @@ void* ChromoMdlX::Find(const void* aHandle, const string& aUri)
     return fres;
 }
 
-void* ChromoMdlX::SetFromFile(const string& aFileName)
+THandle ChromoMdlX::SetFromFile(const string& aFileName)
 {
     xmlNode *sEnv = NULL; // Node of environment element
-    xmlNode *sRoot = NULL; // Node of root element
     // Read and parse the CAE spec file
     Reset();
     iDoc = xmlReadFile(aFileName.c_str(), NULL, XML_PARSE_DTDLOAD | XML_PARSE_DTDVALID);
     __ASSERT(iDoc != NULL);
     // Get the node 
-    sRoot = (xmlNodePtr) GetFirstChild((void *) iDoc, ENt_Node);
+    THandle sRoot = GetFirstChild((void *) iDoc, ENt_Node);
     iDocOwned = EFalse;
     return sRoot;
 }
 
-void* ChromoMdlX::SetFromSpec(const string& aSpec)
+THandle ChromoMdlX::SetFromSpec(const string& aSpec)
 {
     xmlNode *sEnv = NULL; // Node of environment element
-    xmlNode *sRoot = NULL; // Node of root element
     // Read and parse the CAE spec file
     Reset();
     iDoc = xmlReadMemory(aSpec.c_str(), aSpec.size(), "noname.xml", NULL, XML_PARSE_DTDLOAD | XML_PARSE_DTDVALID);
     __ASSERT(iDoc != NULL);
     // Get any node, not necessary ENt_Node, ref ds_mut_osmlc_impl
-    sRoot = (xmlNodePtr) GetFirstChild((void *) iDoc);
+    THandle sRoot = GetFirstChild((void *) iDoc);
     iDocOwned = EFalse;
     return sRoot;
 }
 
-void* ChromoMdlX::Set(const string& aUri)
+THandle ChromoMdlX::Set(const string& aUri)
 {
-    xmlNodePtr res = NULL;
+    THandle res;
     xmlNode *sEnv = NULL; // Node of environment element
-    xmlNode *sRoot = NULL; // Node of root element
     // Read and parse the CAE spec file
     Reset();
     string path;
@@ -105,7 +100,7 @@ void* ChromoMdlX::Set(const string& aUri)
     // Get the node 
     string desuri;
     ChromoUtils::GetFrag(aUri, desuri);
-    sRoot = (xmlNodePtr) GetFirstChild((void *) iDoc, ENt_Node);
+    THandle sRoot = GetFirstChild((void *) iDoc, ENt_Node);
     if (!desuri.empty()) {
 	// Transform into rel uri if abs
 	// TODO [YB] - to consider if it would be better to update Find to accept the abs uri
@@ -115,7 +110,7 @@ void* ChromoMdlX::Set(const string& aUri)
 	    it++;
 	}
 	desuri = desurib.toString(it);
-	res = (xmlNodePtr) Find(sRoot, desuri); 
+	res = Find(sRoot, desuri); 
     }
     else {
 	res = sRoot;
@@ -124,7 +119,7 @@ void* ChromoMdlX::Set(const string& aUri)
     return res;
 }
 
-void* ChromoMdlX::Set(const void* aHandle)
+THandle ChromoMdlX::Set(const THandle& aHandle)
 {
     if (iDoc == NULL) {
 	iDocOwned = ETrue;
@@ -132,9 +127,9 @@ void* ChromoMdlX::Set(const void* aHandle)
 	xmlDtdPtr dtd = xmlParseDTD(NULL, (const xmlChar*) KChromoSystemId );
 	iDoc->extSubset = dtd;
     }
-    xmlNodePtr node = xmlDocCopyNode((xmlNodePtr) aHandle, iDoc, 1);
+    xmlNodePtr node = xmlDocCopyNode(aHandle.Data<xmlNodePtr>(), iDoc, 1);
     xmlDocSetRootElement(iDoc, node);
-    return node;
+    return THandle(node);
 }
 
 TNodeType ChromoMdlX::GetType(const string& aId)
@@ -142,10 +137,10 @@ TNodeType ChromoMdlX::GetType(const string& aId)
     return TMut::NodeType(aId);
 }
 
-TNodeType ChromoMdlX::GetType(const void* aHandle)
+TNodeType ChromoMdlX::GetType(const THandle& aHandle)
 {
     TNodeType res = ENt_Unknown;
-    xmlNodePtr node = (xmlNodePtr) aHandle;
+    xmlNodePtr node = aHandle.Data(node);
     if (node->name != NULL) {
 	const char* type_name = (const char*) node->name;
 	res = TMut::NodeType(type_name);
@@ -153,38 +148,38 @@ TNodeType ChromoMdlX::GetType(const void* aHandle)
     return res;
 }
 
-void *ChromoMdlX::GetFirstChild(const void *aHandle, TNodeType aType)
+THandle ChromoMdlX::GetFirstChild(const THandle& aHandle, TNodeType aType)
 {
-    xmlNodePtr node = (xmlNodePtr) aHandle;
+    xmlNodePtr node = aHandle.Data(node);
     __ASSERT(node != NULL);
-    xmlNodePtr res = node->children;
+    THandle res(node->children);
     if (res != NULL) {
-	TNodeType type = GetType((void*) res);
-	if ((res->type != XML_ELEMENT_NODE) || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown)))
-	    res = (xmlNodePtr) Next(res, aType);
+	TNodeType type = GetType(res);
+	if ((res.Data<xmlNodePtr>()->type != XML_ELEMENT_NODE) || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown)))
+	    res = Next(res, aType);
+    }
+    return THandle(res);
+}
+
+THandle ChromoMdlX::GetLastChild(const THandle& aHandle, TNodeType aType)
+{
+    xmlNodePtr node = aHandle.Data(node);
+    __ASSERT(node != NULL);
+    THandle res(node->last);
+    if (res != NULL) {
+	TNodeType type = GetType(res);
+	if ((res.Data<xmlNodePtr>()->type != XML_ELEMENT_NODE) || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown)))
+	    res = Prev(res, aType);
     }
     return res;
 }
 
-void *ChromoMdlX::GetLastChild(const void *aHandle, TNodeType aType)
+THandle ChromoMdlX::Root(const THandle& aHandle)
 {
-    xmlNodePtr node = (xmlNodePtr) aHandle;
-    __ASSERT(node != NULL);
-    xmlNodePtr res = node->last;
-    if (res != NULL) {
-	TNodeType type = GetType((void*) res);
-	if ((res->type != XML_ELEMENT_NODE) || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown)))
-	    res = (xmlNodePtr) Prev(res, aType);
-    }
-    return res;
-}
-
-void* ChromoMdlX::Root(const void* aHandle)
-{
-    void *res = NULL;
-    xmlNodePtr parent = (xmlNodePtr) Parent(aHandle);
+    THandle res;
+    THandle parent = Parent(aHandle);
     if (parent == NULL) {
-	res = (void*) aHandle;
+	res = aHandle;
     }
     else {
 	res = Root(parent);
@@ -192,80 +187,68 @@ void* ChromoMdlX::Root(const void* aHandle)
     return res;
 }
 
-void* ChromoMdlX::Parent(const void* aHandle)
+THandle ChromoMdlX::Parent(const THandle& aHandle)
 {
-    xmlNodePtr parent = ((xmlNodePtr) aHandle)->parent;
-    return (parent != NULL && parent->type == XML_ELEMENT_NODE) ? parent : NULL;
+    xmlNodePtr parent = aHandle.Data<xmlNodePtr>()->parent;
+    return (parent != NULL && parent->type == XML_ELEMENT_NODE) ? THandle(parent) : THandle();
 }
 
-void *ChromoMdlX::Next(const void *aHandle, TNodeType aType)
+THandle ChromoMdlX::Next(const THandle& aHandle, TNodeType aType)
 {
     __ASSERT(aHandle!= NULL);
-    xmlNodePtr res = ((xmlNodePtr) aHandle)->next;
+    xmlNodePtr res = aHandle.Data<xmlNodePtr>()->next;
     if (res != NULL) {
-	TNodeType type = GetType((void*) res);
+	TNodeType type = GetType(res);
 	while ((res != NULL) && ((res->type != XML_ELEMENT_NODE) || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown)))) {
 	    res = res->next;
 	    if (res != NULL)
-		type = GetType((void*) res);
+		type = GetType(res);
 	}
     }
     return res;
 }
 
-void* ChromoMdlX::NextText(const void* aHandle)
+THandle ChromoMdlX::Prev(const THandle& aHandle, TNodeType aType)
 {
-    __ASSERT(aHandle!= NULL);
-    xmlNodePtr res = ((xmlNodePtr) aHandle)->next;
+    __ASSERT(aHandle!= THandle());
+    xmlNodePtr res = aHandle.Data(res)->prev;
     if (res != NULL) {
-	while ((res != NULL) && (res->type != XML_TEXT_NODE)) {
-	    res = res->next;
-	}
-    }
-    return res;
-}
-
-void *ChromoMdlX::Prev(const void *aHandle, TNodeType aType)
-{
-    __ASSERT(aHandle!= NULL);
-    xmlNodePtr res = ((xmlNodePtr) aHandle)->prev;
-    if (res != NULL) {
-	TNodeType type = GetType((void*) res);
+	TNodeType type = GetType(res);
 	while ((res != NULL) && ((res->type != XML_ELEMENT_NODE) || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown)))) {
 	    res = res->prev;
-	    type = GetType((void*) res);
+	    type = GetType(res);
 	}
     }
     return res;
 }
 
-char *ChromoMdlX::GetAttr(const void* aHandle, TNodeAttr aAttr) const
+char *ChromoMdlX::GetAttr(const THandle& aHandle, TNodeAttr aAttr) const
 {
-    __ASSERT(aHandle != NULL);
-    xmlNodePtr node = (xmlNodePtr) aHandle;
+    __ASSERT(aHandle != THandle());
+    xmlNodePtr node = aHandle.Data(node);
     xmlChar *attr = xmlGetProp(node, (const xmlChar *) TMut::NodeAttrName(aAttr).c_str());
     return (char *) attr;
 }
 
-void ChromoMdlX::GetAttr(const void* aHandle, TNodeAttr aAttr, TInt& aVal) const
+void ChromoMdlX::GetAttr(const THandle& aHandle, TNodeAttr aAttr, TInt& aVal) const
 {
     string ss(GetAttr(aHandle, aAttr)); 
     istringstream sstr(ss);
     sstr >> aVal;
 }
 
-void ChromoMdlX::SetAttr(void* aHandle, TNodeAttr aAttr, TInt aVal)
+void ChromoMdlX::SetAttr(const THandle& aHandle, TNodeAttr aAttr, TInt aVal)
 {
     stringstream sval;
     sval << aVal;
     SetAttr(aHandle, aAttr, sval.str().c_str());
 }
 
-TBool ChromoMdlX::AttrExists(const void* aHandle, TNodeAttr aAttr) const
+TBool ChromoMdlX::AttrExists(const THandle& aHandle, TNodeAttr aAttr) const
 {
-    __ASSERT(aHandle != NULL);
+    __ASSERT(aHandle != THandle());
     TBool res = EFalse;
-    xmlNodePtr node = (xmlNodePtr) aHandle;
+    xmlNodePtr node = aHandle.Data(node);
     xmlChar *attr = xmlGetProp(node, (const xmlChar *) TMut::NodeAttrName(aAttr).c_str());
     res = (attr != NULL);
     free (attr);
@@ -284,106 +267,89 @@ int ChromoMdlX::GetAttrInt(void *aHandle, const char *aName)
     return res;
 }
 
-void* ChromoMdlX::AddChild(void* aParent, TNodeType aNode)
+THandle ChromoMdlX::AddChild(const THandle& aParent, TNodeType aNode)
 {
     string name = TMut::NodeTypeName(aNode);
     xmlNodePtr node = xmlNewNode(NULL, (const xmlChar*) name.c_str());
-    return xmlAddChild((xmlNodePtr) aParent, node);
+    return xmlAddChild(aParent.Data<xmlNodePtr>(), node);
 }
 
-void* ChromoMdlX::AddChild(void* aParent, const void* aHandle, TBool aCopy, TBool aRecursively)
+THandle ChromoMdlX::AddChild(const THandle& aParent, const THandle& aHandle, TBool aCopy, TBool aRecursively)
 {
-    void* root = Root(aParent);
-    xmlNodePtr node = aCopy ? xmlCopyNode((xmlNodePtr) aHandle, aRecursively ? 1:2) : (xmlNodePtr) aHandle;
-    return xmlAddChild((xmlNodePtr) aParent, node);
+    xmlNodePtr node = aCopy ? xmlCopyNode(aHandle.Data<xmlNodePtr>(), aRecursively ? 1:2) : aHandle.Data<xmlNodePtr>();
+    return xmlAddChild(aParent.Data<xmlNodePtr>(), node);
 }
 
-// TODO [YB] Seeps to be not used. To remove ?
-void* ChromoMdlX::AddChildDef(void* aParent, const void* aHandle, TBool aCopy)
+THandle ChromoMdlX::AddNext(const THandle& aPrev, const THandle& aHandle, TBool aCopy)
 {
-    xmlNodePtr res = NULL;
-    xmlNodePtr parent = (xmlNodePtr) aParent;
-    xmlNodePtr node = aCopy ? xmlCopyNode((xmlNodePtr) aHandle, 1) : (xmlNodePtr) aHandle;
-    xmlNodePtr pnode = FindNodeEnterigPos(parent, node);
-    if (pnode != NULL) {
-	res = xmlAddNextSibling(pnode, node);
-    }
-    else {
-	if (parent->children != NULL) {
-	    res = xmlAddPrevSibling(parent->children, node);
-	}
-	else {
-	    res = xmlAddChild(parent, node);
-	}
-    }
-    return res;
+    xmlNodePtr handle = aHandle.Data(handle);
+    xmlNodePtr node = aCopy ? xmlCopyNode(handle, 1) : handle;
+    return xmlAddNextSibling(aPrev.Data<xmlNodePtr>(), node);
 }
 
-void* ChromoMdlX::AddNext(const void* aPrev, const void* aHandle, TBool aCopy)
-{
-    xmlNodePtr node = aCopy ? xmlCopyNode((xmlNodePtr) aHandle, 1) : (xmlNodePtr) aHandle;
-    return xmlAddNextSibling((xmlNodePtr) aPrev, node);
-}
-
-void* ChromoMdlX::AddNext(const void* aPrev, TNodeType aNode)
+THandle ChromoMdlX::AddNext(const THandle& aPrev, TNodeType aNode)
 {
     string name = TMut::NodeTypeName(aNode);
     xmlNodePtr node = xmlNewNode(NULL, (const xmlChar*) name.c_str());
-    return xmlAddNextSibling((xmlNodePtr) aPrev, node);
+    return xmlAddNextSibling(aPrev.Data<xmlNodePtr>(), node);
 }
 
-void* ChromoMdlX::AddPrev(const void* aNext, const void* aHandle, TBool aCopy)
+THandle ChromoMdlX::AddPrev(const THandle& aNext, const THandle& aHandle, TBool aCopy)
 {
-    xmlNodePtr node = aCopy ? xmlCopyNode((xmlNodePtr) aHandle, 1) : (xmlNodePtr) aHandle;
-    return xmlAddPrevSibling((xmlNodePtr) aNext, node);
+    xmlNodePtr handle = aHandle.Data(handle);
+    xmlNodePtr node = aCopy ? xmlCopyNode(handle, 1) : handle;
+    return xmlAddPrevSibling(aNext.Data<xmlNodePtr>(), node);
 }
 
-void ChromoMdlX::SetAttr(void* aNode, TNodeAttr aType, const char* aVal)
+void ChromoMdlX::SetAttr(const THandle& aNode, TNodeAttr aType, const char* aVal)
 {
     string name = TMut::NodeAttrName(aType);
+    xmlNodePtr node = aNode.Data(node);
     if (AttrExists(aNode, aType)) {
-	xmlSetProp((xmlNodePtr) aNode, (const xmlChar*) name.c_str(), (const xmlChar*) aVal);
-    }
-    else {
-	xmlNewProp((xmlNodePtr) aNode, (const xmlChar*) name.c_str(), (const xmlChar*) aVal);
+	xmlSetProp(node, (const xmlChar*) name.c_str(), (const xmlChar*) aVal);
+    } else {
+	xmlNewProp(node, (const xmlChar*) name.c_str(), (const xmlChar*) aVal);
     }
 }
 
-void ChromoMdlX::RmAttr(void* aNode, TNodeAttr aType)
+void ChromoMdlX::RmAttr(const THandle& aNode, TNodeAttr aType)
 {
-    xmlAttrPtr attr = xmlHasProp((xmlNodePtr) aNode, (const xmlChar *) TMut::NodeAttrName(aType).c_str());
+    xmlNodePtr node = aNode.Data(node);
+    xmlAttrPtr attr = xmlHasProp(node, (const xmlChar *) TMut::NodeAttrName(aType).c_str());
     if (attr != NULL) {
 	xmlRemoveProp(attr);
     }
 }
 
-void ChromoMdlX::RmChild(void* aParent, void* aChild, TBool aDeattachOnly)
+void ChromoMdlX::RmChild(const THandle& aParent, const THandle& aChild, TBool aDeattachOnly)
 {
-    xmlNodePtr child = (xmlNodePtr) aChild;
+    xmlNodePtr child = aChild.Data(child);
     xmlUnlinkNode(child);
     if (!aDeattachOnly) {
 	xmlFreeNode(child);
     }
 }
 
-void ChromoMdlX::Rm(void* aNode)
+void ChromoMdlX::Rm(const THandle& aNode)
 {
-    xmlNodePtr node = (xmlNodePtr) aNode;
+    xmlNodePtr node = aNode.Data(node);
     xmlUnlinkNode(node);
     xmlFreeNode(node);
 }
 
-void ChromoMdlX::Dump(void* aNode, MLogRec* aLogRec)
+void ChromoMdlX::Dump(const THandle& aNode, MLogRec* aLogRec)
 {
     xmlBufferPtr bufp = xmlBufferCreate();	
-    int	res = xmlNodeDump(bufp, iDoc, (xmlNodePtr) aNode, 0, 0);
+    xmlNodePtr node = aNode.Data(node);
+    int	res = xmlNodeDump(bufp, iDoc, node, 0, 0);
     aLogRec->WriteFormat("%s", xmlBufferContent(bufp));
 }
 
-TBool ChromoMdlX::ToString(void* aNode, string& aString) const
+TBool ChromoMdlX::ToString(const THandle& aNode, string& aString) const
 {
     xmlBufferPtr bufp = xmlBufferCreate();	
-    int	res = xmlNodeDump(bufp, iDoc, (xmlNodePtr) aNode, 0, 0);
+    xmlNodePtr node = aNode.Data(node);
+    int	res = xmlNodeDump(bufp, iDoc, node, 0, 0);
     aString.assign((const char*)(xmlBufferContent(bufp)));
     return (res != 0);
 }
@@ -393,86 +359,7 @@ void ChromoMdlX::Save(const string& aFileName) const
     int res = xmlSaveFormatFile(aFileName.c_str(), iDoc, 4);
 }
 
-xmlElementPtr ChromoMdlX::GetElementDecl(void* aHandle)
-{
-    xmlNodePtr node = (xmlNodePtr) aHandle;
-    struct _xmlDtd* dtd = iDoc->extSubset;
-    const char* nname = (const char*) node->name;
-    __ASSERT(dtd != NULL);
-    xmlNodePtr res = dtd->children;
-    while ((res != NULL) && !((res->type == XML_ELEMENT_DECL) && strcmp((const char*) res->name, nname) == 0))
-       	res = res->next;
-    return (xmlElementPtr) res;
-}
-
-xmlElementContent* ChromoMdlX::GetFirstEldeclSecCont(xmlElementPtr aElem)
-{
-    xmlElementContent* res = aElem->content->c1;
-    return res;
-}
-
-xmlElementContent* ChromoMdlX::FindEldeclSecCont(xmlNodePtr aParent, xmlNodePtr aNode)
-{
-    xmlElementPtr elemdecl = GetElementDecl(aParent);
-    const char* nname = (const char*) aNode->name;
-    xmlElementContent* res = GetFirstEldeclSecCont(elemdecl); 
-    while ((res != NULL) && !(strcmp((const char*) res->name, nname) == 0))
-       	res = GetNextEldeclSecCont(res);
-    return res;
-}
-
-// Gets next element within element decl content of type SEC
-xmlElementContent* ChromoMdlX::GetNextEldeclSecCont(xmlElementContent* aContent)
-{
-    xmlElementContent* res = aContent->parent->c2->c1;
-    return res;
-}
-
-xmlElementContent* ChromoMdlX::GetPrevEldeclSecCont(xmlElementContent* aContent)
-{
-    xmlElementContent* p1 = aContent->parent->parent;
-    xmlElementContent* res = (p1 != NULL  && p1 != (xmlElementContent*) 1) ?  p1->c1 : NULL;
-    return res;
-}
-
-xmlNodePtr ChromoMdlX::FindNodeEnterigPos(xmlNodePtr aParent, xmlNodePtr aNode)
-{
-    xmlNodePtr res = NULL;
-    xmlElementContent* contc = FindEldeclSecCont(aParent, aNode);
-    xmlElementContent* contp = GetPrevEldeclSecCont(contc);
-    if (contp != NULL) {  
-	res = (xmlNodePtr) GetLastChild(aParent, TMut::NodeType((const char*) contp->name));
-	while ((res == NULL) && (contp != NULL))
-	    contp = GetPrevEldeclSecCont(contp);
-    }
-    return res;
-}
-
-
-void ChromoMdlX::MoveNextTo(void* aHandle, void* aDest)
-{
-    xmlNodePtr src = (xmlNodePtr) aHandle;
-    xmlNodePtr dest = (xmlNodePtr) aDest;
-    xmlAddNextSibling(dest, src);
-}
-
-void ChromoMdlX::MovePrevTo(void* aHandle, void* aDest)
-{
-    xmlNodePtr src = (xmlNodePtr) aHandle;
-    xmlNodePtr dest = (xmlNodePtr) aDest;
-    xmlAddPrevSibling(dest, src);
-}
-
-void ChromoMdlX::MoveToEnd(void* aHandle)
-{
-    xmlNodePtr src = (xmlNodePtr) aHandle;
-    xmlNodePtr dest = ((xmlNodePtr) aHandle)->next;
-    if (dest != NULL) {
-	xmlAddSibling(dest, src);
-    }
-}
-
-TInt ChromoMdlX::GetOrder(void* aHandle, TBool aTree) const
+TInt ChromoMdlX::GetOrder(const THandle& aHandle, TBool aTree) const
 {
     TInt res = 0;
     TNodeAttr attr = aTree ? ENa_TOrder : ENa_Order;
@@ -481,17 +368,11 @@ TInt ChromoMdlX::GetOrder(void* aHandle, TBool aTree) const
     return res;
 }
 
-void ChromoMdlX::SetOrder(void* aHandle, TInt aOrder, TBool aTree)
+void ChromoMdlX::DeOrder(const THandle& aHandle)
 {
-    TNodeAttr attr = aTree ? ENa_TOrder : ENa_Order;
-    SetAttr(aHandle, attr, aOrder);
-}
-
-void ChromoMdlX::DeOrder(void* aHandle)
-{
-    xmlNodePtr node = (xmlNodePtr) aHandle;
+    xmlNodePtr node = aHandle.Data(node);
     __ASSERT(node != NULL);
-    RmAttr(node, ENa_Order);
+    RmAttr(aHandle, ENa_Order);
     xmlNodePtr child = node->children;
     while (child != NULL) {
 	DeOrder(child);
@@ -499,9 +380,9 @@ void ChromoMdlX::DeOrder(void* aHandle)
     };
 }
 
-TInt ChromoMdlX::GetLineId(void* aHandle) const
+TInt ChromoMdlX::GetLineId(const THandle& aHandle) const
 {
-    xmlNodePtr src = (xmlNodePtr) aHandle;
+    xmlNodePtr src = aHandle.Data(src);
     return src->line;
 }
 
@@ -517,15 +398,15 @@ ChromoX::ChromoX(const ChromoX& aSrc)
 
 void ChromoX::SetFromFile(const string& aFileName)
 {
-    void *root = iMdl.SetFromFile(aFileName);
+    THandle root = iMdl.SetFromFile(aFileName);
     iRootNode = ChromoNode(iMdl, root);
 }
 
 TBool ChromoX::Set(const string& aUri)
 {
     TBool res = EFalse;
-    void *root = iMdl.Set(aUri);
-    if (root != NULL) {
+    THandle root = iMdl.Set(aUri);
+    if (root != THandle()) {
 	iRootNode = ChromoNode(iMdl, root);
 	res = ETrue;
     }
@@ -535,8 +416,8 @@ TBool ChromoX::Set(const string& aUri)
 TBool ChromoX::SetFromSpec(const string& aSpec)
 {
     TBool res = EFalse;
-    void *root = iMdl.SetFromSpec(aSpec);
-    if (root != NULL) {
+    THandle root = iMdl.SetFromSpec(aSpec);
+    if (root != THandle()) {
 	iRootNode = ChromoNode(iMdl, root);
 	res = ETrue;
     }
@@ -546,7 +427,7 @@ TBool ChromoX::SetFromSpec(const string& aSpec)
 
 void ChromoX::Set(const ChromoNode& aRoot)
 {
-    void *root = iMdl.Set(aRoot.Handle());
+    THandle root = iMdl.Set(aRoot.Handle());
     iRootNode = ChromoNode(iMdl, root);
 }
 
@@ -571,7 +452,7 @@ void ChromoX::Reset()
 
 void ChromoX::Init(TNodeType aRootType)
 {
-    void *root = iMdl.Init(aRootType);
+    THandle root = iMdl.Init(aRootType);
     iRootNode = ChromoNode(iMdl, root);
 }
 
@@ -585,7 +466,7 @@ void ChromoX::Save(const string& aFileName) const
     //iMdl.Save(aFileName);
 }
 
-ChromoNode ChromoX::CreateNode(void* aHandle)
+ChromoNode ChromoX::CreateNode(const THandle& aHandle)
 {
     return ChromoNode(iMdl, aHandle);
 }

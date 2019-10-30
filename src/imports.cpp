@@ -42,7 +42,7 @@ TBool AImports::Import(const string& aUri)
 	it++;
 	selr.AppendTail(moduri, it);
 	ChromoNode sel = iMut->Root().GetNodeByMhUri(selr);
-	if (sel.Handle() != NULL) {
+	if (sel.Handle() != THandle()) {
 	    // Reduce chromo to target node, mutate and check
 	    iMut->ReduceToSelection(sel);
 	    Mutate(EFalse, ETrue, EFalse);

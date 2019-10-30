@@ -14,58 +14,45 @@ class ChromoMdlX: public Base, public MChromoMdl
 	virtual ~ChromoMdlX();
     public:
 	virtual TNodeType GetType(const string& aId);
-	virtual TNodeType GetType(const void* aHandle);
-	virtual void* Root(const void* aHandle);
-	virtual void* Parent(const void* aHandle);
-	virtual void* Next(const void* aHandle, TNodeType aType = ENt_Unknown);
-	virtual void* NextText(const void* aHandle);
-	virtual void* Prev(const void* aHandle, TNodeType aType = ENt_Unknown);
-	virtual void* GetFirstChild(const void* aHandle, TNodeType aType = ENt_Unknown);
-	virtual void* GetLastChild(const void* aHandle, TNodeType aType = ENt_Unknown);
-	virtual char *GetAttr(const void* aHandle, TNodeAttr aAttr) const;
-	virtual void  GetAttr(const void* aHandle, TNodeAttr aAttr, TInt& aVal) const;
-	virtual TBool AttrExists(const void* aHandle, TNodeAttr aAttr) const;
-	virtual void* AddChild(void* aParent, TNodeType aNode);
-	virtual void* AddChild(void* aParent, const void* aHandle, TBool aCopy = ETrue, TBool aRecursively = ETrue);
-	virtual void* AddChildDef(void* aParent, const void* aHandle, TBool aCopy = ETrue);
-	virtual void* AddNext(const void* aPrev, const void* aHandle, TBool aCopy = ETrue);
-	virtual void* AddNext(const void* aPrev, TNodeType aNode);
-	virtual void* AddPrev(const void* aNext, const void* aHandle, TBool aCopy = ETrue);
-	virtual void RmChild(void* aParent, void* aChild, TBool aDeattachOnly = EFalse);
-	virtual void Rm(void* aNode);
-	virtual void MoveNextTo(void* aHandle, void* aDest);
-	virtual void MovePrevTo(void* aHandle, void* aDest);
-	virtual void MoveToEnd(void* aHandle);
-	virtual void SetAttr(void* aNode, TNodeAttr aType, const char* aVal);
-	virtual void SetAttr(void* aHandle, TNodeAttr aAttr, TInt aVal);
-	virtual void RmAttr(void* aNode, TNodeAttr aType);
-	virtual void Dump(void* aNode, MLogRec* aLogRec);
-	virtual TBool ToString(void* aNode, string& aString) const;
+	virtual TNodeType GetType(const THandle& aHandle);
+	virtual THandle Root(const THandle& aHandle);
+	virtual THandle Parent(const THandle& aHandle);
+	virtual THandle Next(const THandle& aHandle, TNodeType aType = ENt_Unknown);
+	virtual THandle Prev(const THandle& aHandle, TNodeType aType = ENt_Unknown);
+	virtual THandle GetFirstChild(const THandle& aHandle, TNodeType aType = ENt_Unknown);
+	virtual THandle GetLastChild(const THandle& aHandle, TNodeType aType = ENt_Unknown);
+	virtual char *GetAttr(const THandle& aHandle, TNodeAttr aAttr) const;
+	virtual void  GetAttr(const THandle& aHandle, TNodeAttr aAttr, TInt& aVal) const;
+	virtual TBool AttrExists(const THandle& aHandle, TNodeAttr aAttr) const;
+	virtual THandle AddChild(const THandle& aParent, TNodeType aNode);
+	virtual THandle AddChild(const THandle& aParent, const THandle& aHandle, TBool aCopy = ETrue, TBool aRecursively = ETrue);
+	virtual THandle AddNext(const THandle& aPrev, const THandle& aHandle, TBool aCopy = ETrue);
+	virtual THandle AddNext(const THandle& aPrev, TNodeType aNode);
+	virtual THandle AddPrev(const THandle& aNext, const THandle& aHandle, TBool aCopy = ETrue);
+	virtual void RmChild(const THandle& aParent, const THandle& aChild, TBool aDeattachOnly = EFalse);
+	virtual void Rm(const THandle& aNode);
+	virtual void SetAttr(const THandle& aNode, TNodeAttr aType, const char* aVal);
+	virtual void SetAttr(const THandle& aHandle, TNodeAttr aAttr, TInt aVal);
+	virtual void RmAttr(const THandle& aNode, TNodeAttr aType);
+	virtual void Dump(const THandle& aNode, MLogRec* aLogRec);
+	virtual TBool ToString(const THandle& aNode, string& aString) const;
 	virtual void Save(const string& aFileName) const;
-	virtual void* Find(const void* aHandle, const string& aUri);
-	virtual TInt GetOrder(void* aHandle, TBool aTree = EFalse) const;
-	virtual void SetOrder(void* aHandle, TInt aOrder, TBool aTree = EFalse);
-	virtual void DeOrder(void* aHandle);
-	virtual TInt GetLineId(void* aHandle) const;
+	virtual THandle Find(const THandle& aHandle, const string& aUri);
+	virtual TInt GetOrder(const THandle& aHandle, TBool aTree = EFalse) const;
+	virtual void DeOrder(const THandle& aHandle);
+	virtual TInt GetLineId(const THandle& aHandle) const;
     public:
 	int GetAttrInt(void *aHandle, const char *aName);
-	void* SetFromFile(const string& aFileName);
-	void* Set(const string& aUri);
-	void* SetFromSpec(const string& aSpec);
-	void* Set(const void* aHandle);
+	THandle SetFromFile(const string& aFileName);
+	THandle Set(const string& aUri);
+	THandle SetFromSpec(const string& aSpec);
+	THandle Set(const THandle& aHandle);
 	xmlDoc* Doc() { return iDoc;};
 	static inline const char *Type() { return "ChromoMdlX";}; 
-	virtual void* Init(TNodeType aRootType);
+	virtual THandle Init(TNodeType aRootType);
 	void Reset();
     protected:
 	virtual MIface *DoGetObj(const char *aName) override { return NULL;}
-    private:
-	xmlElementPtr GetElementDecl(void* aHandle);
-	xmlElementContent* GetFirstEldeclSecCont(xmlElementPtr aElem);
-	xmlElementContent* FindEldeclSecCont(xmlNodePtr aParent, xmlNodePtr aNode);
-	xmlElementContent* GetNextEldeclSecCont(xmlElementContent* aContent);
-	xmlElementContent* GetPrevEldeclSecCont(xmlElementContent* aContent);
-	xmlNodePtr FindNodeEnterigPos(xmlNodePtr aParent, xmlNodePtr aNode);
     private:
 	xmlDoc *iDoc;	// XML document
 	TBool iDocOwned;
@@ -92,7 +79,7 @@ class ChromoX: public MChromo
 	virtual void Init(TNodeType aRootType);
 	virtual void Reset();
 	virtual void Save(const string& aFileName) const;
-	virtual ChromoNode CreateNode(void* aHandle);
+	virtual ChromoNode CreateNode(const THandle& aHandle);
 	virtual void ReduceToSelection(const ChromoNode& aSelNode);
     private:
 	ChromoMdlX iMdl;

@@ -34,6 +34,7 @@ map<TNodeType, string> KNodeTypesNames_Init()
     res[ENt_Change] = "change";
     res[ENt_Cont] = "cont";
     res[ENt_Import] = "import";
+    res[ENt_Seg] = "seg";
     return res;
 }
 
@@ -372,26 +373,26 @@ string ChromoNode::GetName(const string& aTname)
 
 ChromoNode::Iterator ChromoNode::Parent()
 {
-    void* parent = iMdl.Parent(iHandle);
-    return  (parent == NULL) ?  End() : Iterator(ChromoNode(iMdl, parent));
+    THandle parent = iMdl.Parent(iHandle);
+    return  (parent == THandle()) ?  End() : Iterator(ChromoNode(iMdl, parent));
 }
 
 ChromoNode::Iterator ChromoNode::Root()
 {
-    void* root = iMdl.Root(iHandle);
-    return  (root == NULL) ?  End() : Iterator(ChromoNode(iMdl, root));
+    THandle root = iMdl.Root(iHandle);
+    return  (root == THandle()) ?  End() : Iterator(ChromoNode(iMdl, root));
 }
 
 ChromoNode::Const_Iterator ChromoNode::Root() const 
 {
-    void* root = iMdl.Root(iHandle);
-    return  (root == NULL) ?  End() : Const_Iterator(ChromoNode(iMdl, root));
+    THandle root = iMdl.Root(iHandle);
+    return  (root == THandle()) ?  End() : Const_Iterator(ChromoNode(iMdl, root));
 }
 
 ChromoNode::Const_Iterator ChromoNode::Parent() const
 {
-    void* parent = iMdl.Parent(iHandle);
-    return  (parent == NULL) ?  End() : Const_Iterator(ChromoNode(iMdl, parent));
+    THandle parent = iMdl.Parent(iHandle);
+    return  (parent == THandle()) ?  End() : Const_Iterator(ChromoNode(iMdl, parent));
 }
 
 ChromoNode::Iterator ChromoNode::Find(TNodeType aType, const string& aName) 
@@ -457,22 +458,6 @@ ChromoNode::Iterator ChromoNode::FindNodeInMhUri(const GUri& aMhUri, const GUri:
 
 }
 
-TInt ChromoNode::GetLocalRank() const
-{
-    TInt res = -1;
-    TBool found = false;
-    ChromoNode prnt = *Parent();
-    if (prnt.iHandle != NULL) {
-	for (Iterator it = prnt.Begin(); it != prnt.End() && !found; it++, res++) {
-	    ChromoNode nit = *it;
-	    if (nit == *this) {
-		found = ETrue;
-	    }
-	}
-    }
-    return res;
-}
-
 TInt ChromoNode::GetLocalSize()
 {
     TInt res = 0;
@@ -500,7 +485,7 @@ TInt ChromoNode::Count() const
 
 ChromoNode ChromoNode::GetNodeByMhUri(const GUri& aUri)
 {
-    if (aUri.IsErr()) return ChromoNode();
+    if (aUri.IsErr()) return ChromoNode(iMdl, THandle());
     GUri::const_elem_iter it = aUri.Elems().begin();
     if (it != aUri.Elems().end()) {
 	if (it->name().empty()) {
@@ -581,7 +566,7 @@ ChromoNode ChromoNode::GetNodeByMhUri(const GUri& aUri, GUri::const_elem_iter& a
 
 ChromoNode ChromoNode::GetNode(const GUri& aUri)
 {
-    if (aUri.IsErr()) return ChromoNode();
+    if (aUri.IsErr()) return ChromoNode(iMdl, THandle());
     GUri::const_elem_iter it = aUri.Elems().begin();
     if (it != aUri.Elems().end()) {
 	if (it->name().empty()) {
@@ -681,7 +666,7 @@ ChromoNode::Iterator ChromoNode::GetChildOwning(const ChromoNode& aNode) const
 {
     ChromoNode res(aNode);
     ChromoNode prnt = *res.Parent();
-    while (prnt != *this && prnt != ChromoNode()) {
+    while (prnt != *this && prnt != ChromoNode(iMdl, THandle())) {
 	res = prnt;
     }
     return Iterator(res);

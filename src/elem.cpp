@@ -370,6 +370,9 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    if (rnotype == ENt_Node) {
 		AddElem(rno, aRunTime, aTrialMode, aCtx);
 	    }
+	    else if (rnotype == ENt_Seg) {
+		Mutate(rno, aRunTime, aCheckSafety, aTrialMode, aCtx);
+	    }
 	    else if (rnotype == ENt_Change) {
 		Pdstat(PEvents::DurStat_MutChange, true);
 		ChangeAttr(rno, aRunTime, aCheckSafety, aTrialMode, aCtx);
@@ -778,39 +781,6 @@ TBool Elem::IsAownerOf(const MUnit* aElem) const
     return aowner == this;
 }
 
-// Using combined model/chromo calculation, ref ds_daa_chrc_va
-void Elem::GetRank(Rank& aRank, const ChromoNode& aMut) const
-{
-    const MUnit* catt = GetAttachedMgr();
-    MUnit* att = const_cast<MUnit*>(catt);
-    MElem* eatt = att->GetObj(eatt);
-    if (att == this) {
-	// Get models node rank first
-	GetRank(aRank);
-	if (aMut != Chromos().Root()) {
-	    // Add mutations rank
-	    TInt lr = aMut.GetLocalRank();
-	    aRank.push_back(lr);
-	}
-    } else if (att != NULL) {
-	eatt->GetRank(aRank);
-    } else {
-	aRank.push_back(-1);
-    }
-}
-
-void Elem::GetCompRank(Rank& aRank, const MUnit* aComp) const
-{
-    TInt lrank = GetCompLrank(aComp);
-    if (lrank > -1)  {
-	aRank.insert(aRank.begin(), lrank);
-    }
-    if (iMan != NULL) {
-	MElem* eowner = iMan->GetObj(eowner);
-	eowner->GetCompRank(aRank, this);
-    }
-}
-
 TInt Elem::GetCompLrank(const MUnit* aComp) const
 {
     TInt res = -1;
@@ -874,25 +844,6 @@ const MUnit* Elem::GetCompAowner(const MUnit* aComp) const
 	}
     } else {
 	res = this;
-    }
-    return res;
-}
-
-// Using only attached nodes to make model and chromo rank equivalent, ref ds_daa_chrc_va
-void Elem::GetRank(Rank& aRank) const
-{
-    if (iMan != NULL) {
-	MElem* eowner = iMan->GetObj(eowner);
-	eowner->GetCompRank(aRank, this);
-    }
-}
-
-TInt Elem::GetLocalRank() const
-{
-    TInt res = -1;
-    if (iMan != NULL) {
-	res = 0;
-	for (TInt ci = 0; ci < iMan->CompsCount() && iMan->GetComp(ci) != this; ci++, res++);
     }
     return res;
 }

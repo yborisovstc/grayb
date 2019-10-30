@@ -16,12 +16,12 @@ libgrayb_la_SOURCES = \
 		       imports.h \
 		       chromo.cpp \
 		       chromo.h \
+		       chromo2.cpp \
+		       chromo2.h \
 		       chromox.cpp \
 		       chromox.h \
 		       mchromo.h \
 		       mchromo2.h \
-		       chromo2.h \
-		       chromo2.cpp \
 		       mlog.h \
 		       log.cpp \
 		       log.h \
