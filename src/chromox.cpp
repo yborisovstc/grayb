@@ -189,7 +189,8 @@ THandle ChromoMdlX::Root(const THandle& aHandle)
 
 THandle ChromoMdlX::Parent(const THandle& aHandle)
 {
-    xmlNodePtr parent = aHandle.Data<xmlNodePtr>()->parent;
+    xmlNodePtr node = aHandle.Data<xmlNodePtr>();
+    xmlNodePtr parent = node->parent;
     return (parent != NULL && parent->type == XML_ELEMENT_NODE) ? THandle(parent) : THandle();
 }
 

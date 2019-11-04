@@ -33,6 +33,7 @@ enum TNodeAttr
     ENa_Inactive = 13, // Sign of mutations being inactive, optimized out for instance
     ENa_Targ = 14, // Target node of mutation, is used in OSM mode, ref ds_mut_osm
     ENa_Comp = 15, // Component to be changed, for comps related muts only, is used in OSM mode, ref ds_mut_osm
+    ENa_NS = 16,    //!< Name space
 };
 
 /** @brief Handle of Chromo model node

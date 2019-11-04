@@ -34,6 +34,7 @@
     ord CDATA #IMPLIED
     tord CDATA #IMPLIED
     na CDATA #IMPLIED
+    ns CDATA #IMPLIED
 >
 
 <!ATTLIST seg 
@@ -42,6 +43,7 @@
     ord CDATA #IMPLIED
     tord CDATA #IMPLIED
     na CDATA #IMPLIED
+    ns CDATA #IMPLIED
 >
 
 

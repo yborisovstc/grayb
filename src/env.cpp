@@ -490,7 +490,10 @@ void Env::ConstructSystem()
 	    long int beg_us = tp.tv_sec * 1000000 + tp.tv_usec;
 	    Logger()->Write(EInfo, iRoot, "Started of creating system, spec [%s]", iSpecFile.c_str());
 	    eroot->SetMutation(root);
-	    eroot->Mutate(EFalse, EFalse, EFalse, iRoot);
+	    TNs ns;
+	    MutCtx mc(iRoot, ns);
+	    //eroot->Mutate(EFalse, EFalse, EFalse, MutCtx(iRoot));
+	    eroot->Mutate(EFalse, EFalse, EFalse, mc);
 	    Pclock(PEvents::Env_End_Constr, iRoot);
 	    gettimeofday(&tp, NULL);
 	    long int fin_us = tp.tv_sec * 1000000 + tp.tv_usec;

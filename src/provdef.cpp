@@ -94,6 +94,6 @@ const string& ProvDef::ModulesPath() const
 
 MChromo* ProvDef::CreateChromo()
 {
-//    return new Chromo2();
-    return new ChromoX();
+    return new Chromo2();
+//    return new ChromoX();
 }

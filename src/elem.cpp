@@ -11,7 +11,6 @@
 #include "ifu.h"
 #include "profiler_events.h"
 
-
 TBool Elem::EN_MUT_LIM = ETrue;
 
 const string Elem::KCont_About = "About";
@@ -257,10 +256,11 @@ TBool Elem::AppendMutation(const string& aFileName)
     return res;
 }
 
-void Elem::Mutate(TBool aRunTimeOnly, TBool aCheckSafety, TBool aTrialMode, const MUnit* aCtx)
+void Elem::Mutate(TBool aRunTimeOnly, TBool aCheckSafety, TBool aTrialMode, const MutCtx& aCtx)
 {
     ChromoNode& root = iMut->Root();
-    DoMutation(root, aRunTimeOnly, aCheckSafety, aTrialMode, aCtx == NULL ? this: aCtx);
+    MutCtx mctx(aCtx.mUnit == NULL ? this : aCtx.mUnit, aCtx.mNs);
+    DoMutation(root, aRunTimeOnly, aCheckSafety, aTrialMode, mctx);
     // Clear mutation
     for (ChromoNode::Iterator mit = root.Begin(); mit != root.End();)
     {
@@ -270,12 +270,13 @@ void Elem::Mutate(TBool aRunTimeOnly, TBool aCheckSafety, TBool aTrialMode, cons
     }
 }
 
-void Elem::Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly, TBool aCheckSafety, TBool aTrialMode, const MUnit* aCtx)
+void Elem::Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly, TBool aCheckSafety, TBool aTrialMode, const MutCtx& aCtx)
 {
-    DoMutation(aMutsRoot, aRunTimeOnly, aCheckSafety, aTrialMode, aCtx == NULL ? this: aCtx);
+    MutCtx mctx(aCtx.mUnit == NULL ? this : aCtx.mUnit, aCtx.mNs);
+    DoMutation(aMutsRoot, aRunTimeOnly, aCheckSafety, aTrialMode, mctx);
 }
 
-void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MUnit* aCtx)
+void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MutCtx& aCtx)
 {
     const ChromoNode& mroot = aMutSpec;
     if (mroot.Begin() == mroot.End()) return;
@@ -289,6 +290,9 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	lim = iEnv->ChMgr()->GetLim();
 	isattached = IsChromoAttached();
     }
+    // TODO No need to update root ns. Root mutation is not deleted. To analyze if this is correct
+    //TNs root_ns = aCtx.mNs;
+    //UpdateNs(root_ns, sroot);
     for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End(); rit++, order++)
     {
 	Pdstat(PEvents::DurStat_TransfOsm, true);
@@ -300,6 +304,8 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    }
 	    continue;
 	}
+	TNs ns = aCtx.mNs;
+	UpdateNs(ns, rno);
 	Logger()->SetContextMutId(rno.LineId());
 	if (EN_MUT_LIM && this == GetRoot()) {
 	    // Avoiding mutations above limit. Taking into account only attached chromos.
@@ -359,7 +365,8 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		//ftarg->AppendMutation(madd);
 		// Redirect the mut to target: no run-time to keep the mut in internal nodes
 		// Propagate till target owning comp if run-time to keep hidden all muts from parent 
-		eftarg->Mutate(EFalse, aCheckSafety, aTrialMode, aRunTime ? GetCompOwning(ftarg) : aCtx);
+		MutCtx mctx(aRunTime ? GetCompOwning(ftarg) : aCtx.mUnit, ns);
+		eftarg->Mutate(EFalse, aCheckSafety, aTrialMode, mctx);
 		//ftarg->Mutate(aRunTime, aCheckSafety, aTrialMode, aRunTime ? GetCompOwning(ftarg) : aCtx);
 	    } else {
 		Logger()->Write(EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_Targ).c_str());
@@ -401,7 +408,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 }
 
 
-void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MUnit* aCtx)
+void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MutCtx& aCtx)
 {
     __ASSERT(!aSpec.AttrExists(ENa_Comp));
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
@@ -457,7 +464,7 @@ TBool Elem::ChangeAttr(TNodeAttr aAttr, const string& aVal)
     return res;
 }
 
-TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MUnit* aCtx)
+TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MutCtx& aCtx)
 {
     //__ASSERT(!aSpec.AttrExists(ENa_MutNode));
     __ASSERT(!aSpec.AttrExists(ENa_Comp));
@@ -535,13 +542,15 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
     return res;
 }
 
-MUnit* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, const MUnit* aCtx)
+MUnit* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, const MutCtx& aCtx)
 {
     //__ASSERT(!aNode.AttrExists(ENa_MutNode));
     __ASSERT(!aNode.AttrExists(ENa_Comp));
     string snode = aNode.Attr(ENa_MutNode);
     string sparent = aNode.Attr(ENa_Parent);
     string sname = aNode.Name();
+    TNs ns = aCtx.mNs;
+    UpdateNs(ns, aNode);
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
     TBool erepos = iEnv->ChMgr()->EnableReposMuts();
     TBool ecsaf = iEnv->ChMgr()->EnableCheckSafety();
@@ -568,7 +577,8 @@ MUnit* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 	    TBool ext_parent = ETrue;
 	    if (prnturi.Scheme().empty()) {
 		// Local parent
-		parent = GetNode(prnturi);
+		//parent = GetNode(prnturi);
+		parent = GetNodeByName(prnturi, ns);
 		if (parent == NULL) {
 		    // Probably external node not imported yet - ask env for resolving uri
 		    GUri pruri(prnturi);
@@ -604,6 +614,9 @@ MUnit* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 			hroot.SetAttr(ENa_Parent, sparent);
 			if (!snode.empty()) {
 			    hroot.SetAttr(ENa_MutNode, snode);
+			}
+			if (!aNode.Attr(ENa_NS).empty()) {
+			    hroot.SetAttr(ENa_NS, aNode.Attr(ENa_NS));
 			}
 			// Heir has been created, now we can establish solid two-ways relations, ref. ds_daa_hunv
 			//
@@ -860,7 +873,7 @@ MUnit* Elem::GetInhRoot() const
 
 }
 
-TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MUnit* aCtx)
+TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MutCtx& aCtx)
 {
     TBool res = EFalse;
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
@@ -1384,13 +1397,13 @@ void Elem::DumpChilds() const
     }
 }
 
-void Elem::NotifyNodeMutated(const ChromoNode& aMut, const MUnit* aCtx)
+void Elem::NotifyNodeMutated(const ChromoNode& aMut, const MutCtx& aCtx)
 {
     Pdstat(PEvents::DurStat_NotifNodeMutated, true);
     if (this != GetRoot()) {
 	MUnit* owner = GetMan();
 	MElem* eowner = owner == NULL ? NULL : owner->GetObj(eowner);
-	if (aCtx != NULL && (aCtx == owner || aCtx->IsComp(owner)) || eowner->IsCompAttached(this)) {
+	if (aCtx.mUnit != NULL && (aCtx.mUnit == owner || aCtx.mUnit->IsComp(owner)) || eowner->IsCompAttached(this)) {
 	    eowner->OnNodeMutated(this, aMut, aCtx);
 	    iEnv->Observer()->OnCompMutated(this);
 	}
@@ -1401,7 +1414,7 @@ void Elem::NotifyNodeMutated(const ChromoNode& aMut, const MUnit* aCtx)
     Pdstat(PEvents::DurStat_NotifNodeMutated, false);
 }
 
-void Elem::OnNodeMutated(const MUnit* aNode, const TMut& aMut, const MUnit* aCtx)
+void Elem::OnNodeMutated(const MUnit* aNode, const TMut& aMut, const MutCtx& aCtx)
 {
     MUnit* root = GetRoot();
     // Copy mutation to the chromo in case of root or first non-attached owner in he owners chain
@@ -1418,7 +1431,7 @@ void Elem::OnNodeMutated(const MUnit* aNode, const TMut& aMut, const MUnit* aCtx
 	// i.e to the owner if owner is attaching owner or is under mutated node attaching owner
 	MUnit* owner = GetMan();
 	MElem* eowner = owner == NULL ? NULL : owner->GetObj(eowner);
-	if (aCtx != NULL && (aCtx == owner || aCtx->IsComp(owner)) || eowner->IsCompAttached(this)) {
+	if (aCtx.mUnit != NULL && (aCtx.mUnit == owner || aCtx.mUnit->IsComp(owner)) || eowner->IsCompAttached(this)) {
 	    eowner->OnNodeMutated(aNode, aMut, aCtx);
 	}
 	if (HasChilds()) {
@@ -1492,3 +1505,81 @@ void Elem::AppendMutation(const TMut& aMut)
 {
     ChromoNode mut = iMut->Root().AddChild(aMut);
 }
+
+bool Elem::IsName(const string& aUri)
+{
+    char fc = aUri.at(0);
+    return isalpha(fc) || (fc == '_');
+}
+
+/*
+void Elem::GetNs(TNs& aNs, const ChromoNode& aCnode)
+{
+    if (aCnode.AttrExists(ENa_NS)) {
+	string ns = aCnode.Attr(ENa_NS);
+	MUnit* nsu = GetNode(ns);
+	if (nsu == NULL) {
+	    Log(TLog(EErr, this) + "Cannot find namespace [" + ns + "]");
+	} else {
+	    aNs.push_back(nsu);
+	}
+    }
+    ChromoNode owner = *(aCnode.Parent());
+    if (owner != ChromoNode()) {
+	GetNs(aNs, owner);
+    }
+}
+*/
+
+void Elem::UpdateNs(TNs& aNs, const ChromoNode& aCnode)
+{
+    if (aCnode.AttrExists(ENa_NS)) {
+	string ns = aCnode.Attr(ENa_NS);
+	MUnit* nsu = GetNode(ns);
+	if (nsu == NULL) {
+	    Log(TLog(EErr, this) + "Cannot find namespace [" + ns + "]");
+	} else {
+	    aNs.push_back(nsu);
+	}
+    }
+}
+
+void Elem::DumpCnode(const ChromoNode& aNode) const
+{
+    aNode.Dump(iEnv->Logger());
+}
+
+MUnit* Elem::GetNodeByName(const string& aName, const TNs& aNs)
+{
+    MUnit *res = NULL, *node = NULL, *rns = NULL;
+    bool isConflict = false;
+    string uri = IsName(aName) ? string("./") + aName : aName;
+    // Resolving name in current context first
+    res = GetNode(uri);
+    // Then in namespaces
+    for (auto ns : aNs) {
+	node = ns->GetNode(uri);
+	if (res == NULL) {
+	    res = node;
+	    rns = ns;
+	} else if (node != NULL) {
+	    isConflict = true;
+	    res = NULL;
+	    Log(TLog(EErr, this) + "Name [" + aName + "] resolution conflict: " + rns->GetUri(NULL, true)  + " vs " + ns->GetUri(NULL, true));
+	    break;
+	}
+    }
+    if (!isConflict && IsName(aName)) {
+	// And finally in natives
+	node = GetNode(aName);
+	if (res == NULL) {
+	    res = node;
+	} else if (node != NULL) {
+	    isConflict = true;
+	    Log(TLog(EErr, this) + "Name [" + aName + "] resolution conflict: " + rns->GetUri(NULL, true)  + " vs native agents");
+	    res = NULL;
+	}
+    }
+    return res;
+}
+

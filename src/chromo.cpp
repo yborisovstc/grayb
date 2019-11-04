@@ -22,6 +22,7 @@ map<TNodeAttr, string> KNodeAttrsNames_Init()
     res[ENa_Inactive] = "na";
     res[ENa_Targ] = "targ";
     res[ENa_Comp] = "comp";
+    res[ENa_NS] = "ns";
     return res;
 }
 

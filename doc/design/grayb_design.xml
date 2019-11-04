@@ -3753,7 +3753,7 @@
 		</simpara>
 	    </sect3>
 	    <sect3><title>Analysis</title>
-		<simpara>The root-cause of the project is that we try to use to treate the temporary node as the regular node. But temp node is not identified.
+		<simpara>The root-cause of the problem is that we try to use to treate the temporary node as the regular node. But temp node is not identified.
 		    Without initial identification we cannot even attach the node in distributed model because it can be that the temp node from one part of
 		    distributed model is to be attached to the node from anoter part - this required "long" request using node UID.</simpara>
 		<simpara>So, we need to support temp nodes in procedure like getting nodes etc. Impotrant use-case is getting node that is comp of temp node.
@@ -3878,7 +3878,7 @@
 	    <itemizedlist>
 		<listitem>custom mutations for scecific agents, for instance Syst agent can have mutation of connecting two components.  </listitem>
 		<listitem>blocks of mutations (embedded chromp) that are assosiated with specificied context</listitem>
-		<listitem>dependent mutations (mutations chain)</listitem>
+		<listitem>anonymous agents, dependent mutations (mutations chain)</listitem>
 	    </itemizedlist>
 	</sect2>
 	<sect2 id="ds_chr2_ol"><title>Outline</title>
@@ -3917,7 +3917,7 @@
 		    <simpara>Context can be defined both for single mutation and the chromo.</simpara>
 		    <simpara>The chromo (blocks of mutation) makes sense only with context: the block is just group of mutation with same context.</simpara>
 		</listitem>
-		<listitem><glossentry id="ds_chr2_5"><glossterm>#5 Dependent mutations (mutations chain)</glossterm></glossentry>
+		<listitem><glossentry id="ds_chr2_5"><glossterm>#5 Anonymous agents. Dependent mutations (mutations chain)</glossterm></glossentry>
 		    <simpara>Ref <xref linkend="ds_chr2_scs"/> for example of such mutations: </simpara>
 		    <programlisting>
 			|   Incr ~ Add : (Inp ~ Incr; Inp ~ Delta : Statec {About = "Consant - incrementor step"; Value = "SI 1"});
@@ -3939,11 +3939,26 @@
 	    <simpara>Where '=' is the relation "content - value'</simpara>
 	    <simpara>So the idea is to not to use specific action semantic for mutation but establishing specific relation.</simpara>
 	</sect2>
-	<sect2><title>Namespaces</title>
+	<sect2 id="ds_chr2_ns"><title>Namespaces</title>
 	    <simpara>Using namespaces can radically reduce notation for URIs.</simpara>
 	    <simpara>One wariant of syntax is like '# "/Modules/DesComps/"' where relation symbol '#' means relation 'node to namespaces', i.e this
 		mutation adds node "/Modules/DesComps/" to the set of anonimous namespaces.</simpara>
 	    <simpara>What about named namespaces?</simpara>
+	    <sect3 id="ds_chr2_ns_ns"><title>Names syntax</title>
+		<simpara>It was assumed that namespace defines system node that will be treated as owner of name. In this case name should be namespace node components URI.
+		    This approach is straitforward but not convenient. The name syntax in that case will be "./component_name". It would be simpler to have just "component_name".
+		    This notation is reserved currently for native agents. Is it possible to modify the syntax?</simpara>
+		<sect4><title>Approach#1 is to consider native agents URI as agents name with special namespace - native agents namespace.</title>
+		    <simpara> This approach is simple, it's pro. Con is that 
+			the probability of names clashes increases because of implicit native agents namespace. So we need to check also native agents when resolving name.</simpara>
+		</sect4>
+		<sect4><title>Approach#2 Change URI syntax</title>
+		    <simpara>The idea is to change URI syntax for component from "./comp_name" to just "comp_name". Currently this syntax is used for native agents, so In that case
+			we need also to change native agent syntax using for instance specific relation symbol like "~native_agent_name". This approach simplifies resolving names - 
+			no need to check native agents.</simpara>
+		    <simpara>Provlem with that approach is that is breakes compatibility with current chromos specs.</simpara>
+		</sect4>
+	    </sect3>
 	</sect2>
 	<sect2 id="ds_chr2_scs"><title>Sketch of chromo syntax</title>
 	    <simpara>Let's outline the base concepts by short sketch - chromo of simple DES with just one state-incrementor:</simpara>
@@ -4000,8 +4015,8 @@
 		chromo = [context, separator, ":", separator] '{', separator,  chromo_unit , { separator, chromo_unit }, separator, '}';
 		context = context_unit { separator, context_unit };
 		chromo_node = mutation | chromo;
-	#	mutation = elem_p, mutation_id, elem_q;
-	        mutation = creation | assosiation | content_change | import | mut_extensions;
+		#	mutation = elem_p, mutation_id, elem_q;
+		mutation = creation | assosiation | content_change | import | mut_extensions;
 
 		context = mutation_focus | change_focus | partial_mutation_context | context_extensions;
 		mutation_focus = mutation_target, separator, "&lt;";
@@ -4017,8 +4032,8 @@
 		chromo = chromo_node { separator, chromo_node };
 		chromo_node = [context, separator, ":", separator]  ( mutation | ('{', separator, chromo, separator, '}') );
 		context = context_unit { separator, context_unit };
-	#	mutation = elem_p, mutation_id, elem_q;
-	        mutation = creation | assosiation | content_change | import | mut_extensions;
+		#	mutation = elem_p, mutation_id, elem_q;
+		mutation = creation | assosiation | content_change | import | mut_extensions;
 
 		context_unit = mutation_focus | change_focus | partial_mutation_context | context_extensions;
 		mutation_focus = mutation_target, separator, "&lt;";
@@ -4034,27 +4049,47 @@
 		chromo = chromo_node { separator, chromo_node };
 		chromo_node = [context, separator, ":", separator]  chromo;
 		context = context_unit { separator, context_unit };
-	#	mutation = elem_p, mutation_id, elem_q;
-	        mutation = creation | assosiation | content_change | import | mut_extensions;
+		#	mutation = elem_p, mutation_id, elem_q;
+		mutation = creation | assosiation | content_change | import | mut_extensions;
 
 		context_unit = mutation_focus | change_focus | partial_mutation_context | context_extensions;
 		mutation_focus = mutation_target, separator, "&lt;";
 		change_focus = change_target, separator, "&lt;|";
 		partial_mutation_context = "(", partial_mutation, "), separator, "&gt;";
 	    </programlisting>
-
 	</sect2>
 	<sect2><title>Notes</title>
 	    <itemizedlist>
 		<listitem>Chromosome consists of single node for root agent. This root agent is created by environment and has predefined name "Root". So the chromo looks like:
 		    <programlisting>
 			Root &lt; : {
-			 root chromo node #1
-			 ...
+			root chromo node #1
+			...
 			|
 		    </programlisting>
 		</listitem>
 	    </itemizedlist>
+	</sect2>
+	<sect2 id="ds_chr2_pcc"><title>How to pass upper-layer context?</title>
+	    <sect3><title>Intro</title>
+		<simpara>Chromo v2 supports mutation context, target, name spaces etc. Let's call this context "local context". But there is context from upper layer
+		    chromos. How can it be passed to the local mutation execution? The problem is that currently the only local mutation is available for execution.  </simpara>
+		</sect3>
+		<sect3><title>Solution#1 To reuse Mutate method aCtx argument.</title>
+		</sect3>
+	</sect2>
+	<sect2><title>Anonymous agents. Dependent mutations (mutations chain)</title>
+	    <sect3><title>Intro</title>
+		<simpara>Very often we don't need to state name for agent. The example of this case is transition functions in DES: we only need to create
+		    some elementary function from given parent and connect the function to another function in the tree. The naming of the agents just complicates
+		    the chromo. We can use anonymous agents in that case. Some chromo features are required for that:</simpara>
+		<itemizedlist>
+		    <listitem>It should be possible to add the anonymous agent to namespace of segment - this allows to get access to agents components
+			(inputs for instance) withous explicitly stating agents name in componentns URIs.</listitem>
+		    <listitem>Mutations can accept anonymous agent creation mutation instead of explicit URI to the agent.</listitem>
+		</itemizedlist>
+		<simpara>These features causes to the mutation chain when specifying the connected agents.</simpara>
+	    </sect3>
 	</sect2>
 	<sect2><title>Design spots</title>
 	    <sect2><title>Cumulative context</title>
