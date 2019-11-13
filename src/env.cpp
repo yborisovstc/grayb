@@ -17,7 +17,7 @@
 const string KLogFileName = "faplog.txt";
 const char* KRootName = "Root";
 // TODO [YB] to get from build env
-const string ImportsMgr::KDefImportPath = "/usr/share/grayb/modules";
+const string ImportsMgr::KDefImportPath = "/usr/share/grayb/modules_c2";
 const string ImportsMgr::KImportsContainerUri = "./Modules";
 
 Env::EIfu Env::mIfu;

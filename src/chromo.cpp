@@ -318,6 +318,7 @@ ChromoNode& ChromoNode::operator=(const ChromoNode& aNode)
 {
     // TODO [YB] Wrong to assign model because its base is not assignable (Base). To redesign.
 //    iMdl = aNode.iMdl; iHandle = aNode.iHandle;
+    __ASSERT(&iMdl == &aNode.iMdl);
     iHandle = aNode.iHandle;
     return *this;
 }
@@ -334,22 +335,26 @@ TBool ChromoNode::operator==(const ChromoNode& aNode) const
 
 const string ChromoNode::Attr(TNodeAttr aAttr)
 {
-    char* sattr = iMdl.GetAttr(iHandle, aAttr); 
+    return  iMdl.GetAttr(iHandle, aAttr); 
+    /*
     string res; 
     if (sattr != NULL)
 	res.assign(sattr);
     free(sattr); 
     return res; 
+    */
 };
 
 const string ChromoNode::Attr(TNodeAttr aAttr) const
 {
-    char* sattr = iMdl.GetAttr(iHandle, aAttr); 
+    return iMdl.GetAttr(iHandle, aAttr); 
+    /*
     string res; 
     if (sattr != NULL)
 	res.assign(sattr);
     free(sattr); 
     return res; 
+    */
 };
 
 TInt ChromoNode::AttrInt(TNodeAttr aAttr) const 

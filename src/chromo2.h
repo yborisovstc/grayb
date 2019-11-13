@@ -73,14 +73,13 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	virtual ~Chromo2Mdl();
 	// From MChromoMdl
 	virtual TNodeType GetType(const THandle& aHandle);
-	virtual TNodeType GetType(const string& aId);
 	virtual THandle Root(const THandle& aHandle);
 	virtual THandle Parent(const THandle& aHandle);
 	virtual THandle Next(const THandle& aHandle, TNodeType aType = ENt_Unknown);
 	virtual THandle Prev(const THandle& aHandle, TNodeType aType = ENt_Unknown);
 	virtual THandle GetFirstChild(const THandle& aHandle, TNodeType aType = ENt_Unknown);
 	virtual THandle GetLastChild(const THandle& aHandle, TNodeType aType = ENt_Unknown);
-	virtual char* GetAttr(const THandle& aHandle, TNodeAttr aAttr) const;
+	virtual string GetAttr(const THandle& aHandle, TNodeAttr aAttr) const;
 	virtual void  GetAttr(const THandle& aNode, TNodeAttr aType, TInt& aVal) const;
 	virtual TBool AttrExists(const THandle& aHandle, TNodeAttr aAttr) const ;
 	virtual THandle AddChild(const THandle& aParent, TNodeType aType);
@@ -108,22 +107,42 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	THandle Set(const THandle& aHandle);
 	virtual THandle Init(TNodeType aRootType);
 	void Reset();
+	const CError& Error() const { return mErr;};
     protected:
 	// Helpers
 	C2MdlNode CreateNodeMut(const THandle& aHandle, const C2MdlNode& aOwner, TNodeType aR, TNodeAttr aP, TNodeAttr aQ);
 	C2MdlNode CreateNodeChr(const THandle& aHandle, const C2MdlNode& aOwner);
+	/** @brief Parses chromo spec
+	 * */
+	void ParseChromo(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode);
+	/** @brief Parses mutation
+	 * */
+	void ParseCnodeMut(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode);
+	/** @brief Parses chromo node
+	 * */
+	void ParseCnodeChromo(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode);
 	/** @brief Processes X model node and transform it to the model nodes
 	 * */
 	void HandleXNode(const THandle& aHandle, C2MdlNode& aOwner);
-	/** @brief Processes X model node attrs and transform it to the model node context
-	 * */
+	/** @brief Processes X model node attrs and transform it to the model node context */
 	void HandleXNodeCtx(C2MdlNode& aMdlNode, const THandle& aHandle);
+	/** @brief Sets error */
+	void SetErr(streampos);
+    protected:
+	/** @brief Dumps content of input stream fragment
+	 * */
+	static void DumpIsFrag(istream& aIs, streampos aStart, streampos aEnd);
+	/** @brief Dumps model node
+	 * */
+	void DumpMnode(const C2MdlNode& aNode, int aLevel) const;
     protected:
 	// From Base
 	virtual MIface *DoGetObj(const char *aName) override { return NULL;}
     protected:
 	ChromoMdlX *mMdlX;	/*!< Model XML document */
 	C2MdlNode mRoot;
+	vector<string> mLex;   //!< Lexems
+	CError mErr;           //!< Error data
 };
 
 /** @brief Chromo2
@@ -149,6 +168,8 @@ class Chromo2: public MChromo
 	virtual void Save(const string& aFileName) const;
 	virtual ChromoNode CreateNode(const THandle& aHandle);
 	virtual void ReduceToSelection(const ChromoNode& aSelNode);
+	virtual bool IsError() const;
+	virtual const CError& Error() const;
 
     protected:
 	Chromo2Mdl mMdl;

@@ -132,11 +132,6 @@ THandle ChromoMdlX::Set(const THandle& aHandle)
     return THandle(node);
 }
 
-TNodeType ChromoMdlX::GetType(const string& aId)
-{
-    return TMut::NodeType(aId);
-}
-
 TNodeType ChromoMdlX::GetType(const THandle& aHandle)
 {
     TNodeType res = ENt_Unknown;
@@ -223,12 +218,16 @@ THandle ChromoMdlX::Prev(const THandle& aHandle, TNodeType aType)
     return res;
 }
 
-char *ChromoMdlX::GetAttr(const THandle& aHandle, TNodeAttr aAttr) const
+string ChromoMdlX::GetAttr(const THandle& aHandle, TNodeAttr aAttr) const
 {
     __ASSERT(aHandle != THandle());
     xmlNodePtr node = aHandle.Data(node);
     xmlChar *attr = xmlGetProp(node, (const xmlChar *) TMut::NodeAttrName(aAttr).c_str());
-    return (char *) attr;
+    string res;
+    if (attr != NULL)
+	res.assign((char*) attr);
+    free(attr); 
+    return res;
 }
 
 void ChromoMdlX::GetAttr(const THandle& aHandle, TNodeAttr aAttr, TInt& aVal) const

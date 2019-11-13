@@ -13,14 +13,16 @@
 class Ut_chromo2 : public CPPUNIT_NS::TestFixture
 {
     CPPUNIT_TEST_SUITE(Ut_chromo2);
+//    CPPUNIT_TEST(test_Chr1);
     CPPUNIT_TEST(test_Cre1);
-    CPPUNIT_TEST(test_Seg);
-    CPPUNIT_TEST(test_Ns);
+   // CPPUNIT_TEST(test_Seg);
+   // CPPUNIT_TEST(test_Ns);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
     virtual void tearDown();
 private:
+    void test_Chr1();
     void test_Cre1();
     void test_Seg();
     void test_Ns();
@@ -41,12 +43,37 @@ void Ut_chromo2::tearDown()
     CPPUNIT_ASSERT_EQUAL_MESSAGE("tearDown", 0, 0);
 }
 
-void Ut_chromo2::test_Cre1()
+void Ut_chromo2::test_Chr1()
 {
     printf("\n === Test of Chromo2 creation\n");
     Chromo2 chr;
-    chr.SetFromFile("ut_cre_1.xml");
+    chr.SetFromFile("ut_chr2_1.chs");
+    if (chr.IsError()) {
+	cout << "Pos: " << chr.Error().mPos << " -- " << chr.Error().mText << endl;
+    }
+    CPPUNIT_ASSERT_MESSAGE("Chromo parsing error", !chr.IsError());
     ChromoNode croot = chr.Root();
+    CPPUNIT_ASSERT_MESSAGE("Chromo root is empty", croot != ChromoNode());
+    ChromoNode::Iterator beg = croot.Begin();
+    ChromoNode cmp1 = *beg;
+    CPPUNIT_ASSERT_MESSAGE("Chromo root comp1 is empty", cmp1 != ChromoNode());
+    TNodeType cmp1t = cmp1.Type();
+    CPPUNIT_ASSERT_MESSAGE("Wront type of root comp1", cmp1t == ENt_Node);
+    //int cn = croot.Count();
+    //CPPUNIT_ASSERT_MESSAGE("Wrong root node comps number", cn == 2);
+    
+}
+
+void Ut_chromo2::test_Cre1()
+{
+    printf("\n === Test of extended chromo: creating simple model\n");
+
+    iEnv = new Env("ut_chr2_cre1.chs", "ut_chr2_cre1.log");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
 }
 
 void Ut_chromo2::test_Seg()

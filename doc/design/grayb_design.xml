@@ -4024,13 +4024,13 @@
 		partial_mutation_context = "(", partial_mutation, "), separator, "&gt;";
 	    </programlisting>
 
-	    <simpara>Variant #2 Chromo-centric</simpara>
+	    <simpara>Variant #2 Chromo-centric - current variant</simpara>
 	    <programlisting>
 		white_space = ' ';
 		end_of_line = ;
 		separator = white_space | end_of_line;
 		chromo = chromo_node { separator, chromo_node };
-		chromo_node = [context, separator, ":", separator]  ( mutation | ('{', separator, chromo, separator, '}') );
+		chromo_node = [context, separator, ":", separator]  ( (mutation, ';') | ('{', [separator], chromo, [separator], '}') );
 		context = context_unit { separator, context_unit };
 		#	mutation = elem_p, mutation_id, elem_q;
 		mutation = creation | assosiation | content_change | import | mut_extensions;
@@ -4043,19 +4043,19 @@
 
 	    <simpara>Variant #3 (not completed)</simpara>
 	    <programlisting>
-		white_space = ' ';
-		end_of_line = ;
-		separator = white_space | end_of_line;
-		chromo = chromo_node { separator, chromo_node };
-		chromo_node = [context, separator, ":", separator]  chromo;
+		chromo = chromo_node { node_separator, chromo_node };
+		chromo_node = [context, separator, ":", separator]  ( (mutation, ';') | ('{', [separator], chromo, [separator], '}') );
 		context = context_unit { separator, context_unit };
-		#	mutation = elem_p, mutation_id, elem_q;
 		mutation = creation | assosiation | content_change | import | mut_extensions;
-
 		context_unit = mutation_focus | change_focus | partial_mutation_context | context_extensions;
 		mutation_focus = mutation_target, separator, "&lt;";
 		change_focus = change_target, separator, "&lt;|";
 		partial_mutation_context = "(", partial_mutation, "), separator, "&gt;";
+		separator = white_space | end_of_line;
+		white_space = ' ';
+		end_of_line = ;
+		#	mutation = elem_p, mutation_id, elem_q;
+
 	    </programlisting>
 	</sect2>
 	<sect2><title>Notes</title>

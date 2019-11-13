@@ -13,7 +13,6 @@ class ChromoMdlX: public Base, public MChromoMdl
 	ChromoMdlX();
 	virtual ~ChromoMdlX();
     public:
-	virtual TNodeType GetType(const string& aId);
 	virtual TNodeType GetType(const THandle& aHandle);
 	virtual THandle Root(const THandle& aHandle);
 	virtual THandle Parent(const THandle& aHandle);
@@ -21,7 +20,7 @@ class ChromoMdlX: public Base, public MChromoMdl
 	virtual THandle Prev(const THandle& aHandle, TNodeType aType = ENt_Unknown);
 	virtual THandle GetFirstChild(const THandle& aHandle, TNodeType aType = ENt_Unknown);
 	virtual THandle GetLastChild(const THandle& aHandle, TNodeType aType = ENt_Unknown);
-	virtual char *GetAttr(const THandle& aHandle, TNodeAttr aAttr) const;
+	virtual string GetAttr(const THandle& aHandle, TNodeAttr aAttr) const;
 	virtual void  GetAttr(const THandle& aHandle, TNodeAttr aAttr, TInt& aVal) const;
 	virtual TBool AttrExists(const THandle& aHandle, TNodeAttr aAttr) const;
 	virtual THandle AddChild(const THandle& aParent, TNodeType aNode);
@@ -81,9 +80,11 @@ class ChromoX: public MChromo
 	virtual void Save(const string& aFileName) const;
 	virtual ChromoNode CreateNode(const THandle& aHandle);
 	virtual void ReduceToSelection(const ChromoNode& aSelNode);
+	virtual const CError& Error() const {return mErr;}
     private:
 	ChromoMdlX iMdl;
 	ChromoNode iRootNode;
+	CError mErr;
 };
 
 #endif

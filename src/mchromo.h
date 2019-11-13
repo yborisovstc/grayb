@@ -36,6 +36,20 @@ enum TNodeAttr
     ENa_NS = 16,    //!< Name space
 };
 
+
+/** @brief Chromo error
+ * */
+class CError {
+    public:
+	CError() {};
+	CError(streampos aPos, const string& aDescr): mPos(aPos), mText(aDescr) {};
+    public:
+	void Set(streampos aPos, const string& aDescr) {mPos = aPos, mText = aDescr; };
+    public:
+	streampos mPos;     //!< Position of last error
+	string mText;       //!< Descrition of last error 
+};
+
 /** @brief Handle of Chromo model node
  * */
 template<int L> class TTHandle
@@ -59,14 +73,13 @@ class MChromoMdl
 {
     public:
 	virtual TNodeType GetType(const THandle& aHandle) = 0;
-	virtual TNodeType GetType(const string& aId) = 0;
 	virtual THandle Root(const THandle& aHandle) = 0;
 	virtual THandle Parent(const THandle& aHandle) = 0;
 	virtual THandle Next(const THandle& aHandle, TNodeType aType = ENt_Unknown) = 0;
 	virtual THandle Prev(const THandle& aHandle, TNodeType aType = ENt_Unknown) = 0;
 	virtual THandle GetFirstChild(const THandle& aHandle, TNodeType aType = ENt_Unknown) = 0;
 	virtual THandle GetLastChild(const THandle& aHandle, TNodeType aType = ENt_Unknown) = 0;
-	virtual char* GetAttr(const THandle& aHandle, TNodeAttr aAttr) const = 0;
+	virtual string GetAttr(const THandle& aHandle, TNodeAttr aAttr) const = 0;
 	virtual void  GetAttr(const THandle& aNode, TNodeAttr aType, TInt& aVal) const = 0;
 	virtual TBool AttrExists(const THandle& aHandle, TNodeAttr aAttr) const  = 0;
 	virtual THandle AddChild(const THandle& aParent, TNodeType aType) = 0;
@@ -109,6 +122,8 @@ class MChromo
 	virtual void Save(const string& aFileName) const = 0;
 	virtual ChromoNode CreateNode(const THandle& aHandle) = 0;
 	virtual void ReduceToSelection(const ChromoNode& aSelNode) = 0;
+	virtual bool IsError() const { return false;}
+	virtual const CError& Error() const  = 0;
 };
 
 #endif
