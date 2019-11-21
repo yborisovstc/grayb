@@ -59,8 +59,8 @@ void Ut_chromo2::test_Chr1()
     CPPUNIT_ASSERT_MESSAGE("Chromo root comp1 is empty", cmp1 != ChromoNode());
     TNodeType cmp1t = cmp1.Type();
     CPPUNIT_ASSERT_MESSAGE("Wront type of root comp1", cmp1t == ENt_Node);
-    //int cn = croot.Count();
-    //CPPUNIT_ASSERT_MESSAGE("Wrong root node comps number", cn == 2);
+    int cn = croot.Count();
+    CPPUNIT_ASSERT_MESSAGE("Wrong root node comps number", cn == 2);
     
 }
 
@@ -74,6 +74,10 @@ void Ut_chromo2::test_Cre1()
     iEnv->ConstructSystem();
     MUnit* root = iEnv->Root();
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
+    MUnit* e1_2_1 = root->GetNode("./e1/e1_2/e1_2_1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get e1_2_1", e1_2_1 != NULL);
+
+    delete iEnv;
 }
 
 void Ut_chromo2::test_Seg()

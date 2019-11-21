@@ -152,7 +152,6 @@ class ChromoNode
 	const string Name() const { return Attr(ENa_Id);};
 	const string Attr(TNodeAttr aAttr);
 	const string Attr(TNodeAttr aAttr) const;
-	void GetAttr(TNodeAttr aAttr, TInt& aVal) const { iMdl.GetAttr(iHandle, aAttr, aVal);};
 	void RmAttr(TNodeAttr aAttr) const { iMdl.RmAttr(iHandle, aAttr);};
 	TInt AttrInt(TNodeAttr aAttr) const;
 	TBool AttrExists(TNodeAttr aAttr) const { return iMdl.AttrExists(iHandle, aAttr);};
@@ -184,7 +183,8 @@ class ChromoNode
 	ChromoNode::Iterator Find(TNodeType aType, const string& aName, TNodeAttr aAttr, const string& aAttrVal);
 	ChromoNode::Iterator FindNodeInMhUri(const GUri& aMhUri, const GUri::const_elem_iter& aMhUriPos, GUri::const_elem_iter& aResPos);
 	ChromoNode::Iterator GetChildOwning(const ChromoNode& aNode) const;
-	void Dump(MLogRec* aLogRec) const { iMdl.Dump(iHandle, aLogRec);};
+	void Dump() const;
+	void DumpToLog(MLogRec* aLogRec) const { iMdl.DumpToLog(iHandle, aLogRec);};
 	string GetName(const string& aTname);
 	TInt GetOrder(TBool aTree = EFalse) const { return iMdl.GetOrder(iHandle, aTree);};
 	void DeOrder() { iMdl.DeOrder(iHandle);};

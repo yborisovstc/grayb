@@ -280,7 +280,6 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 {
     const ChromoNode& mroot = aMutSpec;
     if (mroot.Begin() == mroot.End()) return;
-    ChromoNode sroot = *(mroot.Root());
     TInt tord = 0;
     TInt lim = 0;
     TInt order = 0;
@@ -1546,7 +1545,7 @@ void Elem::UpdateNs(TNs& aNs, const ChromoNode& aCnode)
 
 void Elem::DumpCnode(const ChromoNode& aNode) const
 {
-    aNode.Dump(iEnv->Logger());
+    aNode.DumpToLog(iEnv->Logger());
 }
 
 MUnit* Elem::GetNodeByName(const string& aName, const TNs& aNs)

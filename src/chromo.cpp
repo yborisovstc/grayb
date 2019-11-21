@@ -467,7 +467,12 @@ ChromoNode::Iterator ChromoNode::FindNodeInMhUri(const GUri& aMhUri, const GUri:
 TInt ChromoNode::GetLocalSize()
 {
     TInt res = 0;
-    for (Iterator it = Begin(); it != End(); it++, res++);
+    //for (Iterator it = Begin(); it != End(); it++, res++);
+    Iterator it = Begin();
+    while (it != End()) {
+	it++;
+	res++;
+    }
     return res;
 }
 
@@ -747,3 +752,5 @@ ChromoNode::operator string() const
     ToString(res);
     return res;
 }
+
+void ChromoNode::Dump() const { iMdl.Dump(iHandle);}

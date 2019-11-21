@@ -80,7 +80,6 @@ class MChromoMdl
 	virtual THandle GetFirstChild(const THandle& aHandle, TNodeType aType = ENt_Unknown) = 0;
 	virtual THandle GetLastChild(const THandle& aHandle, TNodeType aType = ENt_Unknown) = 0;
 	virtual string GetAttr(const THandle& aHandle, TNodeAttr aAttr) const = 0;
-	virtual void  GetAttr(const THandle& aNode, TNodeAttr aType, TInt& aVal) const = 0;
 	virtual TBool AttrExists(const THandle& aHandle, TNodeAttr aAttr) const  = 0;
 	virtual THandle AddChild(const THandle& aParent, TNodeType aType) = 0;
 	virtual THandle AddChild(const THandle& aParent, const THandle& aHandle, TBool aCopy = ETrue, TBool aRecursively = ETrue) = 0;
@@ -89,12 +88,13 @@ class MChromoMdl
 	virtual THandle AddPrev(const THandle& aNext, const THandle& aHandle, TBool aCopy = ETrue) = 0;
 	virtual void RmChild(const THandle& aParent, const THandle& aChild, TBool aDeattachOnly = EFalse) = 0;
 	virtual void Rm(const THandle& aHandle) = 0;
-	virtual void SetAttr(const THandle& aNode, TNodeAttr aType, const char* aVal) = 0;
+	virtual void SetAttr(const THandle& aNode, TNodeAttr aType, const string& aVal) = 0;
 	virtual void SetAttr(const THandle& aNode, TNodeAttr aType, TInt aVal) = 0;
 	virtual void RmAttr(const THandle& aNode, TNodeAttr aType) = 0;
 	//virtual void SetAttr(THandle aNode, TNodeAttr aType, TNodeType aVal) = 0;
 	//virtual void SetAttr(THandle aNode, TNodeAttr aType, TNodeAttr aVal) = 0;
-	virtual void Dump(const THandle& aNode, MLogRec* aLogRec) = 0;
+	virtual void Dump(const THandle& aNode) = 0;
+	virtual void DumpToLog(const THandle& aNode, MLogRec* aLogRec) = 0;
 	virtual TBool ToString(const THandle& aNode, string& aString) const = 0;
 	virtual void Save(const string& aFileName) const = 0;
 	virtual THandle Find(const THandle& aHandle, const string& aUri) = 0;

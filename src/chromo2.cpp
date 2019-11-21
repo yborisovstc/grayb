@@ -26,8 +26,28 @@ static const string KR_CREATE = ":";
 
 static const string KPE_UnexpChrEnd = "Unexpected end of chromo";
 static const string KPE_WrongMutLexNum = "Wrong number mutation lexems";
+static const string KPE_WrongCtxType = "Wrong context type";
 
 using namespace std;
+
+/** @brief Mapping for context: attr to ctx type
+ * */
+const map<TNodeAttr, string> KM_CtxAttToType = {
+    {ENa_Targ, C2MdlCtxNode::KT_Target}
+};
+
+/** @brief Mapping for mut: node type to mut rel
+ * */
+const map<TNodeType, string> KM_MutTypeToRel = {
+    {ENt_Node, KMS_Add}
+};
+
+string GetMutRel(TNodeType aType)
+{
+    return KM_MutTypeToRel.count(aType) == 0 ? string() : KM_MutTypeToRel.at(aType);
+}
+
+
 
 static const map<TNodeType, string> KNtToR = {
     {ENt_Node, KR_CREATE}
@@ -43,53 +63,92 @@ C2MdlNode::C2MdlNode()
 {
 }
 
-C2MdlNode::C2MdlNode(const C2MdlNode* aOwner): mOwner(aOwner)
+C2MdlNode::C2MdlNode(C2MdlNode* aOwner): mOwner(aOwner)
 {
 }
+
+C2MdlNode::C2MdlNode(const C2MdlNode& aSrc): mOwner(aSrc.mOwner), mContext(aSrc.mContext), mMut(aSrc.mMut), mChromo(aSrc.mChromo)
+{
+}
+
+C2MdlNode::C2MdlNode(const C2MdlNode& aSrc, C2MdlNode* aOwner): mOwner(aOwner), mContext(aSrc.mContext), mMut(aSrc.mMut)
+{
+    for (TC2MdlNodesCiter it = aSrc.mChromo.begin(); it != aSrc.mChromo.end(); it++) {
+	const C2MdlNode& cn = *it;
+	mChromo.push_back(C2MdlNode(cn, NULL));
+    }
+}
+
+void C2MdlNode::CloneFrom(const C2MdlNode& aSrc)
+{
+    mContext = aSrc.mContext;
+    mMut = aSrc.mMut;
+    for (TC2MdlNodesCiter it = aSrc.mChromo.begin(); it != aSrc.mChromo.end(); it++) {
+	const C2MdlNode& cn = *it;
+	mChromo.push_back(C2MdlNode(cn, NULL));
+    }
+}
+
+void C2MdlNode::BindTree(C2MdlNode* aOwner)
+{
+    mOwner = aOwner;
+    for (TC2MdlNodesIter it = mChromo.begin(); it != mChromo.end(); it++) {
+	C2MdlNode& cn = *it;
+	cn.BindTree(this);
+    }
+}
+
 void C2MdlNode::AddContext(const string& aType, const string& aValue)
 {
     mContext.push_back(C2MdlCtxNode(aType, aValue));
 }
 
-C2MdlNode Chromo2Mdl::CreateNodeMut(const THandle& aHandle, const C2MdlNode& aOwner, TNodeType aR, TNodeAttr aP, TNodeAttr aQ)
+C2MdlNode* C2MdlNode::GetNextComp(C2MdlNode* aComp)
 {
-    C2MdlNode node(&aOwner);
-    node.mMut.mR = KNtToR.at(aR);
-    node.mMut.mP = mMdlX->GetAttr(aHandle, aP);
-    node.mMut.mQ = mMdlX->GetAttr(aHandle, aQ);
-    return node;
+    C2MdlNode* res = NULL;
+    for (TC2MdlNodesIter it = mChromo.begin(); it != mChromo.end(); it++) {
+	C2MdlNode* node = &(*it);
+	if (node == aComp) {
+	    res = (++it == mChromo.end()) ? NULL: &(*it);
+	    break;
+	}
+    }
+    return res;
 }
 
-C2MdlNode Chromo2Mdl::CreateNodeChr(const THandle& aHandle, const C2MdlNode& aOwner)
+C2MdlNode* C2MdlNode::GetPrevComp(C2MdlNode* aComp)
 {
-    C2MdlNode node(&aOwner);
-    THandle handle = mMdlX->GetFirstChild(aHandle);
-    do {
-	HandleXNode(handle, node);
-	handle = mMdlX->Next(handle);
-    } while (handle != NULL);
-    return node;
+    C2MdlNode* res = NULL;
+    for (TC2MdlNodesRIter it = mChromo.rbegin(); it != mChromo.rend(); it++) {
+	C2MdlNode* node = &(*it);
+	if (node == aComp) {
+	    res = (++it == mChromo.rend()) ? NULL: &(*it);
+	    break;
+	}
+    }
+    return res;
 }
 
-Chromo2Mdl::Chromo2Mdl(): Base(), mMdlX(NULL)
+
+
+Chromo2Mdl::Chromo2Mdl(): Base()
 {
-    mMdlX = new ChromoMdlX(); 
 }
 
 Chromo2Mdl::~Chromo2Mdl()
 {
-    if (mMdlX != NULL) {
-	delete mMdlX;	
-    }
 }
 
-TNodeType Chromo2Mdl::GetType(const THandle& aHandle)
-{
+TNodeType Chromo2Mdl::GetType(const THandle& aHandle) {
     TNodeType res = ENt_Unknown;
     C2MdlNode* node = aHandle.Data(node);
-    string rel = node->mMut.mR;
-    if (rel == KMS_Add) {
-	res = ENt_Node;
+    if (!node->mChromo.empty()) {
+	res = ENt_Seg;
+    } else {
+	string rel = node->mMut.mR;
+	if (rel == KMS_Add) {
+	    res = ENt_Node;
+	}
     }
     return res;
 }
@@ -105,10 +164,15 @@ THandle Chromo2Mdl::Parent(const THandle& aHandle)
 THandle Chromo2Mdl::Next(const THandle& aHandle, TNodeType aType)
 {
     C2MdlNode* node = aHandle.Data(node);
+    C2MdlNode* next = node->mOwner->GetNextComp(node);
+    return next;
 }
 
 THandle Chromo2Mdl::Prev(const THandle& aHandle, TNodeType aType)
 {
+    C2MdlNode* node = aHandle.Data(node);
+    C2MdlNode* prev = node->mOwner->GetPrevComp(node);
+    return prev;
 }
 
 THandle Chromo2Mdl::GetFirstChild(const THandle& aHandle, TNodeType aType)
@@ -125,34 +189,67 @@ THandle Chromo2Mdl::GetLastChild(const THandle& aHandle, TNodeType aType)
 {
 }
 
+string GetContextByAttr(const C2MdlNode& aNode, TNodeAttr aAttr)
+{
+    string res;
+    string rel = KM_CtxAttToType.count(aAttr) == 0 ? string() : KM_CtxAttToType.at(aAttr);
+    for (const C2MdlCtxNode& item : aNode.mContext) {
+	if (item.mType == rel) {
+	    res = item.mValue;
+	}
+    }
+    return res;
+}
+
 string Chromo2Mdl::GetAttr(const THandle& aHandle, TNodeAttr aAttr) const
 {
     C2MdlNode* node = aHandle.Data(node);
     string res;
     string rel = node->mMut.mR;
-    if (rel == KMS_Add) {
-	if (aAttr == ENa_Id) {
-	    res = node->mMut.mP;
-	} else if (aAttr == ENa_Parent) {
-	    res = node->mMut.mQ;
-	}
+    if (aAttr == ENa_Id && rel == KMS_Add) {
+	res = node->mMut.mP;
+    } else if (aAttr == ENa_Parent && rel == KMS_Add) {
+	res = node->mMut.mQ;
+    } else if (aAttr == ENa_Targ) {
+	res = GetContextByAttr(*node, ENa_Targ);
     }
-}
-
-void  Chromo2Mdl::GetAttr(const THandle& aNode, TNodeAttr aType, TInt& aVal) const
-{
+    return res;
 }
 
 TBool Chromo2Mdl::AttrExists(const THandle& aHandle, TNodeAttr aAttr) const 
 {
+    TBool res = false;
+    C2MdlNode* node = aHandle.Data(node);
+    string rel = node->mMut.mR;
+    if (aAttr == ENa_Id || aAttr == ENa_Parent) {
+	res = (rel == KMS_Add);
+    } else if (aAttr == ENa_Targ) {
+	res = !GetContextByAttr(*node, ENa_Targ).empty();
+    }
+    return res;
 }
 
 THandle Chromo2Mdl::AddChild(const THandle& aParent, TNodeType aType)
 {
+    C2MdlNode* parent = aParent.Data(parent);
+    C2MdlNode node;
+    node.mMut.mR = GetMutRel(aType);
+    node.mOwner = parent;
+    parent->mChromo.push_back(node);
+    C2MdlNode& res = parent->mChromo.back();
+    return &res;
 }
 
 THandle Chromo2Mdl::AddChild(const THandle& aParent, const THandle& aHandle, TBool aCopy, TBool aRecursively)
 {
+    C2MdlNode* parent = aParent.Data(parent);
+    C2MdlNode* child = aHandle.Data(child);
+    C2MdlNode node;
+    node.CloneFrom(*child);
+    node.mOwner = parent;
+    parent->mChromo.push_back(node);
+    C2MdlNode& res = parent->mChromo.back();
+    return &res;
 }
 
 THandle Chromo2Mdl::AddNext(const THandle& aPrev, const THandle& aHandle, TBool aCopy)
@@ -175,19 +272,41 @@ void Chromo2Mdl::Rm(const THandle& aHandle)
 {
 }
 
-void Chromo2Mdl::SetAttr(const THandle& aNode, TNodeAttr aType, const char* aVal)
+void Chromo2Mdl::SetAttr(const THandle& aHandle, TNodeAttr aType, const string& aVal)
 {
+    C2MdlNode* node = aHandle.Data(node);
+    string rel = node->mMut.mR;
+    if (aType == ENa_Id) {
+	__ASSERT (rel.empty() || rel == KMS_Add);
+	node->mMut.mP = aVal;
+	if (rel.empty()) {
+	    node->mMut.mR = KMS_Add;
+	}
+    } else if (aType == ENa_Parent) {
+	__ASSERT (rel.empty() || rel == KMS_Add);
+	node->mMut.mQ = aVal;
+	if (rel.empty()) {
+	    node->mMut.mR = KMS_Add;
+	}
+    }
 }
 
 void Chromo2Mdl::SetAttr(const THandle& aNode, TNodeAttr aType, TInt aVal)
 {
 }
 
-void Chromo2Mdl::RmAttr(const THandle& aNode, TNodeAttr aType)
+void Chromo2Mdl::RmAttr(const THandle& aHandle, TNodeAttr aType)
 {
+    C2MdlNode* node = aHandle.Data(node);
 }
 
-void Chromo2Mdl::Dump(const THandle& aNode, MLogRec* aLogRec)
+void Chromo2Mdl::Dump(const THandle& aHandle)
+{
+    C2MdlNode* node = aHandle.Data(node);
+    DumpMnode(*node, 0);
+}
+
+void Chromo2Mdl::DumpToLog(const THandle& aNode, MLogRec* aLogRec)
 {
 }
 
@@ -205,6 +324,7 @@ THandle Chromo2Mdl::Find(const THandle& aHandle, const string& aUri)
 
 TInt Chromo2Mdl::GetOrder(const THandle& aHandle, TBool aTree) const
 {
+    return 0;
 }
 
 void Chromo2Mdl::DeOrder(const THandle& aHandle)
@@ -223,13 +343,6 @@ int Chromo2Mdl::GetAttrInt(void *aHandle, const char *aName)
 
 THandle Chromo2Mdl::SetFromFile(const string& aFileName)
 {
-    /*
-    THandle handle = mMdlX->SetFromFile(aFileName);
-    if (handle != NULL && mMdlX->GetType(handle) == ENt_Node) {
-	// Root, evolve the chromo
-	HandleXNode(handle, mRoot);
-    }
-    */
     ifstream is(aFileName, std::ifstream::in);
     if ( (is.rdstate() & ifstream::failbit ) == 0 ) {
 	is.seekg(0, is.beg);
@@ -252,101 +365,38 @@ THandle Chromo2Mdl::SetFromSpec(const string& aSpec)
 
 THandle Chromo2Mdl::Set(const THandle& aHandle)
 {
+    C2MdlNode* node = aHandle.Data(node);
+    mRoot.CloneFrom(*node);
+    mRoot.BindTree(NULL);
+    return &mRoot;
 }
 
 THandle Chromo2Mdl::Init(TNodeType aRootType)
 {
+    mRoot.mMut.mR = GetMutRel(aRootType);
+    return &mRoot;
 }
 
 void Chromo2Mdl::Reset()
 {
 }
 
-void Chromo2Mdl::HandleXNodeCtx(C2MdlNode& aMdlNode, const THandle& aHandle)
+static void DumpIs(istream& aIs, streampos aStart, streampos aEnd)
 {
-    if (mMdlX->AttrExists(aHandle, ENa_Targ)) {
-	string targ = mMdlX->GetAttr(aHandle, ENa_Targ);
-	aMdlNode.AddContext(C2MdlCtxNode::KT_Target, targ);
-    }
-    if (mMdlX->AttrExists(aHandle, ENa_MutNode)) {
-	string mnode = mMdlX->GetAttr(aHandle, ENa_MutNode);
-	aMdlNode.AddContext(C2MdlCtxNode::KT_Node, mnode);
-    }
-}
-
-void Chromo2Mdl::HandleXNode(const THandle& aHandle, C2MdlNode& aOwner)
-{
-    TNodeType xntype = mMdlX->GetType(aHandle);
-    // Mutation
-    if (xntype == ENt_Node) {
-	C2MdlNode node = CreateNodeMut(aHandle, aOwner, ENt_Node, ENa_Id, ENa_Parent);
-	HandleXNodeCtx(node, aHandle);
-	aOwner.mChromo.push_back(node);
-	THandle child_h = mMdlX->GetFirstChild(aHandle);
-	if (child_h != NULL) {
-	    // Chromo node
-	    C2MdlNode chromo_node = CreateNodeChr(aHandle, aOwner);
-	    // Add node name as target context for chromo
-	    string name = mMdlX->GetAttr(aHandle, ENa_Id);
-	    chromo_node.AddContext(C2MdlCtxNode::KT_Target, name);
-	    aOwner.mChromo.push_back(chromo_node);
-	}
-    }
-}
-
-void Chromo2Mdl::ParseChromo(std::istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode)
-{
-#if 0
-    string lexeme;
-    char c = aIs.get();
-    while (aIs.good()) {
+    streampos curpos = aIs.tellg();
+    aIs.seekg(aStart, aIs.beg);
+    streampos pos = aIs.tellg();
+    while (pos != aEnd) {
+	char c = aIs.get();
 	cout << c;
-	if (c == ' ' || c == '\n') {
-	    mLex.push_back(lexeme);
-	    lexeme.clear();
-	} else {
-	    lexeme.push_back(c);
-	}
-	c = aIs.get();
-    };
-#endif
+	pos = aIs.tellg();
+    }
+    cout << endl;
+    aIs.seekg(curpos, aIs.beg);
+}
 
-#if 0
-    // Variant #2
-
-    string cnode;
-    char c = aIs.get();
-    int cscount = 0;
-    while (aIs.good()) {
-	if (c == KT_MutSeparator) {
-	    ParseMut(cnode);
-	    cnode.erase();
-	} else if (c == KT_ChromoStart) {
-	    cscount++;
-	    c = aIs.get();
-	    while (aIs.good()) {
-		if (c == KT_ChromoStart) {
-		    cscount++;
-		    cnode.push_back(c);
-		} else if (c == KT_ChromoEnd && --cscount == 0) {
-		    ParseChromo(cnode);
-		    cnode.erase();
-		    break;
-		} else {
-		    cnode.push_back(c);
-		}
-		c = aIs.get();
-	    }
-	} else if (c == KT_ChromoEnd && --cscount == 0) {
-	    ParseChromo(cnode);
-	    cnode.erase();
-	} else {
-	    cnode.push_back(c);
-	}
-	c = aIs.get();
-    };
-#endif
-
+void Chromo2Mdl::ParseChromo(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode)
+{
     DumpIsFrag(aIs, aStart, aEnd);
 
     int cscount = 0;
@@ -376,6 +426,8 @@ void Chromo2Mdl::ParseChromo(std::istream& aIs, streampos aStart, streampos aEnd
 			end = aIs.tellg();
 			ParseCnodeChromo(aIs, nbeg, end, aMnode);
 			nbeg = end;
+			// Restore position for chromo parsing can change it
+			aIs.seekg(end, aIs.beg);
 			break;
 		    } else if (cscount < 0) {
 			mErr.Set(pos, KPE_UnexpChrEnd);
@@ -389,32 +441,74 @@ void Chromo2Mdl::ParseChromo(std::istream& aIs, streampos aStart, streampos aEnd
     }
 }
 
-void Chromo2Mdl::ParseCnodeMut(istream& aIs, streampos aBeg, streampos aEnd, C2MdlNode& aMnode)
+void GetLexs(istream& aIs, streampos aBeg, streampos aEnd, vector<string>& aLexs)
 {
-    cout << "Parsing mutation:" << endl;
-    DumpIsFrag(aIs, aBeg, aEnd);
-
-    // Get lexems
-    vector<string> lexs;   //!< Lexems
     string lexeme;
     aIs.seekg(aBeg, aIs.beg);
     streampos pos = aIs.tellg();
     while (pos != aEnd) {
 	char c = aIs.get();
-	if (c == ' ' || c == '\n') {
-	    lexs.push_back(lexeme);
-	    lexeme.clear();
+	if ((c == ' ' || c == '\n' || c == '\r')) {
+	    if (!lexeme.empty()) {
+		aLexs.push_back(lexeme);
+		lexeme.clear();
+	    }
 	} else {
 	    lexeme.push_back(c);
 	}
 	pos = aIs.tellg();
     }
-    lexs.push_back(lexeme);
+    if (!lexeme.empty()) {
+	aLexs.push_back(lexeme);
+    }
+}
+
+void Chromo2Mdl::ParseContext(vector<string>& aLexs, streampos aPos, C2MdlNode& aMnode)
+{
+    for (int i = 0; 2*i < aLexs.size(); i++) {
+	string val = aLexs.at(2*i);
+	string rel = aLexs.at(2*i + 1);
+	if (rel == C2MdlCtxNode::KT_Target) {
+	    aMnode.mContext.push_back(C2MdlCtxNode(rel, val));
+	} else {
+	    mErr.Set(aPos, KPE_WrongCtxType);
+	}
+    }
+}
+
+void Chromo2Mdl::ParseCnodeMut(istream& aIs, streampos aBeg, streampos aEnd, C2MdlNode& aMnode)
+{
+    cout << "Parsing mutation:" << endl;
+    DumpIsFrag(aIs, aBeg, aEnd);
+
+    aIs.seekg(aBeg, aIs.beg);
+    streampos pos = aIs.tellg();
+
+    // Get lexems
+    vector<string> lexs;   //!< Lexems
+    /*
+       string lexeme;
+       aIs.seekg(aBeg, aIs.beg);
+       streampos pos = aIs.tellg();
+       while (pos != aEnd) {
+       char c = aIs.get();
+       if (c == ' ' || c == '\n') {
+       lexs.push_back(lexeme);
+       lexeme.clear();
+       } else {
+       lexeme.push_back(c);
+       }
+       pos = aIs.tellg();
+       }
+       lexs.push_back(lexeme);
+       */
+    GetLexs(aIs, aBeg, aEnd, lexs);
 
     if (lexs.size() >= 3) {
 	string mss = lexs.at(lexs.size() - 2);
 	// Adding nodel node of chromo type
 	C2MdlNode mnode;  
+	mnode.mOwner = &aMnode;
 	if (mss == KMS_Add) {
 	    mnode.mMut.mR = mss;
 	    mnode.mMut.mP = lexs.at(lexs.size() - 3);
@@ -424,6 +518,7 @@ void Chromo2Mdl::ParseCnodeMut(istream& aIs, streampos aBeg, streampos aEnd, C2M
     } else {
 	mErr.Set(pos, KPE_WrongMutLexNum);
     }
+    // Parse context
 }
 
 void Chromo2Mdl::ParseCnodeChromo(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode)
@@ -433,6 +528,7 @@ void Chromo2Mdl::ParseCnodeChromo(istream& aIs, streampos aStart, streampos aEnd
 
     // Adding nodel node of chromo type
     C2MdlNode mnode;  
+    mnode.mOwner = &aMnode;
     aIs.seekg(aStart, aIs.beg);
     streampos pos = aIs.tellg();
     while (pos != aEnd) {
@@ -448,6 +544,19 @@ void Chromo2Mdl::ParseCnodeChromo(istream& aIs, streampos aStart, streampos aEnd
     aIs.seekg(-1, aIs.cur);
     streampos cend = aIs.tellg();
     ParseChromo(aIs, pos, cend, mnode);
+    // Parse context
+    vector<string> lexs;   //!< Lexems
+    aIs.seekg(pos, aIs.beg);
+    aIs.seekg(-1, aIs.cur);
+    streampos lexend = aIs.tellg();
+    DumpIs(aIs, aStart, lexend);
+    GetLexs(aIs, aStart, lexend, lexs);
+    cout << aEnd << endl;
+    if ((lexs.size() % 2) == 0) {
+	ParseContext(lexs, aStart, mnode);
+    } else {
+	mErr.Set(pos, KPE_WrongMutLexNum);
+    }
     aMnode.mChromo.push_back(mnode);
 }
 
@@ -472,12 +581,20 @@ static void Offset(int aLevel)
 
 void Chromo2Mdl::DumpMnode(const C2MdlNode& aNode, int aLevel) const
 {
+    bool cnt = false;
+    if (!aNode.mContext.empty()) {
+	for (vector<C2MdlCtxNode>::const_iterator it = aNode.mContext.begin(); it != aNode.mContext.end(); it++) {
+	    const C2MdlCtxNode& ct = *it;
+	    Offset(aLevel); cout << ct.mValue << " " << ct.mType << " ";
+	    cnt = true;
+	}
+    }
     if (!aNode.mMut.mR.empty()) {
-	Offset(aLevel); cout << aNode.mMut.mP << " " << aNode.mMut.mR << " " << aNode.mMut.mQ << ";" << endl;
+	if (!cnt) Offset(aLevel); cout << aNode.mMut.mP << " " << aNode.mMut.mR << " " << aNode.mMut.mQ << ";" << endl;
     }
     int cnum = aNode.mChromo.size();
     if (cnum > 0) {
-	Offset(aLevel); cout << "{" << endl;
+	if (!cnt) Offset(aLevel); cout << "{" << endl;
 	for (vector<C2MdlNode>::const_iterator it = aNode.mChromo.begin(); it != aNode.mChromo.end(); it++) {
 	    const C2MdlNode& node = *it;
 	    DumpMnode(node, aLevel + 1);
@@ -500,6 +617,7 @@ Chromo2::Chromo2(const Chromo2& aSrc)
 void Chromo2::SetFromFile(const string& aFileName)
 {
     THandle root = mMdl.SetFromFile(aFileName);
+    C2MdlNode* nroot = root.Data(nroot);
     mRootNode = ChromoNode(mMdl, root);
 }
 
@@ -530,6 +648,8 @@ void Chromo2::Set(const ChromoNode& aRoot)
 {
     THandle root = mMdl.Set(aRoot.Handle());
     mRootNode = ChromoNode(mMdl, root);
+    int cnt = mRootNode.Count();
+    cout << cnt << endl;
 }
 
 Chromo2::~Chromo2()

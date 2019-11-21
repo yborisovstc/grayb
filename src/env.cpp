@@ -478,9 +478,12 @@ void Env::ConstructSystem()
 	Pclock(PEvents::Env_Start_Constr, iRoot);
 	Pdur(PEvents::Dur_Env_Constr_Start);
 	const ChromoNode& root = spec->Root();
+	/*
 	string sparent = root.Attr(ENa_Parent);
 	Unit* parent = iProvider->GetNode(sparent);
 	iRoot = iProvider->CreateNode(sparent, root.Name(), NULL, this);
+	*/
+	iRoot = iProvider->CreateNode("Elem", "Root", NULL, this);
 	MElem* eroot = (iRoot == NULL) ? NULL : iRoot->GetObj(eroot);
 	if (eroot != NULL) {
 	    Pclock(PEvents::Env_Root_Created, iRoot);
@@ -505,7 +508,7 @@ void Env::ConstructSystem()
 	    //iRoot->LogComps();
 	}
 	else {
-	    Logger()->WriteFormat("Env: cannot create elem [%s] of type [%s]", root.Name().c_str(), sparent.c_str());
+	    Logger()->WriteFormat("Env: cannot create root elem");
 	}
 	Pdur(PEvents::Dur_Env_Constr);
     }

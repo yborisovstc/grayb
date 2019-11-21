@@ -14,6 +14,9 @@ using namespace std;
 class C2Mut
 {
     public:
+	C2Mut() {}
+	C2Mut(const C2Mut& aSrc): mP(aSrc.mP), mQ(aSrc.mQ), mR(aSrc.mR) {}
+    public:
 	string mP; /*!< P object */
 	string mQ; /*!< Q object */
 	string mR; /*!< Relation */
@@ -40,11 +43,17 @@ class C2MdlNode
 {
     public:
 	C2MdlNode();
-	C2MdlNode(const C2MdlNode* aOwner);
+	C2MdlNode(C2MdlNode* aOwner);
+	C2MdlNode(const C2MdlNode& aSrc);
+	C2MdlNode(const C2MdlNode& aSrc, C2MdlNode* aOwner);
     public:
+	void CloneFrom(const C2MdlNode& aSrc);
 	void AddContext(const string& aType, const string& aValue);
+	C2MdlNode* GetNextComp(C2MdlNode* aComp);
+	C2MdlNode* GetPrevComp(C2MdlNode* aComp);
+	void BindTree(C2MdlNode* aOwner);
     public:
-	const C2MdlNode* mOwner = NULL;
+	C2MdlNode* mOwner = NULL;
 	vector<C2MdlCtxNode> mContext; /*!< Context */
 	C2Mut mMut;                    /*!< Mutation */
 	vector<C2MdlNode> mChromo;     /*!< Chromosome */
@@ -61,6 +70,11 @@ class C2MdlNodeMut: public C2MdlNode
 };
 
 class ChromoMdlX;
+
+using TC2MdlNodes = vector<C2MdlNode>;
+using TC2MdlNodesIter = TC2MdlNodes::iterator;
+using TC2MdlNodesCiter = TC2MdlNodes::const_iterator;
+using TC2MdlNodesRIter = TC2MdlNodes::reverse_iterator;
 
 /** @brief Chromo2 model
  * */
@@ -80,7 +94,6 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	virtual THandle GetFirstChild(const THandle& aHandle, TNodeType aType = ENt_Unknown);
 	virtual THandle GetLastChild(const THandle& aHandle, TNodeType aType = ENt_Unknown);
 	virtual string GetAttr(const THandle& aHandle, TNodeAttr aAttr) const;
-	virtual void  GetAttr(const THandle& aNode, TNodeAttr aType, TInt& aVal) const;
 	virtual TBool AttrExists(const THandle& aHandle, TNodeAttr aAttr) const ;
 	virtual THandle AddChild(const THandle& aParent, TNodeType aType);
 	virtual THandle AddChild(const THandle& aParent, const THandle& aHandle, TBool aCopy = ETrue, TBool aRecursively = ETrue);
@@ -89,10 +102,11 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	virtual THandle AddPrev(const THandle& aNext, const THandle& aHandle, TBool aCopy = ETrue);
 	virtual void RmChild(const THandle& aParent, const THandle& aChild, TBool aDeattachOnly = EFalse);
 	virtual void Rm(const THandle& aHandle);
-	virtual void SetAttr(const THandle& aNode, TNodeAttr aType, const char* aVal);
+	virtual void SetAttr(const THandle& aNode, TNodeAttr aType, const string& aVal);
 	virtual void SetAttr(const THandle& aNode, TNodeAttr aType, TInt aVal);
 	virtual void RmAttr(const THandle& aNode, TNodeAttr aType);
-	virtual void Dump(const THandle& aNode, MLogRec* aLogRec);
+	virtual void Dump(const THandle& aNode);
+	virtual void DumpToLog(const THandle& aNode, MLogRec* aLogRec);
 	virtual TBool ToString(const THandle& aNode, string& aString) const;
 	virtual void Save(const string& aFileName) const;
 	virtual THandle Find(const THandle& aHandle, const string& aUri);
@@ -109,9 +123,6 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	void Reset();
 	const CError& Error() const { return mErr;};
     protected:
-	// Helpers
-	C2MdlNode CreateNodeMut(const THandle& aHandle, const C2MdlNode& aOwner, TNodeType aR, TNodeAttr aP, TNodeAttr aQ);
-	C2MdlNode CreateNodeChr(const THandle& aHandle, const C2MdlNode& aOwner);
 	/** @brief Parses chromo spec
 	 * */
 	void ParseChromo(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode);
@@ -121,11 +132,7 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	/** @brief Parses chromo node
 	 * */
 	void ParseCnodeChromo(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode);
-	/** @brief Processes X model node and transform it to the model nodes
-	 * */
-	void HandleXNode(const THandle& aHandle, C2MdlNode& aOwner);
-	/** @brief Processes X model node attrs and transform it to the model node context */
-	void HandleXNodeCtx(C2MdlNode& aMdlNode, const THandle& aHandle);
+	void ParseContext(vector<string>& aLexs, streampos aPos, C2MdlNode& aMnode);
 	/** @brief Sets error */
 	void SetErr(streampos);
     protected:
@@ -139,9 +146,7 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	// From Base
 	virtual MIface *DoGetObj(const char *aName) override { return NULL;}
     protected:
-	ChromoMdlX *mMdlX;	/*!< Model XML document */
 	C2MdlNode mRoot;
-	vector<string> mLex;   //!< Lexems
 	CError mErr;           //!< Error data
 };
 

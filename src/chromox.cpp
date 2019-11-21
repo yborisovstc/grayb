@@ -230,13 +230,6 @@ string ChromoMdlX::GetAttr(const THandle& aHandle, TNodeAttr aAttr) const
     return res;
 }
 
-void ChromoMdlX::GetAttr(const THandle& aHandle, TNodeAttr aAttr, TInt& aVal) const
-{
-    string ss(GetAttr(aHandle, aAttr)); 
-    istringstream sstr(ss);
-    sstr >> aVal;
-}
-
 void ChromoMdlX::SetAttr(const THandle& aHandle, TNodeAttr aAttr, TInt aVal)
 {
     stringstream sval;
@@ -301,14 +294,14 @@ THandle ChromoMdlX::AddPrev(const THandle& aNext, const THandle& aHandle, TBool 
     return xmlAddPrevSibling(aNext.Data<xmlNodePtr>(), node);
 }
 
-void ChromoMdlX::SetAttr(const THandle& aNode, TNodeAttr aType, const char* aVal)
+void ChromoMdlX::SetAttr(const THandle& aNode, TNodeAttr aType, const string& aVal)
 {
     string name = TMut::NodeAttrName(aType);
     xmlNodePtr node = aNode.Data(node);
     if (AttrExists(aNode, aType)) {
-	xmlSetProp(node, (const xmlChar*) name.c_str(), (const xmlChar*) aVal);
+	xmlSetProp(node, (const xmlChar*) name.c_str(), (const xmlChar*) aVal.c_str());
     } else {
-	xmlNewProp(node, (const xmlChar*) name.c_str(), (const xmlChar*) aVal);
+	xmlNewProp(node, (const xmlChar*) name.c_str(), (const xmlChar*) aVal.c_str());
     }
 }
 
@@ -337,7 +330,11 @@ void ChromoMdlX::Rm(const THandle& aNode)
     xmlFreeNode(node);
 }
 
-void ChromoMdlX::Dump(const THandle& aNode, MLogRec* aLogRec)
+void ChromoMdlX::Dump(const THandle& aNode)
+{
+}
+
+void ChromoMdlX::DumpToLog(const THandle& aNode, MLogRec* aLogRec)
 {
     xmlBufferPtr bufp = xmlBufferCreate();	
     xmlNodePtr node = aNode.Data(node);
@@ -362,9 +359,11 @@ void ChromoMdlX::Save(const string& aFileName) const
 TInt ChromoMdlX::GetOrder(const THandle& aHandle, TBool aTree) const
 {
     TInt res = 0;
+    /* TODO to remove support of chromo order
     TNodeAttr attr = aTree ? ENa_TOrder : ENa_Order;
     if (AttrExists(aHandle, attr))
 	GetAttr(aHandle, attr, res);
+	*/
     return res;
 }
 
