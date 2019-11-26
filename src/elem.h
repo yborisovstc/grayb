@@ -146,6 +146,7 @@ class Elem: public Unit, public MElem
 	virtual void SaveChromo(const char* aPath) const;
 	virtual void DumpChilds() const;
 	virtual void DumpCnode(const ChromoNode& aNode) const;
+	void DumpCtx(const MutCtx& aCtx) const;
     public:
     protected:
 	// Chromo

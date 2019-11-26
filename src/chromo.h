@@ -184,6 +184,7 @@ class ChromoNode
 	ChromoNode::Iterator FindNodeInMhUri(const GUri& aMhUri, const GUri::const_elem_iter& aMhUriPos, GUri::const_elem_iter& aResPos);
 	ChromoNode::Iterator GetChildOwning(const ChromoNode& aNode) const;
 	void Dump() const;
+	void DumpBackTree() const;
 	void DumpToLog(MLogRec* aLogRec) const { iMdl.DumpToLog(iHandle, aLogRec);};
 	string GetName(const string& aTname);
 	TInt GetOrder(TBool aTree = EFalse) const { return iMdl.GetOrder(iHandle, aTree);};

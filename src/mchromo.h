@@ -94,6 +94,7 @@ class MChromoMdl
 	//virtual void SetAttr(THandle aNode, TNodeAttr aType, TNodeType aVal) = 0;
 	//virtual void SetAttr(THandle aNode, TNodeAttr aType, TNodeAttr aVal) = 0;
 	virtual void Dump(const THandle& aNode) = 0;
+	virtual void DumpBackTree(const THandle& aNode) = 0;
 	virtual void DumpToLog(const THandle& aNode, MLogRec* aLogRec) = 0;
 	virtual TBool ToString(const THandle& aNode, string& aString) const = 0;
 	virtual void Save(const string& aFileName) const = 0;

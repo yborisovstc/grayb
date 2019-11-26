@@ -353,11 +353,12 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	if (rno.AttrExists(ENa_Targ)) {
 	    // Targeted mutation, propagate downward, i.e redirect to comp owning the target
 	    // ref ds_mut_osm_linchr_lce
-	    MUnit* ftarg = GetNode(rno.Attr(ENa_Targ));
+	    MUnit* ftarg = GetNodeByName(rno.Attr(ENa_Targ), ns);
 	    // Mutation is not local, propagate downward
 	    if (ftarg != NULL) {
 		//TMut madd(rno);
 		rno.RmAttr(ENa_Targ);
+		rno.RmAttr(ENa_NS);
 		MElem* eftarg = ftarg->GetObj(eftarg);
 		ChromoNode madd = eftarg->AppendMutation(rno);
 		//madd.RmAttr(ENa_Targ);
@@ -1548,6 +1549,15 @@ void Elem::DumpCnode(const ChromoNode& aNode) const
     aNode.DumpToLog(iEnv->Logger());
 }
 
+void Elem::DumpCtx(const MutCtx& aCtx) const
+{
+    cout << "Unit: " << aCtx.mUnit << "   " << (aCtx.mUnit != NULL ? aCtx.mUnit->GetUri(NULL, true) : "") << endl;
+    cout << "Namespaces:" << endl;
+    for (MUnit* ns : aCtx.mNs) {
+	cout << ns << "   " << ns->GetUri(NULL, true) << endl;
+    }
+}
+
 MUnit* Elem::GetNodeByName(const string& aName, const TNs& aNs)
 {
     MUnit *res = NULL, *node = NULL, *rns = NULL;
@@ -1557,6 +1567,7 @@ MUnit* Elem::GetNodeByName(const string& aName, const TNs& aNs)
     res = GetNode(uri);
     // Then in namespaces
     for (auto ns : aNs) {
+	if (ns == this) continue;
 	node = ns->GetNode(uri);
 	if (res == NULL) {
 	    res = node;

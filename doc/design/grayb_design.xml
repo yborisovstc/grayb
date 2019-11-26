@@ -4058,6 +4058,26 @@
 
 	    </programlisting>
 	</sect2>
+	<sect2 id="ds_chr2_mcp"><title>Chromo models compatibility</title>
+	    <sect3><title>Intro</title>
+		<simpara>We request that chromo2 introduction doesn't require the Elem implementation. This means that chromo2 has be compatible with
+		    the current Elem. This possibility was provided by initial design of elem chromo - there were interfaces defined for main chromo component:
+		    <itemizedlist>
+			<listitem>MChromo - chromo itself</listitem>
+			<listitem>ChromoNode - node of chromo, abstract model of chromo components</listitem>
+			<listitem>MChromoMdl - chromo model</listitem>
+		    </itemizedlist>
+		</simpara>
+		<simpara>The problem is that following this abstractions schema doesn't guarantee the compatibility. Main problem is even not chromo APIs but
+		    the fact that elem assums chromo specific structure, that chromo node of type TNt_Node has components, i.e. is chromo itself. Chromo2 model doesn't
+		    posses such possibility. Native elem constructor creates elem chromo with root node and set ChromoNodes attribute "Id" and "Parent", i.e 
+		    for Chromo2 it means that root node becomes mut node. Then when the elem instance is mutated, the mutation is added as coponents of chromo
+		    root node.</simpara>
+	    </sect3>
+	    <sect3><title>Solution#1 Enable Chromo2 mut node containing chromo</title>
+		<simpara>This node exactly correspongs to Chromo1 ENt_Node type mutation. This node can be used internally only. </simpara>
+	    </sect3>
+	</sect2>
 	<sect2><title>Notes</title>
 	    <itemizedlist>
 		<listitem>Chromosome consists of single node for root agent. This root agent is created by environment and has predefined name "Root". So the chromo looks like:
@@ -5218,7 +5238,7 @@
 
     <sect1 id="ds_ns"><title>Name spaces</title>
 	<sect2><title>Intro</title>
-	    <simpara>The very annoying aspect of writing model's chromo is specifying the nodes: parents, targets, etc. The are specified using
+	    <simpara>The very annoying aspect of writing model's chromo is specifying the nodes: parents, targets, etc. They are specified using
 		URI that can include the long chain to the node and be long in description. The more convenient way would be to have simplest identification
 		of the nodes.</simpara>
 	    <simpara>One way to achieve this is using shorter names from some base nodes. These nodes can be considered as name spaces. For instance we could
@@ -5231,6 +5251,10 @@
 		via path relative from base node. We can use specific relation symbol (ref <xref linkend="ds_mpo_crs"/>) for base nodes to simplify resolving them.
 	    </simpara>
 	    <simpara></simpara>
+	</sect2>
+	<sect2><title>Target as default namespace</title>
+	    <simpara>To minimize chromo node notation we could apply the rule that target is included to namespaces. The problem here is that normally there
+	    can be deep hierarchy of chromo segments so the name space can be vast is that case.</simpara>
 	</sect2>
     </sect1>
 

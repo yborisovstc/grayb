@@ -334,6 +334,10 @@ void ChromoMdlX::Dump(const THandle& aNode)
 {
 }
 
+void ChromoMdlX::DumpBackTree(const THandle& aNode)
+{
+}
+
 void ChromoMdlX::DumpToLog(const THandle& aNode, MLogRec* aLogRec)
 {
     xmlBufferPtr bufp = xmlBufferCreate();	

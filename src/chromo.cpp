@@ -754,3 +754,5 @@ ChromoNode::operator string() const
 }
 
 void ChromoNode::Dump() const { iMdl.Dump(iHandle);}
+
+void ChromoNode::DumpBackTree() const { iMdl.DumpBackTree(iHandle);}

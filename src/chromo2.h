@@ -24,6 +24,7 @@ class C2Mut
 
 /** @brief Chromo2 context unit
  * */
+#if 0
 class C2MdlCtxNode
 {
     public:
@@ -36,6 +37,16 @@ class C2MdlCtxNode
 	static const string KT_Node; /*!< Id of node context */
 	static const string KT_Namespace; /*!< Id of name space context */
 };
+#endif
+
+/** @brief Context in Chromo2 model node: map of [type, value]
+ * key is type of context
+ * value is value of context
+ * */
+typedef map<string, string> TC2MdlCtx;
+typedef pair<string, string> TC2MdlCtxElem;
+typedef TC2MdlCtx::iterator TC2MdlCtxIter;
+typedef TC2MdlCtx::const_iterator TC2MdlCtxCiter;
 
 /** @brief Chromo2 model unit
  * */
@@ -54,7 +65,8 @@ class C2MdlNode
 	void BindTree(C2MdlNode* aOwner);
     public:
 	C2MdlNode* mOwner = NULL;
-	vector<C2MdlCtxNode> mContext; /*!< Context */
+	//vector<C2MdlCtxNode> mContext; /*!< Context */
+	TC2MdlCtx mContext; /*!< Context */
 	C2Mut mMut;                    /*!< Mutation */
 	vector<C2MdlNode> mChromo;     /*!< Chromosome */
 };
@@ -106,6 +118,7 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	virtual void SetAttr(const THandle& aNode, TNodeAttr aType, TInt aVal);
 	virtual void RmAttr(const THandle& aNode, TNodeAttr aType);
 	virtual void Dump(const THandle& aNode);
+	virtual void DumpBackTree(const THandle& aNode);
 	virtual void DumpToLog(const THandle& aNode, MLogRec* aLogRec);
 	virtual TBool ToString(const THandle& aNode, string& aString) const;
 	virtual void Save(const string& aFileName) const;
@@ -114,6 +127,7 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	virtual void DeOrder(const THandle& aHandle);
 	virtual TInt GetLineId(const THandle& aHandle) const;
     public:
+	bool CheckTree(const C2MdlNode& aNode) const;
 	int GetAttrInt(void *aHandle, const char *aName);
 	THandle SetFromFile(const string& aFileName);
 	THandle Set(const string& aUri);

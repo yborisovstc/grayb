@@ -33,6 +33,7 @@ class ChromoMdlX: public Base, public MChromoMdl
 	virtual void SetAttr(const THandle& aHandle, TNodeAttr aAttr, TInt aVal);
 	virtual void RmAttr(const THandle& aNode, TNodeAttr aType);
 	virtual void Dump(const THandle& aNode);
+	virtual void DumpBackTree(const THandle& aNode);
 	virtual void DumpToLog(const THandle& aNode, MLogRec* aLogRec);
 	virtual TBool ToString(const THandle& aNode, string& aString) const;
 	virtual void Save(const string& aFileName) const;
