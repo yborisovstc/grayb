@@ -127,7 +127,7 @@ void Ut_cre::test_Cre()
     MUnit* ee = root->GetNode(":Elem");
     MElem* eroot = root->GetObj(eroot);
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    eroot->Chromos().Save("ut_cre_1_saved.xml_");
+    eroot->Chromos().Save("ut_cre_1_saved.xml");
     MUnit* e2 = root->GetNode("./elem1/elem2");
     CPPUNIT_ASSERT_MESSAGE("Fail to get e2", e2 != 0);
     MUnit* e4 = root->GetNode("./elem3/(elem2:)elem4");
@@ -150,8 +150,8 @@ void Ut_cre::test_Cre()
     delete iEnv;
 
     // Recreate the model with osm style chromo
-    iEnv = new Env("ut_cre_1_saved.xml_", "ut_cre_1_saved.txt");
-    CPPUNIT_ASSERT_MESSAGE("Fail to create Env for ut_cre_1_saved.xml_", iEnv != 0);
+    iEnv = new Env("ut_cre_1_saved.xml", "ut_cre_1_saved.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env for ut_cre_1_saved.xml", iEnv != 0);
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
@@ -178,7 +178,7 @@ void Ut_cre::test_Creu()
     CPPUNIT_ASSERT_MESSAGE("Fail to get unit1_1_1", unit1_1_1 != NULL);
 
     // Saving chromo
-    eroot->Chromos().Save("ut_creu_1_saved.xml_");
+    eroot->Chromos().Save("ut_creu_1_saved.xml");
     MUnit* e2 = root->GetNode("./elem1/elem2");
     CPPUNIT_ASSERT_MESSAGE("Fail to get e2", e2 != 0);
     MUnit* e4 = root->GetNode("./elem3/(elem2:)elem4");
@@ -187,8 +187,8 @@ void Ut_cre::test_Creu()
     delete iEnv;
 
     // Recreate the model with osm style chromo
-    iEnv = new Env("ut_creu_1_saved.xml_", "ut_creu_1_saved.txt");
-    CPPUNIT_ASSERT_MESSAGE("Fail to create Env for ut_creu_1_saved.xml_", iEnv != 0);
+    iEnv = new Env("ut_creu_1_saved.xml", "ut_creu_1_saved.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env for ut_creu_1_saved.xml", iEnv != 0);
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
@@ -241,7 +241,7 @@ void Ut_cre::test_CreSyst()
     TBool cont_ok = (cont == "{'root_prop' About:'' Debug:{ Enable_trace:'yes' Enable_dbg:'no'}}");
     CPPUNIT_ASSERT_MESSAGE("Wrong root content", cont_ok);
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    eroot->Chromos().Save("ut_cre_syst1_saved.xml_");
+    eroot->Chromos().Save("ut_cre_syst1_saved.xml");
     MUnit* cp1 = root->GetNode("./cp1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get cp1", cp1 != 0);
     MVert* mcp1 = cp1->GetObj(mcp1);
@@ -302,7 +302,7 @@ void Ut_cre::test_CreSystu()
     string cont = root->GetContent("", ETrue);
     TBool cont_ok = (cont == "{'root_prop' About:'' Debug:{ Enable_trace:'yes' Enable_dbg:'no'}}");
     CPPUNIT_ASSERT_MESSAGE("Wrong root content", cont_ok);
-    eroot->Chromos().Save("ut_cre_systu_1_saved.xml_");
+    eroot->Chromos().Save("ut_cre_systu_1_saved.xml");
     MUnit* cp1 = root->GetNode("./cp1");
     CPPUNIT_ASSERT_MESSAGE("Fail to get cp1", cp1 != 0);
     MUnit* s1_scp1 = root->GetNode("./Syst1/scp1");
@@ -360,7 +360,7 @@ void Ut_cre::test_CreIncaps()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     MUnit* cp = root->GetNode("./sysmod/ConnPoint");
     MElem* ecp = cp->GetObj(ecp);
-    ecp->Chromos().Save("ut_cre_incaps_cp_.xml_");
+    ecp->Chromos().Save("ut_cre_incaps_cp_saved.xml");
     MUnit* ep1 = root->GetNode("./test/Ics1/Capsule/ep");
     CPPUNIT_ASSERT_MESSAGE("Fail to get ep1", ep1 != 0);
     MVert* mep1 = ep1->GetObj(mep1);
@@ -388,7 +388,7 @@ void Ut_cre::test_CreData()
     MUnit* root = iEnv->Root();
     MElem* eroot = root->GetObj(eroot);
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    eroot->Chromos().Save("ut_cre_data_saved.xml_");
+    eroot->Chromos().Save("ut_cre_data_saved.xml");
     MUnit* doutp = root->GetNode("./(Incaps:)test/(DataSInt:)DataS_Int_1/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out", doutp != 0);
     MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
@@ -414,8 +414,8 @@ void Ut_cre::test_CreData()
     delete iEnv;
 
     // Recreate the model with osm style chromo
-    iEnv = new Env("ut_cre_data_saved.xml_", "ut_cre_data_saved.txt");
-    CPPUNIT_ASSERT_MESSAGE("Fail to create Env for ut_cre_data_saved.xml_", iEnv != 0);
+    iEnv = new Env("ut_cre_data_saved.xml", "ut_cre_data_saved.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env for ut_cre_data_saved.xml", iEnv != 0);
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
@@ -542,7 +542,7 @@ void Ut_cre::test_Notif()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     iEnv->SetObserver(mAgtObs);
     eroot->AppendMutation(TMut("node,id:Syst2,parent:./Syst1"));
-    eroot->Mutate();
+    eroot->Mutate(false, false, true, MutCtx());
 
     iEnv->UnsetObserver(mAgtObs);
     delete mAgtObs;

@@ -76,6 +76,7 @@ class ChromoX: public MChromo
 	virtual TBool SetFromSpec(const string& aSpec);
 	virtual TBool GetSpec(string& aSpec);
 	virtual void Set(const ChromoNode& aRoot);
+	virtual void Convert(const MChromo& aSrc);
 	virtual void Init(TNodeType aRootType);
 	virtual void Reset();
 	virtual void Save(const string& aFileName) const;

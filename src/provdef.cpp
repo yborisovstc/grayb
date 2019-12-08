@@ -17,6 +17,9 @@
 // TODO [YB] To import from build variable
 const string KModulesPath = "/usr/share/grayb/modules/";
 
+/** @brief Chromo arguments */
+const string KChromRarg_Xml = "xml";
+const string KChromRarg_Chs = "chs";
 
 /** Native agents factory registry */
 const ProvDef::TFReg ProvDef::mReg ( {
@@ -92,8 +95,13 @@ const string& ProvDef::ModulesPath() const
     return KModulesPath;
 }
 
-MChromo* ProvDef::CreateChromo()
+MChromo* ProvDef::CreateChromo(const string& aRargs)
 {
-    return new Chromo2();
-//    return new ChromoX();
+    MChromo* res = NULL;
+    if (aRargs == KChromRarg_Xml) {
+	res = new ChromoX();
+    } else if (aRargs == KChromRarg_Chs) {
+	res = new Chromo2();
+    }
+    return res;
 }

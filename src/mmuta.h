@@ -22,7 +22,8 @@ class MutCtx
 	MutCtx(const MutCtx& aSrc): mUnit(aSrc.mUnit), mNs(aSrc.mNs) {}
 	MutCtx(const MUnit* aUnit, const TNs& aNs): mUnit(aUnit), mNs(aNs) {}
 	MutCtx(const MUnit* aUnit): mUnit(aUnit), mNs(TNs()) {}
-	MutCtx(): MutCtx(NULL) {}
+	//MutCtx(): MutCtx(NULL) {}
+	MutCtx(): mUnit(NULL), mNs(TNs()) {}
     public:
 	const MUnit* mUnit; //!< Unit
 	const TNs& mNs;     //!< Name spaces
@@ -34,11 +35,11 @@ class MutCtx
 class MMutable
 {
     public:
-	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MutCtx& aCtx = NULL) = 0;
+	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode /*EFalse*/, const MutCtx& aCtx) = 0;
 	// TODO [YN] Why DoMutChangeCont is included but other mutations like ChangeAttr are not?
-	virtual TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MutCtx& aCtx = NULL) = 0;
-	virtual MUnit* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, TBool aTrialMode = EFalse, const MutCtx& aCtx = NULL) = 0;
-	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MutCtx& aCtx = NULL) = 0;
+	virtual TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode /*EFalse*/, const MutCtx& aCtx) = 0;
+	virtual MUnit* AddElem(const ChromoNode& aSpec, TBool aRunTime /*EFalse*/, TBool aTrialMode /*EFalse*/, const MutCtx& aCtx) = 0;
+	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode /*EFalse*/, const MutCtx& aCtx) = 0;
 	virtual string GetChromoSpec() const = 0;
 	virtual const MChromo& Chromos() const = 0;
 	virtual MChromo& Chromos() = 0;

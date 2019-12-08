@@ -24,19 +24,26 @@ class Monitor
 	Monitor();
 	~Monitor();
 	void setSpecName(const string& aFileName);
+	/** @brief Sets converted spec file name */
+	void setOutSpecName(const string& aFileName);
 	bool setLogFile(const string& aPath);
 	bool setProfPath(const string& aPath);
 	void initEnv();
 	void runModel();
 	bool saveModel(const string& aPath);
 	bool saveProfilerData();
-	/** Runs user interaction loop */
+	/** @brief Runs user interaction loop */
 	bool run();
+	/** @brief Converts chromo spec
+	 * @return Sign of sucess
+	 * */
+	bool convertSpec();
     protected:
 	/** Crates input handler for given command */
 	InputHandler* createHandler(const string& aCmd);
     protected:
-	string mSpecName;
+	string mSpecName;  //!< Input spec file name
+	string mCSpecName; //!< Convrted spec file name
 	string mLogName;
 	/** Profiler file path */
 	string mProfName;

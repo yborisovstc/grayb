@@ -67,8 +67,8 @@ class MElem : public MIface,  public MMutable, public MParent, public MChild
     virtual void GetCRoot(TMut& aMut) const = 0;
     virtual MUnit* GetInhRoot() const = 0;
     // TODO [YB] To support returning result. Ref uc_013_dsc_01 for use-case details.
-    virtual void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MutCtx& aCtx = MutCtx()) = 0;
-    virtual void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MutCtx& aCtx = NULL) = 0;
+    virtual void Mutate(TBool aRunTimeOnly /*EFalse*/, TBool aCheckSafety /*EFalse*/, TBool aTrialMode /*ETrue*/, const MutCtx& aCtx) = 0;
+    virtual void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly /*EFalse*/, TBool aCheckSafety /*EFalse*/, TBool aTrialMode /*ETrue*/, const MutCtx& aCtx) = 0;
     virtual TInt GetCompLrank(const MUnit* aComp) const = 0;
     virtual MUnit* GetAowner() = 0;
     virtual const MUnit* GetAowner() const = 0;
@@ -82,7 +82,7 @@ class MElem : public MIface,  public MMutable, public MParent, public MChild
     virtual TBool IsCompAttached(const MUnit* aComp) const = 0;
     virtual TBool IsInheritedComp(const MUnit* aNode) const = 0;
     virtual TBool HasInherDeps(const MUnit* aScope) const = 0;
-    virtual void OnNodeMutated(const MUnit* aNode, const TMut& aMut, const MutCtx& aCtx = NULL) = 0;
+    virtual void OnNodeMutated(const MUnit* aNode, const TMut& aMut, const MutCtx& aCtx) = 0;
     virtual void OnParentMutated(MUnit* aParent, const TMut& aMut) = 0;
     // From MIface
     virtual MIface* MElem_Call(const string& aSpec, string& aRes) { return NULL;}
@@ -90,7 +90,7 @@ class MElem : public MIface,  public MMutable, public MParent, public MChild
     MIface* Call(const string& aSpec, string& aRes) override {return MElem_Call(aSpec, aRes);}
     string Mid() const override { return MElem_Mid();}
     // Mutating
-    virtual void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MutCtx& aCtx = NULL) = 0;
+    virtual void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode /*EFalse*/, const MutCtx& aCtx) = 0;
     // Debugging
     virtual TBool IsHeirOf(const string& aParent) const = 0;
     virtual void SaveChromo(const char* aPath) const = 0;

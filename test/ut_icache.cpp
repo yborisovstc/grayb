@@ -85,7 +85,7 @@ void Ut_icache::test_Inv1()
     ChromoNode mut = emnode->AppendMutation(ENt_Cont);
     mut.SetAttr(ENa_MutNode, "./P1");
     mut.SetAttr(ENa_Ref, "/Root/IncapsRoot/DesRoot/st/Capsule/Inp");
-    emnode->Mutate();
+    emnode->Mutate(false, false, true, MutCtx());
 
     // Do some ticks
     ticksnum = 5;
@@ -134,7 +134,7 @@ void Ut_icache::test_InvMAgent()
     MUnit* agte = dynamic_cast<MUnit*>(agt->DoGetIface(MUnit::Type()));
     CPPUNIT_ASSERT_MESSAGE("Wrong MAgent iface on first request", agte->GetUri(NULL,true) == "/testroot/test/MACompsObserver");
 
-    etest->Mutate();
+    etest->Mutate(false, false, true, MutCtx());
 
     // Cache should be invalidated here, so GetIfi refreshes cache and add two agetns to cache - incaps and extender
     rg = test->GetIfi(MAgent::Type());

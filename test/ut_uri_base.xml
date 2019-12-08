@@ -18,7 +18,7 @@
 	<import id="/FuncComps" />
     </node>
 
-    <node id="test" parent="/testroot/Modules/IncapsComps/(Syst:)Incaps">
+    <node id="test" parent="./Modules/IncapsComps/(Syst:)Incaps">
 
 	<node id="DataS_Int_1" parent="./../Modules/DataComps/(DataS:)DataSInt">
 	    <cont node="./(Prop:)Value" val="34"/> 
@@ -30,7 +30,7 @@
 
 	<node id="Cp1" parent="./../Modules/SysComps/(ConnPointBase:)ConnPoint"/>
 	<!-- Verifying "somewhere" uri elem -->
-	<node id="Cp2" parent="/testroot/Modules/SysComps/(ConnPointBase:)ConnPoint"/>
+	<node id="Cp2" parent="/*/Modules/SysComps/(ConnPointBase:)ConnPoint"/>
 
 	<node id="Result" parent="./../Modules/FuncComps/(Incaps:)FuncIntRes"/>
 

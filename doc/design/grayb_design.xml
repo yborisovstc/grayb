@@ -4060,7 +4060,7 @@
 	</sect2>
 	<sect2 id="ds_chr2_mcp"><title>Chromo models compatibility</title>
 	    <sect3><title>Intro</title>
-		<simpara>We request that chromo2 introduction doesn't require the Elem implementation. This means that chromo2 has be compatible with
+		<simpara>We request that chromo2 introduction doesn't require the specific updates of Elem. This means that chromo2 has be compatible with
 		    the current Elem. This possibility was provided by initial design of elem chromo - there were interfaces defined for main chromo component:
 		    <itemizedlist>
 			<listitem>MChromo - chromo itself</listitem>
@@ -4075,7 +4075,17 @@
 		    root node.</simpara>
 	    </sect3>
 	    <sect3><title>Solution#1 Enable Chromo2 mut node containing chromo</title>
-		<simpara>This node exactly correspongs to Chromo1 ENt_Node type mutation. This node can be used internally only. </simpara>
+		<simpara>This node exactly correspongs to Chromo1 ENt_Node type mutation. The notation of such chromo node would be as:
+		    <programlisting> Some_name : Parent_name { ... } </programlisting>
+		    and differs from standard chromo2 mutation of creation node followed by chromo segment
+		</simpara>
+		<simpara>At the first glance this seems redundant: creation mut containing chromo seems same as creation mut followed by segment with created node
+		    targeted. However this "new" chromo node is convenient - this is just one node, so can be simply used as argument of mutation, like
+		    on the example above:
+		    <programlisting>
+			|   Incr ~ Add : (Inp ~ (Incr Delta) : Statec {About = "Consant - incrementor step"; Value = "SI 1"}) 
+		    </programlisting>
+		</simpara>
 	    </sect3>
 	</sect2>
 	<sect2><title>Notes</title>
@@ -4094,9 +4104,9 @@
 	    <sect3><title>Intro</title>
 		<simpara>Chromo v2 supports mutation context, target, name spaces etc. Let's call this context "local context". But there is context from upper layer
 		    chromos. How can it be passed to the local mutation execution? The problem is that currently the only local mutation is available for execution.  </simpara>
-		</sect3>
-		<sect3><title>Solution#1 To reuse Mutate method aCtx argument.</title>
-		</sect3>
+	    </sect3>
+	    <sect3><title>Solution#1 To reuse Mutate method aCtx argument.</title>
+	    </sect3>
 	</sect2>
 	<sect2><title>Anonymous agents. Dependent mutations (mutations chain)</title>
 	    <sect3><title>Intro</title>
@@ -5254,7 +5264,7 @@
 	</sect2>
 	<sect2><title>Target as default namespace</title>
 	    <simpara>To minimize chromo node notation we could apply the rule that target is included to namespaces. The problem here is that normally there
-	    can be deep hierarchy of chromo segments so the name space can be vast is that case.</simpara>
+		can be deep hierarchy of chromo segments so the name space can be vast is that case.</simpara>
 	</sect2>
     </sect1>
 

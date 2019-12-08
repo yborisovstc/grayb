@@ -145,10 +145,16 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	void ParseCnodeMut(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode);
 	/** @brief Parses chromo node
 	 * */
-	void ParseCnodeChromo(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode);
+	void ParseCnodeChromo(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode, bool aRoot);
 	void ParseContext(vector<string>& aLexs, streampos aPos, C2MdlNode& aMnode);
 	/** @brief Sets error */
 	void SetErr(streampos);
+	/** @brief Checks error */
+	bool IsError() const;
+	/** @brief Writes textual representation of node to stream */
+	static void OutputNode(const C2MdlNode& aNode, ostream& aOs, int aLevel);
+	/** @brief Parses lexems from stream */
+	void GetLexs(istream& aIs, streampos aBeg, streampos aEnd, vector<string>& aLexs);
     protected:
 	/** @brief Dumps content of input stream fragment
 	 * */
@@ -182,6 +188,7 @@ class Chromo2: public MChromo
 	virtual TBool SetFromSpec(const string& aSpec);
 	virtual TBool GetSpec(string& aSpec);
 	virtual void Set(const ChromoNode& aRoot);
+	virtual void Convert(const MChromo& aSrc);
 	virtual void Init(TNodeType aRootType);
 	virtual void Reset();
 	virtual void Save(const string& aFileName) const;
@@ -189,7 +196,8 @@ class Chromo2: public MChromo
 	virtual void ReduceToSelection(const ChromoNode& aSelNode);
 	virtual bool IsError() const;
 	virtual const CError& Error() const;
-
+    protected:
+	void ConvertNode(ChromoNode& aDst, const ChromoNode& aSrc);
     protected:
 	Chromo2Mdl mMdl;
 	ChromoNode mRootNode;

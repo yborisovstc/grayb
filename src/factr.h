@@ -27,7 +27,9 @@ class GFactory: public Base, public MProvider
 	virtual Unit* CreateNode(const string& aType, const string& aName, MUnit* aMan, MEnv* aEnv);
 	virtual Unit* GetNode(const string& aUri);
 	virtual TBool IsProvided(const MUnit* aElem) const;
-	virtual MChromo* CreateChromo();
+	virtual void SetChromoRslArgs(const string& aRargs);
+	virtual void GetChromoRslArgs(string& aRargs);
+	virtual MChromo* CreateChromo(const string& aRargs = string());
 	virtual void AppendNodesInfo(vector<string>& aInfo);
 	virtual const string& ModulesPath() const;
 	virtual void SetEnv(MEnv* aEnv);
@@ -37,6 +39,7 @@ class GFactory: public Base, public MProvider
 	TProviders iProviders;
 	MEnv* iEnv;
 	string iName;
+	string mChromoRargs; //!<  Chromo resolutin arguments
 };
 
 

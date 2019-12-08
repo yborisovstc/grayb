@@ -87,13 +87,13 @@ class Elem: public Unit, public MElem
 	MUnit* GetUnit();
 	virtual void GetCRoot(TMut& aMut) const;
 	virtual TInt GetCompLrank(const MUnit* aComp) const;
-	virtual void Mutate(TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MutCtx& aCtx = NULL);
-	virtual void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly = EFalse, TBool aCheckSafety = EFalse, TBool aTrialMode = ETrue, const MutCtx& aCtx = NULL);
-	virtual void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MutCtx& aCtx = NULL);
+	virtual void Mutate(TBool aRunTimeOnly /*EFalse*/, TBool aCheckSafety /*EFalse*/, TBool aTrialMode /*ETrue*/, const MutCtx& aCtx);
+	virtual void Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly /*EFalse*/, TBool aCheckSafety /*EFalse*/, TBool aTrialMode /*ETrue*/, const MutCtx& aCtx);
+	virtual void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode /*EFalse*/, const MutCtx& aCtx);
 	virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal);
 	// Nodes
-	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MutCtx& aCtx = NULL);
-	virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse);
+	virtual TBool RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode /*EFalse*/, const MutCtx& aCtx);
+	virtual TBool MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode /* EFalse*/, const MutCtx& aCtx);
 	virtual TBool ImportNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode = EFalse);
 	// From MChild
 	virtual MUnit* GetParent();
@@ -107,9 +107,9 @@ class Elem: public Unit, public MElem
 	virtual TBool AppendChild(MUnit* aChild);
 	virtual void RemoveChild(MUnit* aChild);
 	// From MMutable
-	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MutCtx& aCtx = NULL);
-	virtual TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode = EFalse, const MutCtx& aCtx = NULL);
-	virtual MUnit* AddElem(const ChromoNode& aSpec, TBool aRunTime = EFalse, TBool aTrialMode = EFalse, const MutCtx& aCtx = NULL);
+	virtual void DoMutation(const ChromoNode& aCromo, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MutCtx& aCtx);
+	virtual TBool DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MutCtx& aCtx);
+	virtual MUnit* AddElem(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode, const MutCtx& aCtx);
 	virtual void OnNodeMutated(const MUnit* aNode, const TMut& aMut, const MutCtx& aCtx);
 	virtual void OnParentMutated(MUnit* aParent, const TMut& aMut);
 	// Chromo

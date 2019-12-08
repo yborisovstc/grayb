@@ -1,6 +1,7 @@
 #include <env.h>
 #include <stdlib.h>
 
+#include "chromox.h"
 #include "chromo2.h"
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -13,10 +14,11 @@
 class Ut_chromo2 : public CPPUNIT_NS::TestFixture
 {
     CPPUNIT_TEST_SUITE(Ut_chromo2);
-//    CPPUNIT_TEST(test_Chr1);
-    CPPUNIT_TEST(test_Cre1);
+    CPPUNIT_TEST(test_Chr1);
+//    CPPUNIT_TEST(test_Cre1);
    // CPPUNIT_TEST(test_Seg);
    // CPPUNIT_TEST(test_Ns);
+//    CPPUNIT_TEST(test_Conv);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -26,6 +28,7 @@ private:
     void test_Cre1();
     void test_Seg();
     void test_Ns();
+    void test_Conv();
 private:
     Env* iEnv;
 };
@@ -120,3 +123,28 @@ void Ut_chromo2::test_Ns()
     */
 }
 
+void Ut_chromo2::test_Conv()
+{
+    printf("\n === Test of Chr1 conversion to Chr2\n");
+    ChromoX chr;
+    chr.SetFromFile("ut_chr2_conv.xml");
+    if (chr.IsError()) {
+	cout << "Pos: " << chr.Error().mPos << " -- " << chr.Error().mText << endl;
+    }
+    CPPUNIT_ASSERT_MESSAGE("Chromo parsing error", !chr.IsError());
+    ChromoNode croot = chr.Root();
+    CPPUNIT_ASSERT_MESSAGE("Chromo root is empty", croot != ChromoNode());
+    ChromoNode::Iterator beg = croot.Begin();
+    ChromoNode cmp1 = *beg;
+    CPPUNIT_ASSERT_MESSAGE("Chromo root comp1 is empty", cmp1 != ChromoNode());
+    TNodeType cmp1t = cmp1.Type();
+    CPPUNIT_ASSERT_MESSAGE("Wront type of root comp1", cmp1t == ENt_Note);
+    int cn = croot.Count();
+    CPPUNIT_ASSERT_MESSAGE("Wrong root node comps number", cn == 8);
+
+    Chromo2 chr2;
+    chr2.Convert(chr);
+    chr2.Root().Dump();
+    chr2.Save("ut_chr2_conv.chs");
+    
+}

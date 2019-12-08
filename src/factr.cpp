@@ -53,11 +53,22 @@ TBool GFactory::IsProvided(const MUnit* aElem) const
 
 }
 
-MChromo* GFactory::CreateChromo()
+void GFactory::SetChromoRslArgs(const string& aRargs)
+{
+    __ASSERT(mChromoRargs.empty());
+    mChromoRargs = aRargs;
+}
+
+void GFactory::GetChromoRslArgs(string& aRargs)
+{
+    aRargs = mChromoRargs;
+}
+
+MChromo* GFactory::CreateChromo(const string& aRargs)
 {
     MChromo* res = NULL;
     for (TProviders::iterator it = iProviders.begin(); it != iProviders.end() && res == NULL; it++) {
-	res = it->second->CreateChromo();
+	res = it->second->CreateChromo(aRargs.empty() ? mChromoRargs : aRargs);
     }
     return res;
 }

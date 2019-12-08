@@ -63,6 +63,11 @@ class MAgentObserver;
 	    virtual void SetEnableCheckSafety(bool aEnable) = 0;
 	    virtual bool EnableOptimization() const = 0;
 	    virtual void SetEnableOptimization(bool aEnable) = 0;
+	    /** @brief Sets chromo resolution arguments
+	     * Just one argument, chromo spec file extension is used
+	     * */
+	    virtual void SetChromoRslArgs(const string& aArgs) = 0;
+	    virtual void GetChromoRslArgs(string& aArgs) = 0;
     };
 
     // Executive environment interface

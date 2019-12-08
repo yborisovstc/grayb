@@ -17,6 +17,7 @@ enum TNodeType
     ENt_Cont = 6, 	// Change node content
     ENt_Import = 8, 	// Importing node
     ENt_Seg = 9, 	// Segment of chromo
+    ENt_Note = 10, 	// Note
 };
 
 enum TNodeAttr
@@ -118,6 +119,8 @@ class MChromo
 	virtual TBool SetFromSpec(const string& aSpec) = 0;
 	virtual TBool GetSpec(string& aSpec) = 0;
 	virtual void Set(const ChromoNode& aRoot) = 0;
+	/** @brief Converts from another chromo, probably not same type */
+	virtual void Convert(const MChromo& aSrc) = 0;
 	virtual void Init(TNodeType aRootType) = 0;
 	virtual void Reset() = 0;
 	virtual void Save(const string& aFileName) const = 0;

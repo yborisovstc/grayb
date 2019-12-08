@@ -51,7 +51,7 @@ TBool GProvider::IsProvided(const MUnit* aElem) const
     return res;
 }
 
-MChromo* GProvider::CreateChromo()
+MChromo* GProvider::CreateChromo(const string& aRargs)
 {
     return NULL;
 }

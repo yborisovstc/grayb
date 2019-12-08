@@ -4,6 +4,9 @@
 #include <iostream>
 #include <memory>
 
+
+#include <mprov.h>
+
 #include "monitor.h"
 
 using namespace std;
@@ -65,6 +68,11 @@ bool Monitor::setProfPath(const string& aPath)
     return res;
 }
 
+void Monitor::setOutSpecName(const string& aFileName)
+{
+    mCSpecName = aFileName;
+}
+
 bool Monitor::setLogFile(const string& aPath)
 {
     bool res = true;
@@ -108,6 +116,25 @@ bool Monitor::run()
 	    }
 	}
     } while (!end);
+    return res;
+}
+
+bool Monitor::convertSpec()
+{
+    bool res = true;
+    initEnv();
+    string chromo_fext = mSpecName.substr(mSpecName.find_last_of(".") + 1);
+    MProvider* prov = mEnv->Provider();
+    MChromo* chr = prov->CreateChromo(chromo_fext);
+    chr->SetFromFile(mSpecName);
+    if (chr->IsError()) {
+	cout << "Pos: " << chr->Error().mPos << " -- " << chr->Error().mText << endl;
+    }
+    string ochromo_fext = mCSpecName.substr(mCSpecName.find_last_of(".") + 1);
+    MChromo* ochr = prov->CreateChromo(ochromo_fext);
+    ochr->Convert(*chr);
+    ochr->Save(mCSpecName);
+ 
     return res;
 }
 

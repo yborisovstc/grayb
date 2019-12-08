@@ -136,7 +136,9 @@ TNodeType ChromoMdlX::GetType(const THandle& aHandle)
 {
     TNodeType res = ENt_Unknown;
     xmlNodePtr node = aHandle.Data(node);
-    if (node->name != NULL) {
+    if (node->type == XML_COMMENT_NODE) {
+	res = ENt_Note;
+    } else if (node->type == XML_ELEMENT_NODE && node->name != NULL) {
 	const char* type_name = (const char*) node->name;
 	res = TMut::NodeType(type_name);
     }
@@ -150,8 +152,14 @@ THandle ChromoMdlX::GetFirstChild(const THandle& aHandle, TNodeType aType)
     THandle res(node->children);
     if (res != NULL) {
 	TNodeType type = GetType(res);
-	if ((res.Data<xmlNodePtr>()->type != XML_ELEMENT_NODE) || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown)))
+	xmlNodePtr resp = res.Data<xmlNodePtr>();
+	while ((resp != NULL) && ((resp->type != XML_ELEMENT_NODE && resp->type != XML_COMMENT_NODE)
+		    || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown)))) {
 	    res = Next(res, aType);
+	    resp = res.Data<xmlNodePtr>();
+	    if (res != NULL)
+		type = GetType(res);
+	}
     }
     return THandle(res);
 }
@@ -163,8 +171,14 @@ THandle ChromoMdlX::GetLastChild(const THandle& aHandle, TNodeType aType)
     THandle res(node->last);
     if (res != NULL) {
 	TNodeType type = GetType(res);
-	if ((res.Data<xmlNodePtr>()->type != XML_ELEMENT_NODE) || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown)))
+	xmlNodePtr resp = res.Data<xmlNodePtr>();
+	while ((resp != NULL) && ((resp->type != XML_ELEMENT_NODE && resp->type != XML_COMMENT_NODE)
+		    || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown)))) {
 	    res = Prev(res, aType);
+	    resp = res.Data<xmlNodePtr>();
+	    if (res != NULL)
+		type = GetType(res);
+	}
     }
     return res;
 }
@@ -195,7 +209,8 @@ THandle ChromoMdlX::Next(const THandle& aHandle, TNodeType aType)
     xmlNodePtr res = aHandle.Data<xmlNodePtr>()->next;
     if (res != NULL) {
 	TNodeType type = GetType(res);
-	while ((res != NULL) && ((res->type != XML_ELEMENT_NODE) || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown)))) {
+	while ((res != NULL) && ((res->type != XML_ELEMENT_NODE && res->type != XML_COMMENT_NODE)
+		    || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown)))) {
 	    res = res->next;
 	    if (res != NULL)
 		type = GetType(res);
@@ -210,7 +225,8 @@ THandle ChromoMdlX::Prev(const THandle& aHandle, TNodeType aType)
     xmlNodePtr res = aHandle.Data(res)->prev;
     if (res != NULL) {
 	TNodeType type = GetType(res);
-	while ((res != NULL) && ((res->type != XML_ELEMENT_NODE) || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown)))) {
+	while ((res != NULL) && ((res->type != XML_ELEMENT_NODE && res->type != XML_COMMENT_NODE)
+		    || ((aType != ENt_Unknown) ? (type != aType) : (type == ENt_Unknown)))) {
 	    res = res->prev;
 	    type = GetType(res);
 	}
@@ -222,7 +238,14 @@ string ChromoMdlX::GetAttr(const THandle& aHandle, TNodeAttr aAttr) const
 {
     __ASSERT(aHandle != THandle());
     xmlNodePtr node = aHandle.Data(node);
-    xmlChar *attr = xmlGetProp(node, (const xmlChar *) TMut::NodeAttrName(aAttr).c_str());
+    xmlChar* attr = NULL;
+    if (node->type == XML_COMMENT_NODE) {
+	if (aAttr == ENa_MutVal) {
+	    attr = xmlNodeGetContent(node);
+	}
+    } else {
+	attr = xmlGetProp(node, (const xmlChar *) TMut::NodeAttrName(aAttr).c_str());
+    }
     string res;
     if (attr != NULL)
 	res.assign((char*) attr);
@@ -242,7 +265,14 @@ TBool ChromoMdlX::AttrExists(const THandle& aHandle, TNodeAttr aAttr) const
     __ASSERT(aHandle != THandle());
     TBool res = EFalse;
     xmlNodePtr node = aHandle.Data(node);
-    xmlChar *attr = xmlGetProp(node, (const xmlChar *) TMut::NodeAttrName(aAttr).c_str());
+    xmlChar *attr = NULL;
+    if (node->type == XML_COMMENT_NODE) {
+	if (aAttr == ENa_MutVal) {
+	    attr = xmlNodeGetContent(node);
+	}
+    } else {
+	attr = xmlGetProp(node, (const xmlChar *) TMut::NodeAttrName(aAttr).c_str());
+    }
     res = (attr != NULL);
     free (attr);
     return res;
@@ -364,10 +394,10 @@ TInt ChromoMdlX::GetOrder(const THandle& aHandle, TBool aTree) const
 {
     TInt res = 0;
     /* TODO to remove support of chromo order
-    TNodeAttr attr = aTree ? ENa_TOrder : ENa_Order;
-    if (AttrExists(aHandle, attr))
-	GetAttr(aHandle, attr, res);
-	*/
+       TNodeAttr attr = aTree ? ENa_TOrder : ENa_Order;
+       if (AttrExists(aHandle, attr))
+       GetAttr(aHandle, attr, res);
+       */
     return res;
 }
 
@@ -490,3 +520,7 @@ TBool ChromoX::GetSpec(string& aSpec)
     return iMdl.ToString(iRootNode.Handle(), aSpec);
 }
 
+void ChromoX::Convert(const MChromo& aSrc)
+{
+    __ASSERT(false);
+}

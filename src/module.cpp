@@ -45,7 +45,8 @@ MUnit* AMod::Import(const GUri& aUri)
     ChromoNode sel = iMut->Root().GetNodeByMhUri(aUri);
     if (sel.Handle() != THandle()) {
 	iMut->ReduceToSelection(sel);
-	Mutate(EFalse, ETrue, EFalse);
+	MutCtx ctx;
+	Mutate(EFalse, ETrue, EFalse, ctx);
 	res = GetNode(aUri);
     } else {
 	Logger()->Write(EErr, this, "Importing to module: cannot find chromo node [%s]", aUri.toString().c_str());

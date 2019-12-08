@@ -17,7 +17,7 @@
 const string KLogFileName = "faplog.txt";
 const char* KRootName = "Root";
 // TODO [YB] to get from build env
-const string ImportsMgr::KDefImportPath = "/usr/share/grayb/modules_c2";
+const string ImportsMgr::KDefImportPath = "/usr/share/grayb/modules";
 const string ImportsMgr::KImportsContainerUri = "./Modules";
 
 Env::EIfu Env::mIfu;
@@ -55,9 +55,12 @@ void ImportsMgr::AddImportModulesInfo(const string& aPath)
 	    // If the file is a directory (or is in some way invalid) we'll skip it
 	    if (stat( filepath.c_str(), &filestat )) continue;
 	    if (S_ISDIR( filestat.st_mode ))         continue;
-	    if(fname.substr(fname.find_last_of(".") + 1) != "xml") continue;
+	    string spec_ext;
+	    mHost.ChMgr()->GetChromoRslArgs(spec_ext);
+	    if(fname.substr(fname.find_last_of(".") + 1) != spec_ext) continue;
 	    // Get chromo root as the module name
 	    MChromo *spec = mHost.Provider()->CreateChromo();
+	    __ASSERT(spec != NULL);
 	    spec->SetFromFile(filepath);
 	    string rname = spec->Root().Name();
 	    mModsPaths.insert(pair<string, string>(rname, filepath));
@@ -175,7 +178,8 @@ void ImportsMgr::ImportToNode(MUnit* aNode, const ChromoNode& aMut, const Chromo
 	    mHost.Pdstat(PEvents::DurStat_MutImportToNode, false);
 	    MElem* enode = aNode->GetObj(enode);
 	    if (enode != NULL) {
-		enode->Mutate(mut->Root(), ETrue, EFalse, EFalse, aNode);
+		TNs ns; MutCtx ctx(aNode, ns);
+		enode->Mutate(mut->Root(), ETrue, EFalse, EFalse, ctx);
 	    } else {
 		mHost.Logger()->Write(EErr, NULL, "Node [%s] is not mutable", aNode->GetUri(NULL, ETrue).c_str());
 	    }
@@ -288,7 +292,15 @@ void ChromoMgr::SetEnableOptimization(bool aEnable)
     }
 }
 
+void ChromoMgr::SetChromoRslArgs(const string& aArgs)
+{
+    mHost.iProvider->SetChromoRslArgs(aArgs);
+}
 
+void ChromoMgr::GetChromoRslArgs(string& aArgs)
+{
+    mHost.iProvider->GetChromoRslArgs(aArgs);
+}
 
 IfcResolver::IfcResolver(Env& aHost): mHost(aHost)
 {
@@ -406,6 +418,8 @@ Env::Env(const string& aSpecFile, const string& aLogFileName): Base(), iRoot(NUL
     mIfResolver = new IfcResolver(*this);    
     mObserver = new SystemObserver(*this);
     mProf = new GProfiler(this, KPInitData);
+    string chromo_fext = iSpecFile.substr(iSpecFile.find_last_of(".") + 1);
+    iChMgr->SetChromoRslArgs(chromo_fext);
     // Profilers events
     /*
     mPfid_Start_Constr = Profiler()->RegisterEvent(TPEvent("Start construction"));
@@ -430,6 +444,8 @@ Env::Env(const string& aSpec, const string& aLogFileName, TBool aOpt): Base(), i
     mIfResolver = new IfcResolver(*this);    
     mObserver = new SystemObserver(*this);
     mProf = new GProfiler(this, KPInitData);
+    string chromo_fext = iSpecFile.substr(iSpecFile.find_last_of(".") + 1);
+    iChMgr->SetChromoRslArgs(chromo_fext);
     // Profilers events
     /*
     mPfid_Start_Constr = Profiler()->RegisterEvent(TPEvent("Start construction"));
@@ -478,12 +494,13 @@ void Env::ConstructSystem()
 	Pclock(PEvents::Env_Start_Constr, iRoot);
 	Pdur(PEvents::Dur_Env_Constr_Start);
 	const ChromoNode& root = spec->Root();
-	/*
+
+	/**/
 	string sparent = root.Attr(ENa_Parent);
 	Unit* parent = iProvider->GetNode(sparent);
 	iRoot = iProvider->CreateNode(sparent, root.Name(), NULL, this);
-	*/
-	iRoot = iProvider->CreateNode("Elem", "Root", NULL, this);
+	/**/
+	//iRoot = iProvider->CreateNode("Elem", "Root", NULL, this);
 	MElem* eroot = (iRoot == NULL) ? NULL : iRoot->GetObj(eroot);
 	if (eroot != NULL) {
 	    Pclock(PEvents::Env_Root_Created, iRoot);

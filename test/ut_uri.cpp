@@ -153,7 +153,7 @@ void Ut_uri::test_UriBase()
     ChromoNode nchange = edinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./(Prop:)Value");
     nchange.SetAttr(ENa_MutVal, "57");
-    edinp->Mutate();
+    edinp->Mutate(false, false, false, MutCtx());
     // Check the function output
     MUnit* foutp1 = root->GetNode("./test/Incr2/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out when inp data changed", foutp1 != 0);

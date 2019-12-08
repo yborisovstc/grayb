@@ -262,11 +262,11 @@ void Elem::Mutate(TBool aRunTimeOnly, TBool aCheckSafety, TBool aTrialMode, cons
     MutCtx mctx(aCtx.mUnit == NULL ? this : aCtx.mUnit, aCtx.mNs);
     DoMutation(root, aRunTimeOnly, aCheckSafety, aTrialMode, mctx);
     // Clear mutation
-    for (ChromoNode::Iterator mit = root.Begin(); mit != root.End();)
-    {
+    ChromoNode::Iterator mit = root.Begin();
+    while (mit != root.End()) {
 	ChromoNode node = *mit;
-	mit++; // It is required because removing node by iterator breakes iterator itself
 	root.RmChild(node);
+	mit = root.Begin();
     }
 }
 
@@ -391,13 +391,15 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		Pdstat(PEvents::DurStat_MutCont, false);
 	    }
 	    else if (rnotype == ENt_Move) {
-		MoveNode(rno, aRunTime, aTrialMode);
+		MoveNode(rno, aRunTime, aTrialMode, aCtx);
 	    }
 	    else if (rnotype == ENt_Import) {
 		ImportNode(rno, aRunTime, aTrialMode);
 	    }
 	    else if (rnotype == ENt_Rm) {
 		RmNode(rno, aRunTime, aCheckSafety, aTrialMode, aCtx);
+	    }
+	    else if (rnotype == ENt_Note) {
 	    }
 	    else {
 		Logger()->Write(EErr, this, "Mutating - unknown mutation type [%d]", rnotype);
@@ -449,7 +451,7 @@ TBool Elem::ChangeAttr(TNodeAttr aAttr, const string& aVal)
     TBool res = EFalse;
     if (aAttr == ENa_Id) {
 	string sOldName(Name());
-	TBool res = Unit::ChangeAttr(aAttr, aVal);
+	res = Unit::ChangeAttr(aAttr, aVal);
 	if (res) {
 	    MElem* eparent = (iParent == NULL) ? NULL : iParent->GetObj(eparent);
 	    if (eparent != NULL) {
@@ -593,7 +595,7 @@ MUnit* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 		res = spec->Set(sparent);
 		if (res) {
 		    const ChromoNode& root = spec->Root();
-		    parent = AddElem(root);
+		    parent = AddElem(root, false, false, aCtx);
 		    delete spec;
 		}
 	    }
@@ -920,7 +922,7 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
     return res;
 }
 
-TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
+TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode, const MutCtx& aCtx)
 {
     TBool res = EFalse;
     string srcs = aSpec.Attr(ENa_Id);
@@ -994,10 +996,10 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode)
 		const ChromoNode& root = spec->Root();
 		MUnit* nnode = NULL;
 		if (dnode != NULL) {
-		    nnode= ednode->AddElem(root, ETrue);
+		    nnode= ednode->AddElem(root, ETrue, EFalse, aCtx);
 		}
 		else {
-		    nnode = AddElem(root, ETrue);
+		    nnode = AddElem(root, ETrue, false, aCtx);
 		}
 		delete spec;
 		res = nnode != NULL;
@@ -1303,7 +1305,8 @@ MIface* Elem::MElem_Call(const string& aSpec, string& aRes)
 	checksafety = Ifu::ToBool(args.at(2));
 	trialmode = Ifu::ToBool(args.at(3));
 	SetMutation(args.at(0));
-	Mutate(rtonly, checksafety, trialmode);
+	MutCtx ctx;
+	Mutate(rtonly, checksafety, trialmode, ctx);
     } else if (name == "Mutate#2") {
 	TBool rtonly, checksafety, trialmode;
 	rtonly = Ifu::ToBool(args.at(0));

@@ -16,7 +16,9 @@ class ProvDef: public ProvBase
 	// From MProvider
 	virtual void AppendNodesInfo(vector<string>& aInfo);
 	virtual const string& ModulesPath() const;
-	virtual MChromo* CreateChromo();
+	virtual void SetChromoRslArgs(const string& aRargs) {}
+	virtual void GetChromoRslArgs(string& aRargs) {}
+	virtual MChromo* CreateChromo(const string& aRargs = string());
     private:
 	static const TFReg mReg;
 };

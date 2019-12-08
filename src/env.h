@@ -70,6 +70,8 @@ class ChromoMgr: public Base, public MChromoMgr
     virtual void SetEnableCheckSafety(bool aEnable);
     virtual bool EnableOptimization() const { return mEnableOptimization;};;
     virtual void SetEnableOptimization(bool aEnable);
+    virtual void SetChromoRslArgs(const string& aArgs);
+    virtual void GetChromoRslArgs(string& aArgs);
     protected:
     TInt mLim;
     Env& mHost;

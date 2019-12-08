@@ -21,7 +21,12 @@ class MProvider
 	virtual Unit* CreateNode(const string& aType, const string& aName, MUnit* aMan, MEnv* aEnv) = 0;
 	virtual Unit* GetNode(const string& aUri) = 0;
 	virtual TBool IsProvided(const MUnit* aElem) const = 0;
-	virtual MChromo* CreateChromo() = 0;
+	/** @brief Sets chromo resolution arguments
+	 * Just one argument, chromo spec file extension is used
+	 * */
+	virtual void SetChromoRslArgs(const string& aRargs) = 0;
+	virtual void GetChromoRslArgs(string& aRargs) = 0;
+	virtual MChromo* CreateChromo(const string& aRargs = string()) = 0;
 	virtual void AppendNodesInfo(vector<string>& aInfo) = 0;
 	virtual const string& ModulesPath() const = 0;
 	virtual void SetEnv(MEnv* aEnv) = 0;

@@ -14,15 +14,19 @@ using namespace std;
 
 static bool mAutoRun = false;
 
+static bool mConvert = false; //!< Flag operation of converting spec */
+
 const string help = "\nFAP2 Command line monitor\n\n\
 Usage:\n\
 fapm [options] [file]\n\
 Options:\n\
 -h - show help\n\
+-c - convert chromo spec\n\
 -l <file> - log file\n\
 -p <file> - profiler file\n\
 -a        - auto-run\n\
 -s <file> - spec file\n\
+-o <file> - converted spec file\n\
 \n";
 
 int main(int argc, char* argv[])
@@ -55,23 +59,35 @@ int main(int argc, char* argv[])
 		// Spec file
 		string path = arg.substr(2);
 		mnt.setSpecName(path);
+	    } else if (arg.compare(0, 2, "-o") == 0) {
+		// Converted Spec file
+		string path = arg.substr(2);
+		mnt.setOutSpecName(path);
 	    } else if (arg.compare(0, 2, "-a") == 0) {
 		// Autorun
 		mAutoRun = true;
+	    } else if (arg.compare(0, 2, "-c") == 0) {
+		// Convert
+		mConvert = true;
 	    } else {
 		cout << "Error: unknown argument [" << arg << "]" << endl;
 		res = -1;
 	    }
 	}
 	if (res == 0) {
-	    if (mAutoRun) {
+	    if (mConvert) {
+		bool sdres = mnt.convertSpec();
+		if (!sdres) {
+		    cout << "Error on converting chromo spec" << endl;
+		}
+	    } else if (mAutoRun) {
 		// Auto-run mode: run model and exit
 		// Init env and run
 		mnt.initEnv();
 		mnt.runModel();
 		bool sdres = mnt.saveProfilerData();
 		if (!sdres) {
-		    cout << "Error on saving profile data to file";
+		    cout << "Error on saving profile data to file" << endl;
 		}
 	    } else {
 		// Run monitor user input handling loop
