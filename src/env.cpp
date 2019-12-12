@@ -414,12 +414,12 @@ Env::Env(const string& aSpecFile, const string& aLogFileName): Base(), iRoot(NUL
     iSpecFile = aSpecFile;
     srand(time(NULL));
     iChMgr = new ChromoMgr(*this);
+    string chromo_fext = iSpecFile.substr(iSpecFile.find_last_of(".") + 1);
+    iChMgr->SetChromoRslArgs(chromo_fext);
     iImpMgr = new ImportsMgr(*this);
     mIfResolver = new IfcResolver(*this);    
     mObserver = new SystemObserver(*this);
     mProf = new GProfiler(this, KPInitData);
-    string chromo_fext = iSpecFile.substr(iSpecFile.find_last_of(".") + 1);
-    iChMgr->SetChromoRslArgs(chromo_fext);
     // Profilers events
     /*
     mPfid_Start_Constr = Profiler()->RegisterEvent(TPEvent("Start construction"));
@@ -440,12 +440,12 @@ Env::Env(const string& aSpec, const string& aLogFileName, TBool aOpt): Base(), i
     iSpec= aSpec;
     srand(time(NULL));
     iChMgr = new ChromoMgr(*this);
+    string chromo_fext = iSpecFile.substr(iSpecFile.find_last_of(".") + 1);
+    iChMgr->SetChromoRslArgs(chromo_fext);
     iImpMgr = new ImportsMgr(*this);
     mIfResolver = new IfcResolver(*this);    
     mObserver = new SystemObserver(*this);
     mProf = new GProfiler(this, KPInitData);
-    string chromo_fext = iSpecFile.substr(iSpecFile.find_last_of(".") + 1);
-    iChMgr->SetChromoRslArgs(chromo_fext);
     // Profilers events
     /*
     mPfid_Start_Constr = Profiler()->RegisterEvent(TPEvent("Start construction"));
@@ -511,6 +511,7 @@ void Env::ConstructSystem()
 	    Logger()->Write(EInfo, iRoot, "Started of creating system, spec [%s]", iSpecFile.c_str());
 	    eroot->SetMutation(root);
 	    TNs ns;
+	    ns.push_back(iRoot);
 	    MutCtx mc(iRoot, ns);
 	    //eroot->Mutate(EFalse, EFalse, EFalse, MutCtx(iRoot));
 	    eroot->Mutate(EFalse, EFalse, EFalse, mc);

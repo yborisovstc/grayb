@@ -33,6 +33,7 @@ private:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( Ut_mod );
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(Ut_mod, "Ut_mod");
 
 void Ut_mod::setUp()
 {
@@ -74,33 +75,38 @@ void Ut_mod::test_ImpsMgr2()
 {
     printf("\n === Test of imports manager: importing modules node\n");
 
-    iEnv = new Env("ut_mod_impmgr_2.xml", "ut_mod_impmgr_2.txt");
-    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
-    iEnv->ImpsMgr()->AddImportsPaths("modules");
-    iEnv->ImpsMgr()->AddImportsPaths("modules2");
-    // Enabling mutation repositioning in order to resolve unsafety
-    iEnv->ChMgr()->SetEnableReposMuts(ETrue);
-    iEnv->ConstructSystem();
-    MUnit* root = iEnv->Root();
-    // Check creation first
-    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
-    // Verifying importing Mod2_comp_2
-    MUnit* mod2_c2 = root->GetNode("/test/Modules/Mod2_root_3/Mod2_comp_2");
-    CPPUNIT_ASSERT_MESSAGE("Mod2_comp_2 not imported", mod2_c2 != NULL);
-    // Verifying importing Mod_comp_2
-    MUnit* mod_c2 = root->GetNode("/test/Modules/Mod_root_3/Mod_comp_2");
-    CPPUNIT_ASSERT_MESSAGE("Mod_comp_2 not imported", mod_c2 != NULL);
-    // Verifying creation from imported node
-    MUnit* v4 = root->GetNode("./v4");
-    CPPUNIT_ASSERT_MESSAGE("v4 is not created", v4 != NULL);
-    MUnit* v5 = root->GetNode("./v5");
-    CPPUNIT_ASSERT_MESSAGE("v5 is not created", v5 != NULL);
-    // Verify if node is imported with path containing nodes dest, ref ds_mod_prb_uri_chromo
-    MUnit* mod3_c4_c1_c1 = root->GetNode("./Modules/Mod_root_3/Mod3_c4/Mod3_comp_int_c1/Mod3_c4_c1/Mod3_c4_c1_c1");
-    CPPUNIT_ASSERT_MESSAGE("mod3_c4_c1_c1 is not created", mod3_c4_c1_c1 != NULL);
-    MUnit* v6 = root->GetNode("./v6");
-    CPPUNIT_ASSERT_MESSAGE("v6 is not created", v6 != NULL);
-    delete iEnv;
+    for (int ct = 1; ct < 2; ct++) {
+	const string specn("ut_mod_impmgr_2");
+	string spec = specn + string(".") + string(ct == 0 ? "xml" : "chs");
+	string log = specn + string(ct == 0 ? "_xml" : "_chs") + ".log";
+	iEnv = new Env(spec, log);
+	CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+	iEnv->ImpsMgr()->AddImportsPaths("modules");
+	iEnv->ImpsMgr()->AddImportsPaths("modules2");
+	// Enabling mutation repositioning in order to resolve unsafety
+	iEnv->ChMgr()->SetEnableReposMuts(ETrue);
+	iEnv->ConstructSystem();
+	MUnit* root = iEnv->Root();
+	// Check creation first
+	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
+	// Verifying importing Mod2_comp_2
+	MUnit* mod2_c2 = root->GetNode("/test/Modules/Mod2_root_3/Mod2_comp_2");
+	CPPUNIT_ASSERT_MESSAGE("Mod2_comp_2 not imported", mod2_c2 != NULL);
+	// Verifying importing Mod_comp_2
+	MUnit* mod_c2 = root->GetNode("/test/Modules/Mod_root_3/Mod_comp_2");
+	CPPUNIT_ASSERT_MESSAGE("Mod_comp_2 not imported", mod_c2 != NULL);
+	// Verifying creation from imported node
+	MUnit* v4 = root->GetNode("./v4");
+	CPPUNIT_ASSERT_MESSAGE("v4 is not created", v4 != NULL);
+	MUnit* v5 = root->GetNode("./v5");
+	CPPUNIT_ASSERT_MESSAGE("v5 is not created", v5 != NULL);
+	// Verify if node is imported with path containing nodes dest, ref ds_mod_prb_uri_chromo
+	MUnit* mod3_c4_c1_c1 = root->GetNode("./Modules/Mod_root_3/Mod3_c4/Mod3_comp_int_c1/Mod3_c4_c1/Mod3_c4_c1_c1");
+	CPPUNIT_ASSERT_MESSAGE("mod3_c4_c1_c1 is not created", mod3_c4_c1_c1 != NULL);
+	MUnit* v6 = root->GetNode("./v6");
+	CPPUNIT_ASSERT_MESSAGE("v6 is not created", v6 != NULL);
+	delete iEnv;
+    }
 }
 
 #if 0
@@ -126,16 +132,16 @@ void Ut_mod::test_ModInt1()
     // Verifying creation from imported node
     Elem* v4 = root->GetNode("./v4");
     CPPUNIT_ASSERT_MESSAGE("v4 is not created", v4 != NULL);
-    
+
     /*
-    Elem* mode = root->GetNode("./Modules/ut_mod_int_1m");
-    CPPUNIT_ASSERT_MESSAGE("Module isn't created", mode != NULL);
-    MMod* moda = mode->GetObj(moda);
-    GUri impuri("./Mod_root/Mod_comp_1/Mod_comp_1_1");
-    moda->Import(impuri);
-    CPPUNIT_ASSERT_MESSAGE("Module agent isn't created", moda != NULL);
-    Elem* impe = mode->GetNode("./Mod_root/Mod_comp_1/Mod_comp_1_1");
-    CPPUNIT_ASSERT_MESSAGE("Import is failed", impe != NULL);
+       Elem* mode = root->GetNode("./Modules/ut_mod_int_1m");
+       CPPUNIT_ASSERT_MESSAGE("Module isn't created", mode != NULL);
+       MMod* moda = mode->GetObj(moda);
+       GUri impuri("./Mod_root/Mod_comp_1/Mod_comp_1_1");
+       moda->Import(impuri);
+       CPPUNIT_ASSERT_MESSAGE("Module agent isn't created", moda != NULL);
+       Elem* impe = mode->GetNode("./Mod_root/Mod_comp_1/Mod_comp_1_1");
+       CPPUNIT_ASSERT_MESSAGE("Import is failed", impe != NULL);
     // Try to import node to from module
     // Try to add node with parent from module
     ChromoNode mut = root->AppendMutation(ENt_Node);
@@ -178,7 +184,7 @@ void Ut_mod::test_ModInt1()
     // Verifying creation from imported node
     MUnit* v4 = root->GetNode("./v4");
     CPPUNIT_ASSERT_MESSAGE("v4 is not created", v4 != NULL);
-    
+
     // Save upated chromo
     eroot->Chromos().Save("ut_mod_int_1_res.xml_");
     delete iEnv;

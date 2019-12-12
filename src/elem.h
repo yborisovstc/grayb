@@ -136,12 +136,6 @@ class Elem: public Unit, public MElem
 	 * @param[in] aCnode Chromo node
 	 * */
 	void UpdateNs(TNs& aNs, const ChromoNode& aCnode);
-	/** @brief Gets node by name. Name is resolved with name spaces
-	 * @param[out] aNs    Name space
-	 * @param[in]  aCnode Chromo node
-	 * */
-	MUnit* GetNodeByName(const string& aName, const TNs& aNs);
-	static bool IsName(const string& aUri);
 	// Debugging
 	virtual void SaveChromo(const char* aPath) const;
 	virtual void DumpChilds() const;

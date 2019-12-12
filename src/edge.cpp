@@ -410,7 +410,8 @@ void Edge::SetPoint1(const string& aRef)
     GUri uri = GUri("./..") + aRef;
     // TODO Do we need mutation here, or just change?
     pe->AppendMutation(TMut(ENt_Cont, ENa_Ref, uri));
-    pe->Mutate(false, true, true, GetRoot());
+    TNs ns; MutCtx mctx(GetRoot(), ns);
+    pe->Mutate(false, true, true, mctx);
 }
 
 void Edge::SetPoint2(const string& aRef)
@@ -419,7 +420,8 @@ void Edge::SetPoint2(const string& aRef)
     MElem* pe = p->GetObj(pe);
     GUri uri = GUri("./..") + aRef;
     pe->AppendMutation(TMut(ENt_Cont, ENa_Ref, uri));
-    pe->Mutate(false, true, true, GetRoot());
+    TNs ns; MutCtx mctx(GetRoot(), ns);
+    pe->Mutate(false, true, true, mctx);
 }
 
 
@@ -668,12 +670,14 @@ MVert* Aedge::Ref2() const
 void Aedge::SetPoint1(const string& aRef)
 {
     AppendMutation(TMut(ENt_Cont, ENa_Id, mP1ContName, ENa_Ref, aRef));
-    Mutate(false, true, true, GetRoot());
+    TNs ns; MutCtx mctx(GetRoot(), ns);
+    Mutate(false, true, true, mctx);
 }
 
 void Aedge::SetPoint2(const string& aRef)
 {
     AppendMutation(TMut(ENt_Cont, ENa_Id, mP2ContName, ENa_Ref, aRef));
-    Mutate(false, true, true, GetRoot());
+    TNs ns; MutCtx mctx(GetRoot(), ns);
+    Mutate(false, true, true, mctx);
 }
 

@@ -146,6 +146,7 @@ class Unit: public MUnit
 	virtual MUnit* GetNode(const string& aUri, TBool aInclRm = EFalse);
 	virtual MUnit* GetNode(const GUri& aUri, TBool aInclRm = EFalse);
 	virtual MUnit* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere = EFalse, TBool aInclRm = EFalse);
+	virtual MUnit* GetNodeByName(const string& aName, const TNs& aNs) override;
 	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
 	virtual void GetUri(GUri& aUri, MUnit* aTop = NULL) const;
 	virtual void GetRUri(GUri& aUri, MUnit* aTop = NULL);
@@ -196,6 +197,7 @@ class Unit: public MUnit
 	virtual MUnit* GetComp(TInt aInd);
 	static string ContentCompId(const string& aOwnerName, const string& aCompName);
     protected:
+	static bool IsName(const string& aUri);
 	/** Handles agent change */
 	virtual TEhr ProcessCompChanged(MUnit& aComp, const string& aContName);
 	virtual TEhr ProcessChanged(MUnit& aComp);

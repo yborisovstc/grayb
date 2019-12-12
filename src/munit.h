@@ -3,7 +3,7 @@
 
 #include "plat.h"
 #include "guri.h"
-#include "mmuta.h"
+//#include "mmuta.h"
 #include "miface.h"
 #include "ifu.h"
 #include "ifu.h"
@@ -21,6 +21,14 @@ typedef enum {
     EEHR_Accepted = 1,
     EEHR_Denied = 2
 } TEhr;
+
+
+/** @brief Name spaces
+ * */
+//using TNs = vector<MUnit*>;
+class TNs: public vector<MUnit*>
+{
+};
 
 class TICacheRCtx: public vector<MUnit*>
 {
@@ -214,6 +222,10 @@ class MUnit : public MIface, public Base, public MOwner, public MIfProv
     virtual MUnit* GetNode(const GUri& aUri, TBool aInclRm = EFalse) = 0;
     virtual MUnit* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere = EFalse, TBool aInclRm = EFalse) = 0;
     virtual MUnit* GetRoot() const = 0;
+    /** @brief Gets node by name. Name is resolved with name spaces
+     * @param[out] aNs    Name space
+     * */
+    virtual MUnit* GetNodeByName(const string& aName, const TNs& aNs) = 0;
     virtual MUnit* GetCommonOwner(MUnit* aElem) = 0;
     virtual TInt GetContCount(const string& aName = string()) const = 0;
     virtual TBool IsContOfCategory(const string& aName, const string& aCategory) const = 0; 

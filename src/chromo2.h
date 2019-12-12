@@ -63,6 +63,7 @@ class C2MdlNode
 	C2MdlNode* GetNextComp(C2MdlNode* aComp);
 	C2MdlNode* GetPrevComp(C2MdlNode* aComp);
 	void BindTree(C2MdlNode* aOwner);
+	bool ExistsContextByAttr(TNodeAttr aAttr);
     public:
 	C2MdlNode* mOwner = NULL;
 	//vector<C2MdlCtxNode> mContext; /*!< Context */

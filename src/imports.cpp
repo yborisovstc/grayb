@@ -45,7 +45,7 @@ TBool AImports::Import(const string& aUri)
 	if (sel.Handle() != THandle()) {
 	    // Reduce chromo to target node, mutate and check
 	    iMut->ReduceToSelection(sel);
-	    MutCtx ctx;
+	    TNs ns; MutCtx ctx(NULL, ns);
 	    Mutate(EFalse, ETrue, EFalse, ctx);
 	    res = GetNode(aUri);
 	} else {

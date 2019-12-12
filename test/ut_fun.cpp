@@ -102,7 +102,8 @@ void Ut_func::test_FuncSeq1()
     ChromoNode nchange = edinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./Value");
     nchange.SetAttr(ENa_MutVal, "57");
-    edinp->Mutate(false, false, true, MutCtx());
+    TNs ns; MutCtx mctx(NULL, ns);
+    edinp->Mutate(false, false, true, mctx);
     // Check the function output
     MUnit* foutp1 = root->GetNode("./test/Incr2/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out when inp data changed", foutp1 != 0);
@@ -171,7 +172,8 @@ void Ut_func::test_FuncSeq2()
     ChromoNode nchange = edinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./Value");
     nchange.SetAttr(ENa_MutVal, "57");
-    edinp->Mutate(false, false, true, MutCtx());
+    TNs ns; MutCtx mctx(NULL, ns);
+    edinp->Mutate(false, false, true, mctx);
     // Check the function output
     MUnit* foutp1 = root->GetNode("./test/Add/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out when inp data changed", foutp1 != 0);
@@ -240,7 +242,8 @@ void Ut_func::test_FuncSeq3()
     ChromoNode nchange = edinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./Value");
     nchange.SetAttr(ENa_MutVal, "57");
-    edinp->Mutate(false, false, true, MutCtx());
+    TNs ns; MutCtx mctx(NULL, ns);
+    edinp->Mutate(false, false, true, mctx);
     // Check the function output
     MUnit* foutp1 = root->GetNode("./test/Add/Capsule/out");
     CPPUNIT_ASSERT_MESSAGE("Fail to get func out when inp data changed", foutp1 != 0);
@@ -289,7 +292,8 @@ void Ut_func::test_FuncSeq4()
     ChromoNode nchange = edinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./Value");
     nchange.SetAttr(ENa_MutVal, "80");
-    edinp->Mutate(false, false, true, MutCtx());
+    TNs ns; MutCtx mctx(NULL, ns);
+    edinp->Mutate(false, false, true, mctx);
     // Check the output data
     MUnit* resdataprop1 = root->GetNode("./test/ResData/Value");
     CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
@@ -325,7 +329,8 @@ void Ut_func::test_FuncVar1()
     ChromoNode mut1 = edir->AppendMutation(ENt_Cont);
     mut1.SetAttr(ENa_MutNode, "./P1");
     mut1.SetAttr(ENa_Ref, "/Root/Start/Incaps_root/Inp_data1/Capsule/out");
-    edir->Mutate(false, false, true, MutCtx());
+    TNs ns; MutCtx mctx(NULL, ns);
+    edir->Mutate(false, false, true, mctx);
 
     // Check the output data
     MUnit* resdataprop1 = root->GetNode("/Root/Start/Incaps_root/Dt/Value");
@@ -360,7 +365,8 @@ void Ut_func::test_FuncVar1mc()
     ChromoNode mut1 = edir->AppendMutation(ENt_Cont);
     mut1.SetAttr(ENa_MutNode, "./P1");
     mut1.SetAttr(ENa_Ref, "/Root/Start/Incaps_root/Inp_data1/Capsule/out");
-    edir->Mutate(false, false, true, MutCtx());
+    TNs ns; MutCtx mctx(NULL, ns);
+    edir->Mutate(false, false, true, mctx);
 
     // Check the output data
     MUnit* resdataprop1 = root->GetNode("/Root/Start/Incaps_root/Dt/Value");
@@ -422,7 +428,8 @@ void Ut_func::test_FuncVar2()
     ChromoNode nchange = edinp->AppendMutation(ENt_Cont);
     nchange.SetAttr(ENa_MutNode, "./Value");
     nchange.SetAttr(ENa_MutVal, "I 80");
-    edinp->Mutate(false, false, true, MutCtx());
+    TNs ns; MutCtx mctx(NULL, ns);
+    edinp->Mutate(false, false, true, mctx);
 
     delete iEnv;
 }

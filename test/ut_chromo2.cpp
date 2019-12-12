@@ -87,9 +87,6 @@ void Ut_chromo2::test_Seg()
 {
     printf("\n === Test of extended chromo: segment\n");
 
-
-    MutCtx mc((const MUnit*) NULL);
-
     iEnv = new Env("ut_seg.xml", "ut_seg.txt");
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ImpsMgr()->ResetImportsPaths();

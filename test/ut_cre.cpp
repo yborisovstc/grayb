@@ -542,7 +542,8 @@ void Ut_cre::test_Notif()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
     iEnv->SetObserver(mAgtObs);
     eroot->AppendMutation(TMut("node,id:Syst2,parent:./Syst1"));
-    eroot->Mutate(false, false, true, MutCtx());
+    TNs ns; MutCtx mctx(NULL, ns);
+    eroot->Mutate(false, false, true, mctx);
 
     iEnv->UnsetObserver(mAgtObs);
     delete mAgtObs;

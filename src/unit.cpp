@@ -2166,3 +2166,53 @@ MUnit* Unit::CreateHeir(const string& aName, MUnit* aMan, MUnit* aContext)
     Pdstat(PEvents::DurStat_CreateHeir, false);
     return uheir;
 }
+
+MUnit* Unit::GetNodeByName(const string& aName, const TNs& aNs)
+{
+    __ASSERT(!aName.empty());
+    MUnit *res = NULL, *node = NULL, *rns = NULL;
+    if (IsName(aName)) {
+	string uri = "./" + aName;
+	bool isConflict = false;
+	// Resolving name in current context first
+	res = GetNode(uri);
+	// Then in namespaces
+	for (auto ns : aNs) {
+	    if (ns == this) continue;
+	    node = ns->GetNode(uri);
+	    if (res == NULL) {
+		res = node;
+		rns = ns;
+	    } else if (node != NULL) {
+		isConflict = true;
+		res = NULL;
+		Log(TLog(EErr, this) + "Name [" + aName + "] resolution conflict: " + rns->GetUri(NULL, true)  + " vs " + ns->GetUri(NULL, true));
+		break;
+	    }
+	}
+	if (!isConflict && IsName(aName)) {
+	    // And finally in natives
+	    node = GetNode(aName);
+	    if (res == NULL) {
+		res = node;
+	    } else if (node != NULL) {
+		isConflict = true;
+		Log(TLog(EErr, this) + "Name [" + aName + "] resolution conflict: " + rns->GetUri(NULL, true)  + " vs native agents");
+		res = NULL;
+	    }
+	}
+    } else {
+	res = GetNode(aName);
+    }
+    return res;
+}
+
+bool Unit::IsName(const string& aUri)
+{
+    bool res = false;
+    if (!aUri.empty()) {
+	char fc = aUri.at(0);
+	res = isalpha(fc) || (fc == '_');
+    }
+    return res;
+}

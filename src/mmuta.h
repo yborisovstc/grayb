@@ -4,15 +4,12 @@
 #include "plat.h"
 #include "mchromo.h"
 #include <memory>
+#include "munit.h"
 
 class ChromoNode;
 class MUnit;
 class MElem;
 class TMut;
-
-/** @brief Name spaces
- * */
-using TNs = vector<MUnit*>;
 
 /** @brief Mutation context
  * */
@@ -21,9 +18,8 @@ class MutCtx
     public:
 	MutCtx(const MutCtx& aSrc): mUnit(aSrc.mUnit), mNs(aSrc.mNs) {}
 	MutCtx(const MUnit* aUnit, const TNs& aNs): mUnit(aUnit), mNs(aNs) {}
-	MutCtx(const MUnit* aUnit): mUnit(aUnit), mNs(TNs()) {}
-	//MutCtx(): MutCtx(NULL) {}
-	MutCtx(): mUnit(NULL), mNs(TNs()) {}
+	//MutCtx(const MUnit* aUnit): mUnit(aUnit) {}
+	//MutCtx(): mUnit(NULL) {}
     public:
 	const MUnit* mUnit; //!< Unit
 	const TNs& mNs;     //!< Name spaces

@@ -318,12 +318,13 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	if (rno.AttrExists(ENa_MutNode)) {
 	    // Transform DHC mutation to OSM mutation
 	    // Transform ENa_Targ: enlarge to ENa_MutNode
-	    MUnit* targ = rno.AttrExists(ENa_Targ) ? GetNode(rno.Attr(ENa_Targ)) : this;
+	    MUnit* targ = rno.AttrExists(ENa_Targ) ? GetNodeByName(rno.Attr(ENa_Targ), ns) : this;
 	    if (targ == NULL) {
 		Logger()->Write(EErr, this, "Cannot find node [%s]", rno.Attr(ENa_Targ).c_str());
 		continue;
 	    }
-	    MUnit* ftarg = targ->GetNode(rno.Attr(ENa_MutNode));
+	    string mnode = rno.Attr(ENa_MutNode);
+	    MUnit* ftarg = mnode.empty() ? NULL : targ->GetNodeByName(rno.Attr(ENa_MutNode), ns);
 	    if (ftarg == NULL) {
 		Logger()->Write(EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_MutNode).c_str());
 		continue;
@@ -331,7 +332,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    // Transform refs
 	    if (rno.AttrExists(ENa_Parent)) {
 		string prnturi = rno.Attr(ENa_Parent);
-		MUnit* parent = targ->GetNode(prnturi);
+		MUnit* parent = targ->GetNodeByName(prnturi, ns);
 		if (parent == NULL) {
 		    // Probably external node not imported yet - ask env for resolving uri
 		    GUri pruri(prnturi);
@@ -644,7 +645,10 @@ MUnit* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 			    // Mutate object ignoring run-time option. This is required to keep nodes chromo even for inherited nodes
 			    // To avoid this inherited nodes chromo being attached we just don't attach inherited nodes chromo
 			    elem->SetMutation(aNode);
-			    elem->Mutate(EFalse, ecsaf, aTrialMode, aRunTime ? uelem : aCtx);
+			    TNs ns(aCtx.mNs);
+			    ns.push_back(uelem);
+			    MutCtx ctx(aCtx.mUnit, ns);
+			    elem->Mutate(EFalse, ecsaf, aTrialMode, aRunTime ? MutCtx(uelem, ns) : ctx);
 			}
 			else {
 			    Log(TLog(EErr, this) + "Adding node [" + uelem->EType() + ":" + uelem->Name() + "] failed");
@@ -709,7 +713,8 @@ MUnit* Elem::CreateHeir(const string& aName, MUnit* aMan, MUnit* aContext)
 	ChromoNode croot = iChromo->Root();
 	heir->SetMutation(croot);
 	// Mutate run-time only - !! DON'T UPDATE CHROMO, ref UC_019
-	heir->Mutate(ETrue, EFalse, EFalse, uheir);
+	TNs ns; MutCtx mctx(uheir, ns);
+	heir->Mutate(ETrue, EFalse, EFalse, mctx);
 	// Mutated with parent's own chromo - so panent's name is the type now. Set also the parent, but it will be updated further
 	heir->SetParent(Name());
 	// Relocate heir to hier from which the request of creating heir came
@@ -1011,7 +1016,8 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode, 
 	if (!aRunTime && res) {
 	    // Adding dependency to object of change
 	    ChromoNode chn = iChromo->Root().AddChild(aSpec);
-	    NotifyNodeMutated(aSpec, NULL);
+	    TNs ns; MutCtx mctx(NULL, ns);
+	    NotifyNodeMutated(aSpec, mctx);
 	    mutadded = ETrue;
 	}
     }
@@ -1021,7 +1027,8 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode, 
     // Append mutation to chromo anytype, ref uc_043
     if (!aRunTime && !mutadded && !aTrialMode) {
 	iChromo->Root().AddChild(aSpec);
-	NotifyNodeMutated(aSpec, NULL);
+	TNs ns; MutCtx mctx(NULL, ns);
+	NotifyNodeMutated(aSpec, mctx);
     }
     return res;
 }
@@ -1243,7 +1250,8 @@ TBool Elem::ImportNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode
     res = impmgr->Import(srcs);
     if (!aRunTime && (res || !res && !aTrialMode)) {
 	iChromo->Root().AddChild(aSpec);
-	NotifyNodeMutated(aSpec, NULL);
+	TNs ns; MutCtx mctx(NULL, ns);
+	NotifyNodeMutated(aSpec, mctx);
     }
     return ETrue;
 }
@@ -1305,15 +1313,16 @@ MIface* Elem::MElem_Call(const string& aSpec, string& aRes)
 	checksafety = Ifu::ToBool(args.at(2));
 	trialmode = Ifu::ToBool(args.at(3));
 	SetMutation(args.at(0));
-	MutCtx ctx;
-	Mutate(rtonly, checksafety, trialmode, ctx);
+	TNs ns; MutCtx mctx(NULL, ns);
+	Mutate(rtonly, checksafety, trialmode, mctx);
     } else if (name == "Mutate#2") {
 	TBool rtonly, checksafety, trialmode;
 	rtonly = Ifu::ToBool(args.at(0));
 	checksafety = Ifu::ToBool(args.at(1));
 	trialmode = Ifu::ToBool(args.at(2));
-	MUnit* ctx = GetNode(args.at(3));
-	Mutate(rtonly, checksafety, trialmode, ctx);
+	MUnit* uctx = GetNode(args.at(3));
+	TNs ns; MutCtx mctx(uctx, ns);
+	Mutate(rtonly, checksafety, trialmode, mctx);
     } else if (name == "GetChromoSpec") {
 	aRes = GetChromoSpec();
     } else if (name == "EType") {
@@ -1354,8 +1363,9 @@ MIface* Elem::MElem_Call(const string& aSpec, string& aRes)
     } else if (name == "OnNodeMutated") {
 	MUnit* node = GetNode(args.at(0));
 	TMut mut(args.at(1));
-	MUnit* ctx = GetNode(args.at(2));
-	OnNodeMutated(node, mut, ctx);
+	MUnit* uctx = GetNode(args.at(2));
+	TNs ns; MutCtx mctx(uctx, ns);
+	OnNodeMutated(node, mut, mctx);
     } else if (name == "IsCompAttached") {
 	MUnit* node = GetNode(args.at(0));
 	TBool isatt = IsCompAttached(node);
@@ -1483,7 +1493,8 @@ void Elem::OnParentMutated(MUnit* aParent, const TMut& aMut)
 	}
     }
     if (rres) {
-	Mutate(ETrue, EFalse, ETrue, EFalse);
+	TNs ns; MutCtx mctx(NULL, ns);
+	Mutate(ETrue, EFalse, ETrue, mctx);
     }
 }
 
@@ -1507,12 +1518,6 @@ string Elem::GetChromoSpec() const
 void Elem::AppendMutation(const TMut& aMut)
 {
     ChromoNode mut = iMut->Root().AddChild(aMut);
-}
-
-bool Elem::IsName(const string& aUri)
-{
-    char fc = aUri.at(0);
-    return isalpha(fc) || (fc == '_');
 }
 
 /*
@@ -1559,40 +1564,5 @@ void Elem::DumpCtx(const MutCtx& aCtx) const
     for (MUnit* ns : aCtx.mNs) {
 	cout << ns << "   " << ns->GetUri(NULL, true) << endl;
     }
-}
-
-MUnit* Elem::GetNodeByName(const string& aName, const TNs& aNs)
-{
-    MUnit *res = NULL, *node = NULL, *rns = NULL;
-    bool isConflict = false;
-    string uri = IsName(aName) ? string("./") + aName : aName;
-    // Resolving name in current context first
-    res = GetNode(uri);
-    // Then in namespaces
-    for (auto ns : aNs) {
-	if (ns == this) continue;
-	node = ns->GetNode(uri);
-	if (res == NULL) {
-	    res = node;
-	    rns = ns;
-	} else if (node != NULL) {
-	    isConflict = true;
-	    res = NULL;
-	    Log(TLog(EErr, this) + "Name [" + aName + "] resolution conflict: " + rns->GetUri(NULL, true)  + " vs " + ns->GetUri(NULL, true));
-	    break;
-	}
-    }
-    if (!isConflict && IsName(aName)) {
-	// And finally in natives
-	node = GetNode(aName);
-	if (res == NULL) {
-	    res = node;
-	} else if (node != NULL) {
-	    isConflict = true;
-	    Log(TLog(EErr, this) + "Name [" + aName + "] resolution conflict: " + rns->GetUri(NULL, true)  + " vs native agents");
-	    res = NULL;
-	}
-    }
-    return res;
 }
 

@@ -23,6 +23,10 @@ const string KMS_Cont = "=";
 const string KMS_Note = "#";
 const string KMS_Rename = "|";
 const string KMS_Remove = "!";
+const string KMS_Import = "+";
+
+/** @brief Unknown P part */
+static const string KT_Unknown = "$";
 
 static const string KR_CREATE = ":";
 
@@ -44,6 +48,7 @@ using namespace std;
  * */
 const map<TNodeAttr, string> KM_CtxAttToType = {
     {ENa_Targ, KT_Target},
+    {ENa_MutNode, KT_Node},
     {ENa_NS, KT_Namespace}
 };
 
@@ -54,6 +59,7 @@ const map<TNodeType, string> KM_MutTypeToRel = {
     {ENt_Note, KMS_Note},
     {ENt_Change, KMS_Rename},
     {ENt_Rm, KMS_Remove},
+    {ENt_Import, KMS_Import},
     {ENt_Cont, KMS_Cont}
 };
 
@@ -162,6 +168,16 @@ C2MdlNode* C2MdlNode::GetPrevComp(C2MdlNode* aComp)
     return res;
 }
 
+bool C2MdlNode::ExistsContextByAttr(TNodeAttr aAttr)
+{
+    bool res = false;
+    if (KM_CtxAttToType.count(aAttr) > 0) {
+	string rel = KM_CtxAttToType.at(aAttr);
+	res = mContext.count(rel) > 0;
+    }
+    return res;
+}
+
 
 
 Chromo2Mdl::Chromo2Mdl(): Base()
@@ -171,27 +187,6 @@ Chromo2Mdl::Chromo2Mdl(): Base()
 Chromo2Mdl::~Chromo2Mdl()
 {
 }
-
-/*
-TNodeType Chromo2Mdl::GetType(const THandle& aHandle) {
-    TNodeType res = ENt_Unknown;
-    C2MdlNode* node = aHandle.Data(node);
-    if (!node->mChromo.empty()) {
-	res = ENt_Seg;
-    } else {
-	string rel = node->mMut.mR;
-	if (rel == KMS_Add) {
-	    res = ENt_Node;
-	} else if (rel == KMS_Rename) {
-	    // TODO To replace change mut with renaming mut
-	    res = ENt_Change;
-	} else if (rel == KMS_Remove) {
-	    res = ENt_Rm;
-	}
-    }
-    return res;
-}
-*/
 
 TNodeType Chromo2Mdl::GetType(const THandle& aHandle) {
     TNodeType res = ENt_Unknown;
@@ -209,13 +204,15 @@ TNodeType Chromo2Mdl::GetType(const THandle& aHandle) {
 	res = ENt_Rm;
     } else  if (rel == KMS_Note) {
 	res = ENt_Note;
+    } else  if (rel == KMS_Import) {
+	res = ENt_Import;
     }
     return res;
 }
 
 THandle Chromo2Mdl::Root(const THandle& aHandle)
 {
-    __ASSERT(false);
+    return &mRoot;
 }
 
 THandle Chromo2Mdl::Parent(const THandle& aHandle)
@@ -251,6 +248,12 @@ THandle Chromo2Mdl::GetFirstChild(const THandle& aHandle, TNodeType aType)
 
 THandle Chromo2Mdl::GetLastChild(const THandle& aHandle, TNodeType aType)
 {
+    C2MdlNode* node = aHandle.Data(node);
+    C2MdlNode *comp = NULL;
+    if (node->mChromo.size() > 0) {
+	comp = &(node->mChromo.back());
+    }
+    return comp;
 }
 
 string GetContextByAttr(const C2MdlNode& aNode, TNodeAttr aAttr)
@@ -270,8 +273,12 @@ string Chromo2Mdl::GetAttr(const THandle& aHandle, TNodeAttr aAttr) const
     C2MdlNode* node = aHandle.Data(node);
     string res;
     string rel = node->mMut.mR;
-    if (aAttr == ENa_Id && rel == KMS_Add) {
-	res = node->mMut.mP;
+    if (aAttr == ENa_Id) {
+	if (rel == KMS_Add) {
+	    res = node->mMut.mP;
+	} else if (rel == KMS_Import) {
+	    res = node->mMut.mQ;
+	}
     } else if (aAttr == ENa_Parent && rel == KMS_Add) {
 	res = node->mMut.mQ;
     } else if (aAttr == ENa_Targ || aAttr == ENa_NS) {
@@ -296,16 +303,21 @@ TBool Chromo2Mdl::AttrExists(const THandle& aHandle, TNodeAttr aAttr) const
     TBool res = false;
     C2MdlNode* node = aHandle.Data(node);
     string rel = node->mMut.mR;
-    if (aAttr == ENa_Id || aAttr == ENa_Parent) {
+    if (aAttr == ENa_Id) {
+	res = (rel == KMS_Add) || (rel == KMS_Import);
+    } else if (aAttr == ENa_Parent) {
 	res = (rel == KMS_Add);
     } else if (aAttr == ENa_Targ || aAttr == ENa_NS) {
-	res = !GetContextByAttr(*node, aAttr).empty();
+	res = node->ExistsContextByAttr(aAttr);
     } else if (aAttr == ENa_MutVal) {
 	res = (rel == KMS_Cont || rel == KMS_Note || rel == KMS_Rename);
     } else if (aAttr == ENa_MutAttr) {
 	res = (rel == KMS_Rename);
     } else if (aAttr == ENa_MutNode) {
-	res = (rel == KMS_Remove) || (rel == KMS_Rename) || (rel == KMS_Add);
+	res = (rel == KMS_Remove) || (rel == KMS_Rename) ||
+	    (((rel == KMS_Add) || (rel == KMS_Cont)) && node->ExistsContextByAttr(ENa_MutNode));
+    } else if (aAttr == ENa_Ref) {
+	// Use MutVal instead
     }
     return res;
 }
@@ -376,8 +388,13 @@ void Chromo2Mdl::SetAttr(const THandle& aHandle, TNodeAttr aType, const string& 
     C2MdlNode* node = aHandle.Data(node);
     string rel = node->mMut.mR;
     if (aType == ENa_Id) {
-	__ASSERT (rel == KMS_Add || rel == KMS_Cont);
-	node->mMut.mP = aVal;
+	__ASSERT (rel == KMS_Add || rel == KMS_Cont || rel == KMS_Import);
+	if (rel == KMS_Add || rel == KMS_Cont) {
+	    node->mMut.mP = aVal;
+	} else if (rel == KMS_Import) {
+	    node->mMut.mQ = aVal;
+	    node->mMut.mP = KT_Unknown;
+	}
     } else if (aType == ENa_Parent) {
 	__ASSERT (rel.empty() || rel == KMS_Add);
 	node->mMut.mQ = aVal;
@@ -389,16 +406,29 @@ void Chromo2Mdl::SetAttr(const THandle& aHandle, TNodeAttr aType, const string& 
 	// Attr for rename is not used, omit
     } else if (aType == ENa_MutVal) {
 	__ASSERT (rel == KMS_Cont || rel == KMS_Note || rel == KMS_Rename);
-	node->mMut.mQ = aVal;
+	if (rel == KMS_Note) {
+	    node->mMut.mQ = KT_TextGmark + aVal + KT_TextGmark;
+	    node->mMut.mP = KT_Unknown;
+	} else {
+	    node->mMut.mQ = aVal;
+	}
     } else if (aType == ENa_Targ) {
 	string ctxrel = GetCtxRel(aType);
 	__ASSERT (!ctxrel.empty());
 	node->mContext[ctxrel] = aVal;
     } else if (aType == ENa_MutNode) {
-	__ASSERT (rel == KMS_Remove || rel == KMS_Rename || rel == KMS_Add);
+	__ASSERT (rel == KMS_Remove || rel == KMS_Rename || rel == KMS_Add || rel == KMS_Cont);
 	if (rel == KMS_Add) {
+	} else if (rel == KMS_Cont) {
+	    node->AddContext(KT_Node, aVal);
 	} else {
 	    node->mMut.mP = aVal;
+	}
+    } else if (aType == ENa_Ref) {
+	__ASSERT(rel == KMS_Cont);
+	node->mMut.mQ = aVal;
+	if (node->mMut.mP.empty()) {
+	    node->mMut.mP = KT_Unknown;
 	}
     }
 }
@@ -494,7 +524,9 @@ THandle Chromo2Mdl::SetFromFile(const string& aFileName)
 
 THandle Chromo2Mdl::Set(const string& aUri)
 {
-    __ASSERT(false);
+    string path;
+    ChromoUtils::GetPath(aUri, path);
+    return SetFromFile(path);
 }
 
 THandle Chromo2Mdl::SetFromSpec(const string& aSpec)
@@ -954,6 +986,7 @@ void Chromo2::ConvertNode(ChromoNode& aDst, const ChromoNode& aSrc)
     ConvertAttr(aDst, aSrc, ENa_Targ);
     ConvertAttr(aDst, aSrc, ENa_MutNode);
     ConvertAttr(aDst, aSrc, ENa_MutVal);
+    ConvertAttr(aDst, aSrc, ENa_Ref);
     ConvertAttr(aDst, aSrc, ENa_NS);
     for (ChromoNode::Const_Iterator it = aSrc.Begin(); it != aSrc.End(); it++) {
 	const ChromoNode& scomp = *it;

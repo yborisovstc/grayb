@@ -245,7 +245,8 @@ void Ut_conn::test_Vertp()
     mutn.SetAttr(ENa_Targ, "./test");
     mutn.SetAttr(ENa_Id, "Edges.E1.P1");
     mutn.SetAttr(ENa_MutVal, "");
-    eroot->Mutate(false, false, true, MutCtx());
+    TNs ns; MutCtx mctx(NULL, ns);
+    eroot->Mutate(false, false, true, mctx);
     // Verify that v1 and v2 are disconnected
     ev1 = root->GetNode("./test/v1");
     mv1 = ev1->GetObj(mv1);
@@ -282,7 +283,8 @@ void Ut_conn::test_Systp()
     mutn.SetAttr(ENa_Targ, "./test");
     mutn.SetAttr(ENa_Id, "Edges.E1.P1");
     mutn.SetAttr(ENa_MutVal, "");
-    eroot->Mutate(false, false, true, MutCtx());
+    TNs ns; MutCtx mctx(NULL, ns);
+    eroot->Mutate(false, false, true, mctx);
     // Verify that v1 and v2 are disconnected
     es1 = root->GetNode("./test/s1");
     mv1 = es1->GetObj(mv1);
@@ -293,7 +295,7 @@ void Ut_conn::test_Systp()
     mutn.SetAttr(ENa_Targ, "./test");
     mutn.SetAttr(ENa_Id, "Edges.E2");
     mutn.SetAttr(ENa_MutVal, "{P1:'/Root/test/s1~ConnPoints.Cp2' P2:'/Root/test/s2~ConnPoints.Cp1'}");
-    eroot->Mutate(false, false, true, MutCtx());
+    eroot->Mutate(false, false, true, mctx);
     // Verify that v1 and v2 are disconnected
     es1 = root->GetNode("./test/s1");
     mv1 = es1->GetObj(mv1);
@@ -321,7 +323,8 @@ void Ut_conn::test_Systp2()
     mutn.SetAttr(ENa_Targ, "./test");
     mutn.SetAttr(ENa_Id, "Edges.E2");
     mutn.SetAttr(ENa_MutVal, "{P1:'/Root/test/s1~ConnPoints.Ext1' P2:'/Root/test/s2~ConnPoints.Cp1'}");
-    eroot->Mutate(false, false, true, MutCtx());
+    TNs ns; MutCtx mctx(NULL, ns);
+    eroot->Mutate(false, false, true, mctx);
     MUnit* es1 = root->GetNode("./test/s1");
     MVertp* mv1 = es1->GetObj(mv1);
     MUnit* es2 = root->GetNode("./test/s2");
@@ -365,7 +368,8 @@ void Ut_conn::test_SystpSock()
     mutn.SetAttr(ENa_Targ, "./test");
     mutn.SetAttr(ENa_Id, "Edges.E2");
     mutn.SetAttr(ENa_MutVal, "{P1:'/Root/test/s1~ConnPoints.S1' P2:'/Root/test/s2~ConnPoints.S1'}");
-    eroot->Mutate(false, false, true, MutCtx());
+    TNs ns; MutCtx mctx(NULL, ns);
+    eroot->Mutate(false, false, true, mctx);
     MUnit* es1 = root->GetNode("./test/s1");
     MVertp* mv1 = es1->GetObj(mv1);
     MUnit* es2 = root->GetNode("./test/s2");
@@ -481,7 +485,8 @@ void Ut_conn::test_Reconn()
     // Delete v1
     ChromoNode mutn = eroot->AppendMutation(ENt_Rm);
     mutn.SetAttr(ENa_MutNode, "./v1");
-    eroot->Mutate(false, false, true, MutCtx());
+    TNs ns; MutCtx mctx(NULL, ns);
+    eroot->Mutate(false, false, true, mctx);
     // Verify the connection pair is disconnected
     MUnit* ev2 = root->GetNode("./v2");
     MVert* mv2 = ev2->GetObj(mv2);
@@ -495,7 +500,7 @@ void Ut_conn::test_Reconn()
     // Delete v3
     mutn = eroot->AppendMutation(ENt_Rm);
     mutn.SetAttr(ENa_MutNode, "./v3");
-    eroot->Mutate(false, false, true, MutCtx());
+    eroot->Mutate(false, false, true, mctx);
     // Verify the connection pair is disconnected
     MUnit* ev5 = root->GetNode("./v5");
     MVert* mv5 = ev5->GetObj(mv5);
@@ -525,7 +530,8 @@ void Ut_conn::test_Conn2()
     ChromoNode mutn = ee2->AppendMutation(ENt_Cont);
     mutn.SetAttr(ENa_MutNode, "./P1");
     mutn.SetAttr(ENa_Ref, "");
-    ee2->Mutate(false, false, true, MutCtx());
+    TNs ns; MutCtx mctx(NULL, ns);
+    ee2->Mutate(false, false, true, mctx);
     // Verify that v1 and v2 are still connected
     MUnit* ev1 = root->GetNode("./v1");
     MVert* mv1 = ev1->GetObj(mv1);
