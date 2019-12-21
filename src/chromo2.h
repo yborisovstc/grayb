@@ -48,6 +48,10 @@ typedef pair<string, string> TC2MdlCtxElem;
 typedef TC2MdlCtx::iterator TC2MdlCtxIter;
 typedef TC2MdlCtx::const_iterator TC2MdlCtxCiter;
 
+class C2MdlNode;
+
+using TC2MdlNodes = list<C2MdlNode>;
+
 /** @brief Chromo2 model unit
  * */
 class C2MdlNode
@@ -69,7 +73,7 @@ class C2MdlNode
 	//vector<C2MdlCtxNode> mContext; /*!< Context */
 	TC2MdlCtx mContext; /*!< Context */
 	C2Mut mMut;                    /*!< Mutation */
-	vector<C2MdlNode> mChromo;     /*!< Chromosome */
+	TC2MdlNodes mChromo;     /*!< Chromosome */
 };
 
 /** @brief Chromo2 model unit with mut
@@ -84,7 +88,6 @@ class C2MdlNodeMut: public C2MdlNode
 
 class ChromoMdlX;
 
-using TC2MdlNodes = vector<C2MdlNode>;
 using TC2MdlNodesIter = TC2MdlNodes::iterator;
 using TC2MdlNodesCiter = TC2MdlNodes::const_iterator;
 using TC2MdlNodesRIter = TC2MdlNodes::reverse_iterator;

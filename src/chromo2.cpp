@@ -38,6 +38,7 @@ static const string KPE_WrongMutLexNum = "Wrong number mutation lexems";
 static const string KPE_WrongCtxType = "Wrong context type";
 static const string KPE_MissingEndOfGroup = "Missin end of group";
 static const string KPE_UnknownMutation = "Unknown mutation";
+static const string KPE_WrongCombMutType = "Wrong type of combined mutation";
 
 /** @brief Segment offset when node output */
 const int KA_OutOffset = 3;
@@ -206,6 +207,8 @@ TNodeType Chromo2Mdl::GetType(const THandle& aHandle) {
 	res = ENt_Note;
     } else  if (rel == KMS_Import) {
 	res = ENt_Import;
+    } else  if (rel == KMS_Cont) {
+	res = ENt_Cont;
     }
     return res;
 }
@@ -241,7 +244,7 @@ THandle Chromo2Mdl::GetFirstChild(const THandle& aHandle, TNodeType aType)
     C2MdlNode* node = aHandle.Data(node);
     C2MdlNode *comp = NULL;
     if (node->mChromo.size() > 0) {
-	comp = &(node->mChromo.at(0));
+	comp = &(node->mChromo.front());
     }
     return comp;
 }
@@ -274,7 +277,8 @@ string Chromo2Mdl::GetAttr(const THandle& aHandle, TNodeAttr aAttr) const
     string res;
     string rel = node->mMut.mR;
     if (aAttr == ENa_Id) {
-	if (rel == KMS_Add) {
+	__ASSERT(rel == KMS_Add || rel == KMS_Import || rel == KMS_Cont);
+	if (rel == KMS_Add || rel == KMS_Cont) {
 	    res = node->mMut.mP;
 	} else if (rel == KMS_Import) {
 	    res = node->mMut.mQ;
@@ -286,8 +290,9 @@ string Chromo2Mdl::GetAttr(const THandle& aHandle, TNodeAttr aAttr) const
     } else if (aAttr == ENa_MutAttr) {
 	res = "id";
     } else if (aAttr == ENa_MutNode) {
-	__ASSERT(rel == KMS_Remove || rel == KMS_Rename || rel == KMS_Add);
-	if (rel == KMS_Add) {
+	__ASSERT(rel == KMS_Remove || rel == KMS_Rename || rel == KMS_Add || rel == KMS_Cont);
+	if (rel == KMS_Add || rel == KMS_Cont) {
+	    res = GetContextByAttr(*node, aAttr);
 	} else {
 	    res = node->mMut.mP;
 	}
@@ -418,8 +423,7 @@ void Chromo2Mdl::SetAttr(const THandle& aHandle, TNodeAttr aType, const string& 
 	node->mContext[ctxrel] = aVal;
     } else if (aType == ENa_MutNode) {
 	__ASSERT (rel == KMS_Remove || rel == KMS_Rename || rel == KMS_Add || rel == KMS_Cont);
-	if (rel == KMS_Add) {
-	} else if (rel == KMS_Cont) {
+	if (rel == KMS_Add || rel == KMS_Cont) {
 	    node->AddContext(KT_Node, aVal);
 	} else {
 	    node->mMut.mP = aVal;
@@ -674,7 +678,7 @@ void Chromo2Mdl::ParseContext(vector<string>& aLexs, streampos aPos, C2MdlNode& 
     for (int i = 0; 2*i < aLexs.size(); i++) {
 	string val = aLexs.at(2*i);
 	string rel = aLexs.at(2*i + 1);
-	if (rel == KT_Target || rel == KT_Namespace) {
+	if (rel == KT_Target || rel == KT_Namespace || rel == KT_Node) {
 	    aMnode.mContext.insert(TC2MdlCtxElem(rel, val));
 	} else {
 	    mErr.Set(aPos, KPE_WrongCtxType);
@@ -763,13 +767,20 @@ void Chromo2Mdl::ParseCnodeChromo(istream& aIs, streampos aStart, streampos aEnd
     //DumpIs(aIs, aStart, lexend);
     //cout << aEnd << endl;
     GetLexs(aIs, aStart, lexend, lexs);
-    if (lexs.size() == 3 && lexs.at(1) == KMS_Add) {
-	mnode.mMut.mP = lexs.at(0);
-	mnode.mMut.mR = lexs.at(1);
-	mnode.mMut.mQ = lexs.at(2);
-    } else if ((lexs.size() % 2) == 0) {
-	// Parse context
+    int ls = lexs.size();
+    if (ls == 2) {
 	ParseContext(lexs, aStart, mnode);
+    } else if (ls >= 3 && ((ls - 3) % 2) == 0) {
+	mnode.mMut.mQ = lexs.back(); lexs.pop_back();
+	mnode.mMut.mR = lexs.back(); lexs.pop_back();
+	mnode.mMut.mP = lexs.back(); lexs.pop_back();
+	if (mnode.mMut.mR == KMS_Add) {
+	    if (!lexs.empty()) {
+		ParseContext(lexs, aStart, mnode);
+	    }
+	} else {
+	    mErr.Set(pos, KPE_WrongCombMutType);
+	}
     } else {
 	mErr.Set(pos, KPE_WrongMutLexNum);
     }
@@ -807,6 +818,7 @@ void Chromo2Mdl::OutputNode(const C2MdlNode& aNode, ostream& aOs, int aLevel)
 	}
     }
 
+    bool mut = false;
     int cnum = aNode.mChromo.size();
     if (!aNode.mMut.mR.empty()) {
 	if (!cnt) Offset(aLevel, aOs); aOs << aNode.mMut.mP << " " << aNode.mMut.mR << " " << aNode.mMut.mQ;
@@ -814,11 +826,12 @@ void Chromo2Mdl::OutputNode(const C2MdlNode& aNode, ostream& aOs, int aLevel)
 	    aOs << ";";
 	}
 	aOs << endl;
+	mut = true;
     }
 
     if (cnum > 0) {
-	if (!cnt) Offset(aLevel, aOs); aOs << "{" << endl;
-	for (vector<C2MdlNode>::const_iterator it = aNode.mChromo.begin(); it != aNode.mChromo.end(); it++) {
+	if (!cnt || mut) Offset(aLevel, aOs); aOs << "{" << endl;
+	for (TC2MdlNodesCiter it = aNode.mChromo.begin(); it != aNode.mChromo.end(); it++) {
 	    const C2MdlNode& node = *it;
 	    OutputNode(node, aOs, aLevel + 1);
 	}
@@ -839,7 +852,7 @@ void Chromo2Mdl::DumpMnode(const C2MdlNode& aNode, int aLevel) const
 bool Chromo2Mdl::CheckTree(const C2MdlNode& aNode) const
 {
     bool res = true;
-    for (vector<C2MdlNode>::const_iterator it = aNode.mChromo.begin(); it != aNode.mChromo.end() && res; it++) {
+    for (TC2MdlNodesCiter it = aNode.mChromo.begin(); it != aNode.mChromo.end() && res; it++) {
 	const C2MdlNode& comp = *it;
 	res = comp.mOwner == &aNode;
 	res = res && CheckTree(comp);

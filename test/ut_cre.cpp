@@ -227,61 +227,68 @@ void Ut_cre::test_CreSyst()
 {
     printf("\n === Test of creation of system\n");
 
-    iEnv = new Env("ut_cre_syst1.xml", "ut_cre_syst.txt");
-    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
-    iEnv->ImpsMgr()->ResetImportsPaths();
-    iEnv->ImpsMgr()->AddImportsPaths("../modules");
-    iEnv->ConstructSystem();
-    MUnit* root = iEnv->Root();
-    MElem* eroot = root->GetObj(eroot);
-    root->ChangeCont("root_prop", EFalse);
-    root->ChangeCont("yes", EFalse, "Debug.Enable_trace");
-    root->ChangeCont("no", EFalse, "Debug.Enable_dbg");
-    string cont = root->GetContent("", ETrue);
-    TBool cont_ok = (cont == "{'root_prop' About:'' Debug:{ Enable_trace:'yes' Enable_dbg:'no'}}");
-    CPPUNIT_ASSERT_MESSAGE("Wrong root content", cont_ok);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    eroot->Chromos().Save("ut_cre_syst1_saved.xml");
-    MUnit* cp1 = root->GetNode("./cp1");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get cp1", cp1 != 0);
-    MVert* mcp1 = cp1->GetObj(mcp1);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get mcp1", mcp1 != 0);
-    MVert* pair = mcp1->GetPair(0);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    MUnit* epair = pair->GetObj(epair);
-    const string pname = epair->Name();
-    CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pname == "cp2");
-    MUnit* e2 = root->GetNode("./E2");
-    MUnit* e2_p1 = e2->GetNode("./P1");
-    MElem* ee2 = e2 == NULL ? NULL : e2->GetObj(ee2);
-    TBool isatt = ee2->IsCompAttached(e2_p1);
-    //CPPUNIT_ASSERT_MESSAGE("e2->IsAttached(e2_p1) returns false", isatt);
-    MUnit* e1 = root->GetNode("./E1");
-    string cont_e1 = e1->GetContent();
+    for (int ct = 1; ct < 2; ct++) {
+	const string specn("ut_cre_syst1n");
+	string ext = ct == 0 ? "xml" : "chs";
+	string spec = specn + string(".") + ext;
+	string log = specn + string(ct == 0 ? "_xml" : "_chs") + ".log";
+	iEnv = new Env(spec, log);
+	CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+	iEnv->ImpsMgr()->ResetImportsPaths();
+	iEnv->ImpsMgr()->AddImportsPaths("../modules");
+	iEnv->ConstructSystem();
+	MUnit* root = iEnv->Root();
+	MElem* eroot = root->GetObj(eroot);
+	root->ChangeCont("root_prop", EFalse);
+	root->ChangeCont("yes", EFalse, "Debug.Enable_trace");
+	root->ChangeCont("no", EFalse, "Debug.Enable_dbg");
+	string cont = root->GetContent("", ETrue);
+	TBool cont_ok = (cont == "{'root_prop' About:'' Debug:{ Enable_trace:'yes' Enable_dbg:'no'}}");
+	CPPUNIT_ASSERT_MESSAGE("Wrong root content", cont_ok);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+	string saved_name = specn + "_saved." + ext;
+	eroot->Chromos().Save(saved_name);
+	MUnit* cp1 = root->GetNode("./cp1");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get cp1", cp1 != 0);
+	MVert* mcp1 = cp1->GetObj(mcp1);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get mcp1", mcp1 != 0);
+	MVert* pair = mcp1->GetPair(0);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
+	MUnit* epair = pair->GetObj(epair);
+	const string pname = epair->Name();
+	CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pname == "cp2");
+	MUnit* e2 = root->GetNode("./E2");
+	MUnit* e2_p1 = e2->GetNode("./P1");
+	MElem* ee2 = e2 == NULL ? NULL : e2->GetObj(ee2);
+	TBool isatt = ee2->IsCompAttached(e2_p1);
+	//CPPUNIT_ASSERT_MESSAGE("e2->IsAttached(e2_p1) returns false", isatt);
+	MUnit* e1 = root->GetNode("./E1");
+	string cont_e1 = e1->GetContent();
 
-    // Checking extenstion agent
-    MUnit* ep = root->GetNode("./Syst1/ep");
-    MCompatChecker* ep_cchk = (MCompatChecker*) ep->GetSIfiC(MCompatChecker::Type());
-    CPPUNIT_ASSERT_MESSAGE("Fail to get MCompatChecker from ep", ep_cchk != 0);
-    MUnit* cp3 = root->GetNode("./cp3");
-    MVert* cp3v = cp3->GetObj(cp3v);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get cp3", cp3 != 0);
-    MVert* cp3v_pair = cp3v->GetPair(0);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get pair of cp3", cp3v_pair != 0);
-    // Verifying that cp3/Provided chromo is empty, ref ds_uac_snmc
-    MUnit* cp3prov = root->GetNode("./cp3/Provided");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get cp3/Provided", cp3prov != 0);
-    MElem* ecp3prov = cp3prov->GetObj(ecp3prov);
-    TInt cp3prov_chr_cnt = ecp3prov->Chromos().Root().Count();
-    CPPUNIT_ASSERT_MESSAGE("cp3/Provided chromo is not empty", cp3prov_chr_cnt == 0);
-    // Verifying that Syst1/Syst1_1 chromo is empty
-    MUnit* s1_1 = root->GetNode("./Syst1/Syst1_1");
-    MElem* es1_1 = s1_1->GetObj(es1_1);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get ./Syst1/Syst1_1", s1_1 != NULL);
-    TInt s1_1_chr_cnt = es1_1->Chromos().Root().Count();
-    CPPUNIT_ASSERT_MESSAGE("./Syst1/Syst1_1 chromo is not empty", s1_1_chr_cnt == 0);
+	// Checking extenstion agent
+	MUnit* ep = root->GetNode("./Syst1/ep");
+	MCompatChecker* ep_cchk = (MCompatChecker*) ep->GetSIfiC(MCompatChecker::Type());
+	CPPUNIT_ASSERT_MESSAGE("Fail to get MCompatChecker from ep", ep_cchk != 0);
+	MUnit* cp3 = root->GetNode("./cp3");
+	MVert* cp3v = cp3->GetObj(cp3v);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get cp3", cp3 != 0);
+	MVert* cp3v_pair = cp3v->GetPair(0);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get pair of cp3", cp3v_pair != 0);
+	// Verifying that cp3/Provided chromo is empty, ref ds_uac_snmc
+	MUnit* cp3prov = root->GetNode("./cp3/Provided");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get cp3/Provided", cp3prov != 0);
+	MElem* ecp3prov = cp3prov->GetObj(ecp3prov);
+	TInt cp3prov_chr_cnt = ecp3prov->Chromos().Root().Count();
+	CPPUNIT_ASSERT_MESSAGE("cp3/Provided chromo is not empty", cp3prov_chr_cnt == 0);
+	// Verifying that Syst1/Syst1_1 chromo is empty
+	MUnit* s1_1 = root->GetNode("./Syst1/Syst1_1");
+	MElem* es1_1 = s1_1->GetObj(es1_1);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get ./Syst1/Syst1_1", s1_1 != NULL);
+	TInt s1_1_chr_cnt = es1_1->Chromos().Root().Count();
+	CPPUNIT_ASSERT_MESSAGE("./Syst1/Syst1_1 chromo is not empty", s1_1_chr_cnt == 0);
 
-    delete iEnv;
+	delete iEnv;
+    }
 }
 
 void Ut_cre::test_CreSystu()

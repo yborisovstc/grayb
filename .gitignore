@@ -65,6 +65,7 @@ install-root
 ut-grayb-lib
 *.xml_
 *saved.xml
+*saved.chs
 *.swn
 *.swm
 *.exrc

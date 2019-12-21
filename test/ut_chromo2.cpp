@@ -54,6 +54,7 @@ void Ut_chromo2::test_Chr1()
     if (chr.IsError()) {
 	cout << "Pos: " << chr.Error().mPos << " -- " << chr.Error().mText << endl;
     }
+    chr.Root().Dump();
     CPPUNIT_ASSERT_MESSAGE("Chromo parsing error", !chr.IsError());
     ChromoNode croot = chr.Root();
     CPPUNIT_ASSERT_MESSAGE("Chromo root is empty", croot != ChromoNode());

@@ -10,6 +10,7 @@ dist_sconf_DATA = \
 modulesdir = $(pkgdatadir)/modules
 dist_modules_DATA = \
 	     modules/syst.xml \
+	     modules/syst.chs \
 	     modules/capsula.xml \
 	     modules/data.xml \
 	     modules/func.xml \
