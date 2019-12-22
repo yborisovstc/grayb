@@ -489,6 +489,10 @@ void Env::ConstructSystem()
 	} else {
 	    spec->SetFromSpec(iSpec);
 	}
+	if (spec->IsError()) {
+	    const CError& cerr = spec->Error();
+	    Logger()->Write(EErr, NULL, "Chromo error [pos %d]: %s", cerr.mPos.operator streamoff(), cerr.mText.c_str());
+	}
 	Pdur(PEvents::Dur_Profiler_Dur_Start);
 	Pdur(PEvents::Dur_Profiler_Dur);
 	Pclock(PEvents::Env_Start_Constr, iRoot);

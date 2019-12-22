@@ -276,6 +276,12 @@ void Elem::Mutate(const ChromoNode& aMutsRoot, TBool aRunTimeOnly, TBool aCheckS
     DoMutation(aMutsRoot, aRunTimeOnly, aCheckSafety, aTrialMode, mctx);
 }
 
+void Elem::DoSpecificMut(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode, const MutCtx& aCtx)
+{
+    TNodeType rnotype = aSpec.Type();
+    Logger()->Write(EErr, this, "Mutating - unknown mutation type [%d]", rnotype);
+}
+
 void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MutCtx& aCtx)
 {
     const ChromoNode& mroot = aMutSpec;
@@ -403,7 +409,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    else if (rnotype == ENt_Note) {
 	    }
 	    else {
-		Logger()->Write(EErr, this, "Mutating - unknown mutation type [%d]", rnotype);
+		DoSpecificMut(rno, aRunTime, aTrialMode, aCtx);
 	    }
 	    Logger()->SetContextMutId();
 	}

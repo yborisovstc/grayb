@@ -7,6 +7,8 @@
 class MLogRec;
 
 
+/** @brief Chromo node type
+ * */
 enum TNodeType
 {
     ENt_Unknown = 0,
@@ -18,8 +20,13 @@ enum TNodeType
     ENt_Import = 8, 	// Importing node
     ENt_Seg = 9, 	// Segment of chromo
     ENt_Note = 10, 	// Note
+    ENt_Conn = 11, 	// Connection, system custom mutation
+    ENt_Disconn = 12, 	// Connection, system custom mutation
 };
 
+/** @brief Chromo node attributes
+ * */
+// TODO ENa_Comp is not used anymore, remove
 enum TNodeAttr
 {
     ENa_Unknown = 0,
@@ -35,6 +42,7 @@ enum TNodeAttr
     ENa_Targ = 14, // Target node of mutation, is used in OSM mode, ref ds_mut_osm
     ENa_Comp = 15, // Component to be changed, for comps related muts only, is used in OSM mode, ref ds_mut_osm
     ENa_NS = 16,    //!< Name space
+    ENa_MutNode2 = 17, //!< Node as 2nd argument of muation 
 };
 
 

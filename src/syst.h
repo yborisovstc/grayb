@@ -457,6 +457,8 @@ class Syst: public Vert
 	// From MOwner
 	virtual void OnCompDeleting(MUnit& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
 	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
+	// From Elem
+	virtual void DoSpecificMut(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode, const MutCtx& aCtx) override;
     protected:
 	TBool IsPtOk(MUnit* aPt);
 };

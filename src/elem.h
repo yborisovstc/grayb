@@ -120,6 +120,10 @@ class Elem: public Unit, public MElem
 	// From MIface
 	virtual MIface* MElem_Call(const string& aSpec, string& aRes) override;
 	virtual string MElem_Mid() const override { return Unit::Mid();}
+	// Local
+	/** @brief Perform specific mutation
+	 * */
+	virtual void DoSpecificMut(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode, const MutCtx& aCtx);
     protected:
 	/** Helper. Sets cromo root attributes: parent, name */
 	void SetCrAttr(const string& aEType, const string& aName);

@@ -24,9 +24,11 @@ const string KMS_Note = "#";
 const string KMS_Rename = "|";
 const string KMS_Remove = "!";
 const string KMS_Import = "+";
+const string KMS_Conn = "~";
+const string KMS_Disconn = "!~";
 
-/** @brief Unknown P part */
-static const string KT_Unknown = "$";
+/** @brief Default P part */
+static const string KT_Default = "$";
 
 static const string KR_CREATE = ":";
 
@@ -61,7 +63,8 @@ const map<TNodeType, string> KM_MutTypeToRel = {
     {ENt_Change, KMS_Rename},
     {ENt_Rm, KMS_Remove},
     {ENt_Import, KMS_Import},
-    {ENt_Cont, KMS_Cont}
+    {ENt_Cont, KMS_Cont},
+    {ENt_Conn, KMS_Conn}
 };
 
 string GetMutRel(TNodeType aType)
@@ -209,6 +212,10 @@ TNodeType Chromo2Mdl::GetType(const THandle& aHandle) {
 	res = ENt_Import;
     } else  if (rel == KMS_Cont) {
 	res = ENt_Cont;
+    } else  if (rel == KMS_Conn) {
+	res = ENt_Conn;
+    } else  if (rel == KMS_Disconn) {
+	res = ENt_Disconn;
     }
     return res;
 }
@@ -278,8 +285,13 @@ string Chromo2Mdl::GetAttr(const THandle& aHandle, TNodeAttr aAttr) const
     string rel = node->mMut.mR;
     if (aAttr == ENa_Id) {
 	__ASSERT(rel == KMS_Add || rel == KMS_Import || rel == KMS_Cont);
-	if (rel == KMS_Add || rel == KMS_Cont) {
+	if (rel == KMS_Add) {
 	    res = node->mMut.mP;
+	} else if (rel == KMS_Cont) {
+	    res = node->mMut.mP;
+	    if (res == KT_Default) {
+		res.clear();
+	    }
 	} else if (rel == KMS_Import) {
 	    res = node->mMut.mQ;
 	}
@@ -290,11 +302,18 @@ string Chromo2Mdl::GetAttr(const THandle& aHandle, TNodeAttr aAttr) const
     } else if (aAttr == ENa_MutAttr) {
 	res = "id";
     } else if (aAttr == ENa_MutNode) {
-	__ASSERT(rel == KMS_Remove || rel == KMS_Rename || rel == KMS_Add || rel == KMS_Cont);
+	__ASSERT(rel == KMS_Remove || rel == KMS_Rename || rel == KMS_Add || rel == KMS_Cont || rel == KMS_Conn);
 	if (rel == KMS_Add || rel == KMS_Cont) {
 	    res = GetContextByAttr(*node, aAttr);
+	} else if (rel == KMS_Conn || rel == KMS_Disconn) {
+	    res = node->mMut.mP;
 	} else {
 	    res = node->mMut.mP;
+	}
+    } else if (aAttr == ENa_MutNode2) {
+	__ASSERT(rel == KMS_Conn);
+	if (rel == KMS_Conn || rel == KMS_Disconn) {
+	    res = node->mMut.mQ;
 	}
     } else if (aAttr == ENa_MutVal) {
 	__ASSERT(rel == KMS_Cont || rel == KMS_Note || rel == KMS_Rename);
@@ -320,7 +339,10 @@ TBool Chromo2Mdl::AttrExists(const THandle& aHandle, TNodeAttr aAttr) const
 	res = (rel == KMS_Rename);
     } else if (aAttr == ENa_MutNode) {
 	res = (rel == KMS_Remove) || (rel == KMS_Rename) ||
-	    (((rel == KMS_Add) || (rel == KMS_Cont)) && node->ExistsContextByAttr(ENa_MutNode));
+	    (((rel == KMS_Add) || (rel == KMS_Cont)) && node->ExistsContextByAttr(ENa_MutNode)) ||
+	    ((rel == KMS_Conn || rel == KMS_Disconn) && !node->mMut.mP.empty());
+    } else if (aAttr == ENa_MutNode2) {
+	    res = ((rel == KMS_Conn || rel == KMS_Disconn) && !node->mMut.mQ.empty());
     } else if (aAttr == ENa_Ref) {
 	// Use MutVal instead
     }
@@ -398,7 +420,7 @@ void Chromo2Mdl::SetAttr(const THandle& aHandle, TNodeAttr aType, const string& 
 	    node->mMut.mP = aVal;
 	} else if (rel == KMS_Import) {
 	    node->mMut.mQ = aVal;
-	    node->mMut.mP = KT_Unknown;
+	    node->mMut.mP = KT_Default;
 	}
     } else if (aType == ENa_Parent) {
 	__ASSERT (rel.empty() || rel == KMS_Add);
@@ -413,7 +435,7 @@ void Chromo2Mdl::SetAttr(const THandle& aHandle, TNodeAttr aType, const string& 
 	__ASSERT (rel == KMS_Cont || rel == KMS_Note || rel == KMS_Rename);
 	if (rel == KMS_Note) {
 	    node->mMut.mQ = KT_TextGmark + aVal + KT_TextGmark;
-	    node->mMut.mP = KT_Unknown;
+	    node->mMut.mP = KT_Default;
 	} else {
 	    node->mMut.mQ = aVal;
 	}
@@ -432,7 +454,7 @@ void Chromo2Mdl::SetAttr(const THandle& aHandle, TNodeAttr aType, const string& 
 	__ASSERT(rel == KMS_Cont);
 	node->mMut.mQ = aVal;
 	if (node->mMut.mP.empty()) {
-	    node->mMut.mP = KT_Unknown;
+	    node->mMut.mP = KT_Default;
 	}
     }
 }
@@ -651,7 +673,7 @@ void Chromo2Mdl::GetLexs(istream& aIs, streampos aBeg, streampos aEnd, vector<st
     streampos pos = aIs.tellg();
     while (pos != aEnd) {
 	char c = aIs.get();
-	if ((c == ' ' || c == '\n' || c == '\r')) {
+	if ((c == ' ' || c == '\n' || c == '\r' || c == '\t')) {
 	    if (!lexeme.empty()) {
 		aLexs.push_back(lexeme);
 		lexeme.clear();
@@ -1001,6 +1023,10 @@ void Chromo2::ConvertNode(ChromoNode& aDst, const ChromoNode& aSrc)
     ConvertAttr(aDst, aSrc, ENa_MutVal);
     ConvertAttr(aDst, aSrc, ENa_Ref);
     ConvertAttr(aDst, aSrc, ENa_NS);
+    if (aSrc.Type() == ENt_Cont && (!aSrc.AttrExists(ENa_Id) || aSrc.Attr(ENa_Id).empty())) {
+	// Default content
+	aDst.SetAttr(ENa_Id, KT_Default);
+    }
     for (ChromoNode::Const_Iterator it = aSrc.Begin(); it != aSrc.End(); it++) {
 	const ChromoNode& scomp = *it;
 	ChromoNode dcomp = aDst.AddChild(scomp.Type());

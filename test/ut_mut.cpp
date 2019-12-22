@@ -18,6 +18,7 @@ class Ut_mut : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Add);
 //    CPPUNIT_TEST(test_DcpChromo1);
     CPPUNIT_TEST(test_MutSyst);
+    CPPUNIT_TEST(test_MutSyst2);
     CPPUNIT_TEST(test_Move);
     CPPUNIT_TEST(test_MutRmRecr);
     CPPUNIT_TEST(test_MutRmRecrInh);
@@ -51,6 +52,7 @@ private:
     void test_Add();
     void test_DcpChromo1();
     void test_MutSyst();
+    void test_MutSyst2();
     void test_Move();
     void test_MutRmRecr();
     void test_MutRmRecrInh();
@@ -218,7 +220,7 @@ void Ut_mut::test_MutSyst()
 {
     printf("\n === Test of mutation of system\n");
 
-    for (int ct = 1; ct < 2; ct++) {
+    for (int ct = 0; ct < 1; ct++) {
 	const string specn("ut_mut_syst");
 	string spec = specn + string(".") + string(ct == 0 ? "xml" : "chs");
 	string log = specn + string(ct == 0 ? "_xml" : "_chs") + ".log";
@@ -226,6 +228,8 @@ void Ut_mut::test_MutSyst()
 	// Check creation first
 	CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
 	iEnv->ChMgr()->SetEnableFixErrors(ETrue);
+	iEnv->ImpsMgr()->ResetImportsPaths();
+	iEnv->ImpsMgr()->AddImportsPaths("../modules");
 	iEnv->ConstructSystem();
 	MUnit* root = iEnv->Root();
 	MElem* eroot = root->GetObj(eroot);
@@ -271,6 +275,49 @@ void Ut_mut::test_MutSyst()
 	MUnit* epair_1 = pair_1->GetObj(epair_1);
 	const string pname_1 = epair_1->Name();
 	CPPUNIT_ASSERT_MESSAGE("Wrong name of pair of Syst1/cp", pname_1 == "cp2");
+
+	delete iEnv;
+    }
+}
+
+void Ut_mut::test_MutSyst2()
+{
+    printf("\n === Test of mutation of system using custom mutations\n");
+
+    for (int ct = 1; ct < 2; ct++) {
+	const string specn("ut_mut_syst2");
+	string spec = specn + string(".") + string(ct == 0 ? "xml" : "chs");
+	string log = specn + string(ct == 0 ? "_xml" : "_chs") + ".log";
+	iEnv = new Env(spec, log);
+	// Check creation first
+	CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+	iEnv->ChMgr()->SetEnableFixErrors(ETrue);
+	iEnv->ImpsMgr()->ResetImportsPaths();
+	iEnv->ImpsMgr()->AddImportsPaths("../modules");
+	iEnv->ConstructSystem();
+	MUnit* root = iEnv->Root();
+	MElem* eroot = root->GetObj(eroot);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+	MUnit* cp1 = root->GetNode("./cp1");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get cp1", cp1 != 0);
+	MVert* mcp1 = cp1->GetObj(mcp1);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get mcp1", mcp1 != 0);
+	MVert* pair = mcp1->GetPair(0);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
+	MUnit* epair = pair->GetObj(epair);
+	const string pname = epair->Name();
+	CPPUNIT_ASSERT_MESSAGE("Wrong pair's name", pname == "cp2");
+	// Verifying system custom mutation for connecting
+	MUnit* cp3 = root->GetNode("./cp3");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get cp3", cp3 != NULL);
+	MVert* vcp3 = cp3->GetObj(vcp3);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get vcp3", vcp3 != NULL);
+	MVert* vcp3_pair = vcp3->GetPair(0);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get vcp3 pair", vcp3_pair != NULL);
+	MUnit* vcp3_upair = vcp3_pair->GetObj(vcp3_upair);
+	const string vcp3_pname = vcp3_upair->Name();
+	CPPUNIT_ASSERT_MESSAGE("Wrong vcp3 pair's name", vcp3_pname == "Int");
+
 
 	delete iEnv;
     }
