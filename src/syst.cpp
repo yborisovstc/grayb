@@ -2305,6 +2305,60 @@ TBool Syst::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
     return res;
 }
 
+void Syst::Connect(const string& argP, const string& argQ, const TNs& aNs)
+{
+    MUnit* ucpP = GetNodeByName(argP, aNs);
+    MUnit* ucpQ = GetNodeByName(argQ, aNs);
+    if (ucpP != NULL && ucpQ != NULL) {
+	MVert* vcpP = ucpP->GetObj(vcpP);
+	MVert* vcpQ = ucpQ->GetObj(vcpQ);
+	if (vcpP != NULL && vcpQ != NULL) {
+	    MCompatChecker* pt1checker = (MCompatChecker*) ucpP->GetSIfiC(MCompatChecker::Type(), this);
+	    MCompatChecker* pt2checker = (MCompatChecker*) ucpQ->GetSIfiC(MCompatChecker::Type(), this);
+	    TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(ucpQ);
+	    TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(ucpP);
+	    if (ispt1cptb && ispt2cptb) {
+		// Are compatible - connect
+		TBool res = vcpP->Connect(vcpQ);
+		if (!res) {
+		    Logger()->Write(EErr, this, "Connecting [%s - %s] failed", argP.c_str(), argQ.c_str());
+		}
+	    }
+	    else {
+		TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(ucpQ);
+		TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(ucpP);
+		Logger()->Write(EErr, this, "Connecting [%s - %s] - incompatible roles", argP.c_str(), argQ.c_str());
+	    }
+	} else {
+	    Logger()->Write(EErr, this, "Connecting nodes: pair [%s] isn't vertex", ((vcpP == NULL) ? argP : argQ).c_str());
+	}
+    } else {
+	Logger()->Write(EErr, this, "Connecting nodes: pair [%s] not found", ((ucpP == NULL) ? argP : argQ).c_str());
+    }
+}
+
+void Syst::Disconnect(const string& argP, const string& argQ, const TNs& aNs)
+{
+    MUnit* ucpP = GetNodeByName(argP, aNs);
+    MUnit* ucpQ = GetNodeByName(argQ, aNs);
+    if (ucpP != NULL && ucpQ != NULL) {
+	MVert* vcpP = ucpP->GetObj(vcpP);
+	MVert* vcpQ = ucpQ->GetObj(vcpQ);
+	if (vcpP != NULL && vcpQ != NULL) {
+	    if (vcpP->IsPair(vcpQ)) {
+		vcpP->Disconnect(vcpQ);
+		vcpQ->Disconnect(vcpP);
+	    } else {
+		Logger()->Write(EErr, this, "Disonnecting nodes: vertex [%s] isn't pair of [%s]", argQ.c_str(), argP.c_str());
+	    }
+	} else {
+	    Logger()->Write(EErr, this, "Disonnecting nodes: pair [%s] isn't vertex", ((vcpP == NULL) ? argP : argQ).c_str());
+	}
+    } else {
+	Logger()->Write(EErr, this, "Disonnecting nodes: pair [%s] not found", ((ucpP == NULL) ? argP : argQ).c_str());
+    }
+}
+
 void Syst::DoSpecificMut(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode, const MutCtx& aCtx)
 {
     TNodeType rnotype = aSpec.Type();
@@ -2312,39 +2366,19 @@ void Syst::DoSpecificMut(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMo
 	if (aSpec.AttrExists(ENa_MutNode) && aSpec.AttrExists(ENa_MutNode2)) {
 	    string argP = aSpec.Attr(ENa_MutNode);
 	    string argQ = aSpec.Attr(ENa_MutNode2);
-	    //MUnit* ucpP = GetNode(argP);
-	    //MUnit* ucpQ = GetNode(argQ);
 	    const TNs& ns = aCtx.mNs;
-	    MUnit* ucpP = GetNodeByName(argP, ns);
-	    MUnit* ucpQ = GetNodeByName(argQ, ns);
-	    if (ucpP != NULL && ucpQ != NULL) {
-		MVert* vcpP = ucpP->GetObj(vcpP);
-		MVert* vcpQ = ucpQ->GetObj(vcpQ);
-		if (vcpP != NULL && vcpQ != NULL) {
-		    MCompatChecker* pt1checker = (MCompatChecker*) ucpP->GetSIfiC(MCompatChecker::Type(), this);
-		    MCompatChecker* pt2checker = (MCompatChecker*) ucpQ->GetSIfiC(MCompatChecker::Type(), this);
-		    TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(ucpQ);
-		    TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(ucpP);
-		    if (ispt1cptb && ispt2cptb) {
-			// Are compatible - connect
-			TBool res = vcpP->Connect(vcpQ);
-			if (!res) {
-			    Logger()->Write(EErr, this, "Connecting [%s - %s] failed", argP.c_str(), argQ.c_str());
-			}
-		    }
-		    else {
-			TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(ucpQ);
-			TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(ucpP);
-			Logger()->Write(EErr, this, "Connecting [%s - %s] - incompatible roles", argP.c_str(), argQ.c_str());
-		    }
-		} else {
-		    Logger()->Write(EErr, this, "Connecting nodes: pair [%s] isn't vertex", ((vcpP == NULL) ? argP : argQ).c_str());
-		}
-	    } else {
-		Logger()->Write(EErr, this, "Connecting nodes: pair [%s] not found", ((ucpP == NULL) ? argP : argQ).c_str());
-	    }
+	    Connect(argP, argQ, ns);
 	} else {
 	    Logger()->Write(EErr, this, "Connecting nodes: missing required attr");
+	}
+    } else if (rnotype == ENt_Disconn) {
+	if (aSpec.AttrExists(ENa_MutNode) && aSpec.AttrExists(ENa_MutNode2)) {
+	    string argP = aSpec.Attr(ENa_MutNode);
+	    string argQ = aSpec.Attr(ENa_MutNode2);
+	    const TNs& ns = aCtx.mNs;
+	    Disconnect(argP, argQ, ns);
+	} else {
+	    Logger()->Write(EErr, this, "Disconnecting nodes: missing required attr");
 	}
     } else {
 	Vert::DoSpecificMut(aSpec, aRunTime, aTrialMode, aCtx);

@@ -317,7 +317,12 @@ void Ut_mut::test_MutSyst2()
 	MUnit* vcp3_upair = vcp3_pair->GetObj(vcp3_upair);
 	const string vcp3_pname = vcp3_upair->Name();
 	CPPUNIT_ASSERT_MESSAGE("Wrong vcp3 pair's name", vcp3_pname == "Int");
-
+	// Verifying system custom mutation Disconnect
+	eroot->AppendMutation(TMut(ENt_Disconn, ENa_MutNode, "./Syst1/ep/Int", ENa_MutNode2, "cp3"));
+	TNs ns; MutCtx mctx(NULL, ns);
+	eroot->Mutate(false, false, false, mctx);
+	vcp3_pair = vcp3->GetPair(0);
+	CPPUNIT_ASSERT_MESSAGE("vcp3 pair is not disconnected", vcp3_pair == NULL);
 
 	delete iEnv;
     }

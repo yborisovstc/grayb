@@ -460,6 +460,9 @@ class Syst: public Vert
 	// From Elem
 	virtual void DoSpecificMut(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode, const MutCtx& aCtx) override;
     protected:
+	void Connect(const string& argP, const string& argQ, const TNs& aNs);
+	void Disconnect(const string& argP, const string& argQ, const TNs& aNs);
+    protected:
 	TBool IsPtOk(MUnit* aPt);
 };
 
