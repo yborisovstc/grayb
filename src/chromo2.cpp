@@ -111,7 +111,8 @@ C2MdlNode::C2MdlNode(C2MdlNode* aOwner): mOwner(aOwner)
 {
 }
 
-C2MdlNode::C2MdlNode(const C2MdlNode& aSrc): mOwner(aSrc.mOwner), mContext(aSrc.mContext), mMut(aSrc.mMut), mChromo(aSrc.mChromo)
+C2MdlNode::C2MdlNode(const C2MdlNode& aSrc): mOwner(aSrc.mOwner), mContext(aSrc.mContext), mMut(aSrc.mMut), mChromo(aSrc.mChromo),
+    mP(aSrc.mP), mQ(aSrc.mQ)
 {
 }
 
@@ -895,6 +896,15 @@ bool Chromo2Mdl::IsError() const
     return mErr.mText.empty();
 }
 
+THandle Chromo2Mdl::ArgP(const THandle& aHandle)
+{
+    C2MdlNode* node = aHandle.Data(node);
+    return node->mP;
+}
+
+THandle Chromo2Mdl::ArgQ(const THandle& aHandle)
+{
+}
 
 
 

@@ -86,6 +86,8 @@ class MChromoMdl
 	virtual THandle Parent(const THandle& aHandle) = 0;
 	virtual THandle Next(const THandle& aHandle, TNodeType aType = ENt_Unknown) = 0;
 	virtual THandle Prev(const THandle& aHandle, TNodeType aType = ENt_Unknown) = 0;
+	virtual THandle ArgP(const THandle& aHandle) = 0;
+	virtual THandle ArgQ(const THandle& aHandle) = 0;
 	virtual THandle GetFirstChild(const THandle& aHandle, TNodeType aType = ENt_Unknown) = 0;
 	virtual THandle GetLastChild(const THandle& aHandle, TNodeType aType = ENt_Unknown) = 0;
 	virtual string GetAttr(const THandle& aHandle, TNodeAttr aAttr) const = 0;

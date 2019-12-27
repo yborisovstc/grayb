@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <list>
+#include <memory>
 
 #include "mchromo.h"
 #include "chromo.h"
@@ -73,6 +74,8 @@ class C2MdlNode
 	//vector<C2MdlCtxNode> mContext; /*!< Context */
 	TC2MdlCtx mContext; /*!< Context */
 	C2Mut mMut;                    /*!< Mutation */
+	unique_ptr<C2MdlNode> mP;     /*!< Argument P */
+	unique_ptr<C2MdlNode> mQ;     /*!< Argument Q */
 	TC2MdlNodes mChromo;     /*!< Chromosome */
 };
 
@@ -107,6 +110,8 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	virtual THandle Parent(const THandle& aHandle);
 	virtual THandle Next(const THandle& aHandle, TNodeType aType = ENt_Unknown);
 	virtual THandle Prev(const THandle& aHandle, TNodeType aType = ENt_Unknown);
+	virtual THandle ArgP(const THandle& aHandle);
+	virtual THandle ArgQ(const THandle& aHandle);
 	virtual THandle GetFirstChild(const THandle& aHandle, TNodeType aType = ENt_Unknown);
 	virtual THandle GetLastChild(const THandle& aHandle, TNodeType aType = ENt_Unknown);
 	virtual string GetAttr(const THandle& aHandle, TNodeAttr aAttr) const;

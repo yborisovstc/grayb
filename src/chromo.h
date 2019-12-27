@@ -144,6 +144,7 @@ class ChromoNode
 	Const_Iterator Find(TNodeType aNodeType) const { return Const_Iterator(iMdl, iMdl.GetFirstChild(iHandle, aNodeType)); };
 	Iterator FindNextSibling(TNodeType aNodeType) { return Iterator(iMdl, iMdl.Next(iHandle, aNodeType)); };
 	Const_Iterator FindNextSibling(TNodeType aNodeType) const { return Const_Iterator(iMdl, iMdl.Next(iHandle, aNodeType)); };
+	ChromoNode ArgP() const;
     public:
 	TNodeType Type() { return iMdl.GetType(iHandle); };
 	TNodeType Type() const { return iMdl.GetType(iHandle); };

@@ -419,6 +419,15 @@ TInt ChromoMdlX::GetLineId(const THandle& aHandle) const
     return src->line;
 }
 
+THandle ChromoMdlX::ArgP(const THandle& aHandle)
+{
+    return THandle();
+}
+
+THandle ChromoMdlX::ArgQ(const THandle& aHandle)
+{
+    return THandle();
+}
 
 ChromoX::ChromoX(): iRootNode(iMdl, NULL)
 {
