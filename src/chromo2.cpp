@@ -27,6 +27,9 @@ const string KMS_Import = "+";
 const string KMS_Conn = "~";
 const string KMS_Disconn = "!~";
 
+/** @brief Separators **/
+const string KSep = " \t\n\r";
+
 /** @brief Default P part */
 static const string KT_Default = "$";
 
@@ -36,11 +39,12 @@ static const string KR_CREATE = ":";
  * */
 
 static const string KPE_UnexpChrEnd = "Unexpected end of chromo";
-static const string KPE_WrongMutLexNum = "Wrong number mutation lexems";
+static const string KPE_WrongMutLexNum = "Wrong number of mutation lexems";
 static const string KPE_WrongCtxType = "Wrong context type";
 static const string KPE_MissingEndOfGroup = "Missin end of group";
 static const string KPE_UnknownMutation = "Unknown mutation";
 static const string KPE_WrongCombMutType = "Wrong type of combined mutation";
+static const string KPE_TextNotClosed = "Text block is not closed";
 
 /** @brief Segment offset when node output */
 const int KA_OutOffset = 3;
@@ -303,8 +307,8 @@ string Chromo2Mdl::GetAttr(const THandle& aHandle, TNodeAttr aAttr) const
     } else if (aAttr == ENa_MutAttr) {
 	res = "id";
     } else if (aAttr == ENa_MutNode) {
-	__ASSERT(rel == KMS_Remove || rel == KMS_Rename || rel == KMS_Add || rel == KMS_Cont || rel == KMS_Conn || rel == KMS_Disconn);
-	if (rel == KMS_Add || rel == KMS_Cont) {
+	__ASSERT(rel == KMS_Remove || rel == KMS_Rename || rel == KMS_Add || rel == KMS_Cont || rel == KMS_Conn || rel == KMS_Disconn || rel.empty());
+	if (rel == KMS_Add || rel == KMS_Cont || rel.empty()) {
 	    res = GetContextByAttr(*node, aAttr);
 	} else if (rel == KMS_Conn || rel == KMS_Disconn) {
 	    res = node->mMut.mP;
@@ -329,7 +333,7 @@ TBool Chromo2Mdl::AttrExists(const THandle& aHandle, TNodeAttr aAttr) const
     C2MdlNode* node = aHandle.Data(node);
     string rel = node->mMut.mR;
     if (aAttr == ENa_Id) {
-	res = (rel == KMS_Add) || (rel == KMS_Import);
+	res = (rel == KMS_Add) || rel == KMS_Cont || (rel == KMS_Import);
     } else if (aAttr == ENa_Parent) {
 	res = (rel == KMS_Add);
     } else if (aAttr == ENa_Targ || aAttr == ENa_NS) {
@@ -340,7 +344,7 @@ TBool Chromo2Mdl::AttrExists(const THandle& aHandle, TNodeAttr aAttr) const
 	res = (rel == KMS_Rename);
     } else if (aAttr == ENa_MutNode) {
 	res = (rel == KMS_Remove) || (rel == KMS_Rename) ||
-	    (((rel == KMS_Add) || (rel == KMS_Cont)) && node->ExistsContextByAttr(ENa_MutNode)) ||
+	    (((rel == KMS_Add) || (rel == KMS_Cont) || rel.empty()) && node->ExistsContextByAttr(ENa_MutNode)) ||
 	    ((rel == KMS_Conn || rel == KMS_Disconn) && !node->mMut.mP.empty());
     } else if (aAttr == ENa_MutNode2) {
 	    res = ((rel == KMS_Conn || rel == KMS_Disconn) && !node->mMut.mQ.empty());
@@ -355,7 +359,6 @@ THandle Chromo2Mdl::AddChild(const THandle& aParent, TNodeType aType)
     C2MdlNode* parent = aParent.Data(parent);
     C2MdlNode node;
     node.mMut.mR = GetMutRel(aType);
-    __ASSERT(!node.mMut.mR.empty());
     node.mOwner = parent;
     parent->mChromo.push_back(node);
     C2MdlNode& res = parent->mChromo.back();
@@ -435,7 +438,7 @@ void Chromo2Mdl::SetAttr(const THandle& aHandle, TNodeAttr aType, const string& 
     } else if (aType == ENa_MutVal) {
 	__ASSERT (rel == KMS_Cont || rel == KMS_Note || rel == KMS_Rename);
 	if (rel == KMS_Note) {
-	    node->mMut.mQ = KT_TextGmark + aVal + KT_TextGmark;
+	    node->mMut.mQ = aVal;
 	    node->mMut.mP = KT_Default;
 	} else {
 	    node->mMut.mQ = aVal;
@@ -445,8 +448,8 @@ void Chromo2Mdl::SetAttr(const THandle& aHandle, TNodeAttr aType, const string& 
 	__ASSERT (!ctxrel.empty());
 	node->mContext[ctxrel] = aVal;
     } else if (aType == ENa_MutNode) {
-	__ASSERT (rel == KMS_Remove || rel == KMS_Rename || rel == KMS_Add || rel == KMS_Cont || rel == KMS_Conn || rel == KMS_Disconn);
-	if (rel == KMS_Add || rel == KMS_Cont) {
+	__ASSERT (rel == KMS_Remove || rel == KMS_Rename || rel == KMS_Add || rel == KMS_Cont || rel == KMS_Conn || rel == KMS_Disconn || rel.empty());
+	if (rel == KMS_Add || rel == KMS_Cont || rel.empty()) {
 	    node->AddContext(KT_Node, aVal);
 	} else if (rel == KMS_Conn || rel == KMS_Disconn) {
 	    node->mMut.mP = aVal;
@@ -551,7 +554,7 @@ THandle Chromo2Mdl::SetFromFile(const string& aFileName)
 	//ParseChromo(is, beg, end, mRoot);
 	ParseCnodeChromo(is, beg, end, mRoot, true);
 	mRoot.BindTree(NULL);
-	DumpMnode(mRoot, 0);
+	//DumpMnode(mRoot, 0);
     }
     return &mRoot;
 }
@@ -601,6 +604,20 @@ static void DumpIs(istream& aIs, streampos aStart, streampos aEnd)
     aIs.seekg(curpos, aIs.beg);
 }
 
+bool PassThroughText(istream& aIs, streampos aEnd)
+{
+    bool closed = false;
+    streampos pos = aIs.tellg();
+    while (pos != aEnd) {
+	char c = aIs.get();
+	if (c == KT_TextGmark) {
+	    closed = true; break;
+	}
+	pos = aIs.tellg();
+    }
+    return closed;
+}
+
 void Chromo2Mdl::ParseChromo(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode)
 {
     //DumpIsFrag(aIs, aStart, aEnd);
@@ -613,7 +630,12 @@ void Chromo2Mdl::ParseChromo(istream& aIs, streampos aStart, streampos aEnd, C2M
     streampos pos = aIs.tellg();
     while (pos != aEnd) {
 	char c = aIs.get();
-	if (c == KT_MutSeparator) {
+	if (c == KT_TextGmark) {
+	    if (!PassThroughText(aIs, aEnd)) {
+		mErr.Set(pos, KPE_TextNotClosed);
+		break;
+	    }
+	} else if (c == KT_MutSeparator) {
 	    streampos cur = aIs.tellg();
 	    aIs.seekg(-1, aIs.cur);
 	    streampos mend = aIs.tellg();
@@ -798,7 +820,7 @@ void Chromo2Mdl::ParseCnodeChromo(istream& aIs, streampos aStart, streampos aEnd
     //cout << aEnd << endl;
     GetLexs(aIs, aStart, lexend, lexs);
     int ls = lexs.size();
-    if (ls == 2) {
+    if ((ls % 2) == 0) {
 	ParseContext(lexs, aStart, mnode);
     } else if (ls >= 3 && ((ls - 3) % 2) == 0) {
 	mnode.mMut.mQ = lexs.back(); lexs.pop_back();
@@ -838,6 +860,35 @@ void Offset(int aLevel, ostream& aOs)
     for (int i = 0; i < aLevel; i++)  aOs << "  ";
 }
 
+/** @brief Checks if lexeme contains separators
+ * */
+bool ContainsSep(const string& aLex)
+{
+    bool res = false;
+    for (auto c : aLex) {
+	if (KSep.find(c) != string::npos) {
+	    res = true; break;
+	}
+    }
+    return res;
+}
+
+/** @brief Groups lexeme
+ * */
+string GroupLexeme(const string& aLex)
+{
+    string res;
+    bool sep = ContainsSep(aLex);
+    if (sep) {
+	res = KT_TextGmark;
+    }
+    res += aLex;
+    if (sep) {
+	res += KT_TextGmark;
+    }
+    return res;
+}
+
 void Chromo2Mdl::OutputNode(const C2MdlNode& aNode, ostream& aOs, int aLevel)
 {
     bool cnt = false;
@@ -851,7 +902,7 @@ void Chromo2Mdl::OutputNode(const C2MdlNode& aNode, ostream& aOs, int aLevel)
     bool mut = false;
     int cnum = aNode.mChromo.size();
     if (!aNode.mMut.mR.empty()) {
-	if (!cnt) Offset(aLevel, aOs); aOs << aNode.mMut.mP << " " << aNode.mMut.mR << " " << aNode.mMut.mQ;
+	if (!cnt) Offset(aLevel, aOs); aOs << aNode.mMut.mP << " " << aNode.mMut.mR << " " << GroupLexeme(aNode.mMut.mQ);
 	if (cnum == 0) {
 	    aOs << ";";
 	}

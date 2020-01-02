@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+
+<!DOCTYPE node SYSTEM "../etc/objspec.dtd"> 
+
+
+<node id="Root" parent="Elem">
+    <node id="e2" parent="Elem">
+	<node id="e3" parent="Elem"/>
+	<cont val="Data"/>
+    </node>
+</node>

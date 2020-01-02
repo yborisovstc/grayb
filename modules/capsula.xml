@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 
-<!-- Base elements for Incapsulated system layer. Capsula is incapsulated system. Its internal structure
-     is hidded from outside world, the only connection points are the way of relation to the system. 
-     -->
-
 <!DOCTYPE node SYSTEM "/usr/share/grayb/conf/objspec.dtd"> 
 
 <node id="IncapsComps" parent="Elem">
+
+<!-- Base elements for Incapsulated system layer. Capsula is incapsulated system. Its internal structure
+     is hidded from outside world, the only connection points are the way of relation to the system. 
+     -->
 
     <node id="Incaps" parent="Syst"> 
 	<node id="MACompsObserver" parent="IncapsAgent"/> 

@@ -18,6 +18,20 @@
 	<node id="elem4.2" parent="./../elem1"/>
     </seg>
 
+    <seg targ="./elem1" >
+	<node id="unit1_1" parent="Unit"/>
+	<seg node="./unit1_1">
+	    <node id="unit1_1_1" parent="Unit"/>
+	    <seg node="./unit1_1_1">
+		<node id="unit1_1_1_1" parent="Unit"/>
+	    </seg>
+	</seg>
+    </seg>
+
+    <node node="./elem1" id="unit1_2" parent="Unit"/>
+
+    <node node="./elem1/unit1_1" id="unit1_1_2" parent="Unit"/>
+
     <node id="elem5" parent="./elem1/elem2"/>
 
 </node>

@@ -358,29 +358,35 @@ void Ut_cre::test_CreIncaps()
 {
     printf("\n === Test of creation of incapsulated system\n");
 
-    iEnv = new Env("ut_cre_incaps.xml", "ut_cre_incaps.txt");
-    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
-    iEnv->ImpsMgr()->ResetImportsPaths();
-    iEnv->ImpsMgr()->AddImportsPaths("../modules");
-    iEnv->ConstructSystem();
-    MUnit* root = iEnv->Root();
-    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    MUnit* cp = root->GetNode("./sysmod/ConnPoint");
-    MElem* ecp = cp->GetObj(ecp);
-    ecp->Chromos().Save("ut_cre_incaps_cp_saved.xml");
-    MUnit* ep1 = root->GetNode("./test/Ics1/Capsule/ep");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get ep1", ep1 != 0);
-    MVert* mep1 = ep1->GetObj(mep1);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get mep1", mep1 != 0);
-    MVert* pair = mep1->GetPair(0);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
-    MUnit* epairt = root->GetNode("./test/(Incaps:)Ics2/Capsule/ep");
-    MVert* mpairt = epairt->GetObj(mpairt);
-    CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
-    MUnit* wep1 = root->GetNode("./test/Ics1/cp_int");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get wrong edge ep1", wep1 != NULL);
+    for (int ct = 1; ct < 2; ct++) {
+	const string specn("ut_cre_incaps");
+	string ext = ct == 0 ? "xml" : "chs";
+	string spec = specn + string(".") + ext;
+	string log = specn + string(ct == 0 ? "_xml" : "_chs") + ".log";
+	iEnv = new Env(spec, log);
+	CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+	iEnv->ImpsMgr()->ResetImportsPaths();
+	iEnv->ImpsMgr()->AddImportsPaths("../modules");
+	iEnv->ConstructSystem();
+	MUnit* root = iEnv->Root();
+	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+	MUnit* cp = root->GetNode("/testroot/Modules/SysComps/ConnPoint");
+	MElem* ecp = cp->GetObj(ecp);
+	ecp->Chromos().Save("ut_cre_incaps_cp_saved.xml");
+	MUnit* ep1 = root->GetNode("./test/Ics1/Capsule/ep");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get ep1", ep1 != 0);
+	MVert* mep1 = ep1->GetObj(mep1);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get mep1", mep1 != 0);
+	MVert* pair = mep1->GetPair(0);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get pair", pair != 0);
+	MUnit* epairt = root->GetNode("./test/(Incaps:)Ics2/Capsule/ep");
+	MVert* mpairt = epairt->GetObj(mpairt);
+	CPPUNIT_ASSERT_MESSAGE("Wrong pair", pair == mpairt);
+	MUnit* wep1 = root->GetNode("./test/Ics1/cp_int");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get wrong edge ep1", wep1 != NULL);
 
-    delete iEnv;
+	delete iEnv;
+    }
 }
 
 void Ut_cre::test_CreData()

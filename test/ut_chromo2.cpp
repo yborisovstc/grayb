@@ -14,9 +14,10 @@
 class Ut_chromo2 : public CPPUNIT_NS::TestFixture
 {
     CPPUNIT_TEST_SUITE(Ut_chromo2);
-    CPPUNIT_TEST(test_Chr1);
+    //CPPUNIT_TEST(test_Chr1);
 //    CPPUNIT_TEST(test_Cre1);
-   // CPPUNIT_TEST(test_Seg);
+    CPPUNIT_TEST(test_Combo);
+    CPPUNIT_TEST(test_Seg);
    // CPPUNIT_TEST(test_Ns);
 //    CPPUNIT_TEST(test_Conv);
     CPPUNIT_TEST_SUITE_END();
@@ -26,6 +27,7 @@ public:
 private:
     void test_Chr1();
     void test_Cre1();
+    void test_Combo();
     void test_Seg();
     void test_Ns();
     void test_Conv();
@@ -84,25 +86,52 @@ void Ut_chromo2::test_Cre1()
     delete iEnv;
 }
 
+void Ut_chromo2::test_Combo()
+{
+    printf("\n === Test of extended chromo: chromo combo nodes\n");
+
+    iEnv = new Env("ut_chr2_combo.chs", "ut_chr2_combo_chs.log");
+    //iEnv = new Env("ut_chr2_combo.xml", "ut_chr2_combo_xml.log");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root->GetObj(eroot);
+    eroot->Chromos().Save("ut_chr2_combo_saved.chs");
+
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
+    MUnit* e1_2_1 = root->GetNode("./e1/e1_2/e1_2_1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get e1_2_1", e1_2_1 != NULL);
+
+    delete iEnv;
+}
+
+
 void Ut_chromo2::test_Seg()
 {
     printf("\n === Test of extended chromo: segment\n");
 
-    iEnv = new Env("ut_seg.xml", "ut_seg.txt");
-    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
-    iEnv->ImpsMgr()->ResetImportsPaths();
-    iEnv->ImpsMgr()->AddImportsPaths("../modules");
-    iEnv->ConstructSystem();
-    MUnit* root = iEnv->Root();
-    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
-    MUnit* e4 = root->GetNode("./elem3/elem4");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get e4", e4 != NULL);
-    MElem* eroot = root->GetObj(eroot);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get eroot", eroot != NULL);
-    eroot->Chromos().Save("ut_seg_saved.xml_");
-    //Chromo2 chr;
-    //chr.SetFromFile("ut_seg.xml");
-    //ChromoNode croot = chr.Root();
+    for (int ct = 1; ct < 2; ct++) {
+	const string specn("ut_seg");
+	string ext = ct == 0 ? "xml" : "chs";
+	string spec = specn + string(".") + ext;
+	string log = specn + string(ct == 0 ? "_xml" : "_chs") + ".log";
+	iEnv = new Env(spec, log);
+	CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+	iEnv->ImpsMgr()->ResetImportsPaths();
+	iEnv->ImpsMgr()->AddImportsPaths("../modules");
+	iEnv->ConstructSystem();
+	MUnit* root = iEnv->Root();
+	MElem* eroot = root->GetObj(eroot);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
+	string saved_name = specn + "_saved." + ext;
+	eroot->Chromos().Save(saved_name);
+
+	MUnit* e4 = root->GetNode("./elem3/elem4");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get e4", e4 != NULL);
+
+	delete iEnv;
+    }
 }
 
 void Ut_chromo2::test_Ns()
@@ -115,10 +144,10 @@ void Ut_chromo2::test_Ns()
     iEnv->ConstructSystem();
     MUnit* root = iEnv->Root();
     /*
-    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    MUnit* e4 = root->GetNode("./elem3/elem4");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get e4", e4 != 0);
-    */
+       CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+       MUnit* e4 = root->GetNode("./elem3/elem4");
+       CPPUNIT_ASSERT_MESSAGE("Fail to get e4", e4 != 0);
+       */
 }
 
 void Ut_chromo2::test_Conv()
@@ -144,5 +173,5 @@ void Ut_chromo2::test_Conv()
     chr2.Convert(chr);
     chr2.Root().Dump();
     chr2.Save("ut_chr2_conv.chs");
-    
+
 }

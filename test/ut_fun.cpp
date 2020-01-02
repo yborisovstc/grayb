@@ -39,6 +39,7 @@ private:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( Ut_func );
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(Ut_func, "Ut_func");
 
 
 void Ut_func::setUp()
@@ -316,72 +317,91 @@ void Ut_func::test_FuncVar1()
 {
     printf("\n === Test of functions: Addition of variable data\n");
 
-    iEnv = new Env("ut_func_var1.xml", "ut_func_var1.txt");
-    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
-    iEnv->ImpsMgr()->ResetImportsPaths();
-    iEnv->ImpsMgr()->AddImportsPaths("../modules");
-    iEnv->ConstructSystem();
-    MUnit* root = iEnv->Root();
-    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    for (int ct = 0; ct < 1; ct++) {
+	const string specn("ut_func_var1");
+	string ext = ct == 0 ? "xml" : "chs";
+	string spec = specn + string(".") + ext;
+	string log = specn + string(ct == 0 ? "_xml" : "_chs") + ".log";
+	iEnv = new Env(spec, log);
+	CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+	iEnv->ImpsMgr()->ResetImportsPaths();
+	iEnv->ImpsMgr()->AddImportsPaths("../modules");
+	iEnv->ConstructSystem();
+	MUnit* root = iEnv->Root();
+	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
-    MUnit* dir = root->GetNode("./Start/Incaps_root/e2");
-    MElem* edir = dir->GetObj(edir);
-    ChromoNode mut1 = edir->AppendMutation(ENt_Cont);
-    mut1.SetAttr(ENa_MutNode, "./P1");
-    mut1.SetAttr(ENa_Ref, "/Root/Start/Incaps_root/Inp_data1/Capsule/out");
-    TNs ns; MutCtx mctx(NULL, ns);
-    edir->Mutate(false, false, true, mctx);
+	MUnit* dir = root->GetNode("./Start/Incaps_root/e2");
+	MElem* edir = dir->GetObj(edir);
+	ChromoNode mut1 = edir->AppendMutation(ENt_Cont);
+	mut1.SetAttr(ENa_MutNode, "./P1");
+	mut1.SetAttr(ENa_Ref, "/Root/Start/Incaps_root/Inp_data1/Capsule/out");
+	TNs ns; MutCtx mctx(NULL, ns);
+	edir->Mutate(false, false, true, mctx);
 
-    // Check the output data
-    MUnit* resdataprop1 = root->GetNode("/Root/Start/Incaps_root/Dt/Value");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
-    MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
-    const string& rdval1 = rdmprop1->Value();
-    CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "F 4");
-    MUnit* resdata1 = root->GetNode("/Root/Start/Incaps_root/Dt/Capsule/out");
-    MDVarGet* resdata1g = (MDVarGet*) resdata1->GetSIfi(MDVarGet::Type());
-    CPPUNIT_ASSERT_MESSAGE("Cannot get MDVarGet from result data", resdata1g != NULL);
-    MDFloatGet* resdata1f = resdata1g->GetDObj(resdata1f);
-    CPPUNIT_ASSERT_MESSAGE("Cannot get MDFloatGet from result data", resdata1f != NULL);
-    float res1 = resdata1f->Value();
-    CPPUNIT_ASSERT_MESSAGE("Incorrect result data", res1 == 4.0);
-    delete iEnv;
+	// Check the output data
+	MUnit* resdataprop1 = root->GetNode("/Root/Start/Incaps_root/Dt/Value");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
+	MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
+	const string& rdval1 = rdmprop1->Value();
+	CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "F 4");
+	MUnit* resdata1 = root->GetNode("/Root/Start/Incaps_root/Dt/Capsule/out");
+	MDVarGet* resdata1g = (MDVarGet*) resdata1->GetSIfi(MDVarGet::Type());
+	CPPUNIT_ASSERT_MESSAGE("Cannot get MDVarGet from result data", resdata1g != NULL);
+	MDFloatGet* resdata1f = resdata1g->GetDObj(resdata1f);
+	CPPUNIT_ASSERT_MESSAGE("Cannot get MDFloatGet from result data", resdata1f != NULL);
+	float res1 = resdata1f->Value();
+	CPPUNIT_ASSERT_MESSAGE("Incorrect result data", res1 == 4.0);
+	delete iEnv;
+    }
 }
 
 void Ut_func::test_FuncVar1mc()
 {
     printf("\n === Test of functions: Addition of variable data (multicontent)\n");
 
-    iEnv = new Env("ut_func_var1mc.xml", "ut_func_var1mc.txt");
-    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
-    iEnv->ImpsMgr()->ResetImportsPaths();
-    iEnv->ImpsMgr()->AddImportsPaths("../modules");
-    iEnv->ConstructSystem();
-    MUnit* root = iEnv->Root();
-    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    for (int ct = 1; ct < 2; ct++) {
+	const string specn("ut_func_var1mc");
+	string ext = ct == 0 ? "xml" : "chs";
+	string spec = specn + string(".") + ext;
+	string log = specn + string(ct == 0 ? "_xml" : "_chs") + ".log";
+	iEnv = new Env(spec, log);
+	CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+	iEnv->ImpsMgr()->ResetImportsPaths();
+	iEnv->ImpsMgr()->AddImportsPaths("../modules");
+	iEnv->ConstructSystem();
+	MUnit* root = iEnv->Root();
+	MElem* eroot = root->GetObj(eroot);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
 
-    MUnit* dir = root->GetNode("./Start/Incaps_root/e2");
-    MElem* edir = dir->GetObj(edir);
-    ChromoNode mut1 = edir->AppendMutation(ENt_Cont);
-    mut1.SetAttr(ENa_MutNode, "./P1");
-    mut1.SetAttr(ENa_Ref, "/Root/Start/Incaps_root/Inp_data1/Capsule/out");
-    TNs ns; MutCtx mctx(NULL, ns);
-    edir->Mutate(false, false, true, mctx);
+	string savedfn = specn + "_saved." + ext;
+	eroot->Chromos().Save(savedfn);
 
-    // Check the output data
-    MUnit* resdataprop1 = root->GetNode("/Root/Start/Incaps_root/Dt/Value");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
-    MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
-    const string& rdval1 = rdmprop1->Value();
-    CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "F 4");
-    MUnit* resdata1 = root->GetNode("/Root/Start/Incaps_root/Dt/Capsule/out");
-    MDVarGet* resdata1g = (MDVarGet*) resdata1->GetSIfi(MDVarGet::Type());
-    CPPUNIT_ASSERT_MESSAGE("Cannot get MDVarGet from result data", resdata1g != NULL);
-    MDFloatGet* resdata1f = resdata1g->GetDObj(resdata1f);
-    CPPUNIT_ASSERT_MESSAGE("Cannot get MDFloatGet from result data", resdata1f != NULL);
-    float res1 = resdata1f->Value();
-    CPPUNIT_ASSERT_MESSAGE("Incorrect result data", res1 == 4.0);
-    delete iEnv;
+	MUnit* datas = root->GetNode("/Root/Modules/DataComps/DataS");
+	MElem* edatas = datas->GetObj(edatas);
+
+	MUnit* dir = root->GetNode("./Start/Incaps_root/e2");
+	MElem* edir = dir->GetObj(edir);
+	ChromoNode mut1 = edir->AppendMutation(ENt_Cont);
+	mut1.SetAttr(ENa_MutNode, "./P1");
+	mut1.SetAttr(ENa_Ref, "/Root/Start/Incaps_root/Inp_data1/Capsule/out");
+	TNs ns; MutCtx mctx(NULL, ns);
+	edir->Mutate(false, false, true, mctx);
+
+	// Check the output data
+	MUnit* resdataprop1 = root->GetNode("/Root/Start/Incaps_root/Dt/Value");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get result data value property when inp data changed", resdataprop1 != 0);
+	MProp* rdmprop1 = resdataprop1->GetObj(rdmprop1);
+	const string& rdval1 = rdmprop1->Value();
+	CPPUNIT_ASSERT_MESSAGE("Incorrect result data prop value when inp data changed", rdval1 == "F 4");
+	MUnit* resdata1 = root->GetNode("/Root/Start/Incaps_root/Dt/Capsule/out");
+	MDVarGet* resdata1g = (MDVarGet*) resdata1->GetSIfi(MDVarGet::Type());
+	CPPUNIT_ASSERT_MESSAGE("Cannot get MDVarGet from result data", resdata1g != NULL);
+	MDFloatGet* resdata1f = resdata1g->GetDObj(resdata1f);
+	CPPUNIT_ASSERT_MESSAGE("Cannot get MDFloatGet from result data", resdata1f != NULL);
+	float res1 = resdata1f->Value();
+	CPPUNIT_ASSERT_MESSAGE("Incorrect result data", res1 == 4.0);
+	delete iEnv;
+    }
 }
 
 // This ut verifies two-directional negotiation of type
@@ -398,12 +418,12 @@ void Ut_func::test_FuncVar2()
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 
     /*
-    MUnit* dir = root->GetNode("Start/Incaps_root");
-    ChromoNode mut1 = dir->AppendMutation(ENt_Cont);
-    mut1.SetAttr(ENa_MutNode, "e2/P1");
-    mut1.SetAttr(ENa_Ref, "/Root/Start/Incaps_root/Inp_data1/Capsule/out");
-    dir->Mutate();
-    */
+       MUnit* dir = root->GetNode("Start/Incaps_root");
+       ChromoNode mut1 = dir->AppendMutation(ENt_Cont);
+       mut1.SetAttr(ENa_MutNode, "e2/P1");
+       mut1.SetAttr(ENa_Ref, "/Root/Start/Incaps_root/Inp_data1/Capsule/out");
+       dir->Mutate();
+       */
 
 
     // Check the output data
@@ -419,7 +439,7 @@ void Ut_func::test_FuncVar2()
     CPPUNIT_ASSERT_MESSAGE("Cannot get MDFloatGet from result data", resdata1f != NULL);
     TBool res1 = resdata1f->Value();
     CPPUNIT_ASSERT_MESSAGE("Incorrect result data", res1 == EFalse);
-    
+
     // Checking the type establishing
     // Mutate the result data first
     MUnit* dinp = root->GetNode("./Start/Incaps_root/Inp_data1");

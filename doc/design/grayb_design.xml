@@ -4026,6 +4026,7 @@
 
 	    <simpara>Variant #2 Chromo-centric - current variant</simpara>
 	    <programlisting>
+		# TODO  Add combined node: mutation + segment
 		white_space = ' ';
 		end_of_line = ;
 		separator = white_space | end_of_line;
@@ -4108,7 +4109,7 @@
 	    <sect3><title>Solution#1 To reuse Mutate method aCtx argument.</title>
 	    </sect3>
 	</sect2>
-	<sect2><title>Anonymous agents. Dependent mutations (mutations chain)</title>
+	<sect2 id="ds_chr2_aamc"><title>Anonymous agents. Dependent mutations (mutations chain)</title>
 	    <sect3><title>Intro</title>
 		<simpara>Very often we don't need to state name for agent. The example of this case is transition functions in DES: we only need to create
 		    some elementary function from given parent and connect the function to another function in the tree. The naming of the agents just complicates
@@ -4120,13 +4121,73 @@
 		</itemizedlist>
 		<simpara>These features causes to the mutation chain when specifying the connected agents.</simpara>
 	    </sect3>
+	    <sect3><title>Mutations chain: chromo node design considerations</title>
+		<simpara>As we stated it will be acceptable to use node creation mutation instead of URI in many parts of mutation: mutation arguments P and Q, context
+		(target, node, namespace). So chromo topology gets rather complex.</simpara>
+	    </sect3>
+	    <sect3><title>Criticism: anonumous agents and mutations chains - is it really important?</title>
+		<simpara>The initial rationale of mutations chain benefits was the idea that it gives us the possibility of compact and nice notation. This could help us
+		    to specify the transition functions in compact manner so that the function notation gets easy readable. Howewer this approach doesn't break the 
+		    fundamental limitation of chromo languge: the language is one-dimentional. So it is not possible to get easy and adequate notation for multi-agent system with a numger
+		    of connections.</simpara>
+		<simpara>The limitation can be bypassed in visual representation of the system, this approach was used in FAP studio - visual design tool. </simpara>
+		<simpara>So we decided to postpone implemeting of this "AAMC" feature, the code prepared is on branch yb_chr2_aamc. There are still many question regarding what
+		design approach is more effective - direct (using chromo language) or visual.</simpara>
+	    </sect3>
 	</sect2>
-	<sect2><title>Design spots</title>
-	    <sect2><title>Cumulative context</title>
-		<simpara>The context can potentially be cumulated, for instance namespaces. The context is updated by the current context and then needs to be restored when the
-		    current context ends. How to implement it. One way is to keep the contexts assosiated to its scope. In that case when mutation machine leaves the scope of the 
-		    given context that machine just switches to the current context, i.e uses the conext assosiated to the current scope.</simpara>
-	    </sect2>
+	<sect2><title>Is combined node required?</title>
+	    <simpara>There was combined node also implemented, mutation + chromo segment (combined node is not defined in chromo grammar). In fact combo-node is almost same as
+		segment with target specified via dependent mutation (ref <xref linkend="ds_chr2_aamc"/>). The only distinction is missing target context relation symbol. So the
+		question is if this combo-node is required and plays valuable role in the grammar?</simpara>
+	</sect2>
+	<sect2 id="ds_chr2_nsosm"><title>Chromo structure is not supported in <xref linkend="gls_osm"/> approach. </title>
+	    <simpara><xref linkend="gls_osm"/> doesn't natively support chromo segments, the approach is used one-mut granularity instead. Look at the mutation
+		propagating mechanism implemented in base agent - Elem::OnNodeMutated(). So even the given chromo is notated with segments and combined mutations the resulted
+		chromo will be single-mut granulated. Potentially we can transform the resulted chromo to chromo2 notation using simple rules. This can be done on run-time or 
+		with applying separate tools.</simpara>
+	</sect2>
+	<sect2 id="ds_chr2_cctx"><title>Cumulative context</title>
+	    <sect3><title>Namespaces</title>
+		The context can potentially be cumulated, for instance namespaces. The context is updated by the current context and then needs to be restored when the
+		current context ends. How to implement it. One way is to keep the contexts assosiated to its scope. In that case when mutation machine leaves the scope of the 
+		given context that machine just switches to the current context, i.e uses the conext assosiated to the current scope.
+	    </sect3>
+	    <sect3 id="ds_chr2_cctx_tn"><title>Target and node</title>
+		<sect4><title>Outline of approaches</title>
+		    <simpara>Another case of cumulative context is target and node - they can be specified in current segment and also in upper layer segment. How the final context should
+			be in that case? One approach is to calculate final target and node basing on all levels context items. But there should be different schema of "accumulating" 
+			mut-target and mut-node. This is because mut-node URI is relative to mut-target URI. So we can correctly obtain mut-node in this case:
+			<programlisting>
+			    root-chromo-node has mut-targ
+			    child-chromp-node has mut-targ and mut-node
+			    >> mut-node is obtained relative to root-chromo-node-mut-targ + child-chromo-node-mut-targ
+			</programlisting>
+			But having mut-node in begin or mid of series of these attr chain causes to complication of final mut-node obraining schema.
+			So it makes sense to restrict specifying mut-node only in final chromo-node in chromo-nodes hier.
+		    </simpara>
+		    <simpara>The thoughts above is not completely right. Let's consider the following chromo2 example:</simpara>
+		    <programlisting>
+			| ./elem1 &lt; {
+			|    unit1_1 : Unit;
+			|    ./unit1_1 - {
+			|       unit1_1_1 : Unit;
+			|       ./unit1_1_1 - {
+			|           unit1_1_1_1 : Unit;
+			|       }     
+			|    }
+			| }
+		    </programlisting>
+		    <simpara>This examples shows another approach: mut-node context is valid till the lower-layer context substitute it. The lower-layer mut-node is relative to the current
+			context. This approach makes sense especially in cases when we have the complex native hier of unmutable nodes, need to have many changes of them and want to group
+			chromo nodes.</simpara>
+		</sect4>
+		<sect4><title>Solution: using unified mut-target</title>
+		    <simpara>Currently there are both mut-target and mut-node. Mut-target points to the target of mutation, i.e. mutable node that will keep the mutation. Mut-node points
+			to the subject of the change, this node can be not mutable. Is it possible to have just one unified target instead of those two? Seems so, we just can interpret this
+			attr as the pointer to the subject of change, and caclulate the nearest mutable target in hier to redirect the mutation.</simpara>
+		    <simpara>This can be implemented in Elem::DoMutation() via finding nearest mutable node and then modifying mut-target attr rebasing it to this mutable node.</simpara>
+		</sect4>
+	    </sect3>
 	</sect2>
     </sect1>
 
@@ -5429,6 +5490,10 @@
 	</sect2>
 	<sect2><title>New chromo language</title>
 	    <simpara>Ref <xref linkend="ds_chr_nc"/></simpara>
+	</sect2>
+	<sect2><title>To introduce lower layer element - Node</title>
+	    <simpara>Currently the lower layer element is Unit that supports iface resolution. The system can be optimized more if we introduce even more lover layer - Node that
+		supports just native hier and content.</simpara>
 	</sect2>
     </sect1>
 

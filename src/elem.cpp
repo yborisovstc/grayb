@@ -298,6 +298,10 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
     // TODO No need to update root ns. Root mutation is not deleted. To analyze if this is correct
     //TNs root_ns = aCtx.mNs;
     //UpdateNs(root_ns, sroot);
+
+    // Get root mut node to use it as a base of component chromo nodes mut node attr
+    MUnit* rmnode = mroot.AttrExists(ENa_MutNode) ? mroot.Attr(ENa_MutNode : this;
+
     for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End(); rit++, order++)
     {
 	Pdstat(PEvents::DurStat_TransfOsm, true);
@@ -321,6 +325,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		continue;
 	    }
 	}
+#if 0
 	if (rno.AttrExists(ENa_MutNode)) {
 	    // Transform DHC mutation to OSM mutation
 	    // Transform ENa_Targ: enlarge to ENa_MutNode
@@ -356,27 +361,30 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		rno.SetAttr(ENa_Parent, spuri);
 	    }
 	}
+#endif
 	Pdstat(PEvents::DurStat_TransfOsm, false);
 	if (rno.AttrExists(ENa_Targ)) {
 	    // Targeted mutation, propagate downward, i.e redirect to comp owning the target
 	    // ref ds_mut_osm_linchr_lce
-	    MUnit* ftarg = GetNodeByName(rno.Attr(ENa_Targ), ns);
+	    string starg = rno.Attr(ENa_Targ);
+	    MUnit* ftarg = GetNodeByName(starg, ns);
 	    // Mutation is not local, propagate downward
 	    if (ftarg != NULL) {
-		//TMut madd(rno);
 		rno.RmAttr(ENa_Targ);
 		rno.RmAttr(ENa_NS);
 		MElem* eftarg = ftarg->GetObj(eftarg);
-		ChromoNode madd = eftarg->AppendMutation(rno);
-		//madd.RmAttr(ENa_Targ);
-		//ftarg->AppendMutation(madd);
-		// Redirect the mut to target: no run-time to keep the mut in internal nodes
-		// Propagate till target owning comp if run-time to keep hidden all muts from parent 
-		MutCtx mctx(aRunTime ? GetCompOwning(ftarg) : aCtx.mUnit, ns);
-		eftarg->Mutate(EFalse, aCheckSafety, aTrialMode, mctx);
-		//ftarg->Mutate(aRunTime, aCheckSafety, aTrialMode, aRunTime ? GetCompOwning(ftarg) : aCtx);
+		if (eftarg != NULL) {
+		    ChromoNode madd = eftarg->AppendMutation(rno);
+		    // Redirect the mut to target: no run-time to keep the mut in internal nodes
+		    // Propagate till target owning comp if run-time to keep hidden all muts from parent
+		    MutCtx mctx(aRunTime ? GetCompOwning(ftarg) : aCtx.mUnit, ns);
+		    eftarg->Mutate(EFalse, aCheckSafety, aTrialMode, mctx);
+		    //ftarg->Mutate(aRunTime, aCheckSafety, aTrialMode, aRunTime ? GetCompOwning(ftarg) : aCtx);
+		} else {
+		    Logger()->Write(EErr, this, "Target is not mutable [%s]", starg.c_str());
+		}
 	    } else {
-		Logger()->Write(EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_Targ).c_str());
+		Logger()->Write(EErr, this, "Cannot find target node [%s]", starg.c_str());
 	    }
 	} else {
 	    // Local mutation
@@ -407,6 +415,9 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		RmNode(rno, aRunTime, aCheckSafety, aTrialMode, aCtx);
 	    }
 	    else if (rnotype == ENt_Note) {
+		// Comment, just accept
+		iChromo->Root().AddChild(rno);
+		NotifyNodeMutated(rno, aCtx);
 	    }
 	    else {
 		DoSpecificMut(rno, aRunTime, aTrialMode, aCtx);
@@ -489,13 +500,14 @@ TBool Elem::DoMutChangeCont(const ChromoNode& aSpec, TBool aRunTime, TBool aChec
     MElem* enode = NULL;
     MUnit* rnode = NULL;
     TBool mutadded = EFalse;
+    TNs ns = aCtx.mNs;
     if (snode.length() == 0) {
 	node = this; 
     }
     else {
 	GUri unode(snode);
-	node = GetNode(unode);
-	enode = node->GetObj(enode);
+	node = GetNodeByName(unode, ns);
+	enode = node != NULL ? node->GetObj(enode) : NULL;
     }
     if (node != NULL && (node == this || IsComp(node))) {
 	// Only direct inherited comp is available for modif, ref. uc_044_disc_3
@@ -575,7 +587,7 @@ MUnit* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
        */
     //Logger()->Write(EInfo, this, "Start adding node [%s:%s]", sparent.c_str(), sname.c_str());
     MUnit* uelem = NULL;
-    MUnit* node = snode.empty() ? this: GetNode(snode); 
+    MUnit* node = snode.empty() ? this: GetNodeByName(snode, ns);
     if (node != NULL) {
 	// Obtain parent first
 	MUnit *parent = NULL;
