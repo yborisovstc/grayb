@@ -2363,18 +2363,18 @@ void Syst::DoSpecificMut(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMo
 {
     TNodeType rnotype = aSpec.Type();
     if (rnotype == ENt_Conn) {
-	if (aSpec.AttrExists(ENa_MutNode) && aSpec.AttrExists(ENa_MutNode2)) {
-	    string argP = aSpec.Attr(ENa_MutNode);
-	    string argQ = aSpec.Attr(ENa_MutNode2);
+	if (aSpec.AttrExists(ENa_P) && aSpec.AttrExists(ENa_Q)) {
+	    string argP = aSpec.Attr(ENa_P);
+	    string argQ = aSpec.Attr(ENa_Q);
 	    const TNs& ns = aCtx.mNs;
 	    Connect(argP, argQ, ns);
 	} else {
 	    Logger()->Write(EErr, this, "Connecting nodes: missing required attr");
 	}
     } else if (rnotype == ENt_Disconn) {
-	if (aSpec.AttrExists(ENa_MutNode) && aSpec.AttrExists(ENa_MutNode2)) {
-	    string argP = aSpec.Attr(ENa_MutNode);
-	    string argQ = aSpec.Attr(ENa_MutNode2);
+	if (aSpec.AttrExists(ENa_P) && aSpec.AttrExists(ENa_Q)) {
+	    string argP = aSpec.Attr(ENa_P);
+	    string argQ = aSpec.Attr(ENa_Q);
 	    const TNs& ns = aCtx.mNs;
 	    Disconnect(argP, argQ, ns);
 	} else {

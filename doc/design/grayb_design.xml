@@ -85,6 +85,10 @@
 	    <glossdef> <para>Compact (and customized) Chromo Notation, approach that focus on having compact notation of model chromo.
 		    This allows effectivelly creating the model via 'manually' creating chromo of it. Another solution
 		    is Native Chromo Notation, ref <xref linkend="gls_ncn"/>. </para></glossdef> </glossentry>
+	<glossentry id="gls_cmt"><glossterm>CMT</glossterm> <acronym>CMT</acronym>
+	    <glossdef> <para>Combined Mutation Target.  The approach of specifying target in mutation spec when mutation target and change targets are
+		    spedified separately. With this approach the target specified with two mutation attribute, ref also <xref linkend="gls_umt"/> for
+		    alternative approach.</para></glossdef> </glossentry>
 	<glossentry id="gls_cpa"><glossterm>CPA</glossterm> <acronym>CPA</acronym>
 	    <glossdef> <para>Connecting Proxy Agent.
 		    The approach of agents design where dedicated embedded agents play the role of 
@@ -128,7 +132,10 @@
 		    auxiliary components, ref
 		    <xref linkend="ds_uac"/>. Ref <xref linkend="gls_cpa"/>, <xref linkend="gls_pia"/> for other connecting solutions.
 	</para></glossdef> </glossentry>
-
+	<glossentry id="gls_umt"><glossterm>UMT</glossterm> <acronym>UMT</acronym>
+	    <glossdef> <para>Unified Mutation Target.  The approach of specifying target in mutation spec.
+		    With this approach the target specified with just one mutation attribute, ref <xref linkend="ds_umt"/>.
+		    Ref <xref linkend="gls_cmt"/> for alternative approach.</para></glossdef> </glossentry>
     </glossary>
 
     <sect1><title>Intro</title>
@@ -1141,6 +1148,74 @@
 		    have more that one meaning.</simpara>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_umt"><title>Unified mut-target (<xref linkend="gls_umt"/>)</title>
+	    <sect3><title>Intro</title>
+		<simpara>Currently [77d22afb64a2ed0] two mut attributes are used to point to the subject of the mutation (or change): mut-target and mut-node. In many
+		    cases it causes chromo spec complication. </simpara>
+		<simpara>Ref <xref linkend="ds_chr2_cctx_tn"/> for related discussion in the scope of chromo2 design.</simpara>
+		<simpara>This is still the question what approach is more suitable: <xref linkend="gls_umt"/> or <xref linkend="gls_cmt"/>, ref 
+		    <xref linkend="ds_umt_acmp"/> for comparision analysis.</simpara>
+	    </sect3>
+	    <sect3 id="ds_umt_acmp"><title>Approaches comprision</title>
+		<sect4><title><xref linkend="gls_umt"/> cons and pros</title>
+		    <simpara>Pros are:</simpara>
+		    <itemizedlist>
+			<listitem>System designer doesn't need to specify both mut-target and mut-node - the mut schema is simple.</listitem>
+		    </itemizedlist>
+		    <simpara>Cons are:</simpara>
+		    <itemizedlist>
+			<listitem>It is not possible to specify the mutated node exactly.
+			    <simpara>Sometimes it makes sense to mutate just some upper-layer node keeping its components "passive". This is not only 
+				for not-mutable components but also for mutable some. With <xref linkend="gls_umt"/> there is no possibility to "adjust" mutations with
+				separating mutated and changed nodes.</simpara>
+			</listitem>
+		    </itemizedlist>
+		</sect4>
+	    </sect3>
+	    <sect3><title>History</title>
+		<itemizedlist>
+		    <listitem>20200107 Implemeted in the scope of chromo2, ref branch yb_chr2_cctx_tn_umt.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3 id="ds_umt_rtnsu">Problem: real target is not specified explicitly
+		<sect4><title>Intro</title>
+		    <simpara>Real target is not specified explicitly with unitied target approach. For instance if target is not mutable then the real target
+		    will be calculated as nearest mutable owner. This means that real target is not simply seen from the mut spec.</simpara>
+		<simpara>The problem is not really critical, there are solution (ref below), but with any solution it causes to chromo incompatibility.</simpara>
+		</sect4>
+		<sect4><title>Solution: Using names for pointing nodes</title>
+		    <simpara>Namespaces were introduced in the scope of chromo2, ref <xref ilnkend="ds_chr2_ns"/>. So it is effective mechanism of pointing to node
+			if the node name can be resolved in the current context. The resolutin mechanism will automatically find the proper node. The problem could be 
+			in the case when the node is not in the namespace. But even in that case the root part of node URI can be name (note that this feature is not implemented
+			currently, the only sole name is supported but not the name in the root of URI))</simpara>
+		</sect4>
+		<sect4><title>Solution: resolve the target manually</title>
+		    <simpara>It is still possible to realize from the mut spec what the real target is and specify the node URI properly. Even looking simple this approach
+			is not really acceptable because this approach isn't deterministic.</simpara>
+		</sect4>
+		<sect4><title id="ds_umt_rtnsu_rbs">To rebase refs to nodes when calculating real target</title>
+		    <simpara>With this approach all refs are specified relatively to the target. If real target doesn't same node as specified target then the refs shall be
+			re-based to real target. Note that kind of this approach already was tried, ref [fb4115c05ddb] elem.cpp Elem::DoMutation() "Transform refs"
+			(not clear why rebasing of parent was done in DoMutation()?.</simpara>
+		    <simpara>Note that we don't need to rebase mut attr, the attr hasn't to be changed (it is propagated and stored then).
+			Instead the particular mutation operation needs to use rebasing
+			in the scope of resolving the ref. This even is not rebasing, we just need to reguest resolving ref from target node.</simpara>
+		    <simpara>This solution is selected for implementation.</simpara>
+		    <sect5 id="ds_umt_rtnsu_rbs_erpi"><title>Problem: error when resolving parent imported from module when basing parents uri on inherited node</title>
+			<simpara>The example is:</simpara>
+			<simpara>Test ut_func_seq4, trying to import /FuncComps/FConvInt, that includes  creating node Out_WFarg from parent Out_FEInt</simpara>
+			<programlisting> node node="./Capsule" id="Out_WFarg" parent="./../../Out_FEInt" </programlisting>
+			<simpara>The parent in turn needs to be imported. In ImportsMgr::DoImport() the path is formed as:</simpara>
+			<programlisting> /FuncComps/FConvInt/Capsule/../../Out_FEInt </programlisting>
+			<simpara>The path involves inherited node "Capsule" - it is a problem, the current implementation of finding chromo node by URI doesn't work in such
+			    conditions.</simpara>
+			<simpara>Solution here could be optimizing URI after rebase to avoid the back-step units. Implemented, ref branch yb_chr2_cctx_tn_umt</simpara>
+		    </sect5>
+		</sect4>
+	    </sect3>
+	    <sect3><title>Problem: </title>
+	    </sect3>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_smc"><title>Securing of model consistency</title>
@@ -1206,7 +1281,7 @@
 		to mutate item M. The owner traverses all it's components to check if some is ready to mutate N+1. If the owner cannot find one than it
 		in turn calls back to it's owner. So each time of breaking linear sequence we do native hier tree traverse in orider to find node ready
 		for next mutation.
-	    not follow order</para>
+		not follow order</para>
 	</sect2>
 	<sect2 id="ds_mut_osm_linchr"><title>Implementation option: linear chromo of root agent</title>
 	    <sect3 id="ds_mut_osm_linchr_bc"><title>The base concept</title>
@@ -1392,7 +1467,7 @@
 		    dedicated arg "run-time" to all notifications. In Hier chromo approach "run-time" designates two cases: true run-time modification and
 		    "inherited" mutation on creation hier (such mutations are not go to model chromo).</simpara>
 		<simpara>But in OSM "run-time" sign meaning differs from that in heirarchical chromo. In OSM run-time means just true run-time modif.
-		In case of "inherited" mutation "run-time" sign gets false in order to add all the changes to node's local chromo.</simpara>
+		    In case of "inherited" mutation "run-time" sign gets false in order to add all the changes to node's local chromo.</simpara>
 
 	    </sect3>
 	</sect2>
@@ -1499,7 +1574,7 @@
 	    <sect3><title>Solution: applying filter to the chromo</title>
 		<simpara>It is not possible to find dedicated node for given URI but it is possible to filter out all mutations related to the node.
 		    This filter can be applied to attribute "target" of the mutations in given chromo. So in result we can have chromo containing all the
-		mutation for the given node.</simpara>
+		    mutation for the given node.</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_mut_osm_crit"><title>[20180421] Criticizm</title>
@@ -4153,6 +4228,9 @@
 		given context that machine just switches to the current context, i.e uses the conext assosiated to the current scope.
 	    </sect3>
 	    <sect3 id="ds_chr2_cctx_tn"><title>Target and node</title>
+		<sect4><title>Intro</title>
+		    <simpara>Ref <xref linkend="ds_umt"/> for unified target related materials.</simpara>
+		</sect4>
 		<sect4><title>Outline of approaches</title>
 		    <simpara>Another case of cumulative context is target and node - they can be specified in current segment and also in upper layer segment. How the final context should
 			be in that case? One approach is to calculate final target and node basing on all levels context items. But there should be different schema of "accumulating" 
@@ -4187,7 +4265,7 @@
 			attr as the pointer to the subject of change, and caclulate the nearest mutable target in hier to redirect the mutation.</simpara>
 		    <simpara>This can be implemented in Elem::DoMutation() via finding nearest mutable node and then modifying mut-target attr rebasing it to this mutable node.</simpara>
 		    <simpara>The main problem with this approach is migrating comp based mutations (Rm, Rn, Cont).</simpara>
-		    <simpara>At the moment I couldn't implement this approach properly, the branch is "yb_chr2_cctx_tn_umt".</simpara>
+		    <simpara>[20200111] Implemented the solution, most UT passed, the branch is "yb_chr2_cctx_tn_umt".</simpara>
 		</sect4>
 		<sect4 id="ds_chr2_cctx_tn_srns"><title>Solution: use specific rules for the context of nested segments.</title>
 		    <simpara>This solutions is lightweight: just to specify how the context in nested segments should be set. The possible rule is that target should be nested, i.e. lower
@@ -5213,7 +5291,7 @@
 	</sect2>
     </sect1>
 
-    <sect1 id="ds_uac"><title>Re-design approach: <xref linkend="gls_uac"/> - chusing Units as auxiliary components.</title>
+    <sect1 id="ds_uac"><title>Re-design approach: <xref linkend="gls_uac"/> - using Units as auxiliary components.</title>
 	<sect2><title>Intro</title>
 	    <simpara>There was re-desing approach <xref inkend="gls_pia"/> that allows reduce the number of agents when creating model. According
 		to this model the agent shall not use auxiliary agents-components to distribute the functionality. For instance system agent
@@ -5575,6 +5653,15 @@
     <sect1 id="ds_ditsc"><title>Design items tracng to source code</title>
 	<sect2><title>Branches</title>
 	    <sect3><xref linkend="ds_chr2"/> - yb_chr2</sect3>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_cm"><title>Code management</title>
+	<sect2 id="ds_cm_br"><title>Brances</title>
+	    <sect3><title>yb_chr2 base chromo2 solution</title>
+	    </sect3>
+	    <sect3><title>yb_chr2_cctx_tn_umt <xref linkend="gls_umt"/> solution in the scope of chromo2</title>
+	    </sect3>
 	</sect2>
     </sect1>
 

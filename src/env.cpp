@@ -217,6 +217,8 @@ MUnit* ImportsMgr::OnUriNotResolved(MUnit* aNode, const GUri& aUri)
 	    rebased = ETrue;
 	}
 	if (rebased) {
+	    // Squeeze rebased URI to avoid URI units referred to inherited nodes, ref ds_umt_rtnsu_rbs_erpi
+	    buri.Reduce();
 	    suri = buri.toString(ETrue);
 	    res = DoImport(suri);
 	}

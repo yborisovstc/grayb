@@ -89,6 +89,8 @@
 	    void AppendElem(const TElem& aElem);
 	    void PrependElem(const TElem& aElem);
 	    void PrependElem(const string& aType, const string& aName, char aRelType = KNodeSep);
+	    /** @brief Reduces path units by merging back steps */
+	    void Reduce();
 	    //void ToString(string& aRes);
 	    TBool IsErr() const { return iErr;};
 	    TBool IsAbsolute() const;

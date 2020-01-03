@@ -320,7 +320,12 @@ string Chromo2Mdl::GetAttr(const THandle& aHandle, TNodeAttr aAttr) const
 	} else {
 	    res = node->mMut.mP;
 	}
-    } else if (aAttr == ENa_MutNode2) {
+    } else if (aAttr == ENa_P) {
+	__ASSERT(rel == KMS_Conn || rel == KMS_Disconn);
+	if (rel == KMS_Conn || rel == KMS_Disconn) {
+	    res = node->mMut.mP;
+	}
+    } else if (aAttr == ENa_Q) {
 	__ASSERT(rel == KMS_Conn || rel == KMS_Disconn);
 	if (rel == KMS_Conn || rel == KMS_Disconn) {
 	    res = node->mMut.mQ;
@@ -349,9 +354,10 @@ TBool Chromo2Mdl::AttrExists(const THandle& aHandle, TNodeAttr aAttr) const
 	res = (rel == KMS_Rename);
     } else if (aAttr == ENa_MutNode) {
 	res = (rel == KMS_Remove) || (rel == KMS_Rename) ||
-	    (((rel == KMS_Add) || (rel == KMS_Cont) || rel.empty()) && node->ExistsContextByAttr(ENa_MutNode)) ||
-	    ((rel == KMS_Conn || rel == KMS_Disconn) && !node->mMut.mP.empty());
-    } else if (aAttr == ENa_MutNode2) {
+	    (((rel == KMS_Add) || (rel == KMS_Cont) || rel.empty()) && node->ExistsContextByAttr(ENa_MutNode));
+    } else if (aAttr == ENa_P) {
+	    res = ((rel == KMS_Conn || rel == KMS_Disconn) && !node->mMut.mP.empty());
+    } else if (aAttr == ENa_Q) {
 	    res = ((rel == KMS_Conn || rel == KMS_Disconn) && !node->mMut.mQ.empty());
     } else if (aAttr == ENa_Ref) {
 	// Use MutVal instead
@@ -425,7 +431,7 @@ void Chromo2Mdl::SetAttr(const THandle& aHandle, TNodeAttr aType, const string& 
     string rel = node->mMut.mR;
     if (aType == ENa_Id) {
 	__ASSERT (rel == KMS_Add || rel == KMS_Cont || rel == KMS_Import);
-	if (rel == KMS_Add) {
+	if (rel == KMS_Add || rel == KMS_Cont) {
 	    node->mMut.mP = aVal;
 	} else if (rel == KMS_Import) {
 	    node->mMut.mQ = aVal;
@@ -455,8 +461,7 @@ void Chromo2Mdl::SetAttr(const THandle& aHandle, TNodeAttr aType, const string& 
 	__ASSERT (!ctxrel.empty());
 	node->mContext[ctxrel] = aVal;
     } else if (aType == ENa_MutNode) {
-	__ASSERT (rel == KMS_Remove || rel == KMS_Rename || rel == KMS_Add || rel == KMS_Cont || rel == KMS_Conn || rel == KMS_Disconn ||
-		rel == KMS_Note || rel.empty());
+	__ASSERT (rel == KMS_Remove || rel == KMS_Rename || rel == KMS_Add || rel == KMS_Cont || rel == KMS_Conn || rel == KMS_Disconn || rel.empty());
 	if (rel == KMS_Add || rel == KMS_Cont || rel.empty()) {
 	    node->AddContext(KT_Node, aVal);
 	} else if (rel == KMS_Conn || rel == KMS_Disconn) {
@@ -464,7 +469,12 @@ void Chromo2Mdl::SetAttr(const THandle& aHandle, TNodeAttr aType, const string& 
 	} else {
 	    node->mMut.mP = aVal;
 	}
-    } else if (aType == ENa_MutNode2) {
+    } else if (aType == ENa_P) {
+	__ASSERT (rel == KMS_Conn || rel == KMS_Disconn);
+	if (rel == KMS_Conn || rel == KMS_Disconn) {
+	    node->mMut.mP = aVal;
+	}
+    } else if (aType == ENa_Q) {
 	__ASSERT (rel == KMS_Conn || rel == KMS_Disconn);
 	if (rel == KMS_Conn || rel == KMS_Disconn) {
 	    node->mMut.mQ = aVal;

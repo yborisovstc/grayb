@@ -42,7 +42,8 @@ enum TNodeAttr
     ENa_Targ = 14, // Target node of mutation, is used in OSM mode, ref ds_mut_osm
     ENa_Comp = 15, // Component to be changed, for comps related muts only, is used in OSM mode, ref ds_mut_osm
     ENa_NS = 16,    //!< Name space
-    ENa_MutNode2 = 17, //!< Node as 2nd argument of muation 
+    ENa_P = 17, //!< 1st argument of muation
+    ENa_Q = 18, //!< 2nd argument of muation
 };
 
 

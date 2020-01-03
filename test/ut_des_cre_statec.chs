@@ -10,7 +10,8 @@ testroot : Elem
     About = "Simple test that creates sole state DES Incrementor (var, multicontent) looped to youself";
     Log.Creation = y;
     State : AStatec;
-    ./State - { Value = "I 0"; Debug.Update = y;}
+    ./State - Value = "I 0";
+    ./State - Debug.Update = y;
     Trans : ATrcAddVar;
     IncrData : AStatec;
     ./IncrData - Value = "I 1";

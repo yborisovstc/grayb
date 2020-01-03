@@ -1,7 +1,7 @@
 test : Syst
 {
   $ # " Unit test for ceation of system. System includes connpoint with roles specified.
-     So System supports different "type" of relations (roled relations)
+     So System supports different \"type\" of relations (roled relations)
      This test is just for conn points connection
      System specific mutation is used for connection
      ";

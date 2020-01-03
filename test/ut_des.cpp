@@ -346,7 +346,7 @@ void Ut_des::test_CreStatec()
 	const string specn("ut_des_cre_statec");
 	string ext = ct == 0 ? "xml" : "chs";
 	string spec = specn + string(".") + ext;
-	string log = specn + string(ct == 0 ? "_xml" : "_chs") + ".log";
+	string log = specn + "_" + ext + ".log";
 	iEnv = new Env(spec, log);
 	CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
 	iEnv->ImpsMgr()->ResetImportsPaths();

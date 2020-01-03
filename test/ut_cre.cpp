@@ -274,18 +274,18 @@ void Ut_cre::test_CreSyst()
 	CPPUNIT_ASSERT_MESSAGE("Fail to get cp3", cp3 != 0);
 	MVert* cp3v_pair = cp3v->GetPair(0);
 	CPPUNIT_ASSERT_MESSAGE("Fail to get pair of cp3", cp3v_pair != 0);
-	// Verifying that cp3/Provided chromo is empty, ref ds_uac_snmc
+	// cp3/Provided chromo isn't empty with ds_chr2_cctx_tn_umt, because target is unified and the node is mutable
 	MUnit* cp3prov = root->GetNode("./cp3/Provided");
-	CPPUNIT_ASSERT_MESSAGE("Fail to get cp3/Provided", cp3prov != 0);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get cp3/Provided", cp3prov != NULL);
 	MElem* ecp3prov = cp3prov->GetObj(ecp3prov);
 	TInt cp3prov_chr_cnt = ecp3prov->Chromos().Root().Count();
-	CPPUNIT_ASSERT_MESSAGE("cp3/Provided chromo is not empty", cp3prov_chr_cnt == 0);
-	// Verifying that Syst1/Syst1_1 chromo is empty
+	CPPUNIT_ASSERT_MESSAGE("cp3/Provided chromo comps num != 1", cp3prov_chr_cnt == 1);
+	// Verifying that Syst1/Syst1_1 chromo isn't empty
 	MUnit* s1_1 = root->GetNode("./Syst1/Syst1_1");
 	MElem* es1_1 = s1_1->GetObj(es1_1);
 	CPPUNIT_ASSERT_MESSAGE("Fail to get ./Syst1/Syst1_1", s1_1 != NULL);
 	TInt s1_1_chr_cnt = es1_1->Chromos().Root().Count();
-	CPPUNIT_ASSERT_MESSAGE("./Syst1/Syst1_1 chromo is not empty", s1_1_chr_cnt == 0);
+	CPPUNIT_ASSERT_MESSAGE("./Syst1/Syst1_1 chromo comps num != 1", s1_1_chr_cnt == 1);
 
 	delete iEnv;
     }
@@ -338,18 +338,18 @@ void Ut_cre::test_CreSystu()
     CPPUNIT_ASSERT_MESSAGE("Fail to get cp3", cp3 != 0);
     MVert* cp3v_pair = cp3v->GetPair(0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get pair of cp3", cp3v_pair != 0);
-    // Verifying that cp3/Provided chromo is empty, ref ds_uac_snmc
+    // cp3/Provided chromo isn't empty with ds_chr2_cctx_tn_umt, because of target is unified and the node is mutable
     MUnit* cp3prov = root->GetNode("./cp3/Provided");
     CPPUNIT_ASSERT_MESSAGE("Fail to get cp3/Provided", cp3prov != 0);
     MElem* ecp3prov = cp3prov->GetObj(ecp3prov);
     TInt cp3prov_chr_cnt = ecp3prov->Chromos().Root().Count();
-    CPPUNIT_ASSERT_MESSAGE("cp3/Provided chromo is not empty", cp3prov_chr_cnt == 0);
+    CPPUNIT_ASSERT_MESSAGE("cp3/Provided chromo comps num != 1", cp3prov_chr_cnt == 1);
     // Verifying that Syst1/Syst1_1 chromo is empty
     MUnit* s1_1 = root->GetNode("./Syst1/Syst1_1");
     MElem* es1_1 = s1_1->GetObj(es1_1);
     CPPUNIT_ASSERT_MESSAGE("Fail to get ./Syst1/Syst1_1", s1_1 != NULL);
     TInt s1_1_chr_cnt = es1_1->Chromos().Root().Count();
-    CPPUNIT_ASSERT_MESSAGE("./Syst1/Syst1_1 chromo is not empty", s1_1_chr_cnt == 0);
+    CPPUNIT_ASSERT_MESSAGE("./Syst1/Syst1_1 chromo comps num != 1", s1_1_chr_cnt == 1);
 
     delete iEnv;
 }

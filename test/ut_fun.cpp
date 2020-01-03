@@ -321,7 +321,7 @@ void Ut_func::test_FuncVar1()
 	const string specn("ut_func_var1");
 	string ext = ct == 0 ? "xml" : "chs";
 	string spec = specn + string(".") + ext;
-	string log = specn + string(ct == 0 ? "_xml" : "_chs") + ".log";
+	string log = specn + "_" + ext + ".log";
 	iEnv = new Env(spec, log);
 	CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
 	iEnv->ImpsMgr()->ResetImportsPaths();

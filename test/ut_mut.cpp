@@ -145,9 +145,6 @@ void Ut_mut::test_Add()
 	CPPUNIT_ASSERT_MESSAGE("Fail to get elem3/elem2/elem2_1", e3_2_1 != 0);
 	MUnit* e3 = root->GetNode("./elem3");
 	CPPUNIT_ASSERT_MESSAGE("Fail to get e3", e3 != 0);
-	MUnit* ue6_1 = root->GetNode("./elem6/elem6_1");
-	CPPUNIT_ASSERT_MESSAGE("Fail to get ue6_1", ue6_1 != 0);
-	MElem* ee6_1 = ue6_1->GetObj(ee6_1);
 	MUnit* e4_ao = ee4->GetAttachedMgr();
 	CPPUNIT_ASSERT_MESSAGE("Wrong attached owner of e4", e4_ao == e4);
 	MUnit* e3_2_1_ao = ee3_2_1->GetAttachedMgr();
@@ -289,8 +286,9 @@ void Ut_mut::test_MutSyst2()
 
     for (int ct = 1; ct < 2; ct++) {
 	const string specn("ut_mut_syst2");
-	string spec = specn + string(".") + string(ct == 0 ? "xml" : "chs");
-	string log = specn + string(ct == 0 ? "_xml" : "_chs") + ".log";
+	string ext = ct == 0 ? "xml" : "chs";
+	string spec = specn + string(".") + ext;
+	string log = specn + "_" + ext + ".log";
 	iEnv = new Env(spec, log);
 	// Check creation first
 	CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
@@ -321,7 +319,7 @@ void Ut_mut::test_MutSyst2()
 	const string vcp3_pname = vcp3_upair->Name();
 	CPPUNIT_ASSERT_MESSAGE("Wrong vcp3 pair's name", vcp3_pname == "Int");
 	// Verifying system custom mutation Disconnect
-	eroot->AppendMutation(TMut(ENt_Disconn, ENa_MutNode, "./Syst1/ep/Int", ENa_MutNode2, "cp3"));
+	eroot->AppendMutation(TMut(ENt_Disconn, ENa_P, "./Syst1/ep/Int", ENa_Q, "cp3"));
 	TNs ns; MutCtx mctx(NULL, ns);
 	eroot->Mutate(false, false, false, mctx);
 	vcp3_pair = vcp3->GetPair(0);

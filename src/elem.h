@@ -125,7 +125,9 @@ class Elem: public Unit, public MElem
 	 * */
 	virtual void DoSpecificMut(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode, const MutCtx& aCtx);
     protected:
-	/** Helper. Sets cromo root attributes: parent, name */
+	/** @brief Gets nearest mutable owner */
+	static MUnit* GetMowner(MUnit* aNode);
+	/** @brief Helper. Sets cromo root attributes: parent, name */
 	void SetCrAttr(const string& aEType, const string& aName);
 	TBool RegisterChild(MUnit* aChild);
 	void NotifyNodeMutated(const ChromoNode& aMut, const MutCtx& aCtx);

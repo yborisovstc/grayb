@@ -13,13 +13,13 @@ test : Syst
     }
     cp : /test/Modules/SysComps/ConnPoint
     {
-      ./Provided -  = Role1;
-      ./Required -  = Role2;
+      ./Provided - $ = Role1;
+      ./Required - $ = Role2;
     }
     ep : /test/Modules/SysComps/Extender
     {
-      ./Int/Provided -  = Role4;
-      ./Int/Required -  = Role3;
+      ./Int/Provided - $ = Role4;
+      ./Int/Required - $ = Role3;
     }
     scp1 : ConnPointMc
     {
@@ -31,18 +31,18 @@ test : Syst
   ./Syst1/Syst1_1 - Syst1_1_1 : Syst;
   cp1 : /test/Modules/SysComps/ConnPoint
   {
-    ./Provided -  = Role1;
-    ./Required -  = Role2;
+    ./Provided - $ = Role1;
+    ./Required - $ = Role2;
   }
   cp2 : /test/Modules/SysComps/ConnPoint
   {
-    ./Provided -  = Role2;
-    ./Required -  = Role1;
+    ./Provided - $ = Role2;
+    ./Required - $ = Role1;
   }
   cp3 : /test/Modules/SysComps/ConnPoint
   {
-    ./Provided -  = Role4;
-    ./Required -  = Role3;
+    ./Provided - $ = Role4;
+    ./Required - $ = Role3;
   }
   E1 : Aedge
   {

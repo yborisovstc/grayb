@@ -392,10 +392,10 @@
 	<cont node="./Capsule/Sync" id="Provided" val="MDesSyncable"/>
 	    
 	<node node="./Capsule" id="Inp" parent="AExtduInp"/> 
-	<node node="./Capsule/Inp" id="Int" parent="./../StInpSocketMcmu"/> 
+	<node node="./Capsule/Inp" id="Int" parent="./../../../StInpSocketMcmu"/>
 
 	<node node="./Capsule" id="Out" parent="AExtduOut"/> 
-	<node node="./Capsule/Out" id="Int" parent="./../StOutSocketMcmu"/> 
+	<node node="./Capsule/Out" id="Int" parent="./../../../StOutSocketMcmu"/>
     </node>
 
 

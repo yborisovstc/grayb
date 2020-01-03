@@ -175,10 +175,10 @@ const string& TstProv::ModulesPath() const {
 class Ut_conn : public CPPUNIT_NS::TestFixture
 {
     CPPUNIT_TEST_SUITE(Ut_conn);
-    CPPUNIT_TEST(test_Vertp);
-    CPPUNIT_TEST(test_Systp);
-    CPPUNIT_TEST(test_Systp2);
-    CPPUNIT_TEST(test_SystpSock);
+    // CPPUNIT_TEST(test_Vertp); // Prop based agents aren't supported
+    // CPPUNIT_TEST(test_Systp); // Prop based agents aren't supported
+    // CPPUNIT_TEST(test_Systp2); // Prop based agents aren't supported
+    // CPPUNIT_TEST(test_SystpSock); // Prop based agents aren't supported
     CPPUNIT_TEST(test_Sock);
     CPPUNIT_TEST(test_Sock2);
     CPPUNIT_TEST(test_Reconn);

@@ -362,3 +362,23 @@ void GUri::Parse()
 	}
     }
 }
+
+// Introduced in the scope of Unified Mut Target (UMT) design, ref ds_umt_rtnsu_rbs_erpi
+void GUri::Reduce()
+{
+    bool found = false;
+    do {
+	int pos = 0;
+	found = false;
+	for (elem_iter it = iElems.begin(); it != iElems.end(); it++, pos++) {
+	    TElem elem = *it;
+	    if (elem.mName == KUpperLevel && elem.mRel == EComp && (pos > (IsAbsolute() ? 2 : 1))) {
+		found = true;
+		elem_iter oit = it - 1;
+		oit = iElems.erase(oit);
+		iElems.erase(oit);
+		break;
+	    }
+	}
+    } while (found); 
+}

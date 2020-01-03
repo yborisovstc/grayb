@@ -81,12 +81,12 @@ FuncComps : Elem
   $ # " Int function wo inputs  ";
   FuncInt : /*/Modules/IncapsComps/Incaps
   {
-    ./Capsule - out : ./../Out_FInt;
+    ./Capsule - out : ./../../Out_FInt;
   }
   $ # " Var function wo inputs  ";
   FuncVar : /*/Modules/IncapsComps/Incaps
   {
-    ./Capsule - out : ./../Out_FVar;
+    ./Capsule - out : ./../../Out_FVar;
     ViewData : Vert
     {
       Res : Prop;
@@ -95,13 +95,13 @@ FuncComps : Elem
   $ # " Var function wo inputs  ";
   FuncVarMc : /*/Modules/IncapsComps/Incaps
   {
-    ./Capsule - out : ./../Out_FVarMc;
+    ./Capsule - out : ./../../Out_FVarMc;
     ViewData.Res = ;
   }
   $ # " Composed/Reduced Var function wo inputs  ";
   FuncVarC : /*/Modules/IncapsComps/Incaps
   {
-    ./Capsule - Out : ./../Out_FEVar;
+    ./Capsule - Out : ./../../Out_FEVar;
     ViewData : Vert
     {
       Res : Prop;
@@ -135,7 +135,7 @@ FuncComps : Elem
   $ # " Input of Transition Func with variable arg/res ";
   Inp_TFVarMc : /*/Modules/SysComps/ConnPointInpMc
   {
-    About = Input of Transition Func with variable arg/res;
+    About = "Input of Transition Func with variable arg/res";
     Required = MDVarGet;
   }
   $ # " Output of Transition Func with variable arg/res ";
@@ -179,11 +179,11 @@ FuncComps : Elem
   $ # " Composed/Reduced Var transition function wo inputs  ";
   TFuncVarC : /*/Modules/IncapsComps/Incaps
   {
-    ./Capsule - Out : ./../Out_TFEVar;
+    ./Capsule - Out : ./../../Out_TFEVar;
   }
   TFuncVarCMc : /*/Modules/IncapsComps/Incaps
   {
-    ./Capsule - Out : ./../Out_TFEVarMc;
+    ./Capsule - Out : ./../../Out_TFEVarMc;
   }
   $ # " Int function with single input  ";
   FuncIntSi : /*/Modules/IncapsComps/Incaps
@@ -202,7 +202,7 @@ FuncComps : Elem
   $ # " Bool function with simgle input  ";
   FuncBoolSi : /*/Modules/IncapsComps/Incaps
   {
-    ./Capsule - out : ./../Out_FBool;
+    ./Capsule - out : ./../../Out_FBool;
   }
   FuncIncInt : /*/Modules/IncapsComps/Incaps
   {
@@ -247,7 +247,7 @@ FuncComps : Elem
   {
     func_agt : AFAddVar;
     $ # " Input positives ";
-    ./Capsule - Inp : ./../Inp_FVar;
+    ./Capsule - Inp : ./../../Inp_FVar;
     ./ViewData/Res - $ = ./../../func_agt;
   }
   $ # " Function of var addition wo caching, multicontent ";
@@ -255,7 +255,7 @@ FuncComps : Elem
   {
     func_agt : AFAddVar;
     $ # " Input positives ";
-    ./Capsule - Inp : ./../Inp_FVarMc;
+    ./Capsule - Inp : ./../../Inp_FVarMc;
     ViewData.Res = ./func_agt;
     SpAgent = ./func_agt;
   }
@@ -264,38 +264,38 @@ FuncComps : Elem
   {
     func_agt : AFSubInt;
     $ # " Input positives ";
-    ./Capsule - InpP : ./../Inp_FInt;
+    ./Capsule - InpP : ./../../Inp_FInt;
     $ # " Input negatives ";
-    ./Capsule - InpN : ./../Inp_FInt;
+    ./Capsule - InpN : ./../../Inp_FInt;
   }
   $ # " Function of restriction to upper and lower limits ";
   FLimInt : ./FuncInt
   {
     func_agt : AFLimInt;
     $ # " Input  ";
-    ./Capsule - Inp : ./../Inp_FInt;
+    ./Capsule - Inp : ./../../Inp_FInt;
     $ # " Input positives ";
-    ./Capsule - Inp_LimU : ./../Inp_FInt;
+    ./Capsule - Inp_LimU : ./../../Inp_FInt;
     $ # " Input negatives ";
-    ./Capsule - Inp_LimL : ./../Inp_FInt;
+    ./Capsule - Inp_LimL : ./../../Inp_FInt;
   }
   $ # " Function of division ";
   FDivInt : ./FuncInt
   {
     func_agt : AFDivInt;
     $ # " Divided  ";
-    ./Capsule - Inp_DD : ./../Inp_FInt;
+    ./Capsule - Inp_DD : ./../../Inp_FInt;
     $ # " Divisor ";
-    ./Capsule - Inp_DR : ./../Inp_FInt;
+    ./Capsule - Inp_DR : ./../../Inp_FInt;
   }
   $ # " Function of convolution. Working function is external ";
   FConvInt : ./FuncIntSi
   {
     func_agt : AFConvInt;
     $ # " Output for passing argunent to Working function  ";
-    ./Capsule - Out_WFarg : ./../Out_FEInt;
+    ./Capsule - Out_WFarg : ./../../Out_FEInt;
     $ # " Input for getting result from Working function  ";
-    ./Capsule - Inp_WFres : ./../Inp_FInt;
+    ./Capsule - Inp_WFres : ./../../Inp_FInt;
     $ # " Value of Working function argument ";
     WFArg : /*/Modules/DataComps/DataSNInt;
     E1 : Edge
@@ -308,90 +308,90 @@ FuncComps : Elem
   FuncInpToVectInt : /*/Modules/IncapsComps/Incaps
   {
     $ # " Input ";
-    ./Capsule - Inp : ./../Inp_FInt;
+    ./Capsule - Inp : ./../../Inp_FInt;
     $ # " Output ";
-    ./Capsule - Out : ./../Out_FVInt;
+    ./Capsule - Out : ./../../Out_FVInt;
   }
   $ # " Function Inp1 GT Inp2  ";
   FGTInt : ./FuncBoolSi
   {
     func_agt : AFGTInt;
-    ./Capsule - Inp1 : ./../Inp_FInt;
-    ./Capsule - Inp2 : ./../Inp_FInt;
+    ./Capsule - Inp1 : ./../../Inp_FInt;
+    ./Capsule - Inp2 : ./../../Inp_FInt;
   }
   $ # " Function Bool to Int  ";
   FBoolToInt : ./FuncInt
   {
     func_agt : AFBoolToInt;
-    ./Capsule - Inp : ./../Inp_FBool;
+    ./Capsule - Inp : ./../../Inp_FBool;
   }
   $ # " Transition function. It doesn's support observation of inputs change ";
   $ # " Int Transition function wo inputs  ";
   TFuncInt : /*/Modules/IncapsComps/Incaps
   {
-    ./Capsule - out : ./../Out_TFInt;
+    ./Capsule - out : ./../../Out_TFInt;
   }
   $ # " Bool Transition function wo inputs  ";
   TFuncBool : /*/Modules/IncapsComps/Incaps
   {
-    ./Capsule - out : ./../Out_TFBool;
+    ./Capsule - out : ./../../Out_TFBool;
   }
   $ # " Var Transition function wo inputs  ";
   TFuncVar : /*/Modules/IncapsComps/Incaps
   {
-    ./Capsule - Out : ./../Out_TFVar;
+    ./Capsule - Out : ./../../Out_TFVar;
   }
   $ # " Var Transition function wo inputs  ";
   TFuncVarMc : /*/Modules/IncapsComps/Incaps
   {
-    About = Var Transition function wo inputs;
-    ./Capsule - Out : ./../Out_TFVarMc;
+    About = "Var Transition function wo inputs";
+    ./Capsule - Out : ./../../Out_TFVarMc;
     ViewData.Res = ;
   }
   $ # " Function of integer addition wo caching ";
   TFAddInt : ./TFuncInt
   {
     func_agt : AFAddInt;
-    ./Capsule - inp : ./../Inp_TFInt;
+    ./Capsule - inp : ./../../Inp_TFInt;
   }
   $ # " Function of integer addition wo caching ";
   TFSubInt : ./TFuncInt
   {
     func_agt : AFSubInt;
     $ # " Input positives ";
-    ./Capsule - InpP : ./../Inp_TFInt;
+    ./Capsule - InpP : ./../../Inp_TFInt;
     $ # " Input negatives ";
-    ./Capsule - InpN : ./../Inp_TFInt;
+    ./Capsule - InpN : ./../../Inp_TFInt;
   }
   $ # " Function of restriction to upper and lower limits ";
   TFLimInt : ./TFuncInt
   {
     func_agt : AFLimInt;
     $ # " Input  ";
-    ./Capsule - Inp : ./../Inp_TFInt;
+    ./Capsule - Inp : ./../../Inp_TFInt;
     $ # " Input positives ";
-    ./Capsule - Inp_LimU : ./../Inp_TFInt;
+    ./Capsule - Inp_LimU : ./../../Inp_TFInt;
     $ # " Input negatives ";
-    ./Capsule - Inp_LimL : ./../Inp_TFInt;
+    ./Capsule - Inp_LimL : ./../../Inp_TFInt;
   }
   $ # " Function of division ";
   TFDivInt : ./TFuncInt
   {
     func_agt : AFDivInt;
     $ # " Divided  ";
-    ./Capsule - Inp_DD : ./../Inp_TFInt;
+    ./Capsule - Inp_DD : ./../../Inp_TFInt;
     $ # " Divisor ";
-    ./Capsule - Inp_DR : ./../Inp_TFInt;
+    ./Capsule - Inp_DR : ./../../Inp_TFInt;
   }
   $ # " Function of convolution. Working function is external ";
   TFConvInt : ./TFuncInt
   {
     func_agt : AFConvInt;
-    ./Capsule - inp : ./../Inp_TFInt;
+    ./Capsule - inp : ./../../Inp_TFInt;
     $ # " Output for passing argunent to Working function  ";
-    ./Capsule - Out_WFarg : ./../Out_TFEInt;
+    ./Capsule - Out_WFarg : ./../../Out_TFEInt;
     $ # " Input for getting result from Working function  ";
-    ./Capsule - Inp_WFres : ./../Inp_TFInt;
+    ./Capsule - Inp_WFres : ./../../Inp_TFInt;
     $ # " Value of Working function argument ";
     WFArg : /*/Modules/DataComps/DataSUInt;
     E1 : Edge
@@ -404,48 +404,48 @@ FuncComps : Elem
   TFGTInt : ./TFuncBool
   {
     func_agt : AFGTInt;
-    ./Capsule - Inp1 : ./../Inp_TFInt;
-    ./Capsule - Inp2 : ./../Inp_TFInt;
+    ./Capsule - Inp1 : ./../../Inp_TFInt;
+    ./Capsule - Inp2 : ./../../Inp_TFInt;
   }
   $ # " Transition Function EQ  ";
   TFEQVar : ./TFuncVar
   {
     AF_Eq : AFCmpVar;
-    ./Capsule - Inp1 : ./../Inp_TFVar;
-    ./Capsule - Inp2 : ./../Inp_TFVar;
-    ./ViewData/Res - $ = ./../../AF_Eq;
+    ./Capsule - Inp1 : ./../../Inp_TFVar;
+    ./Capsule - Inp2 : ./../../Inp_TFVar;
+    ViewData.Res = ./AF_Eq;
   }
   $ # " Transition Function GE  ";
   TFGEVar : ./TFuncVar
   {
     AF_Ge : AFCmpVar;
-    ./Capsule - Inp1 : ./../Inp_TFVar;
-    ./Capsule - Inp2 : ./../Inp_TFVar;
-    ./ViewData/Res - $ = ./../../AF_Ge;
+    ./Capsule - Inp1 : ./../../Inp_TFVar;
+    ./Capsule - Inp2 : ./../../Inp_TFVar;
+    ViewData.Res = ./AF_Ge;
   }
   $ # " Transition Function LT  ";
   TFLTVar : ./TFuncVar
   {
     AF_Lt : AFCmpVar;
-    ./Capsule - Inp1 : ./../Inp_TFVar;
-    ./Capsule - Inp2 : ./../Inp_TFVar;
-    ./ViewData/Res - $ = ./../../AF_Lt;
+    ./Capsule - Inp1 : ./../../Inp_TFVar;
+    ./Capsule - Inp2 : ./../../Inp_TFVar;
+    ViewData.Res = ./AF_Lt;
   }
   $ # " Transition Function of variable adding ";
   TFAddVar : ./TFuncVar
   {
     func_agt : AFAddVar;
     $ # " Input positives ";
-    ./Capsule - Inp : ./../Inp_TFVar;
+    ./Capsule - Inp : ./../../Inp_TFVar;
     $ # " <cont node="./ViewData/Res" ref="./../../func_agt"/> ";
     ViewData.Res = ./func_agt;
   }
   $ # " Transition Function of variable adding ";
   TFAddVarMc : ./TFuncVarMc
   {
-    About = Transition Function of variable adding;
+    About = "Transition Function of variable adding";
     func_agt : AFAddVar;
-    ./Capsule - Inp : ./../Inp_TFVarMc;
+    ./Capsule - Inp : ./../../Inp_TFVarMc;
     ViewData.Res = ./func_agt;
     SpAgent = ./func_agt;
   }
@@ -454,67 +454,67 @@ FuncComps : Elem
   {
     func_agt : AFAddVar;
     $ # " Input positives ";
-    ./Capsule - Inp : ./../Inp_TFVar;
+    ./Capsule - Inp : ./../../Inp_TFVar;
     $ # " Input negative ";
-    ./Capsule - InpN : ./../Inp_TFVar;
-    ./ViewData/Res - $ = ./../../func_agt;
+    ./Capsule - InpN : ./../../Inp_TFVar;
+    ViewData.Res = ./func_agt;
   }
   $ # " Transition Function of variable multiplication ";
   TFMplVar : ./TFuncVar
   {
     func_agt : AFMplVar;
     $ # " Input positives ";
-    ./Capsule - Inp : ./../Inp_TFVar;
-    ./ViewData/Res - $ = ./../../func_agt;
+    ./Capsule - Inp : ./../../Inp_TFVar;
+    ViewData.Res = ./func_agt;
   }
   $ # " Transition Function of variable mutltiplication, non commutative ";
   TFMplncVar : ./TFuncVar
   {
     func_agt : AFMplncVar;
-    ./Capsule - Inp1 : ./../Inp_TFVar;
-    ./Capsule - Inp2 : ./../Inp_TFVar;
+    ./Capsule - Inp1 : ./../../Inp_TFVar;
+    ./Capsule - Inp2 : ./../../Inp_TFVar;
     ViewData.Res = ./func_agt;
   }
   TFMplncVarMc : ./TFuncVarMc
   {
     func_agt : AFMplncVar;
-    ./Capsule - Inp1 : ./../Inp_TFVarMc;
-    ./Capsule - Inp2 : ./../Inp_TFVarMc;
+    ./Capsule - Inp1 : ./../../Inp_TFVarMc;
+    ./Capsule - Inp2 : ./../../Inp_TFVarMc;
     ViewData.Res = ./func_agt;
   }
   $ # " Transition Function of variable mutltiplicationi inversion ";
   TFMplinvVar : ./TFuncVar
   {
     func_agt : AFMplinvVar;
-    ./Capsule - Inp : ./../Inp_TFVar;
+    ./Capsule - Inp : ./../../Inp_TFVar;
     ViewData.Res = ./func_agt;
   }
   $ # " Transition Function of variable creation of diag matrix ";
   TFCpsMtrdVar : ./TFuncVar
   {
     func_agt : AFCpsMtrdVar;
-    ./Capsule - Inp : ./../Inp_TFVar;
+    ./Capsule - Inp : ./../../Inp_TFVar;
     ViewData.Res = ./func_agt;
   }
   TFCpsMtrdVarMc : ./TFuncVarMc
   {
     func_agt : AFCpsMtrdVar;
-    ./Capsule - Inp : ./../Inp_TFVarMc;
+    ./Capsule - Inp : ./../../Inp_TFVarMc;
     ViewData.Res = ./func_agt;
   }
   $ # " Transition Function of composing of vector from comps, variable ";
   TFCpsVectVar : ./TFuncVar
   {
     func_agt : AFCpsVectVar;
-    ./Capsule - Inp1 : ./../Inp_TFVar;
-    ./Capsule - Inp2 : ./../Inp_TFVar;
+    ./Capsule - Inp1 : ./../../Inp_TFVar;
+    ./Capsule - Inp2 : ./../../Inp_TFVar;
     ViewData.Res = ./func_agt;
   }
   $ # " Transition Function of variable casting ";
   TFCastVar : ./TFuncVar
   {
     func_agt : AFCastVar;
-    ./Capsule - Inp : ./../Inp_TFVar;
+    ./Capsule - Inp : ./../../Inp_TFVar;
     InpType : Prop;
     ViewData.Res = ./func_agt;
   }
@@ -522,30 +522,30 @@ FuncComps : Elem
   TFAtVar : ./TFuncVar
   {
     func_agt : AFAtVar;
-    ./Capsule - Inp : ./../Inp_TFVar;
-    ./Capsule - Index : ./../Inp_TFVar;
+    ./Capsule - Inp : ./../../Inp_TFVar;
+    ./Capsule - Index : ./../../Inp_TFVar;
     ViewData.Res = ./func_agt;
   }
   TFAtVarMc : ./TFuncVarMc
   {
     func_agt : AFAtVar;
-    ./Capsule - Inp : ./../Inp_TFVarMc;
-    ./Capsule - Index : ./../Inp_TFVarMc;
+    ./Capsule - Inp : ./../../Inp_TFVarMc;
+    ./Capsule - Index : ./../../Inp_TFVarMc;
     ViewData.Res = ./func_agt;
   }
   $ # " Transition Function of boolean negation ";
   TFNegVar : ./TFuncVar
   {
     func_agt : AFBoolNegVar;
-    ./Capsule - Inp : ./../Inp_TFVar;
-    ./ViewData/Res - $ = ./../../func_agt;
+    ./Capsule - Inp : ./../../Inp_TFVar;
+    ViewData.Res = ./func_agt;
   }
   $ # " Transition Function of getting component of containter, reduced by index  ";
   TFAtVarI : ./TFuncVarC
   {
     At : ./../TFAtVar;
     Index : /*/Modules/DataComps/DataSCVar;
-    ./Capsule - Inp : ./../Inp_TFEVar;
+    ./Capsule - Inp : ./../../Inp_TFEVar;
     E1 : Edge
     {
       ./P1 - $ = ./../../Capsule/Inp/Int;
@@ -567,7 +567,7 @@ FuncComps : Elem
   {
     At : ./../TFAtVarMc;
     Index : /*/Modules/DataComps/DataSCVarMc;
-    ./Capsule - Inp : ./../Inp_TFEVarMc;
+    ./Capsule - Inp : ./../../Inp_TFEVarMc;
     E1 : Aedge
     {
       P1 = ./../Capsule/Inp/Int;
@@ -589,44 +589,44 @@ FuncComps : Elem
   FLTVar : ./FuncVar
   {
     AF_Lt : AFBcmpVar;
-    ./Capsule - Inp1 : ./../Inp_FVar;
-    ./Capsule - Inp2 : ./../Inp_FVar;
+    ./Capsule - Inp1 : ./../../Inp_FVar;
+    ./Capsule - Inp2 : ./../../Inp_FVar;
   }
   $ # " Function Inp1 LE Inp2  ";
   FLEVar : ./FuncVar
   {
     AF_Le : AFBcmpVar;
-    ./Capsule - Inp1 : ./../Inp_FVar;
-    ./Capsule - Inp2 : ./../Inp_FVar;
+    ./Capsule - Inp1 : ./../../Inp_FVar;
+    ./Capsule - Inp2 : ./../../Inp_FVar;
   }
   $ # " Function Inp1 EQ Inp2  ";
   FEQVar : ./FuncVar
   {
     AF_Eq : AFCmpVar;
-    ./Capsule - Inp1 : ./../Inp_FVar;
-    ./Capsule - Inp2 : ./../Inp_FVar;
+    ./Capsule - Inp1 : ./../../Inp_FVar;
+    ./Capsule - Inp2 : ./../../Inp_FVar;
     ./ViewData/Res - $ = ./../../AF_Eq;
   }
   $ # " Function Inp1 GT Inp2  ";
   FGTVar : ./FuncVar
   {
     AF_Gt : AFBcmpVar;
-    ./Capsule - Inp1 : ./../Inp_FVar;
-    ./Capsule - Inp2 : ./../Inp_FVar;
+    ./Capsule - Inp1 : ./../../Inp_FVar;
+    ./Capsule - Inp2 : ./../../Inp_FVar;
   }
   $ # " Function Inp1 GE Inp2  ";
   FGEVar : ./FuncVar
   {
     AF_Ge : AFBcmpVar;
-    ./Capsule - Inp1 : ./../Inp_FVar;
-    ./Capsule - Inp2 : ./../Inp_FVar;
+    ./Capsule - Inp1 : ./../../Inp_FVar;
+    ./Capsule - Inp2 : ./../../Inp_FVar;
   }
   $ # " Function of getting component of containter  ";
   FAtVar : ./FuncVar
   {
     func_agt : AFAtVar;
-    ./Capsule - Inp : ./../Inp_FVar;
-    ./Capsule - Index : ./../Inp_FVar;
+    ./Capsule - Inp : ./../../Inp_FVar;
+    ./Capsule - Index : ./../../Inp_FVar;
     ./ViewData/Res - $ = ./../../func_agt;
   }
   $ # " Function of getting component of containter, reduced by index  ";
@@ -634,7 +634,7 @@ FuncComps : Elem
   {
     At : ./../FAtVar;
     Index : /*/Modules/DataComps/DataTVar;
-    ./Capsule - Inp : ./../Inp_FEVar;
+    ./Capsule - Inp : ./../../Inp_FEVar;
     E1 : Edge
     {
       ./P1 - $ = ./../../Capsule/Inp/Int;
@@ -654,82 +654,82 @@ FuncComps : Elem
   }
   FAtVar_0 : ./FAtVarI
   {
-    ./Index/Value - $ = SI 0;
+    ./Index/Value - $ = "SI 0";
   }
   FAtVar_1 : ./FAtVarI
   {
-    ./Index/Value - $ = SI 1;
+    ./Index/Value - $ = "SI 1";
   }
   $ # " Function of swithching  ";
   FSwitchVar : ./FuncVar
   {
     func_agt : AFSwitchVar;
-    ./Capsule - Inp1 : ./../Inp_FVar;
-    ./Capsule - Inp2 : ./../Inp_FVar;
-    ./Capsule - Sel : ./../Inp_FVar;
+    ./Capsule - Inp1 : ./../../Inp_FVar;
+    ./Capsule - Inp2 : ./../../Inp_FVar;
+    ./Capsule - Sel : ./../../Inp_FVar;
   }
   $ # " Transition Function of switching  ";
   TFSwitchVar : ./TFuncVar
   {
     func_agt : AFSwitchVar;
-    ./Capsule - Inp1 : ./../Inp_TFVar;
-    ./Capsule - Inp2 : ./../Inp_TFVar;
-    ./Capsule - Sel : ./../Inp_TFVar;
+    ./Capsule - Inp1 : ./../../Inp_TFVar;
+    ./Capsule - Inp2 : ./../../Inp_TFVar;
+    ./Capsule - Sel : ./../../Inp_TFVar;
   }
   $ # " Function Bool to Int  ";
   TFBoolToInt : ./TFuncInt
   {
     func_agt : AFBoolToInt;
-    ./Capsule - Inp : ./../Inp_TFBool;
+    ./Capsule - Inp : ./../../Inp_TFBool;
   }
   $ # " Function of var multiplication wo caching ";
   FMplVar : ./FuncVar
   {
     func_agt : AFMplVar;
-    ./Capsule - Inp : ./../Inp_FVar;
+    ./Capsule - Inp : ./../../Inp_FVar;
   }
   $ # " Function of var non commutative multiplication wo caching ";
   FMplncVar : ./FuncVar
   {
     func_agt : AFMplncVar;
-    ./Capsule - Inp1 : ./../Inp_FVar;
-    ./Capsule - Inp2 : ./../Inp_FVar;
+    ./Capsule - Inp1 : ./../../Inp_FVar;
+    ./Capsule - Inp2 : ./../../Inp_FVar;
     ./ViewData/Res - $ = ./../../func_agt;
   }
   $ # " Function of variable mutltiplicationi inversion ";
   FMplinvVar : ./FuncVar
   {
     func_agt : AFMplinvVar;
-    ./Capsule - Inp : ./../Inp_FVar;
+    ./Capsule - Inp : ./../../Inp_FVar;
     ./ViewData/Res - $ = ./../../func_agt;
   }
   $ # " Function of variable casting ";
   FCastVar : ./FuncVar
   {
     func_agt : AFCastVar;
-    ./Capsule - Inp : ./../Inp_FVar;
+    ./Capsule - Inp : ./../../Inp_FVar;
     ./ViewData/Res - $ = ./../../func_agt;
   }
   $ # " Function of variable creation of diag matrix ";
   FCpsMtrdVar : ./FuncVar
   {
     func_agt : AFCpsMtrdVar;
-    ./Capsule - Inp : ./../Inp_FVar;
+    ./Capsule - Inp : ./../../Inp_FVar;
     ./ViewData/Res - $ = ./../../func_agt;
   }
   $ # " Function of composing of vector from comps, variable ";
   FCpsVectVar : ./FuncVar
   {
     func_agt : AFCpsVectVar;
-    ./Capsule - Inp1 : ./../Inp_FVar;
-    ./Capsule - Inp2 : ./../Inp_FVar;
+    ./Capsule - Inp1 : ./../../Inp_FVar;
+    ./Capsule - Inp2 : ./../../Inp_FVar;
     ./ViewData/Res - $ = ./../../func_agt;
   }
   $ # " Function of var dividing wo caching ";
   FDivVar : ./FuncVar
   {
     func_agt : AFDivVar;
-    ./Capsule - Inp : ./../Inp_FVar;
-    ./Capsule - Inp_Dvs : ./../Inp_FVar;
+    ./Capsule - Inp : ./../../Inp_FVar;
+    ./Capsule - Inp_Dvs : ./../../Inp_FVar;
   }
 }
