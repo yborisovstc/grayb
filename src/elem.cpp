@@ -284,6 +284,7 @@ void Elem::DoSpecificMut(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMo
 
 void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MutCtx& aCtx)
 {
+    bool res = true;
     const ChromoNode& mroot = aMutSpec;
     if (mroot.Begin() == mroot.End()) return;
     TInt tord = 0;
@@ -296,13 +297,21 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	isattached = IsChromoAttached();
     }
     // TODO No need to update root ns. Root mutation is not deleted. To analyze if this is correct
-    //TNs root_ns = aCtx.mNs;
+    TNs root_ns = aCtx.mNs;
     //UpdateNs(root_ns, sroot);
 
-    // Get root mut node to use it as a base of component chromo nodes mut node attr
-    MUnit* rmnode = mroot.AttrExists(ENa_MutNode) ? mroot.Attr(ENa_MutNode : this;
+    MUnit* btarg = this; // Base target
+    string sbtarg;
+    if (mroot.AttrExists(ENa_Targ)) {
+	sbtarg = mroot.Attr(ENa_Targ);
+	btarg = GetNodeByName(sbtarg, root_ns);
+	if (btarg == NULL) {
+	    Logger()->Write(EErr, this, "Cannot find base target node [%s]", sbtarg.c_str());
+	    res = false;
+	}
+    }
 
-    for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End(); rit++, order++)
+    for (ChromoNode::Const_Iterator rit = mroot.Begin(); rit != mroot.End() && res; rit++, order++)
     {
 	Pdstat(PEvents::DurStat_TransfOsm, true);
 	ChromoNode rno = (*rit);
@@ -325,49 +334,23 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		continue;
 	    }
 	}
-#if 0
-	if (rno.AttrExists(ENa_MutNode)) {
-	    // Transform DHC mutation to OSM mutation
-	    // Transform ENa_Targ: enlarge to ENa_MutNode
-	    MUnit* targ = rno.AttrExists(ENa_Targ) ? GetNodeByName(rno.Attr(ENa_Targ), ns) : this;
-	    if (targ == NULL) {
-		Logger()->Write(EErr, this, "Cannot find node [%s]", rno.Attr(ENa_Targ).c_str());
-		continue;
-	    }
-	    string mnode = rno.Attr(ENa_MutNode);
-	    MUnit* ftarg = mnode.empty() ? NULL : targ->GetNodeByName(rno.Attr(ENa_MutNode), ns);
-	    if (ftarg == NULL) {
-		Logger()->Write(EErr, this, "Cannot find target node [%s]", rno.Attr(ENa_MutNode).c_str());
-		continue;
-	    }
-	    // Transform refs
-	    if (rno.AttrExists(ENa_Parent)) {
-		string prnturi = rno.Attr(ENa_Parent);
-		MUnit* parent = targ->GetNodeByName(prnturi, ns);
-		if (parent == NULL) {
-		    // Probably external node not imported yet - ask env for resolving uri
-		    GUri pruri(prnturi);
-		    MImportMgr* impmgr = iEnv->ImpsMgr();
-		    parent = impmgr->OnUriNotResolved(this, pruri);
-		    if (parent == NULL) // Debug
-			parent = impmgr->OnUriNotResolved(this, pruri);
-
-		}
-		if (parent == NULL) {
-		    Logger()->Write(EErr, this, "Cannot find parent [%s]", prnturi.c_str());
-		    continue;
-		}
-		string spuri = parent->GetUri(ftarg, ETrue);
-		rno.SetAttr(ENa_Parent, spuri);
-	    }
+	// Apply segment upper mut-node context if there is no local context
+	// Note that mut-node replaces upper context
+	// Note that combo mut mut-node context is applied for base mut only, ref ds_chr2_cctx_tn_srns
+	if (!rno.AttrExists(ENa_MutNode) && mroot.AttrExists(ENa_MutNode) && (mroot.Type() == ENt_Seg)) {
+	    rno.SetAttr(ENa_MutNode, mroot.Attr(ENa_MutNode));
 	}
-#endif
+	// Set older mut-target context if there is no local context
+	if (!rno.AttrExists(ENa_Targ) && mroot.AttrExists(ENa_Targ)) {
+	    rno.SetAttr(ENa_Targ, mroot.Attr(ENa_Targ));
+	}
 	Pdstat(PEvents::DurStat_TransfOsm, false);
 	if (rno.AttrExists(ENa_Targ)) {
 	    // Targeted mutation, propagate downward, i.e redirect to comp owning the target
 	    // ref ds_mut_osm_linchr_lce
+	    // Update base mut-target with the local one
 	    string starg = rno.Attr(ENa_Targ);
-	    MUnit* ftarg = GetNodeByName(starg, ns);
+	    MUnit* ftarg = btarg->GetNodeByName(starg, ns);
 	    // Mutation is not local, propagate downward
 	    if (ftarg != NULL) {
 		rno.RmAttr(ENa_Targ);

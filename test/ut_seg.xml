@@ -19,11 +19,18 @@
     </seg>
 
     <seg targ="./elem1" >
+	<node id="elem1_1" parent="Elem"/>
+	<node targ="./elem1_1" id="elem1_1_1" parent="Elem"/>
+	<seg targ="./elem1_1">
+	    <node id="elem1_1_2" parent="Elem"/>
+	</seg>
+
 	<node id="unit1_1" parent="Unit"/>
 	<seg node="./unit1_1">
 	    <node id="unit1_1_1" parent="Unit"/>
-	    <seg node="./unit1_1_1">
+	    <seg node="./unit1_1/unit1_1_1">
 		<node id="unit1_1_1_1" parent="Unit"/>
+		<node id="unit1_1_1_2" parent="Unit"/>
 	    </seg>
 	</seg>
     </seg>

@@ -115,10 +115,11 @@ void Ut_mut::test_Add()
 {
     printf("\n === Test#1 of mutation\n");
 
-    for (int ct = 1; ct < 2; ct++) {
+    for (int ct = 0; ct < 1; ct++) {
 	const string specn("ut_mutadd_1");
-	string spec = specn + string(".") + string(ct == 0 ? "xml" : "chs");
-	string log = specn + string(ct == 0 ? "_xml" : "_chs") + ".log";
+	string ext = ct == 0 ? "xml" : "chs";
+	string spec = specn + string(".") + ext;
+	string log = specn + "_" + ext + ".log";
 	iEnv = new Env(spec, log);
 	CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
 	// TODO Temporarily, to remove
@@ -131,7 +132,9 @@ void Ut_mut::test_Add()
 	// Check creation first
 	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 	// Check getting chromo 
-	eroot->Chromos().Save("ut_mutadd_1_saved.xml_");
+	string saved_name = specn + "_saved." + ext;
+	eroot->Chromos().Save(saved_name);
+
 	MUnit* e2 = root->GetNode("./elem1/elem2");
 	CPPUNIT_ASSERT_MESSAGE("Fail to get e2", e2 != 0);
 	MUnit* e4 = root->GetNode("./elem3/elem4");

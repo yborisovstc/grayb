@@ -1,8 +1,14 @@
 root : Elem
 {
-  e2 : Elem
+  e2 : Syst
   {
-      e3 : Elem;
       About = "Data";
+      e3 : Elem
+      {
+          s4 : Syst {
+             About = "System";
+             $ = "Test";
+          }
+      }
   }
 }

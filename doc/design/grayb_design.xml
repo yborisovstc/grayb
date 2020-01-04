@@ -4181,11 +4181,22 @@
 			context. This approach makes sense especially in cases when we have the complex native hier of unmutable nodes, need to have many changes of them and want to group
 			chromo nodes.</simpara>
 		</sect4>
-		<sect4><title>Solution: using unified mut-target</title>
+		<sect4 id="ds_chr2_cctx_tn_umt"><title>Solution: using unified mut-target</title>
 		    <simpara>Currently there are both mut-target and mut-node. Mut-target points to the target of mutation, i.e. mutable node that will keep the mutation. Mut-node points
 			to the subject of the change, this node can be not mutable. Is it possible to have just one unified target instead of those two? Seems so, we just can interpret this
 			attr as the pointer to the subject of change, and caclulate the nearest mutable target in hier to redirect the mutation.</simpara>
 		    <simpara>This can be implemented in Elem::DoMutation() via finding nearest mutable node and then modifying mut-target attr rebasing it to this mutable node.</simpara>
+		    <simpara>The main problem with this approach is migrating comp based mutations (Rm, Rn, Cont).</simpara>
+		    <simpara>At the moment I couldn't implement this approach properly, the branch is "yb_chr2_cctx_tn_umt".</simpara>
+		</sect4>
+		<sect4 id="ds_chr2_cctx_tn_srns"><title>Solution: use specific rules for the context of nested segments.</title>
+		    <simpara>This solutions is lightweight: just to specify how the context in nested segments should be set. The possible rule is that target should be nested, i.e. lower
+			level target should be relative to the upper level. As for mut-node, it shouldn't be nested, i.e. even the segment is nested, its context mut-node shouldn't relate to
+			upper level mut-node context.</simpara>
+		    <simpara>Nesting of segments makes sense only for purpose of re-using the context by minor correction of it. So accrording to the rule above there is no sense to
+			nest the segment with just mut-node context because context is not re-used.</simpara>
+		    <simpara>There should be specific rule for mut-node context specifying in combined mut. This context shouldn't be applied in scope of segment, it only relates to
+			combo mut base mutation.</simpara>
 		</sect4>
 	    </sect3>
 	</sect2>

@@ -14,7 +14,6 @@ testroot : Elem
   {
     State1 : ./../Modules/DesComps/StateInt
     {
-      $ # " <cont node="./DataSInt:Confirmed/Value" val="34"/> ";
       Logspec : Elem
       {
         Creation : Elem;

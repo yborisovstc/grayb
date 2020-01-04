@@ -31,7 +31,7 @@ SysComps : Elem
 	 ";
   ExtenderBase : Vert
   {
-    $ # "node id="Int" ";
+    $ # "node id=\"Int\" ";
     MAExteder : ExtenderAgent;
   }
   Extender : Vert
@@ -41,7 +41,7 @@ SysComps : Elem
   }
   ExtenderInpBase : Vert
   {
-    $ # "node id="Int"";
+    $ # "node id=\"Int\"";
     MAExteder : ExtenderAgentInp;
   }
   ExtenderInp : Vert
@@ -51,7 +51,7 @@ SysComps : Elem
   }
   ExtenderOutBase : Vert
   {
-    $ # "node id="Int"";
+    $ # "node id=\"Int\"";
     MAExteder : ExtenderAgentOut;
   }
   ExtenderOut : Vert
@@ -61,7 +61,7 @@ SysComps : Elem
   }
   ExtenderMc : Vert
   {
-    About = Base extender. Need to add internal connectable named Int;
+    About = "Base extender. Need to add internal connectable named Int";
     MAExteder : AExtender;
   }
   ExtenderInpMc : ./ExtenderMc
@@ -82,7 +82,7 @@ SysComps : Elem
   }
   CpExtenderMc : Vert
   {
-    About = Extender of simple connpoint.;
+    About = "Extender of simple connpoint.";
     Int : ConnPointMc;
     MAExteder : AExtender;
   }

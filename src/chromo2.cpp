@@ -15,7 +15,8 @@ const string KT_Namespace = "@";
 const char KT_MutSeparator = ';';
 const char KT_ChromoStart = '{';
 const char KT_ChromoEnd = '}';
-const char KT_TextGmark = '"';
+const char KT_TextDelim = '"';
+const char KT_Escape = '\\';
 
 /** @brief Mutation symbols */
 const string KMS_Add = ":";
@@ -29,6 +30,10 @@ const string KMS_Disconn = "!~";
 
 /** @brief Separators **/
 const string KSep = " \t\n\r";
+/** @brief Standard control symbols **/
+const string K_Ctrls = {KT_TextDelim};
+
+
 
 /** @brief Default P part */
 static const string KT_Default = "$";
@@ -420,11 +425,13 @@ void Chromo2Mdl::SetAttr(const THandle& aHandle, TNodeAttr aType, const string& 
     string rel = node->mMut.mR;
     if (aType == ENa_Id) {
 	__ASSERT (rel == KMS_Add || rel == KMS_Cont || rel == KMS_Import);
-	if (rel == KMS_Add || rel == KMS_Cont) {
+	if (rel == KMS_Add) {
 	    node->mMut.mP = aVal;
 	} else if (rel == KMS_Import) {
 	    node->mMut.mQ = aVal;
 	    node->mMut.mP = KT_Default;
+	} else if (rel == KMS_Cont) {
+	    node->mMut.mP = aVal.empty() ? KT_Default : aVal;
 	}
     } else if (aType == ENa_Parent) {
 	__ASSERT (rel.empty() || rel == KMS_Add);
@@ -448,7 +455,8 @@ void Chromo2Mdl::SetAttr(const THandle& aHandle, TNodeAttr aType, const string& 
 	__ASSERT (!ctxrel.empty());
 	node->mContext[ctxrel] = aVal;
     } else if (aType == ENa_MutNode) {
-	__ASSERT (rel == KMS_Remove || rel == KMS_Rename || rel == KMS_Add || rel == KMS_Cont || rel == KMS_Conn || rel == KMS_Disconn || rel.empty());
+	__ASSERT (rel == KMS_Remove || rel == KMS_Rename || rel == KMS_Add || rel == KMS_Cont || rel == KMS_Conn || rel == KMS_Disconn ||
+		rel == KMS_Note || rel.empty());
 	if (rel == KMS_Add || rel == KMS_Cont || rel.empty()) {
 	    node->AddContext(KT_Node, aVal);
 	} else if (rel == KMS_Conn || rel == KMS_Disconn) {
@@ -610,7 +618,7 @@ bool PassThroughText(istream& aIs, streampos aEnd)
     streampos pos = aIs.tellg();
     while (pos != aEnd) {
 	char c = aIs.get();
-	if (c == KT_TextGmark) {
+	if (c == KT_TextDelim) {
 	    closed = true; break;
 	}
 	pos = aIs.tellg();
@@ -630,7 +638,7 @@ void Chromo2Mdl::ParseChromo(istream& aIs, streampos aStart, streampos aEnd, C2M
     streampos pos = aIs.tellg();
     while (pos != aEnd) {
 	char c = aIs.get();
-	if (c == KT_TextGmark) {
+	if (c == KT_TextDelim) {
 	    if (!PassThroughText(aIs, aEnd)) {
 		mErr.Set(pos, KPE_TextNotClosed);
 		break;
@@ -674,23 +682,25 @@ bool IsGroupNested(char aGroupMark)
     return false;
 }
 
-bool IsGroupMark(char aChar)
+bool IsTextDelimiter(char aChar)
 {
-    return (aChar == '"');
+    return (aChar == KT_TextDelim);
 }
 
-bool GetGroupLexeme(istream& aIs, streampos aEnd, string& aLex, char aGroupMark)
+bool GetText(istream& aIs, streampos aEnd, string& aLex, char aDelimiter)
 {
     bool res = false;
     streampos pos = aIs.tellg();
+    char prev_c = '\x00';
     while (pos != aEnd) {
 	char c = aIs.get();
-	if (IsGroupMark(c)) {
+	if (IsTextDelimiter(c) && (prev_c != KT_Escape)) {
 	    res = true;
 	    break;
 	} else {
 	    aLex.push_back(c);
 	}
+	prev_c = c;
     }
     return res;
 }
@@ -708,10 +718,13 @@ void Chromo2Mdl::GetLexs(istream& aIs, streampos aBeg, streampos aEnd, vector<st
 		aLexs.push_back(lexeme);
 		lexeme.clear();
 	    }
-	} else if (IsGroupMark(c)) {
-	    res = GetGroupLexeme(aIs, aEnd, lexeme, KT_TextGmark);
+	} else if (IsTextDelimiter(c)) {
+	    res = GetText(aIs, aEnd, lexeme, KT_TextDelim);
 	    pos = aIs.tellg();
-	    if (!res) {
+	    if (res) {
+		aLexs.push_back(lexeme);
+		lexeme.clear();
+	    } else {
 		mErr.Set(pos, KPE_MissingEndOfGroup);
 		break;
 	    }
@@ -880,11 +893,11 @@ string GroupLexeme(const string& aLex)
     string res;
     bool sep = ContainsSep(aLex);
     if (sep) {
-	res = KT_TextGmark;
+	res = KT_TextDelim;
     }
     res += aLex;
     if (sep) {
-	res += KT_TextGmark;
+	res += KT_TextDelim;
     }
     return res;
 }
@@ -1068,9 +1081,25 @@ void Chromo2::Convert(const MChromo& aSrc)
     ConvertNode(mRootNode, sroot);
 }
 
+/** @brief Escape control symbols */
+string EscapeCtrls(const string& aData, const string& aCtrls)
+{
+    string res;
+    for (auto c : aData) {
+	if (aCtrls.find(c) != string::npos || c == KT_Escape) {
+	    res.push_back(KT_Escape);
+	}
+	res.push_back(c);
+    }
+    return res;
+}
+
 void ConvertAttr(ChromoNode& aDst, const ChromoNode& aSrc, TNodeAttr aAttr)
 {
-    if (aSrc.AttrExists(aAttr)) { aDst.SetAttr(aAttr, aSrc.Attr(aAttr));}
+    if (aSrc.AttrExists(aAttr)) {
+	string escSrc = EscapeCtrls(aSrc.Attr(aAttr), K_Ctrls);
+	aDst.SetAttr(aAttr, escSrc);
+    }
 }
 
 void Chromo2::ConvertNode(ChromoNode& aDst, const ChromoNode& aSrc)

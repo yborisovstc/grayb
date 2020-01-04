@@ -60,9 +60,9 @@ void Ut_des::test_Cre1()
 
     for (int ct = 1; ct < 2; ct++) {
 	const string specn("ut_des_cre1");
-	string ext = ct == 0 ? "xml" : "chs";
+	string ext = (ct == 0) ? "xml" : "chs";
 	string spec = specn + string(".") + ext;
-	string log = specn + string(ct == 0 ? "_xml" : "_chs") + ".log";
+	string log = specn + "_" + ext + ".log";
 	iEnv = new Env(spec, log);
 	CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
 	iEnv->ImpsMgr()->ResetImportsPaths();
