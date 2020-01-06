@@ -2185,8 +2185,8 @@ MUnit* Unit::GetNodeByName(const string& aName, const TNs& aNs)
 		rns = ns;
 	    } else if (node != NULL) {
 		isConflict = true;
+		Log(TLog(EErr, this) + "Name [" + aName + "] resolution conflict: " + res->GetUri(NULL, true)  + " vs " + node->GetUri(NULL, true));
 		res = NULL;
-		Log(TLog(EErr, this) + "Name [" + aName + "] resolution conflict: " + rns->GetUri(NULL, true)  + " vs " + ns->GetUri(NULL, true));
 		break;
 	    }
 	}
