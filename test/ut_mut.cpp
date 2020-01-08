@@ -129,11 +129,7 @@ void Ut_mut::test_Add()
 	iEnv->ConstructSystem();
 	MUnit* root = iEnv->Root();
 	MElem* eroot = root->GetObj(eroot);
-	// Check creation first
-	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-	// Check getting chromo 
-	string saved_name = specn + "_saved." + ext;
-	eroot->Chromos().Save(saved_name);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
 
 	MUnit* e2 = root->GetNode("./elem1/elem2");
 	CPPUNIT_ASSERT_MESSAGE("Fail to get e2", e2 != 0);
@@ -180,6 +176,10 @@ void Ut_mut::test_Add()
 	eroot->Mutate(false, false, false, mctx);
 	MUnit* eren = root->GetNode("./elem5_renamed");
 	CPPUNIT_ASSERT_MESSAGE("Fail to rename node", eren != 0);
+
+	// Check getting chromo 
+	string saved_name = specn + "_saved." + ext;
+	eroot->Chromos().Save(saved_name);
 
 	delete iEnv;
     }

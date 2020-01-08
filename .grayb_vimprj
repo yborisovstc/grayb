@@ -13,6 +13,7 @@ libgrayb.pc.in
 src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   base.h
   chromo.h
+  chromo2.h
   chromox.h
   data.h
   des.h
@@ -27,6 +28,7 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   incaps.h
   log.h
   mchromo.h
+  mchromo2.h
   mdata.h
   mdes.h
   medge.h
@@ -59,6 +61,7 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   vertp.h
   base.cpp
   chromo.cpp
+  chromo2.cpp
   chromox.cpp
   data.cpp
   des.cpp
@@ -128,6 +131,7 @@ doc=doc CD=. filter="*" {
  }
 }
 test=test CD=. filter="*.cpp *.h *.xml *.am *.txt" {
+  ut_chromo2.cpp
   ut_conn.cpp
   ut_cre.cpp
   ut_des.cpp
@@ -482,7 +486,7 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
 modules=modules CD=. filter="*" {
   widgets.xml
 }
-test=test CD=. filter="*.h *.cpp *.dtd Makefile.am" {
+test=test CD=. filter="*.h *.cpp *.dtd Makefile.am *.xml" {
   ut_base.cpp
   ut_cre.cpp
   ut_main.cpp

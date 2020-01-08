@@ -150,6 +150,7 @@ MUnit* ImportsMgr::DoImport(const string& aUri)
 	    }
 	} else {
 	    mHost.Pdstat(PEvents::DurStat_DoImport, false);
+	    sel = chromo->Root().GetNodeByMhUri(moduri);
 	    mHost.Logger()->Write(EErr, NULL, "Importing to module: cannot find chromo node [%s]", aUri.c_str());
 	}
 	delete chromo;

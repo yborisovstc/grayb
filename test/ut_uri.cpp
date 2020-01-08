@@ -70,6 +70,16 @@ void Ut_uri::test_UriOpr()
     uri_a += uri_b;
     string uri_as = uri_a.toString();
     CPPUNIT_ASSERT_MESSAGE("Fail to uri +=", uri_as == "./(Elem:)Node1/(Elem:)Node2/(Elem:)Node3");
+
+    // Reducing uri
+    GUri uri_c("./Node1/Node2/../Node3");
+    uri_c.Reduce();
+    string uri_cs = uri_c.toString();
+    CPPUNIT_ASSERT_MESSAGE("Fail to reduce uri_c #1", uri_cs == "./Node1/Node3");
+    uri_c = GUri("./Node1/Node2/Node3/../../Node4");
+    uri_c.Reduce();
+    uri_cs = uri_c.toString();
+    CPPUNIT_ASSERT_MESSAGE("Fail to reduce uri_c #2", uri_cs == "./Node1/Node4");
 }
 
 void Ut_uri::test_UriBase()

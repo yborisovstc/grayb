@@ -394,6 +394,17 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 			}
 		    }
 		}
+		/* TODO this is wrong impl of ds_umt_rtnsu_rbs, to remove
+		// Rebase refs to final target, ref ds_umt_rtnsu_rbs
+		if (aoftarg != ftarg) {
+		    GUri fpuri = ftarg->GetUri(aoftarg, true);
+		    if (rno.AttrExists(ENa_Parent)) {
+			string prnturi = rno.Attr(ENa_Parent);
+			fpuri.Append(prnturi);
+			rno.SetAttr(ENa_Parent, spuri);
+		    }
+		}
+		*/
 	    } else {
 		string ftarg_uri = ftarg->GetUri(NULL, false);
 		Logger()->Write(EErr, this, "Cannot find mutable target for [%s]", ftarg_uri.c_str());
@@ -453,6 +464,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MutCtx& aCtx)
 {
     __ASSERT(!aSpec.AttrExists(ENa_Comp));
+    __ASSERT(!aSpec.AttrExists(ENa_MutNode));
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
     string mattrs = aSpec.Attr(ENa_MutAttr);
     string mval = aSpec.Attr(ENa_MutVal);
@@ -461,7 +473,7 @@ void Elem::ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafet
     if (aSpec.AttrExists(ENa_Targ)) {
 	snode = aSpec.Attr(ENa_Targ);
 	node = GetNode(snode);
-    }      
+    }
     MElem* enode = node != NULL ? node->GetObj(enode) : NULL;
     TBool mutadded = EFalse;
     if (enode != NULL) {
@@ -624,13 +636,13 @@ MUnit* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 	    TBool ext_parent = ETrue;
 	    if (prnturi.Scheme().empty()) {
 		// Local parent
-		//parent = GetNode(prnturi);
-		parent = GetNodeByName(prnturi, ns);
+		// Resolving parent ref basing on target, ref ds_umt_rtnsu_rbs
+		parent = node->GetNodeByName(prnturi, ns);
 		if (parent == NULL) {
 		    // Probably external node not imported yet - ask env for resolving uri
 		    GUri pruri(prnturi);
 		    MImportMgr* impmgr = iEnv->ImpsMgr();
-		    parent = impmgr->OnUriNotResolved(this, pruri);
+		    parent = impmgr->OnUriNotResolved(node, pruri);
 		}
 		ext_parent = EFalse;
 	    }
