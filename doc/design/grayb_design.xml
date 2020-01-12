@@ -85,6 +85,8 @@
 	    <glossdef> <para>Compact (and customized) Chromo Notation, approach that focus on having compact notation of model chromo.
 		    This allows effectivelly creating the model via 'manually' creating chromo of it. Another solution
 		    is Native Chromo Notation, ref <xref linkend="gls_ncn"/>. </para></glossdef> </glossentry>
+	<glossentry id="gls_clm"><glossterm>CLM</glossterm> <acronym>CLM</acronym>
+	    <glossdef> <para>Command Line Monitor application <xref linkend="ds_clm"/> </para></glossdef> </glossentry>
 	<glossentry id="gls_cmt"><glossterm>CMT</glossterm> <acronym>CMT</acronym>
 	    <glossdef> <para>Combined Mutation Target.  The approach of specifying target in mutation spec when mutation target and change targets are
 		    spedified separately. With this approach the target specified with two mutation attribute, ref also <xref linkend="gls_umt"/> for
@@ -5463,6 +5465,64 @@
 		<simpara>The relation symbols can be used to modify the current scheme of URI. We can introduce new relations to simplify URI, for instance 
 		    we can use relation "component of native agents", let's use "~" for that. In that case the native agents can be notated as "~name" so 
 		    we can use simple name to designate direct compoments of node and avoid annoying "./name".</simpara>
+	    </sect3>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_clm"><title>Command line monitor app (<xref linkend="gls_clm"/></title>
+	<sect2 id="ds_clm_chf"><title>Chromo formatter</title>
+	    <sect3><title>Is source file backup required?</title>
+		<simpara>It was decided to not support backup ATM.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_clm_ifv"><title>How to integrate formatter to VIM?</title>
+	    <simpara>VIM formatting plugin can be used, Chiel92/vim-autoformat for instance, ref <xref linkend="ds_clm_vaf"/></simpara>
+	</sect2>
+	<sect2 id="ds_clm_vaf"><title>Set-up Chiel92/vim-autoformat VIM plugin</title>
+	    <sect3><title>Intro</title>
+		<simpara>Ref <ulink url="https://vimawesome.com/plugin/vim-autoformat"/></simpara>
+	    </sect3>
+	    <sect3><title>Installation</title>
+		<simpara>Using Vundle</simpara>
+		<itemizedlist>
+		    <listitem>Put in .vimrc
+			<programlisting>Plugin 'Chiel92/vim-autoformat' </programlisting>
+		    </listitem>
+		    <listitem>Restart vim and run :PluginInstall. Alternatively, you could run :source $MYVIMRC to reload your .vimrc without restarting vim.
+			To update the plugin to the latest version, you can run :PluginUpdate.  </listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Configuration</title>
+		<simpara>Add to .vimrc 
+		    <programlisting>
+			"=====================================================
+			" vim-autoformat settings
+			"=====================================================
+
+			"let g:autoformat_verbosemode=1
+
+			let g:formatdef_yb_chs = '"/home/yborisov/projects/fap/grayb/clm/fapm -f"'
+			let g:formatters_chs = ['yb_chs']
+
+			" Disable autoindenting, retab and removing trailing spaces
+			let g:autoformat_autoindent = 0
+			let g:autoformat_retab = 0
+			let g:autoformat_remove_trailing_spaces = 0
+
+			" map to &lt;Leader&gt;cf
+			autocmd FileType chs nnoremap &lt;buffer&gt;&lt;Leader&gt;ff :&lt;C-u&gt;Autoformat&lt;CR&gt;
+
+			" vim-autoformat settings end
+		    </programlisting>
+		</simpara>
+	    </sect3>
+	    <sect3><title>How to format</title>
+		<simpara>It needs to manually set filetype because it is not automatically detected:</simpara>
+		<programlisting>:set filetype=chs</programlisting>
+		<simpara>To format use command</simpara>
+		<programlisting>:Autoformat</programlisting>
+		<simpara>or mapping</simpara>
+		<programlisting>\ff</programlisting>
 	    </sect3>
 	</sect2>
     </sect1>

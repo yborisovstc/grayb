@@ -385,7 +385,7 @@ TBool ChromoMdlX::ToString(const THandle& aNode, string& aString) const
     return (res != 0);
 }
 
-void ChromoMdlX::Save(const string& aFileName) const
+void ChromoMdlX::Save(const string& aFileName, TInt aIndent) const
 {
     int res = xmlSaveFormatFile(aFileName.c_str(), iDoc, 4);
 }
@@ -489,7 +489,7 @@ void ChromoX::Init(TNodeType aRootType)
     iRootNode = ChromoNode(iMdl, root);
 }
 
-void ChromoX::Save(const string& aFileName) const
+void ChromoX::Save(const string& aFileName, TInt aIndent) const
 {
     // We cannot simply save the doc (iMdl.iDoc) because it will save not only root node but
     // also adjacent nodes. So we need to create new model and add to doc only one separated root

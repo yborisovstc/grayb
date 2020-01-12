@@ -125,7 +125,7 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	virtual void DumpBackTree(const THandle& aNode);
 	virtual void DumpToLog(const THandle& aNode, MLogRec* aLogRec);
 	virtual TBool ToString(const THandle& aNode, string& aString) const;
-	virtual void Save(const string& aFileName) const;
+	virtual void Save(const string& aFileName, TInt aIndent = 0) const;
 	virtual THandle Find(const THandle& aHandle, const string& aUri);
 	virtual TInt GetOrder(const THandle& aHandle, TBool aTree = EFalse) const;
 	virtual void DeOrder(const THandle& aHandle);
@@ -155,8 +155,13 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	void SetErr(streampos);
 	/** @brief Checks error */
 	bool IsError() const;
-	/** @brief Writes textual representation of node to stream */
-	static void OutputNode(const C2MdlNode& aNode, ostream& aOs, int aLevel);
+	/** @brief Writes textual representation of node to stream
+	 * @param[in] aNode  chromo node to output
+	 * @param[in] aOs  output stream
+	 * @param[in] aLevel  level of node in chromo hierarchy
+	 * @param[in] aIndent  output identation
+	 * */
+	static void OutputNode(const C2MdlNode& aNode, ostream& aOs, int aLevel, int aIndent);
 	/** @brief Parses lexems from stream */
 	void GetLexs(istream& aIs, streampos aBeg, streampos aEnd, vector<string>& aLexs);
     protected:
@@ -195,7 +200,7 @@ class Chromo2: public MChromo
 	virtual void Convert(const MChromo& aSrc);
 	virtual void Init(TNodeType aRootType);
 	virtual void Reset();
-	virtual void Save(const string& aFileName) const;
+	virtual void Save(const string& aFileName, TInt aIndent = 0) const;
 	virtual ChromoNode CreateNode(const THandle& aHandle);
 	virtual void ReduceToSelection(const ChromoNode& aSelNode);
 	virtual bool IsError() const;

@@ -107,7 +107,11 @@ class MChromoMdl
 	virtual void DumpBackTree(const THandle& aNode) = 0;
 	virtual void DumpToLog(const THandle& aNode, MLogRec* aLogRec) = 0;
 	virtual TBool ToString(const THandle& aNode, string& aString) const = 0;
-	virtual void Save(const string& aFileName) const = 0;
+	/** @brief Saves chromo to file
+	 * @param[in] aFileName  Output file name
+	 * @param[in] aIndent    Indentation of chromo level, 0 - default indent
+	 * */
+	virtual void Save(const string& aFileName, TInt aIndent = 0) const = 0;
 	virtual THandle Find(const THandle& aHandle, const string& aUri) = 0;
 	virtual TInt GetOrder(const THandle& aHandle, TBool aTree = EFalse) const = 0;
 	virtual void DeOrder(const THandle& aHandle) = 0;
@@ -132,7 +136,11 @@ class MChromo
 	virtual void Convert(const MChromo& aSrc) = 0;
 	virtual void Init(TNodeType aRootType) = 0;
 	virtual void Reset() = 0;
-	virtual void Save(const string& aFileName) const = 0;
+	/** @brief Saves chromo to file
+	 * @param[in] aFileName  Output file name
+	 * @param[in] aIndent    Indentation of chromo level, 0 - default indent
+	 * */
+	virtual void Save(const string& aFileName, TInt aIndent = 0) const = 0;
 	virtual ChromoNode CreateNode(const THandle& aHandle) = 0;
 	virtual void ReduceToSelection(const ChromoNode& aSelNode) = 0;
 	virtual bool IsError() const { return false;}

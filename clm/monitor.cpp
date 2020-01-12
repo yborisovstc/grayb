@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+#include <fstream>
 
 
 #include <mprov.h>
@@ -12,6 +13,8 @@
 using namespace std;
 
 const string Monitor::KDefPrompt = ">";
+
+const string K_Chr2Ext = "chs";
 
 /** Generator of input handlers factory registry item */
 template<typename T> pair<string, Monitor::TIhFact*> Item() {
@@ -119,6 +122,10 @@ bool Monitor::run()
     return res;
 }
 
+bool Monitor::copyFile(const string& aSrcFname, const string& aDstFname)
+{
+}
+
 bool Monitor::convertSpec()
 {
     bool res = true;
@@ -135,6 +142,59 @@ bool Monitor::convertSpec()
     ochr->Convert(*chr);
     ochr->Save(mCSpecName);
  
+    return res;
+}
+
+void storeStdinToFile(const string& aFname)
+{
+    ofstream os(aFname, ofstream::out);
+    if (os) {
+	streambuf* ibuf = cin.rdbuf();
+	streambuf* obuf = os.rdbuf();
+	while (ibuf->sgetc() != EOF )
+	{
+	    char ch = ibuf->sbumpc();
+	    obuf->sputc(ch);
+	}
+	os.close();
+    }
+}
+
+void outputFileToStdout(const string& aFname)
+{
+    ifstream is(aFname, ifstream::out);
+    if (is) {
+	streambuf* ibuf = is.rdbuf();
+	streambuf* obuf = cout.rdbuf();
+	while (ibuf->sgetc() != EOF )
+	{
+	    char ch = ibuf->sbumpc();
+	    obuf->sputc(ch);
+	}
+	is.close();
+    }
+}
+
+bool Monitor::formatSpec()
+{
+    bool res = false;
+    string sname(mSpecName);
+    if (mSpecName.empty()) {
+	sname = ".fmt_tmp.chs";
+	storeStdinToFile(sname);
+    }
+    initEnv();
+    MProvider* prov = mEnv->Provider();
+    MChromo* chr = prov->CreateChromo(K_Chr2Ext);
+    chr->SetFromFile(sname);
+    if (chr->IsError()) {
+	cout << "Pos: " << chr->Error().mPos << " -- " << chr->Error().mText << endl;
+    }
+    MChromo* ochr = prov->CreateChromo(K_Chr2Ext);
+    ochr->Convert(*chr);
+    ochr->Save(sname);
+    outputFileToStdout(sname);
+    res = true;
     return res;
 }
 

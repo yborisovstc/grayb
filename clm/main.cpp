@@ -15,6 +15,7 @@ using namespace std;
 static bool mAutoRun = false;
 
 static bool mConvert = false; //!< Flag operation of converting spec */
+static bool mFormat = false; //!< Flag operation of formatting spec */
 
 const string help = "\nFAP2 Command line monitor\n\n\
 Usage:\n\
@@ -22,6 +23,7 @@ fapm [options] [file]\n\
 Options:\n\
 -h - show help\n\
 -c - convert chromo spec\n\
+-f - format chromo spec\n\
 -l <file> - log file\n\
 -p <file> - profiler file\n\
 -a        - auto-run\n\
@@ -37,7 +39,7 @@ int main(int argc, char* argv[])
     if (argc > 1) {
 	for (int i = 1; i < argc; i++) {
 	    string arg(argv[i]);
-	    cout << arg << endl;
+	    //cout << arg << endl;
 	    if (arg == "-h") {
 		cout << help;
 	    } else if (arg.compare(0, 2, "-l") == 0) {
@@ -69,6 +71,9 @@ int main(int argc, char* argv[])
 	    } else if (arg.compare(0, 2, "-c") == 0) {
 		// Convert
 		mConvert = true;
+	    } else if (arg.compare(0, 2, "-f") == 0) {
+		// Format
+		mFormat = true;
 	    } else {
 		cout << "Error: unknown argument [" << arg << "]" << endl;
 		res = -1;
@@ -79,6 +84,11 @@ int main(int argc, char* argv[])
 		bool sdres = mnt.convertSpec();
 		if (!sdres) {
 		    cout << "Error on converting chromo spec" << endl;
+		}
+	    } else if (mFormat) {
+		bool sdres = mnt.formatSpec();
+		if (!sdres) {
+		    cout << "Error on formatting chromo spec" << endl;
 		}
 	    } else if (mAutoRun) {
 		// Auto-run mode: run model and exit

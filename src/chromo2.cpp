@@ -33,6 +33,9 @@ const string KSep = " \t\n\r";
 /** @brief Standard control symbols **/
 const string K_Ctrls = {KT_TextDelim};
 
+/** @brief Default chromo indentation */
+const TInt K_Indent = 4;
+
 
 
 /** @brief Default P part */
@@ -526,10 +529,10 @@ TBool Chromo2Mdl::ToString(const THandle& aNode, string& aString) const
     __ASSERT(false);
 }
 
-void Chromo2Mdl::Save(const string& aFileName) const
+void Chromo2Mdl::Save(const string& aFileName, TInt aIndent) const
 {
-    ofstream os(aFileName, std::ifstream::out);
-    OutputNode(mRoot, os, 0);
+    ofstream os(aFileName, ofstream::out);
+    OutputNode(mRoot, os, 0, aIndent == 0 ? K_Indent : aIndent);
     os.flush();
     os.close();
 }
@@ -878,9 +881,9 @@ void Chromo2Mdl::DumpIsFrag(istream& aIs, streampos aStart, streampos aEnd)
     aIs.seekg(curpos, aIs.beg);
 }
 
-void Offset(int aLevel, ostream& aOs)
+void Offset(int aLevel, int aIndent, ostream& aOs)
 {
-    for (int i = 0; i < aLevel; i++)  aOs << "  ";
+    for (int i = 0; i < aLevel*aIndent; i++)  aOs << " ";
 }
 
 /** @brief Checks if lexeme contains separators
@@ -912,12 +915,12 @@ string GroupLexeme(const string& aLex)
     return res;
 }
 
-void Chromo2Mdl::OutputNode(const C2MdlNode& aNode, ostream& aOs, int aLevel)
+void Chromo2Mdl::OutputNode(const C2MdlNode& aNode, ostream& aOs, int aLevel, int aIndent)
 {
     bool cnt = false;
     if (!aNode.mContext.empty()) {
 	for (TC2MdlCtxCiter it = aNode.mContext.begin(); it != aNode.mContext.end(); it++) {
-	    Offset(aLevel, aOs); aOs << it->second << " " << it->first << " ";
+	    Offset(aLevel, aIndent, aOs); aOs << it->second << " " << it->first << " ";
 	    cnt = true;
 	}
     }
@@ -925,7 +928,7 @@ void Chromo2Mdl::OutputNode(const C2MdlNode& aNode, ostream& aOs, int aLevel)
     bool mut = false;
     int cnum = aNode.mChromo.size();
     if (!aNode.mMut.mR.empty()) {
-	if (!cnt) Offset(aLevel, aOs); aOs << aNode.mMut.mP << " " << aNode.mMut.mR << " " << GroupLexeme(aNode.mMut.mQ);
+	if (!cnt) Offset(aLevel, aIndent, aOs); aOs << aNode.mMut.mP << " " << aNode.mMut.mR << " " << GroupLexeme(aNode.mMut.mQ);
 	if (cnum == 0) {
 	    aOs << ";";
 	}
@@ -934,12 +937,12 @@ void Chromo2Mdl::OutputNode(const C2MdlNode& aNode, ostream& aOs, int aLevel)
     }
 
     if (cnum > 0) {
-	if (!cnt || mut) Offset(aLevel, aOs); aOs << "{" << endl;
+	if (!cnt || mut) Offset(aLevel, aIndent, aOs); aOs << "{" << endl;
 	for (TC2MdlNodesCiter it = aNode.mChromo.begin(); it != aNode.mChromo.end(); it++) {
 	    const C2MdlNode& node = *it;
-	    OutputNode(node, aOs, aLevel + 1);
+	    OutputNode(node, aOs, aLevel + 1, aIndent);
 	}
-	Offset(aLevel, aOs); aOs << "}" << endl;
+	Offset(aLevel, aIndent, aOs); aOs << "}" << endl;
     }
 }
 
@@ -950,7 +953,7 @@ void Chromo2Mdl::DumpMnode(const C2MdlNode& aNode, int aLevel) const
 	bool treeok = CheckTree(aNode);
 	cout << "Tree integrity: " << (treeok ? "OK" : "NOK") << endl;
     }
-    OutputNode(aNode, cout, aLevel);
+    OutputNode(aNode, cout, aLevel, K_Indent);
 }
 
 bool Chromo2Mdl::CheckTree(const C2MdlNode& aNode) const
@@ -1044,13 +1047,13 @@ void Chromo2::Init(TNodeType aRootType)
     mRootNode = ChromoNode(mMdl, root);
 }
 
-void Chromo2::Save(const string& aFileName) const
+void Chromo2::Save(const string& aFileName, TInt aIndent) const
 {
     // We cannot simply save the doc (mMdl.iDoc) because it will save not only root node but
     // also adjacent nodes. So we need to create new model and add to doc only one separated root
     Chromo2Mdl mdl;
     mdl.Set(mRootNode.Handle());
-    mdl.Save(aFileName);
+    mdl.Save(aFileName, aIndent);
 }
 
 ChromoNode Chromo2::CreateNode(const THandle& aHandle)
@@ -1121,6 +1124,8 @@ void Chromo2::ConvertNode(ChromoNode& aDst, const ChromoNode& aSrc)
     ConvertAttr(aDst, aSrc, ENa_MutVal);
     ConvertAttr(aDst, aSrc, ENa_Ref);
     ConvertAttr(aDst, aSrc, ENa_NS);
+    ConvertAttr(aDst, aSrc, ENa_P);
+    ConvertAttr(aDst, aSrc, ENa_Q);
     if (aSrc.Type() == ENt_Cont && (!aSrc.AttrExists(ENa_Id) || aSrc.Attr(ENa_Id).empty())) {
 	// Default content
 	aDst.SetAttr(ENa_Id, KT_Default);

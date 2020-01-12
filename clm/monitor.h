@@ -38,9 +38,15 @@ class Monitor
 	 * @return Sign of sucess
 	 * */
 	bool convertSpec();
+	/** @brief Formats chromo spec
+	 * @return Sign of sucess
+	 * */
+	bool formatSpec();
     protected:
-	/** Crates input handler for given command */
+	/** @brief Creates input handler for given command */
 	InputHandler* createHandler(const string& aCmd);
+	/** @brief Copies file */
+	static bool copyFile(const string& aSrcFname, const string& aDstFname);
     protected:
 	string mSpecName;  //!< Input spec file name
 	string mCSpecName; //!< Convrted spec file name

@@ -70,3 +70,4 @@ ut-grayb-lib
 *.swm
 *.exrc
 Makefile
+.*.chs
