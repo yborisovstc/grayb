@@ -180,7 +180,7 @@ bool Monitor::formatSpec()
     bool res = false;
     string sname(mSpecName);
     if (mSpecName.empty()) {
-	sname = ".fmt_tmp.chs";
+	sname = "/tmp/.fap2_fmt_tmp.chs";
 	storeStdinToFile(sname);
     }
     initEnv();

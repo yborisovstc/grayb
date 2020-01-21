@@ -2371,6 +2371,10 @@ void Syst::DoSpecificMut(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMo
 	} else {
 	    Logger()->Write(EErr, this, "Connecting nodes: missing required attr");
 	}
+	if (!aRunTime && !aTrialMode) {
+	    ChromoNode chn = iChromo->Root().AddChild(aSpec, ETrue, EFalse);
+	    NotifyNodeMutated(chn, aCtx);
+	}
     } else if (rnotype == ENt_Disconn) {
 	if (aSpec.AttrExists(ENa_P) && aSpec.AttrExists(ENa_Q)) {
 	    string argP = aSpec.Attr(ENa_P);
@@ -2379,6 +2383,10 @@ void Syst::DoSpecificMut(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMo
 	    Disconnect(argP, argQ, ns);
 	} else {
 	    Logger()->Write(EErr, this, "Disconnecting nodes: missing required attr");
+	}
+	if (!aRunTime && !aTrialMode) {
+	    ChromoNode chn = iChromo->Root().AddChild(aSpec, ETrue, EFalse);
+	    NotifyNodeMutated(chn, aCtx);
 	}
     } else {
 	Vert::DoSpecificMut(aSpec, aRunTime, aTrialMode, aCtx);
