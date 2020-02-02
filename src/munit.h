@@ -34,13 +34,17 @@ class TICacheRCtx: public vector<MUnit*>
 {
     public:
 	TICacheRCtx(): vector<MUnit*>() {}
-	TICacheRCtx(MUnit* aElem): TICacheRCtx() { push_back(aElem);}
+	TICacheRCtx(MUnit* aElem): TICacheRCtx() { __ASSERT(aElem != NULL); push_back(aElem);}
 	TBool IsInContext(MUnit* aReq) const { 
 	    TBool res = EFalse;
 	    for (auto* req : *this) {
 		if (req == aReq) { res = ETrue; break;}
 	    }
 	    return res;
+	}
+	inline void push_back(MUnit* aUnit) {
+	    __ASSERT(!IsInContext(aUnit));
+	    vector<MUnit*>::push_back(aUnit);
 	}
 };
 
@@ -157,12 +161,17 @@ class MIfProv
 
 	typedef pair<TIfIter, TIfIter> TIfRange;
     public:
-	MIface* GetSIfiC(const string& aName, MUnit* aRequestor = NULL) { return GetSIfi(aName, aRequestor); }
 	MIface* GetSIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) { TIfRange rg = GetIfi(aName, aCtx);
 	    return (rg.first != rg.second) ? *(rg.first) : NULL;
 	}
 	virtual MIface* GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert = ETrue) = 0;
 	virtual TIfRange GetIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) = 0;
+	/** @brief Register interface provider
+	 * @param[in] aIfName  Name of interface
+	 * @param[in] aCtx     Context of the request at requester
+	 * @param[in] aProv    Ptr to provider
+	 * */
+	virtual void RegIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv) = 0;
 	virtual void UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx) = 0;
 	virtual void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv, TBool aInv = EFalse) = 0;
 	virtual MIface* getLocalIface(const string& aName, const TICacheRCtx& aCtx) = 0;

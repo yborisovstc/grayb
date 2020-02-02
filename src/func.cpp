@@ -60,7 +60,7 @@ void FuncBase::NotifyUpdate()
 	if (mpair != NULL) {
 	    MUnit* epair = mpair->GetObj(epair);
 	    if (epair != NULL) {
-		MDataObserver* obsr = (MDataObserver*) epair->GetSIfiC(MDataObserver::Type(), this);
+		MDataObserver* obsr = (MDataObserver*) epair->GetSIfi(MDataObserver::Type(), this);
 		if (obsr != NULL) {
 		    obsr->OnDataChanged();
 		}
@@ -139,7 +139,7 @@ MDIntGet* AFunInt::GetInp(const string& aInpName)
 	if (pair != NULL) {
 	    MUnit* epair = pair->GetObj(epair);
 	    if (epair != NULL) {
-		res = (MDIntGet*) epair->GetSIfiC(MDIntGet::Type(), this);
+		res = (MDIntGet*) epair->GetSIfi(MDIntGet::Type(), this);
 	    }
 	}
     }
@@ -162,7 +162,7 @@ TBool AIncInt::HandleIoChanged(MUnit& aContext, MUnit* aCp)
     TBool res = ETrue;
     // Checking input change
     if (aCp->Name() == "inp") {
-	MDIntGet* dget = (MDIntGet*) aCp->GetSIfiC(MDIntGet::Type(), this);
+	MDIntGet* dget = (MDIntGet*) aCp->GetSIfi(MDIntGet::Type(), this);
 	if (dget != NULL) {
 	    TInt val = dget->Value();
 	    SetRes(val + 1);
@@ -202,7 +202,7 @@ TBool AFunIntRes::HandleIoChanged(MUnit& aContext, MUnit* aCp)
 	MUnit* vpair = pair->GetObj(vpair);
 	if (aCp->Name() == "inp") {
 	    // Check input change
-	    MDIntGet* dget = (MDIntGet*) vpair->GetSIfiC(MDIntGet::Type(), this);
+	    MDIntGet* dget = (MDIntGet*) vpair->GetSIfi(MDIntGet::Type(), this);
 	    if (dget != NULL) {
 		TInt val = dget->Value();
 		SetRes(val);
@@ -227,7 +227,7 @@ void AFunIntRes::UpdateOutp()
 	MVert* pair = vert->GetPair(0);
 	if (pair != NULL) {
 	    MUnit* vpair = pair->GetObj(vpair);
-	    MDIntSet* dset = (MDIntSet*) vpair->GetSIfiC(MDIntSet::Type(), this);
+	    MDIntSet* dset = (MDIntSet*) vpair->GetSIfi(MDIntSet::Type(), this);
 	    if (dset != NULL) {
 		dset->SetValue(mData);
 	    }
@@ -396,7 +396,7 @@ void AFunc::NotifyUpdate()
     if (mpair != NULL) {
 	MUnit* epair = mpair->GetObj(epair);
 	if (epair != NULL) {
-	    MDataObserver* obsr = (MDataObserver*) epair->GetSIfiC(MDataObserver::Type(), this);
+	    MDataObserver* obsr = (MDataObserver*) epair->GetSIfi(MDataObserver::Type(), this);
 	    if (obsr != NULL) {
 		obsr->OnDataChanged();
 	    }
@@ -803,7 +803,7 @@ void AFuncm::NotifyUpdate()
 	if (mpair != NULL) {
 	    MUnit* epair = mpair->GetObj(epair);
 	    if (epair != NULL) {
-		MDataObserver* obsr = (MDataObserver*) epair->GetSIfiC(MDataObserver::Type(), this);
+		MDataObserver* obsr = (MDataObserver*) epair->GetSIfi(MDataObserver::Type(), this);
 		if (obsr != NULL) {
 		    obsr->OnDataChanged();
 		}

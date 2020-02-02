@@ -99,6 +99,9 @@
 		    resolution mechanism for the client, so the mechanism is distributed between multiple
 		    connecting agents in the model.
 	</para></glossdef> </glossentry>
+	<glossentry id="gls_irm"><glossterm>IRM</glossterm>
+	    <glossdef> <para>Interface resolution mechanism.  <xref linkend="ds_ifcache"/>
+	</para></glossdef> </glossentry>
 	<glossentry id="gls_ncn"><glossterm>NCN</glossterm> <acronym>NCN</acronym>
 	    <glossdef> <para>Native Chromo Notation, approach that focus on very simple chromo notation, like
 		    assembler. It is 'universal', less readable and more suitable for creating model with IDE. Another solution
@@ -267,7 +270,7 @@
 	</sect2>
     </sect1>
 
-    <sect1 id="ds_ifcache"><title>Interfaces provider. Interfaces cache</title>
+    <sect1 id="ds_ifcache"><title><xref linkend="gls_irm"/>, Interfaces provider. Interfaces cache.</title>
 	<sect2 id="ds_ifcache_01"><title>DS_IFCACHE_01 Key scheme for cache</title>
 	    <sect3><title>Description</title>
 		<simpara>Current solution [6d15a3f2] uses key [Name, Requestor, Provider] where Requestor and Provider are pointers. This makes some limitation in
@@ -338,14 +341,98 @@
 			node of this propagation chain not only requests corresponding to given provider but all the requests with that context.
 			In this case we simply unregister the whole request that depends on the initial invalidated provider.  </listitem>
 		</itemizedlist>
-		<para id="ds_u_20180408">[u_20180408] "all the requests with that context" below is incorrect. In when propagating from provider to requestors
+		<para id="ds_u_20180408">[u_20180408] "all the requests with that context" above is incorrect. In when propagating from provider to requestors
 		    we need to invalidate the cache for given interface. This means that if some node gets request "Unregister me as provider from your cache,
 		    and yes, I'd actually do it for invalidation" then it's not enough just to unregister the provider. We need also to cleanup cache for 
 		    given interface, otherwise the cache will not invalidated. It is important that this "cleanup" means that for each cache record
 		    corresponding to given iface we need to unregister the node upward and downward, i.e. as provider and as requestor. This needs to
 		    keep the caches consistency.
+		    This cache invalidation for the interface is required because currently the node "refreshes" the cache only in case when the cache is
+		    empty for the given iface. So to allow full update of the cache we need completely clean the cache for given iface.
 		</para>
 	    </sect3>
+	    <sect3 id="ds_ifcache_refr_icv"><title>Do we need indicator of cache is valid?</title>
+		<simpara>Currently the updating of the cache is performed if the cache doesn't containg the resolved iface instances, ref
+		    <programlisting>
+			|    Unit::TIfRange Unit::GetIfi(
+			...
+			|-      if (beg == end) {
+			...
+			|||          // Invalid cache, update cache
+			||          UpdateIfi(aName, ctx);
+		    </programlisting>
+		    So the invalidation mechanism is based on this behavior. But what if the requested iface cannot be resolved in the system?
+		    The client will request iface and each time the requester will try to upate the cache.</simpara>
+		<simpara>Thees seems not effective approach. Does it make sense to explicitly indicate that the cache is valid (i.e there was already update
+		    of the cache so no need to do it again). Havig such flag we can simplify invalidation - it can be done by clearing the flag of validation.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_ifcache_ciur"><title>Problem: crash on incorrect unregistering</title>
+	    <simpara>The problem happens with fap2-vis test [755a2edd31bc8aa]. Crash happens on the model deletion. The analysis is as:</simpara>
+	    <simpara>There are the units in the model: U1 .. U5 with the following iICacheQF:</simpara>
+	    <programlisting>
+		for U4
+		I1 > (U1, U2, U3) : U5  #X
+
+		for U3:
+		I1 > (U1, U2) : U4      #X
+		I1 > (U1, U2) : U3
+
+	        for U2:	
+		I1 > (U1) : U3          #X
+		I1 > (U1) : U2
+	    </programlisting>
+	    <simpara>Where (..) designates the requesters context and : * designates provider</simpara>
+	    <simpara>The flow is: </simpara>
+	    <programlisting>
+		U4::UnregIfProv(U5) -> U3::UnregIfProv(U4) -> U2::UnregIfProv(U3) - I marked the removed refs as "# X" above
+		so U2 ifaces registry doesn't have now any refs to U3 but U3 still has ref to U2 in context as "(U1, U2) : U3"
+		U2 is deleted but U2 doesn't even attempt to unregister from U3 because U2 hasn't registered relation to U3
+		U3::UnregAllIfRel() - U3 tries to get last context U2 (deleted) - crash
+	    </programlisting>
+	    <simpara>There are 2 records in U3.iICacheQF referring U3 back to U2 but there is only one U2.iICacheQF record referring U2 to U3. Provider unreg logic removes this single
+		record in U2 and one rec in U3 but the second rec in U3 remains. Seems that unregistering algorithm is not quite correct. We need unregister both U3 records
+		"(U1, U2) : U4" and "(U1, U2) : U3" because U2 has only one record for them - "(U1) : U3". Note that we also need to unregister U3 as requestor if there are other
+		records for this (If,ctx). In other words the invalidation of provider from some leaf of Iface resolution tree will invalidate the whole branch of the 1st level.</simpara>
+	    <simpara>Probably we also need to revise provider registering logic that registers local node authomatically (this is where the U3 record "(U1, U2) : U3") comes:</simpara>
+	    <programlisting>
+		|    Unit::TIfRange Unit::GetIfi
+		...
+		|||          // Register the request with local provider in case of no iface resolved (in case of iface
+		|||-         if (beg == end) {
+		||||             InsertIfQm(aName, ctx, this);
+	    </programlisting>
+	    <simpara>Regarding removing both records from U3 - there is already the mechanism of doing that - after unreg the provider in UnregIfProv the method InvalidateIfCache
+		is called. This method will remove both records. The problem is that this method doesn't call all the times but under control of arg aInv. We need just enable this
+		InvalidateIfCache all the times. </simpara>
+	</sect2>
+	<sect2 id="ds_ifcache_refitg"><title>Ifaces resolution: referencing integrity</title>
+	    <sect3><title>Intro</title>
+		<simpara>If requests/providers net cleanup can work correctly only if the net posesses the integrity. A lot of the problems we faced is caused by the lack of 
+		    integrity, ref <xref linkend="ds_ifcache_ciur"/> for instance.</simpara>
+	    </sect3>
+	    <sect3><title>Main principles</title>
+		<simpara>Let's define the main principles to ensire the integrity</simpara>
+		<itemizedlist>
+		    <listitem>The refs are bi-directional</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3 id="ds_ifcache_refitg_bdr"><title>Integrity principles: bi-directional refs</title>
+		<simpara>This allow correct removing back references in case if some referenced node gets deleted. In other words: Ifaces requests registries shouldn't include
+		anonymous records - each record shall have non-empty request context.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_ifcache_cpur"><title>Cycling path on unregistering the relations</title>
+	    <sect3><title>Intro</title>
+		<simpara>Currently the unregistering process affects not simple tree graph of relations requestor-provider. The provider unregistering process (direction from leaf to
+		    root) involves also invalidating of the whole same iface relations. This ensures that the next iface request will re-create the actual tree, ref
+		    <xref linkend="ds_u_20180408"/>. The invalidating perfomrs both direction prov-to-req and req-to-prov unregistering propagation for the given iface.</simpara>
+		<simpara>This approach of invalidating iface when unregisering provider also helps to solve the problem the problem with implementatin of unregistering
+		    when the upper node contains more that one records with same (iface, requestor), ref <xref linkend="ds_ifcache_ciur"/></simpara>
+	    </sect3>
+	    <simpara>But the current approach causes to the condition that the propatation paths can be complex and even to represent the cycle returning request to the initiator
+		of deregistering. This causes to break of regisrty iteration and flow crash.</simpara>
+	    <simpara>How to modify the unregistering algorithm to avoid cycling paths?</simpara>
 	</sect2>
     </sect1>
 
@@ -5643,6 +5730,9 @@
 	<sect2><title>To introduce lower layer element - Node</title>
 	    <simpara>Currently the lower layer element is Unit that supports iface resolution. The system can be optimized more if we introduce even more lover layer - Node that
 		supports just native hier and content.</simpara>
+	</sect2>
+	<sect2><title>Indicator of Ifaces cache is valid?</title>
+	    <simpara>Ref <xref linkend="ds_ifcache_refr_icv"/></simpara>
 	</sect2>
     </sect1>
 

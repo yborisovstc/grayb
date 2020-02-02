@@ -150,25 +150,27 @@ TBool ConnPointBase::IsCompatible(MUnit* aPair, TBool aExt)
     TBool res = EFalse;
     TBool ext = aExt;
     MUnit *cp = aPair;
-    // Checking if the pair is Extender
-    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type(), this);
-    // Consider all pairs not supporting MCompatChecker as not compatible 
-    if (pchkr != NULL) {
-	MUnit* ecp = pchkr->GetExtd(); 
-	if (ecp != NULL ) {
-	    ext = !ext;
-	    cp = ecp;
-	}
-	if (cp != NULL) {
-	    // Check roles conformance
-	    string ppt1prov = Provided();
-	    string ppt1req = Required();
-	    MConnPoint* mcp = cp->GetObj(mcp);
-	    if (mcp != NULL) {
-		if (ext) {
-		    res = mcp->IsProvided(ppt1prov) && mcp->IsRequired(ppt1req);
-		} else {
-		    res = mcp->IsProvided(ppt1req) && mcp->IsRequired(ppt1prov);
+    if (aPair != this) {
+	// Checking if the pair is Extender
+	MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfi(MCompatChecker::Type(), this);
+	// Consider all pairs not supporting MCompatChecker as not compatible 
+	if (pchkr != NULL) {
+	    MUnit* ecp = pchkr->GetExtd(); 
+	    if (ecp != NULL ) {
+		ext = !ext;
+		cp = ecp;
+	    }
+	    if (cp != NULL) {
+		// Check roles conformance
+		string ppt1prov = Provided();
+		string ppt1req = Required();
+		MConnPoint* mcp = cp->GetObj(mcp);
+		if (mcp != NULL) {
+		    if (ext) {
+			res = mcp->IsProvided(ppt1prov) && mcp->IsRequired(ppt1req);
+		    } else {
+			res = mcp->IsProvided(ppt1req) && mcp->IsRequired(ppt1prov);
+		    }
 		}
 	    }
 	}
@@ -393,24 +395,26 @@ TBool ConnPointMc::IsCompatible(MUnit* aPair, TBool aExt)
     TBool ext = aExt;
     MUnit *cp = aPair;
     // Checking if the pair is Extender
-    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type(), this);
-    // Consider all pairs not supporting MCompatChecker as not compatible 
-    if (pchkr != NULL) {
-	MUnit* ecp = pchkr->GetExtd(); 
-	if (ecp != NULL ) {
-	    ext = !ext;
-	    cp = ecp;
-	}
-	if (cp != NULL) {
-	    // Check roles conformance
-	    string ppt1prov = Provided();
-	    string ppt1req = Required();
-	    MConnPoint* mcp = cp->GetObj(mcp);
-	    if (mcp != NULL) {
-		if (ext) {
-		    res = mcp->IsProvided(ppt1prov) && mcp->IsRequired(ppt1req);
-		} else {
-		    res = mcp->IsProvided(ppt1req) && mcp->IsRequired(ppt1prov);
+    if (aPair != this) {
+	MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfi(MCompatChecker::Type(), this);
+	// Consider all pairs not supporting MCompatChecker as not compatible 
+	if (pchkr != NULL) {
+	    MUnit* ecp = pchkr->GetExtd(); 
+	    if (ecp != NULL ) {
+		ext = !ext;
+		cp = ecp;
+	    }
+	    if (cp != NULL) {
+		// Check roles conformance
+		string ppt1prov = Provided();
+		string ppt1req = Required();
+		MConnPoint* mcp = cp->GetObj(mcp);
+		if (mcp != NULL) {
+		    if (ext) {
+			res = mcp->IsProvided(ppt1prov) && mcp->IsRequired(ppt1req);
+		    } else {
+			res = mcp->IsProvided(ppt1req) && mcp->IsRequired(ppt1prov);
+		    }
 		}
 	    }
 	}
@@ -621,7 +625,7 @@ TBool ConnPointMcu::IsCompatible(MUnit* aPair, TBool aExt)
     TBool ext = aExt;
     MUnit *cp = aPair;
     // Checking if the pair is Extender
-    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type(), this);
+    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfi(MCompatChecker::Type(), this);
     // Consider all pairs not supporting MCompatChecker as not compatible 
     if (pchkr != NULL) {
 	MUnit* ecp = pchkr->GetExtd(); 
@@ -870,7 +874,7 @@ TBool ExtenderAgent::IsCompatible(MUnit* aPair, TBool aExt)
 {
     TBool res = EFalse;
     MUnit* intcp = GetExtd();
-    MCompatChecker* mint = (intcp != NULL) ? (MCompatChecker*) intcp->GetSIfiC(MCompatChecker::Type(), this) : NULL;
+    MCompatChecker* mint = (intcp != NULL) ? (MCompatChecker*) intcp->GetSIfi(MCompatChecker::Type(), this) : NULL;
     if (mint != NULL) {
 	res = mint->IsCompatible(aPair, !aExt);
     }
@@ -1032,15 +1036,15 @@ void AExtender::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 		}
 	    }
 	}
-    }
-    // Responsible pairs not found, redirect to upper layer
-    if (rr.first == rr.second && iMan != NULL) {
-	MUnit* hostmgr = Host()->GetMan();
-	MUnit* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
-	if (mgr != NULL && !ctx.IsInContext(mgr)) {
-	    rr = mgr->GetIfi(aName, ctx);
-	    InsertIfCache(aName, aCtx, mgr, rr);
-	    resg = resg || (rr.first != rr.second);
+	// Responsible pairs not found, redirect to upper layer
+	if (rr.first == rr.second && iMan != NULL) {
+	    MUnit* hostmgr = Host()->GetMan();
+	    MUnit* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
+	    if (mgr != NULL && !ctx.IsInContext(mgr)) {
+		rr = mgr->GetIfi(aName, ctx);
+		InsertIfCache(aName, aCtx, mgr, rr);
+		resg = resg || (rr.first != rr.second);
+	    }
 	}
     }
 }
@@ -1049,7 +1053,7 @@ TBool AExtender::IsCompatible(MUnit* aPair, TBool aExt)
 {
     TBool res = EFalse;
     MUnit* intcp = GetExtd();
-    MCompatChecker* mint = (intcp != NULL) ? (MCompatChecker*) intcp->GetSIfiC(MCompatChecker::Type(), this) : NULL;
+    MCompatChecker* mint = (intcp != NULL) ? (MCompatChecker*) intcp->GetSIfi(MCompatChecker::Type(), this) : NULL;
     if (mint != NULL) {
 	res = mint->IsCompatible(aPair, !aExt);
     }
@@ -1148,16 +1152,16 @@ void AExtd::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 		}
 	    }
 	}
-    }
-    // Responsible pairs not found, redirect to upper level
-    // TODO consider if we need this
-    if (rr.first == rr.second && iMan != NULL) {
-	MUnit* hostmgr = GetMan();
-	MUnit* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
-	if (mgr != NULL && !ctx.IsInContext(mgr)) {
-	    rr = mgr->GetIfi(aName, ctx);
-	    InsertIfCache(aName, aCtx, mgr, rr);
-	    resg = resg || (rr.first != rr.second);
+	// Responsible pairs not found, redirect to upper level
+	// TODO consider if we need this
+	if (rr.first == rr.second && iMan != NULL) {
+	    MUnit* hostmgr = GetMan();
+	    MUnit* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
+	    if (mgr != NULL && !ctx.IsInContext(mgr)) {
+		rr = mgr->GetIfi(aName, ctx);
+		InsertIfCache(aName, aCtx, mgr, rr);
+		resg = resg || (rr.first != rr.second);
+	    }
 	}
     }
 }
@@ -1166,7 +1170,7 @@ TBool AExtd::IsCompatible(MUnit* aPair, TBool aExt)
 {
     TBool res = EFalse;
     MUnit* intcp = GetExtd();
-    MCompatChecker* mint = (intcp != NULL) ? (MCompatChecker*) intcp->GetSIfiC(MCompatChecker::Type(), this) : NULL;
+    MCompatChecker* mint = (intcp != NULL) ? (MCompatChecker*) intcp->GetSIfi(MCompatChecker::Type(), this) : NULL;
     if (mint != NULL) {
 	res = mint->IsCompatible(aPair, !aExt);
     }
@@ -1326,7 +1330,7 @@ TBool AExtdu::IsCompatible(MUnit* aPair, TBool aExt)
 {
     TBool res = EFalse;
     MUnit* intcp = GetExtd();
-    MCompatChecker* mint = (intcp != NULL) ? (MCompatChecker*) intcp->GetSIfiC(MCompatChecker::Type(), this) : NULL;
+    MCompatChecker* mint = (intcp != NULL) ? (MCompatChecker*) intcp->GetSIfi(MCompatChecker::Type(), this) : NULL;
     if (mint != NULL) {
 	res = mint->IsCompatible(aPair, !aExt);
     }
@@ -1467,12 +1471,10 @@ void ASocket::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 	InsertIfCache(aName, aCtx, this, res);
     }
     if (res == NULL && !aCtx.empty()) {
-	Base* master = aCtx.back();
-	MUnit* emaster = master->GetObj(emaster);
-	Base* rqst = aCtx.size() > 1 ? aCtx.at(aCtx.size() - 2): NULL;
-	if (rqst != NULL) {
+	MUnit* emaster = aCtx.back();
+	MUnit* erqst = aCtx.size() > 1 ? aCtx.at(aCtx.size() - 2): NULL;
+	if (erqst != NULL) {
 	    // Requestor is specified, so try to redirect basing on it
-	    MUnit* erqst = rqst->GetObj(erqst);
 	    TBool iscomp = emaster->IsComp(erqst);
 	    if (iscomp) {
 		// Request comes from internal CP - forward it to upper layer
@@ -1490,7 +1492,7 @@ void ASocket::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 		// Find associated pair in context
 		Base* apair = NULL;
 		MUnit* pcomp = NULL;
-		Base* ctxe = rqst;
+		MUnit* ctxe = erqst;
 		TICacheRCtx cct(aCtx); if (!cct.empty()) cct.pop_back();
 		MUnit* host = GetMan();
 		TBool isextd = EFalse;
@@ -1627,7 +1629,7 @@ TBool ASocket::IsCompatible(MUnit* aPair, TBool aExt)
     TBool ext = aExt;
     MUnit *cp = aPair;
     // Requesing anonymously because can be returned to itself vie extender
-    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type());
+    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfi(MCompatChecker::Type());
     if (pchkr != NULL) {
 	MUnit* ecp = pchkr->GetExtd(); 
 	// Checking if the pair is Extender
@@ -1640,7 +1642,7 @@ TBool ASocket::IsCompatible(MUnit* aPair, TBool aExt)
 	    for (TInt ci = 0; ci < host->CompsCount() && res; ci++) {
 		MUnit *comp = host->GetComp(ci);
 		if (comp != this && comp->Name() != "Logspec") {
-		    MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), this);
+		    MCompatChecker* checker = (MCompatChecker*) comp->GetSIfi(MCompatChecker::Type(), this);
 		    if (checker != NULL) {
 			GUri uri;
 			uri.AppendElem("*", comp->Name());
@@ -1698,7 +1700,7 @@ TInt ASocket::PinsCount() const
     __ASSERT(host != NULL);
     for (TInt ci = 0; ci < host->CompsCount() && res; ci++) {
 	MUnit *comp = host->GetComp(ci);
-	MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), (MUnit*) this);
+	MCompatChecker* checker = (MCompatChecker*) comp->GetSIfi(MCompatChecker::Type(), (MUnit*) this);
 	if (checker != NULL) {
 	    res++;
 	}
@@ -1713,7 +1715,7 @@ MUnit* ASocket::GetPin(TInt aInd)
     __ASSERT(host != NULL);
     for (TInt ci = 0, ct = 0; ci < host->CompsCount() && res; ci++) {
 	MUnit *comp = host->GetComp(ci);
-	MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), this);
+	MCompatChecker* checker = (MCompatChecker*) comp->GetSIfi(MCompatChecker::Type(), this);
 	if (checker != NULL) {
 	    if (ct == aInd) {
 		res = comp; break;
@@ -2028,7 +2030,7 @@ TBool ASocketMcm::IsCompatible(MUnit* aPair, TBool aExt)
     TBool ext = aExt;
     MUnit *cp = aPair;
     // Requesing anonymously because can be returned to itself vie extender
-    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type());
+    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfi(MCompatChecker::Type());
     if (pchkr != NULL) {
 	MUnit* ecp = pchkr->GetExtd(); 
 	// Checking if the pair is Extender
@@ -2040,7 +2042,7 @@ TBool ASocketMcm::IsCompatible(MUnit* aPair, TBool aExt)
 	    for (TInt ci = 0; ci < CompsCount() && res; ci++) {
 		MUnit *comp = GetComp(ci);
 		if (comp != this && comp->Name() != "Logspec") {
-		    MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), this);
+		    MCompatChecker* checker = (MCompatChecker*) comp->GetSIfi(MCompatChecker::Type(), this);
 		    if (checker != NULL) {
 			GUri uri;
 			uri.AppendElem("*", comp->Name());
@@ -2093,7 +2095,7 @@ TInt ASocketMcm::PinsCount() const
     TInt res = 0;
     for (TInt ci = 0; ci < CompsCount() && res; ci++) {
 	MUnit *comp = const_cast<ASocketMcm*>(this)->GetComp(ci);
-	MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), (MUnit*) this);
+	MCompatChecker* checker = (MCompatChecker*) comp->GetSIfi(MCompatChecker::Type(), (MUnit*) this);
 	if (checker != NULL) {
 	    res++;
 	}
@@ -2106,7 +2108,7 @@ MUnit* ASocketMcm::GetPin(TInt aInd)
     MUnit* res = 0;
     for (TInt ci = 0, ct = 0; ci < CompsCount() && res; ci++) {
 	MUnit *comp = GetComp(ci);
-	MCompatChecker* checker = (MCompatChecker*) comp->GetSIfiC(MCompatChecker::Type(), this);
+	MCompatChecker* checker = (MCompatChecker*) comp->GetSIfi(MCompatChecker::Type(), this);
 	if (checker != NULL) {
 	    if (ct == aInd) {
 		res = comp; break;
@@ -2266,8 +2268,8 @@ TBool Syst::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
 			cp1 = edge->Point1();
 			cp2 = edge->Point2();
 			// Full connection, compatibility checking is needed
-			MCompatChecker* pt1checker = (MCompatChecker*) pt1->GetSIfiC(MCompatChecker::Type(), this);
-			MCompatChecker* pt2checker = (MCompatChecker*) pt2->GetSIfiC(MCompatChecker::Type(), this);
+			MCompatChecker* pt1checker = (MCompatChecker*) pt1->GetSIfi(MCompatChecker::Type(), this);
+			MCompatChecker* pt2checker = (MCompatChecker*) pt2->GetSIfi(MCompatChecker::Type(), this);
 			TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
 			TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
 			if (ispt1cptb && ispt2cptb) {
@@ -2313,8 +2315,8 @@ void Syst::Connect(const string& argP, const string& argQ, const TNs& aNs)
 	MVert* vcpP = ucpP->GetObj(vcpP);
 	MVert* vcpQ = ucpQ->GetObj(vcpQ);
 	if (vcpP != NULL && vcpQ != NULL) {
-	    MCompatChecker* pt1checker = (MCompatChecker*) ucpP->GetSIfiC(MCompatChecker::Type(), this);
-	    MCompatChecker* pt2checker = (MCompatChecker*) ucpQ->GetSIfiC(MCompatChecker::Type(), this);
+	    MCompatChecker* pt1checker = (MCompatChecker*) ucpP->GetSIfi(MCompatChecker::Type(), this);
+	    MCompatChecker* pt2checker = (MCompatChecker*) ucpQ->GetSIfi(MCompatChecker::Type(), this);
 	    TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(ucpQ);
 	    TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(ucpP);
 	    if (ispt1cptb && ispt2cptb) {

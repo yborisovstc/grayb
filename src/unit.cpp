@@ -339,7 +339,7 @@ Unit::TIfRange Unit::GetIfi(const string& aName, const TICacheRCtx& aCtx)
     TICacheRCtx ctx(aCtx);
     if (ctx.empty()) {
 	// TODO Why don't add this to context? This seems to be default behavior
-	ctx.push_back(this);
+	//ctx.push_back(this);
     }
     IfIter beg(this, aName, ctx);
     IfIter end(this, aName, ctx, ETrue);
@@ -357,6 +357,14 @@ Unit::TIfRange Unit::GetIfi(const string& aName, const TICacheRCtx& aCtx)
 	// This allows to do correct invalidation of iface cache from any provider to its requestors
 	if (beg == end) {
 	    InsertIfQm(aName, ctx, this);
+	}
+	// Register self as provider at the requestor, ref ds_ifcache_refitg_bdr
+	if (ctx.size() > 0) {
+	    TICacheRCtx rctx(ctx);
+	    rctx.pop_back();
+	    Base* reqb = ctx.back();
+	    MUnit* reqe = reqb->GetObj(reqe);
+	    reqe->RegIfProv(aName, rctx, this);
 	}
     } else {
 	if (IsIftEnabled()) {
@@ -385,7 +393,7 @@ void Unit::UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx)
 {
     TICacheKeyF query(aIfName, aCtx);
     TICacheQFRange rg = iICacheQF.equal_range(query);
-    __ASSERT (rg.first != rg.second);
+    //__ASSERT (rg.first != rg.second);
 
     for (TICacheQFIter it = rg.first; it != rg.second; it++) {
 	// Unregister itself on next provider
@@ -411,67 +419,79 @@ void Unit::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aP
 {
     TICacheKeyF query(aIfName, aCtx);
     TICacheQFRange rg = iICacheQF.equal_range(query);
+    // Verify that not more that one record with given provider is registered
+    int count = 0;
+    for (TICacheQFIter it = rg.first; it != rg.second; it++) {
+	if (it->second.second == aProv) {
+	    count++;
+	}
+    }
+    __ASSERT(count <= 1);
     // Unfortunatelly we cannot check the conditions of record here. This is because
     // the track of providers is not stored in requests cache so it is possible
     // that for single request here, i.e. resolved by one provider, this provider can 
     // have more that one requests, i.e multiple providers. So it is possible that
     // provider requests unreg request but it is already unreged
-    TICacheQFIter it = rg.first; 
-    while (it != rg.second) {
-	Base* cnd = it->second.second;
-	MUnit* cnde = cnd->GetObj(cnde);
-	if (it->second.second == aProv) {
-	    // Unregister next requestor
-	    // TODO [YB] Do we need to unregister this in requestor. In fact this
-	    // is not invalidated but caller of UnregIfProv does
-	    const TICacheRCtx& ctx = it->first.second;
-	    if (ctx.size() > 1) {
-		TICacheRCtx rctx(ctx);
-		rctx.pop_back();
-		Base* reqb = ctx.back();
-		MUnit* reqe = reqb->GetObj(reqe);
-		reqe->UnregIfProv(it->first.first, rctx, this, aInv);
+    if (count > 0) {
+	TICacheQFIter it = rg.first; 
+	while (it != rg.second) {
+	    MUnit* cnde = it->second.second;
+	    if (it->second.second == aProv) {
+		auto key = it->first;
+		// Unregister next requestor
+		// TODO [YB] Do we need to unregister this in requestor. In fact this
+		// is not invalidated but caller of UnregIfProv does
+		const TICacheRCtx& ctx = it->first.second;
+		if (ctx.size() > 0) {
+		    TICacheRCtx rctx(ctx);
+		    rctx.pop_back();
+		    MUnit* reqe = ctx.back();
+		    reqe->UnregIfProv(it->first.first, rctx, this, aInv);
+		}
+		// Checking if the record is already removed thru unregistering chain, ref ds_ifcache_cpur
+		if (iICacheQF.find(key) != iICacheQF.end()) {
+		    iICache.erase(it->second);
+		    iICacheQF.erase(it);
+		}
+		rg = iICacheQF.equal_range(query);
+		it = rg.first; 
 	    }
-	    iICache.erase(it->second);
-	    iICacheQF.erase(it);
-	    rg = iICacheQF.equal_range(query);
-	    it = rg.first; 
+	    else {
+		it++; 
+	    }
 	}
-	else {
-	    it++; 
+	if (true) {
+	    // Invalidate the interface, ref ds_u_20180408
+	    // Avoid invalidating backward to the given proviider
+	    // Invalidate always to properly remove all records, ref ds_ifcache_ciur
+	    InvalidateIfCache(aIfName, aProv);
 	}
-    }
-    if (aInv) {
-	// Invalidate the interface, ref ds_u_20180408
-	InvalidateIfCache(aIfName);
     }
 }
 
-void Unit::InvalidateIfCache(const string& aIfName)
+void Unit::InvalidateIfCache(const string& aIfName, const MUnit* aProv)
 {
     auto it = iICacheQF.begin();
     while (it != iICacheQF.end()) {
 	if (it->first.first == aIfName) {
-	    // Unreg self as provider
+	    Base* prov = it->second.second;
 	    const TICacheRCtx& ctx = it->first.second;
-	    if (ctx.size() > 1) {
+	    // Unreg self as provider
+	    if (ctx.size() > 0) {
 		TICacheRCtx rctx(ctx);
 		rctx.pop_back();
-		Base* reqb = ctx.back();
-		MUnit* reqe = reqb->GetObj(reqe);
-		reqe->UnregIfProv(it->first.first, rctx, this, true);
+		MUnit* reqe = ctx.back();
+		reqe->UnregIfProv(aIfName, rctx, this, true);
 	    }
 	    // Unreg self as requestor
-	    Base* prov = it->second.second;
 	    MUnit* prove = prov->GetObj(prove);
 	    if (prove == NULL) {
 		prove = prov->GetObj(prove);
 	    }
-	    if (prove != this) {
-		const TICacheRCtx& ctx = it->first.second;
+	    if (prove != this && prove != aProv) {
 		TICacheRCtx rctx(ctx);
 		rctx.push_back(this);
-		prove->UnregIfReq(it->first.first, rctx);
+		prove->UnregIfReq(aIfName, rctx);
 	    }
 	    iICache.erase(it->second);
 	    iICacheQF.erase(it);
@@ -484,24 +504,33 @@ void Unit::InvalidateIfCache(const string& aIfName)
 
 void Unit::UnregAllIfRel(TBool aInv)
 {
+    // TODO What is the sense to iterate thru iICacheQF? We just need the nearest requesors to unreg
+    // Note that there can be number of same iICacheQF keys so there can be redundant unreg requests
+    // (requestor has just to ignore it in UnregIfProv
     TICacheQFIter it = iICacheQF.begin();
-    for (TICacheQFIter it = iICacheQF.begin(); it != iICacheQF.end(); it++) {
-	// Unregister itself on requestor
+    int count = iICacheQF.size();
+    while (it != iICacheQF.end()) {
 	const TICacheRCtx& ctx = it->first.second;
-	if (ctx.size() > 1) {
+	// Unregister itself on requestor
+	if (ctx.size() > 0) {
 	    TICacheRCtx rctx(ctx);
 	    rctx.pop_back();
-	    Base* reqb = ctx.back();
-	    MUnit* reqe = reqb->GetObj(reqe);
+	    MUnit* reqe = ctx.back();
 	    reqe->UnregIfProv(it->first.first, rctx, this, aInv);
 	}
 	// Unregister itself on provider
-	Base* prov = it->second.second;
-	MUnit* prove = prov->GetObj(prove);
+	MUnit* prove = it->second.second;
 	if (prove != this) {
 	    TICacheRCtx rctx(ctx);
 	    rctx.push_back(this);
 	    prove->UnregIfReq(it->first.first, rctx);
+	}
+	int new_count = iICacheQF.size();
+	if (new_count != count) {
+	    count = new_count;
+	    it = iICacheQF.begin();
+	} else {
+	    it++;
 	}
     }
     iICache.clear();
@@ -522,6 +551,10 @@ void Unit::InsertIfQm(const string& aName, const TICacheRCtx& aReq, MUnit* aProv
 {
     TICacheKeyF keyf(aName, aReq);
     TICacheKey key(keyf, aProv);
+    // Checking if ctx doesn't contain provider
+    for (auto ce : aReq) {
+	__ASSERT(ce != aProv);
+    }
     // Push to query map if not already exists
     bool exists = false;
     TICacheQFRange frange = iICacheQF.equal_range(keyf);  
@@ -534,6 +567,11 @@ void Unit::InsertIfQm(const string& aName, const TICacheRCtx& aReq, MUnit* aProv
 	pair<TICacheKeyF, TICacheKey> qr(keyf, key);
 	iICacheQF.insert(qr);
     }
+}
+
+void Unit::RegIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv)
+{
+    InsertIfQm(aIfName, aCtx, aProv);
 }
 
 void Unit::InsertIfCache(const string& aName, const TICacheRCtx& aReq, MUnit* aProv, MIface* aVal)
@@ -599,7 +637,7 @@ void Unit::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 	    }
 	}
     } else {
-	TIfRange rg = GetIfi(MAgent::Type(), this);
+	TIfRange rg = GetIfi(MAgent::Type());
 	// Using cache of agents because iterators will be broken
 	vector<MUnit*> ca;
 	for (TIfIter it = rg.first; it != rg.second; it++) {
@@ -650,10 +688,10 @@ void Unit::DumpIfReqs() const
 	    for (auto* reqe : ctx) {
 		cout << reqe << ": " << (reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue)) << endl;
 	    }
-	    cout << "==> [" << prov << "," << prov->GetUri(NULL, ETrue) << "]" << endl << endl;
+	    cout << "==> [" << prov << ": " << prov->GetUri(NULL, ETrue) << "]" << endl << endl;
 	}
 	else {
-	    cout << "If: [" << it.first.first << "], [none] - [" << prov << "," << prov->GetUri(NULL, ETrue) << "]" << endl;
+	    cout << "[" << it.first.first << "], [none] - [" << prov << ": " << prov->GetUri(NULL, ETrue) << "]" << endl;
 	}
     }
     cout << "<< Ifaces requests: END >>" << endl;
@@ -900,7 +938,7 @@ TBool Unit::IsContOfCategory(const string& aName, const string& aCategory) const
 {
     TBool res = EFalse;
     pair<TContent::const_iterator, TContent::const_iterator> range =
-       	mContent.equal_range(TContentKey(aName, ECrl_Category));
+	mContent.equal_range(TContentKey(aName, ECrl_Category));
     for (TContent::const_iterator it = range.first; it != range.second; it++) {
 	if (it->second == aCategory) {
 	    res = ETrue; break;
@@ -1256,16 +1294,16 @@ TBool Unit::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
     } else if (aVal.at(0) == KContentValQuote) { // Quoted value
 	res = EFalse; // Disabled at the moment
 	/*
-	pos_beg = 1;
-	pos = Ifu::FindFirstCtrl(aVal, KContentValQuote, pos_beg);
-	if (pos == string::npos) { // Error: missing closing quote
-	    res = EFalse;
-	} else {
-	    string value = aVal.substr(pos_beg, pos - pos_beg);
-	    mCntVals[aName] = value;
-	    InsertContent(aName);
-	}
-	*/
+	   pos_beg = 1;
+	   pos = Ifu::FindFirstCtrl(aVal, KContentValQuote, pos_beg);
+	   if (pos == string::npos) { // Error: missing closing quote
+	   res = EFalse;
+	   } else {
+	   string value = aVal.substr(pos_beg, pos - pos_beg);
+	   mCntVals[aName] = value;
+	   InsertContent(aName);
+	   }
+	   */
     } else { // Bare value
 	mCntVals[aName] = aVal;
 	InsertContent(aName);
@@ -1329,24 +1367,24 @@ string Unit::GetContent(const string& aId, TBool aFull) const
 	//  Components
 	TInt count = GetContCount(aId);
 	/*
-	if (count > 0) {
-	    res += " ";
-	    pair<TCntComps::const_iterator, TCntComps::const_iterator> range = mCntComps.equal_range(aId);
-	    for (TCntComps::const_iterator it = range.first; it != range.second; it++) {
-		string comp = it->second;
-		if (it != range.first) {
-		    res += " ";
-		}
-		if (ContentHasComps(comp)) { // Full content of comp
-		    string compcnt = GetContent(comp, ETrue);
-		    res += GetContentLName(comp) + KContentValSep + compcnt;
-		} else { // Simple content
-		    string compcnt = GetContent(comp, EFalse);
-		    res += GetContentLName(comp) + KContentValSep + KContentValQuote + compcnt + KContentValQuote;
-		}
-	    }
-	}
-	*/
+	   if (count > 0) {
+	   res += " ";
+	   pair<TCntComps::const_iterator, TCntComps::const_iterator> range = mCntComps.equal_range(aId);
+	   for (TCntComps::const_iterator it = range.first; it != range.second; it++) {
+	   string comp = it->second;
+	   if (it != range.first) {
+	   res += " ";
+	   }
+	   if (ContentHasComps(comp)) { // Full content of comp
+	   string compcnt = GetContent(comp, ETrue);
+	   res += GetContentLName(comp) + KContentValSep + compcnt;
+	   } else { // Simple content
+	   string compcnt = GetContent(comp, EFalse);
+	   res += GetContentLName(comp) + KContentValSep + KContentValQuote + compcnt + KContentValQuote;
+	   }
+	   }
+	   }
+	   */
 
 	if (count > 0) {
 	    res += " ";
@@ -1504,10 +1542,10 @@ void Unit::OnCompDeleting(MUnit& aComp, TBool aSoft, TBool aModif)
     // Translate to hier
     // Enable propagation from attached node only, ref ds_di_cnfr_snpn
     /*
-    if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
-	iMan->OnCompDeleting(aComp, aSoft, aModif);
-    }
-    */
+       if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
+       iMan->OnCompDeleting(aComp, aSoft, aModif);
+       }
+       */
     // Handle for direct child
     if (aComp.GetMan() == this) {
 	// Don't deattach the childs chromo. Ref UC_016. The childs chromo (childs creation mutation) needs
@@ -1536,10 +1574,10 @@ void Unit::OnCompAdding(MUnit& aComp, TBool aModif)
 #endif
     // Enable propagation from attached node only, ref ds_di_cnfr_snpn
     /*
-    if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
-	iMan->OnCompAdding(aComp, aModif);
-    }
-    */
+       if (iMan != NULL && (mContext == NULL || mContext == iMan)) {
+       iMan->OnCompAdding(aComp, aModif);
+       }
+       */
     //Pdstat(PEvents::DurStat_OnCompAdd, false);
 }
 
@@ -1548,7 +1586,7 @@ TEhr Unit::ProcessCompChanged(MUnit& aComp, const string& aContName)
     Pdstat(PEvents::DurStat_OnCompChanged, true);
     TEhr res = EEHR_Ignored;
     TBool hres = EFalse;
-    TIfRange rg = GetIfi(MAgent::Type(), this);
+    TIfRange rg = GetIfi(MAgent::Type());
     // Using cache of agents because iterators will be broken
     vector<MUnit*> ca;
     for (TIfIter it = rg.first; it != rg.second; it++) {

@@ -101,8 +101,8 @@ TBool Incaps::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aCo
 		    cp1 = edge->Point1();
 		    cp2 = edge->Point2();
 		    // Full connection, compatibility checking is needed
-		    MCompatChecker* pt1checker = (MCompatChecker*) pt1->GetSIfiC(MCompatChecker::Type(), this);
-		    MCompatChecker* pt2checker = (MCompatChecker*) pt2->GetSIfiC(MCompatChecker::Type(), this);
+		    MCompatChecker* pt1checker = (MCompatChecker*) pt1->GetSIfi(MCompatChecker::Type(), this);
+		    MCompatChecker* pt2checker = (MCompatChecker*) pt2->GetSIfi(MCompatChecker::Type(), this);
 		    TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(pt2);
 		    TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(pt1);
 		    if (ispt1cptb && ispt2cptb) {

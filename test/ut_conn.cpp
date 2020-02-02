@@ -565,7 +565,7 @@ void Ut_conn::test_SockMcm()
 
     doutp = root->GetNode("./test/L1/Cp3");
     CPPUNIT_ASSERT_MESSAGE("Fail to get L1 Cp3", doutp != 0);
-    doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type(), doutp);
+    doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface for Cp3", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface for Cp3", doutpget->Value() == 20);
 
@@ -598,7 +598,7 @@ void Ut_conn::test_SockMcmu()
 
     doutp = root->GetNode("./test/L1/Cp3");
     CPPUNIT_ASSERT_MESSAGE("Fail to get L1 Cp3", doutp != 0);
-    doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type(), doutp);
+    doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface for Cp3", doutpget != 0);
     CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface for Cp3", doutpget->Value() == 20);
 

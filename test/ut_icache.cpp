@@ -30,6 +30,7 @@ private:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( Ut_icache );
+CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(Ut_icache, "Ut_icache");
 
 
 void Ut_icache::setUp()
@@ -46,62 +47,68 @@ void Ut_icache::test_Inv1()
 {
     printf("\n === Tests invalidation of function add inputs ifaces cache after feedback edge has been connected\n");
 
-    iEnv = new Env("ut_icache_inv1.xml", "ut_icache_inv1.txt");
-    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
-    iEnv->ImpsMgr()->ResetImportsPaths();
-    iEnv->ImpsMgr()->AddImportsPaths("../modules");
-    iEnv->ConstructSystem();
-    MUnit* root = iEnv->Root();
-    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-    // Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
-    MUnit* doutp = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Out/Int/PinData");
-    CPPUNIT_ASSERT_MESSAGE("Failed to get state out", doutp != 0);
-    MDVarGet* doutpget = (MDVarGet*) doutp->GetSIfi(MDVarGet::Type());
-    CPPUNIT_ASSERT_MESSAGE("Failed to get data out Get iface", doutpget != 0);
-    MDFloatGet* fget = doutpget->GetDObj(fget);
-    //MDFloatGet* fget = (MDFloatGet*) doutpget->GetSIfi(MDFloatGet::Type(), NULL);
-    CPPUNIT_ASSERT_MESSAGE("Failed to get data iface", fget != 0);
-    CPPUNIT_ASSERT_MESSAGE("Wrong value of data iface", fget->Value() == 0);
-    // Sync the state
-    MUnit* esync = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Sync");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != 0);
-    MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
-    CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
+    for (int ct = 1; ct < 2; ct++) {
+	const string specn("ut_icache_inv1");
+	string ext = (ct == 0) ? "xml" : "chs";
+	string spec = specn + string(".") + ext;
+	string log = specn + "_" + ext + ".log";
+	iEnv = new Env(spec, log);
+	CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+	iEnv->ImpsMgr()->ResetImportsPaths();
+	iEnv->ImpsMgr()->AddImportsPaths("../modules");
+	iEnv->ConstructSystem();
+	MUnit* root = iEnv->Root();
+	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+	// Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
+	MUnit* doutp = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Out/Int/PinData");
+	CPPUNIT_ASSERT_MESSAGE("Failed to get state out", doutp != 0);
+	MDVarGet* doutpget = (MDVarGet*) doutp->GetSIfi(MDVarGet::Type());
+	CPPUNIT_ASSERT_MESSAGE("Failed to get data out Get iface", doutpget != 0);
+	MDFloatGet* fget = doutpget->GetDObj(fget);
+	//MDFloatGet* fget = (MDFloatGet*) doutpget->GetSIfi(MDFloatGet::Type(), NULL);
+	CPPUNIT_ASSERT_MESSAGE("Failed to get data iface", fget != 0);
+	CPPUNIT_ASSERT_MESSAGE("Wrong value of data iface", fget->Value() == 0);
+	// Sync the state
+	MUnit* esync = root->GetNode("/Root/IncapsRoot/DesRoot/st/Capsule/Sync");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != 0);
+	MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
+	CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != 0);
 
-    // Do some ticks just to fillout ifaces caches
-    TInt ticksnum = 2;
-    for (TInt cnt = 0; cnt < ticksnum; cnt++) {
-	if (sync->IsActive()) {
-	    sync->Update();
+	// Do some ticks just to fillout ifaces caches
+	TInt ticksnum = 2;
+	for (TInt cnt = 0; cnt < ticksnum; cnt++) {
+	    if (sync->IsActive()) {
+		sync->Update();
+	    }
+	    if (sync->IsUpdated()) {
+		sync->Confirm();
+	    }
 	}
-	if (sync->IsUpdated()) {
-	    sync->Confirm();
+
+	// Connect feedback edge
+	MUnit* mnode = root->GetNode("/Root/IncapsRoot/DesRoot/E_back");
+	MElem* emnode = mnode->GetObj(emnode);
+	ChromoNode mut = emnode->AppendMutation(ENt_Cont);
+	mut.SetAttr(ENa_MutNode, "./P1");
+	mut.SetAttr(ENa_Ref, "/Root/IncapsRoot/DesRoot/st/Capsule/Inp");
+	TNs ns; MutCtx mctx(NULL, ns);
+	emnode->Mutate(false, false, true, mctx);
+
+	// Do some ticks
+	ticksnum = 5;
+	for (TInt cnt = 0; cnt < ticksnum; cnt++) {
+	    if (sync->IsActive()) {
+		sync->Update();
+	    }
+	    if (sync->IsUpdated()) {
+		sync->Confirm();
+	    }
 	}
+
+	CPPUNIT_ASSERT_MESSAGE("Wrong value of data iface", fget->Value() >= 0.6 && fget->Value() < 0.600001);
+
+	delete iEnv;
     }
-
-    // Connect feedback edge
-    MUnit* mnode = root->GetNode("/Root/IncapsRoot/DesRoot/E_back");
-    MElem* emnode = mnode->GetObj(emnode);
-    ChromoNode mut = emnode->AppendMutation(ENt_Cont);
-    mut.SetAttr(ENa_MutNode, "./P1");
-    mut.SetAttr(ENa_Ref, "/Root/IncapsRoot/DesRoot/st/Capsule/Inp");
-    TNs ns; MutCtx mctx(NULL, ns);
-    emnode->Mutate(false, false, true, mctx);
-
-    // Do some ticks
-    ticksnum = 5;
-    for (TInt cnt = 0; cnt < ticksnum; cnt++) {
-	if (sync->IsActive()) {
-	    sync->Update();
-	}
-	if (sync->IsUpdated()) {
-	    sync->Confirm();
-	}
-    }
-
-    CPPUNIT_ASSERT_MESSAGE("Wrong value of data iface", fget->Value() >= 0.6 && fget->Value() < 0.600001);
-
-    delete iEnv;
 }
 
 /**

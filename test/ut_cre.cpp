@@ -267,7 +267,7 @@ void Ut_cre::test_CreSyst()
 
 	// Checking extenstion agent
 	MUnit* ep = root->GetNode("./Syst1/ep");
-	MCompatChecker* ep_cchk = (MCompatChecker*) ep->GetSIfiC(MCompatChecker::Type());
+	MCompatChecker* ep_cchk = (MCompatChecker*) ep->GetSIfi(MCompatChecker::Type());
 	CPPUNIT_ASSERT_MESSAGE("Fail to get MCompatChecker from ep", ep_cchk != 0);
 	MUnit* cp3 = root->GetNode("./cp3");
 	MVert* cp3v = cp3->GetObj(cp3v);
@@ -331,7 +331,7 @@ void Ut_cre::test_CreSystu()
 
     // Checking extenstion agent
     MUnit* ep = root->GetNode("./Syst1/ep");
-    MCompatChecker* ep_cchk = (MCompatChecker*) ep->GetSIfiC(MCompatChecker::Type());
+    MCompatChecker* ep_cchk = (MCompatChecker*) ep->GetSIfi(MCompatChecker::Type());
     CPPUNIT_ASSERT_MESSAGE("Fail to get MCompatChecker from ep", ep_cchk != 0);
     MUnit* cp3 = root->GetNode("./cp3");
     MVert* cp3v = cp3->GetObj(cp3v);

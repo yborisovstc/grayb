@@ -882,7 +882,7 @@ void StateAgent::Update()
     TBool cdata = GetNode("./../Data") != NULL;
     MUnit* eprepu = GetNode(cdata ? "./../Data/Prepared/Capsule/Upd" : "./../Prepared/Capsule/Upd");
     if (eprepu != NULL) {
-	MUpdatable* upd = (MUpdatable*) eprepu->GetSIfiC(MUpdatable::Type(), this);
+	MUpdatable* upd = (MUpdatable*) eprepu->GetSIfi(MUpdatable::Type(), this);
 	if (upd != NULL) {
 	    try {
 		if (upd->Update()) {
@@ -901,7 +901,7 @@ void StateAgent::Confirm()
     TBool cdata = GetNode("./../Data") != NULL;
     MUnit* econfu = GetNode(cdata ? "./../Data/Confirmed/Capsule/Upd" : "./../Confirmed/Capsule/Upd");
     if (econfu != NULL) {
-	MUpdatable* upd = (MUpdatable*) econfu->GetSIfiC(MUpdatable::Type(), this);
+	MUpdatable* upd = (MUpdatable*) econfu->GetSIfi(MUpdatable::Type(), this);
 	if (upd != NULL) {
 	    if (upd->Update()) {
 		// Activate dependencies
@@ -1211,7 +1211,7 @@ MDVarGet* AState::HGetInp(const Base* aRmt)
 	if (vinp->PairsCount() > 0) {
 	    MVert* pair = vinp->GetPair(0);
 	    MUnit* upair = (MUnit*) pair->MVert_DoGetObj(MUnit::Type());
-	    res = (MDVarGet*) upair->GetSIfiC(MDVarGet::Type(), this);
+	    res = (MDVarGet*) upair->GetSIfi(MDVarGet::Type(), this);
 	}
     } else {
 	res = mPdata->GetObj(res);
@@ -1249,7 +1249,7 @@ TBool AState::IsCompatible(MUnit* aPair, TBool aExt)
     TBool ext = aExt;
     MUnit *cp = aPair;
     // Checking if the pair is Extender
-    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type(), this);
+    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfi(MCompatChecker::Type(), this);
     // Consider all pairs not supporting MCompatChecker as not compatible 
     if (pchkr != NULL) {
 	MUnit* ecp = pchkr->GetExtd(); 
@@ -1635,7 +1635,7 @@ MDVarGet* AStatec::HGetInp(const Base* aRmt)
     MDVarGet* res = NULL;
     if (aRmt == mPdata) {
 	MUnit* uinp = GetNode("./Inp");
-	res = (MDVarGet*) uinp->GetSIfiC(MDVarGet::Type(), this);
+	res = (MDVarGet*) uinp->GetSIfi(MDVarGet::Type(), this);
     } else {
 	res = mPdata->GetObj(res);
     }
@@ -1675,7 +1675,7 @@ TBool AStatec::IsCompatible(MUnit* aPair, TBool aExt)
     TBool ext = aExt;
     MUnit *cp = aPair;
     // Checking if the pair is Extender
-    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfiC(MCompatChecker::Type(), this);
+    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfi(MCompatChecker::Type(), this);
     // Consider all pairs not supporting MCompatChecker as not compatible 
     if (pchkr != NULL) {
 	MUnit* ecp = pchkr->GetExtd(); 
@@ -1837,7 +1837,7 @@ void ADes::Update()
     for (TInt ci = 0; ci < host->CompsCount(); ci++) {
 	MUnit* eit = host->GetComp(ci);
 	if (eit != this && eit->Name() != "Capsule") {
-	    MDesSyncable* msync = (MDesSyncable*) eit->GetSIfiC(MDesSyncable::Type(), this);
+	    MDesSyncable* msync = (MDesSyncable*) eit->GetSIfi(MDesSyncable::Type(), this);
 	    if (msync != NULL) {
 		if (msync->IsActive()) {
 		    try {
@@ -1860,7 +1860,7 @@ void ADes::Confirm()
     for (TInt ci = 0; ci < host->CompsCount(); ci++) {
 	MUnit* eit = host->GetComp(ci);
 	if (eit != this && eit->Name() != "Capsule") {
-	    MDesSyncable* msync = (MDesSyncable*) eit->GetSIfiC(MDesSyncable::Type(), this);
+	    MDesSyncable* msync = (MDesSyncable*) eit->GetSIfi(MDesSyncable::Type(), this);
 	    if (msync != NULL) {
 		if (msync->IsUpdated()) {
 		    msync->Confirm();

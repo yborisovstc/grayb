@@ -180,10 +180,11 @@ class Unit: public MUnit
 	virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx());
 	void UpdateIfiLocal(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx());
 	void RmIfCache(IfIter& aIt);
+	virtual void RegIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv) override;
 	virtual void UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx);
 	virtual void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv, TBool aInv = EFalse);
 	void InvalidateIfCache();
-	void InvalidateIfCache(const string& aIfName);
+	void InvalidateIfCache(const string& aIfName, const MUnit* aProv = NULL);
 	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, MUnit* aProv, MIface* aVal);
 	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, MUnit* aProv, TIfRange aRg);
 	//static TBool InInIfRctx(, TIMUnit* aReq);

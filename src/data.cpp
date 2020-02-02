@@ -306,7 +306,7 @@ TBool DInt::Update()
 	MVert* pair = vert->GetPair(0);
 	if (pair != NULL) {
 	    MUnit* inpe = pair->GetObj(inpe);
-	    inp = (MDIntGet*) inpe->GetSIfiC(MDIntGet::Type(), this);
+	    inp = (MDIntGet*) inpe->GetSIfi(MDIntGet::Type(), this);
 	    if (inp != NULL) {
 		TInt idata = inp->Value();
 		if (IsLogeventUpdate()) {
