@@ -415,7 +415,7 @@ void Unit::UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx)
 // same as for provider related records. This simplifies the whole iface requesting (no need to check
 // invalidity on requesting phase, all records are gone) but requres to rerequest ifaces thru all
 // potential providers again after invalidatiio from only one particular provider.
-void Unit::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv, TBool aInv)
+void Unit::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv)
 {
     TICacheKeyF query(aIfName, aCtx);
     TICacheQFRange rg = iICacheQF.equal_range(query);
@@ -446,13 +446,10 @@ void Unit::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aP
 		    TICacheRCtx rctx(ctx);
 		    rctx.pop_back();
 		    MUnit* reqe = ctx.back();
-		    reqe->UnregIfProv(it->first.first, rctx, this, aInv);
+		    reqe->UnregIfProv(it->first.first, rctx, this);
 		}
-		// Checking if the record is already removed thru unregistering chain, ref ds_ifcache_cpur
-		if (iICacheQF.find(key) != iICacheQF.end()) {
-		    iICache.erase(it->second);
-		    iICacheQF.erase(it);
-		}
+		iICache.erase(it->second);
+		iICacheQF.erase(it);
 		rg = iICacheQF.equal_range(query);
 		it = rg.first; 
 	    }
@@ -460,12 +457,10 @@ void Unit::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aP
 		it++; 
 	    }
 	}
-	if (true) {
-	    // Invalidate the interface, ref ds_u_20180408
-	    // Avoid invalidating backward to the given proviider
-	    // Invalidate always to properly remove all records, ref ds_ifcache_ciur
-	    InvalidateIfCache(aIfName, aProv);
-	}
+	// Invalidate the interface, ref ds_u_20180408 and ds_ifcache_oifpi_iotic
+	// Avoid invalidating backward to the given proviider
+	// Invalidate always to properly remove all records, ref ds_ifcache_ciur
+	InvalidateIfCache(aIfName, aCtx, aProv);
     }
 }
 
@@ -474,20 +469,16 @@ void Unit::InvalidateIfCache(const string& aIfName, const MUnit* aProv)
     auto it = iICacheQF.begin();
     while (it != iICacheQF.end()) {
 	if (it->first.first == aIfName) {
-	    Base* prov = it->second.second;
+	    MUnit* prove = it->second.second;
 	    const TICacheRCtx& ctx = it->first.second;
 	    // Unreg self as provider
 	    if (ctx.size() > 0) {
 		TICacheRCtx rctx(ctx);
 		rctx.pop_back();
 		MUnit* reqe = ctx.back();
-		reqe->UnregIfProv(aIfName, rctx, this, true);
+		reqe->UnregIfProv(aIfName, rctx, this);
 	    }
 	    // Unreg self as requestor
-	    MUnit* prove = prov->GetObj(prove);
-	    if (prove == NULL) {
-		prove = prov->GetObj(prove);
-	    }
 	    if (prove != this && prove != aProv) {
 		TICacheRCtx rctx(ctx);
 		rctx.push_back(this);
@@ -502,7 +493,35 @@ void Unit::InvalidateIfCache(const string& aIfName, const MUnit* aProv)
     }
 }
 
-void Unit::UnregAllIfRel(TBool aInv)
+void Unit::InvalidateIfCache(const string& aIfName, const TICacheRCtx& aCtx, const MUnit* aProv)
+{
+    TICacheKeyF key(aIfName, aCtx);
+    TICacheQFRange rg = iICacheQF.equal_range(key);
+    auto it = rg.first;
+    while (it != rg.second) {
+	MUnit* prove = it->second.second;
+	const TICacheRCtx& ctx = it->first.second;
+	// Unreg self as provider
+	if (ctx.size() > 0) {
+	    TICacheRCtx rctx(ctx);
+	    rctx.pop_back();
+	    MUnit* reqe = ctx.back();
+	    reqe->UnregIfProv(aIfName, rctx, this);
+	}
+	// Unreg self as requestor
+	if (prove != this && prove != aProv) {
+	    TICacheRCtx rctx(ctx);
+	    rctx.push_back(this);
+	    prove->UnregIfReq(aIfName, rctx);
+	}
+	iICache.erase(it->second);
+	iICacheQF.erase(it);
+	rg = iICacheQF.equal_range(key);
+	it = rg.first;
+    }
+}
+
+void Unit::UnregAllIfRel()
 {
     // TODO What is the sense to iterate thru iICacheQF? We just need the nearest requesors to unreg
     // Note that there can be number of same iICacheQF keys so there can be redundant unreg requests
@@ -516,7 +535,7 @@ void Unit::UnregAllIfRel(TBool aInv)
 	    TICacheRCtx rctx(ctx);
 	    rctx.pop_back();
 	    MUnit* reqe = ctx.back();
-	    reqe->UnregIfProv(it->first.first, rctx, this, aInv);
+	    reqe->UnregIfProv(it->first.first, rctx, this);
 	}
 	// Unregister itself on provider
 	MUnit* prove = it->second.second;
@@ -544,7 +563,7 @@ void Unit::RmIfCache(IfIter& aIt)
 
 void Unit::InvalidateIfCache()
 {
-    UnregAllIfRel(ETrue);
+    UnregAllIfRel();
 }
 
 void Unit::InsertIfQm(const string& aName, const TICacheRCtx& aReq, MUnit* aProv)
@@ -2028,8 +2047,7 @@ MIface* Unit::Call(const string& aSpec, string& aRes)
 	TICacheRCtx ctx;
 	EIfu::ToCtx(this, args.at(1), ctx);
 	MUnit* prov = GetNode(args.at(2));
-	TBool inv = Ifu::ToBool(args.at(3));	
-	UnregIfProv(name, ctx, prov, inv);
+	UnregIfProv(name, ctx, prov);
     } else if (name == "OnCompAdding") {
 	MUnit* comp = GetNode(args.at(0));
 	if (comp == NULL) {

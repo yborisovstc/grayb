@@ -182,9 +182,10 @@ class Unit: public MUnit
 	void RmIfCache(IfIter& aIt);
 	virtual void RegIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv) override;
 	virtual void UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx);
-	virtual void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv, TBool aInv = EFalse);
+	virtual void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv);
 	void InvalidateIfCache();
 	void InvalidateIfCache(const string& aIfName, const MUnit* aProv = NULL);
+	void InvalidateIfCache(const string& aIfName, const TICacheRCtx& aCtx, const MUnit* aProv = NULL);
 	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, MUnit* aProv, MIface* aVal);
 	void InsertIfCache(const string& aName, const TICacheRCtx& aReq, MUnit* aProv, TIfRange aRg);
 	//static TBool InInIfRctx(, TIMUnit* aReq);
@@ -226,7 +227,7 @@ class Unit: public MUnit
 	virtual MUnit* GetComp(const string& aParent, const string& aName) const;
 	TBool IsLogeventCreOn();
 	void InsertIfQm(const string& aName, const TICacheRCtx& aReq, MUnit* aProv);
-	void UnregAllIfRel(TBool aInv = EFalse);
+	void UnregAllIfRel();
 	void LogIfReqs();
 	static string ContentKey(const string& aBase, const string& aSuffix);
 	static string ContentValueKey(const string& aId);

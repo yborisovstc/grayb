@@ -434,6 +434,22 @@
 		of deregistering. This causes to break of regisrty iteration and flow crash.</simpara>
 	    <simpara>How to modify the unregistering algorithm to avoid cycling paths?</simpara>
 	</sect2>
+	<sect2 id="ds_ifcache_oifpi"><title>Optimization of iface resolution paths invalidation</title>
+	    <sect3><title>Intro</title>
+		<simpara>Seems the current implementatin of invalidation is superfluos. Why we need to unregister requestor? We need it only because of currenly used criteria of
+		    updating the <xref linkend="gls_irm"/> data: ref Unit::GetIfi, the update started only if there are no given iface related records in node's irm data.</simpara>
+		<simpara>On the one hand this simplifies the criteria but on another hand it requires to do full update, we need to remove even those paths that wasn't affected
+		    byt the model structure change.</simpara>
+		<simpara>So we need to consider how avoid this unnecessary removing the paths.</simpara>
+	    </sect3>
+	    <sect3><title>Solution: to use explicit indicator of iface invalidated.</title>
+		<simpara>This can be additional flag in the <xref linkend="gls_irm"/> records. </simpara>
+	    </sect3>
+	    <sect3 id="ds_ifcache_oifpi_iotic"><title>Solution: invalidate only touched iface and context</title>
+		<simpara>Actually the current invalidation criteria used in GetIfi applies not to the whole iface but to the key (iface, context). Can we can invalidate only
+		the paths corresponding to the key? Seems so.</simpara>
+	    </sect3>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_mut"><title>Mutations</title>

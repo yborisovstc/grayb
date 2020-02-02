@@ -173,7 +173,7 @@ class MIfProv
 	 * */
 	virtual void RegIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv) = 0;
 	virtual void UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx) = 0;
-	virtual void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv, TBool aInv = EFalse) = 0;
+	virtual void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv) = 0;
 	virtual MIface* getLocalIface(const string& aName, const TICacheRCtx& aCtx) = 0;
 };
 
