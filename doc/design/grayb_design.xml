@@ -450,6 +450,12 @@
 		the paths corresponding to the key? Seems so.</simpara>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_ifcache_ouor"><title><xref linkend="gls_irm"/> optimization: using one regisrty</title>
+	    <sect3><title>Intro</title>
+		<simpara>Currently the mechanism is implemented with using two registries: one (iICacheQF) for relations and another (ICache) for ifaces. We
+		can simplify the implementation using just one registry combining relations and ifaces.</simpara>
+	    </sect3>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_mut"><title>Mutations</title>

@@ -54,24 +54,20 @@ class Unit: public MUnit
 	typedef multimap<TContentKey, string> TContent; // Content, mutlimap needs for categories and comps
     public:
 	// Request context
-	// Iface cache key first part: [iface name, requestor]
-	typedef pair<string, TICacheRCtx> TICacheKeyF;
-	// Iface cache key: [[iface name, requestor], provider]
-	typedef pair<TICacheKeyF, MUnit*> TICacheKey;
+	// Iface cache key: [iface name, requestor]
+	typedef pair<string, TICacheRCtx> TICacheKey;
+	// Iface cache mapped value
+	typedef pair<MUnit*, MIface*> TICacheMVal;
+	// Iface cache value
+	typedef pair<TICacheKey, TICacheMVal> TICacheVal;
 	// Iface cache
-	typedef multimap<TICacheKey, MIface*> TICache;
-	// Iface cache query by TICMapKeyF (iface, requestor)
-	typedef multimap<TICacheKeyF, TICacheKey> TICacheQF;
-	// Iface cache iterator
+	typedef multimap<TICacheKey, TICacheMVal> TICache;
+	// Iface cache iterators
 	typedef TICache::iterator TICacheIter;
-	// Iface cache const iterator
 	typedef TICache::const_iterator TICacheCIter;
-	// Iface cache query F iterator
-	typedef TICacheQF::iterator TICacheQFIter;
 	// Iface cache range
 	typedef pair<TICacheIter, TICacheIter> TICacheRange;
 	typedef pair<TICacheCIter, TICacheCIter> TICacheCRange;
-	typedef pair<TICacheQFIter, TICacheQFIter> TICacheQFRange;
 
 
     public:
@@ -89,10 +85,6 @@ class Unit: public MUnit
 	MIface* operator*() override;
 	public:
 	Unit* iHost;
-	string iIName; // Iface name
-	TICacheRCtx iReq; // Requestor
-	TICacheQFRange iQFRange; // Range of  cache query by TICMapKeyF
-	TICacheQFIter iQFIter; // Query result current iterator
 	TICacheRange iCacheRange;
 	TICacheIter iCacheIter; // Cache current iterator
     };
@@ -178,7 +170,6 @@ class Unit: public MUnit
 	virtual TBool OnChanged(MUnit& aComp);
 	// Ifaces cache
 	virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx());
-	void UpdateIfiLocal(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx());
 	void RmIfCache(IfIter& aIt);
 	virtual void RegIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv) override;
 	virtual void UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx);
@@ -226,9 +217,7 @@ class Unit: public MUnit
 	TBool UnregisterComp(MUnit* aComp, const string& aName = string());
 	virtual MUnit* GetComp(const string& aParent, const string& aName) const;
 	TBool IsLogeventCreOn();
-	void InsertIfQm(const string& aName, const TICacheRCtx& aReq, MUnit* aProv);
 	void UnregAllIfRel();
-	void LogIfReqs();
 	static string ContentKey(const string& aBase, const string& aSuffix);
 	static string ContentValueKey(const string& aId);
 	static string ContentCompsKey(const string& aId);
@@ -237,7 +226,7 @@ class Unit: public MUnit
 	// Debugging
 	virtual void DumpComps(TBool aRecurs = EFalse) const;
 	virtual void DumpContent() const;
-	virtual void DumpIfReqs() const override;
+	virtual void DumpIfPaths() const override;
 	virtual void DumpIfCache() const override;
 	static void DumpIfCtx(const TICacheRCtx& aCtx);
 	static void DumpIfRange(const TIfRange& aCtx);
@@ -262,8 +251,6 @@ class Unit: public MUnit
 	TNReg iMComps;
 	// Ifaces cache
 	TICache iICache;
-	// Ifaces cache query by TICMapKeyF
-	TICacheQF iICacheQF;
 	// Sign of that node is removed
 	TBool isRemoved;
 	string iName;

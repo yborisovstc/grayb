@@ -143,35 +143,17 @@ string Unit::PEType()
     return string() + GUri::KParentSep + Unit::Type();
 }
 
-Unit::IfIter::IfIter(Unit* aHost, const string& aIName, const TICacheRCtx& aReq, TBool aToEnd): iHost(aHost), iIName(aIName), iReq(aReq) 
+Unit::IfIter::IfIter(Unit* aHost, const string& aIName, const TICacheRCtx& aReq, TBool aToEnd): iHost(aHost)
 {
-    TICacheKeyF query(iIName, iReq);
-    iQFRange = iHost->iICacheQF.equal_range(query);
-    if (iQFRange.first != iQFRange.second) {
-	iQFIter = iQFRange.first;
-	if (aToEnd) {
-	    TICacheQFIter tmp(iQFIter);
-	    TICacheQFIter qfend(iQFIter);
-	    while (++tmp != iQFRange.second) qfend = tmp;
-	    iQFIter = qfend;
-	    iCacheRange = iHost->iICache.equal_range(iQFIter->second);
-	    iCacheIter = iCacheRange.second;
-	}
-	else {
-	    for (TICacheQFIter it = iQFRange.first; it != iQFRange.second; it++) {
-		iQFIter = it;
-		iCacheRange = iHost->iICache.equal_range(iQFIter->second);
-		iCacheIter = iCacheRange.first;
-		if (iCacheRange.first != iCacheRange.second) {
-		    break;
-		}
-	    }
-	}
+    TICacheKey query(aIName, aReq);
+    iCacheRange = iHost->iICache.equal_range(query);
+    iCacheIter = aToEnd ? iCacheRange.second : iCacheRange.first;
+    while (iCacheIter != iCacheRange.second && iCacheIter->second.second == NULL) {
+	iCacheIter++;
     }
 }
 
-Unit::IfIter::IfIter(const IfIter& aIt): iHost(aIt.iHost), iIName(aIt.iIName), iReq(aIt.iReq), iQFRange(aIt.iQFRange),
-    iQFIter(aIt.iQFIter), iCacheRange(aIt.iCacheRange), iCacheIter(aIt.iCacheIter)
+Unit::IfIter::IfIter(const IfIter& aIt): iHost(aIt.iHost), iCacheRange(aIt.iCacheRange), iCacheIter(aIt.iCacheIter)
 {
 }
 
@@ -179,9 +161,6 @@ Unit::MIfIter& Unit::IfIter::operator=(const MIfIter& aIt)
 {
     const IfIter& it = (const IfIter&) aIt;
     iHost = it.iHost; 
-    iIName = it.iIName; iReq = it.iReq;
-    iQFRange = it.iQFRange;
-    iQFIter = it.iQFIter;
     iCacheRange = it.iCacheRange;
     iCacheIter = it.iCacheIter;
     return *this;
@@ -194,18 +173,11 @@ Unit::MIfIter* Unit::IfIter::Clone() const
 
 Unit::MIfIter& Unit::IfIter::operator++()
 {
-    if (++iCacheIter != iCacheRange.second) {
+    if (iCacheIter != iCacheRange.second) {
+	iCacheIter++;
     }
-    else {
-	TICacheQFIter it = iQFIter;
-	for (++it; it != iQFRange.second; it++) {
-	    iQFIter = it;
-	    iCacheRange = iHost->iICache.equal_range(iQFIter->second);
-	    iCacheIter = iCacheRange.first;
-	    if (iCacheRange.first != iCacheRange.second) {
-		break;
-	    }
-	}
+    while (iCacheIter != iCacheRange.second && iCacheIter->second.second == NULL) {
+	iCacheIter++;
     }
     return *this;
 }
@@ -213,14 +185,13 @@ Unit::MIfIter& Unit::IfIter::operator++()
 TBool Unit::IfIter::operator==(const MIfIter& aIt)
 {
     const IfIter& it = (const IfIter&) aIt;
-    TBool res = (iHost == it.iHost && iIName == it.iIName && iReq == it.iReq && iQFRange == it.iQFRange 
-	    && iQFIter == it.iQFIter && iCacheRange == it.iCacheRange && iCacheIter == it.iCacheIter);
+    TBool res = (iHost == it.iHost && iCacheRange == it.iCacheRange && iCacheIter == it.iCacheIter);
     return res;
 }
 
 MIface*  Unit::IfIter::operator*()
 {
-    MIface* res = iCacheIter->second;
+    MIface* res = iCacheIter->second.second;
     return res;
 }
 
@@ -356,7 +327,7 @@ Unit::TIfRange Unit::GetIfi(const string& aName, const TICacheRCtx& aCtx)
 	// This creates relation chain anycase, registering all potential requesters for the providers
 	// This allows to do correct invalidation of iface cache from any provider to its requestors
 	if (beg == end) {
-	    InsertIfQm(aName, ctx, this);
+	    InsertIfCache(aName, ctx, this, NULL);
 	}
 	// Register self as provider at the requestor, ref ds_ifcache_refitg_bdr
 	if (ctx.size() > 0) {
@@ -391,13 +362,12 @@ MIface* Unit::GetSIfi(const string& aReqUri, const string& aName, TBool aReqAsse
 
 void Unit::UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx)
 {
-    TICacheKeyF query(aIfName, aCtx);
-    TICacheQFRange rg = iICacheQF.equal_range(query);
-    //__ASSERT (rg.first != rg.second);
+    TICacheKey query(aIfName, aCtx);
+    TICacheRange rg = iICache.equal_range(query);
 
-    for (TICacheQFIter it = rg.first; it != rg.second; it++) {
+    for (TICacheIter it = rg.first; it != rg.second; it++) {
 	// Unregister itself on next provider
-	Base* prov = it->second.second;
+	Base* prov = it->second.first;
 	MUnit* prove = prov->GetObj(prove);
 	if (prove != this) {
 	    const TICacheRCtx& ctx = it->first.second;
@@ -405,9 +375,8 @@ void Unit::UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx)
 	    rctx.push_back(this);
 	    prove->UnregIfReq(it->first.first, rctx);
 	}
-	iICache.erase(it->second);
     }
-    iICacheQF.erase(rg.first, rg.second);
+    iICache.erase(rg.first, rg.second);
 }
 
 // TODO [YB] To consider redesign. Currently rough mechanism of invalidation is utilized.
@@ -417,27 +386,24 @@ void Unit::UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx)
 // potential providers again after invalidatiio from only one particular provider.
 void Unit::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv)
 {
-    TICacheKeyF query(aIfName, aCtx);
-    TICacheQFRange rg = iICacheQF.equal_range(query);
+    TICacheKey query(aIfName, aCtx);
+    TICacheRange rg = iICache.equal_range(query);
     // Verify that not more that one record with given provider is registered
     int count = 0;
-    for (TICacheQFIter it = rg.first; it != rg.second; it++) {
-	if (it->second.second == aProv) {
+    for (TICacheIter it = rg.first; it != rg.second; it++) {
+	if (it->second.first == aProv) {
 	    count++;
 	}
     }
-    __ASSERT(count <= 1);
     // Unfortunatelly we cannot check the conditions of record here. This is because
     // the track of providers is not stored in requests cache so it is possible
     // that for single request here, i.e. resolved by one provider, this provider can 
     // have more that one requests, i.e multiple providers. So it is possible that
     // provider requests unreg request but it is already unreged
     if (count > 0) {
-	TICacheQFIter it = rg.first; 
+	TICacheIter it = rg.first;
 	while (it != rg.second) {
-	    MUnit* cnde = it->second.second;
-	    if (it->second.second == aProv) {
-		auto key = it->first;
+	    if (it->second.first == aProv) {
 		// Unregister next requestor
 		// TODO [YB] Do we need to unregister this in requestor. In fact this
 		// is not invalidated but caller of UnregIfProv does
@@ -446,12 +412,11 @@ void Unit::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aP
 		    TICacheRCtx rctx(ctx);
 		    rctx.pop_back();
 		    MUnit* reqe = ctx.back();
-		    reqe->UnregIfProv(it->first.first, rctx, this);
+		    reqe->UnregIfProv(aIfName, rctx, this);
 		}
-		iICache.erase(it->second);
-		iICacheQF.erase(it);
-		rg = iICacheQF.equal_range(query);
-		it = rg.first; 
+		iICache.erase(it);
+		rg = iICache.equal_range(query);
+		it = rg.first;
 	    }
 	    else {
 		it++; 
@@ -466,10 +431,10 @@ void Unit::UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aP
 
 void Unit::InvalidateIfCache(const string& aIfName, const MUnit* aProv)
 {
-    auto it = iICacheQF.begin();
-    while (it != iICacheQF.end()) {
+    auto it = iICache.begin();
+    while (it != iICache.end()) {
 	if (it->first.first == aIfName) {
-	    MUnit* prove = it->second.second;
+	    MUnit* prove = it->second.first;
 	    const TICacheRCtx& ctx = it->first.second;
 	    // Unreg self as provider
 	    if (ctx.size() > 0) {
@@ -484,9 +449,8 @@ void Unit::InvalidateIfCache(const string& aIfName, const MUnit* aProv)
 		rctx.push_back(this);
 		prove->UnregIfReq(aIfName, rctx);
 	    }
-	    iICache.erase(it->second);
-	    iICacheQF.erase(it);
-	    it = iICacheQF.begin();
+	    iICache.erase(it);
+	    it = iICache.begin();
 	} else {
 	    it++;
 	}
@@ -495,11 +459,11 @@ void Unit::InvalidateIfCache(const string& aIfName, const MUnit* aProv)
 
 void Unit::InvalidateIfCache(const string& aIfName, const TICacheRCtx& aCtx, const MUnit* aProv)
 {
-    TICacheKeyF key(aIfName, aCtx);
-    TICacheQFRange rg = iICacheQF.equal_range(key);
+    TICacheKey key(aIfName, aCtx);
+    TICacheRange rg = iICache.equal_range(key);
     auto it = rg.first;
     while (it != rg.second) {
-	MUnit* prove = it->second.second;
+	MUnit* prove = it->second.first;
 	const TICacheRCtx& ctx = it->first.second;
 	// Unreg self as provider
 	if (ctx.size() > 0) {
@@ -514,9 +478,8 @@ void Unit::InvalidateIfCache(const string& aIfName, const TICacheRCtx& aCtx, con
 	    rctx.push_back(this);
 	    prove->UnregIfReq(aIfName, rctx);
 	}
-	iICache.erase(it->second);
-	iICacheQF.erase(it);
-	rg = iICacheQF.equal_range(key);
+	iICache.erase(it);
+	rg = iICache.equal_range(key);
 	it = rg.first;
     }
 }
@@ -526,9 +489,9 @@ void Unit::UnregAllIfRel()
     // TODO What is the sense to iterate thru iICacheQF? We just need the nearest requesors to unreg
     // Note that there can be number of same iICacheQF keys so there can be redundant unreg requests
     // (requestor has just to ignore it in UnregIfProv
-    TICacheQFIter it = iICacheQF.begin();
-    int count = iICacheQF.size();
-    while (it != iICacheQF.end()) {
+    TICacheIter it = iICache.begin();
+    int count = iICache.size();
+    while (it != iICache.end()) {
 	const TICacheRCtx& ctx = it->first.second;
 	// Unregister itself on requestor
 	if (ctx.size() > 0) {
@@ -538,22 +501,21 @@ void Unit::UnregAllIfRel()
 	    reqe->UnregIfProv(it->first.first, rctx, this);
 	}
 	// Unregister itself on provider
-	MUnit* prove = it->second.second;
+	MUnit* prove = it->second.first;
 	if (prove != this) {
 	    TICacheRCtx rctx(ctx);
 	    rctx.push_back(this);
 	    prove->UnregIfReq(it->first.first, rctx);
 	}
-	int new_count = iICacheQF.size();
+	int new_count = iICache.size();
 	if (new_count != count) {
 	    count = new_count;
-	    it = iICacheQF.begin();
+	    it = iICache.begin();
 	} else {
 	    it++;
 	}
     }
     iICache.clear();
-    iICacheQF.clear();
 }
 
 void Unit::RmIfCache(IfIter& aIt)
@@ -566,66 +528,36 @@ void Unit::InvalidateIfCache()
     UnregAllIfRel();
 }
 
-void Unit::InsertIfQm(const string& aName, const TICacheRCtx& aReq, MUnit* aProv)
+void Unit::RegIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv)
 {
-    TICacheKeyF keyf(aName, aReq);
-    TICacheKey key(keyf, aProv);
+    InsertIfCache(aIfName, aCtx, aProv, NULL);
+}
+
+void Unit::InsertIfCache(const string& aName, const TICacheRCtx& aReq, MUnit* aProv, MIface* aVal)
+{
+    TICacheKey key(aName, aReq);
     // Checking if ctx doesn't contain provider
     for (auto ce : aReq) {
 	__ASSERT(ce != aProv);
     }
     // Push to query map if not already exists
     bool exists = false;
-    TICacheQFRange frange = iICacheQF.equal_range(keyf);  
-    for (TICacheQFIter it = frange.first; it != frange.second && !exists; it++) {
-	if (it->second.second == aProv) {
+    TICacheRange rg = iICache.equal_range(key);
+    for (TICacheIter it = rg.first; it != rg.second && !exists; it++) {
+	if (it->second.first == aProv && it->second.second == aVal) {
 	    exists = ETrue;
 	}
     }
     if (!exists) {
-	pair<TICacheKeyF, TICacheKey> qr(keyf, key);
-	iICacheQF.insert(qr);
+	TICacheVal val(key, TICacheMVal(aProv, aVal));
+	iICache.insert(val);
     }
-}
-
-void Unit::RegIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv)
-{
-    InsertIfQm(aIfName, aCtx, aProv);
-}
-
-void Unit::InsertIfCache(const string& aName, const TICacheRCtx& aReq, MUnit* aProv, MIface* aVal)
-{
-    TICacheKeyF keyf(aName, aReq);
-    TICacheKey key(keyf, aProv);
-    if (aVal != NULL) {
-	if (IsIftEnabled()) {
-	    Logger()->Write(EInfo, this, "Iface [%s]: resolved [%x], caching", aName.c_str(), aVal);
-	}
-	pair<TICacheKey, MIface*> val(key, aVal);
-	TICacheCIter res = iICache.insert(val);
-    }
-    InsertIfQm(aName, aReq, aProv);
 }
 
 void Unit::InsertIfCache(const string& aName, const TICacheRCtx& aReq, MUnit* aProv, TIfRange aRg)
 {
     for (TIfIter it = aRg.first; it != aRg.second; it++) {
 	InsertIfCache(aName, aReq, aProv, *it);
-    }
-    // Register the request in the map even if result is empty, ref ds_ifcache_refr_fpt
-    if (aRg.first == aRg.second) {
-	InsertIfQm(aName, aReq, aProv);
-    }
-}
-
-void Unit::UpdateIfiLocal(const string& aName, const TICacheRCtx& aCtx)
-{
-    TIfRange rr;
-    TICacheRCtx ctx(aCtx);
-    ctx.push_back(this);
-    MIface* res = (MIface*) DoGetObj(aName.c_str());
-    if (res != NULL) {
-	InsertIfCache(aName, aCtx, this, res);
     }
 }
 
@@ -674,64 +606,28 @@ void Unit::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     }
 }
 
-void Unit::LogIfReqs()
+void Unit::DumpIfPaths() const
 {
-    Logger()->Write(EInfo, this, "[%x], Ifaces requests: START", this);
-    for (TICacheQFIter it = iICacheQF.begin(); it != iICacheQF.end(); it++) {
-	const TICacheRCtx& ctx = it->first.second;
-	Base* provb = it->second.second;
-	Unit* prov = provb->GetObj(prov);
-	if (!ctx.empty()) {
-	    Base* reqb = ctx.back();
-	    Unit* reqe = reqb == NULL ? NULL : reqb->GetObj(reqe);
-	    Logger()->Write(EInfo, NULL, "If: [%s], [%i][%x: %s] - [%x: %s]", it->first.first.c_str(),
-		    ctx.size(), reqe, reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue).c_str(), prov, prov->GetUri(NULL, ETrue).c_str());
-	}
-	else {
-	    Logger()->Write(EInfo, NULL, "If: [%s], [none] - [%x: %s]", it->first.first.c_str(),
-		    prov, prov->GetUri(NULL, ETrue).c_str());
-	}
-    }
-    Logger()->Write(EInfo, this, "Ifaces requests: END");
-}
-
-void Unit::DumpIfReqs() const
-{
-    cout << "<< Ifaces requests: START >>" << endl;
-    for (auto it : iICacheQF) {
-	const TICacheRCtx& ctx = it.first.second;
-	Base* provb = it.second.second;
-	MUnit* prov = provb->GetObj(prov);
-	if (!ctx.empty()) {
-	    cout << "[" << it.first.first << "], [" << ctx.size() << "]:" << endl;
-	    for (auto* reqe : ctx) {
-		cout << reqe << ": " << (reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue)) << endl;
-	    }
-	    cout << "==> [" << prov << ": " << prov->GetUri(NULL, ETrue) << "]" << endl << endl;
-	}
-	else {
-	    cout << "[" << it.first.first << "], [none] - [" << prov << ": " << prov->GetUri(NULL, ETrue) << "]" << endl;
-	}
-    }
-    cout << "<< Ifaces requests: END >>" << endl;
+    // TODO implement
 }
 
 void Unit::DumpIfCache() const
 {
     cout << "<< Ifaces cache: START >>" << endl;
     for (auto it : iICache) {
-	const TICacheRCtx& ctx = it.first.first.second;
-	MIface* iface = it.second;
-	MUnit* prov = it.first.second;
+	const string& iname = it.first.first;
+	const TICacheRCtx& ctx = it.first.second;
+	MIface* iface = it.second.second;
+	MUnit* prov = it.second.first;
 	if (!ctx.empty()) {
-	    cout << "[" << it.first.first.first << "], [" << ctx.size() << "]:" << endl;
+	    cout << "[" << iname << "], [" << ctx.size() << "]:" << endl;
 	    for (auto* reqe : ctx) {
 		cout << reqe << ": " << (reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue)) << endl;
 	    }
-	    cout << "==> [" << prov << "," << prov->GetUri(NULL, ETrue) << "] -> [" << iface << ": " << iface->Uid() << "]" << endl << endl;
+	    cout << "==> [" << prov << ": " << prov->GetUri(NULL, ETrue) << "] -> [" << iface << ": " << (iface == NULL ? "" : iface->Uid()) << "]" << endl << endl;
 	}
 	else {
-	    cout << "If: [" << it.first.first.first << "], [none] - [" << prov << "," << prov->GetUri(NULL, ETrue) << "] -> [" << iface << "]" << endl;
+	    cout << "If: [" << iname << "], [none] - [" << prov << ": " << prov->GetUri(NULL, ETrue) << "] -> [" << iface << "]" << endl;
 	}
     }
     cout << "<< Ifaces cache: END >>" << endl;

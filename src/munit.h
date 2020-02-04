@@ -273,7 +273,8 @@ class MUnit : public MIface, public Base, public MOwner, public MIfProv
     virtual MUnit* GetComp(TInt aInd) = 0;
     virtual void DumpComps(TBool aRecurs = EFalse) const = 0;
     virtual void DumpContent() const = 0;
-    virtual void DumpIfReqs() const = 0;
+    /** @brief Dumps iface resolution paths */
+    virtual void DumpIfPaths() const = 0;
     virtual void DumpIfCache() const = 0;
     // From MIface
     virtual string Uid() const { return Mid() + "%" + Type();};
