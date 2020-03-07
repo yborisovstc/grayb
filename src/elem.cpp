@@ -302,7 +302,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 
     MUnit* btarg = this; // Base target
     string sbtarg;
-    if (mroot.AttrExists(ENa_Targ)) {
+    if (mroot.AttrExists(ENa_Targ) && (mroot.Type() != ENt_Node)) {
 	sbtarg = mroot.Attr(ENa_Targ);
 	btarg = GetNodeByName(sbtarg, root_ns);
 	if (btarg == NULL) {
@@ -380,7 +380,9 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		    rno.RmAttr(ENa_Targ);
 		}
 		rno.RmAttr(ENa_NS);
-		rno.RmAttr(ENa_MutNode);
+		if (rno.AttrExists(ENa_MutNode)) {
+		    rno.RmAttr(ENa_MutNode);
+		}
 		if (!rno.AttrExists(ENa_Targ)) {
 		    // Correcting target if the mut is component related
 		    TNodeType mtype = rno.Type();

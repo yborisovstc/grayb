@@ -326,7 +326,7 @@
 
     <!-- Transition of variable data : Addition -->
     <node id="TrcAddVar" parent="./TrcVar"> 
-	<node id="TrAgt" parent="ATrcAddlVar"/> 
+	<node id="TrAgt" parent="ATrcAddVar"/> 
 	<cont node="./ViewData/Res" ref="./../../TrAgt"/>
     </node>
 

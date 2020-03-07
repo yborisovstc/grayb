@@ -398,6 +398,13 @@ void SystemObserver::OnCompMutated(const MUnit* aNode)
     }
 }
 
+void SystemObserver::OnError(const MUnit* aComp)
+{
+    for (auto observer : mObservers) {
+	observer->OnError(aComp);
+    }
+}
+
 
 // TODO to implement
 MIface* SystemObserver::Call(const string& aSpec, string& aRes)

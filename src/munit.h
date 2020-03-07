@@ -81,6 +81,8 @@ class MAgentObserver: public MIface
 	virtual TBool OnCompRenamed(MUnit& aComp, const string& aOldName) = 0;
 	// Extra notification for the clients handling model's chromo, ref ds_nmm, uc_066
 	virtual void OnCompMutated(const MUnit* aNode) = 0;
+	// TODO Consider passing error parameters
+	virtual void OnError(const MUnit* aComp) = 0;
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};
     protected:
@@ -103,6 +105,7 @@ class MCompsObserver
 	// For run-time only. Use OnCompChanged when the content is changed via mutation
 	virtual TBool OnChanged(MUnit& aComp) = 0;
 	virtual TBool OnCompRenamed(MUnit& aComp, const string& aOldName) = 0;
+	virtual void OnError(const MUnit* aComp) = 0;
 };
 
 /** @brief Interface of owning node in native hier tree
@@ -273,6 +276,7 @@ class MUnit : public MIface, public Base, public MOwner, public MIfProv
     virtual MUnit* GetComp(TInt aInd) = 0;
     virtual void DumpComps(TBool aRecurs = EFalse) const = 0;
     virtual void DumpContent() const = 0;
+    virtual void DumpIfProv(const string& aName, const TICacheRCtx& aCtx, const MIface* aIface) const = 0;
     /** @brief Dumps iface resolution paths */
     virtual void DumpIfPaths() const = 0;
     virtual void DumpIfCache() const = 0;

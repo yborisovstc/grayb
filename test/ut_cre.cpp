@@ -21,6 +21,7 @@ class AgentObserver: public MAgentObserver
 	virtual TBool OnChanged(MUnit& aComp);
 	virtual TBool OnCompRenamed(MUnit& aComp, const string& aOldName);
 	virtual void OnCompMutated(const MUnit* aNode);
+	virtual void OnError(const MUnit* aComp) {}
 	MIface* Call(const string& aSpec, string& aRes) override { return NULL;};
 	string Mid() const override { return string();};
     private:

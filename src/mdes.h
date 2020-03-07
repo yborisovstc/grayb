@@ -47,7 +47,7 @@ class MDesInpObserver: public MIface
     public:
 	static const char* Type() { return "MDesInpObserver";};
 	/** @brief Notification that input state was changed */
-	virtual void OnUpdated() = 0;
+	virtual void OnInpUpdated() = 0;
     public:
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};
@@ -59,6 +59,17 @@ class MDesInpObserver: public MIface
 	// Interface methods utility
 	static EIfu mIfu;
 };
+
+// Iface stub for MDesInpObserver
+class MDesInpObserver_Imd: public MDesInpObserver
+{
+    virtual MIface* MDesInpObserver_Call(const string& aSpec, string& aRes) = 0;
+    virtual string MDesInpObserver_Mid() const = 0;
+    // From MIface
+    virtual MIface* Call(const string& aSpec, string& aRes) { return MDesInpObserver_Call(aSpec, aRes);}
+    virtual string Mid() const { return MDesInpObserver_Mid();}
+};
+
 
 
 // Syncable

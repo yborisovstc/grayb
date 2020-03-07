@@ -115,7 +115,7 @@ void Ut_mut::test_Add()
 {
     printf("\n === Test#1 of mutation\n");
 
-    for (int ct = 0; ct < 1; ct++) {
+    for (int ct = 1; ct < 2; ct++) {
 	const string specn("ut_mutadd_1");
 	string ext = ct == 0 ? "xml" : "chs";
 	string spec = specn + string(".") + ext;
@@ -141,6 +141,8 @@ void Ut_mut::test_Add()
 	CPPUNIT_ASSERT_MESSAGE("Fail to get elem3/elem2/elem2_1", e3_2_1 != 0);
 	MUnit* e3 = root->GetNode("./elem3");
 	CPPUNIT_ASSERT_MESSAGE("Fail to get e3", e3 != 0);
+	MUnit* e6_2 = root->GetNode("./elem6/elem2/elem6_1/elem6_2");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get elem6_2", e6_2 != NULL);
 	MUnit* e4_ao = ee4->GetAttachedMgr();
 	CPPUNIT_ASSERT_MESSAGE("Wrong attached owner of e4", e4_ao == e4);
 	MUnit* e3_2_1_ao = ee3_2_1->GetAttachedMgr();
@@ -171,7 +173,7 @@ void Ut_mut::test_Add()
 	CPPUNIT_ASSERT_MESSAGE("Fail to get elem added", eadded1 != 0);
 #endif
 	// Mutation of type "Rename node"
-	eroot->AppendMutation(TMut(ENt_Change, ENa_MutNode, "./elem5", ENa_MutAttr, TMut::NodeAttrName(ENa_Id),
+	eroot->AppendMutation(TMut(ENt_Change, ENa_Targ, "./elem5", ENa_MutAttr, TMut::NodeAttrName(ENa_Id),
 		    ENa_MutVal, "elem5_renamed"));
 	eroot->Mutate(false, false, false, mctx);
 	MUnit* eren = root->GetNode("./elem5_renamed");

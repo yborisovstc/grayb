@@ -624,25 +624,27 @@ TBool ConnPointMcu::IsCompatible(MUnit* aPair, TBool aExt)
     TBool res = EFalse;
     TBool ext = aExt;
     MUnit *cp = aPair;
-    // Checking if the pair is Extender
-    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfi(MCompatChecker::Type(), this);
-    // Consider all pairs not supporting MCompatChecker as not compatible 
-    if (pchkr != NULL) {
-	MUnit* ecp = pchkr->GetExtd(); 
-	if (ecp != NULL ) {
-	    ext = !ext;
-	    cp = ecp;
-	}
-	if (cp != NULL) {
-	    // Check roles conformance
-	    string ppt1prov = Provided();
-	    string ppt1req = Required();
-	    MConnPoint* mcp = cp->GetObj(mcp);
-	    if (mcp != NULL) {
-		if (ext) {
-		    res = mcp->IsProvided(ppt1prov) && mcp->IsRequired(ppt1req);
-		} else {
-		    res = mcp->IsProvided(ppt1req) && mcp->IsRequired(ppt1prov);
+    if (aPair != this) {
+	// Checking if the pair is Extender
+	MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfi(MCompatChecker::Type(), this);
+	// Consider all pairs not supporting MCompatChecker as not compatible 
+	if (pchkr != NULL) {
+	    MUnit* ecp = pchkr->GetExtd(); 
+	    if (ecp != NULL ) {
+		ext = !ext;
+		cp = ecp;
+	    }
+	    if (cp != NULL) {
+		// Check roles conformance
+		string ppt1prov = Provided();
+		string ppt1req = Required();
+		MConnPoint* mcp = cp->GetObj(mcp);
+		if (mcp != NULL) {
+		    if (ext) {
+			res = mcp->IsProvided(ppt1prov) && mcp->IsRequired(ppt1req);
+		    } else {
+			res = mcp->IsProvided(ppt1req) && mcp->IsRequired(ppt1prov);
+		    }
 		}
 	    }
 	}

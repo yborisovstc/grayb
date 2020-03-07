@@ -606,9 +606,48 @@ void Unit::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     }
 }
 
+void Unit::DumpIfProv(const string& aName, const TICacheRCtx& aCtx, const MIface* aIface) const
+{
+    cout << this << ": " << GetUri(NULL, ETrue) << endl;
+    TICacheKey key(aName, aCtx);
+    auto rg = iICache.equal_range(key);
+    for (auto it = rg.first; it != rg.second; it++) {
+	MIface* iface = it->second.second;
+	if (iface == aIface) {
+	    MUnit* prov = it->second.first;
+	    if (prov != this) {
+		TICacheRCtx pctx(aCtx);
+		pctx.push_back(const_cast<Unit*>(this));
+		prov->DumpIfProv(aName, pctx, iface);
+	    }
+	}
+    }
+}
+
 void Unit::DumpIfPaths() const
 {
-    // TODO implement
+    cout << "<< IRM paths: START >>" << endl;
+    for (auto it : iICache) {
+	const string& iname = it.first.first;
+	const TICacheRCtx& ctx = it.first.second;
+	MIface* iface = it.second.second;
+	MUnit* prov = it.second.first;
+	// Output left part - requestors
+	if (!ctx.empty()) {
+	    cout << endl << ">>> [" << iname << "] -> [" << iface << ": " << (iface == NULL ? "" : iface->Uid()) << "], [" << ctx.size() << "]:" << endl;
+	    for (auto* reqe : ctx) {
+		cout << reqe << ": " << (reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue)) << endl;
+	    }
+	} else {
+	    cout << endl << ">>> [" << iname << "] -> [" << iface << ": " << (iface == NULL ? "" : iface->Uid()) << "], [none]" << endl;
+	}
+	// Output providers chain
+	cout << "==>" << endl;
+	TICacheRCtx pctx(ctx);
+	pctx.push_back(const_cast<Unit*>(this));
+	prov->DumpIfProv(iname, pctx, iface);
+    }
+    cout << "<< IRM paths: END >>" << endl;
 }
 
 void Unit::DumpIfCache() const
@@ -1516,7 +1555,7 @@ TEhr Unit::ProcessCompChanged(MUnit& aComp, const string& aContName)
 	    hres = iagent->HandleCompChanged(*this, aComp, aContName);
 	    res = hres ? EEHR_Accepted : EEHR_Denied;
 	    if (!hres) {
-		iagent->HandleCompChanged(*this, aComp, aContName);
+		//iagent->HandleCompChanged(*this, aComp, aContName);
 	    }
 	}
     }
@@ -1612,6 +1651,16 @@ TBool Unit::OnChanged(MUnit& aComp)
 	res = (pres == EEHR_Accepted);
     }
     return res;
+}
+
+void Unit::OnError(const MUnit* aComp)
+{
+    // Propagate to owner
+    if (iMan != NULL) {
+	iMan->OnError(aComp);
+    } else {
+	iEnv->Observer()->OnError(aComp);
+    }
 }
 
 MUnit* Unit::GetCompOwning(const string& aParent, MUnit* aElem)

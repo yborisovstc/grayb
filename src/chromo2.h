@@ -64,6 +64,7 @@ class C2MdlNode
     public:
 	void CloneFrom(const C2MdlNode& aSrc);
 	void AddContext(const string& aType, const string& aValue);
+	void RmContext(TNodeAttr aAttr);
 	C2MdlNode* GetNextComp(C2MdlNode* aComp);
 	C2MdlNode* GetPrevComp(C2MdlNode* aComp);
 	void BindTree(C2MdlNode* aOwner);
@@ -74,6 +75,7 @@ class C2MdlNode
 	TC2MdlCtx mContext; /*!< Context */
 	C2Mut mMut;                    /*!< Mutation */
 	TC2MdlNodes mChromo;     /*!< Chromosome */
+	TInt mChromoPos; /*!< Corresponding position in chromo */
 };
 
 /** @brief Chromo2 model unit with mut

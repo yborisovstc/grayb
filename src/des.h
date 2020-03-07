@@ -298,6 +298,7 @@ class MDesObserver_Imd: public MDesObserver
 };
 
 // Iface stub to avoid clashing MIface methods
+#if 0
 class MDesInpObserver_Imd: public MDesInpObserver
 {
     virtual MIface* MDesInpObserver_Call(const string& aSpec, string& aRes) = 0;
@@ -306,6 +307,7 @@ class MDesInpObserver_Imd: public MDesInpObserver
     virtual MIface* Call(const string& aSpec, string& aRes) { return MDesInpObserver_Call(aSpec, aRes);};
     virtual string Mid() const { return MDesInpObserver_Mid();};
 };
+#endif
 
 // State base agent
 class StateAgent: public Elem, public MDesSyncable_Imd, public MDesInpObserver_Imd, public MAgent
@@ -328,7 +330,7 @@ class StateAgent: public Elem, public MDesSyncable_Imd, public MDesInpObserver_I
 	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes);
 	virtual string MDesSyncable_Mid() const;
 	// From MDesInpObserver
-	virtual void OnUpdated();
+	virtual void OnInpUpdated();
 	virtual MIface* MDesInpObserver_Call(const string& aSpec, string& aRes);
 	virtual string MDesInpObserver_Mid() const;
 	// From MAgent
@@ -365,7 +367,7 @@ class AState: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, pu
 	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes);
 	virtual string MDesSyncable_Mid() const;
 	// From MDesInpObserver
-	virtual void OnUpdated();
+	virtual void OnInpUpdated();
 	virtual MIface* MDesInpObserver_Call(const string& aSpec, string& aRes);
 	virtual string MDesInpObserver_Mid() const;
 	// From MAgent
@@ -452,7 +454,7 @@ class AStatec: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, p
 	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes);
 	virtual string MDesSyncable_Mid() const;
 	// From MDesInpObserver
-	virtual void OnUpdated();
+	virtual void OnInpUpdated();
 	virtual MIface* MDesInpObserver_Call(const string& aSpec, string& aRes);
 	virtual string MDesInpObserver_Mid() const;
 	// From MConnPoint

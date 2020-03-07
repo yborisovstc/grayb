@@ -99,8 +99,9 @@ void Ut_uri::test_UriBase()
     CPPUNIT_ASSERT_MESSAGE("Fail to get node via incorrect  uri", enode == NULL);
 
     // Getting inheritance root
-    enode = root->GetNode(":Elem");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get inher root", enode != NULL);
+    // Not supporting inheritance hier atm
+    //enode = root->GetNode(":Elem");
+    //CPPUNIT_ASSERT_MESSAGE("Fail to get inher root", enode != NULL);
 
     // Getting native agent
     enode = root->GetNode("Elem");
@@ -116,6 +117,15 @@ void Ut_uri::test_UriBase()
 
     MUnit* enode2 = root->GetNode("./test/Incr");
     CPPUNIT_ASSERT_MESSAGE("Fail to get Incr", enode2 != NULL);
+    // Not suported
+    MUnit* enode2a = root->GetNode("./*/Incr");
+    //CPPUNIT_ASSERT_MESSAGE("Fail to get ./*/Incr", enode2a != NULL);
+    // Not suported
+    MUnit* enode2b = root->GetNode("./test/*/Capsule");
+    //CPPUNIT_ASSERT_MESSAGE("Fail to get ./test/*/Capsule", enode2b != NULL);
+    // Only any root is supported
+    MUnit* enode2c = root->GetNode("/*/test/Incr");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get /*/test/Incr", enode2c != NULL);
     MUnit* owner = enode2->GetNode("./..");
     CPPUNIT_ASSERT_MESSAGE("Fail to get current owner", owner != NULL);
     // Generating native agent relative uri

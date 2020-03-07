@@ -108,6 +108,7 @@ class SystemObserver: public MAgentObserver
 	virtual TBool OnChanged(MUnit& aComp) override;
 	virtual TBool OnCompRenamed(MUnit& aComp, const string& aOldName) override;
 	virtual void OnCompMutated(const MUnit* aNode) override;
+	virtual void OnError(const MUnit* aComp) override;
 	// From MIface
 	virtual MIface* Call(const string& aSpec, string& aRes);
     private:

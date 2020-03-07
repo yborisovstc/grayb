@@ -333,7 +333,7 @@ DesComps : Elem
   $ # " Transition of variable data : Addition ";
   TrcAddVar : ./TrcVar
   {
-    TrAgt : ATrcAddlVar;
+    TrAgt : ATrcAddVar;
     ./ViewData/Res - $ = ./../../TrAgt;
   }
   $ # " END. Transition supported combined chain approach, ref ds_mae_scc ";

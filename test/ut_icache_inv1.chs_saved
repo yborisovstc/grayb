@@ -1,0 +1,49 @@
+Root : Elem
+{
+    Modules : Elem
+    {
+        $ + /IncapsComps/Incaps;
+        $ + /DataComps/DataSUInt;
+        $ + /DataComps/DataSUVar;
+        $ + /FuncComps/TFAddVar;
+        $ + /DesComps/Des;
+        $ + /DesComps/StateVar;
+    }
+    IncapsRoot : /Root/Modules/IncapsComps/Incaps
+    {
+        DesRoot : /Root/Modules/DesComps/Des
+        {
+            st : /(Elem:)Root/(Elem:)Modules/(Elem:)DesComps/(State:)StateVar
+            {
+                Add : /(Elem:)Root/(Elem:)Modules/FuncComps/TFAddVar;
+                /Root/IncapsRoot/DesRoot/st/Capsule/Inp/Int/PinData ~ /Root/IncapsRoot/DesRoot/st/Add/Capsule/Inp;
+                222049375 : Edge
+                {
+                    ./(Prop:)P1 - $ = /(Elem:)Root/(Incaps:)IncapsRoot/(Des:)DesRoot/(StateVar:)st/Capsule/Inp/(StInpSocket:)Int/PinData;
+                    ./(Prop:)P2 - $ = /(Elem:)Root/(Incaps:)IncapsRoot/(Des:)DesRoot/(StateVar:)st/Add/Capsule/Inp;
+                }
+                820889547 : Edge
+                {
+                    ./(Prop:)P2 - $ = /(Elem:)Root/(Incaps:)IncapsRoot/(Des:)DesRoot/(StateVar:)st/Add/Capsule/Out;
+                    ./(Prop:)P1 - $ = /(Elem:)Root/(Incaps:)IncapsRoot/(Des:)DesRoot/(StateVar:)st/(DataSCVar:)Prepared/Capsule/Inp;
+                }
+                Const1 : /(Elem:)Root/(Elem:)Modules/(Elem:)DataComps/(DataSU:)DataSUVar
+                {
+                    ./Value - $ = "F 0.1";
+                }
+                969163776 : Edge
+                {
+                    ./(Prop:)P2 - $ = /(Elem:)Root/(Incaps:)IncapsRoot/(Des:)DesRoot/(StateVar:)st/(DataSUVar:)Const1/Capsule/out;
+                    ./(Prop:)P1 - $ = /(Elem:)Root/(Incaps:)IncapsRoot/(Des:)DesRoot/(StateVar:)st/Add/Capsule/Inp;
+                }
+                ./(DataSCVar:)Confirmed/Value - $ = "F 0";
+                ./(DataSCVar:)Prepared/Value - $ = "F 0";
+            }
+            E_back : Edge
+            {
+                ./(Prop:)P2 - $ = /(Elem:)Root/(Incaps:)IncapsRoot/(Des:)DesRoot/(StateVar:)st/Capsule/Out;
+            }
+            $ # " <cont node=\"./E_back/P1\" ref=\"/Root/IncapsRoot/DesRoot/st/Capsule/Inp\"/> ";
+        }
+    }
+}

@@ -116,6 +116,7 @@ include_HEADERS = \
 		  msyst.h \
 		  mprofiler.h \
 		  profiler.h \
+		  data.h \
 		  incaps.h
 
 

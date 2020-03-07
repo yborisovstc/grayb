@@ -912,7 +912,7 @@ void StateAgent::Confirm()
 		for (TIfIter it = range.first; it != range.second; it++) {
 		    MDesInpObserver* mobs = (MDesInpObserver*) (*it);
 		    if (mobs != NULL) {
-			mobs->OnUpdated();
+			mobs->OnInpUpdated();
 		    }
 		}
 		// Activate mgr
@@ -978,7 +978,7 @@ string StateAgent::MDesSyncable_Mid() const
     return GetUri(iEnv->Root(), ETrue);
 }
 
-void StateAgent::OnUpdated()
+void StateAgent::OnInpUpdated()
 {
     // Mark active
     SetActive();
@@ -997,7 +997,7 @@ MIface* StateAgent::MDesInpObserver_Call(const string& aSpec, string& aRes)
     if (!args_ok)
 	throw (runtime_error("Wrong arguments number"));
     if (name == "OnUpdated") {
-	OnUpdated();
+	OnInpUpdated();
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }
@@ -1102,7 +1102,7 @@ void AState::Confirm()
 	    for (TIfIter it = range.first; it != range.second; it++) {
 		MDesInpObserver* mobs = (MDesInpObserver*) (*it);
 		if (mobs != NULL) {
-		    mobs->OnUpdated();
+		    mobs->OnInpUpdated();
 		}
 	    }
 	    if (IsLogeventUpdate()) {
@@ -1171,7 +1171,7 @@ string AState::MDesSyncable_Mid() const
     return GetUri(iEnv->Root(), ETrue);
 }
 
-void AState::OnUpdated()
+void AState::OnInpUpdated()
 {
     // Mark active
     SetActive();
@@ -1190,7 +1190,7 @@ MIface* AState::MDesInpObserver_Call(const string& aSpec, string& aRes)
     if (!args_ok)
 	throw (runtime_error("Wrong arguments number"));
     if (name == "OnUpdated") {
-	OnUpdated();
+	OnInpUpdated();
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }
@@ -1521,7 +1521,7 @@ void AStatec::Confirm()
 		for (TIfIter it = range.first; it != range.second; it++) {
 		    MDesInpObserver* mobs = (MDesInpObserver*) (*it);
 		    if (mobs != NULL) {
-			mobs->OnUpdated();
+			mobs->OnInpUpdated();
 		    }
 		}
 	    }
@@ -1599,7 +1599,7 @@ string AStatec::MDesSyncable_Mid() const
     return GetUri(iEnv->Root(), ETrue);
 }
 
-void AStatec::OnUpdated()
+void AStatec::OnInpUpdated()
 {
     // Mark active
     SetActive();
@@ -1618,7 +1618,7 @@ MIface* AStatec::MDesInpObserver_Call(const string& aSpec, string& aRes)
     if (!args_ok)
 	throw (runtime_error("Wrong arguments number"));
     if (name == "OnUpdated") {
-	OnUpdated();
+	OnInpUpdated();
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }

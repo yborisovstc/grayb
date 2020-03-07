@@ -168,6 +168,7 @@ class Unit: public MUnit
 	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
 	virtual TBool OnCompRenamed(MUnit& aComp, const string& aOldName);
 	virtual TBool OnChanged(MUnit& aComp);
+	virtual void OnError(const MUnit* aComp) override;
 	// Ifaces cache
 	virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx());
 	void RmIfCache(IfIter& aIt);
@@ -228,6 +229,7 @@ class Unit: public MUnit
 	virtual void DumpContent() const;
 	virtual void DumpIfPaths() const override;
 	virtual void DumpIfCache() const override;
+	virtual void DumpIfProv(const string& aName, const TICacheRCtx& aCtx, const MIface* aIface) const override;
 	static void DumpIfCtx(const TICacheRCtx& aCtx);
 	static void DumpIfRange(const TIfRange& aCtx);
     public:
