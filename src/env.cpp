@@ -403,6 +403,11 @@ void SystemObserver::OnError(const MUnit* aComp)
     for (auto observer : mObservers) {
 	observer->OnError(aComp);
     }
+    // Stop launcher
+    bool stopped = mHost.StopSystem();
+    if (!stopped) {
+	mHost.Logger()->Write(EErr, NULL, "Cannot stop system");
+    }
 }
 
 
@@ -538,12 +543,31 @@ void Env::ConstructSystem()
 	    Logger()->Write(EInfo, iRoot, "Completed of creating system, nodes: %d, imported: %d, time, us: %s", cpc,  cpi, ss.str().c_str());
 	    //Logger()->Write(EInfo, iRoot, "Components");
 	    //iRoot->LogComps();
-	}
-	else {
+	    // Set launcher
+	    mLauncher = dynamic_cast<MLauncher*>(iRoot->MUnit::GetSIfi(MLauncher::Type()));
+	    if (mLauncher == NULL) {
+		Logger()->Write(EErr, NULL, "Cannot find launcher");
+	    }
+	} else {
 	    Logger()->WriteFormat("Env: cannot create root elem");
 	}
 	Pdur(PEvents::Dur_Env_Constr);
     }
+}
+
+TBool Env::RunSystem()
+{
+    TBool res = EFalse;
+    if (iRoot) {
+	if (mLauncher) {
+	    res = mLauncher->Run();
+	} else {
+	    Logger()->Write(EErr, NULL, "Cannot find launcher");
+	}
+    } else {
+	Logger()->Write(EErr, NULL, "Attempt of running not constructed system");
+    }
+    return res;
 }
 
 MChromoMgr* Env::ChMgr()
@@ -571,12 +595,17 @@ MUnit* Env::Root()
     return iRoot; 
 }
 
-void Env::AddProvider(MProvider* aProv)
+// TODO add AddProvider, RemoveProvider to MProvider and use MEnv::Provider() to call
+TBool Env::AddProvider(MProvider* aProv)
 {
+    TBool res = ETrue;
     __ASSERT(aProv != NULL);
-    iProvider->AddProvider(aProv);
-    aProv->SetEnv(NULL);
-    aProv->SetEnv(this);
+    res = iProvider->AddProvider(aProv);
+    if (res) {
+	aProv->SetEnv(NULL);
+	aProv->SetEnv(this);
+    }
+    return res;
 }
 
 void Env::RemoveProvider(MProvider* aProv)
@@ -696,4 +725,13 @@ void Env::OnRootDeleted()
 MProfiler* Env::Profiler()
 {
     return mProf;
+}
+
+TBool Env::StopSystem()
+{
+    TBool res = EFalse;
+    if (mLauncher) {
+	res = mLauncher->Stop();
+    }
+    return res;
 }

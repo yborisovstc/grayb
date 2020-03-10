@@ -4,6 +4,7 @@
 #include "mplugin.h"
 #include <dlfcn.h>
 #include <dirent.h>
+#include <iostream>
 
 
 // Plugins default dir
@@ -80,9 +81,7 @@ TBool GFactory::LoadPlugin(const string& aName)
     string plgpath = KPluginDir + aName;
     void* handle = dlopen(plgpath.c_str(), RTLD_NOW|RTLD_LOCAL|RTLD_DEEPBIND);
     if (handle != NULL) {
-	dlerror();
 	plugin_init_func_t* init = (plugin_init_func_t*) dlsym(handle, "init");
-	char* str_error = dlerror();
 	if (init!= NULL) {
 	    prov = init(iEnv);
 	    if (prov != NULL) {
@@ -93,6 +92,9 @@ TBool GFactory::LoadPlugin(const string& aName)
 	if (!res) {
 	    dlclose(handle);
 	}
+    } else {
+	char* err = dlerror();
+	cout << "Failed loading plugin: " << err << endl;
     }
     return res;
 }
@@ -117,12 +119,17 @@ void GFactory::LoadPlugins()
     }
 }
 
-void GFactory::AddProvider(MProvider* aProv)
+TBool GFactory::AddProvider(MProvider* aProv)
 {
+    TBool res = ETrue;
     // TODO To support name
-    TProviders::const_iterator res = iProviders.find(aProv->Name());
-    __ASSERT(res == iProviders.end());
-    iProviders.insert(TProvidersElem(aProv->Name(), aProv));
+    TProviders::const_iterator found = iProviders.find(aProv->Name());
+    if(found == iProviders.end()) {
+	iProviders.insert(TProvidersElem(aProv->Name(), aProv));
+    } else {
+	res = EFalse;
+    }
+    return res;
 }
 
 void GFactory::RemoveProvider(MProvider* aProv)

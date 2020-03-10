@@ -940,6 +940,7 @@ MUnit* Elem::GetInhRoot() const
 
 TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode, const MutCtx& aCtx)
 {
+    __ASSERT(!aSpec.AttrExists(ENa_Comp));
     TBool res = EFalse;
     TBool epheno = iEnv->ChMgr()->EnablePhenoModif();
     string snode;
@@ -960,7 +961,8 @@ TBool Elem::RmNode(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, 
 		// Refuse removing if there are other critical deps (e.g. -ref-)
 		// TODO [YB] To add checking refs
 		if (ETrue) {
-		    node->SetRemoved(aRunTime);
+		    //node->SetRemoved(aRunTime);
+		    delete node;
 		} else {
 		    Logger()->Write(EErr, this,
 			    "Removing node [%s], refused, there is ref [%s] to the node, release first",
@@ -1312,7 +1314,7 @@ TBool Elem::HasInherDeps(const MUnit* aScope) const
     for (TNEReg::const_iterator it = iMComps.begin(); it != iMComps.end() && !res; it++) {
 	MUnit* comp = it->second;
 	MElem* ecomp = comp->GetObj(ecomp);
-	res = !comp->IsRemoved() && ecomp->HasInherDeps(aScope);
+	res = !comp->IsRemoved() && (ecomp != NULL) && ecomp->HasInherDeps(aScope);
     }
     return res;
 }

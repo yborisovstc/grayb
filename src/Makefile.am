@@ -94,6 +94,7 @@ include_HEADERS = \
 		  mplugin.h \
 		  mmod.h \
 		  mprop.h \
+		  mlauncher.h \
 		  mvert.h \
 		  log.h \
 		  menv.h \

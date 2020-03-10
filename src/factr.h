@@ -18,7 +18,7 @@ class GFactory: public Base, public MProvider
 	virtual ~GFactory();
 	TBool LoadPlugin(const string& aName);
 	void LoadPlugins();
-	void AddProvider(MProvider* aProv);
+	TBool AddProvider(MProvider* aProv);
 	void RemoveProvider(MProvider* aProv);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName) override { return NULL;}

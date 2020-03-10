@@ -30,7 +30,7 @@
     <node id="VB" parent="./VA"/>
     <node targ="./VB/VA_1/VP_1/VM_1" id="VA_1_1_B1" parent="Vert"></node>
     <node targ="./VB/VA_1" id="VA_1_B2" parent="Vert"></node>
-    <rm targ="./VB/VA_1" comp="./VA_1_B2"/>
+    <rm targ="./VB/VA_1/VA_1_B2"/>
     <node targ="./VB" id="VB_1" parent="./VA_1"/>
 </node>
 

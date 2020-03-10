@@ -40,7 +40,7 @@ const ProvDef::TFReg ProvDef::mReg ( {
     Item<ATrBcmpVar>(), Item<ConnPointBase>(), Item<ConnPointBaseInp>(), Item<ConnPointBaseOut>(), Item<ConnPointMc>(),
     Item<AExtd>(), Item<AExtdInp>(), Item<AExtdOut>(), Item<ASocketMcm>(), Item<ASocketInpMcm>(), Item<ASocketOutMcm>(),
     Item<ConnPointMcu>(), Item<AExtdu>(), Item<AExtduInp>(), Item<AExtduOut>(), Item<AState>(), Item<AStatec>(),
-    Item<CpStatecInp>(), Item<CpStatecOutp>(),Item<ATrcBase>(), Item<ATrcVar>(), Item<ATrcAddVar>()
+    Item<CpStatecInp>(), Item<CpStatecOutp>(),Item<ATrcBase>(), Item<ATrcVar>(), Item<ATrcAddVar>(), Item<ADesLauncher>()
 });
 
 

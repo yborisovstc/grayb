@@ -4,6 +4,7 @@
 #include "elem.h"
 #include "mdata.h"
 #include "mdes.h"
+#include "mlauncher.h"
 #include "func.h"
 #include "vert.h"
 #include "syst.h"
@@ -524,5 +525,25 @@ class ADes: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 	TBool iUpdated;
 };
 
+/** @brief Launcher of DES
+ * */
+class ADesLauncher: public Elem, public MLauncher, public MAgent
+{
+    public:
+	static const char* Type() { return "ADesLauncher";};
+	static string PEType();
+	ADesLauncher(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual MIface* DoGetObj(const char *aName);
+	// From MLauncher
+	virtual TBool Run() override;
+	virtual TBool Stop() override;
+	// From MAgent
+	MIface* MAgent_DoGetIface(const string& aName) override;
+	// Local
+	virtual void OnIdle();
+    protected:
+	TBool mStop;
+};
 
 #endif

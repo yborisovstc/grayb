@@ -3,6 +3,7 @@
 
 #include "base.h"
 #include "menv.h"
+#include "mlauncher.h"
 #include "ifu.h"
 #include "guri.h"
 #include "profiler.h"
@@ -120,13 +121,15 @@ class SystemObserver: public MAgentObserver
 class Env: public Base, public MEnv
 {
     friend class ChromoMgr;
+    friend class SystemObserver;
+
     public:
     static const char* Type() { return "GEnv";};
     Env(const string& aSpecFile, const string& aLogFileName = string());
     Env(const string& aSpec, const string& aLogFileName, TBool aOpt);
     virtual ~Env();
     // Separated from constructor because constr can be followed by second phase - setting providers etc.
-    void AddProvider(MProvider* aProv);
+    TBool AddProvider(MProvider* aProv);
     void RemoveProvider(MProvider* aProv);
     // TODO [YB] To implement external iface provider as env module (plugin), to add provider of env modules
     void SetExtIfProv(MExtIfProv* aProv);
@@ -147,7 +150,9 @@ class Env: public Base, public MEnv
     virtual void SetSBool(TSBool aId, TBool aVal);
     virtual void SetEVar(const string& aName, const string& aValue);
     virtual TBool GetEVar(const string& aName, string& aValue) const;
-    virtual void ConstructSystem();
+    virtual void ConstructSystem() override;
+    virtual TBool RunSystem() override;
+    virtual TBool StopSystem() override;
     virtual void OnRootDeleted();
     virtual void SetObserver(MAgentObserver* aObserver) override { mObserver->SetObserver(aObserver);}
     virtual void UnsetObserver(MAgentObserver* aObserver) override { mObserver->UnsetObserver(aObserver);}
@@ -185,6 +190,7 @@ class Env: public Base, public MEnv
     SystemObserver* mObserver;
     /** Profiler */
     GProfiler* mProf;
+    MLauncher* mLauncher = NULL; /*!< Model's launcher */
 };
 
 

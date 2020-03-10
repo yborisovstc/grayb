@@ -26,6 +26,7 @@ Options:\n\
 -f - format chromo spec\n\
 -l <file> - log file\n\
 -p <file> - profiler file\n\
+-m <path> - pahth to module files\n\
 -a        - auto-run\n\
 -s <file> - spec file\n\
 -o <file> - converted spec file\n\
@@ -49,13 +50,19 @@ int main(int argc, char* argv[])
 		if (!spres) {
 		    cout << "Cannot open log file";
 		}
-
 	    } else if (arg.compare(0, 2, "-p") == 0) {
 		// Profile file
 		string path = arg.substr(2);
 		bool spres = mnt.setProfPath(path);
 		if (!spres) {
 		    cout << "Cannot open profiler file";
+		}
+	    } else if (arg.compare(0, 2, "-m") == 0) {
+		// Path to modules
+		string path = arg.substr(2);
+		bool spres = mnt.setModulePath(path);
+		if (!spres) {
+		    cout << "Cannot find module path";
 		}
 	    } else if (arg.compare(0, 2, "-s") == 0) {
 		// Spec file

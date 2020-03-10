@@ -1975,3 +1975,75 @@ string ADes::MDesObserver_Mid() const
     return GetUri(iEnv->Root(), ETrue);
 }
 
+
+
+// DES launcher
+
+const string KCont_TopDesUri = "Path";
+
+string ADesLauncher::PEType()
+{
+    return Elem::PEType() + GUri::KParentSep + Type();
+}
+
+ADesLauncher::ADesLauncher(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), mStop(EFalse)
+{
+    SetCrAttr(PEType(), aName);
+    InsertContent(KCont_TopDesUri);
+}
+
+MIface *ADesLauncher::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MLauncher::Type()) == 0) {
+	res = dynamic_cast<MLauncher*>(this);
+    } else if (strcmp(aName, MAgent::Type()) == 0)
+	res = dynamic_cast<MAgent*>(this);
+    else {
+	res = Elem::DoGetObj(aName);
+    }
+    return res;
+}
+
+MIface* ADesLauncher::MAgent_DoGetIface(const string& aName)
+{
+    return DoGetObj(aName.c_str());
+}
+
+TBool ADesLauncher::Run()
+{
+    TBool res = ETrue;
+    const string path = GetContent(KCont_TopDesUri);
+    MUnit* desu = GetNode(path, ETrue);
+    if (desu != NULL) {
+	MDesSyncable* sync = dynamic_cast<MDesSyncable*>(desu->GetSIfi(MDesSyncable::Type()));
+	if (sync) {
+	    mStop = EFalse;
+	    while (!mStop) {
+		if (sync->IsActive()) {
+		    sync->Update();
+		} else if (sync->IsUpdated()) {
+		    sync->Confirm();
+		} else {
+		    OnIdle();
+		}
+	    }
+
+	} else {
+	    Logger()->Write(EErr, this, "Cannot get DES syncable from [%s]", path.c_str());
+	}
+    } else {
+	Logger()->Write(EErr, this, "Cannot get DES to run [%s]", path.c_str());
+    }
+    return res;
+}
+
+TBool ADesLauncher::Stop()
+{
+    mStop = ETrue;
+}
+
+void ADesLauncher::OnIdle()
+{
+}
+

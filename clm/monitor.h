@@ -42,6 +42,10 @@ class Monitor
 	 * @return Sign of sucess
 	 * */
 	bool formatSpec();
+	/** @brief Sets module path
+	 * @return Sign of sucess
+	 * */
+	bool setModulePath(const string& aPath);
     protected:
 	/** @brief Creates input handler for given command */
 	InputHandler* createHandler(const string& aCmd);
@@ -53,6 +57,7 @@ class Monitor
 	string mLogName;
 	/** Profiler file path */
 	string mProfName;
+	vector<string> mModPaths; /*!< Module paths */	
 	Env* mEnv;
 	string mPrompt;
 	static const string KDefPrompt;

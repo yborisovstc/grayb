@@ -367,8 +367,11 @@ TBool Chromo2Mdl::AttrExists(const THandle& aHandle, TNodeAttr aAttr) const
     } else if (aAttr == ENa_MutAttr) {
 	res = (rel == KMS_Rename);
     } else if (aAttr == ENa_MutNode) {
-	res = (rel == KMS_Remove) ||
-	    (((rel == KMS_Add) || (rel == KMS_Cont) || rel.empty()) && node->ExistsContextByAttr(ENa_MutNode));
+	if (rel == KMS_Remove) {
+	    res = !node->mMut.mP.empty();
+	} else {
+	    res = ((rel == KMS_Add) || (rel == KMS_Cont) || rel.empty()) && node->ExistsContextByAttr(ENa_MutNode);
+	}
     } else if (aAttr == ENa_P) {
 	    res = ((rel == KMS_Conn || rel == KMS_Disconn) && !node->mMut.mP.empty());
     } else if (aAttr == ENa_Q) {

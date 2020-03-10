@@ -7,6 +7,7 @@
 
 
 #include <mprov.h>
+#include <mlog.h>
 
 #include "monitor.h"
 
@@ -45,8 +46,12 @@ void Monitor::initEnv()
     }
     if (mLogName.empty()) {
 	// Assuming log name is default
+	mLogName = mSpecName + ".log";
     }
     mEnv = new Env(mSpecName, mLogName);
+    for (auto path : mModPaths) {
+	mEnv->ImpsMgr()->AddImportsPaths(path);
+    }
 }
 
 
@@ -54,6 +59,12 @@ void Monitor::runModel()
 {
     assert(mEnv != nullptr);
     mEnv->ConstructSystem();
+    if (mEnv->Root() != NULL) {
+	bool res = mEnv->RunSystem();
+	if (!res) {
+	    mEnv->Logger()->Write(EErr, NULL, "Monitor: Failed running the model");
+	}
+    }
 }
 
 bool Monitor::setProfPath(const string& aPath)
@@ -68,6 +79,13 @@ bool Monitor::setProfPath(const string& aPath)
     }
     */
     mProfName = aPath;
+    return res;
+}
+
+bool Monitor::setModulePath(const string& aPath)
+{
+    bool res = true;
+    mModPaths.push_back(aPath);
     return res;
 }
 
