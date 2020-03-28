@@ -106,7 +106,7 @@ class ATrVar: public ATrBase, public MDVarGet, public Func::Host
 	virtual TIfRange GetInps(TInt aId, TBool aOpt = EFalse);
 	virtual void OnFuncContentChanged();
 	virtual void LogWrite(TLogRecCtg aCtg, const char* aFmt,...);
-	virtual Elem* GetAgent() {return this;};
+	virtual Unit* GetAgent() override {return this;};
 	virtual TInt GetInpCpsCount() const {return 0;};
 	// From Elem
 	virtual TBool GetCont(string& aCont, const string& aName=string()) const; 
@@ -288,6 +288,34 @@ class ATrcAddVar: public ATrcVar
 
 
 
+/** @brief Transition function base: unit based, monolitic
+ * */
+class ATrmVar: public Vertu, public MDVarGet, public Func::Host
+{
+    public:
+	static const char* Type() { return "ATrmVar";};
+	static string PEType();
+	ATrmVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual MIface* DoGetObj(const char *aName);
+	// From MDVarGet
+	virtual string VarGetIfid();
+	virtual void *DoGetDObj(const char *aName);
+	// From Func::Host
+	virtual TIfRange GetInps(TInt aId, TBool aOpt = EFalse);
+	virtual void OnFuncContentChanged();
+	virtual void LogWrite(TLogRecCtg aCtg, const char* aFmt,...);
+	virtual Unit* GetAgent() override {return this;};
+	virtual TInt GetInpCpsCount() const {return 0;};
+	// From Elem
+	virtual TBool GetCont(string& aCont, const string& aName=string()) const; 
+    protected:
+	virtual void Init(const string& aIfaceName) {};
+	virtual string GetInpUri(TInt aId) const;
+    protected:
+	Func* mFunc;
+};
+
 // Iface stub to avoid clashing MIface methods
 class MDesObserver_Imd: public MDesObserver
 {
@@ -330,6 +358,8 @@ class StateAgent: public Elem, public MDesSyncable_Imd, public MDesInpObserver_I
 	virtual void ResetActive();
 	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes);
 	virtual string MDesSyncable_Mid() const;
+	virtual void DumpActive() override {}
+	virtual void DumpUpdated() override {}
 	// From MDesInpObserver
 	virtual void OnInpUpdated();
 	virtual MIface* MDesInpObserver_Call(const string& aSpec, string& aRes);
@@ -367,6 +397,8 @@ class AState: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, pu
 	virtual void ResetActive();
 	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes);
 	virtual string MDesSyncable_Mid() const;
+	virtual void DumpActive() override {}
+	virtual void DumpUpdated() override {}
 	// From MDesInpObserver
 	virtual void OnInpUpdated();
 	virtual MIface* MDesInpObserver_Call(const string& aSpec, string& aRes);
@@ -454,6 +486,8 @@ class AStatec: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, p
 	virtual void ResetActive();
 	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes);
 	virtual string MDesSyncable_Mid() const;
+	virtual void DumpActive() override {}
+	virtual void DumpUpdated() override {}
 	// From MDesInpObserver
 	virtual void OnInpUpdated();
 	virtual MIface* MDesInpObserver_Call(const string& aSpec, string& aRes);
@@ -475,7 +509,9 @@ class AStatec: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, p
 	// From MBdVarHost
 	virtual MDVarGet* HGetInp(const Base* aRmt) override;
 	virtual void HOnDataChanged(const Base* aRmt) override;
+	virtual string GetUid() { return GetUri(NULL, ETrue);}
 	// From MDVarSet
+	virtual string MDVarGet_Mid() const {return GetUri(NULL, ETrue);}
 	virtual string VarGetSIfid();
 	virtual MIface *DoGetSDObj(const char *aName) override;
 
@@ -513,6 +549,8 @@ class ADes: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 	virtual void ResetActive();
 	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes);
 	virtual string MDesSyncable_Mid() const;
+	virtual void DumpActive() override;
+	virtual void DumpUpdated() override;
 	// From MDesObserver
 	virtual void OnActivated();
 	virtual void OnUpdated();

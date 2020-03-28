@@ -30,6 +30,8 @@ class MIface
 	// TODO to introduce GUID - ID unique in the scope of the whole model
 };
 
+	const string KIfaceUidCompDelim = "@";
+
 /**
  * @brief Interface of interface. Stub
  */

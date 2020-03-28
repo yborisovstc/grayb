@@ -1,4 +1,6 @@
 
+#include <iostream> 
+
 #include "des.h"
 #include "edge.h"
 #include "prov.h"
@@ -822,6 +824,117 @@ string ATrcAddVar::GetInpUri(TInt aId) const
 }
 
 
+// Transition function of variable type, monolitic
+
+string ATrmVar::PEType()
+{
+    return Vertu::PEType() + GUri::KParentSep + Type();
+}
+
+ATrmVar::ATrmVar(const string& aName, MUnit* aMan, MEnv* aEnv): Vertu(aName, aMan, aEnv), mFunc(NULL)
+{
+}
+
+MIface *ATrmVar::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MDVarGet::Type()) == 0) {
+	res = (MDVarGet*) this;
+    }
+    else {
+	res = Vertu::DoGetObj(aName);
+    }
+    if (res == NULL) {
+	if (mFunc == NULL) {
+	    Init(aName);
+	    if (mFunc != NULL) {
+		res = mFunc->DoGetObj(aName);
+	    }
+	}
+	else {
+	    res = mFunc->DoGetObj(aName);
+	    if (res == NULL) {
+		Init(aName);
+		if (mFunc != NULL) {
+		    res = mFunc->DoGetObj(aName);
+		}
+	    }
+	}
+    }
+    return res;
+}
+
+string ATrmVar::VarGetIfid()
+{
+    return mFunc != NULL ? mFunc->IfaceGetId() : string();
+}
+
+void *ATrmVar::DoGetDObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (mFunc == NULL) {
+	Init(aName);
+	if (mFunc != NULL) {
+	    res = mFunc->DoGetObj(aName);
+	}
+    }
+    else {
+	res = mFunc->DoGetObj(aName);
+	if (res == NULL) {
+	    Init(aName);
+	    if (mFunc != NULL) {
+		res = mFunc->DoGetObj(aName);
+	    }
+	}
+    }
+    return res;
+}
+
+string ATrmVar::GetInpUri(TInt aId) const 
+{
+    if (aId == Func::EInp1) return "Inp1";
+    else if (aId == Func::EInp2) return "Inp2";
+    else if (aId == Func::EInp3) return "Inp3";
+    else if (aId == Func::EInp4) return "Inp4";
+    else return string();
+}
+
+Elem::TIfRange ATrmVar::GetInps(TInt aId, TBool aOpt)
+{
+    TIfRange res;
+    MUnit* inp = GetNode("./" + GetInpUri(aId));
+    if (inp != NULL) {
+	res =  inp->GetIfi(MDVarGet::Type(), this);
+    }
+    else if (!aOpt) {
+	Logger()->Write(EErr, this, "Cannot get input [%s]", GetInpUri(aId).c_str());
+    }
+    return res;
+}
+
+void ATrmVar::OnFuncContentChanged()
+{
+    OnChanged(*this);
+}
+
+TBool ATrmVar::GetCont(string& aCont, const string& aName) const
+{
+    TBool res = EFalse;
+    if (mFunc != NULL) {
+	mFunc->GetResult(aCont);
+	res = ETrue;
+    }
+    return res;
+}
+
+void ATrmVar::LogWrite(TLogRecCtg aCtg, const char* aFmt,...)
+{
+    va_list list;
+    va_start(list,aFmt);
+    Logger()->Write(aCtg, this, aFmt, list);
+}
+
+
 
 
 
@@ -1315,7 +1428,7 @@ TEhr AState::ProcessCompChanged(MUnit& aComp, const string& aContName)
 	if (sres) {
 	    res = EEHR_Accepted;
 	}  else {
-	    Logger()->Write(EErr, this, "[%s] Error on applying content [%s]", GetUri().c_str(), aContName.c_str());
+	    Logger()->Write(EErr, this, "[%s] Error on applying content [%s]", GetUri(NULL, true).c_str(), aContName.c_str());
 	    res = EEHR_Denied;
 	}
     } else {
@@ -1737,11 +1850,14 @@ TEhr AStatec::ProcessCompChanged(MUnit& aComp, const string& aContName)
     if (&aComp == this && aContName == KContVal) {
 	string val = GetContent(KContVal);
 	TBool sres = mPdata->FromString(val);
-	sres = sres && mCdata->FromString(val);
-	if (mPdata->IsValid() && mCdata->IsValid()) {
+	//sres = sres && mCdata->FromString(val);
+	if (mPdata->IsValid()/* && mCdata->IsValid()*/) {
 	    res = EEHR_Accepted;
+	    if (sres) {
+		SetActive();
+	    }
 	}  else {
-	    Logger()->Write(EErr, this, "[%s] Error on applying content [%s]", GetUri().c_str(), aContName.c_str());
+	    Logger()->Write(EErr, this, "[%s] Error on applying content [%s]", GetUri(NULL, true).c_str(), aContName.c_str());
 	    res = EEHR_Denied;
 	}
     } else {
@@ -1975,6 +2091,39 @@ string ADes::MDesObserver_Mid() const
     return GetUri(iEnv->Root(), ETrue);
 }
 
+void ADes::DumpActive()
+{
+    MUnit* host = iMan;
+    for (TInt ci = 0; ci < host->CompsCount(); ci++) {
+	MUnit* eit = host->GetComp(ci);
+	if (eit != this && eit->Name() != "Capsule") {
+	    MDesSyncable* msync = (MDesSyncable*) eit->GetSIfi(MDesSyncable::Type(), this);
+	    if (msync != NULL) {
+		if (msync->IsActive()) {
+		    cout << msync->Uid() << endl;
+		    msync->DumpActive();
+		}
+	    }
+	}
+    }
+}
+
+void ADes::DumpUpdated()
+{
+    MUnit* host = iMan;
+    for (TInt ci = 0; ci < host->CompsCount(); ci++) {
+	MUnit* eit = host->GetComp(ci);
+	if (eit != this && eit->Name() != "Capsule") {
+	    MDesSyncable* msync = (MDesSyncable*) eit->GetSIfi(MDesSyncable::Type(), this);
+	    if (msync != NULL) {
+		if (msync->IsUpdated()) {
+		    cout << msync->Uid() << endl;
+		    msync->DumpUpdated();
+		}
+	    }
+	}
+    }
+}
 
 
 // DES launcher

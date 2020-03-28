@@ -264,8 +264,24 @@
 		    Like simple CP Socket is located in system or capsula of Incaps.
 		    When connecting two sockets the observed hier element, normally Incapsulated system (Incaps)
 		</simpara>
-		<itemizedlist>
-		</itemizedlist>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_conn_cwdl"><title>Connecting vertexes in different levels</title>
+	    <sect3><title>Intro</title>
+		<simpara>The current connecing policies is that the only same level vertexex can be connected. The rationale of that is that with this policiy the
+		    connecting topology is well structured. Such structured models are well understandable and visualized because looking at the current layer user
+		    can see and understand all bindings of the layer. If vertexes lies on different layers it is still possible to follow the policy: we just need to extend
+		    the vertex from lower-layer to the required layer using the chain of extenders and local connections.
+		    Howewer in some cases it is required that vertexes from different levels are connected directly. The example
+		    is the model visualized from the fap2-vis project. There is the agent VrController that needs to get events from toolbar that lies in completelly different
+		    layer. Of course we could follow the poicy and add extend the toolbar button up to the layer where the extender can be "right" connected with VrController agent but
+		    this extension would take a lot of resources. For instance to extend toolbar button to VrController level in model visualizer it requires 5 extenders.</simpara>
+		<simpara>So what would be the solutions here? </simpara>
+	    </sect3>
+	    <sect3 id="ds_conn_cwdl_epec"><title>Solution: extend the prolicy to enable specified internal vertex to be connected</title>
+		<simpara>Possible solution is to enable such direct connection that breaks the policy. This exception needs to be specified as policy
+		    extention and there should be specific restrictions that enables only specifed vertexes to be connected. This specification can be
+		    implemented via specific content of the agents. </simpara>
 	    </sect3>
 	</sect2>
     </sect1>

@@ -1348,7 +1348,6 @@ TBool BdVar::FromString(const string& aData)
     if (mData == NULL) {
 	res = Init(aData);
     } else {
-	//!! if (mData != NULL) {
 	res = mData->FromString(aData);
 	if (!mData->IsValid() && !mData->IsSigOK()) {
 	    // Signature get's not fit, reinit
@@ -1360,50 +1359,58 @@ TBool BdVar::FromString(const string& aData)
 	NotifyUpdate();
     }
     return res;
-    }
+}
 
-    bool BdVar::ToString(string& aData) 
-    {
-	TBool res = EFalse;
+bool BdVar::ToString(string& aData) 
+{
+    TBool res = EFalse;
+    if (mData == NULL) {
+	res = Init(aData);
+    }
+    if (mData != NULL) {
+	mData->ToString(aData);
+    }
+    return res;
+
+}
+
+TBool BdVar::Update()
+{
+    TBool res = EFalse;
+    string old_value;
+    ToString(old_value);
+    MDVarGet* vget = mHost->HGetInp(this);
+    if (vget != NULL) {
 	if (mData == NULL) {
-	    res = Init(aData);
+	    Init(string(), vget);
+	    res = ETrue;
 	}
 	if (mData != NULL) {
-	    mData->ToString(aData);
-	}
-	return res;
-
-    }
-
-    TBool BdVar::Update()
-    {
-	TBool res = EFalse;
-	string old_value;
-	ToString(old_value);
-	MDVarGet* vget = mHost->HGetInp(this);
-	if (vget != NULL) {
-	    if (mData == NULL) {
-		Init(string(), vget);
-	    }
-	    if (mData != NULL) {
-		res = mData->Set(vget);
-	    }
-	}
-	return res;
-    }
-
-    void BdVar::NotifyUpdate()
-    {
-	if (mHost != NULL) {
-	    mHost->HOnDataChanged(this);
+	    res |= mData->Set(vget);
 	}
     }
+    return res;
+}
 
-    void BdVar::HUpdateProp()
-    {
+void BdVar::NotifyUpdate()
+{
+    if (mHost != NULL) {
+	mHost->HOnDataChanged(this);
     }
+}
 
-    void BdVar::HNotifyUpdate()
-    {
-	NotifyUpdate();
-    }
+void BdVar::HUpdateProp()
+{
+}
+
+void BdVar::HNotifyUpdate()
+{
+    NotifyUpdate();
+}
+
+string BdVar::GetValue()
+{
+    string res;
+    ToString(res);
+    return res;
+}

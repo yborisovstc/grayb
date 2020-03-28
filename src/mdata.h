@@ -145,6 +145,7 @@ class MDVarGet: public MIface
 	// Get iface id. Is used for type negotiation from root to leafs
 	virtual string VarGetIfid() = 0;
 	// From MIface
+	virtual string Uid() const override { return Mid() + "%" + Type();};
 	virtual MIface* MDVarGet_Call(const string& aSpec, string& aRes) { return NULL;}
 	virtual string MDVarGet_Mid() const {return "?";}
 	MIface* Call(const string& aSpec, string& aRes) override {return MDVarGet_Call(aSpec, aRes);}
@@ -256,6 +257,8 @@ class MBdVarHost
     public:
 	virtual MDVarGet* HGetInp(const Base* aRmt) = 0;
 	virtual void HOnDataChanged(const Base* aRmt) = 0;
+	virtual string GetUid() { return "?";}
+	virtual string GetDvarUid(const MDVar* aComp) const { return "BdVar";}
 };
 
 

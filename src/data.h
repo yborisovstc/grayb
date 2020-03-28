@@ -325,6 +325,7 @@ class BdVar:  public Base, public MUpdatable, public MDVar, public MDVarGet, pub
 	// From MUpdatable
 	virtual TBool Update();
 	// From MDVarGet
+	virtual string MDVarGet_Mid() const override {return mHost->GetUid() + KIfaceUidCompDelim + mHost->GetDvarUid(this);}
 	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
 	// From MDVarSet
@@ -333,6 +334,8 @@ class BdVar:  public Base, public MUpdatable, public MDVar, public MDVarGet, pub
 	// From DHost
 	virtual void HUpdateProp();
 	virtual void HNotifyUpdate();
+	// Debug
+	string GetValue();
     protected:
 	TBool Init(const string& aString, MDVarGet* aInp = NULL);
 	void NotifyUpdate();
