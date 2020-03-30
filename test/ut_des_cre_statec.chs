@@ -21,7 +21,7 @@ testroot : Elem
     ./Data3 - Value = "SI 3";
     E2 : Aedge
     {
-      $ = "{P1:'./../Trans/Out' P2:'./../State/Inp'}";
+      $ = "{P1:'./../Trans' P2:'./../State/Inp'}";
     }
     E3 : Aedge
     {

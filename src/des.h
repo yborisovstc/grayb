@@ -229,16 +229,27 @@ class ATrBcmpVar: public ATrVar
  * TODO To consider another solution: to implement ConnPoint iface directly by trans
  * as it is done for AStatec. In that case out CP is not needed.
  * */ 
-class ATrcBase: public Vertu
+class ATrcBase: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd
 {
     public:
-	static const char* Type() { return "ATrcBase";};
+	static const char* Type() { return "ATrcBase";}
 	static string PEType();
 	ATrcBase(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From Base
+	virtual MIface* DoGetObj(const char *aName);
 	// From Unit
 	virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
-    protected:
-	MUnit* mOut; //!< Output conn point. Owning by hier
+	// From MConnPoint
+	virtual TBool IsRequired(const string& aIfName) const override;
+	virtual string Required() const override;
+	virtual MIface* MConnPoint_Call(const string& aSpec, string& aRes) override;
+	virtual string MConnPoint_Mid() const override;
+	// From MCompatChecker
+	virtual TBool IsCompatible(MUnit* aPair, TBool aExt = EFalse) override;
+	virtual MUnit* GetExtd() override;
+	virtual TDir GetDir() const override;
+	virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes) override;
+	virtual string MCompatChecker_Mid() const override;
 };
 
 
@@ -251,6 +262,9 @@ class ATrcVar: public ATrcBase, public MDVarGet, public Func::Host
 	ATrcVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);
+	// From MConnPoint
+	virtual TBool IsProvided(const string& aIfName) const override;
+	virtual string Provided() const override;
 	// From MDVarGet
 	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
@@ -271,7 +285,6 @@ class ATrcVar: public ATrcBase, public MDVarGet, public Func::Host
 
 
 /** @brief Agent function "Addition of Var data"
- *
  * */
 class ATrcAddVar: public ATrcVar
 {
@@ -280,41 +293,61 @@ class ATrcAddVar: public ATrcVar
 	static string PEType();
 	ATrcAddVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
 	// From ATrVar
-	virtual void Init(const string& aIfaceName);
-	virtual string GetInpUri(TInt aId) const;
+	virtual void Init(const string& aIfaceName) override;
+	virtual string GetInpUri(TInt aId) const override;
 	// From Func::Host
-	virtual TInt GetInpCpsCount() const {return 2;};
+	virtual TInt GetInpCpsCount() const override {return 2;}
 };
 
 
-
-/** @brief Transition function base: unit based, monolitic
+/** @brief Agent function "Multiplication of Var data"
  * */
-class ATrmVar: public Vertu, public MDVarGet, public Func::Host
+class ATrcMplVar: public ATrcVar
 {
     public:
-	static const char* Type() { return "ATrmVar";};
+	static const char* Type() { return "ATrcMplVar";};
 	static string PEType();
-	ATrmVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
-	// From Base
-	virtual MIface* DoGetObj(const char *aName);
-	// From MDVarGet
-	virtual string VarGetIfid();
-	virtual void *DoGetDObj(const char *aName);
+	ATrcMplVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName) override;
+	virtual string GetInpUri(TInt aId) const override;
 	// From Func::Host
-	virtual TIfRange GetInps(TInt aId, TBool aOpt = EFalse);
-	virtual void OnFuncContentChanged();
-	virtual void LogWrite(TLogRecCtg aCtg, const char* aFmt,...);
-	virtual Unit* GetAgent() override {return this;};
-	virtual TInt GetInpCpsCount() const {return 0;};
-	// From Elem
-	virtual TBool GetCont(string& aCont, const string& aName=string()) const; 
-    protected:
-	virtual void Init(const string& aIfaceName) {};
-	virtual string GetInpUri(TInt aId) const;
-    protected:
-	Func* mFunc;
+	virtual TInt GetInpCpsCount() const {return 1;};
 };
+
+/** @brief Agent function "Boolean AND"
+ * */
+class ATrcAndVar: public ATrcVar
+{
+    public:
+	static const char* Type() { return "ATrcAndVar";};
+	static string PEType();
+	ATrcAndVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName) override;
+	virtual string GetInpUri(TInt aId) const override;
+	// From Func::Host
+	virtual TInt GetInpCpsCount() const {return 1;};
+};
+
+/** @brief Agent function "Boolean negation"
+ * */
+class ATrcNegVar: public ATrcVar
+{
+    public:
+	static const char* Type() { return "ATrcNegVar";};
+	static string PEType();
+	ATrcNegVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName) override;
+	virtual string GetInpUri(TInt aId) const override;
+	// From Func::Host
+	virtual TInt GetInpCpsCount() const {return 1;};
+};
+
+
+
+
 
 // Iface stub to avoid clashing MIface methods
 class MDesObserver_Imd: public MDesObserver
@@ -517,6 +550,8 @@ class AStatec: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, p
 
 	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
     protected:
+	/** @brief Notifies dependencies of input updated */
+	void NotifyInpsUpdated();
 	TBool IsLogeventUpdate();
 	// From MUnit
 	virtual TEhr ProcessCompChanged(MUnit& aComp, const string& aContName) override;

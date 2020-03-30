@@ -999,5 +999,20 @@ class FBnegDt: public Func, public MDtGet<Sdata<bool> >
 	Sdata<bool> mRes;
 };
 
+/** @brief Boolean AND */
+class FBAndDt: public Func, public MDtGet<Sdata<bool> >
+{
+    public:
+	static Func* Create(Func::Host* aHost);
+	FBAndDt(Func::Host& aHost): Func(aHost) {};
+	virtual MIface *DoGetObj(const char *aName);
+	virtual string IfaceGetId() const { return MDtGet<Sdata<bool> >::Type();};
+	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
+	virtual void GetResult(string& aResult) const;
+	virtual void DtGet(Sdata<bool>& aData);
+    protected:
+	Sdata<bool> mRes;
+};
+
 
 #endif

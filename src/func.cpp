@@ -1921,6 +1921,7 @@ void AFMplVar::Init(const string& aIfaceName)
 	mFunc = NULL;
     }
     if ((mFunc = FMplFloat::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FMplDt<Sdata<int> >::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FMplDt<Sdata<bool> >::Create(this, aIfaceName)) != NULL);
 }
 
@@ -3621,6 +3622,74 @@ void FBnegDt::GetResult(string& aResult) const
 }
 
 TBool FBnegDt::GetCont(TInt aInd, string& aName, string& aCont) const
+{
+    if (aInd == 2) {
+	aName = "";
+	GetResult(aCont);
+    }
+    else if (aInd == 3) {
+	aName = "Input";
+	MDVarGet* dget = mHost.GetInp(EInp1);
+	MDtGet<Sdata<bool> >* dfget = dget->GetDObj(dfget);
+	Sdata<bool> arg;
+	dfget->DtGet(arg);
+	arg.ToString(aCont);
+    }
+}
+
+
+// Boolean AND
+Func* FBAndDt::Create(Host* aHost)
+{
+    return new FBAndDt(*aHost);
+}
+
+MIface *FBAndDt::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MDtGet<Sdata<bool> >::Type()) == 0) res = (MDtGet<Sdata<bool> >*) this;
+    return res;
+}
+
+void FBAndDt::DtGet(Sdata<bool>& aData)
+{
+    TBool res = ETrue;
+    Elem::TIfRange range = mHost.GetInps(EInp1);
+    for (MUnit::TIfIter it = range.first; it != range.second; it++) {
+	MDVarGet* dget = (MDVarGet*) (*it);
+	MDtGet<Sdata<bool>>* dfget = dget->GetDObj(dfget);
+	if (dfget != NULL) {
+	    Sdata<bool> arg = aData;
+	    dfget->DtGet(arg);
+	    if (arg.mValid) {
+		if (it == range.first) {
+		    aData = arg;
+		} else {
+		    aData.mData = aData.mData && arg.mData;
+		}
+	    } else {
+		Logger()->Write(EErr, mHost.GetAgent(), "Incorrect argument [%s]",  mHost.GetInpUri(EInp1).c_str());
+		res = EFalse; break;
+	    }
+	} else {
+	    Logger()->Write(EErr, mHost.GetAgent(), "Incompatible argument [%s]",  mHost.GetInpUri(EInp1).c_str());
+	    res = EFalse; break;
+	}
+    }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
+}
+
+
+void FBAndDt::GetResult(string& aResult) const
+{
+    mRes.ToString(aResult);
+}
+
+TBool FBAndDt::GetCont(TInt aInd, string& aName, string& aCont) const
 {
     if (aInd == 2) {
 	aName = "";

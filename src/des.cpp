@@ -637,17 +637,24 @@ FBcmpBase::TFType ATrBcmpVar::GetFType()
 ATrcBase::ATrcBase(const string& aName, MUnit* aMan, MEnv* aEnv): Vertu(aName, aMan, aEnv)
 {
     iName = aName.empty() ? GetType(PEType()) : aName;
-    mOut = Provider()->CreateNode("ConnPointMcu", "Out", this, iEnv);
-    __ASSERT(mOut != NULL);
-    TBool res = AppendComp(mOut);
-    __ASSERT(res);
-    res = mOut->ChangeCont("{Required:'MDesInpObserver'}");
-    __ASSERT(res);
 }
 
 string ATrcBase::PEType()
 {
     return Vertu::PEType() + GUri::KParentSep + Type();
+}
+
+MIface *ATrcBase::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MConnPoint::Type()) == 0) {
+	res = dynamic_cast<MConnPoint*>(this);
+    } else if (strcmp(aName, MCompatChecker::Type()) == 0) {
+	res = dynamic_cast<MCompatChecker*>(this);
+    } else {
+	res = Vertu::DoGetObj(aName);
+    }
+    return res;
 }
 
 void ATrcBase::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
@@ -656,14 +663,92 @@ void ATrcBase::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     TICacheRCtx ctx(aCtx); ctx.push_back(this);
 
     if (aName == MDesInpObserver::Type()) {
-	// Redirect to output
-	rr = mOut->GetIfi(aName, ctx);
-	InsertIfCache(aName, aCtx, mOut, rr);
+	// Redirect to pairs
+	for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
+	    MUnit* pe = (*it)->GetObj(pe);
+	    if (!ctx.IsInContext(pe)) {
+		rr = pe->GetIfi(aName, ctx);
+		InsertIfCache(aName, aCtx, pe, rr);
+	    }
+	}
     }
     if (rr.first == rr.second) {
 	Vertu::UpdateIfi(aName, aCtx);
     }
 }
+
+TBool ATrcBase::IsRequired(const string& aIfName) const
+{
+    return (aIfName == Required());
+}
+
+string ATrcBase::Required() const
+{
+    return MDesInpObserver::Type();
+}
+
+MIface* ATrcBase::MConnPoint_Call(const string& aSpec, string& aRes)
+{
+    return NULL;
+}
+
+string ATrcBase::MConnPoint_Mid() const
+{
+    return GetUri(NULL, ETrue);
+}
+
+MCompatChecker::TDir ATrcBase::GetDir() const
+{
+    return ERegular;
+}
+
+MUnit* ATrcBase::GetExtd()
+{
+    return NULL;
+}
+
+MIface* ATrcBase::MCompatChecker_Call(const string& aSpec, string& aRes)
+{
+    return NULL;
+}
+
+string ATrcBase::MCompatChecker_Mid() const
+{
+    return GetUri(NULL, ETrue);
+}
+
+TBool ATrcBase::IsCompatible(MUnit* aPair, TBool aExt)
+{
+    TBool res = EFalse;
+    TBool ext = aExt;
+    MUnit *cp = aPair;
+    // Checking if the pair is Extender
+    MCompatChecker* pchkr = (MCompatChecker*) aPair->GetSIfi(MCompatChecker::Type(), this);
+    // Consider all pairs not supporting MCompatChecker as not compatible 
+    if (pchkr != NULL) {
+	MUnit* ecp = pchkr->GetExtd(); 
+	if (ecp != NULL ) {
+	    ext = !ext;
+	    cp = ecp;
+	}
+	if (cp != NULL) {
+	    // Check roles conformance
+	    string ppt1prov = Provided();
+	    string ppt1req = Required();
+	    MConnPoint* mcp = cp->GetObj(mcp);
+	    if (mcp != NULL) {
+		if (ext) {
+		    res = mcp->IsProvided(ppt1prov) && mcp->IsRequired(ppt1req);
+		} else {
+		    res = mcp->IsProvided(ppt1req) && mcp->IsRequired(ppt1prov);
+		}
+	    }
+	}
+    }
+    return res;
+}
+
+
 
 // Agent of transition of variable type with combined chain
 
@@ -675,8 +760,6 @@ string ATrcVar::PEType()
 ATrcVar::ATrcVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcBase(aName, aMan, aEnv), mFunc(NULL)
 {
     iName = aName.empty() ? GetType(PEType()) : aName;
-    TBool res = mOut->ChangeCont("{Provided:'MDVarGet'}");
-    __ASSERT(res);
 }
 
 MIface *ATrcVar::DoGetObj(const char *aName)
@@ -777,6 +860,17 @@ void ATrcVar::LogWrite(TLogRecCtg aCtg, const char* aFmt,...)
     Logger()->Write(aCtg, this, aFmt, list);
 }
 
+TBool ATrcVar::IsProvided(const string& aIfName) const
+{
+    return (aIfName == Provided());
+}
+
+string ATrcVar::Provided() const
+{
+    return MDVarGet::Type();
+}
+
+
 
 // Agent function "Addition of Var data"
 string ATrcAddVar::PEType()
@@ -814,6 +908,7 @@ void ATrcAddVar::Init(const string& aIfaceName)
     else if ((mFunc = FAddVect<float>::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddMtrd<float>::Create(this, aIfaceName)) != NULL);
     else if ((mFunc = FAddDt<Sdata<int>>::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FAddDt<Sdata<bool>>::Create(this, aIfaceName)) != NULL);
 }
 
 string ATrcAddVar::GetInpUri(TInt aId) const 
@@ -824,114 +919,107 @@ string ATrcAddVar::GetInpUri(TInt aId) const
 }
 
 
-// Transition function of variable type, monolitic
 
-string ATrmVar::PEType()
+// Agent function "Multiplication var"
+
+string ATrcMplVar::PEType()
 {
-    return Vertu::PEType() + GUri::KParentSep + Type();
+    return ATrcVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrcMplVar::ATrcMplVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcVar(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    Unit* cp = Provider()->CreateNode("ConnPointMcu", "Inp", this, iEnv);
+    __ASSERT(cp != NULL);
+    TBool res = AppendComp(cp);
+    __ASSERT(res);
+    res = cp->ChangeCont("{Provided:'MDesInpObserver' Required:'MDVarGet'}");
+    __ASSERT(res);
 }
 
-ATrmVar::ATrmVar(const string& aName, MUnit* aMan, MEnv* aEnv): Vertu(aName, aMan, aEnv), mFunc(NULL)
+void ATrcMplVar::Init(const string& aIfaceName)
 {
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc = NULL;
+    }
+    if ((mFunc = FMplDt<Sdata<int>>::Create(this, aIfaceName)) != NULL);
+    else if ((mFunc = FMplDt<Sdata<bool>>::Create(this, aIfaceName)) != NULL);
 }
 
-MIface *ATrmVar::DoGetObj(const char *aName)
+string ATrcMplVar::GetInpUri(TInt aId) const 
 {
-    MIface* res = NULL;
-    if (strcmp(aName, MDVarGet::Type()) == 0) {
-	res = (MDVarGet*) this;
-    }
-    else {
-	res = Vertu::DoGetObj(aName);
-    }
-    if (res == NULL) {
-	if (mFunc == NULL) {
-	    Init(aName);
-	    if (mFunc != NULL) {
-		res = mFunc->DoGetObj(aName);
-	    }
-	}
-	else {
-	    res = mFunc->DoGetObj(aName);
-	    if (res == NULL) {
-		Init(aName);
-		if (mFunc != NULL) {
-		    res = mFunc->DoGetObj(aName);
-		}
-	    }
-	}
-    }
-    return res;
-}
-
-string ATrmVar::VarGetIfid()
-{
-    return mFunc != NULL ? mFunc->IfaceGetId() : string();
-}
-
-void *ATrmVar::DoGetDObj(const char *aName)
-{
-    MIface* res = NULL;
-    if (mFunc == NULL) {
-	Init(aName);
-	if (mFunc != NULL) {
-	    res = mFunc->DoGetObj(aName);
-	}
-    }
-    else {
-	res = mFunc->DoGetObj(aName);
-	if (res == NULL) {
-	    Init(aName);
-	    if (mFunc != NULL) {
-		res = mFunc->DoGetObj(aName);
-	    }
-	}
-    }
-    return res;
-}
-
-string ATrmVar::GetInpUri(TInt aId) const 
-{
-    if (aId == Func::EInp1) return "Inp1";
-    else if (aId == Func::EInp2) return "Inp2";
-    else if (aId == Func::EInp3) return "Inp3";
-    else if (aId == Func::EInp4) return "Inp4";
+    if (aId == FMplBase::EInp) return "Inp";
     else return string();
 }
 
-Elem::TIfRange ATrmVar::GetInps(TInt aId, TBool aOpt)
+
+// Agent function "Logical AND"
+
+string ATrcAndVar::PEType()
 {
-    TIfRange res;
-    MUnit* inp = GetNode("./" + GetInpUri(aId));
-    if (inp != NULL) {
-	res =  inp->GetIfi(MDVarGet::Type(), this);
-    }
-    else if (!aOpt) {
-	Logger()->Write(EErr, this, "Cannot get input [%s]", GetInpUri(aId).c_str());
-    }
-    return res;
+    return ATrcVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrcAndVar::ATrcAndVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcVar(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    Unit* cp = Provider()->CreateNode("ConnPointMcu", "Inp", this, iEnv);
+    __ASSERT(cp != NULL);
+    TBool res = AppendComp(cp);
+    __ASSERT(res);
+    res = cp->ChangeCont("{Provided:'MDesInpObserver' Required:'MDVarGet'}");
+    __ASSERT(res);
 }
 
-void ATrmVar::OnFuncContentChanged()
+void ATrcAndVar::Init(const string& aIfaceName)
 {
-    OnChanged(*this);
-}
-
-TBool ATrmVar::GetCont(string& aCont, const string& aName) const
-{
-    TBool res = EFalse;
     if (mFunc != NULL) {
-	mFunc->GetResult(aCont);
-	res = ETrue;
+	delete mFunc;
+	mFunc = NULL;
     }
-    return res;
+    if ((mFunc = FBAndDt::Create(this)) != NULL);
 }
 
-void ATrmVar::LogWrite(TLogRecCtg aCtg, const char* aFmt,...)
+string ATrcAndVar::GetInpUri(TInt aId) const 
 {
-    va_list list;
-    va_start(list,aFmt);
-    Logger()->Write(aCtg, this, aFmt, list);
+    if (aId == FMplBase::EInp) return "Inp";
+    else return string();
+}
+
+
+// Agent function "Logical negation"
+
+string ATrcNegVar::PEType()
+{
+    return ATrcVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrcNegVar::ATrcNegVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcVar(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    Unit* cp = Provider()->CreateNode("ConnPointMcu", "Inp", this, iEnv);
+    __ASSERT(cp != NULL);
+    TBool res = AppendComp(cp);
+    __ASSERT(res);
+    res = cp->ChangeCont("{Provided:'MDesInpObserver' Required:'MDVarGet'}");
+    __ASSERT(res);
+}
+
+void ATrcNegVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc = NULL;
+    }
+    if ((mFunc = FBnegDt::Create(this)) != NULL);
+}
+
+string ATrcNegVar::GetInpUri(TInt aId) const 
+{
+    if (aId == FMplBase::EInp) return "Inp";
+    else return string();
 }
 
 
@@ -1603,6 +1691,27 @@ void AStatec::Update()
     }
 }
 
+void AStatec::NotifyInpsUpdated()
+{
+    // It would be better to request MDesObserver interface from self. But there is the problem
+    // with using this approach because self implements this iface. So accoriding to iface resolution
+    // rules UpdateIfi has to try local ifaces first, so self will be selected. Solution here could be
+    // not following this rule and try pairs first for MDesObserver. But we choose another solution ATM -
+    // to request pairs directly.
+    for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
+	MUnit* pe = (*it)->GetObj(pe);
+	// Don't add self to if request context to enable routing back to self
+	TIfRange range = pe->GetIfi(MDesInpObserver::Type());
+	for (TIfIter it = range.first; it != range.second; it++) {
+	    MDesInpObserver* mobs = (MDesInpObserver*) (*it);
+	    if (mobs != NULL) {
+		mobs->OnInpUpdated();
+	    }
+	}
+    }
+}
+
+
 void AStatec::Confirm()
 {
     MUpdatable* upd = mCdata;
@@ -1610,34 +1719,8 @@ void AStatec::Confirm()
 	string old_value;
 	mCdata->ToString(old_value);
 	if (upd->Update()) {
-	    // Activate dependencies
-	    // Request w/o context because of possible redirecting request to itself
-	    // TODO [YB] To check if iterator is not damage during the cycle, to cache to vector if so
-	    /*
-	    TIfRange range = GetIfi(MDesObserver::Type());
-	    for (TIfIter it = range.first; it != range.second; it++) {
-		MDesObserver* mobs = (MDesObserver*) (*it);
-		if (mobs != NULL) {
-		    mobs->OnUpdated();
-		}
-	    } */
-
-	    // It would be better to request MDesObserver interface from self. But there is the problem
-	    // with using this approach because self implements this iface. So accoriding to iface resolution
-	    // rules UpdateIfi has to try local ifaces first, so self will be selected. Solution here could be
-	    // not following this rule and try pairs first for MDesObserver. But we choose another solution ATM -
-	    // to request pairs directly.
-	    for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
-		MUnit* pe = (*it)->GetObj(pe);
-		// Don't add self to if request context to enable routing back to self
-		TIfRange range = pe->GetIfi(MDesInpObserver::Type());
-		for (TIfIter it = range.first; it != range.second; it++) {
-		    MDesInpObserver* mobs = (MDesInpObserver*) (*it);
-		    if (mobs != NULL) {
-			mobs->OnInpUpdated();
-		    }
-		}
-	    }
+	    // Notify dependencies
+	    NotifyInpsUpdated();
 	    if (IsLogeventUpdate()) {
 		string new_value;
 		mCdata->ToString(new_value);
@@ -1846,15 +1929,20 @@ TBool AStatec::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif
 
 TEhr AStatec::ProcessCompChanged(MUnit& aComp, const string& aContName)
 {
+    // There is not still nice solution for changing state value
+    // The following is used atm: change both prepared and congifmed and notify
+    // obs chain and deps (i.e maximum notification). It doesn't seem optimal
     TEhr res = EEHR_Ignored;
     if (&aComp == this && aContName == KContVal) {
 	string val = GetContent(KContVal);
 	TBool sres = mPdata->FromString(val);
-	//sres = sres && mCdata->FromString(val);
-	if (mPdata->IsValid()/* && mCdata->IsValid()*/) {
+	sres = sres && mCdata->FromString(val);
+	if (mPdata->IsValid() && mCdata->IsValid()) {
 	    res = EEHR_Accepted;
 	    if (sres) {
 		SetActive();
+		SetUpdated();
+		NotifyInpsUpdated();
 	    }
 	}  else {
 	    Logger()->Write(EErr, this, "[%s] Error on applying content [%s]", GetUri(NULL, true).c_str(), aContName.c_str());
