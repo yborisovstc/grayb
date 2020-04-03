@@ -624,11 +624,13 @@ void Unit::DumpIfProv(const string& aName, const TICacheRCtx& aCtx, const MIface
     }
 }
 
-void Unit::DumpIfPaths() const
+void Unit::DumpIfPaths(const char* aIfName) const
 {
-    cout << "<< IRM paths: START >>" << endl;
+    string aifname(aIfName);
+    cout << "<< IRM paths, iface [" << aifname << "] START >>" << endl;
     for (auto it : iICache) {
 	const string& iname = it.first.first;
+	if (!aifname.empty() && (iname != aifname)) continue;
 	const TICacheRCtx& ctx = it.first.second;
 	MIface* iface = it.second.second;
 	MUnit* prov = it.second.first;
@@ -647,7 +649,7 @@ void Unit::DumpIfPaths() const
 	pctx.push_back(const_cast<Unit*>(this));
 	prov->DumpIfProv(iname, pctx, iface);
     }
-    cout << "<< IRM paths: END >>" << endl;
+    cout << "<< IRM paths END >>" << endl;
 }
 
 void Unit::DumpIfCache() const

@@ -1889,14 +1889,29 @@ void ASocketMcm::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 	InsertIfCache(aName, aCtx, this, res);
     }
     if (res == NULL && !aCtx.empty()) {
-	Base* rqst = aCtx.back();
-	if (rqst != NULL) {
+	MUnit* erqst = aCtx.back();
+	if (erqst != NULL) {
 	    // Requestor is specified, so try to redirect basing on it
-	    MUnit* erqst = rqst->GetObj(erqst);
 	    TBool iscomp = IsComp(erqst);
 	    if (iscomp) {
 		// Request comes from internal CP - forward it to upper layer
-		if (iMan != NULL && !ctx.IsInContext(iMan)) {
+		// Redirect to pair. 
+		// TODO [YB] To add checking if requiested iface is supported, ref md "sec_refac_conncomp"
+		// TODO [YB] Probably routing to pair needs to be done first, before the routing to pins
+		if (rr.first == rr.second) {
+		    TInt pcount = PairsCount();
+		    for (TInt ct = 0; ct < pcount && res == NULL; ct++) {
+			MVert* pair = GetPair(ct);
+			MUnit* pe = pair->GetObj(pe);
+			if (!ctx.IsInContext(pe)) {
+			    rr = pe->GetIfi(aName, ctx);
+			    InsertIfCache(aName, aCtx, pe, rr);
+			    resok = resok || (rr.first != rr.second);
+			}
+		    }
+		}
+		// Forward it to upper layer if there are no pairs
+		if (PairsCount() == 0 && iMan != NULL && !ctx.IsInContext(iMan)) {
 		    MUnit* mgr =  GetMan();
 		    if (mgr != NULL && !ctx.IsInContext(mgr)) {
 			rr = mgr->GetIfi(aName, ctx);
@@ -1904,13 +1919,11 @@ void ASocketMcm::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 			resok = resok || (rr.first != rr.second);
 		    }
 		}
-	    }
-	    else {
-		// Request from not internals
+	    } else { // Request from not internals
 		// Find associated pair in context
-		Base* apair = NULL;
+		MUnit* apair = NULL;
 		MUnit* pcomp = NULL;
-		Base* ctxe = rqst;
+		MUnit* ctxe = erqst;
 		TICacheRCtx cct(aCtx);
 		TBool isextd = EFalse;
 		while (ctxe != NULL && pcomp == NULL) {
@@ -1955,21 +1968,7 @@ void ASocketMcm::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 		    resok = resok || (rr.first != rr.second);
 		}
 	    }
-	    // Redirect to pair. 
-	    // TODO [YB] To add checking if requiested iface is supported, ref md "sec_refac_conncomp"
-	    // TODO [YB] Probably routing to pair needs to be done first, before the routing to pins
-	    if (rr.first == rr.second) {
-		TInt pcount = PairsCount();
-		for (TInt ct = 0; ct < pcount && res == NULL; ct++) {
-		    MVert* pair = GetPair(ct);
-		    MUnit* pe = pair->GetObj(pe);
-		    if (!ctx.IsInContext(pe)) {
-			rr = pe->GetIfi(aName, ctx);
-			InsertIfCache(aName, aCtx, pe, rr);
-			resok = resok || (rr.first != rr.second);
-		    }
-		}
-	    }
+#if 0
 	    // Redirect to upper layer
 	    if (rr.first == rr.second && iMan != NULL) {
 		MUnit* mgr = GetMan();
@@ -1980,6 +1979,7 @@ void ASocketMcm::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 		    resok = resok || (rr.first != rr.second);
 		}
 	    }
+#endif
 	}
 	else {
 	    // Requestor not specified, anonymous request

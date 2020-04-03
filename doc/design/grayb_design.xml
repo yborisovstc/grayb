@@ -296,6 +296,23 @@
 		    </itemizedlist>
 		</sect4>
 	    </sect3>
+	    <sect3 id="ds_conn_cwdl_evohl"><title>Solution: extend the policy to enavle the only vertexes in one hier line to be connected</title>
+		<simpara>This solution is similar to <xref linkend="ds_conn_cwdl_epec"/> but enable connecting only components of given hier node.
+		    It is more reasonable because the owning node performs the connection of its components. This solution can also keep the basic policy advantage of 
+		    having "interfaces" for connected vertexes. For instance, lets have the hier:
+		    <programlisting>
+			|      A
+			|         A_1
+			|             A_1_1
+			|                   A_1_1_1
+			|         A_2
+			|             A_2_1
+			|                   A_2_1_1
+		    </programlisting>
+		    and needs to connect A_1_1_1 and A_2_1_1. We can create CP1 in A_1 and CP_2 in A_2 having connections CP1 ~ A_1_1_1 and CP2 ~ A_2_1_1 according to
+		    the solution rule. Then we can connect A_1/CP1 to A_2/CP2. CP1 and CP2 are here the interfaces of A_1 and A_2 correspondingly.
+		</simpara>
+	    </sect3>
 	</sect2>
     </sect1>
 

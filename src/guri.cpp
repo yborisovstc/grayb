@@ -120,6 +120,13 @@ void GUri::PrependElem(const string& aExt, const string& aName, char aRelChar)
     iElems.insert(iElems.begin(), TElem(aName, TElem::relFromChar(aRelChar), aExt));
 }
 
+void GUri::RemoveLastElem()
+{
+    if (!IsErr() && !IsNil() && (iElems.size() > 1)) {
+	iElems.pop_back();
+    }
+}
+
 string GUri::toString(const_elem_iter aStart, TBool aShort) const
 {
     return toString(aStart, iElems.end(), aShort);

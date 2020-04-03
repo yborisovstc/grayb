@@ -279,9 +279,35 @@ class ATrcVar: public ATrcBase, public MDVarGet, public Func::Host
     protected:
 	virtual void Init(const string& aIfaceName) {};
 	virtual string GetInpUri(TInt aId) const;
+	/** @brief Gets value of MDVarGet MDtGet input */
+	template<typename T> bool DtGetInp(T& aData, const string& aInpName);
+	/** @brief Gets value of MDVarGet MDtGet Sdata<T> input */
+	template<typename T> bool DtGetSdataInp(T& aData, const string& aInpName);
     protected:
 	Func* mFunc;
 };
+
+template<typename T> bool ATrcVar::DtGetInp(T& aData, const string& aInpName)
+{
+    bool res = false;
+    MDVarGet* vg = dynamic_cast<MDVarGet*>(GetSIfi("./" + aInpName, MDVarGet::Type()));
+    if (vg) {
+	MDtGet<T>* dg = vg->GetDObj(dg);
+	if (dg) {
+	    dg->DtGet(aData);
+	    res = true;
+	}
+    }
+    return res;
+}
+
+template<typename T> bool ATrcVar::DtGetSdataInp(T& aData, const string& aInpName)
+{
+    Sdata<T> sd;
+    bool res = DtGetInp(sd, aInpName);
+    aData = sd.mData;
+    return res;
+}
 
 
 /** @brief Agent function "Addition of Var data"

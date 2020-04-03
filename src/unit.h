@@ -227,7 +227,7 @@ class Unit: public MUnit
 	// Debugging
 	virtual void DumpComps(TBool aRecurs = EFalse) const;
 	virtual void DumpContent() const;
-	virtual void DumpIfPaths() const override;
+	virtual void DumpIfPaths(const char* aIfName = NULL) const override;
 	virtual void DumpIfCache() const override;
 	virtual void DumpIfProv(const string& aName, const TICacheRCtx& aCtx, const MIface* aIface) const override;
 	static void DumpIfCtx(const TICacheRCtx& aCtx);
