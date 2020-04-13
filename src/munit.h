@@ -42,8 +42,8 @@ class TICacheRCtx: public vector<MUnit*>
 	    }
 	    return res;
 	}
-	inline void push_back(MUnit* aUnit) {
-	    __ASSERT(!IsInContext(aUnit));
+	inline void push_back(MUnit* aUnit, TBool aNoCheck = false) {
+	    __ASSERT(aNoCheck || !IsInContext(aUnit));
 	    vector<MUnit*>::push_back(aUnit);
 	}
 };
@@ -167,6 +167,8 @@ class MIfProv
 	MIface* GetSIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) { TIfRange rg = GetIfi(aName, aCtx);
 	    return (rg.first != rg.second) ? *(rg.first) : NULL;
 	}
+	template<class T> T* GetSIfit(const T* aIfi, const TICacheRCtx& aCtx = TICacheRCtx()) { TIfRange rg = GetIfi(aIfi->Type(), aCtx);
+	    return dynamic_cast<T*>((rg.first != rg.second) ? *(rg.first) : NULL); }
 	virtual MIface* GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert = ETrue) = 0;
 	virtual TIfRange GetIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) = 0;
 	/** @brief Register interface provider

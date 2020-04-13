@@ -771,20 +771,8 @@ MIface *ATrcVar::DoGetObj(const char *aName)
 	res = ATrcBase::DoGetObj(aName);
     }
     if (res == NULL) {
-	if (mFunc == NULL) {
-	    Init(aName);
-	    if (mFunc != NULL) {
-		res = mFunc->DoGetObj(aName);
-	    }
-	}
-	else {
+	if (mFunc != NULL) {
 	    res = mFunc->DoGetObj(aName);
-	    if (res == NULL) {
-		Init(aName);
-		if (mFunc != NULL) {
-		    res = mFunc->DoGetObj(aName);
-		}
-	    }
 	}
     }
     return res;

@@ -73,8 +73,7 @@ void Ut_des::test_Cre1()
 	// Socket doesn't support obtaining iface thru its pins, so access via pin directly but not via extender
 	MUnit* doutp = root->GetNode("./test/State1/Capsule/Out/Int/PinData");
 	CPPUNIT_ASSERT_MESSAGE("Fail to get state out", doutp != 0);
-	//    MDIntGet* doutpget = doutp->GetObj(doutpget);
-	MDIntGet* doutpget = (MDIntGet*) doutp->GetSIfi(MDIntGet::Type());
+	MDIntGet* doutpget = doutp->GetSIfit(doutpget);
 	CPPUNIT_ASSERT_MESSAGE("Fail to get data out Get iface", doutpget != 0);
 	CPPUNIT_ASSERT_MESSAGE("Fail to get value of data iface", doutpget->Value() == 0);
 	// Sync the state

@@ -43,6 +43,7 @@ class MCompatChecker_Imd: public MCompatChecker
     virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes) = 0;
     virtual string MCompatChecker_Mid() const = 0;
     // From MIface
+    virtual string Uid() const { return Mid() + "%" + Type();};
     virtual MIface* Call(const string& aSpec, string& aRes) { return MCompatChecker_Call(aSpec, aRes);};
     virtual string Mid() const { return MCompatChecker_Mid();};
 };

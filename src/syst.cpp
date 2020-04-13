@@ -588,12 +588,26 @@ void ConnPointMcu::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 	// Redirect to pairs if iface requiested is provided by this CP
 	if (GetProvided() == aName) {
 	    // Requested provided iface - cannot be obtain via pairs - redirect to host
-	    if (iMan != NULL && !ctx.IsInContext(iMan)) {
+	    if (iMan != NULL) {
 		// TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
 		MUnit* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
-		rr = mgr->GetIfi(aName, ctx);
-		InsertIfCache(aName, aCtx, mgr, rr);
-		resg = resg || (rr.first == rr.second);
+		if (!ctx.IsInContext(iMan)) {
+		    rr = mgr->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, mgr, rr);
+		    resg = resg || (rr.first == rr.second);
+		} else {
+		    // Owner is in context, but probably it is socket and the connections
+		    // chain is the loopback from one pin to another. Accept such case.
+		    // Avoid redirect to immediate requestor
+		    if (mgr != aCtx.back()) {
+			MSocket* mgrs = mgr->GetObj(mgrs);
+			if (mgrs) {
+			    rr = mgr->GetIfi(aName, ctx);
+			    InsertIfCache(aName, aCtx, mgr, rr);
+			    resg = resg || (rr.first == rr.second);
+			}
+		    }
+		}
 	    }
 	}
 	if (!resg) {
@@ -607,11 +621,13 @@ void ConnPointMcu::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 		    }
 		}
 		// Responsible pairs not found, redirect to upper layer
-		if ((rr.first == rr.second) && iMan != NULL && !ctx.IsInContext(iMan)) {
+		if ((rr.first == rr.second) && iMan != NULL) {
 		    MUnit* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
-		    rr = mgr->GetIfi(aName, ctx);
-		    InsertIfCache(aName, aCtx, mgr, rr);
-		    resg = resg || (rr.first == rr.second);
+		    if (!ctx.IsInContext(iMan)) {
+			rr = mgr->GetIfi(aName, ctx);
+			InsertIfCache(aName, aCtx, mgr, rr);
+			resg = resg || (rr.first == rr.second);
+		    }
 		}
 	    }
 	}
@@ -1884,6 +1900,7 @@ void ASocketMcm::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     TIfRange rr;
     TBool resok = EFalse;
     TICacheRCtx ctx(aCtx); ctx.push_back(this);
+    //TICacheRCtx ctx(aCtx); ctx.push_back(this, ETrue); // Enable dup of socket enntries
     MIface* res = (MIface*) DoGetObj(aName.c_str());
     if (res != NULL) {
 	InsertIfCache(aName, aCtx, this, res);
@@ -1907,6 +1924,8 @@ void ASocketMcm::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 			    rr = pe->GetIfi(aName, ctx);
 			    InsertIfCache(aName, aCtx, pe, rr);
 			    resok = resok || (rr.first != rr.second);
+			} else {
+			    // Pair is in context
 			}
 		    }
 		}
