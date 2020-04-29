@@ -759,6 +759,30 @@ class AFDivVar: public AFunVar
 };
 
 
+// Maximum, variable type
+
+class FMaxBase: public Func {
+    public:
+	enum {
+	    EInp = Func::EInp1
+	};
+	FMaxBase(Host& aHost): Func(aHost) {};
+};
+
+template <class T> class FMaxDt: public FMaxBase, public MDtGet<T> {
+    public:
+	static Func* Create(Host* aHost, const string& aString);
+	FMaxDt(Host& aHost): FMaxBase(aHost) {};
+	virtual MIface *DoGetObj(const char *aName);
+	virtual string IfaceGetId() const { return MDtGet<T>::Type();};
+	virtual void DtGet(T& aData);
+	virtual void GetResult(string& aResult) const;
+	virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
+	virtual TInt GetContCount() const {return 2;};
+	T mRes;
+};
+
+
 class FBcmpBase: public Func {
     public:
 	enum { EInp_1 = EInp1, EInp_2, EInp_Ftype };

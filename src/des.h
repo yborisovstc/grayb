@@ -371,6 +371,21 @@ class ATrcNegVar: public ATrcVar
 	virtual TInt GetInpCpsCount() const {return 1;};
 };
 
+/** @brief Agent function "Max of Var data"
+ * */
+class ATrcMaxVar: public ATrcVar
+{
+    public:
+	static const char* Type() { return "ATrcMaxVar";};
+	static string PEType();
+	ATrcMaxVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName) override;
+	virtual string GetInpUri(TInt aId) const override;
+	// From Func::Host
+	virtual TInt GetInpCpsCount() const override {return 1;}
+};
+
 
 
 

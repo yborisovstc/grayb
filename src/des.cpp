@@ -1010,6 +1010,39 @@ string ATrcNegVar::GetInpUri(TInt aId) const
     else return string();
 }
 
+// Agent function "Max var"
+
+string ATrcMaxVar::PEType()
+{
+    return ATrcVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrcMaxVar::ATrcMaxVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcVar(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    Unit* cp = Provider()->CreateNode("ConnPointMcu", "Inp", this, iEnv);
+    __ASSERT(cp != NULL);
+    TBool res = AppendComp(cp);
+    __ASSERT(res);
+    res = cp->ChangeCont("{Provided:'MDesInpObserver' Required:'MDVarGet'}");
+    __ASSERT(res);
+}
+
+void ATrcMaxVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc = NULL;
+    }
+    if ((mFunc = FMaxDt<Sdata<int>>::Create(this, aIfaceName)) != NULL);
+}
+
+string ATrcMaxVar::GetInpUri(TInt aId) const 
+{
+    if (aId == FMplBase::EInp) return "Inp";
+    else return string();
+}
+
 
 
 

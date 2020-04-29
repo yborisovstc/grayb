@@ -133,6 +133,10 @@
 	    <glossdef> <para>State with Combined Chains. DES state design where data and observing chains are same.
 		    <xref linkend="ds_mae_scc"/>. Ref <xref linkend="gls_ssc"/> for another design solution.
 	</para></glossdef> </glossentry>
+	<glossentry id="gls_slc"><glossterm>SLC</glossterm> <acronym>SCC</acronym>
+	    <glossdef> <para>Sockets Loopback Connections. Socket design approach when loopback connections are supported
+		    <xref linkend="ds_ifcache_slc"/>.
+	</para></glossdef> </glossentry>
 	<glossentry id="gls_ssc"><glossterm>SSC</glossterm> <acronym>SSC</acronym>
 	    <glossdef> <para>State with Separate Chains. DES state design where data and observing chains are separated.
 		    <xref linkend="ds_mae_scc"/>. Ref <xref linkend="gls_scc"/> for another design solution.
@@ -477,8 +481,18 @@
 		    when the upper node contains more that one records with same (iface, requestor), ref <xref linkend="ds_ifcache_ciur"/></simpara>
 	    </sect3>
 	    <simpara>But the current approach causes to the condition that the propatation paths can be complex and even to represent the cycle returning request to the initiator
-		of deregistering. This causes to break of regisrty iteration and flow crash.</simpara>
-	    <simpara>How to modify the unregistering algorithm to avoid cycling paths?</simpara>
+		of deregistering. This causes breakage of regisrty iteration and flow crash. Look at this in detail: unit.cpp</simpara>
+	    <programlisting>
+		|  void Unit::UnregIfReq(const string&amp; aIfName, const TICacheRCtx&amp; aCtx)
+		|  {
+		...
+		|   MUnit* prove = it->second.first;
+		...
+		|     prove->UnregIfReq(it->first.first, rctx);
+	    </programlisting>
+	    <simpara>This method is called recursivelly. Some later call can remove some items in cache - this causes iterator "it" invalide in earlier calls.</simpara>
+	    <simpara>How to modify the unregistering algorithm to avoid cycling paths? One way is to copy the cache, use copy in invalidating loop and then clean up
+	    original cache.</simpara>
 	</sect2>
 	<sect2 id="ds_ifcache_oifpi"><title>Optimization of iface resolution paths invalidation</title>
 	    <sect3><title>Intro</title>
@@ -500,6 +514,56 @@
 	    <sect3><title>Intro</title>
 		<simpara>Currently the mechanism is implemented with using two registries: one (iICacheQF) for relations and another (ICache) for ifaces. We
 		can simplify the implementation using just one registry combining relations and ifaces.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_ifcache_slc"><title>Support of socket loopback connections (<xref linkend="gls_slc"/>)</title>
+	    <sect3><title>Intro</title>
+		<simpara>Socket loopback connection is very useful feature. It can be used to effectively configure system. The example is: lets have DES that
+		    includes some states without transitions because the transitions need to be configured. We can have one socket CP that includes pins for states
+		    inputs and outputs. Outside of DES we can have this socket CP pair with corresponding pins and transitions connecting to those pins.
+		    Such approach is used for instance in FAP visialization where widget (DES) is customized by slots connecting to widget via socket.</simpara>
+		<simpara>The problem is that current <xref linkend="gls_irm"/> design doesn't allow us to use socket loopback - iface resolution mechanism doesn't
+		    allow nodes to be re-entered in resolution paths, but we need it for loopback - same socket can occur in the path more then one time.</simpara>
+	    </sect3>
+	    <sect3 id="ds_ifcache_slc_aesr"><title>Solution: avoid entering sockets to resolution path</title>
+		<simpara>Why we need socket itself in the path? Currently socket in IRM context is used to find corresponding pin. But we can use other pin search
+		    method. One of them is to find neares node with same name as pin in context then check if its owner is socket and this socket connects to the 
+		    current pin socket.</simpara>
+		<sect4 id="ds_ifcache_slc_aesr_nid"><title>No IRM data in socket node. How to invalidate paths.</title>
+		    <simpara>As soon as we refuse entering sock to IRM paths we need to disable sock node to store IRM data. How IRM will work then? How IRM path will
+			be invalidated in case of socks disconnect for instance?  </simpara>
+		    <simpara> As for resolution paths invalidation, there shouldn't be the problem even if socket is not in the path - removing socket
+			causes removing its pins that are in the paths. Hmm. What about disconnecting sockets? How IRM data will be invalidated in that case?
+			Socket can handle disconnecting specifically - request all pins to invalidate IRM data.</simpara>
+		    <simpara>So with this solution we introduce new type node: node that participates in IRM but doesn't have IRM data. Ref <xref linkend="ds_ifcache_ipx"/>
+			for this approach details.</simpara>
+		</sect4>
+	    </sect3>
+	    <sect3 id="ds_ifcache_slc_ecp"><title>Solution: enable cycles in IRM paths</title>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_ifcache_ipx"><title>Approach: IRM proxying support</title>
+	    <sect3><title>Intro</title>
+		<simpara>This approach was originated by <xref linkend="ds_ifcache_slc_aesr"/>. Socket loopback support shows the weekness of the existing IRM design
+		    where the complex paths (paths containing cycles for instance) are not supported properly. So we saw the need to improve IRM. One approach of such
+		    improvement is introducing IRM proxy - the node that helps routing to target but is not included to IRM paths. Not all nodes can be a proxy but only
+		    those that can support IRM data invalidation without using IRM paths. Sockets seems exactly this case: sockets can acs as proxy to "bind" their pins and
+	       sockets owns the pins, so socket can invalide the whole IRM routes by redirecting invalidation request to pins.</simpara>
+	    </sect3>
+	    <sect3><title>Desing approach: Extend IRM APIs by method of redirecting requestor to real provider.</title>
+		<simpara>This approach seems not right because there can be many providers. For instance if the request has come from socket comp that
+		socket redirect the request to pair, but there can be more that one pair.</simpara>
+	    </sect3>
+	    <sect3><title>[20200428] Status</title>
+		<simpara>I couldn't implement this approach facing many problems, the branch is yb_chr2_cctx_tn_umt_ipx.
+		    So applied <xref linkend="ds_ifcache_ecp"/> instead. Needs to made another attempt
+		to design proxy. This approach seems more effective then enabling cycles in IRM paths.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_ifcache_ecp"><title>Approach: Enable cycles in IRM paths</title>
+	    <sect3><title>Intro</title>
+		<simpara>The pros of this approach is that all nodes are homogenious. This in fact is existing IRM but with limitation removed of disabling cycles.</simpara>
+		<simpara>The problem with this approach is with invalidation algorithm, ref <xref linkend="ds_ifcache_cpur"/></simpara>
 	    </sect3>
 	</sect2>
     </sect1>
@@ -1251,7 +1315,7 @@
 		    <xref linkend="ds_mut_pmf"/>. For instance in [syst] module Extender agent has component "Connpoint:Int" for internal connection point.
 		    In many cases it is removed and re-created with the same name but another parent. This keeps interface but change implementation.</simpara>
 		<simpara>It also needs to be taken into account that not-unique name approach causes performance degradation. Ref <xref linkend="ds_prfopt_un"/>
-		for analysis of such affect.</simpara>
+		    for analysis of such affect.</simpara>
 	    </sect3>
 	    <sect3><title>Unique name: how to check uniqueness in case of chromo optimization.</title>
 		<simpara>The use-case is: node A has component A_1, that is removed then, chromo is optimized further, i.e. A_1 is not created in mode.
@@ -1337,8 +1401,8 @@
 	    <sect3 id="ds_umt_rtnsu">Problem: real target is not specified explicitly
 		<sect4><title>Intro</title>
 		    <simpara>Real target is not specified explicitly with unitied target approach. For instance if target is not mutable then the real target
-		    will be calculated as nearest mutable owner. This means that real target is not simply seen from the mut spec.</simpara>
-		<simpara>The problem is not really critical, there are solution (ref below), but with any solution it causes to chromo incompatibility.</simpara>
+			will be calculated as nearest mutable owner. This means that real target is not simply seen from the mut spec.</simpara>
+		    <simpara>The problem is not really critical, there are solution (ref below), but with any solution it causes to chromo incompatibility.</simpara>
 		</sect4>
 		<sect4><title>Solution: Using names for pointing nodes</title>
 		    <simpara>Namespaces were introduced in the scope of chromo2, ref <xref ilnkend="ds_chr2_ns"/>. So it is effective mechanism of pointing to node
@@ -4863,6 +4927,9 @@
 	    <orderedlist>
 		<listitem>To avoid handling notifs from comp on all levels. Maybe direct owner handling is enough</listitem>
 		<listitem>To reimplement content as tree</listitem>
+		<listitem>To apply IRM IPX approach
+		    <simpara>Ref <xref linkend="ds_ifcache_ipx"/></simpara>
+		</listitem>
 	    </orderedlist>
 	</sect2>
 	<sect2 id="ds_prfopt_ahn"><title>To avoid handling notifs from comp on all levels</title>
@@ -5801,6 +5868,9 @@
 	</sect2>
 	<sect2><title>Indicator of Ifaces cache is valid?</title>
 	    <simpara>Ref <xref linkend="ds_ifcache_refr_icv"/></simpara>
+	</sect2>
+	<sect2><title>To apply IRM IPX approach</title>
+	    <simpara>Ref <xref linkend="ds_ifcache_ipx"/></simpara>
 	</sect2>
     </sect1>
 

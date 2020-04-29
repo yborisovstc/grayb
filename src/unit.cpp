@@ -363,19 +363,20 @@ MIface* Unit::GetSIfi(const string& aReqUri, const string& aName, TBool aReqAsse
 void Unit::UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx)
 {
     TICacheKey query(aIfName, aCtx);
-    TICacheRange rg = iICache.equal_range(query);
+    TICache sCache(iICache);
+    TICacheRange rg = sCache.equal_range(query);
 
     for (TICacheIter it = rg.first; it != rg.second; it++) {
 	// Unregister itself on next provider
-	Base* prov = it->second.first;
-	MUnit* prove = prov->GetObj(prove);
+	MUnit* prove = it->second.first;
 	if (prove != this) {
 	    const TICacheRCtx& ctx = it->first.second;
 	    TICacheRCtx rctx(ctx);
-	    rctx.push_back(this);
+	    rctx.push_back(this, ETrue);
 	    prove->UnregIfReq(it->first.first, rctx);
 	}
     }
+    rg = iICache.equal_range(query);
     iICache.erase(rg.first, rg.second);
 }
 
@@ -538,7 +539,7 @@ void Unit::InsertIfCache(const string& aName, const TICacheRCtx& aReq, MUnit* aP
     TICacheKey key(aName, aReq);
     // Checking if ctx doesn't contain provider
     for (auto ce : aReq) {
-	__ASSERT(ce != aProv);
+//	__ASSERT(ce != aProv);
     }
     // Push to query map if not already exists
     bool exists = false;
@@ -617,7 +618,7 @@ void Unit::DumpIfProv(const string& aName, const TICacheRCtx& aCtx, const MIface
 	    MUnit* prov = it->second.first;
 	    if (prov != this) {
 		TICacheRCtx pctx(aCtx);
-		pctx.push_back(const_cast<Unit*>(this));
+		pctx.push_back(const_cast<Unit*>(this), ETrue);
 		prov->DumpIfProv(aName, pctx, iface);
 	    }
 	}
@@ -646,7 +647,7 @@ void Unit::DumpIfPaths(const char* aIfName) const
 	// Output providers chain
 	cout << "==>" << endl;
 	TICacheRCtx pctx(ctx);
-	pctx.push_back(const_cast<Unit*>(this));
+	pctx.push_back(const_cast<Unit*>(this), ETrue);
 	prov->DumpIfProv(iname, pctx, iface);
     }
     cout << "<< IRM paths END >>" << endl;

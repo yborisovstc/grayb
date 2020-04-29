@@ -9,7 +9,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 /*
- * This test is for checking the functionality of interfaces caching
+ * This test is for checking the functionality of interfaces resoluion mechanisn (IRM)
  */
 
 
@@ -18,6 +18,8 @@ class Ut_icache : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST_SUITE(Ut_icache);
     CPPUNIT_TEST(test_Inv1);
     CPPUNIT_TEST(test_InvMAgent);
+    CPPUNIT_TEST(test_Slc);
+    CPPUNIT_TEST(test_Slc2);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -25,6 +27,8 @@ public:
 private:
     void test_Inv1();
     void test_InvMAgent();
+    void test_Slc();
+    void test_Slc2();
 private:
     Env* iEnv;
 };
@@ -159,6 +163,73 @@ void Ut_icache::test_InvMAgent()
     agte = dynamic_cast<MUnit*>(agt->DoGetIface(MUnit::Type()));
     CPPUNIT_ASSERT_MESSAGE("Wrong MAgent 2-nd iface on second request", agte->GetUri(NULL,true) == "/testroot/test/MAExteder");
 
+
+    delete iEnv;
+}
+
+/** @brief Verifies IRM for multi-level socket
+ */
+void Ut_icache::test_Slc()
+{
+    printf("\n === Tests of IRM for connecting via multi-level sockets\n");
+
+    iEnv = new Env("ut_icache_slc.chs", "ut_icache_slc.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+
+    MUnit* pin1 = root->GetNode("./test/Syst1/S1Cp/Block/Pin1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get pin1", pin1 != NULL);
+    MDesInpObserver* dio = pin1->GetSIfit(dio);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get pin1 dio", dio != NULL);
+
+    MUnit* s2cp = root->GetNode("./test/Syst2/S2Cp");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get pin1 s2cp", s2cp != NULL);
+
+    delete iEnv;
+}
+
+/** @brief Verifies IRM for socket loopback connection
+ */
+void Ut_icache::test_Slc2()
+{
+    printf("\n === Tests of IRM for socket loopback connection\n");
+
+    iEnv = new Env("ut_icache_slc_2.chs", "ut_icache_slc_2.txt");
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+
+    MUnit* pin1 = root->GetNode("./test/Syst1/S1Cp/Pin1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get pin1", pin1 != NULL);
+    MDesInpObserver* dio = pin1->GetSIfit(dio);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get pin1 dio", dio != NULL);
+
+    MUnit* pin1back = root->GetNode("./test/Syst1/S1Cp/Pin1Back");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get pin1back", pin1back != NULL);
+
+    // Sync iface
+    MUnit* esync = root->GetNode("./test");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != NULL);
+    MDesSyncable* sync = esync->GetSIfit(sync);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != NULL);
+
+    // Do some ticks
+    const TInt ticksnum = 2;
+    for (TInt cnt = 0; cnt < ticksnum; cnt++) {
+	if (sync->IsActive()) {
+	    sync->Update();
+	}
+	if (sync->IsUpdated()) {
+	    sync->Confirm();
+	}
+    }
 
     delete iEnv;
 }

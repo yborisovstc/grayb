@@ -3705,5 +3705,95 @@ TBool FBAndDt::GetCont(TInt aInd, string& aName, string& aCont) const
     }
 }
 
+// Max: Generic data
+
+template<class T> Func* FMaxDt<T>::Create(Host* aHost, const string& aString)
+{
+    Func* res = NULL;
+    if (aString == MDtGet<T>::Type()) {
+	res = new FMaxDt<T>(*aHost);
+    }
+    return res;
+}
+
+template<class T> MIface *FMaxDt<T>::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
+    return res;
+}
+
+template<class T> TBool FMaxDt<T>::GetCont(TInt aInd, string& aName, string& aCont) const
+{
+    if (aInd == 0) {
+	FMaxBase::GetCont(aInd, aName, aCont);
+    } else if (aInd == 1) {
+	// Inputs values
+	aName = "Inp_values";
+	aCont.append(mHost.GetInpUri(EInp) + ": ");
+	Elem::TIfRange range = mHost.GetInps(EInp);
+	for (MUnit::TIfIter it = range.first; it != range.second; it++) {
+	    if (it != range.first) {
+		aCont.append(", ");
+	    }
+	    MDVarGet* dget = (MDVarGet*) (*it);
+	    MDtGet<T>* dfget = dget->GetDObj(dfget);
+	    if (dfget != NULL) {
+		T arg;
+		dfget->DtGet(arg);
+		string args;
+		arg.ToString(args);
+		aCont.append(args);
+	    }
+	}
+    }
+}
+
+template<class T> void FMaxDt<T>::DtGet(T& aData)
+{
+    TBool res = ETrue;
+    Elem::TIfRange range = mHost.GetInps(EInp);
+    for (MUnit::TIfIter it = range.first; it != range.second; it++) {
+	MDVarGet* dget = (MDVarGet*) (*it);
+	MDtGet<T>* dfget = dget->GetDObj(dfget);
+	if (dfget != NULL) {
+	    T arg = aData;
+	    dfget->DtGet(arg);
+	    if (arg.mValid) {
+		if (it == range.first) {
+		    aData = arg;
+		}
+		else {
+		    if (arg.mData > aData.mData) {
+			aData = arg;
+		    }
+		}
+	    }
+	    else {
+		Logger()->Write(EErr, mHost.GetAgent(), "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
+		res = EFalse; break;
+	    }
+	}
+	else {
+	    Logger()->Write(EErr, mHost.GetAgent(), "Incompatible argument [%s]",  mHost.GetInpUri(EInp).c_str());
+	    res = EFalse; break;
+	}
+    }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
+}
+
+template<class T> void FMaxDt<T>::GetResult(string& aResult) const
+{
+    mRes.ToString(aResult);
+}
+
+static void FMaxDtFact() {
+    FMaxDt<Sdata<int>>::Create(NULL, "");
+}
+
 
 

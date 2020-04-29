@@ -51,7 +51,7 @@ MIface *Vert::DoGetObj(const char *aName)
 
 Vert::~Vert()
 {
-    iPairs.clear();
+    Disconnect();
 }
 
 TBool Vert::Connect(MVert* aPair)
@@ -238,8 +238,11 @@ void Vert::Disconnect()
 {
     while (PairsCount() > 0) {
 	set<MVert*>::iterator it = iPairs.begin();
-	Disconnect(*it);
+	MVert* pair = *it;
+	Disconnect(pair);
+	pair->Disconnect(this);
     }
+    iPairs.clear();
 }
 
 
@@ -281,7 +284,7 @@ MIface *Vertu::DoGetObj(const char *aName)
 
 Vertu::~Vertu()
 {
-    iPairs.clear();
+    Disconnect();
 }
 
 TBool Vertu::Connect(MVert* aPair)
@@ -461,6 +464,9 @@ void Vertu::Disconnect()
 {
     while (PairsCount() > 0) {
 	set<MVert*>::iterator it = iPairs.begin();
-	Disconnect(*it);
+	MVert* pair = *it;
+	Disconnect(pair);
+	pair->Disconnect(this);
     }
+    iPairs.clear();
 }

@@ -1899,8 +1899,8 @@ void ASocketMcm::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     // further routing.
     TIfRange rr;
     TBool resok = EFalse;
-    TICacheRCtx ctx(aCtx); ctx.push_back(this);
-    //TICacheRCtx ctx(aCtx); ctx.push_back(this, ETrue); // Enable dup of socket enntries
+    //TICacheRCtx ctx(aCtx); ctx.push_back(this);
+    TICacheRCtx ctx(aCtx); ctx.push_back(this, ETrue); // Enable dup of socket enntries
     MIface* res = (MIface*) DoGetObj(aName.c_str());
     if (res != NULL) {
 	InsertIfCache(aName, aCtx, this, res);
@@ -1920,7 +1920,7 @@ void ASocketMcm::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 		    for (TInt ct = 0; ct < pcount && res == NULL; ct++) {
 			MVert* pair = GetPair(ct);
 			MUnit* pe = pair->GetObj(pe);
-			if (!ctx.IsInContext(pe)) {
+			if (!ctx.IsInContext(pe) || ctx.IsInContext(pe) && pe != ctx.back()) {
 			    rr = pe->GetIfi(aName, ctx);
 			    InsertIfCache(aName, aCtx, pe, rr);
 			    resok = resok || (rr.first != rr.second);
@@ -2089,6 +2089,7 @@ MUnit* ASocketMcm::GetExtd()
     return NULL;
 }
 
+/*
 MUnit* ASocketMcm::GetPin(const TICacheRCtx& aCtx)
 {
     MUnit* res = NULL;
@@ -2100,7 +2101,20 @@ MUnit* ASocketMcm::GetPin(const TICacheRCtx& aCtx)
     }
     return res;
 }
+*/
 
+MUnit* ASocketMcm::GetPin(const TICacheRCtx& aCtx)
+{
+    MUnit* res = NULL;
+    for (TICacheRCtx::const_reverse_iterator it = aCtx.rbegin(); it < aCtx.rend(); it++) {
+	const MUnit* celem = *it;
+	if (IsComp(celem)) {
+	    res = const_cast<MUnit*>(celem);
+	    break;
+	}
+    }
+    return res;
+}
 
 MCompatChecker::TDir ASocketMcm::GetDir() const
 {

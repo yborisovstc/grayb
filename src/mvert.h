@@ -70,6 +70,7 @@ class MVert: public MIface
 	virtual MIface* MVert_Call(const string& aSpec, string& aRes) { return NULL;}
 	virtual string MVert_Mid() const = 0;
 	MIface* Call(const string& aSpec, string& aRes) override {return MVert_Call(aSpec, aRes);}
+	virtual string Uid() const { return Mid() + "%" + Type();};
 	string Mid() const override { return MVert_Mid();}
     protected:
 	class EIfu: public Ifu {
