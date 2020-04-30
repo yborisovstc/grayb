@@ -71,3 +71,4 @@ ut-grayb-lib
 *.exrc
 Makefile
 .*.chs
+*.out

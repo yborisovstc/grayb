@@ -4415,7 +4415,12 @@
 			(inputs for instance) withous explicitly stating agents name in componentns URIs.</listitem>
 		    <listitem>Mutations can accept anonymous agent creation mutation instead of explicit URI to the agent.</listitem>
 		</itemizedlist>
-		<simpara>These features causes to the mutation chain when specifying the connected agents.</simpara>
+		<simpara>These features causes to the mutation chain (ref <xref linkend="ds_chr2_mc"/>) when specifying the connected agents.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_chr2_mc"><title>Mutations chain</title>
+	    <sect3><title>Intro</title>
+		<simpara>Mutation chain is required when using anonymous agents, ref <xref linkend="ds_chr2_aamc"/></simpara>
 	    </sect3>
 	    <sect3><title>Mutations chain: chromo node design considerations</title>
 		<simpara>As we stated it will be acceptable to use node creation mutation instead of URI in many parts of mutation: mutation arguments P and Q, context

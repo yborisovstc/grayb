@@ -19,6 +19,8 @@ class MIfaceProv
 /**
  * @brief Interface of interface. Support unified invocation of methods
  */
+// TODO There are a number of iface providing ifaces: MIfaceProv, MIfProv, MVert ...
+// Needs to have just one iface. Why cannot we embed iface provider into iface itself?
 class MIface
 {
     public:
