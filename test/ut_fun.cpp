@@ -370,8 +370,9 @@ void Ut_func::test_FuncVar1mc()
 	iEnv->ImpsMgr()->AddImportsPaths("../modules");
 	iEnv->ConstructSystem();
 	MUnit* root = iEnv->Root();
+	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL);
 	MElem* eroot = root->GetObj(eroot);
-	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get eroot", eroot != NULL);
 
 	string savedfn = specn + "_saved." + ext;
 	eroot->Chromos().Save(savedfn);

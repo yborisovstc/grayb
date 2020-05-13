@@ -497,8 +497,7 @@ void Env::ConstructSystem()
     iSpecChromo = spec;
     if (iSpecFile.empty() && iSpec.empty()) {
 	iRoot = new Elem(KRootName, NULL, this);
-    }
-    else {
+    } else {
 	if (!iSpecFile.empty()) {
 	    spec->SetFromFile(iSpecFile);
 	} else {
@@ -507,51 +506,48 @@ void Env::ConstructSystem()
 	if (spec->IsError()) {
 	    const CError& cerr = spec->Error();
 	    Logger()->Write(EErr, NULL, "Chromo error [pos %d]: %s", cerr.mPos.operator streamoff(), cerr.mText.c_str());
-	}
-	Pdur(PEvents::Dur_Profiler_Dur_Start);
-	Pdur(PEvents::Dur_Profiler_Dur);
-	Pclock(PEvents::Env_Start_Constr, iRoot);
-	Pdur(PEvents::Dur_Env_Constr_Start);
-	const ChromoNode& root = spec->Root();
-
-	/**/
-	string sparent = root.Attr(ENa_Parent);
-	Unit* parent = iProvider->GetNode(sparent);
-	iRoot = iProvider->CreateNode(sparent, root.Name(), NULL, this);
-	/**/
-	//iRoot = iProvider->CreateNode("Elem", "Root", NULL, this);
-	MElem* eroot = (iRoot == NULL) ? NULL : iRoot->GetObj(eroot);
-	if (eroot != NULL) {
-	    Pclock(PEvents::Env_Root_Created, iRoot);
-	    stringstream ss;
-	    struct timeval tp;
-	    gettimeofday(&tp, NULL);
-	    long int beg_us = tp.tv_sec * 1000000 + tp.tv_usec;
-	    Logger()->Write(EInfo, iRoot, "Started of creating system, spec [%s]", iSpecFile.c_str());
-	    eroot->SetMutation(root);
-	    TNs ns;
-	    ns.push_back(iRoot);
-	    MutCtx mc(iRoot, ns);
-	    //eroot->Mutate(EFalse, EFalse, EFalse, MutCtx(iRoot));
-	    eroot->Mutate(EFalse, EFalse, EFalse, mc);
-	    Pclock(PEvents::Env_End_Constr, iRoot);
-	    gettimeofday(&tp, NULL);
-	    long int fin_us = tp.tv_sec * 1000000 + tp.tv_usec;
-	    ss << (fin_us - beg_us);
-	    TInt cpc = iRoot->GetCapacity();
-	    TInt cpi = iImpMgr->GetImportsContainer() ? iImpMgr->GetImportsContainer()->GetCapacity() : 0;
-	    Logger()->Write(EInfo, iRoot, "Completed of creating system, nodes: %d, imported: %d, time, us: %s", cpc,  cpi, ss.str().c_str());
-	    //Logger()->Write(EInfo, iRoot, "Components");
-	    //iRoot->LogComps();
-	    // Set launcher
-	    mLauncher = dynamic_cast<MLauncher*>(iRoot->MUnit::GetSIfi(MLauncher::Type()));
-	    if (mLauncher == NULL) {
-		Logger()->Write(EErr, NULL, "Cannot find launcher");
-	    }
 	} else {
-	    Logger()->WriteFormat("Env: cannot create root elem");
+	    Pdur(PEvents::Dur_Profiler_Dur_Start);
+	    Pdur(PEvents::Dur_Profiler_Dur);
+	    Pclock(PEvents::Env_Start_Constr, iRoot);
+	    Pdur(PEvents::Dur_Env_Constr_Start);
+	    const ChromoNode& root = spec->Root();
+
+	    /**/
+	    string sparent = root.Attr(ENa_Parent);
+	    Unit* parent = iProvider->GetNode(sparent);
+	    iRoot = iProvider->CreateNode(sparent, root.Name(), NULL, this);
+	    /**/
+	    MElem* eroot = (iRoot == NULL) ? NULL : iRoot->GetObj(eroot);
+	    if (eroot != NULL) {
+		Pclock(PEvents::Env_Root_Created, iRoot);
+		stringstream ss;
+		struct timeval tp;
+		gettimeofday(&tp, NULL);
+		long int beg_us = tp.tv_sec * 1000000 + tp.tv_usec;
+		Logger()->Write(EInfo, iRoot, "Started of creating system, spec [%s]", iSpecFile.c_str());
+		eroot->SetMutation(root);
+		TNs ns;
+		ns.push_back(iRoot);
+		MutCtx mc(iRoot, ns);
+		eroot->Mutate(EFalse, EFalse, EFalse, mc);
+		Pclock(PEvents::Env_End_Constr, iRoot);
+		gettimeofday(&tp, NULL);
+		long int fin_us = tp.tv_sec * 1000000 + tp.tv_usec;
+		ss << (fin_us - beg_us);
+		TInt cpc = iRoot->GetCapacity();
+		TInt cpi = iImpMgr->GetImportsContainer() ? iImpMgr->GetImportsContainer()->GetCapacity() : 0;
+		Logger()->Write(EInfo, iRoot, "Completed of creating system, nodes: %d, imported: %d, time, us: %s", cpc,  cpi, ss.str().c_str());
+		// Set launcher
+		mLauncher = dynamic_cast<MLauncher*>(iRoot->MUnit::GetSIfi(MLauncher::Type()));
+		if (mLauncher == NULL) {
+		    Logger()->Write(EErr, NULL, "Cannot find launcher");
+		}
+	    } else {
+		Logger()->WriteFormat("Env: cannot create root elem");
+	    }
+	    Pdur(PEvents::Dur_Env_Constr);
 	}
-	Pdur(PEvents::Dur_Env_Constr);
     }
 }
 

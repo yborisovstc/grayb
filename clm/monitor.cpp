@@ -48,6 +48,9 @@ void Monitor::initEnv()
 	// Assuming log name is default
 	mLogName = mSpecName + ".log";
     }
+    if (mSpecName.empty()) {
+	cout << "Error: chromo filename is not specified" << endl;
+    }
     mEnv = new Env(mSpecName, mLogName);
     for (auto path : mModPaths) {
 	mEnv->ImpsMgr()->AddImportsPaths(path);

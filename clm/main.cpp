@@ -26,11 +26,12 @@ Options:\n\
 -f - format chromo spec\n\
 -l <file> - log file\n\
 -p <file> - profiler file\n\
--m <path> - pahth to module files\n\
+-m <path> - path to module files\n\
 -a        - auto-run\n\
 -s <file> - spec file\n\
 -o <file> - converted spec file\n\
 \n";
+
 
 int main(int argc, char* argv[])
 {
@@ -43,42 +44,42 @@ int main(int argc, char* argv[])
 	    //cout << arg << endl;
 	    if (arg == "-h") {
 		cout << help;
-	    } else if (arg.compare(0, 2, "-l") == 0) {
+	    } else if (arg.compare("-l") == 0) {
 		// Log file
-		string path = arg.substr(2);
+		string path(argv[++i]);
 		bool spres = mnt.setLogFile(path);
 		if (!spres) {
 		    cout << "Cannot open log file";
 		}
-	    } else if (arg.compare(0, 2, "-p") == 0) {
+	    } else if (arg.compare("-p") == 0) {
 		// Profile file
-		string path = arg.substr(2);
+		string path(argv[++i]);
 		bool spres = mnt.setProfPath(path);
 		if (!spres) {
 		    cout << "Cannot open profiler file";
 		}
-	    } else if (arg.compare(0, 2, "-m") == 0) {
+	    } else if (arg.compare("-m") == 0) {
 		// Path to modules
-		string path = arg.substr(2);
+		string path(argv[++i]);
 		bool spres = mnt.setModulePath(path);
 		if (!spres) {
 		    cout << "Cannot find module path";
 		}
-	    } else if (arg.compare(0, 2, "-s") == 0) {
+	    } else if (arg.compare("-s") == 0) {
 		// Spec file
-		string path = arg.substr(2);
+		string path(argv[++i]);
 		mnt.setSpecName(path);
-	    } else if (arg.compare(0, 2, "-o") == 0) {
+	    } else if (arg.compare("-o") == 0) {
 		// Converted Spec file
-		string path = arg.substr(2);
+		string path(argv[++i]);
 		mnt.setOutSpecName(path);
-	    } else if (arg.compare(0, 2, "-a") == 0) {
+	    } else if (arg.compare("-a") == 0) {
 		// Autorun
 		mAutoRun = true;
-	    } else if (arg.compare(0, 2, "-c") == 0) {
+	    } else if (arg.compare("-c") == 0) {
 		// Convert
 		mConvert = true;
-	    } else if (arg.compare(0, 2, "-f") == 0) {
+	    } else if (arg.compare("-f") == 0) {
 		// Format
 		mFormat = true;
 	    } else {

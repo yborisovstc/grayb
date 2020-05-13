@@ -46,6 +46,7 @@ static const string KR_CREATE = ":";
 /** @brief Chromo spec parsing errors
  * */
 
+static const string KPE_ErrOnReadingSpec = "Error on reading chromo";
 static const string KPE_UnexpChrEnd = "Unexpected end of chromo";
 static const string KPE_WrongMutLexNum = "Wrong number of mutation lexems";
 static const string KPE_WrongCtxType = "Wrong context type";
@@ -601,6 +602,9 @@ THandle Chromo2Mdl::SetFromFile(const string& aFileName)
 	ParseCnodeChromo(is, beg, end, mRoot, true);
 	mRoot.BindTree(NULL);
 	//DumpMnode(mRoot, 0);
+    } else {
+	// Error reading the file
+	mErr.Set(0, KPE_ErrOnReadingSpec);
     }
     return &mRoot;
 }
