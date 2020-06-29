@@ -38,7 +38,7 @@ void Monitor::setSpecName(const string& aFileName)
     mSpecName = aFileName;
 }
 
-void Monitor::initEnv()
+void Monitor::initEnv(bool aVerbose)
 {
     if (mEnv != nullptr) {
 	delete mEnv;
@@ -48,12 +48,16 @@ void Monitor::initEnv()
 	// Assuming log name is default
 	mLogName = mSpecName + ".log";
     }
-    if (mSpecName.empty()) {
+    if (mSpecName.empty() && aVerbose) {
 	cout << "Error: chromo filename is not specified" << endl;
     }
     mEnv = new Env(mSpecName, mLogName);
     for (auto path : mModPaths) {
 	mEnv->ImpsMgr()->AddImportsPaths(path);
+    }
+    for (auto evar : mEVars) {
+	// TODO Updata env to return error from SetEVar
+	mEnv->SetEVar(evar.first, evar.second);
     }
 }
 
@@ -204,7 +208,7 @@ bool Monitor::formatSpec()
 	sname = "/tmp/.fap2_fmt_tmp.chs";
 	storeStdinToFile(sname);
     }
-    initEnv();
+    initEnv(false);
     MProvider* prov = mEnv->Provider();
     MChromo* chr = prov->CreateChromo(K_Chr2Ext);
     chr->SetFromFile(sname);
@@ -240,6 +244,14 @@ bool Monitor::saveModel(const string& aPath)
     }
     return res;
 }
+
+bool Monitor::addEVar(const string& aName, const string& aValue)
+{
+    auto res = mEVars.insert(TEVarElem(aName, aValue));
+    return res.second;
+}
+
+
 
 
 /** Handler of 'run' command

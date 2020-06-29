@@ -74,8 +74,6 @@ class Elem: public Unit, public MElem
 	// Checks if the node is originated via phenotypical modification
 	TBool IsDirectInheritedComp(const MUnit* aNode) const;
 	TBool IsCompOfInheritedComp(const MUnit* aNode) const;
-	// Debug helpers
-	virtual TBool IsHeirOf(const string& aParent) const;
 	// From MIfProv Iface provider
 	MIface* getLocalIface(const string& aName, const TICacheRCtx& aCtx) override;
 	TInt IfRangeSize(const TIfRange& aRange) const;

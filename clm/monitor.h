@@ -20,6 +20,9 @@ class Monitor
 	using TIhFact = InputHandler* (Monitor& aHost);
 	/** Input handlers registry type */
 	using TIhReg = map<string, TIhFact*>;
+	/** @brief Environment variables type: name, value */
+	using TEVarElem = pair<string, string>;
+	using TEVars = map<string, string>;
     public:
 	Monitor();
 	~Monitor();
@@ -28,7 +31,7 @@ class Monitor
 	void setOutSpecName(const string& aFileName);
 	bool setLogFile(const string& aPath);
 	bool setProfPath(const string& aPath);
-	void initEnv();
+	void initEnv(bool aVerbose = true);
 	void runModel();
 	bool saveModel(const string& aPath);
 	bool saveProfilerData();
@@ -46,6 +49,10 @@ class Monitor
 	 * @return Sign of sucess
 	 * */
 	bool setModulePath(const string& aPath);
+	/** @brief Adds environment variable
+	 * @return Sign of success
+	 * */
+	bool addEVar(const string& aName, const string& aValue);
     protected:
 	/** @brief Creates input handler for given command */
 	InputHandler* createHandler(const string& aCmd);
@@ -63,6 +70,7 @@ class Monitor
 	static const string KDefPrompt;
 	/** Input handlers factory function registry */
 	static const TIhReg mIhReg;
+	TEVars mEVars; /*!< Env variables */
 };
 
 /** Input handler base */

@@ -92,6 +92,7 @@ MUnit::EIfu::EIfu()
     RegMethod("GetContCount", 1);
     RegMethod("GetContComp", 2);
     RegMethod("IsContOfCategory", 2);
+    RegMethod("IsHeirOf", 1);
 }
 
 void MUnit::EIfu::ToCtx(MUnit* aHost, const string& aString, TICacheRCtx& aCtx)
@@ -678,7 +679,7 @@ void Unit::DumpIfCache() const
 
 string Unit::EType(TBool aShort) const
 {
-    return string();
+    return PEType(); // Top of heir ATM
 }
 
 // Stated restriction: name to be unique, ref. ds_mut_nm
@@ -2219,4 +2220,18 @@ bool Unit::IsName(const string& aUri)
 	res = isalpha(fc) || (fc == '_');
     }
     return res;
+}
+
+// TODO [YB] To implement with usage of URI but not just string
+// TODO [YB] The problem is more serious: we need to check full type (all parents chain) to detect inheritance.
+TBool Unit::IsHeirOf(const string& aParent) const
+{
+    TBool res = EFalse;
+    string et = EType(EFalse);
+    int pos = et.find(aParent);
+    if (pos == 0) {
+	res = (aParent.size() == et.size() || et.at(aParent.size()) == GUri::KParentSep);
+    }
+    return res;
+    //return pos == 0 && (aParent.size() == et.size() || et.at(aParent.size()) == GUri::KParentSep);
 }

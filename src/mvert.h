@@ -58,6 +58,10 @@ class MVert: public MIface
 	virtual TInt PairsCount() const = 0;
 	virtual MVert* GetPair(TInt aInd) const = 0;
 	virtual TBool IsPair(const MVert* aPair) const = 0;
+	/** @brief Gets sign of vertex linked to given vertex
+	 * Is shows not only direct linkage (pairing) but also the linkage via components
+	 * */
+	virtual TBool IsLinked(const MVert* aPair, TBool aDirect = EFalse) const = 0;
 	//virtual set<MVert*>& Pairs() = 0;
 	// TODO [YB] We introduced local iface resolver here. It is restricted for some ifaces only
 	// The idea was that earlier the EBase() methos was used that return Base - not safe solution

@@ -95,10 +95,15 @@ etc=etc CD=. filter="*" {
   objspec_s2.dtd
 }
 modules=modules CD=. filter="*" {
+  capsula.chs
   capsula.xml
+  data.chs
   data.xml
+  des.chs
   des.xml
+  func.chs
   func.xml
+  syst.chs
   syst.xml
   vis.xml
 }
@@ -457,40 +462,73 @@ fap2-vis=/home/yborisov/projects/fap/fap2-vis CD=. filter="autogen.sh Makefile.a
  Makefile.in
  fap2vis.pc.in
 src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
-  gwcont.h
+  agentvr.h
+  alignment.h
+  button.h
+  container.h
+  containerl.h
+  hlayoutl.h
+  label.h
+  magentvr.h
+  mcontainer.h
   mdlvis.h
   mmdlvis.h
   mscel.h
   mscene.h
   mvisenv.h
   mvisrepr.h
+  mvrcontroller.h
   mwidget.h
   mwindow.h
   sce_rect.h
   scelem.h
   scene.h
+  scrolledbox.h
+  systdrp.h
   visenv.h
   visprov.h
   visrepr.h
-  gwcont.cpp
+  vlayout.h
+  vlayoutl.h
+  vrcontroller.h
+  widget.h
+  agentvr.cpp
+  alignment.cpp
+  button.cpp
+  container.cpp
+  containerl.cpp
+  hlayoutl.cpp
+  label.cpp
   mdlvis.cpp
   plugin.cpp
   sce_rect.cpp
   scelem.cpp
   scene.cpp
+  scrolledbox.cpp
+  systdrp.cpp
   visenv.cpp
   visprov.cpp
   visrepr.cpp
+  vlayout.cpp
+  vlayoutl.cpp
+  vrcontroller.cpp
+  widget.cpp
   Makefile.am
 } 
 modules=modules CD=. filter="*" {
   widgets.xml
 }
-test=test CD=. filter="*.h *.cpp *.dtd Makefile.am *.xml" {
+test=test CD=. filter="*.h *.cpp *.dtd Makefile.am *.chs" {
+  ut_avr.cpp
   ut_base.cpp
+  ut_cnt.cpp
+  ut_cntl.cpp
   ut_cre.cpp
   ut_main.cpp
+  ut_wdg.cpp
   Makefile.am
+  ut_swnd_1.xml
+  ut_swnd_2.xml
 }
 }
 fap2-srv=/home/yborisov/projects/fap/fap2-srv CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in {
@@ -756,54 +794,79 @@ fap2-vis=/home/yborisov/projects/fap/fap2-vis CD=. filter="autogen.sh Makefile *
     fap-studio-gtk.debhelper.log
   }
  src=src CD=. filter="*.cpp *.h *.xml *.am *.rc" {
-  gwcont.cpp
+  agentvr.cpp
+  alignment.cpp
+  button.cpp
+  container.cpp
+  containerl.cpp
+  hlayoutl.cpp
+  label.cpp
   mdlvis.cpp
   plugin.cpp
   sce_rect.cpp
   scelem.cpp
   scene.cpp
+  scrolledbox.cpp
   visenv.cpp
   visprov.cpp
   visrepr.cpp
-  gwcont.h
+  vlayout.cpp
+  vlayoutl.cpp
+  vrcontroller.cpp
+  widget.cpp
+  agentvr.h
+  alignment.h
+  button.h
+  container.h
+  containerl.h
+  hlayoutl.h
+  label.h
+  magentvr.h
+  mcontainer.h
   mdlvis.h
   mmdlvis.h
   mscel.h
   mscene.h
   mvisenv.h
   mvisrepr.h
+  mvrcontroller.h
   mwidget.h
   mwindow.h
   sce_rect.h
   scelem.h
   scene.h
+  scrolledbox.h
   visenv.h
   visprov.h
   visrepr.h
+  vlayout.h
+  vlayoutl.h
+  vrcontroller.h
+  widget.h
   Makefile.am
  }
  modules=modules CD=. filter="*" {
   widgets.xml
  }
  examples=examples CD=. filter="*" {
-  rock_1.xml
-   rock_2.xml
+  modnav=modnav CD=. filter="*" {
+  }
  }
  test=test CD=. filter="*" {
   Makefile
-  Makefile.am
-  Makefile.in
-  gdb_set
-  ut_base.cpp
-  ut_cre.cpp
-  ut_main.cpp
-  ut_swnd_1.txt
-  ut_swnd_1.txt~old
-  ut_swnd_1.xml
-  ut_swnd_2.txt
-  ut_swnd_2.txt~old
-  ut_swnd_2.xml
-  ut_fap2vis_lib-ut_main.o
+   Makefile.am
+   Makefile.in
+   gdb_set
+   ut_base.cpp
+   ut_cre.cpp
+   ut_main.cpp
+   ut_swnd_1.txt
+   ut_swnd_1.txt~old
+   ut_swnd_1.xml
+   ut_swnd_2.txt
+   ut_swnd_2.txt~old
+   ut_swnd_2.xml
+   ut_fap2vis_lib-ut_main.o
  }
 }
 fap-balls=/home/yborisov/projects/fap/git/fap-balls CD=. filter="*.ac *.am" {

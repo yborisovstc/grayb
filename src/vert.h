@@ -25,6 +25,7 @@ class Vert: public Elem, public MVert
 	virtual TInt PairsCount() const;
 	virtual MVert* GetPair(TInt aInd) const;
 	virtual TBool IsPair(const MVert* aPair) const;
+	virtual TBool IsLinked(const MVert* aPair, TBool aDirect = EFalse) const override;
 	//virtual set<MVert*>& Pairs();
 	virtual MIface* MVert_DoGetObj(const char *aName);
 	// From Elem
@@ -59,6 +60,7 @@ class Vertu: public Unit, public MVert
 	virtual TInt PairsCount() const;
 	virtual MVert* GetPair(TInt aInd) const;
 	virtual TBool IsPair(const MVert* aPair) const;
+	virtual TBool IsLinked(const MVert* aPair, TBool aDirect = EFalse) const override;
 	//virtual set<MVert*>& Pairs();
 	virtual MIface* MVert_DoGetObj(const char *aName);
 	// From Elem

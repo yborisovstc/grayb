@@ -224,6 +224,7 @@ class MUnit : public MIface, public Base, public MOwner, public MIfProv
     virtual MUnit* GetMan() = 0;
     virtual const MUnit* GetMan() const = 0;
     virtual void SetMan(MUnit* aMan) = 0;
+    virtual TBool IsHeirOf(const string& aParent) const = 0;
     /** @brief Creating heir
      * In simplest case it creates the instance of the unit
      */

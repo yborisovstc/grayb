@@ -111,6 +111,7 @@ class Unit: public MUnit
 	virtual TBool IsProvided() const;
 	virtual void SetMan(MUnit* aMan);
 	string PName() const;
+	virtual TBool IsHeirOf(const string& aParent) const override;
     public:
 	virtual MUnit* CreateHeir(const string& aName, MUnit* aMan, MUnit* aContext);
 	// Gets the comp with given type and owning given element

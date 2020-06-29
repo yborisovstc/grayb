@@ -245,6 +245,25 @@ void Vert::Disconnect()
     iPairs.clear();
 }
 
+TBool Vert::IsLinked(const MVert* aPair, TBool aDirect) const
+{
+    TBool res = false;
+    res = IsPair(aPair);
+    if (!res) {
+	for (auto compr : iMComps) {
+	    MVert* compv = compr.second->GetObj(compv);
+	    if (compv) {
+		if (aDirect) {
+		    res = aPair->IsPair(compv);
+		} else {
+		    res = aPair->IsLinked(compv, ETrue);
+		}
+		if (res) break;
+	    }
+	}
+    }
+    return res;
+}
 
 
 // Vertex unit
@@ -469,4 +488,24 @@ void Vertu::Disconnect()
 	pair->Disconnect(this);
     }
     iPairs.clear();
+}
+
+TBool Vertu::IsLinked(const MVert* aPair, TBool aDirect) const
+{
+    TBool res = false;
+    res = IsPair(aPair);
+    if (!res) {
+	for (auto compr : iMComps) {
+	    MVert* compv = compr.second->GetObj(compv);
+	    if (compv) {
+		if (aDirect) {
+		    res = aPair->IsPair(compv);
+		} else {
+		    res = aPair->IsLinked(compv, ETrue);
+		}
+		if (res) break;
+	    }
+	}
+    }
+    return res;
 }

@@ -59,7 +59,6 @@ MElem::EIfu::EIfu()
     RegMethod("AppendMutation", 1);
     RegMethod("AppendMutation#2", 1);
     RegMethod("IsRemoved", 0);
-    RegMethod("IsHeirOf", 1);
     RegMethod("IsComp", 1);
     RegMethod("OnNodeMutated", 3);
     RegMethod("IsCompAttached", 1);
@@ -82,7 +81,7 @@ MElem::EIfu::EIfu()
 
 string Elem::PEType()
 {
-    return string() + GUri::KParentSep + Elem::Type();
+    return Unit::PEType() + GUri::KParentSep + Elem::Type();
 }
 
 // Element
@@ -212,13 +211,12 @@ MIface* Elem::getLocalIface(const string& aName, const TICacheRCtx& aCtx)
 
 string Elem::EType(TBool aShort) const
 {
-    if (iParent == NULL) {
-	return string();
+    if (!iParent) {
+	return PEType();
     }
     if (aShort) {
 	return iParent->Name();
-    }
-    else {
+    } else {
 	return iParent->EType(aShort) + GUri::KParentSep + iParent->Name();
     }
 }
@@ -1097,21 +1095,6 @@ TBool Elem::MoveNode(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode, 
     return res;
 }
 
-// TODO [YB] To implement with usage of URI but not just string
-// TODO [YB] The problem is more serious: we need to check the full type
-// (all parents chain) to detect inheritance.
-TBool Elem::IsHeirOf(const string& aParent) const
-{
-    TBool res = EFalse;
-    string et = EType(EFalse);
-    int pos = et.find(aParent);
-    if (pos == 0) {
-	res = (aParent.size() == et.size() || et.at(aParent.size()) == GUri::KParentSep);
-    }
-    return res;
-    //return pos == 0 && (aParent.size() == et.size() || et.at(aParent.size()) == GUri::KParentSep);
-}
-
 // Checks if elements chromo is attached. Ref UC_019 for details
 // Using model based calculation, ref ds_daa_chrc_va
 TBool Elem::IsChromoAttached() const
@@ -1437,9 +1420,6 @@ MIface* Elem::MElem_Call(const string& aSpec, string& aRes)
 	mut->SetFromSpec(args.at(0));
 	AppendMutation(mut->Root());
 	delete mut;
-    } else if (name == "IsHeirOf") {
-	TBool rr = IsHeirOf(args.at(0));
-	aRes = Ifu::FromBool(rr);
     } else if (name == "OnNodeMutated") {
 	MUnit* node = GetNode(args.at(0));
 	TMut mut(args.at(1));

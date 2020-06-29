@@ -5877,6 +5877,12 @@
 	<sect2><title>To apply IRM IPX approach</title>
 	    <simpara>Ref <xref linkend="ds_ifcache_ipx"/></simpara>
 	</sect2>
+	<sect2><title>To consider models declarations.</title>
+	    <simpara>Ref <xref linkend="ds_i_mdm"/></simpara>
+	</sect2>
+	<sect2><title>Support of set of states</title>
+	    <simpara>Ref <xref linkend="ds_i_oss"/></simpara>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_i"><title>Issues</title>
@@ -5935,6 +5941,14 @@
 		propagation was disabled. But this change caused incorrect 
 		behavior - changing point of edge isn't propagated to owning incaps so the connection is not established.</simpara>
 	    <simpara>Redesign proposal <xref linkend="ds_elem_iact_rdins"/> was created for solve this issue.</simpara>
+	</sect2>
+	<sect2 id="ds_i_mdm"><title>Missing declaration of model</title>
+	    <simpara>In many cases it is required to client to get some declarative info of model or module. For instance 
+		fap2-vis visual representation controller AVrController needs to know exact names of detail representatin (DRP) agents names.</simpara>
+	</sect2>
+	<sect2 id="ds_i_oss"><title>Optimising DES in case of set of states</title>
+	    <simpara>In some cases the model includes "array" of states. Example is fap2-vis containers that contains set of widgets.
+	    Widgets allocation is updated with same transitions, so we have number of same transitions that is not effective</simpara>
 	</sect2>
     </sect1>
 

@@ -92,7 +92,6 @@ class MElem : public MIface,  public MMutable, public MParent, public MChild
     // Mutating
     virtual void ChangeAttr(const ChromoNode& aSpec, TBool aRunTime, TBool aCheckSafety, TBool aTrialMode /*EFalse*/, const MutCtx& aCtx) = 0;
     // Debugging
-    virtual TBool IsHeirOf(const string& aParent) const = 0;
     virtual void SaveChromo(const char* aPath) const = 0;
     virtual void DumpChilds() const = 0;
     virtual void DumpCnode(const ChromoNode& aNode) const = 0;

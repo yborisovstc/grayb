@@ -30,8 +30,21 @@ Options:\n\
 -a        - auto-run\n\
 -s <file> - spec file\n\
 -o <file> - converted spec file\n\
+-e <name,value> - environment variable\n\
 \n";
 
+
+bool parseEVar(const string& aEVar, pair<string, string>& aRes)
+{
+    bool ret = false;
+    size_t pos = aEVar.find(',');
+    if (pos != string::npos) {
+	aRes.first = aEVar.substr(0, pos);
+	aRes.second = aEVar.substr(pos + 1);
+	ret = true;
+    }
+    return ret;
+}
 
 int main(int argc, char* argv[])
 {
@@ -44,6 +57,7 @@ int main(int argc, char* argv[])
 	    //cout << arg << endl;
 	    if (arg == "-h") {
 		cout << help;
+		res = -1;
 	    } else if (arg.compare("-l") == 0) {
 		// Log file
 		string path(argv[++i]);
@@ -82,6 +96,20 @@ int main(int argc, char* argv[])
 	    } else if (arg.compare("-f") == 0) {
 		// Format
 		mFormat = true;
+	    } else if (arg.compare("-e") == 0) {
+		// Environment variable
+		string sevar(argv[++i]);
+		pair<string, string> evar;
+		bool pres = parseEVar(sevar, evar);
+		if (pres) {
+		    bool ores = mnt.addEVar(evar.first, evar.second);
+		    if (!ores) {
+			cout << "Error: env var [" << evar.first << "] already exists" << endl;
+		    }
+		} else {
+		    cout << "Error: incorrect env var spec [" << sevar << "]" << endl;
+		    res = -1;
+		}
 	    } else {
 		cout << "Error: unknown argument [" << arg << "]" << endl;
 		res = -1;
