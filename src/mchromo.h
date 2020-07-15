@@ -66,7 +66,7 @@ template<int L> class TTHandle
 {
     public:
 	TTHandle() {mData.fill(0);}
-	TTHandle(const TTHandle& aSrc) { for (int i = 0; i < mData.size(); i++) mData[i] = aSrc.mData[i]; }
+	TTHandle(const TTHandle& aSrc) { for (unsigned int i = 0; i < mData.size(); i++) mData[i] = aSrc.mData[i]; }
 	template<class T> TTHandle(const T& aData) { __ASSERT(sizeof(T) <= L); T* pd = reinterpret_cast<T*>(mData.data()); *pd = aData;}
 	template<class T> T Data(const T& aData) const { __ASSERT(sizeof(T) <= L); const T* pd = reinterpret_cast<const T*>(mData.data()); return *pd;}
 	template<class T> T Data() const { __ASSERT(sizeof(T) <= L); const T* pd = reinterpret_cast<const T*>(mData.data()); return *pd;}

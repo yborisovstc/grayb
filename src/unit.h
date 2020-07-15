@@ -127,7 +127,7 @@ class Unit: public MUnit
 	TIfRange GetIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
 	MIface* getLocalIface(const string& aName, const TICacheRCtx& aCtx) override;
 	TInt IfRangeSize(const TIfRange& aRange) const;
-	void* GetIfind(TIfRange& aRange, TInt aInd);
+	virtual MIface* GetIfind(const string& aName, const TICacheRCtx& aCtx, TInt aInd) override;
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MUnit
@@ -164,11 +164,11 @@ class Unit: public MUnit
 	virtual TInt GetCapacity() const;
 	// From MOwner
 	virtual TBool IsComp(const MUnit* aElem) const;
-	virtual void OnCompDeleting(MUnit& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
-	virtual void OnCompAdding(MUnit& aComp, TBool aModif = EFalse);
-	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
-	virtual TBool OnCompRenamed(MUnit& aComp, const string& aOldName);
-	virtual TBool OnChanged(MUnit& aComp);
+	virtual void OnCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
+	virtual void OnCompAdding(const MUnit* aComp, TBool aModif = EFalse);
+	virtual TBool OnCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse);
+	virtual TBool OnCompRenamed(const MUnit* aComp, const string& aOldName) override;
+	virtual TBool OnChanged(const MUnit* aComp) override;
 	virtual void OnError(const MUnit* aComp) override;
 	// Ifaces cache
 	virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx());
@@ -194,8 +194,8 @@ class Unit: public MUnit
     protected:
 	static bool IsName(const string& aUri);
 	/** Handles agent change */
-	virtual TEhr ProcessCompChanged(MUnit& aComp, const string& aContName);
-	virtual TEhr ProcessChanged(MUnit& aComp);
+	virtual TEhr ProcessCompChanged(const MUnit* aComp, const string& aContName);
+	virtual TEhr ProcessChanged(MUnit* aComp);
 	/** Helper. Gets type from extended type */
 	string GetType(const string& aEType) const;
 	/** Helper. Gets parent extended type from agent extended type */
@@ -223,6 +223,8 @@ class Unit: public MUnit
 	static string ContentKey(const string& aBase, const string& aSuffix);
 	static string ContentValueKey(const string& aId);
 	static string ContentCompsKey(const string& aId);
+	// Iface provider support
+	MIface* GetIfind(TIfRange& aRange, TInt aInd);
 	// Visual client debugging, ref ds_visdbg
 	virtual string GetAssociatedData(const string& aUri) const;
 	// Debugging

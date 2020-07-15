@@ -15,11 +15,11 @@ class AgentObserver: public MAgentObserver
     public:
 	AgentObserver(MEnv* aEnv): mEnv(aEnv) {};
 	// From MAgentObserver
-	virtual void OnCompDeleting(MUnit& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
-	virtual void OnCompAdding(MUnit& aComp, TBool aModif = EFalse);
-	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
-	virtual TBool OnChanged(MUnit& aComp);
-	virtual TBool OnCompRenamed(MUnit& aComp, const string& aOldName);
+	virtual void OnCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
+	virtual void OnCompAdding(const MUnit* aComp, TBool aModif = EFalse);
+	virtual TBool OnCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse);
+	virtual TBool OnChanged(const MUnit* aComp);
+	virtual TBool OnCompRenamed(const MUnit* aComp, const string& aOldName);
 	virtual void OnCompMutated(const MUnit* aNode);
 	virtual void OnError(const MUnit* aComp) {}
 	MIface* Call(const string& aSpec, string& aRes) override { return NULL;};
@@ -68,33 +68,33 @@ CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(Ut_cre, "Ut_cre");
 
 
 
-void AgentObserver::OnCompDeleting(MUnit& aComp, TBool aSoft, TBool aModif)
+void AgentObserver::OnCompDeleting(const MUnit* aComp, TBool aSoft, TBool aModif)
 {
 }
 
-void AgentObserver::OnCompAdding(MUnit& aComp, TBool aModif)
+void AgentObserver::OnCompAdding(const MUnit* aComp, TBool aModif)
 {
-    string uid = aComp.Uid();
+    string uid = aComp->Uid();
     cout << "AgentObserver::OnCompAdding " << uid << endl;
     MIface* comp = mEnv->IfaceResolver()->GetIfaceByUid(uid);
     CPPUNIT_ASSERT_MESSAGE("Fail to get comp iface by UID", comp != NULL);
 }
 
-TBool AgentObserver::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
+TBool AgentObserver::OnCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
 {
-    string uid = aComp.Uid();
+    string uid = aComp->Uid();
     cout << "AgentObserver::OnCompChanged " << uid << endl;
     MIface* comp = mEnv->IfaceResolver()->GetIfaceByUid(uid);
     CPPUNIT_ASSERT_MESSAGE("Fail to get comp iface by UID", comp != NULL);
 }
 
-TBool AgentObserver::OnChanged(MUnit& aComp)
+TBool AgentObserver::OnChanged(const MUnit* aComp)
 {
 }
 
-TBool AgentObserver::OnCompRenamed(MUnit& aComp, const string& aOldName)
+TBool AgentObserver::OnCompRenamed(const MUnit* aComp, const string& aOldName)
 {
-    string uid = aComp.Uid();
+    string uid = aComp->Uid();
     cout << "AgentObserver::OnCompRenamed " << uid << endl;
     MIface* comp = mEnv->IfaceResolver()->GetIfaceByUid(uid);
     CPPUNIT_ASSERT_MESSAGE("Fail to get comp iface by UID", comp != NULL);

@@ -13,7 +13,7 @@ class FuncBase: public Elem, public MACompsObserver, public MDataObserver
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName = string());
+	virtual TBool HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName = string());
 	// From MDataObserver
 	virtual void OnDataChanged();
     protected:
@@ -109,7 +109,7 @@ class AFunc: public Elem, public MACompsObserver, public MDataObserver, public M
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName = string());
+	virtual TBool HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName = string());
 	// From MDataObserver
 	virtual void OnDataChanged();
 	// From MAgent
@@ -259,7 +259,7 @@ class AFuncm: public Elem, public MACompsObserver, public MDataObserver, public 
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName = string());
+	virtual TBool HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName = string());
 	// From MDataObserver
 	virtual void OnDataChanged();
     protected:
@@ -354,7 +354,7 @@ class AFunVar: public AFunc, public MDVarGet, public Func::Host
 	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName = string());
+	virtual TBool HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName = string());
 	// From Func::Host
 	virtual TIfRange GetInps(TInt aId, TBool aOpt = EFalse);
 	virtual void OnFuncContentChanged();

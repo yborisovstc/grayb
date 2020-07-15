@@ -45,7 +45,7 @@ class Edge: public Elem, public MEdge
 	virtual void SetPoint1(const string& aRef);
 	virtual void SetPoint2(const string& aRef);
 	// From MOwner
-	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
+	virtual TBool OnCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse);
 	// From Elem
 	virtual void SetRemoved(TBool aModif);
 	// From MIface

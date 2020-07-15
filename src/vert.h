@@ -29,8 +29,8 @@ class Vert: public Elem, public MVert
 	//virtual set<MVert*>& Pairs();
 	virtual MIface* MVert_DoGetObj(const char *aName);
 	// From Elem
-	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
-	virtual void OnCompDeleting(MUnit& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
+	virtual TBool OnCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse);
+	virtual void OnCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
 	// From MIface
 	virtual MIface* MVert_Call(const string& aSpec, string& aRes);
 	virtual string MVert_Mid() const { return Elem::MElem_Mid();}
@@ -64,8 +64,8 @@ class Vertu: public Unit, public MVert
 	//virtual set<MVert*>& Pairs();
 	virtual MIface* MVert_DoGetObj(const char *aName);
 	// From Elem
-	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
-	virtual void OnCompDeleting(MUnit& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
+	virtual TBool OnCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse);
+	virtual void OnCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
 	// From MIface
 	virtual MIface* MVert_Call(const string& aSpec, string& aRes);
 	string Mid() const override { return Unit::Mid();}

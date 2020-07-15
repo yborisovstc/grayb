@@ -70,7 +70,7 @@ TBool Vert::Connect(MVert* aPair)
 		aPair->Connect(this);
 	    }
 	    __ASSERT(iMan != NULL);
-	    iMan->OnChanged(*this);
+	    iMan->OnChanged(this);
 	}
 	else {
 	    // TODO [YB] Seems this happens constantly. To analyze why
@@ -128,18 +128,18 @@ void Vert::Disconnect(MVert* aPair)
 	// Invalidate ifaces cache
 	InvalidateIfCache();
 	__ASSERT(iMan != NULL);
-	iMan->OnChanged(*this);
+	iMan->OnChanged(this);
     }
 }
 
-TBool Vert::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
+TBool Vert::OnCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
 {
     TBool res = ETrue;
     TEhr pres = Elem::ProcessCompChanged(aComp, aContName);
     if (pres == EEHR_Ignored) {
-	MEdge* edge = aComp.GetObj(edge);	
+	MEdge* edge = const_cast<MUnit*>(aComp)->GetObj(edge);	
 	if (edge == NULL) {
-	    MUnit* owner = aComp.GetMan();
+	    MUnit* owner = const_cast<MUnit*>(aComp)->GetMan();
 	    edge = owner ? owner->GetObj(edge) : NULL;
 	}
 	if (edge != NULL) {
@@ -161,7 +161,7 @@ TBool Vert::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
 		if (!res) {
 		    MUnit* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
 		    MUnit* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
-		    Logger()->Write(EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri().c_str(), pt2->GetUri().c_str());
+		    Logger()->Write(EErr, aComp, "Connecting [%s - %s] failed", pt1->GetUri().c_str(), pt2->GetUri().c_str());
 		}
 	    }
 	}
@@ -218,10 +218,10 @@ MIface* Vert::MVert_Call(const string& aSpec, string& aRes)
     return res;
 }
 
-void Vert::OnCompDeleting(MUnit& aComp, TBool aSoft, TBool aModif)
+void Vert::OnCompDeleting(const MUnit* aComp, TBool aSoft, TBool aModif)
 {
     // Disconnect the binding edges if the comp is vert connected
-    MVert* vert = aComp.GetObj(vert);
+    MVert* vert = const_cast<MUnit*>(aComp)->GetObj(vert);
     if (vert != NULL && vert->PairsCount() > 0) {
 	for (auto& it : iMComps) {
 	    MUnit* comp = it.second;
@@ -322,7 +322,7 @@ TBool Vertu::Connect(MVert* aPair)
 		aPair->Connect(this);
 	    }
 	    __ASSERT(iMan != NULL);
-	    iMan->OnChanged(*this);
+	    iMan->OnChanged(this);
 	}
 	else {
 	    // TODO [YB] Seems this happens constantly. To analyze why
@@ -373,18 +373,18 @@ void Vertu::Disconnect(MVert* aPair)
 	// Invalidate ifaces cache
 	InvalidateIfCache();
 	__ASSERT(iMan != NULL);
-	iMan->OnChanged(*this);
+	iMan->OnChanged(this);
     }
 }
 
-TBool Vertu::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
+TBool Vertu::OnCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
 {
     TBool res = ETrue;
     TEhr pres = ProcessCompChanged(aComp, aContName);
     if (pres == EEHR_Ignored) {
-	MEdge* edge = aComp.GetObj(edge);	
+	MEdge* edge = const_cast<MUnit*>(aComp)->GetObj(edge);	
 	if (edge == NULL) {
-	    MUnit* owner = aComp.GetMan();
+	    MUnit* owner = const_cast<MUnit*>(aComp)->GetMan();
 	    edge = owner ? owner->GetObj(edge) : NULL;
 	}
 	if (edge != NULL) {
@@ -406,7 +406,7 @@ TBool Vertu::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
 		if (!res) {
 		    MUnit* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
 		    MUnit* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
-		    Logger()->Write(EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri().c_str(), pt2->GetUri().c_str());
+		    Logger()->Write(EErr, aComp, "Connecting [%s - %s] failed", pt1->GetUri().c_str(), pt2->GetUri().c_str());
 		}
 	    }
 	}
@@ -463,10 +463,10 @@ MIface* Vertu::MVert_Call(const string& aSpec, string& aRes)
     return res;
 }
 
-void Vertu::OnCompDeleting(MUnit& aComp, TBool aSoft, TBool aModif)
+void Vertu::OnCompDeleting(const MUnit* aComp, TBool aSoft, TBool aModif)
 {
     // Disconnect the binding edges if the comp is vert connected
-    MVert* vert = aComp.GetObj(vert);
+    MVert* vert = const_cast<MUnit*>(aComp)->GetObj(vert);
     if (vert != NULL && vert->PairsCount() > 0) {
 	for (auto& it : iMComps) {
 	    MUnit* comp = it.second;

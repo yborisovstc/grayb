@@ -12,7 +12,7 @@ enum {
     EPiid_Clock = 0, /** Clock */
     EPiid_Dur = 1,   /** Duration */
     EPiid_DurStat = 2,   /** Duration statistic */
-} TPindId;
+};
 
 /** Performance indicator. Base */
 class PindBase: public MPind

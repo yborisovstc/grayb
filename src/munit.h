@@ -72,13 +72,13 @@ class MAgentObserver: public MIface
 {
     public:
 	static const char* Type() { return "MAgentObserver";};
-	virtual void OnCompDeleting(MUnit& aComp, TBool aSoft = ETrue, TBool aModif = EFalse) = 0;
-	virtual void OnCompAdding(MUnit& aComp, TBool aModif = EFalse) = 0;
+	virtual void OnCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse) = 0;
+	virtual void OnCompAdding(const MUnit* aComp, TBool aModif = EFalse) = 0;
 	// TODO [YB] Return value isn't used, to remove ?
-	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse) = 0;
+	virtual TBool OnCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse) = 0;
 	// For run-time only. Use OnCompChanged when the content is changed via mutation
-	virtual TBool OnChanged(MUnit& aComp) = 0;
-	virtual TBool OnCompRenamed(MUnit& aComp, const string& aOldName) = 0;
+	virtual TBool OnChanged(const MUnit* aComp) = 0;
+	virtual TBool OnCompRenamed(const MUnit* aComp, const string& aOldName) = 0;
 	// Extra notification for the clients handling model's chromo, ref ds_nmm, uc_066
 	virtual void OnCompMutated(const MUnit* aNode) = 0;
 	// TODO Consider passing error parameters
@@ -99,12 +99,12 @@ class MCompsObserver
 {
     public:
 	static const char* Type() { return "MCompsObserver";};
-	virtual void OnCompDeleting(MUnit& aComp, TBool aSoft = ETrue, TBool aModif = EFalse) = 0;
-	virtual void OnCompAdding(MUnit& aComp, TBool aModif = EFalse) = 0;
-	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse) = 0;
+	virtual void OnCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse) = 0;
+	virtual void OnCompAdding(const MUnit* aComp, TBool aModif = EFalse) = 0;
+	virtual TBool OnCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse) = 0;
 	// For run-time only. Use OnCompChanged when the content is changed via mutation
-	virtual TBool OnChanged(MUnit& aComp) = 0;
-	virtual TBool OnCompRenamed(MUnit& aComp, const string& aOldName) = 0;
+	virtual TBool OnChanged(const MUnit* aComp) = 0;
+	virtual TBool OnCompRenamed(const MUnit* aComp, const string& aOldName) = 0;
 	virtual void OnError(const MUnit* aComp) = 0;
 };
 
@@ -150,16 +150,15 @@ class MIfProv
 		TIfIter(MIfIter& aImpl): mImpl(&aImpl), mCloned(EFalse) {};
 		TIfIter(const TIfIter& aIt): mImpl(NULL), mCloned(ETrue) { if (aIt.mImpl != NULL) mImpl = aIt.mImpl->Clone(); };
 		~TIfIter() { if (mCloned) delete mImpl; mImpl = NULL;};
-		TIfIter& operator=(const TIfIter& aIt) { if (mImpl == NULL) { if (aIt.mImpl != NULL) mImpl = aIt.mImpl->Clone();} 
-		    else if (aIt.mImpl == NULL) {delete mImpl; mImpl = NULL;} else mImpl->operator=(*(aIt.mImpl)); return *this;};
-		    TIfIter& operator++() { mImpl->operator++(); return *this;};
-		    TIfIter operator++(int) { TIfIter tmp(*this); operator++(); return tmp; };
-		    TBool operator==(const TIfIter& aIt) { return (mImpl != NULL && aIt.mImpl != NULL) ? mImpl->operator==((*aIt.mImpl)) : mImpl == aIt.mImpl;};
-		    TBool operator!=(const TIfIter& aIt) { return !operator==(aIt);};
-		    virtual MIface*  operator*() { return mImpl->operator*();};
+		TIfIter& operator=(const TIfIter& aIt);
+		TIfIter& operator++() { mImpl->operator++(); return *this;};
+		TIfIter operator++(int) { TIfIter tmp(*this); operator++(); return tmp; };
+		TBool operator==(const TIfIter& aIt) { return (mImpl != NULL && aIt.mImpl != NULL) ? mImpl->operator==((*aIt.mImpl)) : mImpl == aIt.mImpl;};
+		TBool operator!=(const TIfIter& aIt) { return !operator==(aIt);};
+		virtual MIface*  operator*() { return mImpl->operator*();};
 	    protected:
-		    MIfIter* mImpl;
-		    TBool mCloned;
+		MIfIter* mImpl;
+		TBool mCloned;
 	};
 
 	typedef pair<TIfIter, TIfIter> TIfRange;
@@ -171,6 +170,9 @@ class MIfProv
 	    return dynamic_cast<T*>((rg.first != rg.second) ? *(rg.first) : NULL); }
 	virtual MIface* GetSIfi(const string& aReqUri, const string& aName, TBool aReqAssert = ETrue) = 0;
 	virtual TIfRange GetIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) = 0;
+	/** @brief Gets iface by index
+	 * */
+	virtual MIface* GetIfind(const string& aName, const TICacheRCtx& aCtx, TInt aInd) = 0;
 	/** @brief Register interface provider
 	 * @param[in] aIfName  Name of interface
 	 * @param[in] aCtx     Context of the request at requester
@@ -182,13 +184,23 @@ class MIfProv
 	virtual MIface* getLocalIface(const string& aName, const TICacheRCtx& aCtx) = 0;
 };
 
+inline MIfProv::TIfIter& MIfProv::TIfIter::operator=(const TIfIter& aIt)
+{ 
+    if (mImpl == NULL) {
+	if (aIt.mImpl != NULL) mImpl = aIt.mImpl->Clone();
+    } else if (aIt.mImpl == NULL) {
+	delete mImpl; mImpl = NULL;
+    } else mImpl->operator=(*(aIt.mImpl));
+    return *this;
+};
+
 // Agent - comps observer
 class MACompsObserver: public MIface
 {
     public:
 	static const char* Type() { return "MACompsObserver";};
-	virtual TBool HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName = string()) = 0;
-	virtual TBool HandleChanged(MUnit& aContext, MUnit& aComp) {return ETrue;}
+	virtual TBool HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName = string()) = 0;
+	virtual TBool HandleChanged(MUnit* aContext, MUnit* aComp) {return ETrue;}
 	virtual MIface* MACompsObserver_Call(const string& aSpec, string& aRes) { return NULL;}
 	virtual string MACompsObserver_Mid() const { return "?";}
 	MIface* Call(const string& aSpec, string& aRes) override {return MACompsObserver_Call(aSpec, aRes);}
@@ -205,98 +217,98 @@ class MACompsObserver: public MIface
 class MUnit : public MIface, public Base, public MOwner, public MIfProv
 {
     public:
-    // Predefined content categories
-    static const string KCont_Categories;
-    static const string KCont_Ctg_Readonly;
-    static const string KCont_Ctg_Debug;
+	// Predefined content categories
+	static const string KCont_Categories;
+	static const string KCont_Ctg_Readonly;
+	static const string KCont_Ctg_Debug;
     public:
-    static const char* Type() { return "MUnit";};
-    /** Extended type
-     * @param aShort Directs to get short version of type
-     * @return Extended type
-     * */
-    virtual string EType(TBool aShort = ETrue) const = 0;
-    /** Dedicated request of deletion, ref ds_daa_powrd
-     * */
-    virtual void Delete() = 0;
-    virtual const string& Name() const = 0;
-    virtual TBool IsProvided() const = 0;
-    virtual MUnit* GetMan() = 0;
-    virtual const MUnit* GetMan() const = 0;
-    virtual void SetMan(MUnit* aMan) = 0;
-    virtual TBool IsHeirOf(const string& aParent) const = 0;
-    /** @brief Creating heir
-     * In simplest case it creates the instance of the unit
-     */
-    virtual MUnit* CreateHeir(const string& aName, MUnit* aMan, MUnit* aContext) = 0;
-    // Support of final owner, ref ds_daa_itn_sfo
-    // TODO [YB] Is the context actually used?
-    virtual MUnit* GetCtx() = 0;
-    virtual void SetCtx(MUnit* aOwner) = 0;
-    virtual MUnit* GetNode(const string& aUri, TBool aInclRm = EFalse) = 0;
-    virtual MUnit* GetNode(const GUri& aUri, TBool aInclRm = EFalse) = 0;
-    virtual MUnit* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere = EFalse, TBool aInclRm = EFalse) = 0;
-    virtual MUnit* GetRoot() const = 0;
-    /** @brief Gets node by name. Name is resolved with name spaces
-     * @param[out] aNs    Name space
-     * */
-    virtual MUnit* GetNodeByName(const string& aName, const TNs& aNs) = 0;
-    virtual MUnit* GetCommonOwner(MUnit* aElem) = 0;
-    virtual TInt GetContCount(const string& aName = string()) const = 0;
-    virtual TBool IsContOfCategory(const string& aName, const string& aCategory) const = 0; 
-    virtual TBool ContentExists(const string& aName) const = 0;
-    virtual TBool ContValueExists(const string& aName=string()) const = 0;
-    // TODO To use content URI instead of key
-    virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const = 0; 
-    // TODO To add also method GetContentComp(baseId, compId)
-    virtual string GetContComp(const string& aOwnerName, TInt aInd) const = 0;
-    virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()) = 0; 
-    // Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
-    virtual void GetUri(GUri& aUri, MUnit* aTop = NULL) const = 0;
-    virtual void GetRUri(GUri& aUri, MUnit* aTop = NULL) = 0;
-    virtual string GetUri(MUnit* aTop = NULL, TBool aShort = EFalse) const = 0;
-    virtual string GetRUri(MUnit* aTop = NULL) = 0;
-    virtual TBool RebaseUri(const GUri& aUri, const MUnit* aBase, GUri& aRes) = 0;
-    virtual TBool RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere, const MUnit* aBase, GUri& aRes) = 0;
-    virtual TBool IsRemoved() const = 0;
-    virtual void SetRemoved(TBool aModif) = 0;
-    virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal) = 0;
-    virtual MUnit* GetComp(const string& aParent, const string& aName) const = 0;
-    // Gets the comp with given type and owning given element
-    virtual MUnit* GetCompOwning(const string& aParent, MUnit* aElem) = 0;
-    /** Gets the direct comp of this owning given unit
-     * @param aElem Given unit
-     * @return The direct comp owning aElem
-     * */
-    virtual MUnit* GetCompOwning(MUnit* aElem) = 0;
-    virtual const MUnit* GetCompOwning(const MUnit* aElem) const = 0;
-    // Visual client debugging, ref ds_visdbg
-    virtual string GetAssociatedData(const string& aUri) const = 0;
-    // Debugging
-    virtual TInt GetCapacity() const = 0;
-    virtual MUnit* GetNodeS(const char* aUri) = 0;
-    virtual TInt CompsCount() const = 0;
-    virtual MUnit* GetComp(TInt aInd) = 0;
-    virtual void DumpComps(TBool aRecurs = EFalse) const = 0;
-    virtual void DumpContent() const = 0;
-    virtual void DumpIfProv(const string& aName, const TICacheRCtx& aCtx, const MIface* aIface) const = 0;
-    /** @brief Dumps iface resolution paths */
-    virtual void DumpIfPaths(const char* aIfName = NULL) const = 0;
-    virtual void DumpIfCache() const = 0;
-    // From MIface
-    virtual string Uid() const { return Mid() + "%" + Type();};
-    // Helpers
-    static string GetContentOwner(const string& aCont);
-    static string GetContentLName(const string& aName);
+	static const char* Type() { return "MUnit";};
+	/** Extended type
+	 * @param aShort Directs to get short version of type
+	 * @return Extended type
+	 * */
+	virtual string EType(TBool aShort = ETrue) const = 0;
+	/** Dedicated request of deletion, ref ds_daa_powrd
+	 * */
+	virtual void Delete() = 0;
+	virtual const string& Name() const = 0;
+	virtual TBool IsProvided() const = 0;
+	virtual MUnit* GetMan() = 0;
+	virtual const MUnit* GetMan() const = 0;
+	virtual void SetMan(MUnit* aMan) = 0;
+	virtual TBool IsHeirOf(const string& aParent) const = 0;
+	/** @brief Creating heir
+	 * In simplest case it creates the instance of the unit
+	 */
+	virtual MUnit* CreateHeir(const string& aName, MUnit* aMan, MUnit* aContext) = 0;
+	// Support of final owner, ref ds_daa_itn_sfo
+	// TODO [YB] Is the context actually used?
+	virtual MUnit* GetCtx() = 0;
+	virtual void SetCtx(MUnit* aOwner) = 0;
+	virtual MUnit* GetNode(const string& aUri, TBool aInclRm = EFalse) = 0;
+	virtual MUnit* GetNode(const GUri& aUri, TBool aInclRm = EFalse) = 0;
+	virtual MUnit* GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere = EFalse, TBool aInclRm = EFalse) = 0;
+	virtual MUnit* GetRoot() const = 0;
+	/** @brief Gets node by name. Name is resolved with name spaces
+	 * @param[out] aNs    Name space
+	 * */
+	virtual MUnit* GetNodeByName(const string& aName, const TNs& aNs) = 0;
+	virtual MUnit* GetCommonOwner(MUnit* aElem) = 0;
+	virtual TInt GetContCount(const string& aName = string()) const = 0;
+	virtual TBool IsContOfCategory(const string& aName, const string& aCategory) const = 0; 
+	virtual TBool ContentExists(const string& aName) const = 0;
+	virtual TBool ContValueExists(const string& aName=string()) const = 0;
+	// TODO To use content URI instead of key
+	virtual string GetContent(const string& aName=string(), TBool aFull = EFalse) const = 0; 
+	// TODO To add also method GetContentComp(baseId, compId)
+	virtual string GetContComp(const string& aOwnerName, TInt aInd) const = 0;
+	virtual TBool ChangeCont(const string& aVal, TBool aRtOnly = ETrue, const string& aName=string()) = 0; 
+	// Gets URI from hier top node aTop, if aTop is NULL then the absolute URI will be produced
+	virtual void GetUri(GUri& aUri, MUnit* aTop = NULL) const = 0;
+	virtual void GetRUri(GUri& aUri, MUnit* aTop = NULL) = 0;
+	virtual string GetUri(MUnit* aTop = NULL, TBool aShort = EFalse) const = 0;
+	virtual string GetRUri(MUnit* aTop = NULL) = 0;
+	virtual TBool RebaseUri(const GUri& aUri, const MUnit* aBase, GUri& aRes) = 0;
+	virtual TBool RebaseUri(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool aAnywhere, const MUnit* aBase, GUri& aRes) = 0;
+	virtual TBool IsRemoved() const = 0;
+	virtual void SetRemoved(TBool aModif) = 0;
+	virtual TBool ChangeAttr(TNodeAttr aAttr, const string& aVal) = 0;
+	virtual MUnit* GetComp(const string& aParent, const string& aName) const = 0;
+	// Gets the comp with given type and owning given element
+	virtual MUnit* GetCompOwning(const string& aParent, MUnit* aElem) = 0;
+	/** Gets the direct comp of this owning given unit
+	 * @param aElem Given unit
+	 * @return The direct comp owning aElem
+	 * */
+	virtual MUnit* GetCompOwning(MUnit* aElem) = 0;
+	virtual const MUnit* GetCompOwning(const MUnit* aElem) const = 0;
+	// Visual client debugging, ref ds_visdbg
+	virtual string GetAssociatedData(const string& aUri) const = 0;
+	// Debugging
+	virtual TInt GetCapacity() const = 0;
+	virtual MUnit* GetNodeS(const char* aUri) = 0;
+	virtual TInt CompsCount() const = 0;
+	virtual MUnit* GetComp(TInt aInd) = 0;
+	virtual void DumpComps(TBool aRecurs = EFalse) const = 0;
+	virtual void DumpContent() const = 0;
+	virtual void DumpIfProv(const string& aName, const TICacheRCtx& aCtx, const MIface* aIface) const = 0;
+	/** @brief Dumps iface resolution paths */
+	virtual void DumpIfPaths(const char* aIfName = NULL) const = 0;
+	virtual void DumpIfCache() const = 0;
+	// From MIface
+	virtual string Uid() const { return Mid() + "%" + Type();};
+	// Helpers
+	static string GetContentOwner(const string& aCont);
+	static string GetContentLName(const string& aName);
     protected:
-    class EIfu: public Ifu {
-	public:
-	    EIfu();
-	    static void ToCtx(MUnit* aHost, const string& aStr, TICacheRCtx& aCtx);
-    };
-    // Interface methods utility
-    // TODO [YB] To redesign: to separate iface metadata and utility. To add miface method to get metadata.
-    static EIfu mIfu;
+	class EIfu: public Ifu {
+	    public:
+		EIfu();
+		static void ToCtx(MUnit* aHost, const string& aStr, TICacheRCtx& aCtx);
+	};
+	// Interface methods utility
+	// TODO [YB] To redesign: to separate iface metadata and utility. To add miface method to get metadata.
+	static EIfu mIfu;
 };
 
 #endif

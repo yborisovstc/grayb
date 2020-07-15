@@ -19,7 +19,7 @@ class DataBase: public Elem, public MACompsObserver, public MUpdatable, public M
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName = string());
+	virtual TBool HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName = string());
 	// From MDataObserver
 	virtual void OnDataChanged();
 	// From MUpdatable
@@ -278,7 +278,7 @@ class DVar:  public DataBase, public MDVar, public MDVarGet, public MDVarSet, pu
 	static string PEType();
 	DVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
 	virtual ~DVar();
-	virtual TBool HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName = string());
+	virtual TBool HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName = string());
 	virtual TBool HandleIoChanged(MUnit& aContext, MUnit* aCp);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);

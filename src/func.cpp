@@ -32,16 +32,16 @@ MIface *FuncBase::DoGetObj(const char *aName)
     return res;
 }
 
-TBool FuncBase::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName)
+TBool FuncBase::HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName)
 {
     TBool res = ETrue;
-    MUnit* caps = aContext.GetNode("./Capsule");
+    MUnit* caps = aContext->GetNode("./Capsule");
     if (caps != NULL) {
 	// TODO [YB] To optimize by using proper utility
-	MUnit* cp = caps->GetCompOwning("ConnPointInp", &aComp);
-	cp = cp != NULL ? cp : caps->GetCompOwning("ConnPointOut", &aComp);
+	MUnit* cp = caps->GetCompOwning("ConnPointInp", aComp);
+	cp = cp != NULL ? cp : caps->GetCompOwning("ConnPointOut", aComp);
 	if (cp != NULL) {
-	    res = HandleIoChanged(aContext, cp);
+	    res = HandleIoChanged(*aContext, cp);
 	}
     }
     return res;
@@ -374,12 +374,12 @@ MIface* AFunc::MAgent_DoGetIface(const string& aName)
     return res;
 }
 
-TBool AFunc::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName)
+TBool AFunc::HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName)
 {
     TBool res = ETrue;
-    MUnit* caps = aContext.GetNode("./Capsule");
+    MUnit* caps = aContext->GetNode("./Capsule");
     if (caps != NULL) {
-	MUnit* cp = caps->GetCompOwning("ConnPointInp", &aComp);
+	MUnit* cp = caps->GetCompOwning("ConnPointInp", aComp);
 	if (cp != NULL) {
 	    NotifyUpdate();
 	}
@@ -445,7 +445,7 @@ TInt AFuncInt::Value()
     TInt data = GetValue();
     if (data != mData) {
 	mData = data;
-	iMan->OnChanged(*this);
+	iMan->OnChanged(this);
     }
     return mData;
 }
@@ -781,12 +781,12 @@ MIface *AFuncm::DoGetObj(const char *aName)
     return res;
 }
 
-TBool AFuncm::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName)
+TBool AFuncm::HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName)
 {
     TBool res = ETrue;
-    MUnit* caps = aContext.GetNode("./Capsule");
+    MUnit* caps = aContext->GetNode("./Capsule");
     if (caps != NULL) {
-	MUnit* cp = caps->GetCompOwning("ConnPointInp", &aComp);
+	MUnit* cp = caps->GetCompOwning("ConnPointInp", aComp);
 	if (cp != NULL) {
 	    NotifyUpdate();
 	}
@@ -950,12 +950,12 @@ MIface *AFunVar::DoGetObj(const char *aName)
     return res;
 }
 
-TBool AFunVar::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName)
+TBool AFunVar::HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName)
 {
     TBool res = ETrue;
-    MUnit* caps = aContext.GetNode("./Capsule");
+    MUnit* caps = aContext->GetNode("./Capsule");
     if (caps != NULL) {
-	MUnit* cp = caps->GetCompOwning("Inp_FVar", &aComp);
+	MUnit* cp = caps->GetCompOwning("Inp_FVar", aComp);
 	if (cp != NULL) {
 	    NotifyUpdate();
 	}
@@ -974,7 +974,7 @@ string AFunVar::VarGetIfid()
 
 void AFunVar::OnFuncContentChanged()
 {
-    OnChanged(*this);
+    OnChanged(this);
 }
 
 void *AFunVar::DoGetDObj(const char *aName)

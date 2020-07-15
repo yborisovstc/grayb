@@ -77,12 +77,11 @@ class Elem: public Unit, public MElem
 	// From MIfProv Iface provider
 	MIface* getLocalIface(const string& aName, const TICacheRCtx& aCtx) override;
 	TInt IfRangeSize(const TIfRange& aRange) const;
-	void* GetIfind(TIfRange& aRange, TInt aInd);
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MElem
 	virtual string EType(TBool aShort = ETrue) const;
-	MUnit* GetUnit();
+	virtual MUnit* GetUnit() override;
 	virtual void GetCRoot(TMut& aMut) const;
 	virtual TInt GetCompLrank(const MUnit* aComp) const;
 	virtual void Mutate(TBool aRunTimeOnly /*EFalse*/, TBool aCheckSafety /*EFalse*/, TBool aTrialMode /*ETrue*/, const MutCtx& aCtx);

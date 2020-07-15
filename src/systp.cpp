@@ -31,16 +31,16 @@ Systp::Systp(const string& aName, MUnit* aMan, MEnv* aEnv): Vertp(aName, aMan, a
     SetCrAttr(PEType(), aName);
 }
 
-void Systp::OnCompDeleting(MUnit& aComp, TBool aSoft, TBool aModif)
+void Systp::OnCompDeleting(const MUnit* aComp, TBool aSoft, TBool aModif)
 {
     Vertp::OnCompDeleting(aComp, aSoft, aModif);
 }
 
 // TODO To consider separating of handling of content change on local level and on owner level
-TBool Systp::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
+TBool Systp::OnCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
 {
     TBool res = true;
-    if (&aComp == this) {
+    if (aComp == this) {
 	TBool isedge = IsContentCompOf(aContName, KContent_Edges);
 	if (isedge) {
 	    string edgeName = GetContentOwner(aContName);

@@ -43,8 +43,8 @@ TBool Prop::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
     //if (aVal != iValue) {
     if (aName.empty()) {
 	iValue = aVal;
-	iMan->OnCompChanged(*this, aName, aRtOnly);
-	iEnv->Observer()->OnCompChanged(*this, aName, aRtOnly);
+	iMan->OnCompChanged(this, aName, aRtOnly);
+	iEnv->Observer()->OnCompChanged(this, aName, aRtOnly);
     } else {
 	res = Elem::ChangeCont(aVal, aRtOnly, aName);
     }

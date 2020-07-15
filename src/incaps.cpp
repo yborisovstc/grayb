@@ -74,13 +74,13 @@ TBool Incaps::IsPtOk(MUnit& aContext, MUnit* aPt) {
     return res;
 }
 
-TBool Incaps::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName)
+TBool Incaps::HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName)
 {
     TBool hres = ETrue;
     // Handling both Edge (nodes - properties) and AEdge (multicontent)
-    MEdge* edge = aComp.GetObj(edge);	
+    MEdge* edge = aComp->GetObj(edge);	
     if (edge == NULL) {
-	MUnit* owner = aComp.GetMan();
+	MUnit* owner = const_cast<MUnit*>(aComp)->GetMan();
 	edge = owner ? owner->GetObj(edge) : NULL;
     }
     if (edge != NULL) {
@@ -92,8 +92,8 @@ TBool Incaps::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aCo
 	if (cp1 != ref1 || cp2 != ref2) {
 	    MUnit* pt1 = ref1 == NULL ? NULL : ref1->GetObj(pt1);
 	    MUnit* pt2 = ref2 == NULL ? NULL : ref2->GetObj(pt2);
-	    TBool isptok1 = (ref1 == NULL || IsPtOk(aContext, pt1));
-	    TBool isptok2 = (ref2 == NULL || IsPtOk(aContext, pt2));
+	    TBool isptok1 = (ref1 == NULL || IsPtOk(*aContext, pt1));
+	    TBool isptok2 = (ref2 == NULL || IsPtOk(*aContext, pt2));
 	    if (isptok1 && isptok2) {
 		if (cp1 != NULL && ref1 != cp1) edge->Disconnect(cp1);
 		if (cp2 != NULL && ref2 != cp2) edge->Disconnect(cp2);
@@ -110,7 +110,7 @@ TBool Incaps::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aCo
 			if (cp1 == NULL) res = edge->ConnectP1(ref1);
 			if (res && cp2 == NULL) res = edge->ConnectP2(ref2);
 			if (!res) {
-			    Logger()->Write(EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
+			    Logger()->Write(EErr, aComp, "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
 			}
 		    }
 		    else {

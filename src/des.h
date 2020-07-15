@@ -19,7 +19,7 @@ class ATrBase: public Elem, public MACompsObserver, public MAgent
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName = string());
+	virtual TBool HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName = string());
 	// From MAgent
 	MIface* MAgent_DoGetIface(const string& aName) override;
 };
@@ -497,11 +497,11 @@ class AState: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, pu
 	virtual MDVarGet* HGetInp(const Base* aRmt) override;
 	virtual void HOnDataChanged(const Base* aRmt) override;
 
-	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
+	virtual TBool OnCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse);
     protected:
 	TBool IsLogeventUpdate();
 	// From MUnit
-	virtual TEhr ProcessCompChanged(MUnit& aComp, const string& aContName) override;
+	virtual TEhr ProcessCompChanged(const MUnit* aComp, const string& aContName) override;
     private:
 	TBool iActive;
 	TBool iUpdated;
@@ -589,13 +589,13 @@ class AStatec: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, p
 	virtual string VarGetSIfid();
 	virtual MIface *DoGetSDObj(const char *aName) override;
 
-	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
+	virtual TBool OnCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse);
     protected:
 	/** @brief Notifies dependencies of input updated */
 	void NotifyInpsUpdated();
 	TBool IsLogeventUpdate();
 	// From MUnit
-	virtual TEhr ProcessCompChanged(MUnit& aComp, const string& aContName) override;
+	virtual TEhr ProcessCompChanged(const MUnit* aComp, const string& aContName) override;
     private:
 	TBool iActive;
 	TBool iUpdated;

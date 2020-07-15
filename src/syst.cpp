@@ -20,7 +20,7 @@ ACapsule::ACapsule(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aM
     SetCrAttr(PEType(), aName);
 }
 
-TBool ACapsule::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
+TBool ACapsule::OnCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
 {
 #if 0
     if (!aModif) { // Don't care of modifications
@@ -44,7 +44,7 @@ TBool ACapsule::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModi
     }
 }
 
-TBool ACapsule::OnChanged(MUnit& aComp)
+TBool ACapsule::OnChanged(const MUnit* aComp)
 {
     // Capsule doesn't assume any embedded agents/comp_observers
     // So just redirect to owner
@@ -2255,9 +2255,9 @@ Syst::Syst(const string& aName, MUnit* aMan, MEnv* aEnv): Vert(aName, aMan, aEnv
     SetCrAttr(PEType(), aName);
 }
 
-void Syst::OnCompDeleting(MUnit& aComp, TBool aSoft, TBool aModif)
+void Syst::OnCompDeleting(const MUnit* aComp, TBool aSoft, TBool aModif)
 {
-    MUnit* eedge = GetCompOwning("Edge", &aComp);
+    MUnit* eedge = GetCompOwning("Edge", const_cast<MUnit*>(aComp));
     if (eedge != NULL) {
 	// Reconnect the edge
 	MEdge* edge = eedge->GetObj(edge);
@@ -2275,15 +2275,15 @@ TBool Syst::IsPtOk(MUnit* aPt) {
     return ETrue;
 }
 
-TBool Syst::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
+TBool Syst::OnCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
 {
     TBool res = ETrue;
     TEhr pres = Elem::ProcessCompChanged(aComp, aContName);
     if (pres == EEHR_Ignored) {
 	// Hasn't processed by CompObservers, process locally
-	MEdge* edge = aComp.GetObj(edge);	
+	MEdge* edge = const_cast<MUnit*>(aComp)->GetObj(edge);	
 	if (edge == NULL) {
-	    MUnit* owner = aComp.GetMan();
+	    MUnit* owner = const_cast<MUnit*>(aComp)->GetMan();
 	    edge = owner ? owner->GetObj(edge) : NULL;
 	}
 	if (edge != NULL) {
@@ -2314,7 +2314,7 @@ TBool Syst::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
 			    if (res && cp2 == NULL) res = edge->ConnectP2(ref2);
 			    if (!res) {
 				MUnit* host = GetMan();
-				Logger()->Write(EErr, &aComp, "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
+				Logger()->Write(EErr, aComp, "Connecting [%s - %s] failed", pt1->GetUri(NULL, ETrue).c_str(), pt2->GetUri(NULL, ETrue).c_str());
 			    }
 			}
 			else {

@@ -103,11 +103,11 @@ class SystemObserver: public MAgentObserver
 	void SetObserver(MAgentObserver* aObserver);
 	void UnsetObserver(MAgentObserver* aObserver);
 	// From MAgentObserver
-	virtual void OnCompDeleting(MUnit& aComp, TBool aSoft = ETrue, TBool aModif = EFalse) override;
-	virtual void OnCompAdding(MUnit& aComp, TBool aModif = EFalse) override;
-	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse) override;
-	virtual TBool OnChanged(MUnit& aComp) override;
-	virtual TBool OnCompRenamed(MUnit& aComp, const string& aOldName) override;
+	virtual void OnCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse) override;
+	virtual void OnCompAdding(const MUnit* aComp, TBool aModif = EFalse) override;
+	virtual TBool OnCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse) override;
+	virtual TBool OnChanged(const MUnit* aComp) override;
+	virtual TBool OnCompRenamed(const MUnit* aComp, const string& aOldName) override;
 	virtual void OnCompMutated(const MUnit* aNode) override;
 	virtual void OnError(const MUnit* aComp) override;
 	// From MIface

@@ -11,8 +11,8 @@ class ACapsule: public Elem
 	static string PEType();
 	ACapsule(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
 	// From MOwner
-	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
-	virtual TBool OnChanged(MUnit& aComp);
+	virtual TBool OnCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse);
+	virtual TBool OnChanged(const MUnit* aComp);
 };
 
 // Base of ConnPoint reimplement obj provider iface to redirect the request to the hier mgr
@@ -455,8 +455,8 @@ class Syst: public Vert
 	static string PEType();
 	Syst(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
 	// From MOwner
-	virtual void OnCompDeleting(MUnit& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
-	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
+	virtual void OnCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
+	virtual TBool OnCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse);
 	// From Elem
 	virtual void DoSpecificMut(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode, const MutCtx& aCtx) override;
     protected:

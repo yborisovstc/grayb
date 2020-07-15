@@ -78,7 +78,7 @@ TBool Vertp::Connect(MVertp* aPair, const string& aCp)
 	mPairToCpReg.insert(TPairToCpRegElem(aPair, aCp));
 	mCpToPairReg.insert(TCpToPairRegElem(aCp, aPair));
 	__ASSERT(iMan != NULL);
-	res = res && iMan->OnChanged(*this);
+	res = res && iMan->OnChanged(this);
     } else {
 	MUnit* ep = aPair->GetObj(ep);
 	Logger()->Write(EErr, this, "Connecting [%s] - already connected, failed", ep->GetUri().c_str());
@@ -118,11 +118,11 @@ void Vertp::Disconnect(MVertp* aPair)
 	// Invalidate ifaces cache
 	InvalidateIfCache();
 	__ASSERT(iMan != NULL);
-	iMan->OnChanged(*this);
+	iMan->OnChanged(this);
     }
 }
 
-TBool Vertp::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
+TBool Vertp::OnCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
 {
     TBool res = Elem::OnCompChanged(aComp, aContName, aModif);
     if (res) {
@@ -232,10 +232,10 @@ MIface* Vertp::MVertp_Call(const string& aSpec, string& aRes)
     return res;
 }
 
-void Vertp::OnCompDeleting(MUnit& aComp, TBool aSoft, TBool aModif)
+void Vertp::OnCompDeleting(const MUnit* aComp, TBool aSoft, TBool aModif)
 {
     // Disconnect the binding edges if the comp is vert connected
-    MVertp* vert = aComp.GetObj(vert);
+    MVertp* vert = const_cast<MUnit*>(aComp)->GetObj(vert);
     if (vert != NULL && vert->PairsCount() > 0) {
 	TInt ind = 0;
 	while (vert->PairsCount() > 0) {

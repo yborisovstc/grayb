@@ -1,15 +1,15 @@
 
-grayb=/home/yborisov/projects/fap/grayb CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in {
-autogen.sh
-Makefile.am
-configure.ac
-AUTHORS
-COPYING
-ChangeLog
-README
-NEWS
-Makefile.in
-libgrayb.pc.in
+grayb=~/projects/fap/grayb CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in {
+ autogen.sh
+ Makefile.am
+ configure.ac
+ AUTHORS
+ COPYING
+ ChangeLog
+ README
+ NEWS
+ Makefile.in
+ libgrayb.pc.in
 src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   base.h
   chromo.h
@@ -450,7 +450,7 @@ fap2-studio-gtk=/home/yborisov/projects/fap/fap2-studio-gtk CD=. filter="autogen
   vis_vect_1.xml
  }
 }
-fap2-vis=/home/yborisov/projects/fap/fap2-vis CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in {
+fap2-vis=~/projects/fap/fap2-vis CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in {
  autogen.sh
  Makefile.am
  configure.ac
@@ -531,7 +531,7 @@ test=test CD=. filter="*.h *.cpp *.dtd Makefile.am *.chs" {
   ut_swnd_2.xml
 }
 }
-fap2-srv=/home/yborisov/projects/fap/fap2-srv CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in {
+fap2-srv=~/projects/fap/fap2-srv CD=. filter="autogen.sh Makefile.am configure.ac AUTHORS COPYING ChangeLog README NEWS *.in {
  autogen.sh
  Makefile.am
  configure.ac
@@ -552,6 +552,7 @@ dmas=dmas CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   mipxprov.h
   mlogrecpx.h
   mproxy.h
+  munitpx.h
   mvertpx.h
   renv.h
   daaprov.cpp
@@ -561,6 +562,7 @@ dmas=dmas CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   mdespx.cpp
   melempx.cpp
   mlogrecpx.cpp
+  munitpx.cpp
   mvertpx.cpp
   renv.cpp
   Makefile.am
@@ -768,7 +770,7 @@ fap-bvp-gtk=/home/yborisov/projects/fap/fap-bvp-gtk CD=. filter="autogen.sh Make
    tbar_btn_trans.png
  }
 }
-fap2-vis=/home/yborisov/projects/fap/fap2-vis CD=. filter="autogen.sh Makefile *.am *.ac *.in AUTHORS COPYING ChangeLog README NEWS" {
+fap2-vis=~/projects/fap/fap2-vis CD=. filter="autogen.sh Makefile *.am *.ac *.in AUTHORS COPYING ChangeLog README NEWS" {
  autogen.sh
  Makefile
  Makefile.am
@@ -807,6 +809,7 @@ fap2-vis=/home/yborisov/projects/fap/fap2-vis CD=. filter="autogen.sh Makefile *
   scelem.cpp
   scene.cpp
   scrolledbox.cpp
+  systdrp.cpp
   visenv.cpp
   visprov.cpp
   visrepr.cpp
@@ -836,6 +839,7 @@ fap2-vis=/home/yborisov/projects/fap/fap2-vis CD=. filter="autogen.sh Makefile *
   scelem.h
   scene.h
   scrolledbox.h
+  systdrp.h
   visenv.h
   visprov.h
   visrepr.h
@@ -854,19 +858,43 @@ fap2-vis=/home/yborisov/projects/fap/fap2-vis CD=. filter="autogen.sh Makefile *
  }
  test=test CD=. filter="*" {
   Makefile
-   Makefile.am
-   Makefile.in
-   gdb_set
-   ut_base.cpp
-   ut_cre.cpp
-   ut_main.cpp
-   ut_swnd_1.txt
-   ut_swnd_1.txt~old
-   ut_swnd_1.xml
-   ut_swnd_2.txt
-   ut_swnd_2.txt~old
-   ut_swnd_2.xml
-   ut_fap2vis_lib-ut_main.o
+  Makefile.am
+  Makefile.in
+  gdb_set
+  test_model_syst_1.chs
+  ut-fap2vis-lib
+  ut_avr.cpp
+  ut_avr_unit.chs
+  ut_avr_unit_drp.chs
+  ut_avr_vrc_1.chs
+  ut_avr_vrc_1l.chs
+  ut_base.cpp
+  ut_button_1.chs
+  ut_cnt.cpp
+  ut_cnt1.chs
+  ut_cntl.cpp
+  ut_cre.cpp
+  ut_hlayoutl_1.chs
+  ut_hlayoutl_2.chs
+  ut_main.cpp
+  ut_swnd_1.xml
+  ut_swnd_2.chs
+  ut_swnd_2.xml
+  ut_vlayout_1.chs
+  ut_vlayoutl_1.chs
+  ut_vlayoutl_2.chs
+  ut_vlayoutl_3.chs
+  ut_vrc1_mdl.chs
+  ut_wdg.cpp
+  ut_wdg_base.chs
+  ut_wdg_label.chs
+  ut_fap2vis_lib-ut_avr.o
+  ut_fap2vis_lib-ut_base.o
+  ut_fap2vis_lib-ut_cnt.o
+  ut_fap2vis_lib-ut_cntl.o
+  ut_fap2vis_lib-ut_cre.o
+  ut_fap2vis_lib-ut_main.o
+  ut_fap2vis_lib-ut_wdg.o
  }
 }
 fap-balls=/home/yborisov/projects/fap/git/fap-balls CD=. filter="*.ac *.am" {

@@ -338,7 +338,7 @@ MUnit* Edge::Point2p()
     return GetNode("./P2");
 }
 
-TBool Edge::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
+TBool Edge::OnCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
 {
     return Elem::OnCompChanged(aComp, aContName, aModif);
     // Propagate notification to upper level

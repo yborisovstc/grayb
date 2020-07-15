@@ -74,8 +74,6 @@ MUnit::EIfu::EIfu()
     RegMethod("CompsCount", 0);
     RegMethod("GetComp", 1);
     RegMethod("GetComp#2", 2);
-    RegMethod("AppendMutation", 1);
-    RegMethod("AppendMutation#2", 1);
     RegMethod("IsRemoved", 0);
     RegMethod("IsComp", 1);
     RegMethod("GetCompLrank", 1);
@@ -93,6 +91,7 @@ MUnit::EIfu::EIfu()
     RegMethod("GetContComp", 2);
     RegMethod("IsContOfCategory", 2);
     RegMethod("IsHeirOf", 1);
+    RegMethod("CreateHeir", 3);
 }
 
 void MUnit::EIfu::ToCtx(MUnit* aHost, const string& aString, TICacheRCtx& aCtx)
@@ -254,9 +253,9 @@ Unit::~Unit()
     // This means that the ovner notified will not be able to understand what agent is deleted
     // To consider to add one more notification - before deletions
     if (iMan != NULL) {
-	iMan->OnCompDeleting(*this, EFalse, ETrue);
+	iMan->OnCompDeleting(this, EFalse, ETrue);
     }
-    iEnv->Observer()->OnCompDeleting(*this, EFalse, ETrue);
+    iEnv->Observer()->OnCompDeleting(this, EFalse, ETrue);
 
     // Notify env of root deletion, ref ds_daa_rdo
     if (this == GetRoot()) {
@@ -1071,8 +1070,8 @@ TBool Unit::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
 	SetContentValue(aName, aVal);
     }
     if (res) {
-	res = OnCompChanged(*this, aName, aRtOnly);
-	iEnv->Observer()->OnCompChanged(*this, aName, aRtOnly);
+	res = OnCompChanged(this, aName, aRtOnly);
+	iEnv->Observer()->OnCompChanged(this, aName, aRtOnly);
     }
     return res;
 }
@@ -1267,7 +1266,7 @@ TBool Unit::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
 	InsertContent(aName);
     }
     if (res) {
-	OnCompChanged(*this, aName);
+	OnCompChanged(this, aName);
     }
     return res;
 }
@@ -1409,8 +1408,8 @@ TBool Unit::ChangeAttr(TNodeAttr aAttr, const string& aVal)
     if (aAttr == ENa_Id) {
 	string sOldName(Name());
 	iName = aVal;
-	res = iMan->OnCompRenamed(*this, sOldName);
-	iEnv->Observer()->OnCompRenamed(*this, sOldName);
+	res = iMan->OnCompRenamed(this, sOldName);
+	iEnv->Observer()->OnCompRenamed(this, sOldName);
 	if (!res) {
 	    // Rollback
 	    iName = sOldName;
@@ -1439,9 +1438,9 @@ TBool Unit::AppendComp(MUnit* aComp, TBool aRt)
 	// Propagate notification only if self is the component of owner, ref ds_di_cnfr
 	if (iMan != NULL && iMan->GetComp(string(), Name()) == this) {
 	    Pdstat(PEvents::DurStat_OnCompAdd, true);
-	    iMan->OnCompAdding(*aComp, aRt);
+	    iMan->OnCompAdding(aComp, aRt);
 	    Pdstat(PEvents::DurStat_OnCompAdd, false);
-	    iEnv->Observer()->OnCompAdding(*aComp, aRt);
+	    iEnv->Observer()->OnCompAdding(aComp, aRt);
 	}
     }
     return res;
@@ -1495,7 +1494,7 @@ MUnit* Unit::GetNode(const string& aUri, TBool aInclRm)
     return res;
 }
 
-void Unit::OnCompDeleting(MUnit& aComp, TBool aSoft, TBool aModif)
+void Unit::OnCompDeleting(const MUnit* aComp, TBool aSoft, TBool aModif)
 {
     // Translate to hier
     // Enable propagation from attached node only, ref ds_di_cnfr_snpn
@@ -1505,7 +1504,7 @@ void Unit::OnCompDeleting(MUnit& aComp, TBool aSoft, TBool aModif)
        }
        */
     // Handle for direct child
-    if (aComp.GetMan() == this) {
+    if (aComp->GetMan() == this) {
 	// Don't deattach the childs chromo. Ref UC_016. The childs chromo (childs creation mutation) needs
 	// to be kept in parents chromo.
 	/*
@@ -1515,18 +1514,18 @@ void Unit::OnCompDeleting(MUnit& aComp, TBool aSoft, TBool aModif)
 	// Don't unregister comp in case if notif is for "soft" removal, ref ds_mut_rm_appr2
 	if (!aSoft) {
 	    // Unregister first
-	    UnregisterComp(&aComp);
+	    UnregisterComp(const_cast<MUnit*>(aComp));
 	}
     }
 }
 
 // TODO [YB] To avoid propagation thru the whole model. It is temporarily remaining because of
 // missing proper mechanism of the whole model observer.
-void Unit::OnCompAdding(MUnit& aComp, TBool aModif)
+void Unit::OnCompAdding(const MUnit* aComp, TBool aModif)
 {
     //Pdstat(PEvents::DurStat_OnCompAdd, true);
 #ifdef __EXT_ASSERTS__
-    string url = aComp.GetUri(NULL, ETrue);
+    string url = aComp->GetUri(NULL, ETrue);
     MUnit* comp = GetNode(url);
     __ASSERT(comp != NULL);
 #endif
@@ -1539,7 +1538,7 @@ void Unit::OnCompAdding(MUnit& aComp, TBool aModif)
     //Pdstat(PEvents::DurStat_OnCompAdd, false);
 }
 
-TEhr Unit::ProcessCompChanged(MUnit& aComp, const string& aContName)
+TEhr Unit::ProcessCompChanged(const MUnit* aComp, const string& aContName)
 {
     Pdstat(PEvents::DurStat_OnCompChanged, true);
     TEhr res = EEHR_Ignored;
@@ -1556,7 +1555,7 @@ TEhr Unit::ProcessCompChanged(MUnit& aComp, const string& aContName)
     for (MUnit* agent : ca) {
 	MACompsObserver* iagent = agent == NULL ? NULL : agent->GetObj(iagent);
 	if (iagent != NULL) {
-	    hres = iagent->HandleCompChanged(*this, aComp, aContName);
+	    hres = iagent->HandleCompChanged(this, const_cast<MUnit*>(aComp), aContName);
 	    res = hres ? EEHR_Accepted : EEHR_Denied;
 	    if (!hres) {
 		//iagent->HandleCompChanged(*this, aComp, aContName);
@@ -1566,7 +1565,7 @@ TEhr Unit::ProcessCompChanged(MUnit& aComp, const string& aContName)
     return res;
 }
 
-TEhr Unit::ProcessChanged(MUnit& aComp)
+TEhr Unit::ProcessChanged(MUnit* aComp)
 {
     Pdstat(PEvents::DurStat_OnCompChanged, true);
     TEhr res = EEHR_Ignored;
@@ -1583,7 +1582,7 @@ TEhr Unit::ProcessChanged(MUnit& aComp)
     for (MUnit* agent : ca) {
 	MACompsObserver* iagent = agent->GetObj(iagent);
 	if (iagent != NULL) {
-	    hres = iagent->HandleChanged(*this, aComp);
+	    hres = iagent->HandleChanged(this, aComp);
 	    res = hres ? EEHR_Accepted : EEHR_Denied;
 	}
     }
@@ -1598,7 +1597,7 @@ TEhr Unit::ProcessChanged(MUnit& aComp)
 // If providing mechanism is used instead of full relations tracking in Vert. So node A has Ifaces cache
 // that includes ifaces from node B but there is no mechanism of the changes in the cache. To consider
 // to implement cache update notification. Ref UC_010 
-TBool Unit::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
+TBool Unit::OnCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
 {
     Pdstat(PEvents::DurStat_OnCompChanged, true);
     TBool res = EFalse;
@@ -1618,15 +1617,15 @@ TBool Unit::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
     return res;
 }
 
-TBool Unit::OnCompRenamed(MUnit& aComp, const string& aOldName)
+TBool Unit::OnCompRenamed(const MUnit* aComp, const string& aOldName)
 {
     TBool res = EFalse;
-    if (aComp.GetMan() == this) {
+    if (aComp->GetMan() == this) {
 	// Unregister the comp with its old name
-	res = UnregisterComp(&aComp, aOldName);
+	res = UnregisterComp(const_cast<MUnit*>(aComp), aOldName);
 	if (res) {
 	    // Register the comp again with its current name
-	    res = RegisterComp(&aComp);
+	    res = RegisterComp(const_cast<MUnit*>(aComp));
 	}
     }
     // Propagate the notification
@@ -1640,7 +1639,7 @@ TBool Unit::OnCompRenamed(MUnit& aComp, const string& aOldName)
 }
 
 // TODO not used, why?
-TBool Unit::OnChanged(MUnit& aComp)
+TBool Unit::OnChanged(const MUnit* aComp)
 {
     TBool res = EFalse;
     // TODO Single CompObserver API is used both for handling CompChange
@@ -1828,8 +1827,8 @@ void Unit::SetRemoved(TBool aModif)
     // Remove node from native hier but keep it in inher hier
     // Notify the man of deleting
     if (iMan != NULL) {
-	iMan->OnCompDeleting(*this, ETrue, aModif);
-	iEnv->Observer()->OnCompDeleting(*this, ETrue, aModif);
+	iMan->OnCompDeleting(this, ETrue, aModif);
+	iEnv->Observer()->OnCompDeleting(this, ETrue, aModif);
     }
     for (auto& it : iMComps) {
 	MUnit* comp = it.second;
@@ -1955,7 +1954,7 @@ MIface* Unit::Call(const string& aSpec, string& aRes)
 	   }
 	   */
     } else if (name == "GetIfind") {
-	string name = args.at(0);
+	string ifname = args.at(0);
 	vector<string> ctxe;
 	if (!args.at(1).empty()) {
 	    Ifu::ToStringArray(args.at(1), ctxe);
@@ -1966,9 +1965,8 @@ MIface* Unit::Call(const string& aSpec, string& aRes)
 	    MUnit* elem = GetNode(suri);
 	    ctx.push_back(elem);
 	}
-	TIfRange rg = GetIfi(name, ctx);
 	TInt ind = Ifu::ToInt(args.at(2));
-	res = (MIface*) GetIfind(rg, ind);
+	res = GetIfind(ifname, ctx, ind);
     } else if (name == "GetSIfi") {
 	string name = args.at(0);
 	vector<string> ctxe;
@@ -2002,20 +2000,20 @@ MIface* Unit::Call(const string& aSpec, string& aRes)
 	if (comp == NULL) {
 	    throw (runtime_error("Cannot get node " + args.at(0)));
 	}
-	OnCompAdding(*comp);
+	OnCompAdding(comp);
     } else if (name == "OnCompChanged") {
 	MUnit* comp = GetNode(args.at(0));
 	if (comp == NULL) {
 	    throw (runtime_error("Cannot get node " + args.at(0)));
 	}
-	TBool rr = OnCompChanged(*comp, args.at(1));
+	TBool rr = OnCompChanged(comp, args.at(1));
 	aRes = Ifu::Pack(rr);
     } else if (name == "OnChanged") {
 	MUnit* comp = GetNode(args.at(0));
 	if (comp == NULL) {
 	    throw (runtime_error("Cannot get node " + args.at(0)));
 	}
-	TBool res = OnCompChanged(*comp);
+	TBool res = OnCompChanged(comp);
 	aRes = Ifu::Pack(res);
     } else if (name == "OnCompDeleting") {
 	MUnit* comp = GetNode(args.at(0), ETrue);
@@ -2023,7 +2021,7 @@ MIface* Unit::Call(const string& aSpec, string& aRes)
 	    throw (runtime_error("Cannot get node " + args.at(0)));
 	}
 	TBool soft = Ifu::ToBool(args.at(1));
-	OnCompDeleting(*comp, soft);
+	OnCompDeleting(comp, soft);
     } else if (name == "CompsCount") {
 	TInt cnt = CompsCount();
 	aRes = Ifu::Pack(cnt);
@@ -2043,6 +2041,17 @@ MIface* Unit::Call(const string& aSpec, string& aRes)
 	    TBool rr = IsComp(comp);
 	    aRes = Ifu::FromBool(rr);
 	}
+    } else if (name == "CreateHeir") {
+	string hname = args.at(0);
+	MUnit* owner = GetNode(args.at(1));
+	if (owner == NULL) {
+	    throw (runtime_error("Cannot get node " + args.at(1)));
+	}
+	MUnit* ctx = GetNode(args.at(2));
+	if (ctx == NULL) {
+	    throw (runtime_error("Cannot get node " + args.at(2)));
+	}
+	res = CreateHeir(hname, owner, ctx);
     } else {
 	throw (runtime_error("Unhandled method: " + name));
     }
@@ -2056,9 +2065,9 @@ TInt Unit::IfRangeSize(const TIfRange& aRange) const
     return res;
 }
 
-void* Unit::GetIfind(TIfRange& aRange, TInt aInd)
+MIface* Unit::GetIfind(TIfRange& aRange, TInt aInd)
 {
-    void* res = NULL;
+    MIface* res = NULL;
     TIfIter it = aRange.first;
     for (; it != aRange.second && aInd >= 0; it++, aInd--) {
 	if (aInd == 0)  {
@@ -2069,6 +2078,13 @@ void* Unit::GetIfind(TIfRange& aRange, TInt aInd)
     if (aInd != 0)  {
 	__ASSERT(EFalse);
     }
+    return res;
+}
+
+MIface* Unit::GetIfind(const string& aName, const TICacheRCtx& aCtx, TInt aInd)
+{
+    TIfRange rg = GetIfi(aName, aCtx);
+    MIface* res = GetIfind(rg, aInd);
     return res;
 }
 

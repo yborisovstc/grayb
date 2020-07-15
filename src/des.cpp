@@ -76,7 +76,7 @@ MIface* ATrBase::MAgent_DoGetIface(const string& aName)
     return res;
 }
 
-TBool ATrBase::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName)
+TBool ATrBase::HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName)
 {
     TBool res = ETrue;
     return res;
@@ -346,7 +346,7 @@ Elem::TIfRange ATrVar::GetInps(TInt aId, TBool aOpt)
 
 void ATrVar::OnFuncContentChanged()
 {
-    OnChanged(*this);
+    OnChanged(this);
 }
 
 TBool ATrVar::GetCont(string& aCont, const string& aName) const
@@ -828,7 +828,7 @@ Unit::TIfRange ATrcVar::GetInps(TInt aId, TBool aOpt)
 
 void ATrcVar::OnFuncContentChanged()
 {
-    OnChanged(*this);
+    OnChanged(this);
 }
 
 TBool ATrcVar::GetCont(string& aCont, const string& aName) const
@@ -1522,15 +1522,15 @@ string AState::MConnPoint_Mid() const
 {
 }
 
-TBool AState::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
+TBool AState::OnCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
 {
     return Vertu::OnCompChanged(aComp, aContName, aModif);
 }
 
-TEhr AState::ProcessCompChanged(MUnit& aComp, const string& aContName)
+TEhr AState::ProcessCompChanged(const MUnit* aComp, const string& aContName)
 {
     TEhr res = EEHR_Ignored;
-    if (&aComp == this && aContName == KContVal) {
+    if (aComp == this && aContName == KContVal) {
 	string val = GetContent(KContVal);
 	TBool sres = mPdata->FromString(val);
 	sres = sres && mCdata->FromString(val);
@@ -1943,18 +1943,18 @@ string AStatec::MConnPoint_Mid() const
 {
 }
 
-TBool AStatec::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
+TBool AStatec::OnCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
 {
     return Vertu::OnCompChanged(aComp, aContName, aModif);
 }
 
-TEhr AStatec::ProcessCompChanged(MUnit& aComp, const string& aContName)
+TEhr AStatec::ProcessCompChanged(const MUnit* aComp, const string& aContName)
 {
     // There is not still nice solution for changing state value
     // The following is used atm: change both prepared and congifmed and notify
     // obs chain and deps (i.e maximum notification). It doesn't seem optimal
     TEhr res = EEHR_Ignored;
-    if (&aComp == this && aContName == KContVal) {
+    if (aComp == this && aContName == KContVal) {
 	string val = GetContent(KContVal);
 	TBool sres = mPdata->FromString(val);
 	sres = sres && mCdata->FromString(val);

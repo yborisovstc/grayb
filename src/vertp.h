@@ -26,8 +26,8 @@ class Vertp: public Elem, public MVertp
 	virtual MIface* MVertp_DoGetObj(const char *aName);
 	virtual void DumpCps() const;
 	// From Elem
-	virtual TBool OnCompChanged(MUnit& aComp, const string& aContName = string(), TBool aModif = EFalse);
-	virtual void OnCompDeleting(MUnit& aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
+	virtual TBool OnCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse);
+	virtual void OnCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
 	// From MIface
 	virtual MIface* MVertp_Call(const string& aSpec, string& aRes);
 	string MVertp_Mid() const override { return Elem::MElem_Mid();}

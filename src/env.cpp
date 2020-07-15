@@ -356,35 +356,35 @@ void SystemObserver::UnsetObserver(MAgentObserver* aObserver)
 }
 
 
-void SystemObserver::OnCompDeleting(MUnit& aComp, TBool aSoft, TBool aModif)
+void SystemObserver::OnCompDeleting(const MUnit* aComp, TBool aSoft, TBool aModif)
 {
     for (auto observer : mObservers) {
 	observer->OnCompDeleting(aComp, aSoft, aModif);
     }
 }
 
-void SystemObserver::OnCompAdding(MUnit& aComp, TBool aModif)
+void SystemObserver::OnCompAdding(const MUnit* aComp, TBool aModif)
 {
     for (auto observer : mObservers) {
 	observer->OnCompAdding(aComp, aModif);
     }
 }
 
-TBool SystemObserver::OnCompChanged(MUnit& aComp, const string& aContName, TBool aModif)
+TBool SystemObserver::OnCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
 {
     for (auto observer : mObservers) {
 	observer->OnCompChanged(aComp, aContName, aModif);
     }
 }
 
-TBool SystemObserver::OnChanged(MUnit& aComp)
+TBool SystemObserver::OnChanged(const MUnit* aComp)
 {
     for (auto observer : mObservers) {
 	observer->OnChanged(aComp);
     }
 }
 
-TBool SystemObserver::OnCompRenamed(MUnit& aComp, const string& aOldName)
+TBool SystemObserver::OnCompRenamed(const MUnit* aComp, const string& aOldName)
 {
     for (auto observer : mObservers) {
 	observer->OnCompRenamed(aComp, aOldName);

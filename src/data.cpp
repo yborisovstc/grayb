@@ -32,16 +32,16 @@ MIface* DataBase::MAgent_DoGetIface(const string& aName)
 
 // TODO [YB] Bug ds_di_wsucv: Wrong scheme of using content "Value" in DataBase
 // To fix
-TBool DataBase::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName)
+TBool DataBase::HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName)
 {
     TBool res = ETrue;
-    if ((aComp.Name() == "Value" || aComp.Name() == "Type") && aComp.EType() == "Prop") {
-	MUnit* etype = aContext.GetNode("./Type");
-	MUnit* eval = aContext.GetNode("./Value");
+    if ((aComp->Name() == "Value" || aComp->Name() == "Type") && aComp->EType() == "Prop") {
+	MUnit* etype = aContext->GetNode("./Type");
+	MUnit* eval = aContext->GetNode("./Value");
 	__ASSERT(eval != NULL);
 	MProp* prop = eval->GetObj(prop);
 	if (prop == NULL) {
-	    Logger()->Write(EErr, this, "Missing MProp iface in property [%s]", aComp.Name().c_str());
+	    Logger()->Write(EErr, this, "Missing MProp iface in property [%s]", aComp->Name().c_str());
 	    res = EFalse;
 	}
 	else {
@@ -54,7 +54,7 @@ TBool DataBase::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& a
 	    string stype = ptype == NULL ? string() : ptype->Value();
 	    FromString(stype, prop->Value());
 	}
-    } else if (&aComp == Context() && aContName == KCont_Value) { // Value - multicontent
+    } else if (aComp == Context() && aContName == KCont_Value) { // Value - multicontent
 	string val = Context()->GetContent(KCont_Value);
 	if (IsLogeventUpdate()) {
 	    string curr;
@@ -63,20 +63,20 @@ TBool DataBase::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& a
 	}
 	FromString(string(), val);
     } else {
-	MUnit* caps = aContext.GetNode("./Capsule");
+	MUnit* caps = aContext->GetNode("./Capsule");
 	if (caps != NULL) {
-	    MUnit* cp = caps->GetCompOwning("ConnPointInp", &aComp);
+	    MUnit* cp = caps->GetCompOwning("ConnPointInp", aComp);
 	    if (cp == NULL) {
-		cp = caps->GetCompOwning("ConnPointOut", &aComp);
+		cp = caps->GetCompOwning("ConnPointOut", aComp);
 	    }
 	    if (cp == NULL) {
-		cp = caps->GetCompOwning("ConnPointInpMc", &aComp);
+		cp = caps->GetCompOwning("ConnPointInpMc", aComp);
 	    }
 	    if (cp == NULL) {
-		cp = caps->GetCompOwning("ConnPointOutMc", &aComp);
+		cp = caps->GetCompOwning("ConnPointOutMc", aComp);
 	    }
 	    if (cp != NULL) {
-		res = HandleIoChanged(aComp, cp);
+		res = HandleIoChanged(*aComp, cp);
 	    }
 	}
     }
@@ -101,9 +101,9 @@ void DataBase::NotifyUpdate()
     }
     // Also notify context in order to propagate the update event to observer
     if (iMan != NULL) {
-	iMan->OnChanged(*this);
+	iMan->OnChanged(this);
     }
-    iEnv->Observer()->OnChanged(*this);
+    iEnv->Observer()->OnChanged(this);
 }
 
 MIface *DataBase::DoGetObj(const char *aName)
@@ -555,7 +555,7 @@ MUnit* DVar::GetInp()
     return einp;
 }
 
-TBool DVar::HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName)
+TBool DVar::HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName)
 {
     return DataBase::HandleCompChanged(aContext, aComp, aContName);
 }

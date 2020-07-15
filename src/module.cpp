@@ -63,9 +63,9 @@ TBool AMod::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
 	//mSpec = Provider()->CreateChromo();
 	//TBool res1 = mSpec->Set(mCont);
 	if (aRtOnly) {
-	    iMan->OnChanged(*this);
+	    iMan->OnChanged(this);
 	} else {
-	    iMan->OnCompChanged(*this);
+	    iMan->OnCompChanged(this);
 	}
     }
     return res;

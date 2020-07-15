@@ -12,7 +12,7 @@ class Incaps: public Elem, public MACompsObserver, public MAgent
 	// From Base
 	virtual MIface *DoGetObj(const char *aName);
 	// From MACompsObserver
-	virtual TBool HandleCompChanged(MUnit& aContext, MUnit& aComp, const string& aContName = string());
+	virtual TBool HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName = string());
 	// From MAgent
 	MIface* MAgent_DoGetIface(const string& aName) override;
     protected:
