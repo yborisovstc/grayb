@@ -12,9 +12,26 @@ testroot : Elem
         Log.Creation = y;
         Target : Unit;
         Target < Cmp_0 : Unit;
-        Adapter : /*/Modules/AdpComps/UnitAdp
+        Target < Cmp_1 : Unit;
+        Controller : /*/Modules/DesComps/Des
         {
-            AdpAgent < AgentUri = ./../../Target;
+            About = "Controller using adapter for access to target";
+            Adapter : /*/Modules/AdpComps/UnitAdp
+            {
+                AdpAgent < AgentUri = ./../../../Target;
+                CompUid < Debug.Update = y;
+            }
+            $ # "Comps count index incrementor";
+            CompIdxCount : AStatec;
+            CompIdxCount < Value = "SI 0";
+            CompIdxCount < Debug.Update = y;
+            Incr : ATrcAddVar;
+            Const_1 : AStatec;
+            Const_1 < Value = "SI 1";
+            CompIdxCount/Inp ~ Incr;
+            Incr/Inp ~ CompIdxCount;
+            Incr/Inp ~ Const_1;
+            Adapter/InpCompIdx ~ CompIdxCount;
         }
     }
 }

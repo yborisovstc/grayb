@@ -1856,9 +1856,13 @@ TInt Unit::CompsCount() const
 
 MUnit* Unit::GetComp(TInt aInd)
 {
-    auto it = iMComps.begin();
-    for (TInt i = 0; i < aInd; i++, it++);
-    return it->second;
+    MUnit* res = NULL;
+    if (aInd < iMComps.size()) {
+	auto it = iMComps.begin();
+	for (TInt i = 0; i < aInd; i++, it++);
+	res = it->second;
+    }
+    return res;
 }
 
 MIface* Unit::Call(const string& aSpec, string& aRes)

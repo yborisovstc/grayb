@@ -2310,6 +2310,7 @@ void ADesLauncher::OnIdle()
 // MUnit DES adapter
 
 const string KCont_AgentUri = "AgentUri";
+const string K_CompIdxInpUri = "./InpCompIdx";
 
 string AMunitAdp::PEType()
 {
@@ -2390,39 +2391,93 @@ void AMunitAdp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 	    rr = cmpCount->GetIfi(aName, ctx);
 	    InsertIfCache(aName, aCtx, cmpCount, rr);
 	}
+	MUnit* cmpUid = Host()->GetNode("./CompUid");
+	__ASSERT(cmpUid);
+	if (!ctx.IsInContext(cmpUid)) {
+	    rr = cmpUid->GetIfi(aName, ctx);
+	    InsertIfCache(aName, aCtx, cmpUid, rr);
+	}
     } else if (aName == MDVarGet::Type()) {
 	MUnit* cmpCount = Host()->GetNode("./CompsCount");
 	if (ctx.IsInContext(cmpCount)) {
 	    MIface* iface = dynamic_cast<MDVarGet*>(&mApCmpCount);
 	    InsertIfCache(aName, aCtx, cmpCount, iface);
 	}
-    }
-    if (rr.first == rr.second) {
+	MUnit* cmpUid = Host()->GetNode("./CompUid");
+	if (ctx.IsInContext(cmpUid)) {
+	    MIface* iface = dynamic_cast<MDVarGet*>(&mApCmpUid);
+	    InsertIfCache(aName, aCtx, cmpUid, iface);
+	}
+    } else  {
 	Unit::UpdateIfi(aName, aCtx);
     }
 }
 
-int AMunitAdp::GetObservedData(TMagPar aPar)
+template <typename T> TBool AMunitAdp::GetData(MUnit* aDvget, T& aData) const
 {
-    int res = 0;
-    if (aPar == Epar_CmpCount) {
-	res = mMag->CompsCount();
+    TBool res = EFalse;
+    MDVarGet* vget = aDvget->GetSIfit(vget);
+    if (vget) {
+	MDtGet<Sdata<T>>* gsd = vget->GetDObj(gsd);
+	if (gsd) {
+	    Sdata<T> st;
+	    gsd->DtGet(st);
+	    aData = st.mData;
+	    res = ETrue;
+	}
     }
     return res;
 }
 
-void* AMunitAdp::AdpPap::DoGetDObj(const char *aName)
+int AMunitAdp::GetCompsCount() const
+{
+    return  mMag->CompsCount();
+}
+
+string AMunitAdp::GetCompUid()
+{
+    string res;
+    TBool eres = EFalse;
+    MUnit* inp = Host()->GetNode(K_CompIdxInpUri);
+    __ASSERT(inp != NULL);
+    TInt idx = 0;
+    eres = GetData(inp, idx);
+    if (idx < mMag->CompsCount()) {
+	MUnit* comp = mMag->GetComp(idx);
+	res = comp->Uid();
+    } else {
+	Logger()->Write(EErr, this, "Comp index [%i] is out of range", idx);
+    }
+    return res;
+}
+
+
+// Access points
+
+template <typename T> void* AMunitAdp::AdpPap<T>::DoGetDObj(const char *aName)
 {
     void* res = NULL;
-    if (aName == MDtGet<Sdata<int> >::Type()) {
-	res = dynamic_cast<MDtGet<Sdata<int> >*>(this);
+    if (aName == MDtGet<Sdata<T> >::Type()) {
+	res = dynamic_cast<MDtGet<Sdata<T> >*>(this);
     }
     return res;
 }
 
-void AMunitAdp::AdpPap::DtGet(Sdata<int>& aData)
+template <> void AMunitAdp::AdpPap<int>::DtGet(Sdata<int>& aData)
 {
-    int res = mHost->GetObservedData(mPar);
+    int res = 0;
+    if (mPar == Epar_CmpCount) {
+	res = mHost->GetCompsCount();
+    }
+    aData.Set(res);
+}
+
+template <> void AMunitAdp::AdpPap<string>::DtGet(Sdata<string>& aData)
+{
+    string res;
+    if (mPar == Epar_CmpUid) {
+	res = mHost->GetCompUid();
+    }
     aData.Set(res);
 }
 

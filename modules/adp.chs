@@ -9,5 +9,9 @@ AdpComps : Elem
         CompsCount < Value = "SI 0";
         AdpCp : CpStatecOutp;
         CompsCount/Inp ~ AdpCp;
+        CompUid : AStatec;
+        CompUid < Value = "SS _";
+        CompUid/Inp ~ AdpCp;
+        InpCompIdx : CpStatecInp;
     }
 }

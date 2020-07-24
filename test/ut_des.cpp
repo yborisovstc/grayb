@@ -430,7 +430,11 @@ void Ut_des::test_MunitAdp_1()
     MElem* eroot = root->GetObj(eroot);
     CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
 
-    MUnit* adp = root->GetNode("./test/Adapter");
+    // Verify target agent
+    MUnit* tag = root->GetNode("./test/Target");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get target agent", tag != NULL);
+    // Verify adapter
+    MUnit* adp = root->GetNode("./test/Controller/Adapter");
     CPPUNIT_ASSERT_MESSAGE("Fail to get adapter", adp != NULL);
    // Sync the state
     MUnit* esync = root->GetNode("./test");
@@ -449,17 +453,31 @@ void Ut_des::test_MunitAdp_1()
 	if (sync->IsUpdated()) {
 	    sync->Confirm();
 	}
+	// Verify comps count
+	MUnit* cmpCount = root->GetNode("./test/Controller/Adapter/CompsCount");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get adapters CompsCount", cmpCount != NULL);
+	MDVarGet* cmpCountVget = cmpCount->GetSIfit(cmpCountVget);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get CompsCount VarGet iface", cmpCountVget != NULL);
+	MDtGet<Sdata<int>>* cmpCountGsi = cmpCountVget->GetDObj(cmpCountGsi);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get cmpCountGsi ", cmpCountGsi != NULL);
+	Sdata<int> cmpCountSi = 0;
+	cmpCountGsi->DtGet(cmpCountSi);
+	CPPUNIT_ASSERT_MESSAGE("Incorrect CompsCount value", cmpCountSi.mData == 2);
+	// Verify comp UID
+	MUnit* cmpUid = root->GetNode("./test/Controller/Adapter/CompUid");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get adapters CompUid", cmpUid != NULL);
+	MDVarGet* cmpUidVget = cmpUid->GetSIfit(cmpUidVget);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get CompUid VarGet iface", cmpUidVget != NULL);
+	MDtGet<Sdata<string>>* cmpUidGsi = cmpUidVget->GetDObj(cmpUidGsi);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get cmpUidGsi ", cmpUidGsi != NULL);
+	Sdata<string> cmpUidSi;
+	cmpUidGsi->DtGet(cmpUidSi);
+	MUnit* tagCmp = tag->GetComp(cnt);
+	if (tagCmp) {
+	    CPPUNIT_ASSERT_MESSAGE("Incorrect CompUid", cmpUidSi.mData == tagCmp->Uid());
+	}
     }
-    // Verify observed data
-    MUnit* cmpCount = root->GetNode("./test/Adapter/CompsCount");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get adapters CompsCount", cmpCount != NULL);
-    MDVarGet* cmpCountVget = cmpCount->GetSIfit(cmpCountVget);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get CompsCount VarGet iface", cmpCountVget != NULL);
-    MDtGet<Sdata<int>>* cmpCountGsi = cmpCountVget->GetDObj(cmpCountGsi);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get CompsCount MDtGet<Sdata<int>> iface", cmpCountGsi != NULL);
-    Sdata<int> cmpCountSi = 0;
-    cmpCountGsi->DtGet(cmpCountSi);
-    CPPUNIT_ASSERT_MESSAGE("Incorrect CompsCount value", cmpCountSi.mData == 1);
+
 
     delete iEnv;
 }

@@ -666,12 +666,15 @@ class AMunitAdp: public Unit, public MAgent, public MDVarGet
 {
     public:
 	/** @brief Id of observed/managed agent parameter */
-	using TMagPar = enum { Epar_CmpCount };
+	using TMagPar = enum {
+	    Epar_CmpCount,
+	    Epar_CmpUid,
+	};
     public:
 	/** @brief Observer agent parameter access point
 	 * Represents the agent paremeter like number of comps
 	 * */
-	class AdpPap: public MDVarGet, public MDtGet<Sdata<int>> {
+	template <typename T> class AdpPap: public MDVarGet, public MDtGet<Sdata<T>> {
 	    public:
 		AdpPap(const AdpPap& aSrc): mHost(aSrc.mHost), mPar(aSrc.mPar) {}
 		AdpPap(AMunitAdp* aHost, TMagPar aPar): mHost(aHost), mPar(aPar) {}
@@ -680,7 +683,7 @@ class AMunitAdp: public Unit, public MAgent, public MDVarGet
 		virtual void *DoGetDObj(const char *aName) override;
 		virtual string VarGetIfid() override {return string();}
 		// From MDtGet
-		virtual void DtGet(Sdata<int>& aData) override;
+		virtual void DtGet(Sdata<T>& aData) override;
 	    protected:
 		AMunitAdp* mHost;
 		TMagPar mPar;
@@ -701,16 +704,21 @@ class AMunitAdp: public Unit, public MAgent, public MDVarGet
 	virtual void *DoGetDObj(const char *aName) override {return NULL;}
 	virtual string VarGetIfid() override {return string();}
     public:
-	int GetObservedData(TMagPar aPar); 
+	int GetCompsCount() const; 
+	string GetCompUid();
+	MLogRec* Logrec() { return Logger();}
     protected:
 	// From MUnit
 	virtual TEhr ProcessCompChanged(const MUnit* aComp, const string& aContName) override;
 	/** @brief Notifies all states inputs of update **/
 	void NotifyInpsUpdated();
 	inline MUnit* Host() { return iMan;}
+	/** @brief Helper. Gets value from MDVarGet */
+	template <typename T> TBool GetData(MUnit* aDvget, T& aData) const;
     protected:
 	MUnit* mMag; /*<! Managed agent */
-	AdpPap mApCmpCount = AdpPap(this, Epar_CmpCount);
+	AdpPap<int> mApCmpCount = AdpPap<int>(this, Epar_CmpCount); /*<! Comps count access point */
+	AdpPap<string> mApCmpUid = AdpPap<string>(this, Epar_CmpUid); /*<! Comp UID access point */
 };
 
 #endif
