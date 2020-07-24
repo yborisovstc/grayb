@@ -15,6 +15,7 @@
 class Ut_des : public CPPUNIT_NS::TestFixture
 {
     CPPUNIT_TEST_SUITE(Ut_des);
+    /*
     CPPUNIT_TEST(test_Cre1);
     CPPUNIT_TEST(test_Cre2);
     CPPUNIT_TEST(test_Cre4);
@@ -23,6 +24,8 @@ class Ut_des : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Cre6mcmu);
     CPPUNIT_TEST(test_Cre6mcmau);
     CPPUNIT_TEST(test_CreStatec);
+    */
+    CPPUNIT_TEST(test_MunitAdp_1);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -36,6 +39,7 @@ private:
     void test_Cre6mcmu();
     void test_Cre6mcmau();
     void test_CreStatec();
+    void test_MunitAdp_1();
 private:
     Env* iEnv;
 };
@@ -405,4 +409,57 @@ void Ut_des::test_CreStatec()
 
 	delete iEnv;
     }
+}
+
+/** @brief MUnit DES adapter 
+ * */
+void Ut_des::test_MunitAdp_1()
+{
+    printf("\n === Test of MUnit DES adapter\n");
+
+    const string specn("ut_des_uadp_1");
+    string ext = "chs";
+    string spec = specn + string(".") + "chs";
+    string log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root->GetObj(eroot);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
+
+    MUnit* adp = root->GetNode("./test/Adapter");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get adapter", adp != NULL);
+   // Sync the state
+    MUnit* esync = root->GetNode("./test");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != NULL);
+    MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != NULL);
+
+    // Do some ticks
+    const TInt ticksnum = 5;
+    for (TInt cnt = 0; cnt < ticksnum; cnt++) {
+	if (sync->IsActive()) {
+	    //iEnv->SetSBool(MEnv::ESb_EnIfTrace, ETrue);
+	    sync->Update();
+	    //iEnv->SetSBool(MEnv::ESb_EnIfTrace, EFalse);
+	}
+	if (sync->IsUpdated()) {
+	    sync->Confirm();
+	}
+    }
+    // Verify observed data
+    MUnit* cmpCount = root->GetNode("./test/Adapter/CompsCount");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get adapters CompsCount", cmpCount != NULL);
+    MDVarGet* cmpCountVget = cmpCount->GetSIfit(cmpCountVget);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get CompsCount VarGet iface", cmpCountVget != NULL);
+    MDtGet<Sdata<int>>* cmpCountGsi = cmpCountVget->GetDObj(cmpCountGsi);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get CompsCount MDtGet<Sdata<int>> iface", cmpCountGsi != NULL);
+    Sdata<int> cmpCountSi = 0;
+    cmpCountGsi->DtGet(cmpCountSi);
+    CPPUNIT_ASSERT_MESSAGE("Incorrect CompsCount value", cmpCountSi.mData == 1);
+
+    delete iEnv;
 }

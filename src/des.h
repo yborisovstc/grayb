@@ -660,4 +660,57 @@ class ADesLauncher: public Elem, public MLauncher, public MAgent
 	TBool mStop;
 };
 
+/** @brief MUnit DES adapter
+ * */
+class AMunitAdp: public Unit, public MAgent, public MDVarGet
+{
+    public:
+	/** @brief Id of observed/managed agent parameter */
+	using TMagPar = enum { Epar_CmpCount };
+    public:
+	/** @brief Observer agent parameter access point
+	 * Represents the agent paremeter like number of comps
+	 * */
+	class AdpPap: public MDVarGet, public MDtGet<Sdata<int>> {
+	    public:
+		AdpPap(const AdpPap& aSrc): mHost(aSrc.mHost), mPar(aSrc.mPar) {}
+		AdpPap(AMunitAdp* aHost, TMagPar aPar): mHost(aHost), mPar(aPar) {}
+		void SetHost(AMunitAdp* aHost) {mHost = aHost;}
+		// From MDVarGet
+		virtual void *DoGetDObj(const char *aName) override;
+		virtual string VarGetIfid() override {return string();}
+		// From MDtGet
+		virtual void DtGet(Sdata<int>& aData) override;
+	    protected:
+		AMunitAdp* mHost;
+		TMagPar mPar;
+	};
+
+    public:
+	static const char* Type() { return "AMunitAdp";};
+	static string PEType();
+	AMunitAdp(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	virtual ~AMunitAdp();
+	// From Base
+	virtual MIface* DoGetObj(const char *aName) override;
+	// From MAgent
+	MIface* MAgent_DoGetIface(const string& aName) override;
+	// From MUnit
+	virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
+	// From MDVarGet
+	virtual void *DoGetDObj(const char *aName) override {return NULL;}
+	virtual string VarGetIfid() override {return string();}
+    public:
+	int GetObservedData(TMagPar aPar); 
+    protected:
+	// From MUnit
+	virtual TEhr ProcessCompChanged(const MUnit* aComp, const string& aContName) override;
+	/** @brief Notifies all states inputs of update **/
+	void NotifyInpsUpdated();
+	inline MUnit* Host() { return iMan;}
+    protected:
+	MUnit* mMag; /*<! Managed agent */
+	AdpPap mApCmpCount = AdpPap(this, Epar_CmpCount);
+};
+
 #endif

@@ -67,6 +67,10 @@
     </bibliolist>
 
     <glossary> <title>Glossary</title> 
+	<glossentry id="gls_adp"><glossterm>ADP</glossterm> <acronym>ADP</acronym>
+	    <glossdef> <para>Agents DES adaPtor</para> <para>
+		    The agent dedicated to adapt target agent interfaces to DES.
+		    Ref <xref linkend="ds_dmm_adp"/> </para></glossdef> </glossentry>
 	<glossentry id="gls_cp"><glossterm>CP</glossterm> <acronym>CP</acronym>
 	    <glossdef> <para>Connection Point</para> <para>
 		    Element that is used as endpoint of connections between systems.  
@@ -76,6 +80,19 @@
 		    Approach of multi-agent system that assumes that the modes is distributed among several environments that 
 		    can be running on undependent executable enviromnents.
 		    Ref <xref linkend="ds_daa"/> </para></glossdef> </glossentry>
+	<glossentry id="gls_deds"><glossterm>DEDS</glossterm> <acronym>DEDS</acronym>
+	    <glossdef> <para>Discrete Event Dynamic System,  a discrete-state, event-driven system of which the state evolution depends entirely
+		    on the occurrence of asynchronous discrete events over time. Although similar to continuous-variable dynamic systems (CVDS),
+		    DEDS consists solely of discrete state spaces and event-driven state transition mechanisms. 
+		    Ref <ulink url="https://en.wikipedia.org/wiki/Discrete_event_dynamic_system"/></para>
+		<glossseealso otherterm="gls_des"/>
+	</glossdef> </glossentry>
+	<glossentry id="gls_des"><glossterm>DES</glossterm> <acronym>DES</acronym>
+	    <glossdef> <para>Discrete-Event Simulation - model of the operation of a system as a discrete sequence of events in time.
+		    Each event occurs at a particular instant in time and marks a change of state in the system.
+		    Ref <ulink url="https://en.wikipedia.org/wiki/Discrete-event_simulation"/></para>
+		<glossseealso otherterm="gls_deds"/>
+	</glossdef> </glossentry>
 	<glossentry id="gls_dhc"><glossterm>DHC</glossterm> <acronym>DHC</acronym>
 	    <glossdef> <para>Direct Hierarchical Chromosome</para> <para>
 		    Approach of multi-agent system definition that describes the model's structure directly. 
@@ -97,8 +114,11 @@
 		    connection points of agent, i.e. doing all connecting relative work instead of agent.
 		    In contrast of <xref linkend="gls_pia"/> connecting proxy agent provides interface
 		    resolution mechanism for the client, so the mechanism is distributed between multiple
-		    connecting agents in the model.
-	</para></glossdef> </glossentry>
+		    connecting agents in the model.  </para></glossdef> </glossentry>
+	<glossentry id="gls_dmm"><glossterm>DMM</glossterm> <acronym>DMM</acronym>
+	    <glossdef> <para>DES Managing of Model.  The approach of using DES to manage the generic multi-agent model.
+		    With this approach it is not needed to have some external native model managing entity, this managing entity
+		    is implemented as managing DES model, ref also <xref linkend="ds_dmm"/> for details.</para></glossdef> </glossentry>
 	<glossentry id="gls_irm"><glossterm>IRM</glossterm>
 	    <glossdef> <para>Interface resolution mechanism.  <xref linkend="ds_ifcache"/>
 	</para></glossdef> </glossentry>
@@ -153,13 +173,17 @@
 		    Ref <xref linkend="gls_cmt"/> for alternative approach.</para></glossdef> </glossentry>
     </glossary>
 
-    <sect1><title>Intro</title>
+    <sect1 id="ds_itr"><title>Intro</title>
 	<sect2><title>Desing items status</title>
 	    <simpara>Desing items status is designated by specific tags in square brackets. The tag prefix is DS_. The status values are:</simpara>
 	    <itemizedlist>
 		<listitem>DS_P - proposal, the item that needs to be considered</listitem>
 		<listitem>DS_I - implemented</listitem>
 	    </itemizedlist>
+	</sect2>
+	<sect2 id="ds_itr_dp"><title>Dependent projects</title>
+	    <sect3 id="ds_itr_dp_vis"><title><xref linkend="gls_des"/> Visualilzation framework</title>
+	    </sect3>
 	</sect2>
     </sect1>
 
@@ -5754,6 +5778,44 @@
 	</sect2>
     </sect1>
 
+    <sect1 id="ds_rai"><title>References to agents interfaces</title>
+	<sect2><title>Intro</title>
+	    <simpara>It is required to have references to agent interfaces in scope of some tasks. Ref <xref linkend="ds_dmm_irta"/> for an
+	    example of using references.</simpara>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_dmm"><title>DES managing of model</title>
+	<sect2><title>Intro</title>
+	    <simpara>Currently <xref linkend="gls_des"/> layer of the modeling framework is used to create regular dynamic models, where
+		the states represents some regular data (coordinates, current etc.). But in many cases it is required to change the model itself.
+		Such case is creating visual representation (ref <xref linkend="ds_itr_dp_vis"/>) where we need to create the visual representation model
+		of given model.</simpara>
+	</sect2>
+	<sect2 id="ds_dmm_adp"><title>Design approach: Agent's DES adapter</title>
+	    <sect3><title>Intro</title>
+		<simpara>To apply DES-style managing of some agent we need to make this agent "visible" for DES. This means we need to adapt the
+		    agent (object of managing) to DES. So we need to introduce specific agent that "adapts" target agent to DES.</simpara>
+	    </sect3>
+	    <sect3><title>What is the object of adaptation? Interfaces.</title>
+		<simpara>Interfaces are the only what target agent exposes for observation and managing. So the only interfaces have to 
+		    be used in DES adaptation. What interface to be adapted depends on what aspect of agent needs to be controlled. For
+		    instance for the purpose of creating unit detail visual representation (DRP) as mentioned above we need MUnit interface
+		    adapted only.</simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_dmm_irta"><title>How to implement reference to target agent?</title>
+	    <sect3><title>Intro</title>
+		<simpara>The adaptor has to have "reference" to target agent in order to communicate to it. Currently the framework design
+		    doesn't contain the proper abstraction for referencing agents. Kinds of referencing approaches are implemented in the scope of
+		    vertices layer: vertex has one-way reference to its pair, owning vertex establishes two-way reference between two owned 
+		    vertices via getting URI of pairs, obtaining pairs by the given URI (referencing) and then "connecting" the pairs </simpara>
+		<simpara>So the question is do we need the specific abstraction for referencing (ref <xref linkend="ds_rai"/>) or can
+		    we use some local solution?</simpara>
+	    </sect3>
+	</sect2>
+    </sect1>
+
     <sect1 id="ds_th"><title>To handle</title>
 	<orderedlist>
 	    <listitem>Using mut order to ensure original sequence of muts, ref <xref linkend="ds_mut_dis_pheno"/> </listitem>
@@ -5948,7 +6010,39 @@
 	</sect2>
 	<sect2 id="ds_i_oss"><title>Optimising DES in case of set of states</title>
 	    <simpara>In some cases the model includes "array" of states. Example is fap2-vis containers that contains set of widgets.
-	    Widgets allocation is updated with same transitions, so we have number of same transitions that is not effective</simpara>
+		Widgets allocation is updated with same transitions, so we have number of same transitions that is not effective</simpara>
+	</sect2>
+	<sect2 id="ds_i_icnau"><title>I_ICNAU [IS_C] incorrect creation native agent from parent inherited from Unit</title>
+	    <sect3><title>Analysis</title>
+		<simpara>The cause of the problem is that the parent name (native agent inherited from Unit) is set incorrectly in 
+		    Unit constructor:
+		    <programlisting>
+			Unit::Unit(const string &amp;aName, MUnit* aMan, MEnv* aEnv): ...
+			{
+			...
+			|       if (aName.empty()) {
+			|-          // Native base agent, its name is cpp class type
+			||          iName = GetType(PEType());
+		    </programlisting>
+		</simpara>
+		<simpara>For instance if native agent class name is MyAgent and PEType() is ":Unit" then the name will be "Unit" but
+		    should be MyAgent. PEType() that is static is used in the constructor that always gives iName "Unit".</simpara>
+		<simpara>Interesting but this works from Elem inherited native parent, why? That is because each Elem based native agent
+		    re-establish his name by having in constructor:
+		    <programlisting>SetCrAttr(PEType(), aName); </programlisting>
+		    that uses it's own PEType() to set the name.
+		</simpara>
+	    </sect3>
+	    <sect3><title>Solution</title>
+		<simpara>Potential solution would be to have virtual PEType(), but we cannot use virtual method in Unit constructor. This
+		    would be solved with using secondary constructor, but it require re-design. So the interim solution is to add to the
+		    native agent (inherited from Unit) constructor:
+		    <programlisting>
+			iName = aName.empty() ? GetType(PEType()) : iName = aName;
+		    </programlisting>
+		    ref AMunitAdp for example;
+		</simpara>
+	    </sect3>
 	</sect2>
     </sect1>
 
@@ -5965,9 +6059,19 @@
 
     <sect1 id="ds_cm"><title>Code management</title>
 	<sect2 id="ds_cm_br"><title>Brances</title>
-	    <sect3><title>yb_chr2 base chromo2 solution</title>
+	    <sect3><title>Tree</title>
+		<programlisting>
+		    |
+		    | yb_chr2_cctx_tn_umt 
+		    |     yb_dmm
+		</programlisting>
 	    </sect3>
-	    <sect3><title>yb_chr2_cctx_tn_umt <xref linkend="gls_umt"/> solution in the scope of chromo2</title>
+	    <sect3><title>yb_chr2 - base chromo2 solution</title>
+	    </sect3>
+	    <sect3><title>yb_chr2_cctx_tn_umt - <xref linkend="gls_umt"/> solution in the scope of chromo2</title>
+	    </sect3>
+	    <sect3><title>yb_dmm - <xref linkend="gls_dmm"/> solution</title>
+		<simpara>Ref <xref linkend="ds_dmm"/> for details.</simpara>
 	    </sect3>
 	</sect2>
     </sect1>

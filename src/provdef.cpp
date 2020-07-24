@@ -41,7 +41,7 @@ const ProvDef::TFReg ProvDef::mReg ( {
 	Item<AExtd>(), Item<AExtdInp>(), Item<AExtdOut>(), Item<ASocketMcm>(), Item<ASocketInpMcm>(), Item<ASocketOutMcm>(),
 	Item<ConnPointMcu>(), Item<AExtdu>(), Item<AExtduInp>(), Item<AExtduOut>(), Item<AState>(), Item<AStatec>(),
 	Item<CpStatecInp>(), Item<CpStatecOutp>(), Item<ATrcAddVar>(), Item<ATrcMplVar>(), Item<ATrcAndVar>(), Item<ATrcNegVar>(),
-	Item<ATrcMaxVar>(),
+	Item<ATrcMaxVar>(), Item<AMunitAdp>(),
 	Item<ADesLauncher>()
 	});
 

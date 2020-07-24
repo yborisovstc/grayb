@@ -2305,3 +2305,125 @@ void ADesLauncher::OnIdle()
 {
 }
 
+
+
+// MUnit DES adapter
+
+const string KCont_AgentUri = "AgentUri";
+
+string AMunitAdp::PEType()
+{
+    return Unit::PEType() + GUri::KParentSep + Type();
+}
+
+AMunitAdp::AMunitAdp(const string& aName, MUnit* aMan, MEnv* aEnv): Unit(aName, aMan, aEnv), mMag(NULL)
+{
+    iName = aName.empty() ? GetType(PEType()) : iName = aName;
+    InsertContent(KCont_AgentUri);
+}
+
+AMunitAdp::~AMunitAdp()
+{
+}
+
+MIface* AMunitAdp::MAgent_DoGetIface(const string& aName)
+{
+    MIface* res = NULL;
+    if (aName == MUnit::Type())
+	res = dynamic_cast<MUnit*>(this);
+    return res;
+}
+
+TEhr AMunitAdp::ProcessCompChanged(const MUnit* aComp, const string& aContName)
+{
+    TEhr res = EEHR_Ignored;
+    if (aComp == this && aContName == KCont_AgentUri) {
+	string val = GetContent(KCont_AgentUri);
+	mMag = GetNode(val);
+	if (mMag) {
+	    res = EEHR_Accepted;
+	    // Notify states of update
+		NotifyInpsUpdated();
+	}  else {
+	    Logger()->Write(EErr, this, "[%s] Error on applying content [%s]", GetUri(NULL, true).c_str(), aContName.c_str());
+	    res = EEHR_Denied;
+	}
+    } else {
+	res = Unit::ProcessCompChanged(aComp, aContName);
+    }
+    return res;
+}
+
+void AMunitAdp::NotifyInpsUpdated()
+{
+    // It is AMunitAdp responsibility to provide the ifaces
+    TIfRange range = GetIfi(MDesInpObserver::Type());
+    for (TIfIter it = range.first; it != range.second; it++) {
+	MDesInpObserver* mobs = dynamic_cast<MDesInpObserver*>(*it);
+	if (mobs) {
+	    mobs->OnInpUpdated();
+	}
+    }
+}
+
+MIface *AMunitAdp::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MAgent::Type()) == 0)
+	res = dynamic_cast<MAgent*>(this);
+    else {
+	res = Unit::DoGetObj(aName);
+    }
+    return res;
+}
+
+void AMunitAdp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
+{
+    TIfRange rr;
+    TICacheRCtx ctx(aCtx); ctx.push_back(this);
+
+    if (aName == MDesInpObserver::Type()) {
+	// Redirect to parameter states
+	MUnit* cmpCount = Host()->GetNode("./CompsCount");
+	__ASSERT(cmpCount);
+	if (!ctx.IsInContext(cmpCount)) {
+	    rr = cmpCount->GetIfi(aName, ctx);
+	    InsertIfCache(aName, aCtx, cmpCount, rr);
+	}
+    } else if (aName == MDVarGet::Type()) {
+	MUnit* cmpCount = Host()->GetNode("./CompsCount");
+	if (ctx.IsInContext(cmpCount)) {
+	    MIface* iface = dynamic_cast<MDVarGet*>(&mApCmpCount);
+	    InsertIfCache(aName, aCtx, cmpCount, iface);
+	}
+    }
+    if (rr.first == rr.second) {
+	Unit::UpdateIfi(aName, aCtx);
+    }
+}
+
+int AMunitAdp::GetObservedData(TMagPar aPar)
+{
+    int res = 0;
+    if (aPar == Epar_CmpCount) {
+	res = mMag->CompsCount();
+    }
+    return res;
+}
+
+void* AMunitAdp::AdpPap::DoGetDObj(const char *aName)
+{
+    void* res = NULL;
+    if (aName == MDtGet<Sdata<int> >::Type()) {
+	res = dynamic_cast<MDtGet<Sdata<int> >*>(this);
+    }
+    return res;
+}
+
+void AMunitAdp::AdpPap::DtGet(Sdata<int>& aData)
+{
+    int res = mHost->GetObservedData(mPar);
+    aData.Set(res);
+}
+
+
