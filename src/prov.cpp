@@ -119,6 +119,7 @@ Unit* ProvBase::GetNode(const string& aUri)
 
 	if (res != NULL) {
 	    if (parent == NULL) {
+		// TODO Is PName really used here? PName even is not implemented properly. To check.
 		string pname = GetParentName(res->PName());
 		if (!pname.empty())
 		    parent = iEnv->Provider()->GetNode(pname);

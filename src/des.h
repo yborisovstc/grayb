@@ -1,6 +1,8 @@
 #ifndef __GRAYB_DES_H
 #define __GRAYB_DES_H
 
+#include <functional> 
+
 #include "elem.h"
 #include "mdata.h"
 #include "mdes.h"
@@ -660,53 +662,45 @@ class ADesLauncher: public Elem, public MLauncher, public MAgent
 	TBool mStop;
 };
 
-/** @brief MUnit DES adapter
+
+/** @brief DES adapter base
+ * Internal "access points" are used to create required topology instead of
+ * using "true" DES with transitions. This is for optimization purpose.
  * */
-class AMunitAdp: public Unit, public MAgent, public MDVarGet
+class AAdp: public Unit, public MAgent, public MDVarGet
 {
     public:
-	/** @brief Id of observed/managed agent parameter */
-	using TMagPar = enum {
-	    Epar_CmpCount,
-	    Epar_CmpUid,
-	};
-    public:
 	/** @brief Observer agent parameter access point
-	 * Represents the agent paremeter like number of comps
+	 * Acts as a binder of MDVarGet request to method of host
 	 * */
 	template <typename T> class AdpPap: public MDVarGet, public MDtGet<Sdata<T>> {
 	    public:
-		AdpPap(const AdpPap& aSrc): mHost(aSrc.mHost), mPar(aSrc.mPar) {}
-		AdpPap(AMunitAdp* aHost, TMagPar aPar): mHost(aHost), mPar(aPar) {}
-		void SetHost(AMunitAdp* aHost) {mHost = aHost;}
+		//template<typename P> using THandler = void (*)(Sdata<P>&);
+		template<typename P> using THandler = std::function<void (Sdata<P>&)>;
+	    public:
+		THandler<T> mHandler;
+		//void (*mHandler)(Sdata<T>&);
+	    public:
+		AdpPap(const AdpPap& aSrc): mHandler(aSrc.mHandler) {}
+		AdpPap(THandler<T> aHandler): mHandler(aHandler){}
 		// From MDVarGet
 		virtual void *DoGetDObj(const char *aName) override;
 		virtual string VarGetIfid() override {return string();}
 		// From MDtGet
-		virtual void DtGet(Sdata<T>& aData) override;
-	    protected:
-		AMunitAdp* mHost;
-		TMagPar mPar;
+		virtual void DtGet(Sdata<T>& aData) override { mHandler(aData);}
 	};
 
     public:
-	static const char* Type() { return "AMunitAdp";};
+	static const char* Type() { return "AAdp";};
 	static string PEType();
-	AMunitAdp(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
-	virtual ~AMunitAdp();
+	AAdp(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
 	// From Base
 	virtual MIface* DoGetObj(const char *aName) override;
 	// From MAgent
 	MIface* MAgent_DoGetIface(const string& aName) override;
-	// From MUnit
-	virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
 	// From MDVarGet
 	virtual void *DoGetDObj(const char *aName) override {return NULL;}
 	virtual string VarGetIfid() override {return string();}
-    public:
-	int GetCompsCount() const; 
-	string GetCompUid();
-	MLogRec* Logrec() { return Logger();}
     protected:
 	// From MUnit
 	virtual TEhr ProcessCompChanged(const MUnit* aComp, const string& aContName) override;
@@ -714,11 +708,27 @@ class AMunitAdp: public Unit, public MAgent, public MDVarGet
 	void NotifyInpsUpdated();
 	inline MUnit* Host() { return iMan;}
 	/** @brief Helper. Gets value from MDVarGet */
-	template <typename T> TBool GetData(MUnit* aDvget, T& aData) const;
+	template <typename T> static TBool GetData(MUnit* aDvget, T& aData);
     protected:
 	MUnit* mMag; /*<! Managed agent */
-	AdpPap<int> mApCmpCount = AdpPap<int>(this, Epar_CmpCount); /*<! Comps count access point */
-	AdpPap<string> mApCmpUid = AdpPap<string>(this, Epar_CmpUid); /*<! Comp UID access point */
+};
+
+
+class AMunitAdp : public AAdp
+{
+    public:
+	static const char* Type() { return "AMunitAdp";};
+	static string PEType();
+	//AMunitAdp(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL): AAdp(aName, aMan, aEnv) {};
+	AMunitAdp(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From MUnit
+	virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
+    protected:
+	void GetCompsCount(Sdata<TInt>& aData);
+	void GetCompUid(Sdata<string>& aData);
+    protected:
+	AdpPap<int> mApCmpCount = AdpPap<int>([this](Sdata<TInt>& aData) {GetCompsCount(aData);}); /*<! Comps count access point */
+	AdpPap<string> mApCmpUid = AdpPap<string>([this](Sdata<string>& aData) {GetCompUid(aData);}); /*<! Comp UID access point */
 };
 
 #endif

@@ -1,5 +1,6 @@
 
 #include <iostream> 
+#include <functional> 
 
 #include "des.h"
 #include "edge.h"
@@ -2307,27 +2308,23 @@ void ADesLauncher::OnIdle()
 
 
 
-// MUnit DES adapter
 
+// DES adapter base
+//
 const string KCont_AgentUri = "AgentUri";
-const string K_CompIdxInpUri = "./InpCompIdx";
 
-string AMunitAdp::PEType()
+string AAdp::PEType()
 {
     return Unit::PEType() + GUri::KParentSep + Type();
 }
 
-AMunitAdp::AMunitAdp(const string& aName, MUnit* aMan, MEnv* aEnv): Unit(aName, aMan, aEnv), mMag(NULL)
+AAdp::AAdp(const string& aName, MUnit* aMan, MEnv* aEnv): Unit(aName, aMan, aEnv), mMag(NULL)
 {
     iName = aName.empty() ? GetType(PEType()) : iName = aName;
     InsertContent(KCont_AgentUri);
 }
 
-AMunitAdp::~AMunitAdp()
-{
-}
-
-MIface* AMunitAdp::MAgent_DoGetIface(const string& aName)
+MIface* AAdp::MAgent_DoGetIface(const string& aName)
 {
     MIface* res = NULL;
     if (aName == MUnit::Type())
@@ -2335,7 +2332,7 @@ MIface* AMunitAdp::MAgent_DoGetIface(const string& aName)
     return res;
 }
 
-TEhr AMunitAdp::ProcessCompChanged(const MUnit* aComp, const string& aContName)
+TEhr AAdp::ProcessCompChanged(const MUnit* aComp, const string& aContName)
 {
     TEhr res = EEHR_Ignored;
     if (aComp == this && aContName == KCont_AgentUri) {
@@ -2355,7 +2352,7 @@ TEhr AMunitAdp::ProcessCompChanged(const MUnit* aComp, const string& aContName)
     return res;
 }
 
-void AMunitAdp::NotifyInpsUpdated()
+void AAdp::NotifyInpsUpdated()
 {
     // It is AMunitAdp responsibility to provide the ifaces
     TIfRange range = GetIfi(MDesInpObserver::Type());
@@ -2367,7 +2364,7 @@ void AMunitAdp::NotifyInpsUpdated()
     }
 }
 
-MIface *AMunitAdp::DoGetObj(const char *aName)
+MIface *AAdp::DoGetObj(const char *aName)
 {
     MIface* res = NULL;
     if (strcmp(aName, MAgent::Type()) == 0)
@@ -2376,6 +2373,50 @@ MIface *AMunitAdp::DoGetObj(const char *aName)
 	res = Unit::DoGetObj(aName);
     }
     return res;
+}
+
+template <typename T> TBool AAdp::GetData(MUnit* aDvget, T& aData)
+{
+    TBool res = EFalse;
+    MDVarGet* vget = aDvget->GetSIfit(vget);
+    if (vget) {
+	MDtGet<Sdata<T>>* gsd = vget->GetDObj(gsd);
+	if (gsd) {
+	    Sdata<T> st;
+	    gsd->DtGet(st);
+	    aData = st.mData;
+	    res = ETrue;
+	}
+    }
+    return res;
+}
+
+
+// Access point
+
+template <typename T> void* AAdp::AdpPap<T>::DoGetDObj(const char *aName)
+{
+    void* res = NULL;
+    if (aName == MDtGet<Sdata<T> >::Type()) {
+	res = dynamic_cast<MDtGet<Sdata<T> >*>(this);
+    }
+    return res;
+}
+
+// MUnit DES adapter
+
+const string K_CompIdxInpUri = "./InpCompIdx";
+
+AMunitAdp::AMunitAdp(const string& aName, MUnit* aMan, MEnv* aEnv): AAdp(aName, aMan, aEnv)
+{
+    // TODO This iName init seems far from elegant. To find solution, ref ds_i_icnau 
+    iName = aName.empty() ? GetType(PEType()) : iName = aName;
+    InsertContent(KCont_AgentUri);
+}
+
+string AMunitAdp::PEType()
+{
+    return AAdp::PEType() + GUri::KParentSep + Type();
 }
 
 void AMunitAdp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
@@ -2413,72 +2454,29 @@ void AMunitAdp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     }
 }
 
-template <typename T> TBool AMunitAdp::GetData(MUnit* aDvget, T& aData) const
+void AMunitAdp::GetCompsCount(Sdata<TInt>& aData)
+{
+    aData.mData = mMag->CompsCount();
+}
+
+void AMunitAdp::GetCompUid(Sdata<string>& aData)
 {
     TBool res = EFalse;
-    MDVarGet* vget = aDvget->GetSIfit(vget);
-    if (vget) {
-	MDtGet<Sdata<T>>* gsd = vget->GetDObj(gsd);
-	if (gsd) {
-	    Sdata<T> st;
-	    gsd->DtGet(st);
-	    aData = st.mData;
-	    res = ETrue;
-	}
-    }
-    return res;
-}
-
-int AMunitAdp::GetCompsCount() const
-{
-    return  mMag->CompsCount();
-}
-
-string AMunitAdp::GetCompUid()
-{
-    string res;
-    TBool eres = EFalse;
     MUnit* inp = Host()->GetNode(K_CompIdxInpUri);
     __ASSERT(inp != NULL);
     TInt idx = 0;
-    eres = GetData(inp, idx);
-    if (idx < mMag->CompsCount()) {
-	MUnit* comp = mMag->GetComp(idx);
-	res = comp->Uid();
+    res = GetData(inp, idx);
+    if (res) {
+	if (idx < mMag->CompsCount()) {
+	    MUnit* comp = mMag->GetComp(idx);
+	    aData.mData = comp->Uid();
+	} else {
+	    Logger()->Write(EErr, this, "Comp index [%i] is out of range", idx);
+	}
     } else {
-	Logger()->Write(EErr, this, "Comp index [%i] is out of range", idx);
+	    Logger()->Write(EErr, this, "Cannot get comp index");
     }
-    return res;
 }
 
-
-// Access points
-
-template <typename T> void* AMunitAdp::AdpPap<T>::DoGetDObj(const char *aName)
-{
-    void* res = NULL;
-    if (aName == MDtGet<Sdata<T> >::Type()) {
-	res = dynamic_cast<MDtGet<Sdata<T> >*>(this);
-    }
-    return res;
-}
-
-template <> void AMunitAdp::AdpPap<int>::DtGet(Sdata<int>& aData)
-{
-    int res = 0;
-    if (mPar == Epar_CmpCount) {
-	res = mHost->GetCompsCount();
-    }
-    aData.Set(res);
-}
-
-template <> void AMunitAdp::AdpPap<string>::DtGet(Sdata<string>& aData)
-{
-    string res;
-    if (mPar == Epar_CmpUid) {
-	res = mHost->GetCompUid();
-    }
-    aData.Set(res);
-}
 
 
