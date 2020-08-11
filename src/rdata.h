@@ -61,8 +61,8 @@ template<class T> class Sdata: public DtBase
 	static Sdata<T>* Construct(const string& aSrep) {Sdata<T>* res = NULL; if (IsSrepFit(aSrep)) { res = new Sdata<T>(); } else ;return res;};
 	//TBool Set(const Sdata& d);
 	virtual string GetTypeSig() const { return TypeSig();};
-	virtual void DataToString(stringstream& aStream) const { aStream << std::boolalpha << mData;};
-	virtual TBool DataFromString(istringstream& aStream, TBool& aRes);
+	virtual void DataToString(stringstream& aStream) const override { aStream << std::boolalpha << mData;};
+	virtual TBool DataFromString(istringstream& aStream, TBool& aRes) override;
 	virtual DtBase* Clone() {return new Sdata<T>(*this);};
 	virtual TBool operator==(const DtBase& sb)
 	{ const Sdata<T>& b = dynamic_cast<const Sdata<T>& >(sb); return &b != NULL && DtBase::operator==(b) && mData == b.mData;};
@@ -79,6 +79,8 @@ template<class T> class Sdata: public DtBase
 	Sdata<T>& operator!() { mData = !mData; return *this;};
 	//TBool operator!=(const Sdata<T>& b) {return !this->operator==(b);};
 	TBool Set(const T& aData) { TBool res = aData != mData; mData = aData; mValid = ETrue; return res; };
+    protected:
+	void InpFromString(istringstream& aStream, T& aRes);
     public:
 	T mData;
 };
@@ -87,12 +89,14 @@ template<class T> TBool Sdata<T>::DataFromString(istringstream& aStream, TBool& 
 {
     TBool changed = EFalse;
     T sdata;
-    aStream >> std::boolalpha >> sdata;
+    InpFromString(aStream, sdata);
+//    aStream >> std::boolalpha >> sdata;
     if (aRes = !aStream.fail()) {
 	mValid = ETrue; if (mData != sdata) { mData = sdata; changed = ETrue; }
     }
     return changed;
 }
+
 
 
 

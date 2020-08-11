@@ -72,6 +72,7 @@ template<int L> class TTHandle
 	template<class T> T Data() const { __ASSERT(sizeof(T) <= L); const T* pd = reinterpret_cast<const T*>(mData.data()); return *pd;}
 	bool operator ==(const TTHandle& aB) const {return mData == aB.mData;}
 	bool operator !=(const TTHandle& aB) const {return !(*this == aB);}
+	bool IsNull() const { for (auto it = mData.begin(); it != mData.end(); it++) if (*it) return false; return true;}
     public:
 	array<uint8_t, L> mData;
 };

@@ -1045,6 +1045,87 @@ string ATrcMaxVar::GetInpUri(TInt aId) const
 }
 
 
+// Agent function "Conc var"
+
+string ATrcApndVar::PEType()
+{
+    return ATrcVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrcApndVar::ATrcApndVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcVar(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    Unit* cp = Provider()->CreateNode("ConnPointMcu", "Inp", this, iEnv);
+    __ASSERT(cp != NULL);
+    TBool res = AppendComp(cp);
+    __ASSERT(res);
+    res = cp->ChangeCont("{Provided:'MDesInpObserver' Required:'MDVarGet'}");
+    __ASSERT(res);
+    cp = Provider()->CreateNode("ConnPointMcu", "Inp2", this, iEnv);
+    __ASSERT(cp != NULL);
+    res = AppendComp(cp);
+    __ASSERT(res);
+    res = cp->ChangeCont("{Provided:'MDesInpObserver' Required:'MDVarGet'}");
+    __ASSERT(res);
+}
+
+void ATrcApndVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc = NULL;
+    }
+    if ((mFunc = FApndDt<Sdata<string>>::Create(this, aIfaceName)) != NULL);
+}
+
+string ATrcApndVar::GetInpUri(TInt aId) const 
+{
+    if (aId == Func::EInp1) return "Inp";
+    else if (aId == Func::EInp2) return "Inp2";
+    else return string();
+}
+
+
+// Agent function "Number to string"
+
+string ATrcNtosVar::PEType()
+{
+    return ATrcVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrcNtosVar::ATrcNtosVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcVar(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    Unit* cp = Provider()->CreateNode("ConnPointMcu", "Inp", this, iEnv);
+    __ASSERT(cp != NULL);
+    TBool res = AppendComp(cp);
+    __ASSERT(res);
+    res = cp->ChangeCont("{Provided:'MDesInpObserver' Required:'MDVarGet'}");
+    __ASSERT(res);
+}
+
+void ATrcNtosVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc = NULL;
+    }
+    MDVarGet* inp1 = GetInp(Func::EInp1);
+    if (aIfaceName == MDtGet<Sdata<string> >::Type() && inp1 != NULL) {
+	string t1 = inp1->VarGetIfid();
+	if ((mFunc = FNtos<Sdata<TInt> >::Create(this, t1)) != NULL);
+	//YB else if ((mFunc = FNtos<Sdata<float> >::Create(this, t1)) != NULL);
+    }
+}
+
+string ATrcNtosVar::GetInpUri(TInt aId) const 
+{
+    if (aId == Func::EInp1) return "Inp";
+    else return string();
+}
+
+
+
 
 
 
@@ -1968,6 +2049,7 @@ TEhr AStatec::ProcessCompChanged(const MUnit* aComp, const string& aContName)
 	    }
 	}  else {
 	    Logger()->Write(EErr, this, "[%s] Error on applying content [%s]", GetUri(NULL, true).c_str(), aContName.c_str());
+	    sres = mPdata->FromString(val);
 	    res = EEHR_Denied;
 	}
     } else {
@@ -2403,6 +2485,7 @@ template <typename T> void* AAdp::AdpPap<T>::DoGetDObj(const char *aName)
     return res;
 }
 
+
 // MUnit DES adapter
 
 const string K_CompIdxInpUri = "./InpCompIdx";
@@ -2411,7 +2494,6 @@ AMunitAdp::AMunitAdp(const string& aName, MUnit* aMan, MEnv* aEnv): AAdp(aName, 
 {
     // TODO This iName init seems far from elegant. To find solution, ref ds_i_icnau 
     iName = aName.empty() ? GetType(PEType()) : iName = aName;
-    InsertContent(KCont_AgentUri);
 }
 
 string AMunitAdp::PEType()
@@ -2478,5 +2560,70 @@ void AMunitAdp::GetCompUid(Sdata<string>& aData)
     }
 }
 
+
+
+// MUnit DES adapter
+
+const string K_MutApplOutpUri = "./MutationApplied";
+const string K_InpMUtpUri = "./InpMut";
+
+AMelemAdp::AMelemAdp(const string& aName, MUnit* aMan, MEnv* aEnv): AAdp(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : iName = aName;
+    mMagChromo = iEnv->Provider()->CreateChromo();
+}
+
+string AMelemAdp::PEType()
+{
+    return AAdp::PEType() + GUri::KParentSep + Type();
+}
+
+void AMelemAdp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
+{
+    TIfRange rr;
+    TICacheRCtx ctx(aCtx); ctx.push_back(this);
+
+    if (aName == MDesInpObserver::Type()) {
+	// Redirect to parameter states
+	MUnit* mutAppl = Host()->GetNode(K_MutApplOutpUri);
+	__ASSERT(mutAppl);
+	if (!ctx.IsInContext(mutAppl)) {
+	    rr = mutAppl->GetIfi(aName, ctx);
+	    InsertIfCache(aName, aCtx, mutAppl, rr);
+	}
+    } else if (aName == MDVarGet::Type()) {
+	MUnit* mutAppl = Host()->GetNode(K_MutApplOutpUri);
+	if (ctx.IsInContext(mutAppl)) {
+	    MIface* iface = dynamic_cast<MDVarGet*>(&mApMutApl);
+	    InsertIfCache(aName, aCtx, mutAppl, iface);
+	}
+    } else  {
+	Unit::UpdateIfi(aName, aCtx);
+    }
+}
+
+void AMelemAdp::GetMutApplied(Sdata<string>& aData)
+{
+    TBool eres = EFalse;
+    MUnit* inpMut = Host()->GetNode(K_InpMUtpUri);
+    string mut;
+    eres = GetData(inpMut, mut);
+    if (eres) {
+	MElem* mag = mMag->GetObj(mag);
+	if (mag) {
+	    mut.insert(0, "{ ");
+	    mut.append(" }");
+	    mMagChromo->SetFromSpec(mut);
+	    TNs ns; MutCtx mutctx(NULL, ns);
+	    mag->Mutate(mMagChromo->Root(), EFalse, EFalse, EFalse, mutctx);
+	    aData.mData = mut;
+	} else {
+	    Logger()->Write(EErr, this, "Managed agent is not MElem");
+	}
+    }
+    if (!eres) {
+	Logger()->Write(EErr, this, "Cannot get data from InpMut");
+    }
+}
 
 

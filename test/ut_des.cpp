@@ -24,8 +24,9 @@ class Ut_des : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Cre6mcmu);
     CPPUNIT_TEST(test_Cre6mcmau);
     CPPUNIT_TEST(test_CreStatec);
+    GCPPUNIT_TEST(test_MunitAdp_1);
     */
-    CPPUNIT_TEST(test_MunitAdp_1);
+    CPPUNIT_TEST(test_MelemAdp_1);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -40,6 +41,7 @@ private:
     void test_Cre6mcmau();
     void test_CreStatec();
     void test_MunitAdp_1();
+    void test_MelemAdp_1();
 private:
     Env* iEnv;
 };
@@ -411,13 +413,13 @@ void Ut_des::test_CreStatec()
     }
 }
 
-/** @brief MUnit DES adapter 
+/** @brief MUnit DES adapter test
  * */
 void Ut_des::test_MunitAdp_1()
 {
     printf("\n === Test of MUnit DES adapter\n");
 
-    const string specn("ut_des_uadp_1");
+    const string specn("ut_des_eadp_1");
     string ext = "chs";
     string spec = specn + string(".") + "chs";
     string log = specn + "_" + ext + ".log";
@@ -478,6 +480,78 @@ void Ut_des::test_MunitAdp_1()
 	}
     }
 
+
+    delete iEnv;
+}
+
+
+
+/** @brief MElem DES adapter test
+ * */
+void Ut_des::test_MelemAdp_1()
+{
+    printf("\n === Test of MElem DES adapter\n");
+
+    const string specn("ut_des_eadp_1");
+    string ext = "chs";
+    string spec = specn + string(".") + "chs";
+    string log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root->GetObj(eroot);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
+
+    // Verify target agent
+    MUnit* tag = root->GetNode("./test/Target");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get target agent", tag != NULL);
+    // Verify adapter
+    MUnit* adp = root->GetNode("./test/Controller/UnitAdp");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get adapter", adp != NULL);
+   // Sync the state
+    MUnit* esync = root->GetNode("./test");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != NULL);
+    MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != NULL);
+
+    // Do some ticks
+    const TInt ticksnum = 5;
+    for (TInt cnt = 0; cnt < ticksnum; cnt++) {
+	if (sync->IsActive()) {
+	    //iEnv->SetSBool(MEnv::ESb_EnIfTrace, ETrue);
+	    sync->Update();
+	    //iEnv->SetSBool(MEnv::ESb_EnIfTrace, EFalse);
+	}
+	if (sync->IsUpdated()) {
+	    sync->Confirm();
+	}
+	// Verify comps count
+	MUnit* cmpCount = root->GetNode("./test/Controller/UnitAdp/CompsCount");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get adapters CompsCount", cmpCount != NULL);
+	MDVarGet* cmpCountVget = cmpCount->GetSIfit(cmpCountVget);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get CompsCount VarGet iface", cmpCountVget != NULL);
+	MDtGet<Sdata<int>>* cmpCountGsi = cmpCountVget->GetDObj(cmpCountGsi);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get cmpCountGsi ", cmpCountGsi != NULL);
+	Sdata<int> cmpCountSi = 0;
+	cmpCountGsi->DtGet(cmpCountSi);
+	CPPUNIT_ASSERT_MESSAGE("Incorrect CompsCount value", cmpCountSi.mData == (2 + cnt));
+	// Verify comp UID
+	MUnit* cmpUid = root->GetNode("./test/Controller/UnitAdp/CompUid");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get adapters CompUid", cmpUid != NULL);
+	MDVarGet* cmpUidVget = cmpUid->GetSIfit(cmpUidVget);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get CompUid VarGet iface", cmpUidVget != NULL);
+	MDtGet<Sdata<string>>* cmpUidGsi = cmpUidVget->GetDObj(cmpUidGsi);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get cmpUidGsi ", cmpUidGsi != NULL);
+	Sdata<string> cmpUidSi;
+	cmpUidGsi->DtGet(cmpUidSi);
+	MUnit* tagCmp = tag->GetComp(cnt);
+	if (tagCmp) {
+	    CPPUNIT_ASSERT_MESSAGE("Incorrect CompUid", cmpUidSi.mData == tagCmp->Uid());
+	}
+    }
 
     delete iEnv;
 }

@@ -618,7 +618,15 @@ THandle Chromo2Mdl::Set(const string& aUri)
 
 THandle Chromo2Mdl::SetFromSpec(const string& aSpec)
 {
-    __ASSERT(false);
+    istringstream is(aSpec);
+    is.seekg(0, is.beg);
+    streampos beg = is.tellg();
+    is.seekg(0, is.end);
+    streampos end = is.tellg();
+    ParseCnodeChromo(is, beg, end, mRoot, true);
+    mRoot.BindTree(NULL);
+    //DumpMnode(mRoot, 0);
+    return &mRoot;
 }
 
 THandle Chromo2Mdl::Set(const THandle& aHandle)
@@ -1036,6 +1044,15 @@ TBool Chromo2::Set(const string& aUri)
 TBool Chromo2::SetFromSpec(const string& aSpec)
 {
     TBool res = EFalse;
+    if (!mRootNode.IsNil()) {
+	// Clear old mutation // TODO to re-design
+	ChromoNode::Iterator mit = mRootNode.Begin();
+	while (mit != mRootNode.End()) {
+	    ChromoNode node = *mit;
+	    mRootNode.RmChild(node);
+	    mit = mRootNode.Begin();
+	}
+    }
     THandle root = mMdl.SetFromSpec(aSpec);
     if (root != NULL) {
 	mRootNode = ChromoNode(mMdl, root);

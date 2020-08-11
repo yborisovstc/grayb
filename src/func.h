@@ -335,6 +335,8 @@ class Func: public Base {
     virtual string GetInpExpType(TInt aId) const { return "<?>";};
     virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
     virtual TInt GetContCount() const {return 1;};
+    /** @brief Helper. Gets value from MDVarGet */
+    template <typename T> static TBool GetData(MDVarGet* aDvget, T& aData);
     MLogRec* Logger() {return mHost.GetAgent()->Logger();};
     Host& mHost;
     map<MDVarGet*, string> mInps;
@@ -782,6 +784,30 @@ template <class T> class FMaxDt: public FMaxBase, public MDtGet<T> {
 	T mRes;
 };
 
+// Append, variable type
+
+class FApndBase: public Func {
+    public:
+	enum {
+	    EInp = Func::EInp1,
+	    EInp2 = Func::EInp2
+	};
+	FApndBase(Host& aHost): Func(aHost) {};
+};
+
+template <class T> class FApndDt: public FApndBase, public MDtGet<T> {
+    public:
+	static Func* Create(Host* aHost, const string& aString);
+	FApndDt(Host& aHost): FApndBase(aHost) {};
+	virtual MIface *DoGetObj(const char *aName);
+	virtual string IfaceGetId() const { return MDtGet<T>::Type();};
+	virtual void DtGet(T& aData);
+	virtual void GetResult(string& aResult) const;
+	//virtual TBool GetCont(TInt aInd, string& aName, string& aCont) const;
+	virtual TInt GetContCount() const {return 2;};
+	T mRes;
+};
+
 
 class FBcmpBase: public Func {
     public:
@@ -847,7 +873,6 @@ template <class T> class FCmp: public FCmpBase
 	virtual void DtGet(Sdata<bool>& aData);
 };
 
-
 class AFCmpVar: public AFunVar
 {
     public:
@@ -861,6 +886,35 @@ class AFCmpVar: public AFunVar
     protected:
 	virtual void Init(const string& aIfaceName);
 };
+
+
+
+/** @brief  Num to string, variable data, base
+ * */
+class FNtosBase: public Func, public MDtGet<Sdata<string> >
+{
+    public:
+	FNtosBase(Host& aHost): Func(aHost) {};
+	virtual string IfaceGetId() const;
+	virtual void GetResult(string& aResult) const;
+	virtual MIface *DoGetObj(const char *aName);
+	virtual void DtGet(Sdata<string>& aData);
+    protected:
+	Sdata<string> mRes;
+};
+
+/** @brief  Num to string, variable data,
+ * */
+template <class T> class FNtos: public FNtosBase
+{
+    public:
+	static Func* Create(Host* aHost, const string& aInp1Iid);
+	FNtos(Host& aHost): FNtosBase(aHost) {};
+	virtual void DtGet(Sdata<string>& aData);
+};
+
+
+
 
 // Getting component of container
 class AFAtVar: public AFunVar

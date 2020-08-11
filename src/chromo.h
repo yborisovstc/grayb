@@ -205,6 +205,7 @@ class ChromoNode
 	void ReduceToSelection(const ChromoNode& aSelNode);
 	void ToString(string& aString) const { iMdl.ToString(iHandle, aString);};
 	operator string() const;
+	bool IsNil() const {return iHandle.IsNull();}
     private :
 	MChromoMdl& iMdl;
 	THandle iHandle;

@@ -388,6 +388,37 @@ class ATrcMaxVar: public ATrcVar
 	virtual TInt GetInpCpsCount() const override {return 1;}
 };
 
+/** @brief Agent function "Append"
+ * */
+class ATrcApndVar: public ATrcVar
+{
+    public:
+	static const char* Type() { return "ATrcApndVar";};
+	static string PEType();
+	ATrcApndVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName) override;
+	virtual string GetInpUri(TInt aId) const override;
+	// From Func::Host
+	virtual TInt GetInpCpsCount() const override {return 2;}
+};
+
+/** @brief Agent function "Number to string"
+ * */
+class ATrcNtosVar: public ATrcVar
+{
+    public:
+	static const char* Type() { return "ATrcNtosVar";};
+	static string PEType();
+	ATrcNtosVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName) override;
+	virtual string GetInpUri(TInt aId) const override;
+	// From Func::Host
+	virtual TInt GetInpCpsCount() const override {return 1;}
+};
+
+
 
 
 
@@ -714,12 +745,13 @@ class AAdp: public Unit, public MAgent, public MDVarGet
 };
 
 
+/** @brief MUnit iface ADP agent
+ * */
 class AMunitAdp : public AAdp
 {
     public:
 	static const char* Type() { return "AMunitAdp";};
 	static string PEType();
-	//AMunitAdp(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL): AAdp(aName, aMan, aEnv) {};
 	AMunitAdp(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
 	// From MUnit
 	virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
@@ -730,5 +762,25 @@ class AMunitAdp : public AAdp
 	AdpPap<int> mApCmpCount = AdpPap<int>([this](Sdata<TInt>& aData) {GetCompsCount(aData);}); /*<! Comps count access point */
 	AdpPap<string> mApCmpUid = AdpPap<string>([this](Sdata<string>& aData) {GetCompUid(aData);}); /*<! Comp UID access point */
 };
+
+/** @brief MElem iface ADP agent
+ * */
+class AMelemAdp : public AAdp
+{
+    public:
+	static const char* Type() { return "AMelemAdp";};
+	static string PEType();
+	AMelemAdp(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From MUnit
+	virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
+    protected:
+	void GetMutApplied(Sdata<string>& aData);
+    protected:
+	AdpPap<string> mApMutApl = AdpPap<string>([this](Sdata<string>& aData) {GetMutApplied(aData);}); /*<! Mut applied */
+    protected:
+	MChromo* mMagChromo; /*<! Managed agent chromo */
+};
+
+
 
 #endif

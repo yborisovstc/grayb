@@ -8,15 +8,21 @@ const char KSigParsToDataSep = ' ';
 const char KSigToParsSep = ',';
 const char KParsSep = ',';
 
-DtBase::~DtBase()
-{
-}
-
 // Scalar data
 template<> const char* Sdata<int>::TypeSig() { return  "SI";};
 template<> const char* Sdata<float>::TypeSig() { return  "SF";};
 template<> const char* Sdata<bool>::TypeSig() { return  "SB";};
 template<> const char* Sdata<string>::TypeSig() { return  "SS";};
+
+template<> void Sdata<int>::InpFromString(istringstream& aStream, int& aRes) { aStream >> std::boolalpha >> aRes; }
+template<> void Sdata<float>::InpFromString(istringstream& aStream, float& aRes) { aStream >> std::boolalpha >> aRes; }
+template<> void Sdata<bool>::InpFromString(istringstream& aStream, bool& aRes) { aStream >> std::boolalpha >> aRes; }
+template<> void Sdata<string>::InpFromString(istringstream& aStream, string& aRes) { aRes = aStream.str(); }
+
+
+DtBase::~DtBase()
+{
+}
 
 char DtBase::mKTypeToDataSep = KSigParsToDataSep;
 
@@ -75,8 +81,9 @@ TBool DtBase::FromString(const string& aString)
 	string ss;
 	if (end != string::npos) {
 	    int beg = end + 1;
-	    end = aString.find(' ', beg);
-	    ss = aString.substr(beg, end - beg);
+	    //end = aString.find(' ', beg);
+	    //ss = aString.substr(beg, end - beg);
+	    ss = aString.substr(beg);
 	}
 	if (!ss.empty()) {
 	    istringstream sstr(ss);

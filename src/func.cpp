@@ -1592,6 +1592,20 @@ MDVarGet* Func::Host::GetInp(TInt aInpId, TBool aOpt)
     return res;
 }
 
+template <typename T> TBool Func::GetData(MDVarGet* aDvget, T& aData)
+{
+    __ASSERT(aDvget);
+    TBool res = EFalse;
+    MDtGet<Sdata<T>>* gsd = aDvget->GetDObj(gsd);
+    if (gsd) {
+	Sdata<T> st;
+	gsd->DtGet(st);
+	aData = st.mData;
+	res = ETrue;
+    }
+    return res;
+}
+
 
 // Diagonal matrix addition
 template<class T> Func* FAddMtrd<T>::Create(Host* aHost, const string& aString)
@@ -3794,6 +3808,167 @@ template<class T> void FMaxDt<T>::GetResult(string& aResult) const
 static void FMaxDtFact() {
     FMaxDt<Sdata<int>>::Create(NULL, "");
 }
+
+
+// Append: Generic data
+
+template<class T> Func* FApndDt<T>::Create(Host* aHost, const string& aString)
+{
+    Func* res = NULL;
+    if (aString == MDtGet<T>::Type()) {
+	res = new FApndDt<T>(*aHost);
+    }
+    return res;
+}
+
+template<class T> MIface *FApndDt<T>::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
+    return res;
+}
+
+#if 0
+template<class T> TBool FApndDt<T>::GetCont(TInt aInd, string& aName, string& aCont) const
+{
+    if (aInd == 0) {
+	FApndBase::GetCont(aInd, aName, aCont);
+    } else if (aInd == 1) {
+	// Inputs values
+	aName = "Inp_values";
+	aCont.append(mHost.GetInpUri(EInp) + ": ");
+	Elem::TIfRange range = mHost.GetInps(EInp);
+	for (MUnit::TIfIter it = range.first; it != range.second; it++) {
+	    if (it != range.first) {
+		aCont.append(", ");
+	    }
+	    MDVarGet* dget = (MDVarGet*) (*it);
+	    MDtGet<T>* dfget = dget->GetDObj(dfget);
+	    if (dfget != NULL) {
+		T arg;
+		dfget->DtGet(arg);
+		string args;
+		arg.ToString(args);
+		aCont.append(args);
+	    }
+	}
+    }
+}
+#endif
+
+template<class T> void FApndDt<T>::DtGet(T& aData)
+{
+    TBool res = ETrue;
+    Elem::TIfRange range = mHost.GetInps(EInp);
+    // TODO We need embedded constrait for inputs connections. To implement.
+    if (MIfProv::IfCount(range) == 1) {
+	MDVarGet* dget1 = (MDVarGet*) (*range.first);
+	range = mHost.GetInps(EInp2);
+	if (MIfProv::IfCount(range) == 1) {
+	    MDVarGet* dget2 = (MDVarGet*) (*range.first);
+	    res = GetData(dget1, aData.mData);
+	    if (res) {
+		T arg2;
+		res = GetData(dget2, arg2.mData);
+		if (res) {
+		   aData.mData += arg2.mData;
+		} else {
+		    Logger()->Write(EErr, mHost.GetAgent(), "Incorrect argument [%s]",  mHost.GetInpUri(EInp2).c_str());
+		}
+	    } else {
+		Logger()->Write(EErr, mHost.GetAgent(), "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
+	    }
+	} else {
+	    Logger()->Write(EErr, mHost.GetAgent(), "Num of sources on [%s] != 1",  mHost.GetInpUri(EInp2).c_str());
+	}
+    } else {
+	Logger()->Write(EErr, mHost.GetAgent(), "Num of sources on [%s] != 1",  mHost.GetInpUri(EInp).c_str());
+    }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
+}
+
+template<class T> void FApndDt<T>::GetResult(string& aResult) const
+{
+    mRes.ToString(aResult);
+}
+
+
+static void FApndFact() {
+    FApndDt<Sdata<string> >::Create(NULL, "");
+}
+
+
+// Num to string, variable data
+
+
+string FNtosBase::IfaceGetId() const
+{ 
+    return MDtGet<Sdata<string> >::Type();
+}
+
+void FNtosBase::GetResult(string& aResult) const
+{
+    aResult = mRes.mData;
+}
+
+MIface *FNtosBase::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MDtGet<Sdata<string> >::Type()) == 0) res = dynamic_cast<MDtGet<Sdata<string> >*>(this);
+    return res;
+}
+
+void FNtosBase::DtGet(Sdata<string>& aData)
+{
+    aData.Set("??");
+}
+
+template <class T> Func* FNtos<T>::Create(Host* aHost, const string& aInp1Iid)
+{
+    Func* res = NULL;
+    if (aInp1Iid == MDtGet<T>::Type()) {
+	res = new FNtos<T>(*aHost);
+    }
+    return res;
+}
+
+template <class T> void FNtos<T>::DtGet(Sdata<string>& aData)
+{
+    TBool res = ETrue;
+    MDVarGet* av1 = mHost.GetInp(EInp1);
+    if (av1 != NULL) {
+	MDtGet<T>* a1 = av1->GetDObj(a1);
+	if (a1 != NULL) {
+	    T arg1;
+	    a1->DtGet(arg1);
+	    if (arg1.mValid) {
+		string res;
+		stringstream ss;
+		ss << arg1.mData;
+		aData.Set(ss.str());
+	    } else {
+		res = EFalse;
+	    }
+	}
+    }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
+}
+
+static void FNtosFact() {
+    FNtos<Sdata<int> >::Create(NULL, "");
+    //FNtos<Sdata<float> >::Create(NULL, "");
+}
+
+
+
 
 
 

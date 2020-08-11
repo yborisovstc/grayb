@@ -182,6 +182,9 @@ class MIfProv
 	virtual void UnregIfReq(const string& aIfName, const TICacheRCtx& aCtx) = 0;
 	virtual void UnregIfProv(const string& aIfName, const TICacheRCtx& aCtx, MUnit* aProv) = 0;
 	virtual MIface* getLocalIface(const string& aName, const TICacheRCtx& aCtx) = 0;
+	static TInt IfCount(const TIfRange& aRange) {
+	    TInt res = 0; for (TIfIter it = aRange.first; it != aRange.second; it++, res++); return res; 
+	}
 };
 
 inline MIfProv::TIfIter& MIfProv::TIfIter::operator=(const TIfIter& aIt)
