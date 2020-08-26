@@ -6044,6 +6044,10 @@
 		</simpara>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_i_tmdmc"><title>TMut design is not consistent.</title>
+	    <simpara>There are many design lacks here. For instance SetAttr method doesn't verify the attr (it depends on mut type).
+	    Do we need specific classes for types?</simpara>
+	</sect2>
     </sect1>
 
     <sect1><title>Status items</title>

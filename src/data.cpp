@@ -5,6 +5,7 @@
 #include "mvert.h"
 #include "data.h"
 #include "vert.h"
+#include "rmutdata.h"
 
 const string DataBase::KCont_Value = "Value";
 
@@ -449,6 +450,7 @@ TBool DVar::Init(const string& aString, MDVarGet* aInpv)
     else if ((mData = HDt<Mtr <float> >::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<NTuple>::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<Enum>::Create(this, aString, aInpv)) != NULL);
+    else if ((mData = HDt<DMut>::Create(this, aString, aInpv)) != NULL);
     //else if ((mData = HVect<float>::Create(this, aString, aInpv)) != NULL);
     //else if ((mData = HMtrd<float>::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HBool::Create(this, aString, aInpv)) != NULL);
@@ -1330,6 +1332,7 @@ TBool BdVar::Init(const string& aString, MDVarGet* aInpv)
     else if ((mData = HDt<Mtr <float> >::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<NTuple>::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<Enum>::Create(this, aString, aInpv)) != NULL);
+    else if ((mData = HDt<DMut>::Create(this, aString, aInpv)) != NULL);
     //else if ((mData = HVect<float>::Create(this, aString, aInpv)) != NULL);
     //else if ((mData = HMtrd<float>::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HBool::Create(this, aString, aInpv)) != NULL);

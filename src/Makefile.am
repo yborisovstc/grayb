@@ -66,6 +66,8 @@ libgrayb_la_SOURCES = \
 		       des.cpp \
 		       rdata.h \
 		       rdata.cpp \
+		       rmutdata.h \
+		       rmutdata.cpp \
 		       miface.h \
 		       mmuta.h \
 		       mplugin.h \

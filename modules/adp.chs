@@ -20,9 +20,10 @@ AdpComps : Elem
         AdpAgent : AMelemAdp;
         AdpCp : CpStatecOutp;
         MutationApplied : AStatec;
-	MutationApplied < Debug.Update = y;
-        MutationApplied < Value = "SS _";
+        MutationApplied < Debug.Update = y;
+        MutationApplied < Value = "MUT none";
         MutationApplied/Inp ~ AdpCp;
+        $ # "MutationApplied ~ InpMut via internal binding";
         InpMut : CpStatecInp;
     }
 }

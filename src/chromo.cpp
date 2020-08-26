@@ -29,6 +29,7 @@ map<TNodeAttr, string> KNodeAttrsNames_Init()
 map<TNodeType, string> KNodeTypesNames_Init()
 {
     map<TNodeType, string> res;
+    res[ENt_None] = "none";
     res[ENt_Node] = "node";
     res[ENt_Move] = "move";
     res[ENt_Rm] = "rm";
@@ -83,36 +84,36 @@ TNodeType TMut::NodeType(const string& aTypeName)
     return KNodeTypes.count(aTypeName) > 0 ? KNodeTypes[aTypeName] : ENt_Unknown;
 }
 
-TMut::TMut(): mType(ENt_Unknown)
+TMut::TMut(): mType(ENt_Unknown), mIsValid(ETrue)
 {
 }
 
-TMut::TMut(TNodeType aType): mType(aType)
+TMut::TMut(TNodeType aType): mType(aType), mIsValid(ETrue)
 {
 }
 
 TMut::TMut(TNodeType aType, TNodeAttr aAttr0, const string& aAttr0Val):
-    mType(aType)
+    mType(aType), mIsValid(ETrue)
 {
     mAttrs.insert(TElem(aAttr0, aAttr0Val));
 }
 
 TMut::TMut(TNodeType aType, TNodeAttr aAttr0, const string& aAttr0Val, TNodeAttr aAttr1, const string& aAttr1Val):
-    mType(aType)
+    mType(aType), mIsValid(ETrue)
 {
     mAttrs.insert(TElem(aAttr0, aAttr0Val));
     mAttrs.insert(TElem(aAttr1, aAttr1Val));
 }
 
 TMut::TMut(TNodeType aType, TNodeAttr aAttr0, const string& aAttr0Val, TNodeAttr aAttr1, const string& aAttr1Val,
-	TNodeAttr aAttr2, const string& aAttr2Val): mType(aType)
+	TNodeAttr aAttr2, const string& aAttr2Val): mType(aType), mIsValid(ETrue)
 {
     mAttrs.insert(TElem(aAttr0, aAttr0Val));
     mAttrs.insert(TElem(aAttr1, aAttr1Val));
     mAttrs.insert(TElem(aAttr2, aAttr2Val));
 }
 
-TMut::TMut(const ChromoNode& aCnode): mType(aCnode.Type())
+TMut::TMut(const ChromoNode& aCnode): mType(aCnode.Type()), mIsValid(ETrue)
 {
     for (map<TNodeAttr, string>::const_iterator it = KNodeAttrsNames.begin(); it != KNodeAttrsNames.end(); it++) {
 	TNodeAttr attr = it->first;
@@ -142,16 +143,20 @@ void TMut::RmAttr(TNodeAttr aAttr)
     mAttrs.erase(aAttr);
 }
 
-TMut::TMut(const string& aSpec)
+TMut::TMut(const string& aSpec): TMut()
+{
+    FromString(aSpec);
+}
+
+void TMut::FromString(const string& aSpec)
 {
     size_t type_beg = 0, type_end = 0;
     type_end = aSpec.find_first_of(KSep, type_beg); 
     string types = aSpec.substr(type_beg, (type_end == string::npos) ? string::npos : type_end - type_beg);
     mType = NodeType(types);
     if (mType == ENt_Unknown) {
-	throw (runtime_error("Incorrect TMut type: " + types));
-    }
-    if (type_end != string::npos) {
+	mIsValid = EFalse;
+    } else if (type_end != string::npos) {
 	size_t attr_end = type_end;
 	size_t attr_beg;
 	do {
@@ -169,13 +174,13 @@ TMut::TMut(const string& aSpec)
 		    string attrtype = attr.substr(0, attrtype_end);
 		    TNodeAttr atype = NodeAttr(attrtype);
 		    if (atype == ENa_Unknown) {
-			throw (runtime_error("Incorrect TMut attr type: " + atype));
+			mIsValid = EFalse;
 		    }
 		    size_t attrval_beg = attrtype_end + 1;
 		    string attrval = attr.substr(attrval_beg, string::npos);
 		    SetAttr(atype, DeEscCtrls(attrval));
 		} else {
-		    throw (runtime_error("Incorrect TMut attr: " + attr));
+		    mIsValid = EFalse;
 		}
 	} while (attr_end != string::npos);
     }

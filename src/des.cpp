@@ -11,6 +11,37 @@
 #include "data.h"
 
 
+// Helper
+template <typename T> TBool GetSData(MUnit* aDvget, T& aData)
+{
+    TBool res = EFalse;
+    MDVarGet* vget = aDvget->GetSIfit(vget);
+    if (vget) {
+	MDtGet<Sdata<T>>* gsd = vget->GetDObj(gsd);
+	if (gsd) {
+	    Sdata<T> st;
+	    gsd->DtGet(st);
+	    aData = st.mData;
+	    res = ETrue;
+	}
+    }
+    return res;
+}
+
+template <typename T> TBool GetGData(MUnit* aDvget, T& aData)
+{
+    TBool res = EFalse;
+    MDVarGet* vget = aDvget->GetSIfit(vget);
+    if (vget) {
+	MDtGet<T>* gsd = vget->GetDObj(gsd);
+	if (gsd) {
+	    gsd->DtGet(aData);
+	    res = ETrue;
+	}
+    }
+    return res;
+}
+
 // MDesObserver metadata
 MDesObserver::EIfu::EIfu()
 {
@@ -749,6 +780,15 @@ TBool ATrcBase::IsCompatible(MUnit* aPair, TBool aExt)
     return res;
 }
 
+void ATrcBase::AddInput(const string& aName)
+{
+    Unit* cp = Provider()->CreateNode("ConnPointMcu", aName, this, iEnv);
+    __ASSERT(cp != NULL);
+    TBool res = AppendComp(cp);
+    __ASSERT(res);
+    res = cp->ChangeCont("{Provided:'MDesInpObserver' Required:'MDVarGet'}");
+    __ASSERT(res);
+}
 
 
 // Agent of transition of variable type with combined chain
@@ -859,6 +899,13 @@ string ATrcVar::Provided() const
     return MDVarGet::Type();
 }
 
+void ATrcVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc = NULL;
+    }
+}
 
 
 // Agent function "Addition of Var data"
@@ -2389,7 +2436,7 @@ void ADesLauncher::OnIdle()
 }
 
 
-
+// Agents DES adaptation - ADP
 
 // DES adapter base
 //
@@ -2474,7 +2521,7 @@ template <typename T> TBool AAdp::GetData(MUnit* aDvget, T& aData)
 }
 
 
-// Access point
+// Access point, using Sdata
 
 template <typename T> void* AAdp::AdpPap<T>::DoGetDObj(const char *aName)
 {
@@ -2484,6 +2531,18 @@ template <typename T> void* AAdp::AdpPap<T>::DoGetDObj(const char *aName)
     }
     return res;
 }
+
+// Access point, using generic data
+
+template <typename T> void* AAdp::AdpPapB<T>::DoGetDObj(const char *aName)
+{
+    void* res = NULL;
+    if (aName == MDtGet<T>::Type()) {
+	res = dynamic_cast<MDtGet<T>*>(this);
+    }
+    return res;
+}
+
 
 
 // MUnit DES adapter
@@ -2602,21 +2661,24 @@ void AMelemAdp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     }
 }
 
-void AMelemAdp::GetMutApplied(Sdata<string>& aData)
+void AMelemAdp::GetMutApplied(DMut& aData)
 {
     TBool eres = EFalse;
     MUnit* inpMut = Host()->GetNode(K_InpMUtpUri);
-    string mut;
-    eres = GetData(inpMut, mut);
+    DMut dmut;
+    eres = GetGData(inpMut, dmut);
     if (eres) {
 	MElem* mag = mMag->GetObj(mag);
+	TMut& mut = dmut.mData;
 	if (mag) {
-	    mut.insert(0, "{ ");
-	    mut.append(" }");
-	    mMagChromo->SetFromSpec(mut);
-	    TNs ns; MutCtx mutctx(NULL, ns);
-	    mag->Mutate(mMagChromo->Root(), EFalse, EFalse, EFalse, mutctx);
-	    aData.mData = mut;
+	    if (mut.IsValid() && mut.Type() != ENt_None && mut.Type() != ENt_Unknown) {
+		mag->AppendMutation(mut);
+		TNs ns; MutCtx mutctx(NULL, ns);
+		mag->Mutate(EFalse, EFalse, EFalse, mutctx);
+		aData = dmut;
+	    } else if (!mut.IsValid() || mut.Type() == ENt_Unknown) {
+		Logger()->Write(EErr, this, "Invalid mutation [%s]", mut.operator string().c_str());
+	    }
 	} else {
 	    Logger()->Write(EErr, this, "Managed agent is not MElem");
 	}
@@ -2624,6 +2686,110 @@ void AMelemAdp::GetMutApplied(Sdata<string>& aData)
     if (!eres) {
 	Logger()->Write(EErr, this, "Cannot get data from InpMut");
     }
+}
+
+
+
+// Agent functions "Mut composer" base
+
+string ATrcMut::PEType()
+{
+    return ATrcVar::PEType() + GUri::KParentSep + Type();
+}
+
+ATrcMut::ATrcMut(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcBase(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? ATrcBase::GetType(PEType()) : aName;
+    string str = mRes.ToString();
+}
+
+TBool ATrcMut::IsProvided(const string& aIfName) const
+{
+    return (aIfName == Provided());
+}
+
+string ATrcMut::Provided() const
+{
+    return MDVarGet::Type();
+}
+
+MIface *ATrcMut::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MDVarGet::Type()) == 0) {
+	res = dynamic_cast<MDVarGet*>(this);
+    } else {
+	res = ATrcBase::DoGetObj(aName);
+    }
+    return res;
+}
+
+void *ATrcMut::DoGetDObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MDtGet<DMut>::Type()) == 0) {
+	res = dynamic_cast<MDtGet<DMut>*>(this);
+    }
+    return res;
+}
+
+string ATrcMut::VarGetIfid()
+{
+    return MDtGet<DMut>::Type();
+}
+
+template<typename T> TBool ATrcMut::GetInp(TInt aId, T& aRes)
+{
+    TBool res = EFalse;
+    MUnit* inp = GetNode("./" + GetInpUri(aId));
+    if (inp != NULL) {
+	res =  GetSData(inp, aRes);
+    } else {
+	Logger()->Write(EErr, this, "Cannot get input [%s]", GetInpUri(aId).c_str());
+    }
+    return res;
+}
+
+
+// Agent function "Mut Node composer"
+
+string ATrcMutNode::PEType()
+{
+    return ATrcVar::PEType() + GUri::KParentSep + Type();
+}
+
+ATrcMutNode::ATrcMutNode(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcMut(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? Unit::GetType(PEType()) : aName;
+    AddInput("Parent");
+    AddInput("Name");
+}
+
+string ATrcMutNode::GetInpUri(TInt aId) const
+{
+    if (aId == EInpParent) return "Parent";
+    else if (aId == EInpName) return "Name";
+    else return string();
+}
+
+void ATrcMutNode::DtGet(DMut& aData)
+{
+    TBool res = EFalse;
+    string name;
+    res = GetInp(EInpName, name);
+    if (res) {
+	string parent;
+	res = GetInp(EInpParent, parent);
+	if (res) {
+	    aData.mData = TMut(ENt_Node, ENa_Parent, parent, ENa_Id, name);
+	    aData.mValid = ETrue;
+	} else {
+	    aData.mValid = EFalse;
+	}
+    } else {
+	aData.mValid = EFalse;
+    }
+    mRes = aData;
 }
 
 

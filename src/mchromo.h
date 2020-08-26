@@ -12,7 +12,8 @@ class MLogRec;
 enum TNodeType
 {
     ENt_Unknown = 0,
-    ENt_Node = 1,
+    ENt_None = 1,
+    ENt_Node = 2,
     ENt_Move = 3, 	// Mutation - move node
     ENt_Rm = 4,   	// Mutation - removal
     ENt_Change = 5, 	// Change node attribute

@@ -10,6 +10,7 @@
 #include "func.h"
 #include "vert.h"
 #include "syst.h"
+#include "rmutdata.h"
 
 // Transition function agent base. 
 class ATrBase: public Elem, public MACompsObserver, public MAgent
@@ -252,6 +253,8 @@ class ATrcBase: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd
 	virtual TDir GetDir() const override;
 	virtual MIface* MCompatChecker_Call(const string& aSpec, string& aRes) override;
 	virtual string MCompatChecker_Mid() const override;
+    protected:
+	void AddInput(const string& aName);
 };
 
 
@@ -279,7 +282,7 @@ class ATrcVar: public ATrcBase, public MDVarGet, public Func::Host
 	// From Elem
 	virtual TBool GetCont(string& aCont, const string& aName=string()) const; 
     protected:
-	virtual void Init(const string& aIfaceName) {};
+	virtual void Init(const string& aIfaceName);
 	virtual string GetInpUri(TInt aId) const;
 	/** @brief Gets value of MDVarGet MDtGet input */
 	template<typename T> bool DtGetInp(T& aData, const string& aInpName);
@@ -701,16 +704,14 @@ class ADesLauncher: public Elem, public MLauncher, public MAgent
 class AAdp: public Unit, public MAgent, public MDVarGet
 {
     public:
-	/** @brief Observer agent parameter access point
+	/** @brief Observer agent parameter access point, using Sdata
 	 * Acts as a binder of MDVarGet request to method of host
 	 * */
 	template <typename T> class AdpPap: public MDVarGet, public MDtGet<Sdata<T>> {
 	    public:
-		//template<typename P> using THandler = void (*)(Sdata<P>&);
 		template<typename P> using THandler = std::function<void (Sdata<P>&)>;
 	    public:
 		THandler<T> mHandler;
-		//void (*mHandler)(Sdata<T>&);
 	    public:
 		AdpPap(const AdpPap& aSrc): mHandler(aSrc.mHandler) {}
 		AdpPap(THandler<T> aHandler): mHandler(aHandler){}
@@ -719,6 +720,24 @@ class AAdp: public Unit, public MAgent, public MDVarGet
 		virtual string VarGetIfid() override {return string();}
 		// From MDtGet
 		virtual void DtGet(Sdata<T>& aData) override { mHandler(aData);}
+	};
+    public:
+	/** @brief Observer agent parameter access point, using generic data
+	 * Acts as a binder of MDVarGet request to method of host
+	 * */
+	template <typename T> class AdpPapB: public MDVarGet, public MDtGet<T> {
+	    public:
+		template<typename P> using THandler = std::function<void (P&)>;
+	    public:
+		THandler<T> mHandler;
+	    public:
+		AdpPapB(const AdpPapB& aSrc): mHandler(aSrc.mHandler) {}
+		AdpPapB(THandler<T> aHandler): mHandler(aHandler){}
+		// From MDVarGet
+		virtual void *DoGetDObj(const char *aName) override;
+		virtual string VarGetIfid() override {return string();}
+		// From MDtGet
+		virtual void DtGet(T& aData) override { mHandler(aData);}
 	};
 
     public:
@@ -774,13 +793,52 @@ class AMelemAdp : public AAdp
 	// From MUnit
 	virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
     protected:
-	void GetMutApplied(Sdata<string>& aData);
+	void GetMutApplied(DMut& aData);
     protected:
-	AdpPap<string> mApMutApl = AdpPap<string>([this](Sdata<string>& aData) {GetMutApplied(aData);}); /*<! Mut applied */
+	AdpPapB<DMut> mApMutApl = AdpPapB<DMut>([this](DMut& aData) {GetMutApplied(aData);}); /*<! Mut applied */
     protected:
 	MChromo* mMagChromo; /*<! Managed agent chromo */
 };
 
+/** @brief Agent functions "Mut composer" base
+ * */
+class ATrcMut: public ATrcBase, public MDVarGet, public MDtGet<DMut>
+{
+    public:
+	static const char* Type() { return "ATrcMut";};
+	static string PEType();
+	ATrcMut(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	virtual string GetInpUri(TInt aId) const = 0;
+	template<typename T> TBool GetInp(TInt aId, T& aRes);
+	// From Base
+	virtual MIface* DoGetObj(const char *aName);
+	// From MDVarGet
+	virtual string VarGetIfid();
+	virtual void *DoGetDObj(const char *aName);
+	// From MConnPoint
+	virtual TBool IsProvided(const string& aIfName) const override;
+	virtual string Provided() const override;
+    protected:
+	DMut mRes;  /*<! Cached result */
+};
+
+
+
+/** @brief Agent function "Mut Node composer"
+ * */
+class ATrcMutNode: public ATrcMut
+{
+    public:
+	enum { EInpName, EInpParent };
+    public:
+	static const char* Type() { return "ATrcMutNode";};
+	static string PEType();
+	ATrcMutNode(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From ATrcMut
+	virtual string GetInpUri(TInt aId) const override;
+	// From MDtGet
+	virtual void DtGet(DMut& aData) override;
+};
 
 
 #endif

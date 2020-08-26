@@ -419,7 +419,7 @@ void Ut_des::test_MunitAdp_1()
 {
     printf("\n === Test of MUnit DES adapter\n");
 
-    const string specn("ut_des_eadp_1");
+    const string specn("ut_des_uadp_1");
     string ext = "chs";
     string spec = specn + string(".") + "chs";
     string log = specn + "_" + ext + ".log";
@@ -492,7 +492,8 @@ void Ut_des::test_MelemAdp_1()
 {
     printf("\n === Test of MElem DES adapter\n");
 
-    const string specn("ut_des_eadp_1");
+    //const string specn("ut_des_eadp_1");
+    const string specn("ut_des_eadp_2");
     string ext = "chs";
     string spec = specn + string(".") + "chs";
     string log = specn + "_" + ext + ".log";
@@ -520,6 +521,7 @@ void Ut_des::test_MelemAdp_1()
     // Do some ticks
     const TInt ticksnum = 5;
     for (TInt cnt = 0; cnt < ticksnum; cnt++) {
+	cout << "Cnt: " << cnt << endl;
 	if (sync->IsActive()) {
 	    //iEnv->SetSBool(MEnv::ESb_EnIfTrace, ETrue);
 	    sync->Update();
@@ -537,7 +539,7 @@ void Ut_des::test_MelemAdp_1()
 	CPPUNIT_ASSERT_MESSAGE("Fail to get cmpCountGsi ", cmpCountGsi != NULL);
 	Sdata<int> cmpCountSi = 0;
 	cmpCountGsi->DtGet(cmpCountSi);
-	CPPUNIT_ASSERT_MESSAGE("Incorrect CompsCount value", cmpCountSi.mData == (2 + cnt));
+	CPPUNIT_ASSERT_MESSAGE("Incorrect CompsCount value", cmpCountSi.mData == (3 + cnt));
 	// Verify comp UID
 	MUnit* cmpUid = root->GetNode("./test/Controller/UnitAdp/CompUid");
 	CPPUNIT_ASSERT_MESSAGE("Fail to get adapters CompUid", cmpUid != NULL);

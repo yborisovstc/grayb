@@ -7,7 +7,10 @@
 #include <map>
 
 
-// Mutation spec
+/** Mutation spec
+ * Unified representation of mutation
+ * String representation format: <type>,<attr_name>:<attr_val> ...
+ * */
 class TMut
 {
     public:
@@ -28,7 +31,13 @@ class TMut
 	string Attr(TNodeAttr aId) const;
 	TBool AttrExists(TNodeAttr aId) const;
 	const TAttrs& Attrs() const { return mAttrs;};
+	void FromString(const string& aSrc);
+	string ToString() const { return *this;}
+	TBool IsValid() const { return mIsValid;}
 	operator string() const;
+	TBool operator ==(const TMut& a) const {
+	    return (!mIsValid && !a.mIsValid) || (mIsValid && a.mIsValid && (mType == a.mType) && (mAttrs == a.mAttrs));}
+	TBool operator!=(const TMut& a) const {return !this->operator==(a);}
     public:
 	static const string& NodeAttrName(TNodeAttr aAttr);
 	static const string& NodeTypeName(TNodeType aType);
@@ -43,6 +52,7 @@ class TMut
     private:
 	TNodeType mType;
 	TAttrs mAttrs;
+	TBool mIsValid;
 	static const char KSep = ',';
 	static const char KAttrSep = ':';
 	static const char KEsc = '\\';
