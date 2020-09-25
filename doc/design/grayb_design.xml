@@ -1429,7 +1429,7 @@
 		    <simpara>The problem is not really critical, there are solution (ref below), but with any solution it causes to chromo incompatibility.</simpara>
 		</sect4>
 		<sect4><title>Solution: Using names for pointing nodes</title>
-		    <simpara>Namespaces were introduced in the scope of chromo2, ref <xref ilnkend="ds_chr2_ns"/>. So it is effective mechanism of pointing to node
+		    <simpara>Namespaces were introduced in the scope of chromo2, ref <xref linkend="ds_chr2_ns"/>. So it is effective mechanism of pointing to node
 			if the node name can be resolved in the current context. The resolutin mechanism will automatically find the proper node. The problem could be 
 			in the case when the node is not in the namespace. But even in that case the root part of node URI can be name (note that this feature is not implemented
 			currently, the only sole name is supported but not the name in the root of URI))</simpara>
@@ -2489,7 +2489,7 @@
 	</sect2>
 	<sect2 id="ds_elem_iact_rdins"><title>Redesign proposal: improving notifications scheme</title>
 	    <sect3><title>Intro</title>
-		<simpara>There was the issue <xref linken="ds_i_dpe_wb"/> discovered after offhand redesign. We need to prepare the redesign of notifications
+		<simpara>There was the issue <xref linkend="ds_i_dpe_wb"/> discovered after offhand redesign. We need to prepare the redesign of notifications
 		    carefully.</simpara>
 		<simpara>The main aim of redesign is to avoid unnecesary propagation of notification. Also there is the design gap that notifications
 		    currently doesn't allow to disable unaccepted mutation, ref <xref linkend="ds_prfopt_pepe"/>.</simpara>
@@ -5033,7 +5033,7 @@
 			I couldnt find any solution for that. Trying to use google pprof instead, ref
 			<xref linkend="ds_prfopt_gpprof"/>.
 		    </listitem>
-		    <listitem>google pprof doesn't work for me, ref <xref linend="ds_prfopt_gpprof"/> log -
+		    <listitem>google pprof doesn't work for me, ref <xref linkend="ds_prfopt_gpprof"/> log -
 			I couldn't see any events. So returnign to gprof but for fap monitor statically linked to grayb lib.
 			Linker option for fapm is as:
 			<programlisting>
@@ -5546,7 +5546,7 @@
 
     <sect1 id="ds_uac"><title>Re-design approach: <xref linkend="gls_uac"/> - using Units as auxiliary components.</title>
 	<sect2><title>Intro</title>
-	    <simpara>There was re-desing approach <xref inkend="gls_pia"/> that allows reduce the number of agents when creating model. According
+	    <simpara>There was re-desing approach <xref linkend="gls_pia"/> that allows reduce the number of agents when creating model. According
 		to this model the agent shall not use auxiliary agents-components to distribute the functionality. For instance system agent
 		shall not use connection points agents.
 		Howewer this approach causes overcomplicating the agents. For instance system agent has to get responsibility for connecting (including 
@@ -5645,6 +5645,29 @@
 		    /testroot; Started of creating system, spec [ut_des_cre_statec.xml]
 		    /testroot; Completed of creating system, nodes: 12, imported: 0, time, us: 2397
 		</programlisting>
+	    </sect3>
+	</sect2>
+    </sect1>
+
+    <sect1 id="ds_ilt"><title>Optimization: introducing lower native types Node and Atom</title>
+	<sect2><title>Intro</title>
+	    <simpara>It gets clear from the practice that using Unit based inputs is superfluos. Indeed in many cases we don't need support
+		of content and even support of native hier. The example is the DES transition - the transition agent creates inputs natively, so
+		doesn't need native hier. Moreover the content of inputs (e.g. provided/required ifaces) can be hardcoded in most useful
+		case of DES based on Statec. So the effective solution is to introduce these simplified objects with the hierarchy Atom - Node - Unit.
+	    </simpara>
+	    <simpara>Here Atom is the simplest one not supporting neither native hier nor content, but supports iface resolution. To be more presice it
+		supports native hier relation to owner but cannot own by itself, i.e. it is the leaf in the native hier.
+		Node shall support native hier but not content. Needs to consider support simplified content, seems content is very primary feature.</simpara>
+	    <simpara>BTW, the interim solutin would be to introduce Atom independently, without embedding it to types hierarchy. This semms to be 
+		local impromvment. Transitions can use customized atoms for implementing inputs.</simpara>
+	</sect2>
+	<sect2><title>Questions.</title>
+	    <sect3><title>What about layer that doesn't support iface resolution.</title>
+		<simpara>Iface resoluion itself is resource consiming.</simpara>
+		<simpara>How this primitive type can be used? It can be just exposed some iface and be reached via native hier.</simpara>
+	    </sect3>
+	    <sect3><title>Can we use content created on demand?</title>
 	    </sect3>
 	</sect2>
     </sect1>
@@ -5944,6 +5967,9 @@
 	</sect2>
 	<sect2><title>Support of set of states</title>
 	    <simpara>Ref <xref linkend="ds_i_oss"/></simpara>
+	</sect2>
+	<sect2><title>Introducing lower native types Node and Atom</title>
+	    <simpara>Ref <xref linkend="ds_ilt"/></simpara>
 	</sect2>
     </sect1>
 

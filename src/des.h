@@ -110,6 +110,7 @@ class ATrVar: public ATrBase, public MDVarGet, public Func::Host
 	virtual void OnFuncContentChanged();
 	virtual void LogWrite(TLogRecCtg aCtg, const char* aFmt,...);
 	virtual Unit* GetAgent() override {return this;};
+	// TODO YB Not used actually. Remove ?
 	virtual TInt GetInpCpsCount() const {return 0;};
 	// From Elem
 	virtual TBool GetCont(string& aCont, const string& aName=string()) const; 
@@ -273,6 +274,7 @@ class ATrcVar: public ATrcBase, public MDVarGet, public Func::Host
 	// From MDVarGet
 	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
+	virtual string MDVarGet_Mid() const override {return GetUri(NULL, ETrue);}
 	// From Func::Host
 	virtual TIfRange GetInps(TInt aId, TBool aOpt = EFalse) override;
 	virtual void OnFuncContentChanged() override;
@@ -419,6 +421,37 @@ class ATrcNtosVar: public ATrcVar
 	virtual string GetInpUri(TInt aId) const override;
 	// From Func::Host
 	virtual TInt GetInpCpsCount() const override {return 1;}
+};
+
+/** @brief Agent function "Compare"
+ * */
+class ATrcCmpVar: public ATrcVar
+{
+    public:
+	static const char* Type() { return "ATrcCmpVar";};
+	static string PEType();
+	ATrcCmpVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	FCmpBase::TFType GetFType();
+	// From ATrVar
+	virtual void Init(const string& aIfaceName) override;
+	virtual string GetInpUri(TInt aId) const override;
+	// From Func::Host
+	virtual TInt GetInpCpsCount() const override {return 2;}
+};
+
+/** @brief Agent function "Switcher"
+ * */
+class ATrcSwitchBool: public ATrcVar
+{
+    public:
+	static const char* Type() { return "ATrcSwitchBool";};
+	static string PEType();
+	ATrcSwitchBool(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From ATrcVar
+	virtual void Init(const string& aIfaceName) override;
+	virtual string GetInpUri(TInt aId) const override;
+	// From MDVarGet
+	virtual void *DoGetDObj(const char *aName);
 };
 
 
@@ -815,6 +848,7 @@ class ATrcMut: public ATrcBase, public MDVarGet, public MDtGet<DMut>
 	// From MDVarGet
 	virtual string VarGetIfid();
 	virtual void *DoGetDObj(const char *aName);
+	virtual string MDVarGet_Mid() const override {return GetUri(NULL, ETrue);}
 	// From MConnPoint
 	virtual TBool IsProvided(const string& aIfName) const override;
 	virtual string Provided() const override;

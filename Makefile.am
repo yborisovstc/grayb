@@ -19,6 +19,7 @@ dist_modules_DATA = \
 	     modules/func.chs \
 	     modules/des.xml \
 	     modules/des.chs \
+	     modules/adp.chs \
 	     modules/vis.xml 
 
 
@@ -33,5 +34,6 @@ EXTRA_DIST = \
 	     modules/func.xml \
 	     modules/func.chs \
 	     modules/des.xml \
-	     modules/des.chs
+	     modules/des.chs \
+	     modules/adp.chs
 

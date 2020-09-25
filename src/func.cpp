@@ -3497,7 +3497,7 @@ string AFSwitchVar::GetInpUri(TInt aId) const
 Func* FSwitchBool::Create(Host* aHost, const string& aOutIid, const string& aInpIid)
 {
     Func* res = NULL;
-    if (aOutIid == MDVarGet::Type() && (aInpIid == MDBoolGet::Type() || aInpIid == MDtGet<Sdata<bool> >::Type())) {
+    if (aInpIid == MDBoolGet::Type() || aInpIid == MDtGet<Sdata<bool> >::Type()) {
 	res = new FSwitchBool(*aHost);
     }
     return res;
@@ -3569,6 +3569,70 @@ string FSwitchBool::GetInpExpType(TInt aId) const
     }
     return res;
 }
+
+
+
+// Selector
+
+Func* FSel::Create(Host* aHost, const string& aOutIid, const string& aInpIid)
+{
+    Func* res = NULL;
+    if (aOutIid == MDVarGet::Type()) {
+	res = new FSel(*aHost);
+    }
+    return res;
+}
+
+MIface *FSel::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    // There are two approach of commutation. The first one is to commutate MDVarGet iface, i.e.
+    // that switcher result is this iface of selected case. The second is that switcher 
+    // implements MDVarGet by itselt and does commutation in this iface methods.
+    // The first approach requires iface cache refresh any time the swithcher ctrl is changed.
+    // This is not what the cache is intended to and makes overhead. So let's select approach#2 for now.
+    if (strcmp(aName, MDVarGet::Type()) == 0) res = (MDVarGet*) this;
+    return res;
+}
+
+TInt FSel::GetCaseIdx() const
+{
+}
+
+MDVarGet* FSel::GetCase() const
+{
+    MDVarGet* res = NULL;
+    TBool case_idx = GetCaseIdx();
+    res = mHost.GetInp(case_idx);
+    return res;
+}
+
+string FSel::VarGetIfid()
+{
+    MDVarGet* cs = GetCase();
+    return cs->VarGetIfid();
+}
+
+void *FSel::DoGetDObj(const char *aName)
+{
+    MDVarGet* cs = GetCase();
+    return cs != NULL ? cs->DoGetDObj(aName) : NULL;
+}
+
+string FSel::GetInpExpType(TInt aId) const
+{
+    string res;
+    /*
+    if (aId == EInp_Sel) {
+	res = MDtGet<Sdata<bool> >::Type();
+    } else {
+	res = "<any>";
+    }
+    */
+    return res;
+}
+
+
 
 
 // Boolean negation

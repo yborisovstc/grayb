@@ -1171,6 +1171,123 @@ string ATrcNtosVar::GetInpUri(TInt aId) const
     else return string();
 }
 
+// Agent function "Switch var"
+
+string ATrcSwitchBool::PEType()
+{
+    return ATrcVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrcSwitchBool::ATrcSwitchBool(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcVar(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    AddInput("Sel");
+    AddInput("Inp1");
+    AddInput("Inp2");
+}
+
+void ATrcSwitchBool::Init(const string& aIfaceName)
+{
+    ATrcVar::Init(aIfaceName);
+    MDVarGet* inpCase = GetInp(FSwithcBase::EInp_Sel);
+    MDtGet<Sdata<TBool>>* inpCaseD = inpCase->GetDObj(inpCaseD);
+    MDVarGet* inp2 = GetInp(FSwithcBase::EInp_1);
+    void* inp2d = inp2->DoGetDObj(aIfaceName.c_str());
+    MDVarGet* inp3 = GetInp(FSwithcBase::EInp_1 + 1);
+    void* inp3d = inp3->DoGetDObj(aIfaceName.c_str());
+    if (inpCaseD && inp2d && inp3d) {
+	string t_case = inpCase->VarGetIfid();
+	mFunc = FSwitchBool::Create(this, aIfaceName, t_case);
+    }
+}
+
+string ATrcSwitchBool::GetInpUri(TInt aId) const 
+{
+    if (aId == FSwithcBase::EInp_Sel) return "Sel";
+    else if (aId > FSwithcBase::EInp_Sel) {
+	stringstream ss;
+	ss <<  "Inp" << (aId - FSwithcBase::EInp_Sel);
+	return ss.str();
+    }
+    else return string();
+}
+
+void *ATrcSwitchBool::DoGetDObj(const char *aName)
+{
+    void* res = NULL;
+    if (mFunc == NULL) {
+	Init(aName);
+	if (mFunc != NULL) {
+	    MDVarGet* fvg = mFunc->GetObj(fvg);
+	    res = fvg ? fvg->DoGetDObj(aName) : NULL;
+	}
+    } else {
+	MDVarGet* fvg = mFunc->GetObj(fvg);
+	res = fvg ? fvg->DoGetDObj(aName) : NULL;
+	if (res == NULL) {
+	    Init(aName);
+	    if (mFunc != NULL) {
+		MDVarGet* fvg = mFunc->GetObj(fvg);
+		res = fvg ? fvg->DoGetDObj(aName) : NULL;
+	    }
+	}
+    }
+    return res;
+}
+
+
+
+// Agent function "Compare"
+
+string ATrcCmpVar::PEType()
+{
+    return ATrcVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrcCmpVar::ATrcCmpVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcVar(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    AddInput("Inp");
+    AddInput("Inp2");
+}
+
+void ATrcCmpVar::Init(const string& aIfaceName)
+{
+    ATrcVar::Init(aIfaceName);
+    MDVarGet* inp1 = GetInp(Func::EInp1);
+    MDVarGet* inp2 = GetInp(Func::EInp2);
+    if (aIfaceName == MDtGet<Sdata<bool> >::Type() && inp1 != NULL && inp2 != NULL) {
+	string t1 = inp1->VarGetIfid();
+	string t2 = inp2->VarGetIfid();
+	FCmpBase::TFType ftype = GetFType();
+	if (mFunc = FCmp<Sdata<int> >::Create(this, t1, t2, ftype));
+	else if (mFunc = FCmp<Enum>::Create(this, t1, t2, ftype));
+    }
+}
+
+string ATrcCmpVar::GetInpUri(TInt aId) const 
+{
+    if (aId == Func::EInp1) return "Inp";
+    else if (aId == Func::EInp2) return "Inp2";
+    else return string();
+}
+
+FCmpBase::TFType ATrcCmpVar::GetFType()
+{
+    FCmpBase::TFType res = FCmpBase::EEq;
+    if (Name().find("_Lt") != string::npos) res = FCmpBase::ELt;
+    else if (Name().find("_Le") != string::npos) res = FCmpBase::ELe;
+    else if (Name().find("_Eq") != string::npos) res = FCmpBase::EEq;
+    else if (Name().find("_Gt") != string::npos) res = FCmpBase::EGt;
+    else if (Name().find("_Ge") != string::npos) res = FCmpBase::EGe;
+    else {
+	Logger()->Write(EErr, this, "Incorrect type of function [%s]", Name().c_str());
+    }
+    return res;
+}
+
+
+
 
 
 
@@ -2597,25 +2714,35 @@ void AMunitAdp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 
 void AMunitAdp::GetCompsCount(Sdata<TInt>& aData)
 {
-    aData.mData = mMag->CompsCount();
+    if (mMag) {
+	aData.mData = mMag->CompsCount();
+	aData.mValid = ETrue;
+    } else {
+	aData.mValid = EFalse;
+    }
 }
 
 void AMunitAdp::GetCompUid(Sdata<string>& aData)
 {
     TBool res = EFalse;
-    MUnit* inp = Host()->GetNode(K_CompIdxInpUri);
-    __ASSERT(inp != NULL);
-    TInt idx = 0;
-    res = GetData(inp, idx);
-    if (res) {
-	if (idx < mMag->CompsCount()) {
-	    MUnit* comp = mMag->GetComp(idx);
-	    aData.mData = comp->Uid();
+    if (mMag) {
+	MUnit* inp = Host()->GetNode(K_CompIdxInpUri);
+	__ASSERT(inp != NULL);
+	TInt idx = 0;
+	res = GetData(inp, idx);
+	if (res) {
+	    if (idx < mMag->CompsCount()) {
+		MUnit* comp = mMag->GetComp(idx);
+		aData.mData = comp->Uid();
+		aData.mValid = ETrue;
+	    } else {
+		Logger()->Write(EErr, this, "Comp index [%i] is out of range", idx);
+	    }
 	} else {
-	    Logger()->Write(EErr, this, "Comp index [%i] is out of range", idx);
+	    Logger()->Write(EErr, this, "Cannot get comp index");
 	}
     } else {
-	    Logger()->Write(EErr, this, "Cannot get comp index");
+	aData.mValid = EFalse;
     }
 }
 
@@ -2663,28 +2790,33 @@ void AMelemAdp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 
 void AMelemAdp::GetMutApplied(DMut& aData)
 {
-    TBool eres = EFalse;
-    MUnit* inpMut = Host()->GetNode(K_InpMUtpUri);
-    DMut dmut;
-    eres = GetGData(inpMut, dmut);
-    if (eres) {
-	MElem* mag = mMag->GetObj(mag);
-	TMut& mut = dmut.mData;
-	if (mag) {
-	    if (mut.IsValid() && mut.Type() != ENt_None && mut.Type() != ENt_Unknown) {
-		mag->AppendMutation(mut);
-		TNs ns; MutCtx mutctx(NULL, ns);
-		mag->Mutate(EFalse, EFalse, EFalse, mutctx);
-		aData = dmut;
-	    } else if (!mut.IsValid() || mut.Type() == ENt_Unknown) {
-		Logger()->Write(EErr, this, "Invalid mutation [%s]", mut.operator string().c_str());
+    if (mMag) {
+	TBool eres = EFalse;
+	MUnit* inpMut = Host()->GetNode(K_InpMUtpUri);
+	DMut dmut;
+	eres = GetGData(inpMut, dmut);
+	if (eres) {
+	    MElem* mag = mMag->GetObj(mag);
+	    TMut& mut = dmut.mData;
+	    if (mag) {
+		if (mut.IsValid() && mut.Type() != ENt_None && mut.Type() != ENt_Unknown) {
+		    mag->AppendMutation(mut);
+		    TNs ns; MutCtx mutctx(NULL, ns);
+		    mag->Mutate(EFalse, EFalse, EFalse, mutctx);
+		    aData = dmut;
+		    aData.mValid = ETrue;
+		} else if (!mut.IsValid() || mut.Type() == ENt_Unknown) {
+		    Logger()->Write(EErr, this, "Invalid mutation [%s]", mut.operator string().c_str());
+		}
+	    } else {
+		Logger()->Write(EErr, this, "Managed agent is not MElem");
 	    }
-	} else {
-	    Logger()->Write(EErr, this, "Managed agent is not MElem");
 	}
-    }
-    if (!eres) {
-	Logger()->Write(EErr, this, "Cannot get data from InpMut");
+	if (!eres) {
+	    Logger()->Write(EErr, this, "Cannot get data from InpMut");
+	}
+    } else {
+	aData.mValid = EFalse;
     }
 }
 

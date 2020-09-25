@@ -1031,14 +1031,14 @@ class FSwithcBase: public Func
 	FSwithcBase(Host& aHost): Func(aHost) {};
 };
 
-// 	Boolean case, selector should be of MDBoolGet or MDtGet<Sdata<bool> >
+// Boolean switcher, selector should be of MDBoolGet or MDtGet<Sdata<bool> >
 class FSwitchBool: public FSwithcBase, public MDVarGet
 {
     public:
 	static Func* Create(Func::Host* aHost, const string& aOutIid, const string& aInp1Id);
 	FSwitchBool(Func::Host& aHost): FSwithcBase(aHost) {};
 	virtual MIface *DoGetObj(const char *aName);
-	    virtual string IfaceGetId() const { return MDVarGet::Type();};
+	virtual string IfaceGetId() const { return MDVarGet::Type();};
 	MDVarGet* GetCase() const;
 	virtual string GetInpExpType(TInt aId) const;
 	// From MDVarGet
@@ -1046,6 +1046,30 @@ class FSwitchBool: public FSwithcBase, public MDVarGet
 	virtual void *DoGetDObj(const char *aName);
     private:
 	TBool GetCtrl() const;
+};
+
+/** @brief Selector
+ * There are number of data inputs where each input is enabled by
+ * corresponding enabler input of MDtGet<Sdata<bool> >
+ * Only one enabler can be true, otherwise error indicated
+ * Actually it is just compact version of sequence of boolean switcher
+ * !! NOT COMPLETED
+ * */
+class FSel: public Func, public MDVarGet
+{
+    public:
+	static Func* Create(Func::Host* aHost, const string& aOutIid, const string& aInp1Id);
+	FSel(Func::Host& aHost): Func(aHost) {};
+	virtual MIface *DoGetObj(const char *aName);
+	// From Func
+	virtual string IfaceGetId() const override { return MDVarGet::Type();};
+	virtual string GetInpExpType(TInt aId) const override;
+	MDVarGet* GetCase() const;
+	// From MDVarGet
+	virtual string VarGetIfid();
+	virtual void *DoGetDObj(const char *aName);
+    protected:
+	TInt GetCaseIdx() const;
 };
 
 // Boolean negation

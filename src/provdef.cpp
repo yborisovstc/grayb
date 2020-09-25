@@ -42,7 +42,7 @@ const ProvDef::TFReg ProvDef::mReg ( {
 	Item<ConnPointMcu>(), Item<AExtdu>(), Item<AExtduInp>(), Item<AExtduOut>(), Item<AState>(), Item<AStatec>(),
 	Item<CpStatecInp>(), Item<CpStatecOutp>(), Item<ATrcAddVar>(), Item<ATrcMplVar>(), Item<ATrcAndVar>(), Item<ATrcNegVar>(),
 	Item<ATrcMaxVar>(), Item<ATrcApndVar>(), Item<ATrcNtosVar>(), Item<AMunitAdp>(), Item<AMelemAdp>(), Item<ATrcMutNode>(),
-	Item<ADesLauncher>()
+	Item<ADesLauncher>(), Item<ATrcSwitchBool>(), Item<ATrcCmpVar>()
 	});
 
 

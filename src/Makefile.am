@@ -114,6 +114,7 @@ include_HEADERS = \
 		  edge.h \
 		  rdata.h \
 		  ifu.h \
+		  rmutdata.h \
 		  des.h \
 		  func.h \
 		  msyst.h \
