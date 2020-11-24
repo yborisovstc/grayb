@@ -330,29 +330,33 @@ MIface* IfcResolver::GetIfaceByUid(const string& aUid)
 
 /** System observer */
 
-void SystemObserver::SetObserver(MAgentObserver* aObserver)
+TBool SystemObserver::SetObserver(MAgentObserver* aObserver)
 {
     __ASSERT(aObserver != NULL);
+    TBool res = EFalse;
     TBool found = EFalse;
     for (auto observer : mObservers) {
 	if (observer == aObserver) {
 	    found = ETrue; break;
 	}
     }
-    __ASSERT(!found);
-    mObservers.push_back(aObserver);
+    if (!found) {
+	mObservers.push_back(aObserver);
+	res = ETrue;
+    }
+    return res;
 }
 
-void SystemObserver::UnsetObserver(MAgentObserver* aObserver)
+TBool SystemObserver::UnsetObserver(MAgentObserver* aObserver)
 {
     __ASSERT(aObserver != NULL);
-    TBool found = EFalse;
+    TBool res = EFalse;
     for (auto it = mObservers.begin(); it != mObservers.end(); it++) {
 	if (*it == aObserver) {
-	    mObservers.erase(it); found = ETrue; break;
+	    mObservers.erase(it); res = ETrue; break;
 	}
     }
-    __ASSERT(found);
+    return res;
 }
 
 

@@ -141,6 +141,7 @@ class MDVarGet: public MIface
 	static const char* Type() { return "MDVarGet";};
 	template <class T> T* GetDObj(T* aInst) { return aInst = static_cast<T*>(DoGetDObj(aInst->Type()));};
 	void* GetDObj(const char *aType) { return DoGetDObj(aType); };
+	// TODO YB To return MIface?
 	virtual void *DoGetDObj(const char *aName) { return NULL;};
 	// Get iface id. Is used for type negotiation from root to leafs
 	virtual string VarGetIfid() = 0;
@@ -215,10 +216,7 @@ template<class T> const string MDtSet<T>::mType = string(TypeBase()) + "_" + T::
 
 // TODO [YB] Obsolete, replaced ty MMtrGet, to remove
 // Vector
-//typedef std::vector<float> VFloat;
 template<class T> struct Vect: public std::vector<T> { };
-//typedef std::vector<class T> Vect;
-//template<class T> struct Vect { typedef std::vector<T> Type; };
 
 template <class T> class MVectGet: public MIfaceStub
 {
@@ -261,5 +259,19 @@ class MBdVarHost
 	virtual string GetDvarUid(const MDVar* aComp) const { return "BdVar";}
 };
 
+template <typename T>
+class MVectorGet : public MIface
+{
+    public:
+	static const char* Type();
+    public: 
+	virtual int Size() const = 0;
+	virtual TBool GetElem(int aInd, T& aElem) const = 0;
+	virtual string MVectorGet_Mid() const = 0;
+	virtual MIface* MVectorGet_Call(const string& aSpec, string& aRes) = 0;
+	// From MIface
+	MIface* Call(const string& aSpec, string& aRes) override {return MVectorGet_Call(aSpec, aRes);}
+	string Mid() const override { return MVectorGet_Mid();}
+};
 
 #endif

@@ -13,36 +13,50 @@
 
 using namespace std;
 
-class Base;
+
+/** @brief Data base interface
+ * */
+class MDtBase
+{
+    public:
+	static const char* Type() { return "MDtBase";};
+    public:
+	virtual void ToString(string& aString) const = 0;
+	virtual TBool FromString(const string& aString) = 0;
+	virtual TBool IsValid() const { return EFalse;}
+	virtual TBool operator==(const MDtBase& b) {return EFalse;}
+	TBool operator!=(const MDtBase& b) {return !this->operator==(b);};
+    public:
+	virtual string GetTypeSig() const { return "?";};
+	virtual void DataToString(stringstream& aStream) const {aStream << "?";};
+	virtual TBool DataFromString(istringstream& aStream, TBool& aRes) {};
+	virtual TBool IsCompatible(const MDtBase& b) {return ETrue;};
+    public:
+	static const char mKTypeToDataSep;
+};
+
 
 // Scalar data
 
-class DtBase 
+class DtBase : public MDtBase
 {
     public:
 	DtBase(): mValid(EFalse) {};
 	DtBase(const DtBase& d): mValid(d.mValid), mSigTypeOK(EFalse) {};
 	virtual ~DtBase();
+	string ToString() const { string res; ToString(res); return res; }
 	static int ParseSigPars(const string& aCont, string& aSig);
 	static TBool IsSrepFit(const string& aString, const string& aTypeSig);
 	static TBool IsDataFit(const DtBase& aData, const string& aTypeSig);
-	//TBool Set(const DtBase& d) { return mValid != d.mValid, mValid = d.mValid; };
-	virtual void ToString(string& aString) const;
-	string ToString() const;
-	TBool FromString(const string& aString);
-	DtBase& operator=(const DtBase& b) { mValid = b.mValid; mSigTypeOK = EFalse; return *this;};
-	virtual TBool operator==(const DtBase& b) { return mValid == b.mValid;};
-	TBool operator!=(const DtBase& b) {return !this->operator==(b);};
+	virtual void ToString(string& aString) const override;
+	virtual TBool FromString(const string& aString) override;
+	virtual TBool operator==(const MDtBase& b) override { return mValid == b.IsValid();};
+	virtual TBool IsValid() const override { return mValid;}
     public:
-	virtual string GetTypeSig() const { return "?";};
-	virtual void DataToString(stringstream& aStream) const {aStream << "?";};
-	virtual TBool DataFromString(istringstream& aStream, TBool& aRes) {};
-	virtual DtBase* Clone() {return NULL;};
-	virtual TBool IsCompatible(const DtBase& b) {return ETrue;};
+	virtual DtBase* Clone() {return NULL;}
 	virtual void SetMplncArg1Hint(const DtBase& res, const DtBase& arg2) {};
 	virtual void SetMplncArg2Hint(const DtBase& res, const DtBase& arg1) {};
     public:
-	static char mKTypeToDataSep;
 	TBool mValid;
 	// Invalidity reason: sigtype is invalis
 	TBool mSigTypeOK;
@@ -64,7 +78,7 @@ template<class T> class Sdata: public DtBase
 	virtual void DataToString(stringstream& aStream) const override { aStream << std::boolalpha << mData;};
 	virtual TBool DataFromString(istringstream& aStream, TBool& aRes) override;
 	virtual DtBase* Clone() {return new Sdata<T>(*this);};
-	virtual TBool operator==(const DtBase& sb)
+	virtual TBool operator==(const MDtBase& sb) override
 	{ const Sdata<T>& b = dynamic_cast<const Sdata<T>& >(sb); return &b != NULL && DtBase::operator==(b) && mData == b.mData;};
 	TBool operator>(const Sdata<T>& b) const { return mData > b.mData;};
 	TBool operator>=(const Sdata<T>& b) const { return mData >= b.mData;};
@@ -99,7 +113,6 @@ template<class T> TBool Sdata<T>::DataFromString(istringstream& aStream, TBool& 
 
 
 
-
 // Matrix
 // Operations required the result to provide the hints: type or dim required values.
 // If there is no hint for particular par, the par can be redifined by the operaton
@@ -118,6 +131,7 @@ class MtrBase: public DtBase
 	typedef pair<int, int> TMtrDim;
     public: 
 	MtrBase(): DtBase(), mType(EMt_Unknown), mDim(TMtrDim(0, 0)) {};
+	MtrBase(TMtrType aType, TMtrDim aDim): DtBase(), mType(aType), mDim(aDim) {};
 	MtrBase(const MtrBase& aMtr): DtBase(aMtr), mType(aMtr.mType), mDim(aMtr.mDim) {};
 	virtual void ToString(string& aString) const;
 	TBool FromString(const string& aString);
@@ -152,6 +166,7 @@ template<class T> class Mtr: public MtrBase
 { 
     public:
 	Mtr(): MtrBase() {};
+	Mtr(TMtrType aType, TMtrDim aDim): MtrBase(aType, aDim) {};
 	Mtr(const Mtr<T>& aMtr): MtrBase(aMtr), mData(aMtr.mData) {};
 	template <class TA> Mtr(const Mtr<TA>& aMtr);
 	static const char* TypeSig();
@@ -159,7 +174,7 @@ template<class T> class Mtr: public MtrBase
 	static TBool IsDataFit(const Mtr<T>& aData) { return MtrBase::IsDataFit(aData, TypeSig());};
 	T GetElem(int r, int c) const { int i = Ind(r,c); return (i == -1) ? T(0) : mData.at(i);};
 	T& Elem(int r, int c) { int i = Ind(r,c); __ASSERT(i >= 0 && i < mData.size()); return mData.at(i);};
-	virtual TBool operator==(const DtBase& sb) { 
+	virtual TBool operator==(const MDtBase& sb) override { 
 	    const Mtr<T>& b = dynamic_cast<const Mtr<T>& >(sb); return &b != NULL && DtBase::operator==(b) &&
 		this->mType == b.mType && this->mDim == b.mDim && this->mData == b.mData;};
 	//TBool operator==(const Mtr<T>& b) { 
@@ -271,7 +286,7 @@ class NTuple: public DtBase
 	virtual void ToString(string& aString) const;
 	TBool FromString(const string& aString);
 	DtBase* GetElem(const string& aName);
-	virtual TBool operator==(const DtBase& sb);
+	virtual TBool operator==(const MDtBase& sb) override;
 	NTuple& operator=(const NTuple& b);
 	//TBool operator==(const NTuple& b);
 	//TBool operator!=(const NTuple& b) {return !this->operator==(b);};
@@ -309,7 +324,7 @@ class Enum: public DtBase
 	virtual void DataToString(stringstream& aStream) const;
 	virtual TBool IsCompatible(const DtBase& b);
     public:
-	virtual TBool operator==(const DtBase& sb);
+	virtual TBool operator==(const MDtBase& sb) override;
 	TBool operator>(const Enum& b) const { return mData > b.mData;};
 	TBool operator>=(const Enum& b) const { return mData >= b.mData;};
 	TBool operator<(const Enum& b) const { return mData < b.mData;};
@@ -320,6 +335,66 @@ class Enum: public DtBase
     public:
 	tSet mSet;
 	TInt mData;
+};
+
+
+/** @brief Vector base
+ * */
+class VectorBase : public DtBase
+{
+    public:
+	VectorBase(): DtBase() {};
+	VectorBase(TInt aSize): DtBase() {};
+	VectorBase(const VectorBase& aSrc): DtBase(aSrc) {};
+	virtual void ElemToString(TInt aInd, stringstream& aStream) const { aStream << "?";};
+	virtual TBool ElemFromString(TInt aIdx, istringstream& aStream, TBool& aRes) { return EFalse;}
+	virtual TInt Size() const { return -1;}
+	// From DtBase
+	virtual void DataToString(stringstream& aStream) const override;
+	virtual TBool DataFromString(istringstream& aStream, TBool& aRes);
+	virtual TBool IsCompatible(const MDtBase& b) override;
+};
+
+/** @brief Typed vector
+ * */
+template <typename T>
+class Vector : public VectorBase
+{
+    public:
+	Vector(): VectorBase() {}
+	Vector(TInt aSize): VectorBase(aSize) {}
+	Vector(const Vector& aSrc): VectorBase(aSrc) {}
+	static const char* TypeSig();
+	static TBool IsSrepFit(const string& aString) { return DtBase::IsSrepFit(aString, TypeSig());};
+	static TBool IsDataFit(const Vector<T>& aData) { return DtBase::IsDataFit(aData, TypeSig());};
+	// From VectorBase
+	virtual TInt Size() const override { return mData.size();}
+	virtual void ElemToString(TInt aIdx, stringstream& aStream) const override { aStream << mData.at(aIdx);}
+	virtual TBool ElemFromString(TInt aIdx, istringstream& aStream, TBool& aRes) override {
+	    __ASSERT(aIdx <= mData.size());
+	    T data; aStream >> data; TBool res = aIdx >= mData.size() || mData.at(aIdx) != data; 
+	    if (aIdx < mData.size())
+		mData.at(aIdx) = data;
+	    else 
+		mData.push_back(data);
+	    aRes = ETrue;
+	}
+	virtual TBool operator==(const MDtBase& b) override {
+	    if (!IsCompatible(b)) return false;
+	    const Vector<T>* vb = dynamic_cast<const Vector<T>*>(&b);
+	    if (!vb) return false;
+    	    return this->mData == vb->mData; }
+	// From MDtBase
+	virtual string GetTypeSig() const { return TypeSig();};
+	virtual DtBase* Clone() {return new Vector<T>(*this);};
+	// Local
+	virtual TBool GetElem(int aInd, T& aElem) const {
+	    TBool res = ETrue;
+	    if (aInd < Size()) aElem = mData.at(aInd);
+	    else res = EFalse;
+	    return res; }
+    protected:
+	vector<T> mData;
 };
 
 #endif

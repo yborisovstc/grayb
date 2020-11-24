@@ -3205,6 +3205,7 @@ void AFAtVar::Init(const string& aIfaceName)
 	if ((mFunc = FAtMVect<float>::Create(this, aIfaceName, t1)) != NULL);
 	else if ((mFunc = FAtMVect<int>::Create(this, aIfaceName, t1)) != NULL);
 	else if ((mFunc = FAtNTuple::Create(this, t1, tind)) != NULL);
+	else if ((mFunc = FAtVect<string>::Create(this, aIfaceName, t1)) != NULL);
 	else {
 	    LogWrite(EErr, "Init error, outp_iface [%s], inp_iface", aIfaceName.c_str(), t1.c_str());
 	}
@@ -3297,6 +3298,79 @@ template <class T> string FAtMVect<T>::GetInpExpType(TInt aId) const
     }
     return res;
 }
+
+
+// Getting component of container: vector
+template <class T> Func* FAtVect<T>::Create(Host* aHost, const string& aOutIid, const string& aInpIid)
+{
+    Func* res = NULL;
+    if (!aOutIid.empty()) {
+	if (aOutIid == MDtGet<Sdata<T>>::Type() && aInpIid == MDtGet<Vector<T>>::Type()) {
+	    res = new FAtVect<T>(*aHost);
+	}
+    } else {
+	// Weak negotiation - just base on input type
+	if (aInpIid == MDtGet<Vector<T>>::Type()) {
+	    res = new FAtVect<T>(*aHost);
+	}
+    }
+    return res;
+}
+
+template <class T> MIface *FAtVect<T>::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MDtGet<Sdata<T>>::Type()) == 0) res = (MDtGet<Sdata<T>>*) this;
+    return res;
+}
+
+template <class T> void FAtVect<T>::DtGet(Sdata<T>& aData)
+{
+    TBool res = ETrue;
+    MDVarGet* dget = mHost.GetInp(EInp1);
+    MDtGet<Vector<T>>* dfget = dget->GetDObj(dfget);
+    dget = mHost.GetInp(EInp2);
+    MDtGet<Sdata<int>>* diget = dget->GetDObj(diget);
+    if (dfget != NULL && diget != NULL) {
+	Vector<T> arg;
+	dfget->DtGet(arg);
+	Sdata<int> ind;
+	diget->DtGet(ind);
+	if (arg.mValid && ind.mValid ) {
+	    if (ind.mData < arg.Size()) {
+		aData.mValid = arg.GetElem(ind.mData, aData.mData);
+	    } else {
+		mHost.LogWrite(EErr, "Index is exceeded");
+		res = EFalse;
+	    }
+	} else {
+	    mHost.LogWrite(EErr, "Incorrect argument");
+	    res = EFalse;
+	}
+    } else {
+	mHost.LogWrite(EErr, "Non-matrix argument");
+	res = EFalse;
+    }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
+}
+
+template <class T> string FAtVect<T>::GetInpExpType(TInt aId) const
+{
+    string res;
+    if (aId == EInp1) {
+	res = MDtGet<Vector<T>>::Type();
+    } else if (aId == EInp2) {
+	res = MDtGet<Sdata<int>>::Type();
+    }
+    return res;
+}
+
+
+
 
 
 // 	Getting component of container: named tuple 

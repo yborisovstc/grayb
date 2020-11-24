@@ -100,8 +100,8 @@ class SystemObserver: public MAgentObserver
 {
     public:
 	SystemObserver(Env& aHost): mHost(aHost) {}
-	void SetObserver(MAgentObserver* aObserver);
-	void UnsetObserver(MAgentObserver* aObserver);
+	TBool SetObserver(MAgentObserver* aObserver);
+	TBool UnsetObserver(MAgentObserver* aObserver);
 	// From MAgentObserver
 	virtual void OnCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse) override;
 	virtual void OnCompAdding(const MUnit* aComp, TBool aModif = EFalse) override;
@@ -154,8 +154,8 @@ class Env: public Base, public MEnv
     virtual TBool RunSystem() override;
     virtual TBool StopSystem() override;
     virtual void OnRootDeleted();
-    virtual void SetObserver(MAgentObserver* aObserver) override { mObserver->SetObserver(aObserver);}
-    virtual void UnsetObserver(MAgentObserver* aObserver) override { mObserver->UnsetObserver(aObserver);}
+    virtual TBool SetObserver(MAgentObserver* aObserver) override { return mObserver->SetObserver(aObserver);}
+    virtual TBool UnsetObserver(MAgentObserver* aObserver) override { return mObserver->UnsetObserver(aObserver);}
     // From MIface
     virtual MIface* Call(const string& aSpec, string& aRes);
     string Mid() const override { return string();}

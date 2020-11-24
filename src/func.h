@@ -950,6 +950,23 @@ template <class T> class FAtMVect: public FAtBase, public MDtGet<Sdata<T> > {
 	Sdata<T> mRes;
 };
 
+/** @briefGetting component of container: Vector
+ * */
+template <class T>
+class FAtVect: public FAtBase, public MDtGet<Sdata<T>> {
+    public:
+	static Func* Create(Host* aHost, const string& aOutIid, const string& aInp1Id);
+	FAtVect(Host& aHost): FAtBase(aHost) {};
+	virtual MIface *DoGetObj(const char *aName);
+	virtual string IfaceGetId() const { return MDtGet<Sdata<T>>::Type();};
+	virtual void DtGet(Sdata<T>& aData);
+	virtual void GetResult(string& aResult) const {mRes.ToString(aResult);};
+	virtual string GetInpExpType(TInt aId) const;
+    protected:
+	Sdata<T> mRes;
+};
+
+
 // 	Getting component of container: named tuple
 class FAtNTuple: public FAtBase  {
     public:

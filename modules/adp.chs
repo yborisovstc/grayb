@@ -13,6 +13,9 @@ AdpComps : Elem
         CompUid < Value = "SS _";
         CompUid/Inp ~ AdpCp;
         InpCompIdx : CpStatecInp;
+        CompNames : ConnPointMcu;
+	CompNames - Required = MDesInpObserver;
+	CompNames - Provided = MVectorGet;
     }
     MelemAdp : /*/Modules/DesComps/Des
     {

@@ -8,6 +8,9 @@ const char KSigParsToDataSep = ' ';
 const char KSigToParsSep = ',';
 const char KParsSep = ',';
 
+
+const char MDtBase::mKTypeToDataSep = KSigParsToDataSep;
+
 // Scalar data
 template<> const char* Sdata<int>::TypeSig() { return  "SI";};
 template<> const char* Sdata<float>::TypeSig() { return  "SF";};
@@ -24,17 +27,16 @@ DtBase::~DtBase()
 {
 }
 
-char DtBase::mKTypeToDataSep = KSigParsToDataSep;
 
 int DtBase::ParseSigPars(const string& aCont, string& aSig)
 {
     size_t res = string::npos;
     if (!aCont.empty()) {
 	int beg = 0;
-	int sigp_e = aCont.find_first_of(' ');
+	int sigp_e = aCont.find_first_of(KSigParsToDataSep);
 	res = sigp_e;
 	string sigp = aCont.substr(beg, sigp_e);
-	int sig_e = sigp.find_first_of(',');
+	int sig_e = sigp.find_first_of(KParsSep);
 	aSig = sigp.substr(0, sig_e);
     }
     return res;
@@ -50,11 +52,6 @@ TBool DtBase::IsSrepFit(const string& aString, const string& aTypeSig)
 TBool DtBase::IsDataFit(const DtBase& aData, const string& aTypeSig)
 {
     return  aData.mValid && aData.GetTypeSig() == aTypeSig;
-}
-
-string DtBase::ToString() const
-{
-    string res; ToString(res); return res;
 }
 
 void DtBase::ToString(string& aString) const
@@ -616,7 +613,7 @@ DtBase* NTuple::GetElem(const string& aName)
     return res;
 }
 
-TBool NTuple::operator==(const DtBase& sb) 
+TBool NTuple::operator==(const MDtBase& sb)
 { 
     const NTuple& b = dynamic_cast<const NTuple&>(sb);
     TBool res = ETrue;
@@ -832,8 +829,51 @@ TBool Enum::IsCompatible(const DtBase& sb)
     return res;
 }
 
-TBool Enum::operator==(const DtBase& sb)
+TBool Enum::operator==(const MDtBase& sb)
 { 
     const Enum& b = dynamic_cast<const Enum& >(sb); 
     return &b != NULL && DtBase::operator==(b)  && mData == b.mData;
 };
+
+// Vector base
+
+void VectorBase::DataToString(stringstream& aStream) const
+{
+    for (TInt idx = 0; idx < Size(); idx++) {
+	ElemToString(idx, aStream);
+	aStream << KDataSep;
+    }
+}
+
+TBool VectorBase::DataFromString(istringstream& aStream, TBool& aRes)
+{
+    bool res = true;
+    bool changed = false;
+    string ss = aStream.str();
+    if (!ss.empty()) {
+	int beg = 0;
+	int elem_e = ss.find_first_of(KDataSep);
+	TInt idx = 0;
+	do {
+	    string elems = ss.substr(beg, elem_e);
+	    istringstream ess(elems);
+	    changed |= ElemFromString(idx++, ess, res);
+	    beg = elem_e == string::npos ? string::npos : elem_e + 1;
+	} while (res && beg != string::npos);
+    }
+    aRes = res;
+    return changed;
+}
+
+TBool VectorBase::IsCompatible(const MDtBase& sb)
+{
+    const VectorBase& b = dynamic_cast<const VectorBase& >(sb); 
+    TBool res = b.mValid && b.GetTypeSig() == GetTypeSig();
+    return res;
+}
+
+// Vector
+
+
+template<> const char* Vector<string>::TypeSig() { return  "VS";};
+

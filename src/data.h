@@ -172,7 +172,7 @@ template <class T> class HData: public HBase, public MDataGet<T> {
 	HData(DHost* aHost);
 	static HBase* Create(DHost* aHost, const string& aString, MDVarGet* aInp = NULL);
 	virtual MIface *DoGetObj(const char *aName);
-	virtual string IfaceGetId() const { return MVectGet<T>::Type();};
+	virtual string IfaceGetId() const { return MDataGet<T>::Type();};
 	virtual string IfaceSGetId() const { return string();}
 	// From MDataGet
 	virtual void DataGet(T& aData);
@@ -184,6 +184,7 @@ template <class T> class HData: public HBase, public MDataGet<T> {
 	static string mId;
 };
 
+// TODO YB Seems to be obsolete. Remove.
 template <class T> class HVect: public HBase, public MVectGet<T> {
     public:
 	HVect(DHost* aHost);
@@ -240,7 +241,9 @@ template <class T> class HMtr: public HBase, public MMtrGet<T> {
 	Mtr<T> mData;
 };
 
-// Generic data
+/** @brief Generic data
+ * @tparam  T Underlying data type, DtBase inherited 
+ * */
 template <class T> class HDt: public HBase, public MDtGet<T>, public MDtSet<T> {
     public:
 	HDt(DHost* aHost, const string& aCont);

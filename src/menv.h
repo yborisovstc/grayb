@@ -100,8 +100,8 @@ class MAgentObserver;
 	    virtual TBool StopSystem() = 0;
 	    // Notification of root deleted, ref ds_daa_rdo
 	    virtual void OnRootDeleted() = 0;
-	    virtual void SetObserver(MAgentObserver* aObserver) = 0;
-	    virtual void UnsetObserver(MAgentObserver* aObserver) = 0;
+	    virtual TBool SetObserver(MAgentObserver* aObserver) = 0;
+	    virtual TBool UnsetObserver(MAgentObserver* aObserver) = 0;
 	public:
 	    // From MIface
 	    virtual MIface* Call(const string& aSpec, string& aRes) = 0;

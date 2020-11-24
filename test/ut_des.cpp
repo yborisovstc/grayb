@@ -28,6 +28,7 @@ class Ut_des : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_MelemAdp_1);
     */
     CPPUNIT_TEST(test_Tr_Switch_1);
+    CPPUNIT_TEST(test_Tr_Vect_1);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -44,6 +45,7 @@ private:
     void test_MunitAdp_1();
     void test_MelemAdp_1();
     void test_Tr_Switch_1();
+    void test_Tr_Vect_1();
 private:
     Env* iEnv;
 };
@@ -625,6 +627,48 @@ void Ut_des::test_Tr_Switch_1()
 	MUnit* tagCmp = tag->GetComp(cnt);
 	if (tagCmp) {
 	    CPPUNIT_ASSERT_MESSAGE("Incorrect CompUid", cmpUidSi.mData == tagCmp->Uid());
+	}
+    }
+
+    delete iEnv;
+}
+
+/** @brief MElem DES transition test: comp of vector
+ * */
+void Ut_des::test_Tr_Vect_1()
+{
+    printf("\n === Test of Vector state and trans\n");
+
+    const string specn("ut_des_tr_vect_1");
+    string ext = "chs";
+    string spec = specn + string(".") + "chs";
+    string log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root->GetObj(eroot);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
+
+   // Sync the state
+    MUnit* esync = root->GetNode("./test");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != NULL);
+    MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != NULL);
+
+    // Do some ticks
+    const TInt ticksnum = 2;
+    for (TInt cnt = 0; cnt < ticksnum; cnt++) {
+	cout << "Cnt: " << cnt << endl;
+	if (sync->IsActive()) {
+	    //iEnv->SetSBool(MEnv::ESb_EnIfTrace, ETrue);
+	    sync->Update();
+	    //iEnv->SetSBool(MEnv::ESb_EnIfTrace, EFalse);
+	}
+	if (sync->IsUpdated()) {
+	    sync->Confirm();
 	}
     }
 

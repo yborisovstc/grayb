@@ -570,8 +570,8 @@ void ATrAtVar::Init(const string& aIfaceName)
     MDVarGet* inp = GetInp(Func::EInp1);
     if (inp_ind != NULL && inp != NULL) {
 	 string t_inp = inp->VarGetIfid();
-	//if ((mFunc = FAtVect<float>::Create(this, aIfaceName, t_inp)) != NULL);
 	if ((mFunc = FAtMVect<float>::Create(this, aIfaceName, t_inp)) != NULL);
+	else if ((mFunc = FAtVect<string>::Create(this, aIfaceName, t_inp)) != NULL);
     }
 }
 
@@ -1285,6 +1285,44 @@ FCmpBase::TFType ATrcCmpVar::GetFType()
     }
     return res;
 }
+
+
+// Agent function "Get component"
+
+string ATrcAtVar::PEType()
+{
+    return ATrcVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrcAtVar::ATrcAtVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcVar(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    AddInput("Inp");
+    AddInput("Idx");
+}
+
+void ATrcAtVar::Init(const string& aIfaceName)
+{ 
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc = NULL;
+     }
+    MDVarGet* inp_ind = GetInp(Func::EInp2);
+    MDVarGet* inp = GetInp(Func::EInp1);
+    if (inp_ind != NULL && inp != NULL) {
+	 string t_inp = inp->VarGetIfid();
+	if ((mFunc = FAtMVect<float>::Create(this, aIfaceName, t_inp)) != NULL);
+	//else if ((mFunc = FAtVect<string>::Create(this, aIfaceName, t_inp)) != NULL);
+    }
+}
+
+string ATrcAtVar::GetInpUri(TInt aId) const 
+{
+    if (aId == Func::EInp1) return "Inp";
+    else if (aId == Func::EInp2) return "Idx";
+    else return string();
+}
+
 
 
 
@@ -2570,6 +2608,11 @@ AAdp::AAdp(const string& aName, MUnit* aMan, MEnv* aEnv): Unit(aName, aMan, aEnv
     InsertContent(KCont_AgentUri);
 }
 
+AAdp::~AAdp()
+{
+    iEnv->UnsetObserver(&mMagObs);
+}
+
 MIface* AAdp::MAgent_DoGetIface(const string& aName)
 {
     MIface* res = NULL;
@@ -2586,8 +2629,9 @@ TEhr AAdp::ProcessCompChanged(const MUnit* aComp, const string& aContName)
 	mMag = GetNode(val);
 	if (mMag) {
 	    res = EEHR_Accepted;
+	    iEnv->SetObserver(&mMagObs);
 	    // Notify states of update
-		NotifyInpsUpdated();
+	    NotifyInpsUpdated();
 	}  else {
 	    Logger()->Write(EErr, this, "[%s] Error on applying content [%s]", GetUri(NULL, true).c_str(), aContName.c_str());
 	    res = EEHR_Denied;
@@ -2635,6 +2679,34 @@ template <typename T> TBool AAdp::GetData(MUnit* aDvget, T& aData)
 	}
     }
     return res;
+}
+
+void AAdp::OnMagCompDeleting(const MUnit* aComp, TBool aSoft, TBool aModif)
+{
+}
+
+void AAdp::OnMagCompAdding(const MUnit* aComp, TBool aModif)
+{
+}
+
+TBool AAdp::OnMagCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
+{
+}
+
+TBool AAdp::OnMagChanged(const MUnit* aComp)
+{
+}
+
+TBool AAdp::OnMagCompRenamed(const MUnit* aComp, const string& aOldName)
+{
+}
+
+void AAdp::OnMagCompMutated(const MUnit* aNode)
+{
+}
+
+void AAdp::OnMagError(const MUnit* aComp)
+{
 }
 
 
@@ -2707,6 +2779,14 @@ void AMunitAdp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 	    MIface* iface = dynamic_cast<MDVarGet*>(&mApCmpUid);
 	    InsertIfCache(aName, aCtx, cmpUid, iface);
 	}
+	/*
+    } else if (aName == MVectorGet<string>::Type()) {
+	MUnit* cmpNames = Host()->GetNode("./CompNames");
+	if (ctx.IsInContext(cmpNames)) {
+	    MIface* iface = dynamic_cast<MDVarGet*>(&mApCmpNames);
+	    InsertIfCache(aName, aCtx, cmpNames, iface);
+	}
+	*/
     } else  {
 	Unit::UpdateIfi(aName, aCtx);
     }
@@ -2746,6 +2826,9 @@ void AMunitAdp::GetCompUid(Sdata<string>& aData)
     }
 }
 
+//void AMunitAdp::GetCompNames(Sdata<TCmpNames>& aData)
+//{
+//}
 
 
 // MUnit DES adapter

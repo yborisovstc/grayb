@@ -21,8 +21,8 @@ class DMut: public DtBase
 	virtual string GetTypeSig() const override { return TypeSig();};
 	virtual TBool DataFromString(istringstream& aStream, TBool& aRes) override;
 	virtual void DataToString(stringstream& aStream) const override;
-	virtual TBool operator==(const DtBase& b) override {
-	    return mValid && b.mValid && (mData == dynamic_cast<const DMut&>(b).mData);}
+	virtual TBool operator==(const MDtBase& b) override {
+	    return this->DtBase::operator==(b) && (mData == dynamic_cast<const DMut&>(b).mData);}
 	//virtual TBool IsCompatible(const DtBase& aSrc) override;
     public:
 	TMut mData;

@@ -454,6 +454,21 @@ class ATrcSwitchBool: public ATrcVar
 	virtual void *DoGetDObj(const char *aName);
 };
 
+/** @brief Agent function "Getting component"
+ * */
+class ATrcAtVar: public ATrcVar
+{
+    public:
+	static const char* Type() { return "ATrcAtVar";};
+	static string PEType();
+	ATrcAtVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName) override;
+	virtual string GetInpUri(TInt aId) const override;
+	// From Func::Host
+	virtual TInt GetInpCpsCount() const override {return 2;}
+};
+
 
 
 
@@ -755,7 +770,7 @@ class AAdp: public Unit, public MAgent, public MDVarGet
 		virtual void DtGet(Sdata<T>& aData) override { mHandler(aData);}
 	};
     public:
-	/** @brief Observer agent parameter access point, using generic data
+	/** @brief Managed agent parameter access point, using generic data
 	 * Acts as a binder of MDVarGet request to method of host
 	 * */
 	template <typename T> class AdpPapB: public MDVarGet, public MDtGet<T> {
@@ -773,10 +788,34 @@ class AAdp: public Unit, public MAgent, public MDVarGet
 		virtual void DtGet(T& aData) override { mHandler(aData);}
 	};
 
+	/** @brief Managed agent observer
+	 * */
+	class AdpMagObs : public MAgentObserver {
+	    public:
+		AdpMagObs(AAdp* aHost): mHost(aHost) {}
+		// From MAgentObserver
+		virtual void OnCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse) override {
+		    mHost->OnMagCompDeleting(aComp, aSoft, aModif);}
+		virtual void OnCompAdding(const MUnit* aComp, TBool aModif = EFalse) override {
+		    mHost->OnMagCompAdding(aComp, aModif);}
+		virtual TBool OnCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse) override {
+		    return mHost->OnMagCompChanged(aComp, aContName, aModif);}
+		virtual TBool OnChanged(const MUnit* aComp) override { return mHost->OnMagChanged(aComp); }
+		virtual TBool OnCompRenamed(const MUnit* aComp, const string& aOldName) override {
+		    return mHost->OnMagCompRenamed(aComp, aOldName); }
+		virtual void OnCompMutated(const MUnit* aNode) override { return mHost->OnMagCompMutated(aNode); }
+		virtual void OnError(const MUnit* aComp) override { return mHost->OnMagError(aComp); }
+		// From MIface
+		virtual MIface* Call(const string& aSpec, string& aRes) override {}
+	    private:
+		AAdp* mHost;
+	};
+
     public:
 	static const char* Type() { return "AAdp";};
 	static string PEType();
 	AAdp(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	virtual ~AAdp();
 	// From Base
 	virtual MIface* DoGetObj(const char *aName) override;
 	// From MAgent
@@ -784,6 +823,14 @@ class AAdp: public Unit, public MAgent, public MDVarGet
 	// From MDVarGet
 	virtual void *DoGetDObj(const char *aName) override {return NULL;}
 	virtual string VarGetIfid() override {return string();}
+    protected:
+	virtual void OnMagCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
+	virtual void OnMagCompAdding(const MUnit* aComp, TBool aModif = EFalse);
+	virtual TBool OnMagCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse);
+	virtual TBool OnMagChanged(const MUnit* aComp);
+	virtual TBool OnMagCompRenamed(const MUnit* aComp, const string& aOldName);
+	virtual void OnMagCompMutated(const MUnit* aNode);
+	virtual void OnMagError(const MUnit* aComp);
     protected:
 	// From MUnit
 	virtual TEhr ProcessCompChanged(const MUnit* aComp, const string& aContName) override;
@@ -793,7 +840,8 @@ class AAdp: public Unit, public MAgent, public MDVarGet
 	/** @brief Helper. Gets value from MDVarGet */
 	template <typename T> static TBool GetData(MUnit* aDvget, T& aData);
     protected:
-	MUnit* mMag; /*<! Managed agent */
+	MUnit* mMag; /*!< Managed agent */
+	AdpMagObs mMagObs = AdpMagObs(this); /*!< Managed agent observer */
 };
 
 
@@ -801,6 +849,24 @@ class AAdp: public Unit, public MAgent, public MDVarGet
  * */
 class AMunitAdp : public AAdp
 {
+    public:
+#if 0
+	/** @brief Managed agent comps names access point via MVectorGet<string> */
+	class AdpPapCns: public MVectorGet<string> {
+	    public:
+		AdpPapCns(const AMunitAdp& aHost): mHost(aHost) {}
+		// From MVectorGet
+		virtual int Size() const override {return mHost.mCompNames.size();}
+		virtual void GetElem(int aInd, string& aElem) const override { aElem = mHost.mCompNames.at(aInd);}
+		virtual string MVectorGet_Mid() const { return mHost.GetUri(NULL, true) + "#AdpPapCns%" +
+		    string(MVectorGet<string>::Type());}
+		virtual MIface* MVectorGet_Call(const string& aSpec, string& aRes) override {}
+	    private:
+		const AMunitAdp& mHost;
+	};
+#endif
+    public:
+	//using TCmpNames = Mtr<string>;
     public:
 	static const char* Type() { return "AMunitAdp";};
 	static string PEType();
@@ -810,9 +876,14 @@ class AMunitAdp : public AAdp
     protected:
 	void GetCompsCount(Sdata<TInt>& aData);
 	void GetCompUid(Sdata<string>& aData);
+	//void GetCompNames(Sdata<TCmpNames>& aData);
     protected:
-	AdpPap<int> mApCmpCount = AdpPap<int>([this](Sdata<TInt>& aData) {GetCompsCount(aData);}); /*<! Comps count access point */
-	AdpPap<string> mApCmpUid = AdpPap<string>([this](Sdata<string>& aData) {GetCompUid(aData);}); /*<! Comp UID access point */
+	AdpPap<int> mApCmpCount = AdpPap<int>([this](Sdata<TInt>& aData) {GetCompsCount(aData);}); /*!< Comps count access point */
+	AdpPap<string> mApCmpUid = AdpPap<string>([this](Sdata<string>& aData) {GetCompUid(aData);}); /*!< Comp UID access point */
+	//AdpPap<TCmpNames> mApCmpNames = AdpPap<TCmpNames>([this](Sdata<TCmpNames>& aData) {GetCompNames(aData);}); /*!< Comp names access point */
+//	AdpPapCns mApCmpNames = AdpPapCns(*this); /*!< Comps names access point */
+    protected:
+	//TCmpNames mCompNames;
 };
 
 /** @brief MElem iface ADP agent
