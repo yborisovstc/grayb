@@ -2,6 +2,7 @@
 #include <iostream> 
 #include <functional> 
 
+#include "log.h"
 #include "des.h"
 #include "edge.h"
 #include "prov.h"
@@ -393,9 +394,12 @@ TBool ATrVar::GetCont(string& aCont, const string& aName) const
 
 void ATrVar::LogWrite(TLogRecCtg aCtg, const char* aFmt,...)
 {
+    char buf[GLogRec::KLogRecBufSize];
     va_list list;
     va_start(list,aFmt);
-    Logger()->Write(aCtg, this, aFmt, list);
+    vsprintf(buf, aFmt, list);
+    Logger()->Write(aCtg, this, buf);
+    va_end(list);
 }
 
 // Agent function "Addition of Var data"
@@ -884,9 +888,12 @@ TBool ATrcVar::GetCont(string& aCont, const string& aName) const
 
 void ATrcVar::LogWrite(TLogRecCtg aCtg, const char* aFmt,...)
 {
+    char buf[GLogRec::KLogRecBufSize];
     va_list list;
     va_start(list,aFmt);
-    Logger()->Write(aCtg, this, aFmt, list);
+    vsprintf(buf, aFmt, list);
+    Logger()->Write(aCtg, this, buf);
+    va_end(list);
 }
 
 TBool ATrcVar::IsProvided(const string& aIfName) const
@@ -1057,6 +1064,38 @@ string ATrcNegVar::GetInpUri(TInt aId) const
     if (aId == FMplBase::EInp) return "Inp";
     else return string();
 }
+
+
+// Transition agent "Min var"
+
+string ATrcMinVar::PEType()
+{
+    return ATrcVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrcMinVar::ATrcMinVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcVar(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    AddInput("Inp");
+}
+
+void ATrcMinVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc = NULL;
+    }
+    if ((mFunc = FMinDt<Sdata<int>>::Create(this, aIfaceName)) != NULL);
+}
+
+string ATrcMinVar::GetInpUri(TInt aId) const 
+{
+    if (aId == FMplBase::EInp) return "Inp";
+    else return string();
+}
+
+
+
 
 // Agent function "Max var"
 
@@ -1287,6 +1326,47 @@ FCmpBase::TFType ATrcCmpVar::GetFType()
 }
 
 
+
+// Transition agent "Getting container size"
+
+string ATrcSizeVar::PEType()
+{
+    return ATrcVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrcSizeVar::ATrcSizeVar(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcVar(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    AddInput("Inp");
+}
+
+void ATrcSizeVar::Init(const string& aIfaceName)
+{ 
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc = NULL;
+     }
+    MDVarGet* inp = GetInp(Func::EInp1);
+    if (inp) {
+	string t_inp = inp->VarGetIfid();
+	if ((mFunc = FSizeVect<string>::Create(this, aIfaceName, t_inp)) != NULL);
+    }
+}
+
+string ATrcSizeVar::GetInpUri(TInt aId) const 
+{
+    if (aId == Func::EInp1) return "Inp";
+    else return string();
+}
+
+string ATrcSizeVar::VarGetIfid()
+{
+    return MDtGet<Sdata<TInt>>::Type();
+}
+
+
+
+
 // Agent function "Get component"
 
 string ATrcAtVar::PEType()
@@ -1312,7 +1392,7 @@ void ATrcAtVar::Init(const string& aIfaceName)
     if (inp_ind != NULL && inp != NULL) {
 	 string t_inp = inp->VarGetIfid();
 	if ((mFunc = FAtMVect<float>::Create(this, aIfaceName, t_inp)) != NULL);
-	//else if ((mFunc = FAtVect<string>::Create(this, aIfaceName, t_inp)) != NULL);
+	else if ((mFunc = FAtVect<string>::Create(this, aIfaceName, t_inp)) != NULL);
     }
 }
 
@@ -1792,18 +1872,22 @@ MCompatChecker::TDir AState::GetDir() const
 
 MIface* AState::MCompatChecker_Call(const string& aSpec, string& aRes)
 {
+    return NULL;
 }
 
 string AState::MCompatChecker_Mid() const
 {
+    return GetUri(iEnv->Root(), ETrue);
 }
 
 MIface* AState::MConnPoint_Call(const string& aSpec, string& aRes)
 {
+    return NULL;
 }
 
 string AState::MConnPoint_Mid() const
 {
+    return GetUri(iEnv->Root(), ETrue);
 }
 
 TBool AState::OnCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
@@ -2213,18 +2297,22 @@ MCompatChecker::TDir AStatec::GetDir() const
 
 MIface* AStatec::MCompatChecker_Call(const string& aSpec, string& aRes)
 {
+    return NULL;
 }
 
 string AStatec::MCompatChecker_Mid() const
 {
+    return GetUri(iEnv->Root(), ETrue);
 }
 
 MIface* AStatec::MConnPoint_Call(const string& aSpec, string& aRes)
 {
+    return NULL;
 }
 
 string AStatec::MConnPoint_Mid() const
 {
+    return GetUri(iEnv->Root(), ETrue);
 }
 
 TBool AStatec::OnCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
@@ -2584,6 +2672,7 @@ TBool ADesLauncher::Run()
 TBool ADesLauncher::Stop()
 {
     mStop = ETrue;
+    return ETrue;
 }
 
 void ADesLauncher::OnIdle()
@@ -2691,14 +2780,17 @@ void AAdp::OnMagCompAdding(const MUnit* aComp, TBool aModif)
 
 TBool AAdp::OnMagCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
 {
+    return ETrue;
 }
 
 TBool AAdp::OnMagChanged(const MUnit* aComp)
 {
+    return ETrue;
 }
 
 TBool AAdp::OnMagCompRenamed(const MUnit* aComp, const string& aOldName)
 {
+    return ETrue;
 }
 
 void AAdp::OnMagCompMutated(const MUnit* aNode)

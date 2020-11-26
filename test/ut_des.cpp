@@ -27,7 +27,7 @@ class Ut_des : public CPPUNIT_NS::TestFixture
     GCPPUNIT_TEST(test_MunitAdp_1);
     CPPUNIT_TEST(test_MelemAdp_1);
     */
-    CPPUNIT_TEST(test_Tr_Switch_1);
+ //   CPPUNIT_TEST(test_Tr_Switch_1);
     CPPUNIT_TEST(test_Tr_Vect_1);
     CPPUNIT_TEST_SUITE_END();
 public:
@@ -659,7 +659,7 @@ void Ut_des::test_Tr_Vect_1()
     CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != NULL);
 
     // Do some ticks
-    const TInt ticksnum = 2;
+    const TInt ticksnum = 8;
     for (TInt cnt = 0; cnt < ticksnum; cnt++) {
 	cout << "Cnt: " << cnt << endl;
 	if (sync->IsActive()) {

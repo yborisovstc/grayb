@@ -378,6 +378,23 @@ class ATrcNegVar: public ATrcVar
 	virtual TInt GetInpCpsCount() const {return 1;};
 };
 
+
+/** @brief Transition agent "Min of Var data"
+ * */
+class ATrcMinVar: public ATrcVar
+{
+    public:
+	static const char* Type() { return "ATrcMinVar";};
+	static string PEType();
+	ATrcMinVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName) override;
+	virtual string GetInpUri(TInt aId) const override;
+	// From Func::Host
+	virtual TInt GetInpCpsCount() const override {return 1;}
+};
+
+
 /** @brief Agent function "Max of Var data"
  * */
 class ATrcMaxVar: public ATrcVar
@@ -453,6 +470,24 @@ class ATrcSwitchBool: public ATrcVar
 	// From MDVarGet
 	virtual void *DoGetDObj(const char *aName);
 };
+
+/** @brief Transition agent "Getting container size"
+ * */
+class ATrcSizeVar: public ATrcVar
+{
+    public:
+	static const char* Type() { return "ATrcSizeVar";};
+	static string PEType();
+	ATrcSizeVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName) override;
+	virtual string GetInpUri(TInt aId) const override;
+	// From Func::Host
+	virtual TInt GetInpCpsCount() const override {return 1;}
+	// From MDVarGet
+	virtual string VarGetIfid() override;
+};
+
 
 /** @brief Agent function "Getting component"
  * */
@@ -806,7 +841,7 @@ class AAdp: public Unit, public MAgent, public MDVarGet
 		virtual void OnCompMutated(const MUnit* aNode) override { return mHost->OnMagCompMutated(aNode); }
 		virtual void OnError(const MUnit* aComp) override { return mHost->OnMagError(aComp); }
 		// From MIface
-		virtual MIface* Call(const string& aSpec, string& aRes) override {}
+		virtual MIface* Call(const string& aSpec, string& aRes) override { return NULL;}
 	    private:
 		AAdp* mHost;
 	};

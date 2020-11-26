@@ -25,12 +25,12 @@ class MDtBase
 	virtual TBool FromString(const string& aString) = 0;
 	virtual TBool IsValid() const { return EFalse;}
 	virtual TBool operator==(const MDtBase& b) {return EFalse;}
-	TBool operator!=(const MDtBase& b) {return !this->operator==(b);};
+	TBool operator!=(const MDtBase& b) {return !this->operator==(b);}
     public:
-	virtual string GetTypeSig() const { return "?";};
-	virtual void DataToString(stringstream& aStream) const {aStream << "?";};
-	virtual TBool DataFromString(istringstream& aStream, TBool& aRes) {};
-	virtual TBool IsCompatible(const MDtBase& b) {return ETrue;};
+	virtual string GetTypeSig() const { return "?";}
+	virtual void DataToString(stringstream& aStream) const {aStream << "?";}
+	virtual TBool DataFromString(istringstream& aStream, TBool& aRes) { return EFalse;}
+	virtual TBool IsCompatible(const MDtBase& b) {return ETrue;}
     public:
 	static const char mKTypeToDataSep;
 };
@@ -147,7 +147,7 @@ class MtrBase: public DtBase
 	MtrBase& Mpl(const void* b);
 	MtrBase& Invm(const MtrBase& a);
 	virtual void ElemToString(TInt aInd, stringstream& aStream) const { aStream << "?";};
-	virtual TBool ElemFromString(TInt aInd, istringstream& aStream, TBool& aRes) {};
+	virtual TBool ElemFromString(TInt aInd, istringstream& aStream, TBool& aRes) { return EFalse;}
 	virtual void AddElem(const MtrBase& aB, TInt aRI, TInt aCI) {};
 	virtual void SubElem(const MtrBase& aB, TInt aRI, TInt aCI) {};
 	virtual void MplElems(TInt r, TInt c, const MtrBase& a, TInt ar, TInt ac, const MtrBase& b, TInt br, TInt bc) {};
@@ -378,6 +378,7 @@ class Vector : public VectorBase
 	    else 
 		mData.push_back(data);
 	    aRes = ETrue;
+	    return ETrue; // TODO YB get non trivial ret val
 	}
 	virtual TBool operator==(const MDtBase& b) override {
 	    if (!IsCompatible(b)) return false;

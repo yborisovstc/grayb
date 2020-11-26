@@ -173,12 +173,13 @@ TBool DataBase::Update()
 
 TBool DataBase::FromString(const string& aType, const string& aData)
 {
+    TBool res = EFalse;
     if (aType.empty()) {
-	FromString(aData);
+	res = FromString(aData);
+    } else {
+	res = FromString(aType + string(1, DtBase::mKTypeToDataSep) + aData);
     }
-    else {
-	FromString(aType + string(1, DtBase::mKTypeToDataSep) + aData);
-    }
+    return res;
 }
 
 TBool DataBase::FromString(const string& aData) 
@@ -198,6 +199,7 @@ bool DataBase::ToString(string& aType, string& aData)
     int end = full.find(DtBase::mKTypeToDataSep);
     aType = full.substr(0, end);
     aData = full.substr(end + 1, string::npos);
+    return ETrue; // TODO YB to form return value
 }
 
 /*
@@ -274,6 +276,7 @@ bool DInt::FromString(const string& aData)
     TInt data;
     sscanf(aData.c_str(), "%d", &data);
     Set(data);
+    return ETrue; // TODO YB get non trivial ret val
 }
 
 bool DInt::ToString(string& aData)
@@ -282,6 +285,7 @@ bool DInt::ToString(string& aData)
     memset(buf, 0, 20);
     sprintf(buf, "%d", mData);
     aData.append(buf);
+    return ETrue; // TODO YB get non trivial ret val
 }
 
 TInt DInt::Value()

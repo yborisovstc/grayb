@@ -852,13 +852,14 @@ TBool VectorBase::DataFromString(istringstream& aStream, TBool& aRes)
     string ss = aStream.str();
     if (!ss.empty()) {
 	int beg = 0;
-	int elem_e = ss.find_first_of(KDataSep);
+	int elem_e = ss.find_first_of(KDataSep, beg);
 	TInt idx = 0;
 	do {
 	    string elems = ss.substr(beg, elem_e);
 	    istringstream ess(elems);
 	    changed |= ElemFromString(idx++, ess, res);
 	    beg = elem_e == string::npos ? string::npos : elem_e + 1;
+	    elem_e = ss.find_first_of(KDataSep, beg);
 	} while (res && beg != string::npos);
     }
     aRes = res;

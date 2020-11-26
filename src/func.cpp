@@ -1302,6 +1302,7 @@ TBool Func::GetCont(TInt aInd, string& aName, string& aCont) const
 	aName = "Result";
 	GetResult(aCont);
     }
+    return ETrue; // TODO YB get non trivial ret val
 };
 
 const string AFAddVar::KContVal_About = "Addition function with variable type of arguments";
@@ -1471,6 +1472,7 @@ TBool FAddFloat::GetCont(TInt aInd, string& aName, string& aCont) const
 	    cnt++;
 	}
     }
+    return ETrue; // TODO YB get non trivial ret val
 }
 
 TInt FAddFloat::GetContCount() const
@@ -2031,6 +2033,7 @@ template<class T> TBool FMplDt<T>::GetCont(TInt aInd, string& aName, string& aCo
 	    }
 	}
     }
+    return ETrue; // TODO YB get non trivial ret val
 }
 
 template<class T> void FMplDt<T>::DtGet(T& aData)
@@ -3179,6 +3182,98 @@ template <class T> void FCmp<T>::DtGet(Sdata<bool>& aData)
 
 }
 
+// Getting size of container: vector
+
+
+template <class T> Func* FSizeVect<T>::Create(Host* aHost, const string& aOutIid, const string& aInpIid)
+{
+    Func* res = NULL;
+    if (!aOutIid.empty()) {
+	if (aOutIid == MDtGet<Sdata<TInt>>::Type() && aInpIid == MDtGet<Vector<T>>::Type()) {
+	    res = new FSizeVect<T>(*aHost);
+	}
+    } else {
+	// Weak negotiation - just base on input type
+	if (aInpIid == MDtGet<Vector<T>>::Type()) {
+	    res = new FSizeVect<T>(*aHost);
+	}
+    }
+    return res;
+}
+
+template <class T> MIface *FSizeVect<T>::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MDtGet<Sdata<TInt>>::Type()) == 0) res = (MDtGet<Sdata<TInt>>*) this;
+    return res;
+}
+
+template <class T> void FSizeVect<T>::DtGet(Sdata<TInt>& aData)
+{
+    TBool res = ETrue;
+    MDVarGet* dget = mHost.GetInp(EInp1);
+    MDtGet<Vector<T>>* dfget = dget->GetDObj(dfget);
+    if (dfget) {
+	Vector<T> arg;
+	dfget->DtGet(arg);
+	if (arg.mValid) {
+	    aData.mData = arg.Size();
+	    aData.mValid = ETrue;
+	} else {
+	    mHost.LogWrite(EErr, "Incorrect input data");
+	    res = EFalse;
+	}
+    } else {
+	mHost.LogWrite(EErr, "Cannot get input [%s]", mHost.GetInpUri(EInp1).c_str());
+	res = EFalse;
+    }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
+}
+
+template <class T> string FSizeVect<T>::GetInpExpType(TInt aId) const
+{
+    string res;
+    if (aId == EInp1) {
+	res = MDtGet<Vector<T>>::Type();
+    }
+    return res;
+}
+
+// Getting size of container
+
+AFSizeVar::AFSizeVar(const string& aName, MUnit* aMan, MEnv* aEnv): AFunVar(aName, aMan, aEnv)
+{
+    SetCrAttr(PEType(), aName);
+}
+
+void AFSizeVar::Init(const string& aIfaceName)
+{
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc = NULL;
+    }
+    MDVarGet* inp1 = GetInp(Func::EInp1);
+    if (inp1) {
+	string t1 = inp1->VarGetIfid();
+	if ((mFunc = FSizeVect<string>::Create(this, aIfaceName, t1)) != NULL);
+	else {
+	    LogWrite(EErr, "Init error, outp_iface [%s], inp_iface", aIfaceName.c_str(), t1.c_str());
+	}
+    }
+}
+
+string AFSizeVar::GetInpUri(TInt aId) const
+{
+    if (aId == Func::EInp1) return "Inp";
+    else return string();
+}
+
+
+
 
 // Getting component of container
 string AFAtVar::PEType()
@@ -3347,8 +3442,11 @@ template <class T> void FAtVect<T>::DtGet(Sdata<T>& aData)
 	    mHost.LogWrite(EErr, "Incorrect argument");
 	    res = EFalse;
 	}
-    } else {
-	mHost.LogWrite(EErr, "Non-matrix argument");
+    } else if (dfget == NULL) {
+	mHost.LogWrite(EErr, "Cannot get input [%s]", mHost.GetInpUri(EInp1).c_str());
+	res = EFalse;
+    } else if (diget == NULL) {
+	mHost.LogWrite(EErr, "Cannot get input [%s]", mHost.GetInpUri(EInp2).c_str());
 	res = EFalse;
     }
     aData.mValid = res;
@@ -3368,8 +3466,6 @@ template <class T> string FAtVect<T>::GetInpExpType(TInt aId) const
     }
     return res;
 }
-
-
 
 
 
@@ -3671,6 +3767,7 @@ MIface *FSel::DoGetObj(const char *aName)
 
 TInt FSel::GetCaseIdx() const
 {
+    return 0;
 }
 
 MDVarGet* FSel::GetCase() const
@@ -3787,6 +3884,7 @@ TBool FBnegDt::GetCont(TInt aInd, string& aName, string& aCont) const
 	dfget->DtGet(arg);
 	arg.ToString(aCont);
     }
+    return ETrue; // TODO YB get non trivial ret val
 }
 
 
@@ -3855,7 +3953,69 @@ TBool FBAndDt::GetCont(TInt aInd, string& aName, string& aCont) const
 	dfget->DtGet(arg);
 	arg.ToString(aCont);
     }
+    return ETrue; // TODO YB get non trivial ret val
 }
+
+
+// Min: Generic data
+
+template<class T> Func* FMinDt<T>::Create(Host* aHost, const string& aString)
+{
+    Func* res = NULL;
+    if (aString == MDtGet<T>::Type()) {
+	res = new FMinDt<T>(*aHost);
+    }
+    return res;
+}
+
+template<class T> MIface *FMinDt<T>::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MDtGet<T>::Type()) == 0) res = (MDtGet<T>*) this;
+    return res;
+}
+
+template<class T> void FMinDt<T>::DtGet(T& aData)
+{
+    TBool res = ETrue;
+    Elem::TIfRange range = mHost.GetInps(EInp);
+    for (MUnit::TIfIter it = range.first; it != range.second; it++) {
+	MDVarGet* dget = (MDVarGet*) (*it);
+	MDtGet<T>* dfget = dget->GetDObj(dfget);
+	if (dfget != NULL) {
+	    T arg = aData;
+	    dfget->DtGet(arg);
+	    if (arg.mValid) {
+		if (it == range.first) {
+		    aData = arg;
+		} else {
+		    if (arg.mData < aData.mData) {
+			aData = arg;
+		    }
+		}
+	    } else {
+		Logger()->Write(EErr, mHost.GetAgent(), "Incorrect argument [%s]",  mHost.GetInpUri(EInp).c_str());
+		res = EFalse; break;
+	    }
+	} else {
+	    Logger()->Write(EErr, mHost.GetAgent(), "Incompatible argument [%s]",  mHost.GetInpUri(EInp).c_str());
+	    res = EFalse; break;
+	}
+    }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
+}
+
+static void FMinDtFact() {
+    FMinDt<Sdata<int>>::Create(NULL, "");
+}
+
+
+
+
 
 // Max: Generic data
 
@@ -3899,6 +4059,7 @@ template<class T> TBool FMaxDt<T>::GetCont(TInt aInd, string& aName, string& aCo
 	    }
 	}
     }
+    return ETrue; // TODO YB get non trivial ret val
 }
 
 template<class T> void FMaxDt<T>::DtGet(T& aData)

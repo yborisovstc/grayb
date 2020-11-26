@@ -760,6 +760,28 @@ class AFDivVar: public AFunVar
 	virtual void Init(const string& aIfaceName);
 };
 
+/** @brief Minimum, base */
+class FMinBase: public Func {
+    public:
+	enum { EInp = Func::EInp1 };
+	FMinBase(Host& aHost): Func(aHost) {};
+};
+
+/** @brief Function: minimum
+ * */
+template <class T>
+class FMinDt: public FMinBase, public MDtGet<T> {
+    public:
+	static Func* Create(Host* aHost, const string& aString);
+	FMinDt(Host& aHost): FMinBase(aHost) {};
+	virtual MIface *DoGetObj(const char *aName) override;
+	virtual string IfaceGetId() const override { return MDtGet<T>::Type();};
+	virtual void DtGet(T& aData) override;
+	virtual void GetResult(string& aResult) const override { mRes.ToString(aResult); }
+	T mRes;
+};
+
+
 
 // Maximum, variable type
 
@@ -914,9 +936,45 @@ template <class T> class FNtos: public FNtosBase
 };
 
 
+/** @brief Getting size of container
+ * */
+class AFSizeVar: public AFunVar
+{
+    public:
+	static const char* Type() { return "AFSizeVar";};
+	static string PEType() { return AFunVar::PEType() + GUri::KParentSep + Type();}
+	AFSizeVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From Func::Host
+	virtual string GetInpUri(TInt aId) const;
+	virtual TInt GetInpCpsCount() const {return 1;}
+    protected:
+	virtual void Init(const string& aIfaceName);
+};
 
 
-// Getting component of container
+/** @brief Getting size of container: Vector
+ * @tparam T type of vector element
+ * */
+// TODO YB Weak design. Size doesn't depend on container elem type, so better to have this class w/o template.
+// But the current design doesn't allow to do it. HDt returns the exact MDtGet iface of owned data.
+// To consider the design improvement
+template <class T>
+class FSizeVect: public Func, public MDtGet<Sdata<TInt>> {
+    public:
+	static Func* Create(Host* aHost, const string& aOutIid, const string& aInp1Id);
+	FSizeVect(Host& aHost): Func(aHost) {};
+	virtual MIface *DoGetObj(const char *aName);
+	virtual string IfaceGetId() const { return MDtGet<Sdata<TInt>>::Type();}
+	virtual void DtGet(Sdata<TInt>& aData);
+	virtual void GetResult(string& aResult) const {mRes.ToString(aResult);}
+	virtual string GetInpExpType(TInt aId) const;
+    protected:
+	Sdata<TInt> mRes;
+};
+
+
+/** @brief Getting component of container
+ * */
 class AFAtVar: public AFunVar
 {
     public:
@@ -925,18 +983,22 @@ class AFAtVar: public AFunVar
 	AFAtVar(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
 	// From Func::Host
 	virtual string GetInpUri(TInt aId) const;
-	virtual TInt GetInpCpsCount() const {return 2;};
+	virtual TInt GetInpCpsCount() const {return 2;}
     protected:
 	virtual void Init(const string& aIfaceName);
 };
 
+
+/** @brief Getting component of container: base
+ * */
 class FAtBase: public Func 
 {
     public:
 	FAtBase(Host& aHost): Func(aHost) {};
 };
 
-// 	Getting component of container: matrix-vector 
+/** @brief Getting component of container: matrix-vector
+ * */
 template <class T> class FAtMVect: public FAtBase, public MDtGet<Sdata<T> > {
     public:
 	static Func* Create(Host* aHost, const string& aOutIid, const string& aInp1Id);
