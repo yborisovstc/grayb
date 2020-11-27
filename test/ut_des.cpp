@@ -24,11 +24,11 @@ class Ut_des : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Cre6mcmu);
     CPPUNIT_TEST(test_Cre6mcmau);
     CPPUNIT_TEST(test_CreStatec);
-    GCPPUNIT_TEST(test_MunitAdp_1);
-    CPPUNIT_TEST(test_MelemAdp_1);
     */
- //   CPPUNIT_TEST(test_Tr_Switch_1);
-    CPPUNIT_TEST(test_Tr_Vect_1);
+    CPPUNIT_TEST(test_MunitAdp_1);
+    //CPPUNIT_TEST(test_MelemAdp_1);
+    //CPPUNIT_TEST(test_Tr_Switch_1);
+    //CPPUNIT_TEST(test_Tr_Vect_1);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -460,6 +460,7 @@ void Ut_des::test_MunitAdp_1()
 	    sync->Confirm();
 	}
 	// Verify comps count
+	/*
 	MUnit* cmpCount = root->GetNode("./test/Controller/Adapter/CompsCount");
 	CPPUNIT_ASSERT_MESSAGE("Fail to get adapters CompsCount", cmpCount != NULL);
 	MDVarGet* cmpCountVget = cmpCount->GetSIfit(cmpCountVget);
@@ -482,6 +483,7 @@ void Ut_des::test_MunitAdp_1()
 	if (tagCmp) {
 	    CPPUNIT_ASSERT_MESSAGE("Incorrect CompUid", cmpUidSi.mData == tagCmp->Uid());
 	}
+	*/
     }
 
 

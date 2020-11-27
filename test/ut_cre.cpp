@@ -86,10 +86,12 @@ TBool AgentObserver::OnCompChanged(const MUnit* aComp, const string& aContName, 
     cout << "AgentObserver::OnCompChanged " << uid << endl;
     MIface* comp = mEnv->IfaceResolver()->GetIfaceByUid(uid);
     CPPUNIT_ASSERT_MESSAGE("Fail to get comp iface by UID", comp != NULL);
+    return ETrue;
 }
 
 TBool AgentObserver::OnChanged(const MUnit* aComp)
 {
+    return ETrue;
 }
 
 TBool AgentObserver::OnCompRenamed(const MUnit* aComp, const string& aOldName)
@@ -98,6 +100,7 @@ TBool AgentObserver::OnCompRenamed(const MUnit* aComp, const string& aOldName)
     cout << "AgentObserver::OnCompRenamed " << uid << endl;
     MIface* comp = mEnv->IfaceResolver()->GetIfaceByUid(uid);
     CPPUNIT_ASSERT_MESSAGE("Fail to get comp iface by UID", comp != NULL);
+    return ETrue;
 }
 
 void AgentObserver::OnCompMutated(const MUnit* aNode)

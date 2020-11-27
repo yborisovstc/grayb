@@ -2746,9 +2746,13 @@ void AAdp::NotifyInpsUpdated()
 MIface *AAdp::DoGetObj(const char *aName)
 {
     MIface* res = NULL;
-    if (strcmp(aName, MAgent::Type()) == 0)
+    if (strcmp(aName, MAgent::Type()) == 0) {
 	res = dynamic_cast<MAgent*>(this);
-    else {
+    } else if (strcmp(aName, MDesSyncable::Type()) == 0) {
+	res = (MDesSyncable*) this;
+    } else if (strcmp(aName, MDesObserver::Type()) == 0) {
+	res = (MDesObserver*) this;
+    } else {
 	res = Unit::DoGetObj(aName);
     }
     return res;
@@ -2801,6 +2805,70 @@ void AAdp::OnMagError(const MUnit* aComp)
 {
 }
 
+void AAdp::SetActive()
+{
+    mActive = ETrue;
+    // Propagate activation to owner
+    MUnit* host = iMan;
+    MUnit* downer = host->GetMan();
+    if (downer != NULL) {
+	MDesObserver* mobs = (MDesObserver*) downer->GetSIfi(MDesObserver::Type(), this);
+	if (mobs != NULL) {
+	    mobs->OnActivated();
+	}
+    }
+}
+
+void AAdp::Update()
+{
+    SetUpdated();
+    ResetActive();
+}
+
+void AAdp::Confirm()
+{
+}
+
+void AAdp::SetUpdated()
+{
+    mUpdated = ETrue;
+    // Propagate updated to owner
+    MUnit* host = iMan;
+    MUnit* downer = host->GetMan();
+    if (downer != NULL) {
+	MDesObserver* mobs = (MDesObserver*) downer->GetSIfi(MDesObserver::Type(), this);
+	if (mobs != NULL) {
+	    mobs->OnUpdated();
+	}
+    }
+}
+
+void AAdp::OnUpdated()
+{
+    // Upstem notification, mark itself updated and propagate
+    SetUpdated();
+}
+
+void AAdp::OnActivated()
+{
+    // Upstem notification, mark itself activated and propagate
+    SetActive();
+}
+
+void AAdp::NotifyInpsUpdated(MUnit* aCp)
+{
+    TIfRange range = aCp->GetIfi(MDesInpObserver::Type());
+    for (TIfIter it = range.first; it != range.second; it++) {
+	MDesInpObserver* mobs = (MDesInpObserver*) (*it);
+	if (mobs != NULL) {
+	    mobs->OnInpUpdated();
+	}
+    }
+}
+
+
+
+
 
 // Access point, using Sdata
 
@@ -2829,11 +2897,14 @@ template <typename T> void* AAdp::AdpPapB<T>::DoGetDObj(const char *aName)
 // MUnit DES adapter
 
 const string K_CompIdxInpUri = "./InpCompIdx";
+const string K_CpUriCompNames = "./CompNames";
+const string K_CpUriCompCount = "./CompsCount";
 
 AMunitAdp::AMunitAdp(const string& aName, MUnit* aMan, MEnv* aEnv): AAdp(aName, aMan, aEnv)
 {
     // TODO This iName init seems far from elegant. To find solution, ref ds_i_icnau 
     iName = aName.empty() ? GetType(PEType()) : iName = aName;
+    mCompNames.mValid = ETrue;
 }
 
 string AMunitAdp::PEType()
@@ -2846,30 +2917,16 @@ void AMunitAdp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     TIfRange rr;
     TICacheRCtx ctx(aCtx); ctx.push_back(this);
 
-    if (aName == MDesInpObserver::Type()) {
-	// Redirect to parameter states
-	MUnit* cmpCount = Host()->GetNode("./CompsCount");
-	__ASSERT(cmpCount);
-	if (!ctx.IsInContext(cmpCount)) {
-	    rr = cmpCount->GetIfi(aName, ctx);
-	    InsertIfCache(aName, aCtx, cmpCount, rr);
-	}
-	MUnit* cmpUid = Host()->GetNode("./CompUid");
-	__ASSERT(cmpUid);
-	if (!ctx.IsInContext(cmpUid)) {
-	    rr = cmpUid->GetIfi(aName, ctx);
-	    InsertIfCache(aName, aCtx, cmpUid, rr);
-	}
-    } else if (aName == MDVarGet::Type()) {
+    if (aName == MDVarGet::Type()) {
 	MUnit* cmpCount = Host()->GetNode("./CompsCount");
 	if (ctx.IsInContext(cmpCount)) {
 	    MIface* iface = dynamic_cast<MDVarGet*>(&mApCmpCount);
 	    InsertIfCache(aName, aCtx, cmpCount, iface);
 	}
-	MUnit* cmpUid = Host()->GetNode("./CompUid");
-	if (ctx.IsInContext(cmpUid)) {
-	    MIface* iface = dynamic_cast<MDVarGet*>(&mApCmpUid);
-	    InsertIfCache(aName, aCtx, cmpUid, iface);
+	MUnit* cmpNames = Host()->GetNode("./CompNames");
+	if (ctx.IsInContext(cmpNames)) {
+	    MIface* iface = dynamic_cast<MDVarGet*>(&mApCmpNames);
+	    InsertIfCache(aName, aCtx, cmpNames, iface);
 	}
 	/*
     } else if (aName == MVectorGet<string>::Type()) {
@@ -2886,44 +2943,70 @@ void AMunitAdp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 
 void AMunitAdp::GetCompsCount(Sdata<TInt>& aData)
 {
-    if (mMag) {
-	aData.mData = mMag->CompsCount();
-	aData.mValid = ETrue;
-    } else {
-	aData.mValid = EFalse;
-    }
+    aData.mData = mCompNames.mData.size();
+    aData.mValid = ETrue;
 }
 
-void AMunitAdp::GetCompUid(Sdata<string>& aData)
+void AMunitAdp::Confirm()
 {
-    TBool res = EFalse;
     if (mMag) {
-	MUnit* inp = Host()->GetNode(K_CompIdxInpUri);
-	__ASSERT(inp != NULL);
-	TInt idx = 0;
-	res = GetData(inp, idx);
-	if (res) {
-	    if (idx < mMag->CompsCount()) {
-		MUnit* comp = mMag->GetComp(idx);
-		aData.mData = comp->Uid();
-		aData.mValid = ETrue;
-	    } else {
-		Logger()->Write(EErr, this, "Comp index [%i] is out of range", idx);
+	if (mCompNamesUpdated) {
+	    // Comps names
+	    mCompNames.mData.clear();
+	    for (TInt i = 0; i < mMag->CompsCount(); i++) {
+		mCompNames.mData.push_back(mMag->GetComp(i)->Name());
 	    }
-	} else {
-	    Logger()->Write(EErr, this, "Cannot get comp index");
+	    mCompNames.mValid = ETrue;
+	    mCompNamesUpdated = EFalse;
+	    MUnit* cp = Host()->GetNode(K_CpUriCompNames);
+	    NotifyInpsUpdated(cp);
+	    // Comps count
+	    cp = Host()->GetNode(K_CpUriCompCount);
+	    NotifyInpsUpdated(cp);
 	}
     } else {
-	aData.mValid = EFalse;
+	Logger()->Write(EErr, this, "Managed agent is not attached");
     }
+    ResetUpdated();
+
 }
 
-//void AMunitAdp::GetCompNames(Sdata<TCmpNames>& aData)
-//{
-//}
+void AMunitAdp::OnMagCompDeleting(const MUnit* aComp, TBool aSoft, TBool aModif)
+{
+    mCompNamesUpdated = ETrue;
+}
+
+void AMunitAdp::OnMagCompAdding(const MUnit* aComp, TBool aModif)
+{
+    mCompNamesUpdated = ETrue;
+}
+
+TBool AMunitAdp::OnMagCompChanged(const MUnit* aComp, const string& aContName, TBool aModif)
+{
+    return ETrue;
+}
+
+TBool AMunitAdp::OnMagChanged(const MUnit* aComp)
+{
+    return ETrue;
+}
+
+TBool AMunitAdp::OnMagCompRenamed(const MUnit* aComp, const string& aOldName)
+{
+    mCompNamesUpdated = ETrue;
+    return ETrue;
+}
+
+void AMunitAdp::OnMagCompMutated(const MUnit* aNode)
+{
+}
+
+void AMunitAdp::OnMagError(const MUnit* aComp)
+{
+}
 
 
-// MUnit DES adapter
+// MElem DES adapter
 
 const string K_MutApplOutpUri = "./MutationApplied";
 const string K_InpMUtpUri = "./InpMut";

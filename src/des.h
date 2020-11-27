@@ -725,6 +725,7 @@ class AStatec: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, p
 
 
 // DES base agent
+// TODO YB to base the agent on Unit, little chance to mutate it
 class ADes: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd, public MAgent
 {
     public:
@@ -784,7 +785,7 @@ class ADesLauncher: public Elem, public MLauncher, public MAgent
  * Internal "access points" are used to create required topology instead of
  * using "true" DES with transitions. This is for optimization purpose.
  * */
-class AAdp: public Unit, public MAgent, public MDVarGet
+class AAdp: public Unit, public MDesSyncable_Imd, public MDesObserver_Imd, public MAgent, public MDVarGet
 {
     public:
 	/** @brief Observer agent parameter access point, using Sdata
@@ -796,13 +797,15 @@ class AAdp: public Unit, public MAgent, public MDVarGet
 	    public:
 		THandler<T> mHandler;
 	    public:
-		AdpPap(const AdpPap& aSrc): mHandler(aSrc.mHandler) {}
-		AdpPap(THandler<T> aHandler): mHandler(aHandler){}
+		AdpPap(MUnit& aHost, THandler<T> aHandler): mHost(aHost), mHandler(aHandler){}
 		// From MDVarGet
 		virtual void *DoGetDObj(const char *aName) override;
-		virtual string VarGetIfid() override {return string();}
+		virtual string VarGetIfid() override {return MDtGet<Sdata<T>>::Type();}
 		// From MDtGet
 		virtual void DtGet(Sdata<T>& aData) override { mHandler(aData);}
+		virtual string MDVarGet_Mid() const {return mHost.GetUri(NULL, ETrue);}
+	    protected:
+		MUnit& mHost;
 	};
     public:
 	/** @brief Managed agent parameter access point, using generic data
@@ -858,6 +861,24 @@ class AAdp: public Unit, public MAgent, public MDVarGet
 	// From MDVarGet
 	virtual void *DoGetDObj(const char *aName) override {return NULL;}
 	virtual string VarGetIfid() override {return string();}
+	// From MDesSyncable
+	virtual void Update() override;
+	virtual void Confirm() override;
+	virtual TBool IsUpdated() override { return mUpdated;}
+	virtual void SetUpdated() override;
+	virtual void ResetUpdated() override { mUpdated = EFalse;}
+	virtual TBool IsActive() override { return mActive;}
+	virtual void SetActive() override;
+	virtual void ResetActive() override { mActive = EFalse;}
+	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes) override { return NULL;}
+	virtual string MDesSyncable_Mid() const override { return GetUri(iEnv->Root(), ETrue);}
+	virtual void DumpActive() override {}
+	virtual void DumpUpdated() override {}
+	// From MDesObserver
+	virtual void OnActivated() override;
+	virtual void OnUpdated() override;
+	virtual MIface* MDesObserver_Call(const string& aSpec, string& aRes) override {return NULL;}
+	virtual string MDesObserver_Mid() const override { return GetUri(iEnv->Root(), ETrue);}
     protected:
 	virtual void OnMagCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
 	virtual void OnMagCompAdding(const MUnit* aComp, TBool aModif = EFalse);
@@ -866,6 +887,8 @@ class AAdp: public Unit, public MAgent, public MDVarGet
 	virtual TBool OnMagCompRenamed(const MUnit* aComp, const string& aOldName);
 	virtual void OnMagCompMutated(const MUnit* aNode);
 	virtual void OnMagError(const MUnit* aComp);
+	// Local
+	void NotifyInpsUpdated(MUnit* aCp);
     protected:
 	// From MUnit
 	virtual TEhr ProcessCompChanged(const MUnit* aComp, const string& aContName) override;
@@ -875,6 +898,8 @@ class AAdp: public Unit, public MAgent, public MDVarGet
 	/** @brief Helper. Gets value from MDVarGet */
 	template <typename T> static TBool GetData(MUnit* aDvget, T& aData);
     protected:
+	TBool mActive = ETrue;
+	TBool mUpdated = ETrue;
 	MUnit* mMag; /*!< Managed agent */
 	AdpMagObs mMagObs = AdpMagObs(this); /*!< Managed agent observer */
 };
@@ -901,24 +926,34 @@ class AMunitAdp : public AAdp
 	};
 #endif
     public:
-	//using TCmpNames = Mtr<string>;
+	using TCmpNames = Vector<string>;
     public:
 	static const char* Type() { return "AMunitAdp";};
 	static string PEType();
 	AMunitAdp(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
 	// From MUnit
 	virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
+	// From MDesSyncable
+	virtual void Confirm() override;
     protected:
 	void GetCompsCount(Sdata<TInt>& aData);
-	void GetCompUid(Sdata<string>& aData);
-	//void GetCompNames(Sdata<TCmpNames>& aData);
+	void GetCompNames(TCmpNames& aData) { aData = mCompNames;}
+	// From AAdp
+	virtual void OnMagCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse) override;
+	virtual void OnMagCompAdding(const MUnit* aComp, TBool aModif = EFalse) override;
+	virtual TBool OnMagCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse) override;
+	virtual TBool OnMagChanged(const MUnit* aComp) override;
+	virtual TBool OnMagCompRenamed(const MUnit* aComp, const string& aOldName) override;
+	virtual void OnMagCompMutated(const MUnit* aNode) override;
+	virtual void OnMagError(const MUnit* aComp) override;
     protected:
-	AdpPap<int> mApCmpCount = AdpPap<int>([this](Sdata<TInt>& aData) {GetCompsCount(aData);}); /*!< Comps count access point */
-	AdpPap<string> mApCmpUid = AdpPap<string>([this](Sdata<string>& aData) {GetCompUid(aData);}); /*!< Comp UID access point */
-	//AdpPap<TCmpNames> mApCmpNames = AdpPap<TCmpNames>([this](Sdata<TCmpNames>& aData) {GetCompNames(aData);}); /*!< Comp names access point */
+	// Comps count param adapter. Even if the count can be get via comp names vector we support separate param for convenience
+	AdpPap<int> mApCmpCount = AdpPap<int>(*this, [this](Sdata<TInt>& aData) {GetCompsCount(aData);}); /*!< Comps count access point */
+	AdpPapB<TCmpNames> mApCmpNames = AdpPapB<TCmpNames>([this](TCmpNames& aData) {GetCompNames(aData);}); /*!< Comp names access point */
 //	AdpPapCns mApCmpNames = AdpPapCns(*this); /*!< Comps names access point */
     protected:
-	//TCmpNames mCompNames;
+	TCmpNames mCompNames;
+	TBool mCompNamesUpdated = ETrue;
 };
 
 /** @brief MElem iface ADP agent

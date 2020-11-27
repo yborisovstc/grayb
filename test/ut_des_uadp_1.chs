@@ -19,19 +19,17 @@ testroot : Elem
             Adapter : /*/Modules/AdpComps/UnitAdp
             {
                 AdpAgent < AgentUri = ./../../../Target;
-                CompUid < Debug.Update = y;
             }
-            $ # "Comps count index incrementor";
-            CompIdxCount : AStatec;
-            CompIdxCount < Value = "SI 0";
-            CompIdxCount < Debug.Update = y;
-            Incr : ATrcAddVar;
-            Const_1 : AStatec;
-            Const_1 < Value = "SI 1";
-            CompIdxCount/Inp ~ Incr;
-            Incr/Inp ~ CompIdxCount;
-            Incr/Inp ~ Const_1;
-            Adapter/InpCompIdx ~ CompIdxCount;
+            $ # Components_count;
+            CompCount : AStatec;
+            CompCount < Value = "SI 0";
+            CompCount < Debug.Update = y;
+            CompCount/Inp ~ Adapter/CompsCount;
+            $ # Components;
+            CompNames : AStatec;
+            CompNames < Value = "VS";
+            CompNames < Debug.Update = y;
+            CompNames/Inp ~ Adapter/CompNames;
         }
     }
 }

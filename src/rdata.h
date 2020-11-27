@@ -394,7 +394,7 @@ class Vector : public VectorBase
 	    if (aInd < Size()) aElem = mData.at(aInd);
 	    else res = EFalse;
 	    return res; }
-    protected:
+    public:
 	vector<T> mData;
 };
 

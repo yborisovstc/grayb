@@ -86,9 +86,11 @@ TBool DtBase::FromString(const string& aString)
 	    istringstream sstr(ss);
 	    changed |= DataFromString(sstr, res);
 	}
+	/* YB Let's enable default data
 	else {
 	    res = EFalse;
 	}
+	*/
     }
     else {
 	res = EFalse;
@@ -319,6 +321,7 @@ MtrBase& MtrBase::Mpl(const void* b)
 	    }
 	}
     }
+    return *this;
 }
 
 MtrBase& MtrBase::Mpl(const MtrBase& a, const MtrBase& b) 
@@ -377,6 +380,7 @@ MtrBase& MtrBase::Mpl(const MtrBase& a, const MtrBase& b)
     else {
 	mValid = EFalse;
     }
+    return *this;
 }
 
 void MtrBase::SetMplncArg1Hint(const DtBase& res, const DtBase& arg2)
@@ -428,6 +432,7 @@ MtrBase& MtrBase::Invm(const MtrBase& a)
     else {
 	mValid = EFalse;
     }
+    return *this;
 }
 
 
