@@ -13,6 +13,7 @@
 #include "module.h"
 #include "imports.h"
 #include "chromo2.h"
+#include "mnt.h"
 
 // TODO [YB] To import from build variable
 const string KModulesPath = "/usr/share/grayb/modules/";
@@ -43,6 +44,7 @@ const ProvDef::TFReg ProvDef::mReg ( {
 	Item<CpStatecInp>(), Item<CpStatecOutp>(), Item<ATrcAddVar>(), Item<ATrcMplVar>(), Item<ATrcAndVar>(), Item<ATrcNegVar>(),
 	Item<ATrcMaxVar>(), Item<ATrcApndVar>(), Item<ATrcNtosVar>(), Item<AMunitAdp>(), Item<AMelemAdp>(), Item<ATrcMutNode>(),
 	Item<ADesLauncher>(), Item<ATrcSwitchBool>(), Item<ATrcCmpVar>(), Item<ATrcAtVar>(), Item<ATrcSizeVar>(), Item<ATrcMinVar>(),
+	Item<AMntp>()
 	});
 
 

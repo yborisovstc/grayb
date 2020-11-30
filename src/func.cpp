@@ -3076,6 +3076,7 @@ void AFCmpVar::Init(const string& aIfaceName)
 	FCmpBase::TFType ftype = GetFType();
 	if ((mFunc = FCmp<Sdata<int> >::Create(this, t1, t2, ftype)) != NULL);
 	else if ((mFunc = FCmp<Enum>::Create(this, t1, t2, ftype)) != NULL);
+	else if ((mFunc = FCmp<Sdata<string>>::Create(this, t1, t2, ftype)) != NULL);
 	/* Debuggng
 	   if (mFunc != NULL) {
 	//Func* func = new FCmpBase(*this, ftype);

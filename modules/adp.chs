@@ -5,7 +5,7 @@ AdpComps : Elem
     {
         About = "MUnit DES adaptor";
         AdpAgent : AMunitAdp;
-        AdpCp : CpStatecOutp;
+        InpMagUri : CpStatecInp;
         CompsCount : CpStatecOutp;
         CompNames : CpStatecOutp;
     }

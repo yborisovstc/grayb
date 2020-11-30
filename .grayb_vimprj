@@ -35,9 +35,11 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   melem.h
   menv.h
   miface.h
+  mlauncher.h
   mlog.h
   mmod.h
   mmuta.h
+  mnt.h
   module.h
   mplugin.h
   mprofiler.h
@@ -54,6 +56,7 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   prov.h
   provdef.h
   rdata.h
+  rmutdata.h
   syst.h
   systp.h
   unit.h
@@ -75,6 +78,7 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   imports.cpp
   incaps.cpp
   log.cpp
+  mnt.cpp
   module.cpp
   profiler.cpp
   profiler_events.cpp
@@ -82,6 +86,7 @@ src=src CD=. filter="*.h *.cpp *.dtd Makefile.am" {
   prov.cpp
   provdef.cpp
   rdata.cpp
+  rmutdata.cpp
   syst.cpp
   systp.cpp
   unit.cpp

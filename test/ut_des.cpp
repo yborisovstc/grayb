@@ -460,7 +460,6 @@ void Ut_des::test_MunitAdp_1()
 	    sync->Confirm();
 	}
 	// Verify comps count
-	/*
 	MUnit* cmpCount = root->GetNode("./test/Controller/Adapter/CompsCount");
 	CPPUNIT_ASSERT_MESSAGE("Fail to get adapters CompsCount", cmpCount != NULL);
 	MDVarGet* cmpCountVget = cmpCount->GetSIfit(cmpCountVget);
@@ -469,7 +468,13 @@ void Ut_des::test_MunitAdp_1()
 	CPPUNIT_ASSERT_MESSAGE("Fail to get cmpCountGsi ", cmpCountGsi != NULL);
 	Sdata<int> cmpCountSi = 0;
 	cmpCountGsi->DtGet(cmpCountSi);
-	CPPUNIT_ASSERT_MESSAGE("Incorrect CompsCount value", cmpCountSi.mData == 2);
+	int cc = cmpCountSi.mData;
+	if (cnt == 1) {
+	    CPPUNIT_ASSERT_MESSAGE("Incorrect CompsCount value", cc == 3);
+	} else if (cnt == 3) {
+	    CPPUNIT_ASSERT_MESSAGE("Incorrect CompsCount value", cc == 4);
+	}
+	/*
 	// Verify comp UID
 	MUnit* cmpUid = root->GetNode("./test/Controller/Adapter/CompUid");
 	CPPUNIT_ASSERT_MESSAGE("Fail to get adapters CompUid", cmpUid != NULL);

@@ -13,6 +13,7 @@ ut_grayb_lib_SOURCES = \
 		       ut_conn.cpp \
 		       ut_fun.cpp \
 		       ut_icache.cpp \
+		       ut_mnt.cpp \
 		       ut_des.cpp
 
 ut_grayb_lib_LDFLAGS=-L../src/.libs/ -lgrayb  -lcppunit -lrt

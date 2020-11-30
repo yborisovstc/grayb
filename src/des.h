@@ -785,7 +785,7 @@ class ADesLauncher: public Elem, public MLauncher, public MAgent
  * Internal "access points" are used to create required topology instead of
  * using "true" DES with transitions. This is for optimization purpose.
  * */
-class AAdp: public Unit, public MDesSyncable_Imd, public MDesObserver_Imd, public MAgent, public MDVarGet
+class AAdp: public Unit, public MDesSyncable_Imd, public MDesObserver_Imd, public MDesInpObserver_Imd, public MAgent, public MDVarGet
 {
     public:
 	/** @brief Observer agent parameter access point, using Sdata
@@ -879,6 +879,10 @@ class AAdp: public Unit, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 	virtual void OnUpdated() override;
 	virtual MIface* MDesObserver_Call(const string& aSpec, string& aRes) override {return NULL;}
 	virtual string MDesObserver_Mid() const override { return GetUri(iEnv->Root(), ETrue);}
+	// From MDesInpObserver
+	virtual void OnInpUpdated() override;
+	virtual MIface* MDesInpObserver_Call(const string& aSpec, string& aRes) override {return NULL;}
+	virtual string MDesInpObserver_Mid() const override { return GetUri(iEnv->Root(), ETrue);}
     protected:
 	virtual void OnMagCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
 	virtual void OnMagCompAdding(const MUnit* aComp, TBool aModif = EFalse);
@@ -888,7 +892,10 @@ class AAdp: public Unit, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 	virtual void OnMagCompMutated(const MUnit* aNode);
 	virtual void OnMagError(const MUnit* aComp);
 	// Local
+	virtual void OnMagUpdated() {}
 	void NotifyInpsUpdated(MUnit* aCp);
+	TBool UpdateMag(const string& aMagUri);
+	void UpdateMag();
     protected:
 	// From MUnit
 	virtual TEhr ProcessCompChanged(const MUnit* aComp, const string& aContName) override;
@@ -901,6 +908,7 @@ class AAdp: public Unit, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 	TBool mActive = ETrue;
 	TBool mUpdated = ETrue;
 	MUnit* mMag; /*!< Managed agent */
+	string mMagUri; /*!< Managed agent URI */
 	AdpMagObs mMagObs = AdpMagObs(this); /*!< Managed agent observer */
 };
 
@@ -946,6 +954,8 @@ class AMunitAdp : public AAdp
 	virtual TBool OnMagCompRenamed(const MUnit* aComp, const string& aOldName) override;
 	virtual void OnMagCompMutated(const MUnit* aNode) override;
 	virtual void OnMagError(const MUnit* aComp) override;
+	// From AAdp
+	virtual void OnMagUpdated() override;
     protected:
 	// Comps count param adapter. Even if the count can be get via comp names vector we support separate param for convenience
 	AdpPap<int> mApCmpCount = AdpPap<int>(*this, [this](Sdata<TInt>& aData) {GetCompsCount(aData);}); /*!< Comps count access point */

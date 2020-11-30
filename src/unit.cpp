@@ -808,10 +808,14 @@ MUnit* Unit::GetNode(const GUri& aUri, TBool aInclRm)
 	    if (root != NULL) {
 		if (!anywhere) {
 		    it++;
-		    GUri::TElem elem = *it;
-		    anywhere = elem.name() == GUri::KTypeAnywhere; 
-		    TBool any = elem.name() == GUri::KTypeAny;
-		    if (!anywhere && !any && root->Name() != elem.name()) {
+		    if (it != aUri.Elems().end()) {
+			GUri::TElem elem = *it;
+			anywhere = elem.name() == GUri::KTypeAnywhere; 
+			TBool any = elem.name() == GUri::KTypeAny;
+			if (!anywhere && !any && root->Name() != elem.name()) {
+			    root = NULL;
+			}
+		    } else {
 			root = NULL;
 		    }
 		}
@@ -874,8 +878,10 @@ MUnit* Unit::GetNode(const GUri& aUri, GUri::const_elem_iter& aPathBase, TBool a
 		res = Provider()->GetNode(elem.name());
 	    }
 	} else {
-	    if (iMComps.count(elem.name()) > 0) {
-		MUnit* node = iMComps.at(elem.name());
+	    // Enable selection "some" only if any and single choice
+	    TBool isSome = (elem.name() == GUri::KTypeAny) && (iMComps.size() == 1);
+	    if (iMComps.count(elem.name()) > 0 || isSome) {
+		MUnit* node = isSome ? iMComps.begin()->second : iMComps.at(elem.name());
 		uripos++;
 		if (uripos != aUri.Elems().end()) {
 		    res = node->GetNode(aUri, uripos, EFalse, aInclRm);

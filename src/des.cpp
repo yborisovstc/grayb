@@ -1229,15 +1229,23 @@ void ATrcSwitchBool::Init(const string& aIfaceName)
 {
     ATrcVar::Init(aIfaceName);
     MDVarGet* inpCase = GetInp(FSwithcBase::EInp_Sel);
-    MDtGet<Sdata<TBool>>* inpCaseD = inpCase->GetDObj(inpCaseD);
     MDVarGet* inp2 = GetInp(FSwithcBase::EInp_1);
-    void* inp2d = inp2->DoGetDObj(aIfaceName.c_str());
     MDVarGet* inp3 = GetInp(FSwithcBase::EInp_1 + 1);
-    void* inp3d = inp3->DoGetDObj(aIfaceName.c_str());
-    if (inpCaseD && inp2d && inp3d) {
-	string t_case = inpCase->VarGetIfid();
-	mFunc = FSwitchBool::Create(this, aIfaceName, t_case);
+    if (inpCase && inp2 && inp3) {
+	MDtGet<Sdata<TBool>>* inpCaseD = inpCase->GetDObj(inpCaseD);
+	void* inp2d = inp2->DoGetDObj(aIfaceName.c_str());
+	void* inp3d = inp3->DoGetDObj(aIfaceName.c_str());
+	if (inpCaseD && inp2d && inp3d) {
+	    string t_case = inpCase->VarGetIfid();
+	    mFunc = FSwitchBool::Create(this, aIfaceName, t_case);
+	}
+    } else {
+	string inp = GetInpUri(FSwithcBase::EInp_Sel);
+	if (!inp2) inp = GetInpUri(FSwithcBase::EInp_1);
+	else if (!inp3) inp = GetInpUri(FSwithcBase::EInp_1 + 1);
+	Logger()->Write(EErr, this, "Cannot get input [%s]", inp.c_str());
     }
+
 }
 
 string ATrcSwitchBool::GetInpUri(TInt aId) const 
@@ -1301,6 +1309,7 @@ void ATrcCmpVar::Init(const string& aIfaceName)
 	FCmpBase::TFType ftype = GetFType();
 	if (mFunc = FCmp<Sdata<int> >::Create(this, t1, t2, ftype));
 	else if (mFunc = FCmp<Enum>::Create(this, t1, t2, ftype));
+	else if (mFunc = FCmp<Sdata<string> >::Create(this, t1, t2, ftype));
     }
 }
 
@@ -2683,8 +2692,9 @@ void ADesLauncher::OnIdle()
 // Agents DES adaptation - ADP
 
 // DES adapter base
-//
+
 const string KCont_AgentUri = "AgentUri";
+const string K_CpUriInpMagUri = "./InpMagUri";
 
 string AAdp::PEType()
 {
@@ -2714,22 +2724,15 @@ TEhr AAdp::ProcessCompChanged(const MUnit* aComp, const string& aContName)
 {
     TEhr res = EEHR_Ignored;
     if (aComp == this && aContName == KCont_AgentUri) {
-	string val = GetContent(KCont_AgentUri);
-	mMag = GetNode(val);
-	if (mMag) {
-	    res = EEHR_Accepted;
-	    iEnv->SetObserver(&mMagObs);
-	    // Notify states of update
-	    NotifyInpsUpdated();
-	}  else {
-	    Logger()->Write(EErr, this, "[%s] Error on applying content [%s]", GetUri(NULL, true).c_str(), aContName.c_str());
-	    res = EEHR_Denied;
-	}
+	string magUri = GetContent(KCont_AgentUri);
+	TBool sres = UpdateMag(magUri);
+	res = sres ? EEHR_Accepted : EEHR_Denied;
     } else {
 	res = Unit::ProcessCompChanged(aComp, aContName);
     }
     return res;
 }
+
 
 void AAdp::NotifyInpsUpdated()
 {
@@ -2752,6 +2755,8 @@ MIface *AAdp::DoGetObj(const char *aName)
 	res = (MDesSyncable*) this;
     } else if (strcmp(aName, MDesObserver::Type()) == 0) {
 	res = (MDesObserver*) this;
+    } else if (strcmp(aName, MDesInpObserver::Type()) == 0) {
+	res = dynamic_cast<MDesInpObserver*>(this);
     } else {
 	res = Unit::DoGetObj(aName);
     }
@@ -2821,6 +2826,7 @@ void AAdp::SetActive()
 
 void AAdp::Update()
 {
+    UpdateMag();
     SetUpdated();
     ResetActive();
 }
@@ -2866,6 +2872,44 @@ void AAdp::NotifyInpsUpdated(MUnit* aCp)
     }
 }
 
+void AAdp::OnInpUpdated()
+{
+    SetActive();
+}
+
+void AAdp::UpdateMag()
+{
+    MUnit* inp = iMan->GetNode(K_CpUriInpMagUri);
+    if (inp) {
+	string magUri;
+	TBool res = GetData(inp, magUri);
+	if (res) {
+	    UpdateMag(magUri);
+	}
+    }
+}
+
+TBool AAdp::UpdateMag(const string& aMagUri)
+{
+    TBool res = EFalse;
+    if (aMagUri != mMagUri) {
+	mMagUri = aMagUri;
+	MUnit* mag = GetNode(mMagUri);
+	if (mag) {
+	    mMag = mag;
+	    res = ETrue;
+	    OnMagUpdated();
+	    iEnv->SetObserver(&mMagObs);
+	    NotifyInpsUpdated();
+	    Logger()->Write(EInfo, this, "Managed agent attached [%s]", mMagUri.c_str());
+	} else {
+	    Logger()->Write(EErr, this, "Cannot find managed agent [%s]", mMagUri.c_str());
+	}
+    }
+    return res;
+}
+
+
 
 
 
@@ -2896,7 +2940,6 @@ template <typename T> void* AAdp::AdpPapB<T>::DoGetDObj(const char *aName)
 
 // MUnit DES adapter
 
-const string K_CompIdxInpUri = "./InpCompIdx";
 const string K_CpUriCompNames = "./CompNames";
 const string K_CpUriCompCount = "./CompsCount";
 
@@ -2918,12 +2961,12 @@ void AMunitAdp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     TICacheRCtx ctx(aCtx); ctx.push_back(this);
 
     if (aName == MDVarGet::Type()) {
-	MUnit* cmpCount = Host()->GetNode("./CompsCount");
+	MUnit* cmpCount = Host()->GetNode(K_CpUriCompCount);
 	if (ctx.IsInContext(cmpCount)) {
 	    MIface* iface = dynamic_cast<MDVarGet*>(&mApCmpCount);
 	    InsertIfCache(aName, aCtx, cmpCount, iface);
 	}
-	MUnit* cmpNames = Host()->GetNode("./CompNames");
+	MUnit* cmpNames = Host()->GetNode(K_CpUriCompNames);
 	if (ctx.IsInContext(cmpNames)) {
 	    MIface* iface = dynamic_cast<MDVarGet*>(&mApCmpNames);
 	    InsertIfCache(aName, aCtx, cmpNames, iface);
@@ -2937,7 +2980,7 @@ void AMunitAdp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 	}
 	*/
     } else  {
-	Unit::UpdateIfi(aName, aCtx);
+	AAdp::UpdateIfi(aName, aCtx);
     }
 }
 
@@ -3005,6 +3048,10 @@ void AMunitAdp::OnMagError(const MUnit* aComp)
 {
 }
 
+void AMunitAdp::OnMagUpdated()
+{
+    mCompNamesUpdated = ETrue;
+}
 
 // MElem DES adapter
 
