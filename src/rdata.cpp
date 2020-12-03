@@ -599,6 +599,7 @@ void NTuple::Init(const tCTypes& aCt)
 	if ((comp = Sdata<int>::Construct(sr)) != NULL);
 	else if ((comp = Sdata<float>::Construct(sr)) != NULL);
 	else if ((comp = Sdata<bool>::Construct(sr)) != NULL);
+	else if ((comp = Sdata<string>::Construct(sr)) != NULL);
 	if (comp != NULL) {
 	    mData.push_back(tComp(name, comp));
 	}

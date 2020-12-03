@@ -153,6 +153,7 @@ class MDVarGet: public MIface
 	string Mid() const override { return MDVarGet_Mid();}
 };
 
+
 class MDVarSet: public MIface
 {
     public:

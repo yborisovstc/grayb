@@ -21,7 +21,6 @@ testroot : Elem
             UnitAdp : /*/Modules/AdpComps/UnitAdp
             {
                 AdpAgent < AgentUri = ./../../../Target;
-                CompUid < Debug.Update = y;
                 CompsCount < Debug.Update = y;
             }
             ElemAdp : /*/Modules/AdpComps/MelemAdp
@@ -38,7 +37,6 @@ testroot : Elem
             CompIdxCount/Inp ~ Incr;
             Incr/Inp ~ CompIdxCount;
             Incr/Inp ~ Const_1;
-            UnitAdp/InpCompIdx ~ CompIdxCount;
             $ # Mutation;
             TCmp_Eq : ATrcCmpVar;
             TCmp_Eq/Inp ~ CompIdxCount;
@@ -60,6 +58,10 @@ testroot : Elem
             TMutNode1/Parent ~ MutParent;
             TSwitch/Inp2 ~ TMutNode1;
             TSwitch/Sel ~ TCmp_Eq;
+            CompNames : AStatec;
+            CompNames < Value = "VS";
+            CompNames < Debug.Update = y;
+            CompNames/Inp ~ UnitAdp/CompNames;
         }
     }
 }

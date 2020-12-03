@@ -9,16 +9,10 @@ AdpComps : Elem
         CompsCount : CpStatecOutp;
         CompNames : CpStatecOutp;
     }
-    MelemAdp : /*/Modules/DesComps/Des
+    MelemAdp : Syst
     {
         About = "MElem iface DES adaptor";
         AdpAgent : AMelemAdp;
-        AdpCp : CpStatecOutp;
-        MutationApplied : AStatec;
-        MutationApplied < Debug.Update = y;
-        MutationApplied < Value = "MUT none";
-        MutationApplied/Inp ~ AdpCp;
-        $ # "MutationApplied ~ InpMut via internal binding";
         InpMut : CpStatecInp;
     }
 }

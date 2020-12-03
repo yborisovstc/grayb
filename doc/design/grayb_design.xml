@@ -590,6 +590,18 @@
 		<simpara>The problem with this approach is with invalidation algorithm, ref <xref linkend="ds_ifcache_cpur"/></simpara>
 	    </sect3>
 	</sect2>
+	<sect2 id="ds_ifcache_cip"><title>Problem: cache invalidated in the progress of cache iterator usage.</title>
+	    <sect3><title>Intro</title>
+		<simpara>I discovered this problem debugging fap2-vis feature: there is state kept some widget container mutation. On the state confirm
+		    it iterates thru all DesInpObservers and signal to them. Some observers indication causes some observer change (actually creation the compoment) and
+		    iface cache invalidation. This leads to iterator damage and model crash.</simpara>
+	    </sect3>
+	    <sect3 id="ds_ifcache_cip_s1"><title>Solution#1: cache ifaces from initial request.</title>
+		<simpara>The idea is to iterate the original request and cache the ifaces to secondary cache (std::vector for instance). The problem here is that
+		    potentially the iface action called can remove another iface from the original request, so the crach will happen.
+		    And also this makes the code a bit superfluos.  </simpara>
+	    </sect3>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_mut"><title>Mutations</title>
@@ -599,58 +611,58 @@
 		    for instance:</simpara>
 		<itemizedlist>
 		    <listitem>In mutations rollback to identify the last mutation to be applied
-		    </listitem>
-		    <listitem>In decoupled chromo to link the chromos part, ref <xref linkend="ds_daa_chrc_rm"/></listitem>
-		</itemizedlist>
-	    </sect3>
-	</sect2>
-	<sect2 id="ds_mut_unappr"><title>Avoidng unappropriate mutations</title>
-	    <sect3><title>Rank</title>
-		<simpara>We define rank as a vector the i-th element of which is the order of elements owner of i-th level.</simpara>
-		<itemizedlist>
-		    <listitem>Rank A is greater that rank B if A[i] > B[i] for some i. </listitem>
-		    <listitem>We call the number of elements of rank tuple as depth of rank</listitem>
-		    <listitem>We are saying that rank R is the rank of level N if N is R depth - 1. The lower level we call "higher" </listitem>
-		</itemizedlist>
-	    </sect3>
-	    <sect3 id="ds_mut_unappr_intro"><title>Introduction</title>
-		<simpara>Ref <ulink url="../requirements/index.html#uc_028"/> for use-case.</simpara>
-		<simpara>Two structures are under operation when creating system: mutations tree and system native run-time hierarchy.
-		    Mutations are the specification of the changes but native hier is the result of applying the mutaions sequence.
-		    The mutations are applied in the order that is determined by the structures of mutations tree.
-		    The number of step when particular mutation will be applied is the mutations rank.</simpara>
-		<simpara>Almost are mutations includes reference to some node of current native hier.
-		    These relations can be considered as dependencies network. 
-		    Applying mutation Mn can brake the system if the mutaions is placed in unappropriate position within mutation tree.
-		    The brackage happens for instance if the mutation related to node NN is placed in the position with the rank 
-		    lower that rank of another mutation related to NN and "not knowing" of the first mutation.</simpara>
-		<simpara>Below is the example of mutation braking system consistency:
-		    <figure id="fig_mut_uappr_intro_ex1"><imageobject> <imagedata fileref="pics/pic_mut_uc1.png"/> </imageobject></figure>
-		</simpara>
-		<simpara>Mutation tree has the node. The nodes that has leaves (non-terminal node) produces native hier node. 
-		    Ref to mutation spec DTD to confirm that. Terminal nodes can be both node creation mutation and change mutations.</simpara>
-		<simpara>What relations from mutation to hier node can be? They are almost directly related to mutation
-		    attribures specified in DTD: 
-		    <orderedlist>
-			<listitem> creation (attr ENa_Id in mut "node") </listitem>
-			<listitem> parent (attr ENa_Parent in mut "node") </listitem>
-			<listitem id="ds_mut_unappr_intro_dep_obj"> object of change (attr ENa_Node in mut "node, rm, change, cont") </listitem>
-			<listitem id="ds_mut_unappr_intro_dep_ref"> reference (arrt ENa_Ref in mut "cont") </listitem>
-		    </orderedlist>
-		</simpara>
-		<simpara>So one way of preventing unappropriate mutation is to place it into the position with rank greater than 
-		    the maximum rank of all related to given node mutations. But how to get this maximum rank? The problem is 
-		    that mutations are not run-time object that can be armed with run-time relation. Mutations are just elements of chromo. 
-		    So it is doubtful to create effective scheme of creating that relation network.</simpara>
-		<simpara>The simplest solution (Biggest_rank) would be to add mutation to the biggest rank position in chromo,
-		    i.e at the end of roots chromo.  In addition the mechainsm of mutations merging (squeezing or compacting of chromo) 
-		    can be prepared that removes some mutation and replaces others to lower rank place.</simpara>
-		<simpara>Another solution (Run_time_deps) is to collect all dependencies in run-time hier model: to mark the current node 
-		    as dependent on some node if the current node chromo includes mutation referred to the node. Basing on this 
-		    data it is getting possible to find the max rank dependent chromo, so the current mutation is to go to this chromo. 
-		    The problem here is that creating of this dependencies network is complicated even
-		    on run-time model level. The dependency is produced by any reference to the node, for instance by referring to node 
-		    in URI extention part. </simpara>
+		</listitem>
+		<listitem>In decoupled chromo to link the chromos part, ref <xref linkend="ds_daa_chrc_rm"/></listitem>
+	    </itemizedlist>
+	</sect3>
+    </sect2>
+<sect2 id="ds_mut_unappr"><title>Avoidng unappropriate mutations</title>
+    <sect3><title>Rank</title>
+	<simpara>We define rank as a vector the i-th element of which is the order of elements owner of i-th level.</simpara>
+	<itemizedlist>
+	    <listitem>Rank A is greater that rank B if A[i] > B[i] for some i. </listitem>
+	    <listitem>We call the number of elements of rank tuple as depth of rank</listitem>
+	    <listitem>We are saying that rank R is the rank of level N if N is R depth - 1. The lower level we call "higher" </listitem>
+	</itemizedlist>
+    </sect3>
+    <sect3 id="ds_mut_unappr_intro"><title>Introduction</title>
+	<simpara>Ref <ulink url="../requirements/index.html#uc_028"/> for use-case.</simpara>
+	<simpara>Two structures are under operation when creating system: mutations tree and system native run-time hierarchy.
+	    Mutations are the specification of the changes but native hier is the result of applying the mutaions sequence.
+	    The mutations are applied in the order that is determined by the structures of mutations tree.
+	    The number of step when particular mutation will be applied is the mutations rank.</simpara>
+	<simpara>Almost are mutations includes reference to some node of current native hier.
+	    These relations can be considered as dependencies network. 
+	    Applying mutation Mn can brake the system if the mutaions is placed in unappropriate position within mutation tree.
+	    The brackage happens for instance if the mutation related to node NN is placed in the position with the rank 
+	    lower that rank of another mutation related to NN and "not knowing" of the first mutation.</simpara>
+	<simpara>Below is the example of mutation braking system consistency:
+	<figure id="fig_mut_uappr_intro_ex1"><imageobject> <imagedata fileref="pics/pic_mut_uc1.png"/> </imageobject></figure>
+    </simpara>
+    <simpara>Mutation tree has the node. The nodes that has leaves (non-terminal node) produces native hier node. 
+	Ref to mutation spec DTD to confirm that. Terminal nodes can be both node creation mutation and change mutations.</simpara>
+    <simpara>What relations from mutation to hier node can be? They are almost directly related to mutation
+	attribures specified in DTD: 
+    <orderedlist>
+	<listitem> creation (attr ENa_Id in mut "node") </listitem>
+	<listitem> parent (attr ENa_Parent in mut "node") </listitem>
+	<listitem id="ds_mut_unappr_intro_dep_obj"> object of change (attr ENa_Node in mut "node, rm, change, cont") </listitem>
+	<listitem id="ds_mut_unappr_intro_dep_ref"> reference (arrt ENa_Ref in mut "cont") </listitem>
+    </orderedlist>
+</simpara>
+<simpara>So one way of preventing unappropriate mutation is to place it into the position with rank greater than 
+    the maximum rank of all related to given node mutations. But how to get this maximum rank? The problem is 
+    that mutations are not run-time object that can be armed with run-time relation. Mutations are just elements of chromo. 
+    So it is doubtful to create effective scheme of creating that relation network.</simpara>
+<simpara>The simplest solution (Biggest_rank) would be to add mutation to the biggest rank position in chromo,
+    i.e at the end of roots chromo.  In addition the mechainsm of mutations merging (squeezing or compacting of chromo) 
+    can be prepared that removes some mutation and replaces others to lower rank place.</simpara>
+<simpara>Another solution (Run_time_deps) is to collect all dependencies in run-time hier model: to mark the current node 
+    as dependent on some node if the current node chromo includes mutation referred to the node. Basing on this 
+    data it is getting possible to find the max rank dependent chromo, so the current mutation is to go to this chromo. 
+    The problem here is that creating of this dependencies network is complicated even
+    on run-time model level. The dependency is produced by any reference to the node, for instance by referring to node 
+    in URI extention part. </simpara>
 	    </sect3>
 	    <sect3 id="ds_mut_unappr_rt"><title>Run_time_deps</title>
 		<simpara>We need to clarify the term "relation" used earlier. We will say that run-time node Na depends on mutation Mb. 
@@ -658,62 +670,62 @@
 		<simpara>Theses</simpara>
 		<orderedlist>
 		    <listitem id="ds_mut_unappr_rt_ths1"> If node Na depends on mut Mb then also owners and parents of Na depends on mut Mb. 
-			<simpara>
-			    Prove for owner:  if there is owner No and it's comp Nc and mut Mc of Nc, then for instance mut of removing
-			    No should go after Mc.
-			    Prove for parent: There is parent Np and it's child Nc, and there is mut Mc of Nc containgin URI including parent,
-			    then for instance mut Mp of renaming Np should go after Mc otherwise Mc will be broken.
-			</simpara>
-			<simpara>There are different "nature" of these deps. Some of them are created because of referencing via
-			    URI, and that uri "trace" include the node. If the trace is going thru inheritance tree that deps parents via
-			    childs created as mentioned above.</simpara>
-		    </listitem>
-		    <listitem id="ds_mut_unappr_rt_ths2"> If node Na depends on mut Mb then all children and components of Na also depend on Mb. 
-			<simpara> Proving case for parent: mut Mp changing parent or owner changes URI ref to it, so changes ref to childs
-			    and comps. So any mut of childs and comps should go after Mp, i.e with bigger rank. Example: node No contains it's
-			    copnonent Nc. There is mut Mo of No of renaming No. So any mut of Nc that ident Nc via URI including Nc name should
-			    go after Mo.
-			</simpara>
-		    </listitem>
-		    <listitem>Basing on theses [<xref linkend="ds_mut_unappr_rt_ths1"/>] and [<xref linkend="ds_mut_unappr_rt_ths2"/>] 
-			we see that to check dependencies of any node N in native hier we
-			need to check it's whole comp and inher branches in the hier.</listitem>
-		    <listitem>We can consider mutation as harmless if the mutation supplements run-time model. The following mutation are harmless: 
-			node, add. We can consider a mutation as unsafe if the mutation change or reduces run-time model. 
-			Unsafe mutations are: rm, change, cont.</listitem>
-		    <listitem>The register of deps in node Na contains all mutations (plus nodes containing that mutation) that depends 
-			on node Na. So the client is able to get the max rank of nodes that are dependent on the current node.</listitem>
-		    <listitem>The dependant is actually the mutation, but only mutation within run-time node (there can be mutaion in 
-			some node but it is possible that it doesn't reflect any node in run-time model, for instance if some root node 
-			is mutated first by adding component node and than by removing it - all mutation within adding component node part 
-			of chromo will not be in run-time.  Mutations are not reflecing directly to run-time model even -node-.
-			So the dependency can be defined as the node which chromo containg mutation plus mutation itself in chromo.</listitem>
-		    <listitem>There are deps "model-on-chromo" and "chromo-on-model". We can consider the type of dep as the type 
-			of mut argument</listitem>
-		    <listitem>We need to consider not only simple deps but chain of deps. The example of chain is inheritance chain, node3 on node1:
-			<programlisting>
-			    mut1 on node1 as -parent-
-			    node2 on mut1 as -id-
-			    mut2 on node2 as -parent-
-			    node3 on mut2 as -id-
-			</programlisting>
-		    </listitem>
-		</orderedlist>
-		<simpara>So the algorithm of taking into account dependencies for mutation of type -rm- is as:</simpara>
-		<itemizedlist>
-		    <listitem>Get the node being removed </listitem>
-		    <listitem>From this node get the major dependent node - the dependent node with biggest rank. The depencend node is 
-			run-time node containing dependent mutation, or child of this node (ref Theses) or child of node being removed.</listitem>
-		    <listitem>Mutate the dependency instead of initial node.</listitem>
-		</itemizedlist>
-		<simpara>Below is shown the example of using dependencies</simpara>
-		<figure id="fig_mut_uappr_intro_ex2"><imageobject> <imagedata fileref="pics/pic_mut_uc2.png"/> </imageobject></figure>
+		    <simpara>
+			Prove for owner:  if there is owner No and it's comp Nc and mut Mc of Nc, then for instance mut of removing
+			No should go after Mc.
+			Prove for parent: There is parent Np and it's child Nc, and there is mut Mc of Nc containgin URI including parent,
+			then for instance mut Mp of renaming Np should go after Mc otherwise Mc will be broken.
+		    </simpara>
+		    <simpara>There are different "nature" of these deps. Some of them are created because of referencing via
+			URI, and that uri "trace" include the node. If the trace is going thru inheritance tree that deps parents via
+			childs created as mentioned above.</simpara>
+		</listitem>
+		<listitem id="ds_mut_unappr_rt_ths2"> If node Na depends on mut Mb then all children and components of Na also depend on Mb. 
+		<simpara> Proving case for parent: mut Mp changing parent or owner changes URI ref to it, so changes ref to childs
+		    and comps. So any mut of childs and comps should go after Mp, i.e with bigger rank. Example: node No contains it's
+		    copnonent Nc. There is mut Mo of No of renaming No. So any mut of Nc that ident Nc via URI including Nc name should
+		    go after Mo.
+	    </simpara>
+	</listitem>
+	<listitem>Basing on theses [<xref linkend="ds_mut_unappr_rt_ths1"/>] and [<xref linkend="ds_mut_unappr_rt_ths2"/>] 
+	    we see that to check dependencies of any node N in native hier we
+	    need to check it's whole comp and inher branches in the hier.</listitem>
+	<listitem>We can consider mutation as harmless if the mutation supplements run-time model. The following mutation are harmless: 
+	    node, add. We can consider a mutation as unsafe if the mutation change or reduces run-time model. 
+	    Unsafe mutations are: rm, change, cont.</listitem>
+	<listitem>The register of deps in node Na contains all mutations (plus nodes containing that mutation) that depends 
+	    on node Na. So the client is able to get the max rank of nodes that are dependent on the current node.</listitem>
+	<listitem>The dependant is actually the mutation, but only mutation within run-time node (there can be mutaion in 
+	    some node but it is possible that it doesn't reflect any node in run-time model, for instance if some root node 
+	    is mutated first by adding component node and than by removing it - all mutation within adding component node part 
+	    of chromo will not be in run-time.  Mutations are not reflecing directly to run-time model even -node-.
+	    So the dependency can be defined as the node which chromo containg mutation plus mutation itself in chromo.</listitem>
+	<listitem>There are deps "model-on-chromo" and "chromo-on-model". We can consider the type of dep as the type 
+	    of mut argument</listitem>
+	<listitem>We need to consider not only simple deps but chain of deps. The example of chain is inheritance chain, node3 on node1:
+	<programlisting>
+	    mut1 on node1 as -parent-
+	    node2 on mut1 as -id-
+	    mut2 on node2 as -parent-
+	    node3 on mut2 as -id-
+	</programlisting>
+    </listitem>
+</orderedlist>
+<simpara>So the algorithm of taking into account dependencies for mutation of type -rm- is as:</simpara>
+<itemizedlist>
+    <listitem>Get the node being removed </listitem>
+    <listitem>From this node get the major dependent node - the dependent node with biggest rank. The depencend node is 
+	run-time node containing dependent mutation, or child of this node (ref Theses) or child of node being removed.</listitem>
+    <listitem>Mutate the dependency instead of initial node.</listitem>
+</itemizedlist>
+<simpara>Below is shown the example of using dependencies</simpara>
+<figure id="fig_mut_uappr_intro_ex2"><imageobject> <imagedata fileref="pics/pic_mut_uc2.png"/> </imageobject></figure>
 	    </sect3>
 	    <sect3><title>Restrictions of mutations</title>
 		<simpara>We introduce the restriction of mutations that can simplify the validation of mutations</simpara>
 		<orderedlist>
 		    <listitem>Rank depth of mutations of dependency type "object" and "parameter" (ref <xref linkend="ds_mut_unappr_intro_dep_obj"/>, 
-			<xref linkend="ds_mut_unappr_intro_dep_ref"/>) must be less or equal of rank depth of mutated node. 
+		    <xref linkend="ds_mut_unappr_intro_dep_ref"/>) must be less or equal of rank depth of mutated node. 
 			In other words the object of mutation must be owned of node that contains the mutations. </listitem>
 		    <listitem>It is not allowed to remove a node if the node has childs. This restriction can be removed in the future. 
 			Currently it is not supporting of creating child when some parent in parents chain is missed. Potentially
@@ -774,210 +786,210 @@
 	    <sect3><title>Analysis</title>
 		<simpara>Current implementation is just notify the owner of renaming, so owner makes the correction into components register. UC_031 is not considered currently.
 		    But it seems there is no fundamental limitation as for removing of parent, ref <xref linkend="ds_rm_prnt"/>. This is because the parent is accessible from child
-		    node in runtime. The only problem is that currently the child refers to parent via chromo data on creation heir, ref Elem::CreateHeir.</simpara>
-	    </sect3>
-	</sect2>
-	<sect2 id="ds_mv_local"><title>Local Moving of node.</title>
-	    <sect3 id="ds_mv_local_intro"><title>Intro</title>
-		<simpara>Actually local moving of node is not single mutation but two mutations: 
-		    re-creating node in new context and removing initial node.</simpara>
-	    </sect3>
-	    <sect3 id="ds_mv_local_tch"><title>How to transform chromo for new context</title>
-		<simpara>One of the problem when re-creating node in new context is transformation node's chromo to be 
-		    sutable for new context. </simpara>
-		<simpara>There can be some solution considered. One of them is to transform source node chromo to destination node context. 
-		    This approach is rather complicated for
-		    implementation. Another approach is to use currently implemented mechanism of creatng heir. 
-		    So we can create heir from source node (this is done by source node 
-		    in original context, so doesn't cause any troubles. Then we can re-adopt the heir from source node to its parent.</simpara>
-	    </sect3>
-	    <sect3><title>Is operation of local movement useful?</title>
-		<simpara>The problem here is that the current implementation [ff62b4f15279edfbe4baf36161d3dcad6973725f] 
-		    the result of local movement is run-time only. It is 
-		    clear, we just need to remember that local movement is specified by simple mutation within the chromo.
-		    So there are doubts that local movement is actually useful. There
-		    were no occurances at the moment of using this local movement operation.
+			node in runtime. The only problem is that currently the child refers to parent via chromo data on creation heir, ref Elem::CreateHeir.</simpara>
+		</sect3>
+	    </sect2>
+	    <sect2 id="ds_mv_local"><title>Local Moving of node.</title>
+		<sect3 id="ds_mv_local_intro"><title>Intro</title>
+		    <simpara>Actually local moving of node is not single mutation but two mutations: 
+			re-creating node in new context and removing initial node.</simpara>
+		</sect3>
+		<sect3 id="ds_mv_local_tch"><title>How to transform chromo for new context</title>
+		    <simpara>One of the problem when re-creating node in new context is transformation node's chromo to be 
+			sutable for new context. </simpara>
+		    <simpara>There can be some solution considered. One of them is to transform source node chromo to destination node context. 
+			This approach is rather complicated for
+			implementation. Another approach is to use currently implemented mechanism of creatng heir. 
+			So we can create heir from source node (this is done by source node 
+			in original context, so doesn't cause any troubles. Then we can re-adopt the heir from source node to its parent.</simpara>
+		</sect3>
+		<sect3><title>Is operation of local movement useful?</title>
+		    <simpara>The problem here is that the current implementation [ff62b4f15279edfbe4baf36161d3dcad6973725f] 
+			the result of local movement is run-time only. It is 
+			clear, we just need to remember that local movement is specified by simple mutation within the chromo.
+			So there are doubts that local movement is actually useful. There
+			were no occurances at the moment of using this local movement operation.
 		</simpara>
 		<simpara>There is alternative approach, ref <xref linkend="ds_mut_cutncopy"/></simpara>
 	    </sect3>
 	    <sect3 id="ds_mv_local_nm"><title>Local movng and node mounting</title>
 		<simpara>There is tight relation between moving of node and mounting some remote node to local node. Mounting of remote node can be
 		    considered as one approach of distributed systems, ref <xref linkend="ds_daa"/>. Mounting remote node seems similar to moving - 
-		    it is in fact de-attaching some node from remote model and attach it to some local node - so the context is changed in this case.
+			it is in fact de-attaching some node from remote model and attach it to some local node - so the context is changed in this case.
 		</simpara>
 	    </sect3>
 	    <sect3 id="ds_mv_local_wkc"><title>Anoter way to keep consistency when moving node - using mutation context.</title>
 		<simpara>The main problem with moving node is to keep all the "references" correct in chromo, ref <xref linkend="ds_mv_local_tch"/> for
 		    details and current solution description. Anoter possible solution can be as follow:
-		    <itemizedlist>
-			<listitem>Special attribute is introduced in base agent - mutation context. (It's interesting how this mutation context
-			    corresponds to mutation context introduced in <xref linkend="ds_daa_itn_sfo"/>?).</listitem>
-			<listitem>All mutations are executed on base on this attribute.</listitem>
-			<listitem>Specia mutaion is added - "Change of mutation context". This mutation adds new element to mutation context.</listitem>
-			<listitem>When node A is moved to node B, not only node B mutation of moving is applied but node B also mutates
-			    node A with mutation "Change of mutation context"</listitem>
-			<listitem>When node A creates heir, the A mutations are subsequentely applied to its heir. As soon as mutation
-			    "Change context" occurs the attribute "mutation context" is set from the mutation.</listitem>
-		    </itemizedlist>
-		</simpara>
-	    </sect3>
-	</sect2>
-	<sect2 id="ds_mut_rm"><title>Removing of node</title>
-	    <sect3 id="ds_mut_rm_appr"><title>Real deletions vs marking as removed</title>
-		<simpara>There are two approaches considered of how to implement removing mutation:</simpara>
 		<itemizedlist>
-		    <listitem>#1 - to really remove node from model</listitem>
-		    <listitem>#2 - to mark node in model as removed but keep it in model</listitem>
+		    <listitem>Special attribute is introduced in base agent - mutation context. (It's interesting how this mutation context
+			corresponds to mutation context introduced in <xref linkend="ds_daa_itn_sfo"/>?).</listitem>
+		    <listitem>All mutations are executed on base on this attribute.</listitem>
+		    <listitem>Specia mutaion is added - "Change of mutation context". This mutation adds new element to mutation context.</listitem>
+		    <listitem>When node A is moved to node B, not only node B mutation of moving is applied but node B also mutates
+			node A with mutation "Change of mutation context"</listitem>
+		    <listitem>When node A creates heir, the A mutations are subsequentely applied to its heir. As soon as mutation
+			"Change context" occurs the attribute "mutation context" is set from the mutation.</listitem>
 		</itemizedlist>
-		<simpara>Removing node allows save resources, but there is serious problem with that approach. The matter is
-		    that models node keeps register of dependencies. These registers are required for instanse for
-		    squeezing chromo, ref <xref linkend="ds_mut_squeezing"/>. So approach#2 is to be applied. </simpara>
-	    </sect3>
-	    <sect3 id="ds_mut_rm_appr2"><title>Approach#2 details (marking node as deleted, no real removal)</title>
-		<itemizedlist>
-		    <listitem>Owner has to keep removed component in owners register. We can distinguish 
-			bottom-up notification from component in case of mutation of removing (soft removing acc to
-			approach#2), and real removing. This means that in this notification handler the owner should 
-			behave differently: don't de-register component if soft removal, and de-register if real removal.
-		    </listitem>
-		</itemizedlist>
-	    </sect3>
-	    <sect3 id="ds_mut_rm_deps"><title>Refusing removing if deps presents</title>
-		<simpara>Node removing mutation has to be refused if there are critical dependencies on this node.
-		    Missing the node in this case will cause model creation errors. The reason of this
-		    policy is that event if the node is not really removed from the model (i.e approach#2 from 
-		    <xref linkend="ds_mut_rm_appr"/> is used) the further chromo squeezing will lead to the node
-		    completely removing from the model.</simpara>
-	    </sect3>
-	</sect2>
-	<sect2 id="ds_transp"><title>Nodes (mutations) transposition (reordering)</title>
-	    <sect3><title>Intro</title>
-		<simpara> Nodes transposition, or nodes shifting is just changing the order the nodes in the 
-		    owner node. The order is inportant for model creation because actually the model creation "machine" is single-pass. 
-		    So the mutation that use reference to some node must be applied AFTER the referenced node is created.</simpara>
-		<simpara>There was the discussion around this operation, 
-		    ref <ulink url="../../../fap-doc/doc_incr_syst_creation/index.html#sec_lim_transp"/>. There was conclusion
-		    that transposition is not allowed in the scope of incremental mutations approach.</simpara>
-	    </sect3>
-	    <sect3><title>Approached</title>
-		<simpara>There are potential solution for the problem of changing order:</simpara>
-		<orderedlist>
-		    <listitem>Not consider changing order as chromo mutaion, ref <xref linkend="ds_transp_nochange"/></listitem>
-		    <listitem>Add specific mutation, improve ordering mechanism, ref <xref linkend="ds_transp_mut"/></listitem>
-		</orderedlist>
-	    </sect3>
-	    <sect3 id="ds_transp_nochange"><title>Approach: Not consider changing order as chromo mutaion </title>
-		<simpara>The disadvantage here is that there will not be the history of change.</simpara>
-	    </sect3>
-	    <sect3 id="ds_transp_mut"><title>Mutation for transposition instead of direct changing of chromo</title>
-		<simpara>The decision that transposition is not allowed in incremental mutation scheme is based on the assumption that
-		    the transposition is done via direct chromo changing. But it is still possible to change the order without 
-		    direct changing of chromo. The idea is that the mutation can be used, that specifies the change of order.  </simpara>
-		<simpara>In this case we still follow the incremental mutaions approach and the same time can change the order. 
-		    Another point is that the mutaion mechanism needs to be improved to support the change order mutation. This is 
-		    because the mechanism should operate not only with the current mutation as usual but take into account all nodes
-		    in the current upper level node and "create" the order before adding the nodes. There is also the option of 
-		    inserting the order change mutation at the beginning of the upper level node.</simpara>
-		<simpara>One of the solution could be as following. The -node- mutation includes specific element - container of reordering mutations. This element should be the first
-		    within -node-. Reordering mutation is like: 'order' object_order target_order, where object order is the initial order of reordered mutation and target order is initial order of 
-		    mutation before that the reordered mutation is shifted. The initial order is id of native order of mutation in owned node, i.e the order of mutation in local chromo. When -node- mutation
-		    gets applied, the mutated agent first calculate the order of mutations using reodreding mutations and then applies the mutaion according to new order. In result the chromo of 
-		    agent will be reordered. To keep chromo original this reordered chromo needs to be transformed back to unordered state on chromo saving.</simpara>
-	    </sect3>
-	</sect2>
-	<sect2 id="ds_mut_dis_pheno"><title>Disabling/Enabling phenotypic modificaions</title>
-	    <sect3><title>Intro</title>
-		<simpara>Last time there was decision made to introduce new options - disabling pheno modificaions</simpara>
-	    </sect3>
-	    <sect3 id="ds_mut_dis_pheno_cs"><title>Cause of the problem</title>
-		<simpara>The root-cause of the problem is contradiction between the sequence of changing model and 
-		    option of inheritance of childs from the structural part of system native hier. If we didn't require 
-		    such an inheritance then we can use flat chromo where the order of mutations completelly corresponds to
-		    the order the changes applied to the system on construction phase.</simpara>
-		<simpara>However native hier (structure) is very important part of system creation and cannot be
-		    avoided or ignored. This approach is to create the system via a set of components, which are
-		    improved via inheritance and local mutations. According to this approach the mutation in parent must
-		    be applied before the childs creation. But this mutation applying sequence differs from native secuence 
-		    (the sequence of how the mutation were introduced)</simpara>
-		<simpara>Actually to keep original sequence is not a problem. For instance flat chromo can be used.</simpara>
-		<simpara>There is another option of keeping the original sequence of mutation - mutation order. 
-		    Currently it is possible to set order value for each mutation. So if the "chromo machine" could to
-		    apply the muts according to the order it would be equivalent to flat chromo. Equivelency means that these
-		    forms of chromos can be explicitly transformed one to another.</simpara>
-		<simpara>But again the real problem is that approach of creating system via inherited sybsystems requires that
-		    the sequence of applying differs the original sequence.</simpara>
-	    </sect3>
-	    <sect3><title>Inheritance based approach: solving the problems.</title>
-		<simpara>Currently inherirance based approach is the primary mechanism for creation system. The problem of 
-		    not keeping the original sequence in this case can be mitigated by disabling phenotypic modification. What
-		    are the theats of breaking chromo safety:
-		    <itemizedlist>
-			<listitem>Changing ref: dependencies on the local owner component with the bigger rank.
-			    This problem can be fixed by shifting mutated node root mutation over to dependency mutation. This will
-			    not affect the model because this shifting is local, ref also <xref linkend="ds_indp_mutord"/></listitem>
-			<listitem>Renaming subnode that is referenced. No solution here, required change of ref.</listitem>
-		    </itemizedlist>
-		</simpara>
-	    </sect3>
-	    <sect3><title>Flat chromo approach</title>
-		<simpara>Issues</simpara>
-		<orderedlist>
-		    <listitem>What if we create child from a node and then apply some mutation to the node. Then we d like to
-			have this mutaion in child also.</listitem>
-		</orderedlist>
-	    </sect3>
-	    <sect3 id="ds_mut_dis_pheno_rebase"><title>Hibrid approach: pheno modif not hampering inheritance. Reparent mutation.</title>
-		<simpara>As mentioned in <xref linkend="ds_mut_dis_pheno_cs"/> the approach of creating system via inherited 
-		    subsystems are explicit and convenient. Subsystem_B that inherites Subsystem_A is "improvement" of Subystem_A. 
-		    The whole system normally "grows up" by adding new improvements to the current chaing: Subystem_C, or branching. 
-		    But it is also possible that system creation requires to change initial subsystem in the chain. This can happen 
-		    for instance in case when there already is big three of inherited subsystem and then error in some base subsystem gets
-		    discovered.</simpara>
-		<simpara>The "traditional" approach works here: we can mutate the base subsystem and there regenerate the system. This 
-		    is how "disabled pheno modif" is working. As discussed there is problem with that approach - we introduce break in native
-		    sequence of mutations. There is one approach that potentially allows to make change in base subsystems and same time
-		    keep native sequence of mutation. This approach is not to mutate base subsystem, but create inherited subsystem, 
-		    mutate it properly and then "rebase" the upper tree part to it.</simpara>
-	    </sect3>
-	    <sect3><title>Issues</title>
-		<orderedlist>
-		    <listitem>In case of pheno disabled it will not be possible to change parents but keep childs out of this change. 
-			Currently (enabled pheno) it
-			is possible to change parent even after there was children created. Then potentially we have an option to 
-			"rebase" children via moving pheno to mutation. In case of pheno disabled we need to refuse any mutations in 
-			parent or enable the mut, so do "rebasing" immediatelly. In fact this "immediate" rebasing is exact 
-			approach of system creation using inheritance.</listitem>
-		</orderedlist>
-	    </sect3>
-	</sect2>
-	<sect2 id="ds_mut_pheno"><title>Controlling of Phenotypic modification mode</title>
-	    <sect3><title>Introduction</title>
-		<simpara>Initially phenotypic modification was enabled by default. On practice this mode was rather
-		    inconvenient because of pheno modifs created a lot of dependencies. To keep chromo safe we transform many changes 
-		    to pheno modif and put them after corresponding deps. In result the constructed system chromo
-		    become mess. Also this hardened inheritance - the changes that should be real mutations were transformed to
-		    pheno modif that were not involved in inheritance process.</simpara>
-		<simpara>After this problem analysis it was decided that we need to restrict the pheno modif mode and have
-		    pheno modif disabled by default. Only for inherited nodes the pheno modif would be enabled in this case	.</simpara>
-		<simpara>But this decision also resulted in problem. For instance it got not possible to simply change 
-		    ref in Edges connpoint. So if some edge was created with low rank and then it became required to make connection
-		    to node with greated rank then it result in critical dependency. There were two approached considered: 
-		    <itemizedlist>
-			<listitem>to move edge locally in order to increase edges rank, ref <xref linkend="ds_indp_mutord"/></listitem>
-			<listitem>to introduce the ability to set pheno mode for particular agent.</listitem>
-		    </itemizedlist>
-		</simpara>
-	    </sect3>
-	    <sect3><title>Shifting node to increase its rank</title>
-		<simpara> This approach cons is that actually it is not possible to do it via simple mutation. It was discussed 
-		    many times, ref <xref linkend="ref_incr_mut"/> for the discusstion, specifically the section
-		    "Transposition of nodes within chromo is not allowed". Also ref <xref linkend="ds_transp"/> for the design 
-		    related discussion. The short explanation is that the initial mutaion anytime goes first so to change nodes rank we
-		    need to edit chromo but not mutation it additivelly.</simpara>
-		<simpara>So to shift the node we need to recreate the node, remove initial one and then squeeze the chromo to 
-		    avoid errors reporting because of initial mut is failed. Not simple approach really.</simpara>
-		<simpara>The update here is that "chromo invariance with regards to node order" principle can be applied,
-		    ref <xref linkend="ds_indp_mutord"/>. This will solve the problem mentioned above because shifting of the node
+	    </simpara>
+	</sect3>
+    </sect2>
+    <sect2 id="ds_mut_rm"><title>Removing of node</title>
+	<sect3 id="ds_mut_rm_appr"><title>Real deletions vs marking as removed</title>
+	    <simpara>There are two approaches considered of how to implement removing mutation:</simpara>
+	    <itemizedlist>
+		<listitem>#1 - to really remove node from model</listitem>
+		<listitem>#2 - to mark node in model as removed but keep it in model</listitem>
+	    </itemizedlist>
+	    <simpara>Removing node allows save resources, but there is serious problem with that approach. The matter is
+		that models node keeps register of dependencies. These registers are required for instanse for
+		squeezing chromo, ref <xref linkend="ds_mut_squeezing"/>. So approach#2 is to be applied. </simpara>
+	</sect3>
+	<sect3 id="ds_mut_rm_appr2"><title>Approach#2 details (marking node as deleted, no real removal)</title>
+	    <itemizedlist>
+		<listitem>Owner has to keep removed component in owners register. We can distinguish 
+		    bottom-up notification from component in case of mutation of removing (soft removing acc to
+		    approach#2), and real removing. This means that in this notification handler the owner should 
+		    behave differently: don't de-register component if soft removal, and de-register if real removal.
+	    </listitem>
+	</itemizedlist>
+    </sect3>
+    <sect3 id="ds_mut_rm_deps"><title>Refusing removing if deps presents</title>
+	<simpara>Node removing mutation has to be refused if there are critical dependencies on this node.
+	    Missing the node in this case will cause model creation errors. The reason of this
+	    policy is that event if the node is not really removed from the model (i.e approach#2 from 
+	<xref linkend="ds_mut_rm_appr"/> is used) the further chromo squeezing will lead to the node
+	    completely removing from the model.</simpara>
+    </sect3>
+</sect2>
+<sect2 id="ds_transp"><title>Nodes (mutations) transposition (reordering)</title>
+    <sect3><title>Intro</title>
+	<simpara> Nodes transposition, or nodes shifting is just changing the order the nodes in the 
+	    owner node. The order is inportant for model creation because actually the model creation "machine" is single-pass. 
+	    So the mutation that use reference to some node must be applied AFTER the referenced node is created.</simpara>
+	<simpara>There was the discussion around this operation, 
+	    ref <ulink url="../../../fap-doc/doc_incr_syst_creation/index.html#sec_lim_transp"/>. There was conclusion
+		that transposition is not allowed in the scope of incremental mutations approach.</simpara>
+	</sect3>
+	<sect3><title>Approached</title>
+	    <simpara>There are potential solution for the problem of changing order:</simpara>
+	    <orderedlist>
+		<listitem>Not consider changing order as chromo mutaion, ref <xref linkend="ds_transp_nochange"/></listitem>
+		<listitem>Add specific mutation, improve ordering mechanism, ref <xref linkend="ds_transp_mut"/></listitem>
+	    </orderedlist>
+	</sect3>
+	<sect3 id="ds_transp_nochange"><title>Approach: Not consider changing order as chromo mutaion </title>
+	    <simpara>The disadvantage here is that there will not be the history of change.</simpara>
+	</sect3>
+	<sect3 id="ds_transp_mut"><title>Mutation for transposition instead of direct changing of chromo</title>
+	    <simpara>The decision that transposition is not allowed in incremental mutation scheme is based on the assumption that
+		the transposition is done via direct chromo changing. But it is still possible to change the order without 
+		direct changing of chromo. The idea is that the mutation can be used, that specifies the change of order.  </simpara>
+	    <simpara>In this case we still follow the incremental mutaions approach and the same time can change the order. 
+		Another point is that the mutaion mechanism needs to be improved to support the change order mutation. This is 
+		because the mechanism should operate not only with the current mutation as usual but take into account all nodes
+		in the current upper level node and "create" the order before adding the nodes. There is also the option of 
+		inserting the order change mutation at the beginning of the upper level node.</simpara>
+	    <simpara>One of the solution could be as following. The -node- mutation includes specific element - container of reordering mutations. This element should be the first
+		within -node-. Reordering mutation is like: 'order' object_order target_order, where object order is the initial order of reordered mutation and target order is initial order of 
+		mutation before that the reordered mutation is shifted. The initial order is id of native order of mutation in owned node, i.e the order of mutation in local chromo. When -node- mutation
+		gets applied, the mutated agent first calculate the order of mutations using reodreding mutations and then applies the mutaion according to new order. In result the chromo of 
+		agent will be reordered. To keep chromo original this reordered chromo needs to be transformed back to unordered state on chromo saving.</simpara>
+	</sect3>
+    </sect2>
+    <sect2 id="ds_mut_dis_pheno"><title>Disabling/Enabling phenotypic modificaions</title>
+	<sect3><title>Intro</title>
+	    <simpara>Last time there was decision made to introduce new options - disabling pheno modificaions</simpara>
+	</sect3>
+	<sect3 id="ds_mut_dis_pheno_cs"><title>Cause of the problem</title>
+	    <simpara>The root-cause of the problem is contradiction between the sequence of changing model and 
+		option of inheritance of childs from the structural part of system native hier. If we didn't require 
+		such an inheritance then we can use flat chromo where the order of mutations completelly corresponds to
+		the order the changes applied to the system on construction phase.</simpara>
+	    <simpara>However native hier (structure) is very important part of system creation and cannot be
+		avoided or ignored. This approach is to create the system via a set of components, which are
+		improved via inheritance and local mutations. According to this approach the mutation in parent must
+		be applied before the childs creation. But this mutation applying sequence differs from native secuence 
+		(the sequence of how the mutation were introduced)</simpara>
+	    <simpara>Actually to keep original sequence is not a problem. For instance flat chromo can be used.</simpara>
+	    <simpara>There is another option of keeping the original sequence of mutation - mutation order. 
+		Currently it is possible to set order value for each mutation. So if the "chromo machine" could to
+		apply the muts according to the order it would be equivalent to flat chromo. Equivelency means that these
+		forms of chromos can be explicitly transformed one to another.</simpara>
+	    <simpara>But again the real problem is that approach of creating system via inherited sybsystems requires that
+		the sequence of applying differs the original sequence.</simpara>
+	</sect3>
+	<sect3><title>Inheritance based approach: solving the problems.</title>
+	    <simpara>Currently inherirance based approach is the primary mechanism for creation system. The problem of 
+		not keeping the original sequence in this case can be mitigated by disabling phenotypic modification. What
+		are the theats of breaking chromo safety:
+	    <itemizedlist>
+		<listitem>Changing ref: dependencies on the local owner component with the bigger rank.
+		    This problem can be fixed by shifting mutated node root mutation over to dependency mutation. This will
+		    not affect the model because this shifting is local, ref also <xref linkend="ds_indp_mutord"/></listitem>
+		<listitem>Renaming subnode that is referenced. No solution here, required change of ref.</listitem>
+	    </itemizedlist>
+	</simpara>
+    </sect3>
+    <sect3><title>Flat chromo approach</title>
+	<simpara>Issues</simpara>
+	<orderedlist>
+	    <listitem>What if we create child from a node and then apply some mutation to the node. Then we d like to
+		have this mutaion in child also.</listitem>
+	</orderedlist>
+    </sect3>
+    <sect3 id="ds_mut_dis_pheno_rebase"><title>Hibrid approach: pheno modif not hampering inheritance. Reparent mutation.</title>
+	<simpara>As mentioned in <xref linkend="ds_mut_dis_pheno_cs"/> the approach of creating system via inherited 
+	    subsystems are explicit and convenient. Subsystem_B that inherites Subsystem_A is "improvement" of Subystem_A. 
+	    The whole system normally "grows up" by adding new improvements to the current chaing: Subystem_C, or branching. 
+	    But it is also possible that system creation requires to change initial subsystem in the chain. This can happen 
+	    for instance in case when there already is big three of inherited subsystem and then error in some base subsystem gets
+	    discovered.</simpara>
+	<simpara>The "traditional" approach works here: we can mutate the base subsystem and there regenerate the system. This 
+	    is how "disabled pheno modif" is working. As discussed there is problem with that approach - we introduce break in native
+	    sequence of mutations. There is one approach that potentially allows to make change in base subsystems and same time
+	    keep native sequence of mutation. This approach is not to mutate base subsystem, but create inherited subsystem, 
+	    mutate it properly and then "rebase" the upper tree part to it.</simpara>
+    </sect3>
+    <sect3><title>Issues</title>
+	<orderedlist>
+	    <listitem>In case of pheno disabled it will not be possible to change parents but keep childs out of this change. 
+		Currently (enabled pheno) it
+		is possible to change parent even after there was children created. Then potentially we have an option to 
+		"rebase" children via moving pheno to mutation. In case of pheno disabled we need to refuse any mutations in 
+		parent or enable the mut, so do "rebasing" immediatelly. In fact this "immediate" rebasing is exact 
+		approach of system creation using inheritance.</listitem>
+	</orderedlist>
+    </sect3>
+</sect2>
+<sect2 id="ds_mut_pheno"><title>Controlling of Phenotypic modification mode</title>
+    <sect3><title>Introduction</title>
+	<simpara>Initially phenotypic modification was enabled by default. On practice this mode was rather
+	    inconvenient because of pheno modifs created a lot of dependencies. To keep chromo safe we transform many changes 
+	    to pheno modif and put them after corresponding deps. In result the constructed system chromo
+	    become mess. Also this hardened inheritance - the changes that should be real mutations were transformed to
+	    pheno modif that were not involved in inheritance process.</simpara>
+	<simpara>After this problem analysis it was decided that we need to restrict the pheno modif mode and have
+	    pheno modif disabled by default. Only for inherited nodes the pheno modif would be enabled in this case	.</simpara>
+	<simpara>But this decision also resulted in problem. For instance it got not possible to simply change 
+	    ref in Edges connpoint. So if some edge was created with low rank and then it became required to make connection
+	    to node with greated rank then it result in critical dependency. There were two approached considered: 
+	<itemizedlist>
+	    <listitem>to move edge locally in order to increase edges rank, ref <xref linkend="ds_indp_mutord"/></listitem>
+	    <listitem>to introduce the ability to set pheno mode for particular agent.</listitem>
+	</itemizedlist>
+    </simpara>
+</sect3>
+<sect3><title>Shifting node to increase its rank</title>
+    <simpara> This approach cons is that actually it is not possible to do it via simple mutation. It was discussed 
+	many times, ref <xref linkend="ref_incr_mut"/> for the discusstion, specifically the section
+	    "Transposition of nodes within chromo is not allowed". Also ref <xref linkend="ds_transp"/> for the design 
+		related discussion. The short explanation is that the initial mutaion anytime goes first so to change nodes rank we
+		need to edit chromo but not mutation it additivelly.</simpara>
+	    <simpara>So to shift the node we need to recreate the node, remove initial one and then squeeze the chromo to 
+		avoid errors reporting because of initial mut is failed. Not simple approach really.</simpara>
+	    <simpara>The update here is that "chromo invariance with regards to node order" principle can be applied,
+		ref <xref linkend="ds_indp_mutord"/>. This will solve the problem mentioned above because shifting of the node
 		    is not mutation anymore (nodes position just doesn't affect the model at all).</simpara>
 	    </sect3>
 	    <sect3><title>How to set pheno mode for an agent</title>
@@ -1040,72 +1052,72 @@
 		    squeezing approaces assumes that chromo is changed in result of squeezing procedure. And these changes
 		    are not "regular", i.e. they are not introduced via adding of mutations. 
 		    Instead mutations themselves are being changed, ref to example in <xref linkend="ds_mut_sqeezing_mrg"/>. 
-		    This makes rollback inapplicable for squeezed chromos.  </simpara>
-		<simpara>Is it real limitation for keeping history? Probably not. We can try to avoid changing of mutations 
-		    themselves. To be more exact, we can use those changes that can be reverted. For instanse we can use 
-		    mutation attribure showing that the mutations is inactive. This attribute can be simply removed if we 
-		    want to revert squeezing. Let's call this approach "soft optimization".
-		    What about -rn- mutation?  How can we avoid mutations change in this case? 
-		    This -rename- mutation is quite specific. This is separate subject of consideration of it because this 
-		    mutation changes reference to the renamed node. Some alternative approaches were already 
-		    discussed, e.g using aliases.</simpara>
-		<simpara>Another approach to keep chromo history is to introduce one more level on model - model of 
-		    changing of chromo, <xref linkend="ds_mmc"/>. This makes chromo itself just intermediate
-		    model being generated from upper layer model. "Chromo of chromo" or chromo2 can include all operations
-		    of changing chromo, not only elementary but also operations like "squeeze chromo" etc.</simpara>
-	    </sect3>
-	    <sect3 id="ds_mut_sqeezing_so_prnc"><title>Soft optimization: principles</title>
-		<sect4 id="ds_mut_sqeezing_so_prnc_att"><title>To optimize only attached mutations</title>
-		    <simpara>The reasoning of this principle is that optimizing out de-attached mutations is not
-			permanent. There are a lot of use-cases causes to errors if this is not followed. For example
-			ref to uint test Ut_mod::test_ImpsMgrOpt().</simpara>
-		</sect4>
-		<sect4 id="ds_mut_sqeezing_so_prnc_cnd"><title>To omit optimization if opt conditions aren't met.</title>
-		    <simpara>Example is: </simpara>
-		    <programlisting>
-			00 node A1
-			01 cont some_node ref=A1
-			03 rm A1
-		    </programlisting>
-		    <simpara>Mutation 03 is wrong, it was denied because A1 has dep of type -ref-. Of course
-			in normal surcumstances the mut -rm- couldn't be included to the chromo, but what is it
-			already happened? In this case -rm- mutation will not be applied, so optimization procedure
-			will not find original mut -node-. Let's consider this as not meeting optimization 
-			condition. In other words, we say that only chain of correct mutations has to be 
-			optimized, but not wrong mutations.</simpara>
-		    <simpara>There is another approach. We can say that any mutations that are "ecessive" in
-			chromo are to be optimized out. According to that, wrong mutations are to be optimized out too.
-			There is problem with this approach. If it is applied to the example above we will miss the
-			error messages in the log.
-		    </simpara>
-		    <simpara>Select approach#1 as working.</simpara>
-		</sect4>
-		<sect4 id="ds_mut_sqeezing_so_prnc_mp"><title>Optimization to be multy-pass procedure</title>
-		    <simpara>In result of first pass of optimization some mutations gets optimized out, this change
-			the chromo thus changes the conditions of optimization. So optimization has to be repeated
-			several times until the chromo gets unchanges.</simpara>
-		</sect4>
-	    </sect3>
-	    <sect3 id="ds_mut_sqeezing_rm"><title>Soft optimization: -rm- mutation</title>
-		<sect4><title>Procedure of optimization</title>
-		    <simpara>Optimization rules are:</simpara>
-		    <orderedlist>
-			<listitem>Optimize out original -node- mutations (that is removed via -rm-) if there
-			    are not critical dependencies (-parent- and -ref-). So there will be creator responsibility 
-			    to release these deps first. There is alternative approach when deps of some type
-			    (e.g. -ref-) are not blocking -rm- so optimized out automatically.</listitem>
-			<listitem>Optimize out all remaining mutations dependent on removed node
-			    (e.g. with -node- dep type)</listitem>
-		    </orderedlist>
-		    <simpara>Regarding approach of considering some deps not blocking. Does it make sense to 
-			consider -parent- deps also not blocking. What would be the criteria of not blocking deps?
-			The criteria would be that optimization out such dependence doesnt cause further propagation of
-			optimization. For instance optimizing out -parent- dep leads to such propagation (optimizing out
-			the child node equivalent to removing the node, this causes in turn necessity to optimize out
-			the child of this node and so on. So -parent- dep doesn't satisfy the criteria of non-propagation.
-			Probably it make sense to introduce new option "Removal policy: strict/soft" where strict
-			policy assumes the critical deps are to be resolved by the user first but soft policy allowes
-			automatically optimize out all the deps.
+			This makes rollback inapplicable for squeezed chromos.  </simpara>
+		    <simpara>Is it real limitation for keeping history? Probably not. We can try to avoid changing of mutations 
+			themselves. To be more exact, we can use those changes that can be reverted. For instanse we can use 
+			mutation attribure showing that the mutations is inactive. This attribute can be simply removed if we 
+			want to revert squeezing. Let's call this approach "soft optimization".
+			What about -rn- mutation?  How can we avoid mutations change in this case? 
+			This -rename- mutation is quite specific. This is separate subject of consideration of it because this 
+			mutation changes reference to the renamed node. Some alternative approaches were already 
+			discussed, e.g using aliases.</simpara>
+		    <simpara>Another approach to keep chromo history is to introduce one more level on model - model of 
+			changing of chromo, <xref linkend="ds_mmc"/>. This makes chromo itself just intermediate
+			    model being generated from upper layer model. "Chromo of chromo" or chromo2 can include all operations
+			    of changing chromo, not only elementary but also operations like "squeeze chromo" etc.</simpara>
+		    </sect3>
+		    <sect3 id="ds_mut_sqeezing_so_prnc"><title>Soft optimization: principles</title>
+			<sect4 id="ds_mut_sqeezing_so_prnc_att"><title>To optimize only attached mutations</title>
+			    <simpara>The reasoning of this principle is that optimizing out de-attached mutations is not
+				permanent. There are a lot of use-cases causes to errors if this is not followed. For example
+				ref to uint test Ut_mod::test_ImpsMgrOpt().</simpara>
+			</sect4>
+			<sect4 id="ds_mut_sqeezing_so_prnc_cnd"><title>To omit optimization if opt conditions aren't met.</title>
+			    <simpara>Example is: </simpara>
+			    <programlisting>
+				00 node A1
+				01 cont some_node ref=A1
+				03 rm A1
+			    </programlisting>
+			    <simpara>Mutation 03 is wrong, it was denied because A1 has dep of type -ref-. Of course
+				in normal surcumstances the mut -rm- couldn't be included to the chromo, but what is it
+				already happened? In this case -rm- mutation will not be applied, so optimization procedure
+				will not find original mut -node-. Let's consider this as not meeting optimization 
+				condition. In other words, we say that only chain of correct mutations has to be 
+				optimized, but not wrong mutations.</simpara>
+			    <simpara>There is another approach. We can say that any mutations that are "ecessive" in
+				chromo are to be optimized out. According to that, wrong mutations are to be optimized out too.
+				There is problem with this approach. If it is applied to the example above we will miss the
+				error messages in the log.
+			</simpara>
+			<simpara>Select approach#1 as working.</simpara>
+		    </sect4>
+		    <sect4 id="ds_mut_sqeezing_so_prnc_mp"><title>Optimization to be multy-pass procedure</title>
+			<simpara>In result of first pass of optimization some mutations gets optimized out, this change
+			    the chromo thus changes the conditions of optimization. So optimization has to be repeated
+			    several times until the chromo gets unchanges.</simpara>
+		    </sect4>
+		</sect3>
+		<sect3 id="ds_mut_sqeezing_rm"><title>Soft optimization: -rm- mutation</title>
+		    <sect4><title>Procedure of optimization</title>
+			<simpara>Optimization rules are:</simpara>
+			<orderedlist>
+			    <listitem>Optimize out original -node- mutations (that is removed via -rm-) if there
+				are not critical dependencies (-parent- and -ref-). So there will be creator responsibility 
+				to release these deps first. There is alternative approach when deps of some type
+				(e.g. -ref-) are not blocking -rm- so optimized out automatically.</listitem>
+			    <listitem>Optimize out all remaining mutations dependent on removed node
+				(e.g. with -node- dep type)</listitem>
+			</orderedlist>
+			<simpara>Regarding approach of considering some deps not blocking. Does it make sense to 
+			    consider -parent- deps also not blocking. What would be the criteria of not blocking deps?
+			    The criteria would be that optimization out such dependence doesnt cause further propagation of
+			    optimization. For instance optimizing out -parent- dep leads to such propagation (optimizing out
+			    the child node equivalent to removing the node, this causes in turn necessity to optimize out
+			    the child of this node and so on. So -parent- dep doesn't satisfy the criteria of non-propagation.
+			    Probably it make sense to introduce new option "Removal policy: strict/soft" where strict
+			    policy assumes the critical deps are to be resolved by the user first but soft policy allowes
+			    automatically optimize out all the deps.
 		    </simpara>
 		</sect4>
 	    </sect3>
@@ -1130,43 +1142,43 @@
 		    optimize chromo. -node- mutations will be optimized off, so the dependency will be removed and 
 		    the first -cont- mutation can be then optimized off too. This requires at least two passages of 
 		    optimization.
-		</simpara>
-		<sect4><title>Case: removed reference</title>
-		    <programlisting>
-			cont N_1, _REF(N_2)
-			rm N_2
-			cont N_1, _new_value
-		    </programlisting>
-		</sect4>
-		<sect4><title>Taking optimized off muts into account when adding new mut</title>
-		    <simpara>Optimized off mutations are to be taken into account when adding new mutations.
-			The reason of that is that chromo machine can move nodes locally in case the deps are
-			not broken. Optimized off mutations are to be used in deps analsys. Otherwise deps 
-			broken can occurs after optimization undo.</simpara>
-		</sect4>
-	    </sect3>
-	    <sect3 id="ds_mut_sqeezing_sft_lim"><title>Soft optimization: deficiencies and limitations</title>
-	    </sect3>
-	    <sect3 id="ds_mut_sqeezing_smautm"><title>Soft optimization: automatic optimization</title>
-		<sect4><title>Introduction</title>
-		    <simpara>There was the idea (ref. <xref linkend="ds_mut_sqeezing_rm"/> that the optimization 
-			can be done automatically each time the user adds new mutation. 
-			Then on new mutation being introduced (mutation introduction is 
-			done using "triage" mutation mode) the chromo machine runs optimization procedure.</simpara>
-		</sect4>
-		<sect4><title>Processing mut opt attribute when analyzing deps</title>
-		    <simpara>After each optimization the model reloading would be required. This happens not always
-			but in principle we will need to reload the model. This is for instance because mutations to
-			be optimized out are blocking deps for mutation creator is going to add. Example is:</simpara>
-		    <programlisting>
-			01  node A1 ...
-			02  cont node=NN ref A1
-			...
-			03  cont node=NN ref NONE
-			04  rm node A1
-		    </programlisting>
-		    <simpara>Creator edits initial chromo {01, 02}, then he is going to remove A1. But A1 has 
-			critical dep 03 of -ref- type, ref <xref linkend="ds_mut_sqeezing_rm"/>.
+	    </simpara>
+	    <sect4><title>Case: removed reference</title>
+		<programlisting>
+		    cont N_1, _REF(N_2)
+		    rm N_2
+		    cont N_1, _new_value
+		</programlisting>
+	    </sect4>
+	    <sect4><title>Taking optimized off muts into account when adding new mut</title>
+		<simpara>Optimized off mutations are to be taken into account when adding new mutations.
+		    The reason of that is that chromo machine can move nodes locally in case the deps are
+		    not broken. Optimized off mutations are to be used in deps analsys. Otherwise deps 
+		    broken can occurs after optimization undo.</simpara>
+	    </sect4>
+	</sect3>
+	<sect3 id="ds_mut_sqeezing_sft_lim"><title>Soft optimization: deficiencies and limitations</title>
+	</sect3>
+	<sect3 id="ds_mut_sqeezing_smautm"><title>Soft optimization: automatic optimization</title>
+	    <sect4><title>Introduction</title>
+		<simpara>There was the idea (ref. <xref linkend="ds_mut_sqeezing_rm"/> that the optimization 
+		    can be done automatically each time the user adds new mutation. 
+		    Then on new mutation being introduced (mutation introduction is 
+		    done using "triage" mutation mode) the chromo machine runs optimization procedure.</simpara>
+	    </sect4>
+	    <sect4><title>Processing mut opt attribute when analyzing deps</title>
+		<simpara>After each optimization the model reloading would be required. This happens not always
+		    but in principle we will need to reload the model. This is for instance because mutations to
+		    be optimized out are blocking deps for mutation creator is going to add. Example is:</simpara>
+		<programlisting>
+		    01  node A1 ...
+		    02  cont node=NN ref A1
+		    ...
+		    03  cont node=NN ref NONE
+		    04  rm node A1
+		</programlisting>
+		<simpara>Creator edits initial chromo {01, 02}, then he is going to remove A1. But A1 has 
+		    critical dep 03 of -ref- type, ref <xref linkend="ds_mut_sqeezing_rm"/>.
 			To remove this dep creator change the ref to NONE. The ref
 			is removed from the model but there is still mutation in chromo, so chromo machine still
 			denies removal A1. To continue removing A1 creator needs to optimize the chromo (it will
@@ -1252,44 +1264,44 @@
 		    by agent itself but by the role the agent plays in its owner. For instance, ConnectionPoint agent can be referenced within vertes 
 		    as just vertex but not Connectable. So as a vertex ConnectionPoint doesn't have some specifics for deps. But if it is referenced
 		    within system, then it becomes specific deps as Connectable. So Connectable has to have its own method for deps.
-		</simpara>
-		<simpara>Also it needs to be considered if all mutation require asking owner to find implicit deps. As we see the implicit deps are 
-		    generated by run-time behaviour, i.e by agents specific. Let's look at what parts of mutation require knowledge of deps. As we 
-		    already discussed the dep is actually dep runtime node on another dep. So saying "what are the deps for the given mutation" we
-		    have to say "what are the deps for all runtime nodes referenced by this mutation". There are three kinds of runtime nodes 
-		    references in mutations: object, parent, and ref. What refs can generate implicit deps in agents? To answer this question we
-		    need to look at which references are specifically handled by agents. All such handling is initiated via MCompsObserver iface. The
-		    review of the current handling implementation is as: </simpara>
-		<programlisting>
-		    Syst::OnCompDeleting - object
-		    OnCompAdding - default handling only
-		    OnCompChanged - many agents hadnling change of ref in content. So - ref
-		    OnCompRenamed - default handling only
-		</programlisting>
-		<simpara>So at the moment the only specific deps for mutation nodes referenced via ref attribute have to be taken into account.</simpara>
-	    </sect3>
-	</sect2>
-	<sect2 id="ds_mut_attach"><title>Concept of nodes chromo attaching</title>
-	    <sect3 id="ds_mut_attach_calc"><title>Attaching sign calculation</title>
-		<simpara>Currently the concept of nodes chromo attaching is actively used. There is base agents proper APIs for that: IsChromoAttached.
-		    We say that nodes chromo is attached if there is path from nodes chromo to system chromo root node. But currently the attaching sign
-		    is calculated a bit incorrectly. In result the nodes not directly attached but placed to component are not considered as attached, example is: 
-		    [node node=some_component parent=some_parent name=some_name]. This causes problem when pheno modification disabled: on one hand such node 
-		    is detected as not attached so its attached owner is selected as the mutation point,
-		    on another hand the error "attempt of pheno modif, disabled" occurs because the node isn't inherited.</simpara>
-	    </sect3>
-	    <sect3><title>Attaching node and ownining node</title>
-		<simpara>It makes sense to consider also relation of attaching. So the let's call "attaching node" the node that chromo is attaching of 
-		    given node chromo. This attaching node also is some level owner of given node but not necessary direct owner. For direct mutation of 
-		    type "node" (i.e. the mutation that doesn't have argument "node") the attaching owner is direct owner. To simplify the referring, let's
-		    use to following abbreviation:
-		    <itemizedlist>
-			<listitem> Acomp - component attached to the given node.
-			    <simpara>Acomp is also component but not necessary direct.</simpara> </listitem>
-			<listitem>Aowner - near owner attaching the given node.
-			    <simpara>Aowner is owner but not necessary direct owner.  </simpara></listitem>
-		    </itemizedlist>
-		</simpara>
+	    </simpara>
+	    <simpara>Also it needs to be considered if all mutation require asking owner to find implicit deps. As we see the implicit deps are 
+		generated by run-time behaviour, i.e by agents specific. Let's look at what parts of mutation require knowledge of deps. As we 
+		already discussed the dep is actually dep runtime node on another dep. So saying "what are the deps for the given mutation" we
+		have to say "what are the deps for all runtime nodes referenced by this mutation". There are three kinds of runtime nodes 
+		references in mutations: object, parent, and ref. What refs can generate implicit deps in agents? To answer this question we
+		need to look at which references are specifically handled by agents. All such handling is initiated via MCompsObserver iface. The
+		review of the current handling implementation is as: </simpara>
+	    <programlisting>
+		Syst::OnCompDeleting - object
+		OnCompAdding - default handling only
+		OnCompChanged - many agents hadnling change of ref in content. So - ref
+		OnCompRenamed - default handling only
+	    </programlisting>
+	    <simpara>So at the moment the only specific deps for mutation nodes referenced via ref attribute have to be taken into account.</simpara>
+	</sect3>
+    </sect2>
+    <sect2 id="ds_mut_attach"><title>Concept of nodes chromo attaching</title>
+	<sect3 id="ds_mut_attach_calc"><title>Attaching sign calculation</title>
+	    <simpara>Currently the concept of nodes chromo attaching is actively used. There is base agents proper APIs for that: IsChromoAttached.
+		We say that nodes chromo is attached if there is path from nodes chromo to system chromo root node. But currently the attaching sign
+		is calculated a bit incorrectly. In result the nodes not directly attached but placed to component are not considered as attached, example is: 
+		[node node=some_component parent=some_parent name=some_name]. This causes problem when pheno modification disabled: on one hand such node 
+		is detected as not attached so its attached owner is selected as the mutation point,
+		on another hand the error "attempt of pheno modif, disabled" occurs because the node isn't inherited.</simpara>
+	</sect3>
+	<sect3><title>Attaching node and ownining node</title>
+	    <simpara>It makes sense to consider also relation of attaching. So the let's call "attaching node" the node that chromo is attaching of 
+		given node chromo. This attaching node also is some level owner of given node but not necessary direct owner. For direct mutation of 
+		type "node" (i.e. the mutation that doesn't have argument "node") the attaching owner is direct owner. To simplify the referring, let's
+		use to following abbreviation:
+	    <itemizedlist>
+		<listitem> Acomp - component attached to the given node.
+		<simpara>Acomp is also component but not necessary direct.</simpara> </listitem>
+	    <listitem>Aowner - near owner attaching the given node.
+	    <simpara>Aowner is owner but not necessary direct owner.  </simpara></listitem>
+    </itemizedlist>
+</simpara>
 	    </sect3>
 	</sect2>
 	<sect2 id="ds_mut_refs"><title>References: rules and limitations</title>
@@ -1324,21 +1336,21 @@
 		    connecting/disconnecting to components. Owner doesn't modify connection to the component being removed but the connections are going to 
 		    state "invalid" or "incative", then the owner monitors of creation new component and if it happens initiates refreshing of connections state.
 		    Some kind of this mechanism was used on earlier version of DES engine, but not in the latest.
-		</simpara>
-	    </sect3>
-	</sect2>
-	<sect2 id="ds_mut_nm"><title>Components name uniquiness</title>
-	    <sect3><title>Intro</title>
-		<simpara>Current implementation of DES engine allows for agent to have components with the same name. The only limitation is to have 
-		    a pair (parents_name, name) unique. But even this restriction is not applied in case if component (parents_name, name) pair is the same as this
-		    in some removed component. Removed component is considered as invisible via navigation so this lack of uniquiness doesn't trouble selecting
-		    component by parents and name. Howewer this approach causes problems with navigation when we enable removed components lookup during navigation.
-		    This mode is required for decoupled chromo approach, ref <xref linkend="ds_daa_chrc_rm"/>.</simpara>
-		<simpara>So the question is if we can request strong restriction of components name to be unique?</simpara>
-		<simpara>Actually the ability of components to have the same name is activelly used to support cold-switching polymorphism, ref 
-		    <xref linkend="ds_mut_pmf"/>. For instance in [syst] module Extender agent has component "Connpoint:Int" for internal connection point.
-		    In many cases it is removed and re-created with the same name but another parent. This keeps interface but change implementation.</simpara>
-		<simpara>It also needs to be taken into account that not-unique name approach causes performance degradation. Ref <xref linkend="ds_prfopt_un"/>
+	    </simpara>
+	</sect3>
+    </sect2>
+    <sect2 id="ds_mut_nm"><title>Components name uniquiness</title>
+	<sect3><title>Intro</title>
+	    <simpara>Current implementation of DES engine allows for agent to have components with the same name. The only limitation is to have 
+		a pair (parents_name, name) unique. But even this restriction is not applied in case if component (parents_name, name) pair is the same as this
+		in some removed component. Removed component is considered as invisible via navigation so this lack of uniquiness doesn't trouble selecting
+		component by parents and name. Howewer this approach causes problems with navigation when we enable removed components lookup during navigation.
+		This mode is required for decoupled chromo approach, ref <xref linkend="ds_daa_chrc_rm"/>.</simpara>
+	    <simpara>So the question is if we can request strong restriction of components name to be unique?</simpara>
+	    <simpara>Actually the ability of components to have the same name is activelly used to support cold-switching polymorphism, ref 
+	    <xref linkend="ds_mut_pmf"/>. For instance in [syst] module Extender agent has component "Connpoint:Int" for internal connection point.
+		In many cases it is removed and re-created with the same name but another parent. This keeps interface but change implementation.</simpara>
+	    <simpara>It also needs to be taken into account that not-unique name approach causes performance degradation. Ref <xref linkend="ds_prfopt_un"/>
 		    for analysis of such affect.</simpara>
 	    </sect3>
 	    <sect3><title>Unique name: how to check uniqueness in case of chromo optimization.</title>
@@ -1349,7 +1361,7 @@
 	    </sect3>
 	    <sect3 id="ds_mut_nm_sn"><title>Same name component as potential approach of polimorphism in model</title>
 		<simpara>Initially there wan an idea to use the feature of name not-uniqueness as part of mechanism of polymorphism in model, ref
-		    <xref linkend="ds_mut_pmf"/>, by removing some component A_1 and creating new implementation with same name A_1 instead. But the 
+		<xref linkend="ds_mut_pmf"/>, by removing some component A_1 and creating new implementation with same name A_1 instead. But the 
 		    latest DES engine implementation requires full "disconnecting" of component before deleting. Earlier engine variant supported kind of 
 		    "hot-plug" replacement via automatic disconnection/reconnection, but it was not implemented completelly.
 		    Now it makes sense to use re-parenting mechanism instead.</simpara>
@@ -1357,48 +1369,48 @@
 	    <sect3 id="ds_mut_nm_pnc"><title>Problem: name uniquiness approach can cause to names clash when creating heir or moving node.</title>
 		<simpara>The problem was discovered in the scope of working on the problem with resolving temporal nodes UIDs in distributed models.
 		    Ref <xref linkend="ds_di_cnfr_susl_pnae"/> for details. Note that this problem becomes apparent only if temporal heir full
-		    registering is applied, ref <xref linkend="ds_di_cnfr_susl"/> for details.</simpara>
-	    </sect3>
-	    <sect3 id="ds_mut_nm_cfl"><title>How to resolve same names conflict in unique name approach.</title>
-		<simpara>It would be effective if we have solution for automatic names resolution. In that case user can assign to newly created 
-		    components the name, that already exists (there could be cases when using same name is quite reasoned and correspond to real semantic of
-		    the model.</simpara>
-		<simpara>One approach is to automatically add unique suffix to the name. This approach is already partially applied for agent that 
-		    is not named by user, edge for instance. With this approach the name gets just generated.
-		    We can avoid displaying the suffix in studio.</simpara>
-	    </sect3>
-	    <sect3><title>Diary</title>
-		<itemizedlist>
-		    <listitem>20160131 Approach was implemented, ref 79b545db</listitem>
-		    <listitem>20170122 Problem <xref linkend="ds_mut_nm_pnc"/> was found.</listitem>
-		</itemizedlist>
-	    </sect3>
-	</sect2>
-	<sect2 id="ds_mut_rn"><title>Renaming of node</title>
-	    <sect3><title>Intro</title>
-		<simpara>Renaming is one of sensitive parts of model mutating. There are some reasons of this sensitivity.</simpara>
-		<itemizedlist>
-		    <listitem> One of them is that renaming breaks relation between chromo [node] mutation and corresponding model node, 
-			ref <xref linkend="ds_daa_chrc_rn"/>.
-		    </listitem>
-		    <listitem>Another area of sensitivity is dependency that this mutation creates. Disabling of regular pheno modif minimised
-			the amount of dependencies. Now the only refs and renaming are deps causes. </listitem>
-		</itemizedlist>
-		<simpara>Currently the direct renaming approach is implemented: component is re-registered with new name in its owner. Alternative
-		    approach is to use additional name (pseudo-name) instead.</simpara>
-	    </sect3>
-	    <sect3><title>Node renaming: pseudo-names approach</title>
-		<simpara>The idea of this approach is to allow models node to have more then one name. All the names are equivalent: any of names
-		    can be used for locating node. The rationale of this approach is that the name is just compact designation of nodes functionality and can
-		    have more that one meaning.</simpara>
-	    </sect3>
-	</sect2>
-	<sect2 id="ds_umt"><title>Unified mut-target (<xref linkend="gls_umt"/>)</title>
-	    <sect3><title>Intro</title>
-		<simpara>Currently [77d22afb64a2ed0] two mut attributes are used to point to the subject of the mutation (or change): mut-target and mut-node. In many
-		    cases it causes chromo spec complication. </simpara>
-		<simpara>Ref <xref linkend="ds_chr2_cctx_tn"/> for related discussion in the scope of chromo2 design.</simpara>
-		<simpara>This is still the question what approach is more suitable: <xref linkend="gls_umt"/> or <xref linkend="gls_cmt"/>, ref 
+			registering is applied, ref <xref linkend="ds_di_cnfr_susl"/> for details.</simpara>
+		</sect3>
+		<sect3 id="ds_mut_nm_cfl"><title>How to resolve same names conflict in unique name approach.</title>
+		    <simpara>It would be effective if we have solution for automatic names resolution. In that case user can assign to newly created 
+			components the name, that already exists (there could be cases when using same name is quite reasoned and correspond to real semantic of
+			the model.</simpara>
+		    <simpara>One approach is to automatically add unique suffix to the name. This approach is already partially applied for agent that 
+			is not named by user, edge for instance. With this approach the name gets just generated.
+			We can avoid displaying the suffix in studio.</simpara>
+		</sect3>
+		<sect3><title>Diary</title>
+		    <itemizedlist>
+			<listitem>20160131 Approach was implemented, ref 79b545db</listitem>
+			<listitem>20170122 Problem <xref linkend="ds_mut_nm_pnc"/> was found.</listitem>
+		    </itemizedlist>
+		</sect3>
+	    </sect2>
+	    <sect2 id="ds_mut_rn"><title>Renaming of node</title>
+		<sect3><title>Intro</title>
+		    <simpara>Renaming is one of sensitive parts of model mutating. There are some reasons of this sensitivity.</simpara>
+		    <itemizedlist>
+			<listitem> One of them is that renaming breaks relation between chromo [node] mutation and corresponding model node, 
+			    ref <xref linkend="ds_daa_chrc_rn"/>.
+			</listitem>
+			<listitem>Another area of sensitivity is dependency that this mutation creates. Disabling of regular pheno modif minimised
+			    the amount of dependencies. Now the only refs and renaming are deps causes. </listitem>
+		    </itemizedlist>
+		    <simpara>Currently the direct renaming approach is implemented: component is re-registered with new name in its owner. Alternative
+			approach is to use additional name (pseudo-name) instead.</simpara>
+		</sect3>
+		<sect3><title>Node renaming: pseudo-names approach</title>
+		    <simpara>The idea of this approach is to allow models node to have more then one name. All the names are equivalent: any of names
+			can be used for locating node. The rationale of this approach is that the name is just compact designation of nodes functionality and can
+			have more that one meaning.</simpara>
+		</sect3>
+	    </sect2>
+	    <sect2 id="ds_umt"><title>Unified mut-target (<xref linkend="gls_umt"/>)</title>
+		<sect3><title>Intro</title>
+		    <simpara>Currently [77d22afb64a2ed0] two mut attributes are used to point to the subject of the mutation (or change): mut-target and mut-node. In many
+			cases it causes chromo spec complication. </simpara>
+		    <simpara>Ref <xref linkend="ds_chr2_cctx_tn"/> for related discussion in the scope of chromo2 design.</simpara>
+		    <simpara>This is still the question what approach is more suitable: <xref linkend="gls_umt"/> or <xref linkend="gls_cmt"/>, ref 
 		    <xref linkend="ds_umt_acmp"/> for comparision analysis.</simpara>
 	    </sect3>
 	    <sect3 id="ds_umt_acmp"><title>Approaches comprision</title>
@@ -1410,8 +1422,8 @@
 		    <simpara>Cons are:</simpara>
 		    <itemizedlist>
 			<listitem>It is not possible to specify the mutated node exactly.
-			    <simpara>Sometimes it makes sense to mutate just some upper-layer node keeping its components "passive". This is not only 
-				for not-mutable components but also for mutable some. With <xref linkend="gls_umt"/> there is no possibility to "adjust" mutations with
+			<simpara>Sometimes it makes sense to mutate just some upper-layer node keeping its components "passive". This is not only 
+			    for not-mutable components but also for mutable some. With <xref linkend="gls_umt"/> there is no possibility to "adjust" mutations with
 				separating mutated and changed nodes.</simpara>
 			</listitem>
 		    </itemizedlist>
@@ -1423,51 +1435,51 @@
 		</itemizedlist>
 	    </sect3>
 	    <sect3 id="ds_umt_rtnsu">Problem: real target is not specified explicitly
-		<sect4><title>Intro</title>
-		    <simpara>Real target is not specified explicitly with unitied target approach. For instance if target is not mutable then the real target
-			will be calculated as nearest mutable owner. This means that real target is not simply seen from the mut spec.</simpara>
-		    <simpara>The problem is not really critical, there are solution (ref below), but with any solution it causes to chromo incompatibility.</simpara>
-		</sect4>
-		<sect4><title>Solution: Using names for pointing nodes</title>
-		    <simpara>Namespaces were introduced in the scope of chromo2, ref <xref linkend="ds_chr2_ns"/>. So it is effective mechanism of pointing to node
-			if the node name can be resolved in the current context. The resolutin mechanism will automatically find the proper node. The problem could be 
-			in the case when the node is not in the namespace. But even in that case the root part of node URI can be name (note that this feature is not implemented
-			currently, the only sole name is supported but not the name in the root of URI))</simpara>
-		</sect4>
-		<sect4><title>Solution: resolve the target manually</title>
-		    <simpara>It is still possible to realize from the mut spec what the real target is and specify the node URI properly. Even looking simple this approach
-			is not really acceptable because this approach isn't deterministic.</simpara>
-		</sect4>
-		<sect4><title id="ds_umt_rtnsu_rbs">To rebase refs to nodes when calculating real target</title>
-		    <simpara>With this approach all refs are specified relatively to the target. If real target doesn't same node as specified target then the refs shall be
-			re-based to real target. Note that kind of this approach already was tried, ref [fb4115c05ddb] elem.cpp Elem::DoMutation() "Transform refs"
-			(not clear why rebasing of parent was done in DoMutation()?.</simpara>
-		    <simpara>Note that we don't need to rebase mut attr, the attr hasn't to be changed (it is propagated and stored then).
-			Instead the particular mutation operation needs to use rebasing
-			in the scope of resolving the ref. This even is not rebasing, we just need to reguest resolving ref from target node.</simpara>
-		    <simpara>This solution is selected for implementation.</simpara>
-		    <sect5 id="ds_umt_rtnsu_rbs_erpi"><title>Problem: error when resolving parent imported from module when basing parents uri on inherited node</title>
-			<simpara>The example is:</simpara>
-			<simpara>Test ut_func_seq4, trying to import /FuncComps/FConvInt, that includes  creating node Out_WFarg from parent Out_FEInt</simpara>
-			<programlisting> node node="./Capsule" id="Out_WFarg" parent="./../../Out_FEInt" </programlisting>
-			<simpara>The parent in turn needs to be imported. In ImportsMgr::DoImport() the path is formed as:</simpara>
-			<programlisting> /FuncComps/FConvInt/Capsule/../../Out_FEInt </programlisting>
-			<simpara>The path involves inherited node "Capsule" - it is a problem, the current implementation of finding chromo node by URI doesn't work in such
-			    conditions.</simpara>
-			<simpara>Solution here could be optimizing URI after rebase to avoid the back-step units. Implemented, ref branch yb_chr2_cctx_tn_umt</simpara>
-		    </sect5>
-		</sect4>
-	    </sect3>
-	    <sect3><title>Problem: </title>
-	    </sect3>
-	</sect2>
-    </sect1>
+	    <sect4><title>Intro</title>
+		<simpara>Real target is not specified explicitly with unitied target approach. For instance if target is not mutable then the real target
+		    will be calculated as nearest mutable owner. This means that real target is not simply seen from the mut spec.</simpara>
+		<simpara>The problem is not really critical, there are solution (ref below), but with any solution it causes to chromo incompatibility.</simpara>
+	    </sect4>
+	    <sect4><title>Solution: Using names for pointing nodes</title>
+		<simpara>Namespaces were introduced in the scope of chromo2, ref <xref linkend="ds_chr2_ns"/>. So it is effective mechanism of pointing to node
+		    if the node name can be resolved in the current context. The resolutin mechanism will automatically find the proper node. The problem could be 
+		    in the case when the node is not in the namespace. But even in that case the root part of node URI can be name (note that this feature is not implemented
+		    currently, the only sole name is supported but not the name in the root of URI))</simpara>
+	    </sect4>
+	    <sect4><title>Solution: resolve the target manually</title>
+		<simpara>It is still possible to realize from the mut spec what the real target is and specify the node URI properly. Even looking simple this approach
+		    is not really acceptable because this approach isn't deterministic.</simpara>
+	    </sect4>
+	    <sect4><title id="ds_umt_rtnsu_rbs">To rebase refs to nodes when calculating real target</title>
+		<simpara>With this approach all refs are specified relatively to the target. If real target doesn't same node as specified target then the refs shall be
+		    re-based to real target. Note that kind of this approach already was tried, ref [fb4115c05ddb] elem.cpp Elem::DoMutation() "Transform refs"
+		    (not clear why rebasing of parent was done in DoMutation()?.</simpara>
+		<simpara>Note that we don't need to rebase mut attr, the attr hasn't to be changed (it is propagated and stored then).
+		    Instead the particular mutation operation needs to use rebasing
+		    in the scope of resolving the ref. This even is not rebasing, we just need to reguest resolving ref from target node.</simpara>
+		<simpara>This solution is selected for implementation.</simpara>
+		<sect5 id="ds_umt_rtnsu_rbs_erpi"><title>Problem: error when resolving parent imported from module when basing parents uri on inherited node</title>
+		    <simpara>The example is:</simpara>
+		    <simpara>Test ut_func_seq4, trying to import /FuncComps/FConvInt, that includes  creating node Out_WFarg from parent Out_FEInt</simpara>
+		    <programlisting> node node="./Capsule" id="Out_WFarg" parent="./../../Out_FEInt" </programlisting>
+		    <simpara>The parent in turn needs to be imported. In ImportsMgr::DoImport() the path is formed as:</simpara>
+		    <programlisting> /FuncComps/FConvInt/Capsule/../../Out_FEInt </programlisting>
+		    <simpara>The path involves inherited node "Capsule" - it is a problem, the current implementation of finding chromo node by URI doesn't work in such
+			conditions.</simpara>
+		    <simpara>Solution here could be optimizing URI after rebase to avoid the back-step units. Implemented, ref branch yb_chr2_cctx_tn_umt</simpara>
+		</sect5>
+	    </sect4>
+	</sect3>
+	<sect3><title>Problem: </title>
+	</sect3>
+    </sect2>
+</sect1>
 
-    <sect1 id="ds_smc"><title>Securing of model consistency</title>
-	<sect2><title>Intro</title>
-	    <simpara>Model's consistency is the key part of multi-agent systems creation. There are many approaches and technique of achieving it.
-		Initially this aspect of modelling was not be considered as key one, so the one most evident approach was applied, so called direct hierarchical
-		chromosome (<xref linkend="gls_dhc"/>). This approach design is described (a bit chaotic) in <xref linkend="ds_mut"/>. Many troubles
+<sect1 id="ds_smc"><title>Securing of model consistency</title>
+    <sect2><title>Intro</title>
+	<simpara>Model's consistency is the key part of multi-agent systems creation. There are many approaches and technique of achieving it.
+	    Initially this aspect of modelling was not be considered as key one, so the one most evident approach was applied, so called direct hierarchical
+	    chromosome (<xref linkend="gls_dhc"/>). This approach design is described (a bit chaotic) in <xref linkend="ds_mut"/>. Many troubles
 		with keeping model consistent impel to analysis and consideration this aspect more thoroughly. In result the design of alternative approaches
 		was introdused. This chapter is mostly dedicated for outlining and comprition of approaches. The genaralization of this aspect of 
 		mutli-agents systems is also the aim of the chapter.</simpara>
@@ -6045,6 +6057,9 @@
 	<sect2><title>Introducing lower native types Node and Atom</title>
 	    <simpara>Ref <xref linkend="ds_ilt"/></simpara>
 	</sect2>
+	<sect2><title>Weak design indicatior: access to same and upper layers is not restricted.</title>
+	    <simpara>Ref <xref linkend="ds_i_anr"/></simpara>
+	</sect2>
     </sect1>
 
     <sect1 id="ds_i"><title>Issues</title>
@@ -6150,6 +6165,59 @@
 	</sect2>
 	<sect2 id="ds_i_sonc"><title>Handlind of system changes is not well designed</title>
 	    <simpara>Ref <xref linkend="ds_hsc"/> for the desing. Needs to be re-designed properly.</simpara>
+	</sect2>
+	<sect2 id="ds_i_anr"><title>Weak design indicatior: access to same and upper layers is not restricted.</title>
+	    <sect3><title>Intro</title>
+		<simpara> The current design allows unit the access to any other units in native hierarchy. This indicates the serious weakness in the desing.
+		    Probably the philosophy of narive heir needs to be revised. Currently the access to owner is used frequently: in the scope of
+		    iface resolution, to pass the unit updata notification etc.</simpara>
+		<simpara>This access makes the whole models unsafe: any unit can breake the whole model. Also the upstream signalling downgrades the whole performance.</simpara>
+		<simpara>So the quesion is if there is design approach that doesn't require such access.</simpara>
+	    </sect3>
+	    <sect3><title>Do we need upstream notifications?</title>
+		<simpara>The notifications mechanism was introduces due to the design principle "a unit can be modified locally". This means that it is possible
+		    to modify the unit without involving its owner. In that case the owner needs to handle the component change (this is actually the question if it really needs.
+		    The example is changing of content of edge point. The upper system handles this and manage the connection proreply.</simpara>
+		<simpara>Actually the upstream notifications affect the performance but not safety of the model.</simpara>
+		<simpara>The possible design modificatio is to establish comp-to-owner relation on demand in form of unit observer.</simpara>
+		<simpara>So with this we go to the idea of having elements (units etc) net (ref <xref linkend="ds_i_anr_nn"/>) different from native tree.
+		    Here the element should support "native connections" mechanism. Thus navigation thru such native net differs from what we have now -
+		    the navigation to the owner will allowed only if there is the comp-owner relation.</simpara>
+	    </sect3>
+	    <sect3><title>Why don't just restrict navigation to upper layers?</title>
+		<simpara>This will not work if a unit has ref to the owner. The unit can have full access (MUnit iface) to the owner, so to the owner of owner etc.
+		    To really restrict the access we need to specialize the comp-to-owner relation with specific owner iface.</simpara>
+	    </sect3>
+	    <sect3 id="ds_i_anr_nn"><title>Native net</title>
+		<sect4><title>What problem can solve native net.</title>
+		    <itemizedlist>
+			<listitem>Content redesign. With native net we can have simple "content" units the can be attached to given "content owner" unit
+			    and form tree if necessary.</listitem>
+		    </itemizedlist>
+		</sect4>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_i_nrn"><title>Current scheme doesn't allow element to get notification of related node change</title>
+	    <sect3><title>Intro</title>
+		<simple>The problem described in TODO to Unit::OnCompChanged()</simple>
+		<simpara>
+		    The only notification thru hier can be get via MOwner, but not relation thru edges.
+		    Thus if node A is related to node B via the chain of edges, the change of B or even the change
+		    of the relation chain cannot be observed by node A. This is the serious lack. This is because the
+		    If providing mechanism is used instead of full relations tracking in Vert. So node A has Ifaces cache
+		    that includes ifaces from node B but there is no mechanism of the changes in the cache. To consider
+		    to implement cache update notification. Ref <ulink url="../requirements/index.html#uc_010"/> for related use-case.
+		</simpara>
+		<simpara>Similar problem is in DES when we connect systems during model movement (using <xref linkend="gls_adp"/> for instance).
+		    Currently this connection will not affect the systems at all that is wrong behavior.</simpara>
+	    </sect3>
+	    <sect3><title>Solution#1: Notify iface requestors of iface cache gets invalidated</title>
+		<sect4><title>Intro</title>
+		    <simpara>In case of DES, the requestors (most probably they are states) can re-notify MDesInpObserver providers of inp updated.
+			This will cause all inp observers update: some observers will not be updated actually (this will be just extra work), other
+			observers will be updated so the whole system gets actual.</simpara>
+		</sect4>
+	    </sect3>
 	</sect2>
     </sect1>
 

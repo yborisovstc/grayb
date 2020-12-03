@@ -4,6 +4,7 @@
 #include <mvert.h>
 #include <mdata.h>
 #include <mdes.h>
+#include <des.h>
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -25,9 +26,9 @@ class Ut_des : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(test_Cre6mcmau);
     CPPUNIT_TEST(test_CreStatec);
     */
-    CPPUNIT_TEST(test_MunitAdp_1);
+    //CPPUNIT_TEST(test_MunitAdp_1);
     //CPPUNIT_TEST(test_MelemAdp_1);
-    //CPPUNIT_TEST(test_Tr_Switch_1);
+    CPPUNIT_TEST(test_Tr_Switch_1);
     //CPPUNIT_TEST(test_Tr_Vect_1);
     CPPUNIT_TEST_SUITE_END();
 public:
@@ -623,17 +624,16 @@ void Ut_des::test_Tr_Switch_1()
 	cmpCountGsi->DtGet(cmpCountSi);
 	CPPUNIT_ASSERT_MESSAGE("Incorrect CompsCount value", cmpCountSi.mData == (3 + cnt));
 	// Verify comp UID
-	MUnit* cmpUid = root->GetNode("./test/Controller/UnitAdp/CompUid");
-	CPPUNIT_ASSERT_MESSAGE("Fail to get adapters CompUid", cmpUid != NULL);
-	MDVarGet* cmpUidVget = cmpUid->GetSIfit(cmpUidVget);
-	CPPUNIT_ASSERT_MESSAGE("Fail to get CompUid VarGet iface", cmpUidVget != NULL);
-	MDtGet<Sdata<string>>* cmpUidGsi = cmpUidVget->GetDObj(cmpUidGsi);
-	CPPUNIT_ASSERT_MESSAGE("Fail to get cmpUidGsi ", cmpUidGsi != NULL);
-	Sdata<string> cmpUidSi;
-	cmpUidGsi->DtGet(cmpUidSi);
-	MUnit* tagCmp = tag->GetComp(cnt);
-	if (tagCmp) {
-	    CPPUNIT_ASSERT_MESSAGE("Incorrect CompUid", cmpUidSi.mData == tagCmp->Uid());
+	MUnit* cmpNames = root->GetNode("./test/Controller/UnitAdp/CompNames");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get adapters CompNames", cmpNames != NULL);
+	Vector<string> cnames;
+	TBool dres = GetGData(cmpNames, cnames);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get comp names", dres);
+	string cnamesr = cnames.ToString();
+	if (cnt == 0) {
+	    CPPUNIT_ASSERT_MESSAGE("Wrong comp names",  cnamesr == "VS Cmp_0 Cmp_1 NewComp_0 ");
+	} else if (cnt == 1) {
+	    CPPUNIT_ASSERT_MESSAGE("Wrong comp names",  cnamesr == "VS Cmp_0 Cmp_1 NewComp_0 NewComp_1 ");
 	}
     }
 

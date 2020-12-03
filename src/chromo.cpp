@@ -23,6 +23,8 @@ map<TNodeAttr, string> KNodeAttrsNames_Init()
     res[ENa_Targ] = "targ";
     res[ENa_Comp] = "comp";
     res[ENa_NS] = "ns";
+    res[ENa_P] = "p";
+    res[ENa_Q] = "q";
     return res;
 }
 
@@ -37,6 +39,7 @@ map<TNodeType, string> KNodeTypesNames_Init()
     res[ENt_Cont] = "cont";
     res[ENt_Import] = "import";
     res[ENt_Seg] = "seg";
+    res[ENt_Conn] = "conn";
     return res;
 }
 

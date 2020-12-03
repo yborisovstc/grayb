@@ -12,36 +12,7 @@
 #include "data.h"
 
 
-// Helper
-template <typename T> TBool GetSData(MUnit* aDvget, T& aData)
-{
-    TBool res = EFalse;
-    MDVarGet* vget = aDvget->GetSIfit(vget);
-    if (vget) {
-	MDtGet<Sdata<T>>* gsd = vget->GetDObj(gsd);
-	if (gsd) {
-	    Sdata<T> st;
-	    gsd->DtGet(st);
-	    aData = st.mData;
-	    res = ETrue;
-	}
-    }
-    return res;
-}
 
-template <typename T> TBool GetGData(MUnit* aDvget, T& aData)
-{
-    TBool res = EFalse;
-    MDVarGet* vget = aDvget->GetSIfit(vget);
-    if (vget) {
-	MDtGet<T>* gsd = vget->GetDObj(gsd);
-	if (gsd) {
-	    gsd->DtGet(aData);
-	    res = ETrue;
-	}
-    }
-    return res;
-}
 
 // MDesObserver metadata
 MDesObserver::EIfu::EIfu()
@@ -2100,11 +2071,16 @@ void AStatec::NotifyInpsUpdated()
 	MUnit* pe = (*it)->GetObj(pe);
 	// Don't add self to if request context to enable routing back to self
 	TIfRange range = pe->GetIfi(MDesInpObserver::Type());
+	// Using secondary cache to avoid crach during the cache invalidation, ref ds_ifcache_cip_s1
+	vector<MDesInpObserver*> ic;
 	for (TIfIter it = range.first; it != range.second; it++) {
-	    MDesInpObserver* mobs = (MDesInpObserver*) (*it);
-	    if (mobs != NULL) {
-		mobs->OnInpUpdated();
+	    MDesInpObserver* mobs = dynamic_cast<MDesInpObserver*>(*it);
+	    if (mobs) {
+		ic.push_back(mobs);
 	    }
+	}
+	for (auto obs : ic) {
+	    obs->OnInpUpdated();
 	}
     }
 }
@@ -2372,7 +2348,6 @@ MIface *AStatec::DoGetSDObj(const char *aName)
 {
     return mPdata == NULL ? NULL : mPdata->DoGetSDObj(aName);
 }
-
 
 
 /* DES base agent */
@@ -2763,22 +2738,6 @@ MIface *AAdp::DoGetObj(const char *aName)
     return res;
 }
 
-template <typename T> TBool AAdp::GetData(MUnit* aDvget, T& aData)
-{
-    TBool res = EFalse;
-    MDVarGet* vget = aDvget->GetSIfit(vget);
-    if (vget) {
-	MDtGet<Sdata<T>>* gsd = vget->GetDObj(gsd);
-	if (gsd) {
-	    Sdata<T> st;
-	    gsd->DtGet(st);
-	    aData = st.mData;
-	    res = ETrue;
-	}
-    }
-    return res;
-}
-
 void AAdp::OnMagCompDeleting(const MUnit* aComp, TBool aSoft, TBool aModif)
 {
 }
@@ -2882,7 +2841,7 @@ void AAdp::UpdateMag()
     MUnit* inp = iMan->GetNode(K_CpUriInpMagUri);
     if (inp) {
 	string magUri;
-	TBool res = GetData(inp, magUri);
+	TBool res = GetSData(inp, magUri);
 	if (res) {
 	    UpdateMag(magUri);
 	}
@@ -2912,6 +2871,12 @@ TBool AAdp::UpdateMag(const string& aMagUri)
 
 
 
+// Input access point
+
+void AAdp::AdpIap::OnInpUpdated()
+{
+    mHandler();
+}
 
 
 // Access point, using Sdata
@@ -3075,25 +3040,17 @@ void AMelemAdp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     TICacheRCtx ctx(aCtx); ctx.push_back(this);
 
     if (aName == MDesInpObserver::Type()) {
-	// Redirect to parameter states
-	MUnit* mutAppl = Host()->GetNode(K_MutApplOutpUri);
-	__ASSERT(mutAppl);
-	if (!ctx.IsInContext(mutAppl)) {
-	    rr = mutAppl->GetIfi(aName, ctx);
-	    InsertIfCache(aName, aCtx, mutAppl, rr);
-	}
-    } else if (aName == MDVarGet::Type()) {
-	MUnit* mutAppl = Host()->GetNode(K_MutApplOutpUri);
-	if (ctx.IsInContext(mutAppl)) {
-	    MIface* iface = dynamic_cast<MDVarGet*>(&mApMutApl);
-	    InsertIfCache(aName, aCtx, mutAppl, iface);
+	MUnit* inpMut = Host()->GetNode(K_InpMUtpUri);
+	if (ctx.IsInContext(inpMut)) {
+	    MIface* iface = dynamic_cast<MDesInpObserver*>(&mIapInpMut);
+	    InsertIfCache(aName, aCtx, inpMut, iface);
 	}
     } else  {
 	Unit::UpdateIfi(aName, aCtx);
     }
 }
 
-void AMelemAdp::GetMutApplied(DMut& aData)
+void AMelemAdp::ApplyMut()
 {
     if (mMag) {
 	TBool eres = EFalse;
@@ -3108,8 +3065,8 @@ void AMelemAdp::GetMutApplied(DMut& aData)
 		    mag->AppendMutation(mut);
 		    TNs ns; MutCtx mutctx(NULL, ns);
 		    mag->Mutate(EFalse, EFalse, EFalse, mutctx);
-		    aData = dmut;
-		    aData.mValid = ETrue;
+		    string muts = mut.ToString();
+		    Logger()->Write(EInfo, this, "Managed agent is mutated [%s]", muts.c_str());
 		} else if (!mut.IsValid() || mut.Type() == ENt_Unknown) {
 		    Logger()->Write(EErr, this, "Invalid mutation [%s]", mut.operator string().c_str());
 		}
@@ -3120,9 +3077,22 @@ void AMelemAdp::GetMutApplied(DMut& aData)
 	if (!eres) {
 	    Logger()->Write(EErr, this, "Cannot get data from InpMut");
 	}
-    } else {
-	aData.mValid = EFalse;
     }
+}
+
+void AMelemAdp::OnInpMut()
+{
+    mInpMutChanged = ETrue;
+    SetActive();
+}
+
+void AMelemAdp::Update()
+{
+    if (mInpMutChanged) {
+	ApplyMut();
+	mInpMutChanged = EFalse;
+    }
+    AAdp::Update();
 }
 
 
@@ -3219,6 +3189,48 @@ void ATrcMutNode::DtGet(DMut& aData)
 	res = GetInp(EInpParent, parent);
 	if (res) {
 	    aData.mData = TMut(ENt_Node, ENa_Parent, parent, ENa_Id, name);
+	    aData.mValid = ETrue;
+	} else {
+	    aData.mValid = EFalse;
+	}
+    } else {
+	aData.mValid = EFalse;
+    }
+    mRes = aData;
+}
+
+
+// Agent function "Mut Connect composer"
+
+string ATrcMutConn::PEType()
+{
+    return ATrcVar::PEType() + GUri::KParentSep + Type();
+}
+
+ATrcMutConn::ATrcMutConn(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcMut(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? Unit::GetType(PEType()) : aName;
+    AddInput("Cp1");
+    AddInput("Cp2");
+}
+
+string ATrcMutConn::GetInpUri(TInt aId) const
+{
+    if (aId == EInpCp1) return "Cp1";
+    else if (aId == EInpCp2) return "Cp2";
+    else return string();
+}
+
+void ATrcMutConn::DtGet(DMut& aData)
+{
+    TBool res = EFalse;
+    string cp1;
+    res = GetInp(EInpCp1, cp1);
+    if (res) {
+	string cp2;
+	res = GetInp(EInpCp2, cp2);
+	if (res) {
+	    aData.mData = TMut(ENt_Conn, ENa_P, cp1, ENa_Q, cp2);
 	    aData.mValid = ETrue;
 	} else {
 	    aData.mValid = EFalse;

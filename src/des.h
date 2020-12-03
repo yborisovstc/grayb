@@ -707,7 +707,6 @@ class AStatec: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, p
 	virtual string MDVarGet_Mid() const {return GetUri(NULL, ETrue);}
 	virtual string VarGetSIfid();
 	virtual MIface *DoGetSDObj(const char *aName) override;
-
 	virtual TBool OnCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse);
     protected:
 	/** @brief Notifies dependencies of input updated */
@@ -788,7 +787,23 @@ class ADesLauncher: public Elem, public MLauncher, public MAgent
 class AAdp: public Unit, public MDesSyncable_Imd, public MDesObserver_Imd, public MDesInpObserver_Imd, public MAgent, public MDVarGet
 {
     public:
-	/** @brief Observer agent parameter access point, using Sdata
+	/** @brief Input access point
+	 * */
+	class AdpIap: public MDesInpObserver_Imd {
+	    public:
+		using THandler = std::function<void()>;
+		THandler mHandler;
+	    public:
+		AdpIap(MUnit& aHost, THandler aHandler): mHost(aHost), mHandler(aHandler){}
+		// From MDesInpObserver
+		virtual void OnInpUpdated() override;
+		virtual MIface* MDesInpObserver_Call(const string& aSpec, string& aRes) override { return NULL;}
+		virtual string MDesInpObserver_Mid() const  override { return mHost.GetUri(NULL, ETrue);}
+	    protected:
+		MUnit& mHost;
+	};
+
+	/** @brief Parameter access point, using Sdata
 	 * Acts as a binder of MDVarGet request to method of host
 	 * */
 	template <typename T> class AdpPap: public MDVarGet, public MDtGet<Sdata<T>> {
@@ -828,9 +843,10 @@ class AAdp: public Unit, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 
 	/** @brief Managed agent observer
 	 * */
+	template <class T>
 	class AdpMagObs : public MAgentObserver {
 	    public:
-		AdpMagObs(AAdp* aHost): mHost(aHost) {}
+		AdpMagObs(T* aHost): mHost(aHost) {}
 		// From MAgentObserver
 		virtual void OnCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse) override {
 		    mHost->OnMagCompDeleting(aComp, aSoft, aModif);}
@@ -846,7 +862,7 @@ class AAdp: public Unit, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 		// From MIface
 		virtual MIface* Call(const string& aSpec, string& aRes) override { return NULL;}
 	    private:
-		AAdp* mHost;
+		T* mHost;
 	};
 
     public:
@@ -902,14 +918,12 @@ class AAdp: public Unit, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 	/** @brief Notifies all states inputs of update **/
 	void NotifyInpsUpdated();
 	inline MUnit* Host() { return iMan;}
-	/** @brief Helper. Gets value from MDVarGet */
-	template <typename T> static TBool GetData(MUnit* aDvget, T& aData);
     protected:
 	TBool mActive = ETrue;
 	TBool mUpdated = ETrue;
 	MUnit* mMag; /*!< Managed agent */
 	string mMagUri; /*!< Managed agent URI */
-	AdpMagObs mMagObs = AdpMagObs(this); /*!< Managed agent observer */
+	AdpMagObs<AAdp> mMagObs = AdpMagObs<AAdp>(this); /*!< Managed agent observer */
 };
 
 
@@ -977,11 +991,15 @@ class AMelemAdp : public AAdp
 	// From MUnit
 	virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
     protected:
-	void GetMutApplied(DMut& aData);
+	void ApplyMut();
+	void OnInpMut();
+	// From MDesSyncable
+	virtual void Update();
     protected:
-	AdpPapB<DMut> mApMutApl = AdpPapB<DMut>([this](DMut& aData) {GetMutApplied(aData);}); /*<! Mut applied */
+	AdpIap mIapInpMut = AdpIap(*this, [this]() {OnInpMut();}); /*!< Mut Add Widget input access point */
     protected:
 	MChromo* mMagChromo; /*<! Managed agent chromo */
+	TBool mInpMutChanged = ETrue;
 };
 
 /** @brief Agent functions "Mut composer" base
@@ -1008,7 +1026,6 @@ class ATrcMut: public ATrcBase, public MDVarGet, public MDtGet<DMut>
 };
 
 
-
 /** @brief Agent function "Mut Node composer"
  * */
 class ATrcMutNode: public ATrcMut
@@ -1024,6 +1041,57 @@ class ATrcMutNode: public ATrcMut
 	// From MDtGet
 	virtual void DtGet(DMut& aData) override;
 };
+
+/** @brief Agent function "Mut connect composer"
+ * */
+class ATrcMutConn: public ATrcMut
+{
+    public:
+	enum { EInpCp1, EInpCp2 };
+    public:
+	static const char* Type() { return "ATrcMutConn";};
+	static string PEType();
+	ATrcMutConn(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From ATrcMut
+	virtual string GetInpUri(TInt aId) const override;
+	// From MDtGet
+	virtual void DtGet(DMut& aData) override;
+};
+
+
+
+
+// Helpers
+template <typename T> TBool GetSData(MUnit* aDvget, T& aData)
+{
+    TBool res = EFalse;
+    MDVarGet* vget = aDvget->GetSIfit(vget);
+    if (vget) {
+	MDtGet<Sdata<T>>* gsd = vget->GetDObj(gsd);
+	if (gsd) {
+	    Sdata<T> st;
+	    gsd->DtGet(st);
+	    aData = st.mData;
+	    res = ETrue;
+	}
+    }
+    return res;
+}
+
+template <typename T> TBool GetGData(MUnit* aDvget, T& aData)
+{
+    TBool res = EFalse;
+    MDVarGet* vget = aDvget->GetSIfit(vget);
+    if (vget) {
+	MDtGet<T>* gsd = vget->GetDObj(gsd);
+	if (gsd) {
+	    gsd->DtGet(aData);
+	    res = ETrue;
+	}
+    }
+    return res;
+}
+
 
 
 #endif
