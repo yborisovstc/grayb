@@ -28,8 +28,9 @@ class Ut_des : public CPPUNIT_NS::TestFixture
     */
     //CPPUNIT_TEST(test_MunitAdp_1);
     //CPPUNIT_TEST(test_MelemAdp_1);
-    CPPUNIT_TEST(test_Tr_Switch_1);
+    //CPPUNIT_TEST(test_Tr_Switch_1);
     //CPPUNIT_TEST(test_Tr_Vect_1);
+    CPPUNIT_TEST(test_IfInval_1);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -47,6 +48,7 @@ private:
     void test_MelemAdp_1();
     void test_Tr_Switch_1();
     void test_Tr_Vect_1();
+    void test_IfInval_1();
 private:
     Env* iEnv;
 };
@@ -678,6 +680,68 @@ void Ut_des::test_Tr_Vect_1()
 	    sync->Confirm();
 	}
     }
+
+    delete iEnv;
+}
+
+
+/** @brief MElem DES hanling of iface invalidation
+ * Ref ds_i_nrn
+ * */
+void Ut_des::test_IfInval_1()
+{
+    printf("\n === Test of DES handling iface invalidation - connect\n");
+
+    const string specn("ut_des_if_inval_1");
+    string ext = "chs";
+    string spec = specn + string(".") + "chs";
+    string log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root->GetObj(eroot);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
+
+   // Sync the state
+    MUnit* test = root->GetNode("./test");
+    MElem* etest = test->GetObj(etest);
+    MUnit* esync = root->GetNode("./test");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != NULL);
+    MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != NULL);
+
+    MUnit* s2da = root->GetNode("./test/Syst_2/DesAgt");
+    MUnit* s2cp1 = root->GetNode("./test/Syst_2/Comp_1");
+    MDesSyncable* s2cp1s = dynamic_cast<MDesSyncable*>(s2cp1->GetSIfi(MDesSyncable::Type()));
+
+    // Do some ticks
+    const TInt ticksnum = 5;
+    for (TInt cnt = 0; cnt < ticksnum; cnt++) {
+	cout << "Cnt: " << cnt << endl;
+	if (sync->IsActive()) {
+	    //iEnv->SetSBool(MEnv::ESb_EnIfTrace, ETrue);
+	    sync->Update();
+	    //iEnv->SetSBool(MEnv::ESb_EnIfTrace, EFalse);
+	}
+	if (sync->IsUpdated()) {
+	    sync->Confirm();
+	}
+	if (cnt == 2) {
+	    etest->AppendMutation(TMut("conn,p:./Syst_1/Out1,q:./Syst_2/Inp1"));
+	    TNs ns; MutCtx mctx(NULL, ns);
+	    etest->Mutate(false, false, false, mctx);
+	}
+    }
+    // Verifying Syst_2/Comp_1 update
+    MUnit* comp = root->GetNode("./test/Syst_2/Comp_1");
+    CPPUNIT_ASSERT_MESSAGE("Failed to get Syst_2/Comp_1", comp != NULL);
+    TInt data;
+    TBool dres = GetSData(comp, data);
+    CPPUNIT_ASSERT_MESSAGE("Failed to get Syst_2/Comp_1 data", dres);
+    CPPUNIT_ASSERT_MESSAGE("Wrong Syst_2/Comp_1 data", data == 3);
 
     delete iEnv;
 }

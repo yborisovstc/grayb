@@ -2373,6 +2373,8 @@ MIface *ADes::DoGetObj(const char *aName)
     }
     else if (strcmp(aName, MAgent::Type()) == 0)
 	res = dynamic_cast<MAgent*>(this);
+    else if (strcmp(aName, MACompsObserver::Type()) == 0)
+	res = dynamic_cast<MACompsObserver*>(this);
     else {
 	res = Elem::DoGetObj(aName);
     }
@@ -2446,11 +2448,11 @@ void ADes::Confirm()
 	    if (msync != NULL) {
 		if (msync->IsUpdated()) {
 		    msync->Confirm();
-		    ResetUpdated();
 		}
 	    }
 	}
     }
+    ResetUpdated();
 }
 
 TBool ADes::IsUpdated()
@@ -2586,6 +2588,33 @@ void ADes::DumpUpdated()
 		    cout << msync->Uid() << endl;
 		    msync->DumpUpdated();
 		}
+	    }
+	}
+    }
+}
+
+TBool ADes::HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName)
+{
+    TBool res = EFalse;
+    MUnit* comp = const_cast<MUnit*>(aComp);
+    MCompatChecker* cpc = comp->GetObj(cpc);
+    if (cpc) {
+	ForceActive();
+	res = ETrue;
+    }
+    return res;
+}
+
+void ADes::ForceActive()
+{
+    SetActive();
+    MUnit* host = iMan;
+    for (TInt ci = 0; ci < host->CompsCount(); ci++) {
+	MUnit* eit = host->GetComp(ci);
+	if (eit != this && eit->Name() != "Capsule") {
+	    MDesSyncable* msync = (MDesSyncable*) eit->GetSIfi(MDesSyncable::Type(), this);
+	    if (msync) {
+		msync->ForceActive();
 	    }
 	}
     }

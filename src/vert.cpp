@@ -75,7 +75,7 @@ TBool Vert::Connect(MVert* aPair)
 	else {
 	    // TODO [YB] Seems this happens constantly. To analyze why
 	    MUnit* ep = aPair->GetObj(ep);
-	    Logger()->Write(EErr, this, "Connecting [%s] - already connected, failed", ep->GetUri().c_str());
+	    Logger()->Write(EErr, this, "Connecting [%s] - already connected, failed", ep->GetUri(NULL, ETrue).c_str());
 	    res = EFalse;
 	}
     }
@@ -327,7 +327,7 @@ TBool Vertu::Connect(MVert* aPair)
 	else {
 	    // TODO [YB] Seems this happens constantly. To analyze why
 	    MUnit* ep = aPair->GetObj(ep);
-	    Logger()->Write(EErr, this, "Connecting [%s] - already connected, failed", ep->GetUri().c_str());
+	    Logger()->Write(EErr, this, "Connecting [%s] - already connected, failed", ep->GetUri(NULL, ETrue).c_str());
 	    res = EFalse;
 	}
     }

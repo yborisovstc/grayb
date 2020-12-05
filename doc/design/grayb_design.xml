@@ -6218,6 +6218,12 @@
 			observers will be updated so the whole system gets actual.</simpara>
 		</sect4>
 	    </sect3>
+	    <sect3 id="ds_i_nrn_s2"><title>Solution#2: Handle iface invalidation in owners.</title>
+		<sect4><title>Intro</title>
+		    <simpara>In DES the problem is that the system doesn't uptate after iface invalidation. To solve this we can just handle onChange
+			notification in changed unit DES owner to mark the DES as active.</simpara>
+		</sect4>
+	    </sect3>
 	</sect2>
     </sect1>
 

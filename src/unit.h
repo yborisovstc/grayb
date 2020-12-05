@@ -269,6 +269,8 @@ class Unit: public MUnit
 	// Context, ref ds_daa_itn_sfo
 	MUnit* mContext;
 
+	TBool mDeleting = EFalse;
+
 	static TBool EN_MUT_LIM;
 	static const string KCont_About;
 
@@ -276,6 +278,7 @@ class Unit: public MUnit
 	void Pclock(PEvent::TId aEventId, MUnit* aNode) { iEnv->Profiler()->Clock()(aEventId, aNode);}
 	void Pdur(PEvent::TId aEventId, MUnit* aNode) { iEnv->Profiler()->Dur()(aEventId, aNode);}
 	void Pdstat(PEvent::TId aEventId, bool aStart) { iEnv->Profiler()->DurStat()(aEventId, aStart);}
+
 };
 
 inline MLogRec* Unit::Logger() const {return iEnv ? iEnv->Logger(): NULL; }

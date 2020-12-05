@@ -85,6 +85,7 @@ class MDesSyncable: public MIface
 	virtual TBool IsActive() = 0;
 	virtual void SetActive() = 0;
 	virtual void ResetActive() = 0;
+	virtual void ForceActive() { SetActive();}
 	// Debug
 	virtual void DumpActive() = 0;
 	virtual void DumpUpdated() = 0;

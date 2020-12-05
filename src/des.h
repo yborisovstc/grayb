@@ -725,7 +725,7 @@ class AStatec: public Vertu, public MConnPoint_Imd, public MCompatChecker_Imd, p
 
 // DES base agent
 // TODO YB to base the agent on Unit, little chance to mutate it
-class ADes: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd, public MAgent
+class ADes: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd, public MAgent, public MACompsObserver
 {
     public:
 	static const char* Type() { return "ADes";};
@@ -742,6 +742,7 @@ class ADes: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 	virtual TBool IsActive();
 	virtual void SetActive();
 	virtual void ResetActive();
+	virtual void ForceActive() override;
 	virtual MIface* MDesSyncable_Call(const string& aSpec, string& aRes);
 	virtual string MDesSyncable_Mid() const;
 	virtual void DumpActive() override;
@@ -753,6 +754,9 @@ class ADes: public Elem, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 	virtual string MDesObserver_Mid() const;
 	// From MAgent
 	MIface* MAgent_DoGetIface(const string& aName) override;
+	// From MACompsObserver
+	virtual TBool HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName = string()) override;
+	virtual string MACompsObserver_Mid() const override { return GetUri(NULL, ETrue);}
     private:
 	TBool iActive;
 	TBool iUpdated;

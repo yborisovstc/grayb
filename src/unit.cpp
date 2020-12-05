@@ -240,6 +240,7 @@ void Unit::Delete()
 
 Unit::~Unit() 
 {
+    mDeleting = ETrue;
     // Unregigster ifaces providers
     UnregAllIfRel();
     // Remove the comps, using iterator refresh because the map is updated on each comp deletion
@@ -306,6 +307,9 @@ Unit::TIfRange Unit::GetIfi(const string& aName, const TICacheRCtx& aCtx)
     // So on invalidation provider checks if context is initial (size == 1), if so it ignore relation
     // But it is possible that size == 1 for second requestor if the initial makes anonimous request
     // To avoid this inconsistance we need to explicitly register even anonymous requestor
+    if (mDeleting) {
+	return TIfRange();
+    }
     Pdstat(PEvents::DurStat_GetIfi, true);
     TICacheRCtx ctx(aCtx);
     if (ctx.empty()) {
@@ -662,14 +666,14 @@ void Unit::DumpIfCache() const
 	MIface* iface = it.second.second;
 	MUnit* prov = it.second.first;
 	if (!ctx.empty()) {
-	    cout << "[" << iname << "], [" << ctx.size() << "]:" << endl;
+	    cout << ">> [" << iname << "], [" << ctx.size() << "]:" << endl;
 	    for (auto* reqe : ctx) {
 		cout << reqe << ": " << (reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue)) << endl;
 	    }
 	    cout << "==> [" << prov << ": " << prov->GetUri(NULL, ETrue) << "] -> [" << iface << ": " << (iface == NULL ? "" : iface->Uid()) << "]" << endl << endl;
 	}
 	else {
-	    cout << "If: [" << iname << "], [none] - [" << prov << ": " << prov->GetUri(NULL, ETrue) << "] -> [" << iface << "]" << endl;
+	    cout << ">> [" << iname << "], [none] - [" << prov << ": " << prov->GetUri(NULL, ETrue) << "] -> [" << iface << "]" << endl;
 	}
     }
     cout << "<< Ifaces cache: END >>" << endl;
