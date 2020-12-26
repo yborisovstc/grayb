@@ -3,6 +3,7 @@
 
 #include "chromox.h"
 #include "chromo2.h"
+#include "mprov.h"
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -15,11 +16,13 @@ class Ut_chromo2 : public CPPUNIT_NS::TestFixture
 {
     CPPUNIT_TEST_SUITE(Ut_chromo2);
     //CPPUNIT_TEST(test_Chr1);
-    CPPUNIT_TEST(test_Cre1);
-    CPPUNIT_TEST(test_Combo);
-    CPPUNIT_TEST(test_Seg);
-   // CPPUNIT_TEST(test_Ns);
+    ////CPPUNIT_TEST(test_Cre1);
+    ////CPPUNIT_TEST(test_Combo);
+    ////CPPUNIT_TEST(test_Seg);
+    ////CPPUNIT_TEST(test_Ns);
 //    CPPUNIT_TEST(test_Conv);
+    CPPUNIT_TEST(test_Tranf1);
+    //CPPUNIT_TEST(test_Tranf2);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -31,6 +34,8 @@ private:
     void test_Seg();
     void test_Ns();
     void test_Conv();
+    void test_Tranf1();
+    void test_Tranf2();
 private:
     Env* iEnv;
 };
@@ -118,7 +123,7 @@ void Ut_chromo2::test_Seg()
 {
     printf("\n === Test of extended chromo: segment\n");
 
-    for (int ct = 0; ct < 1; ct++) {
+    for (int ct = 1; ct < 2; ct++) {
 	const string specn("ut_seg");
 	string ext = ct == 0 ? "xml" : "chs";
 	string spec = specn + string(".") + ext;
@@ -141,12 +146,6 @@ void Ut_chromo2::test_Seg()
 	MUnit* u1_1_1_2 = root->GetNode("./elem1/unit1_1/unit1_1_1/unit1_1_1_2");
 	CPPUNIT_ASSERT_MESSAGE("Fail to get u1_1_1_2", u1_1_1_2 != NULL);
 
-	MUnit* e1_1_1 = root->GetNode("./elem1/elem1_1/elem1_1_1");
-	CPPUNIT_ASSERT_MESSAGE("Fail to get e1_1_1", e1_1_1 != NULL);
-
-	MUnit* e1_1_2 = root->GetNode("./elem1/elem1_1/elem1_1_2");
-	CPPUNIT_ASSERT_MESSAGE("Fail to get e1_1_2", e1_1_2 != NULL);
-
 	delete iEnv;
     }
 }
@@ -154,17 +153,23 @@ void Ut_chromo2::test_Seg()
 void Ut_chromo2::test_Ns()
 {
     printf("\n === Test of extended chromo: namespace\n");
-    iEnv = new Env("ut_ns.xml", "ut_ns.txt");
+    const string specn("ut_chr2_ns");
+    string ext = "chs";
+    string spec = specn + string(".") + ext;
+    string log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
     CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
     iEnv->ImpsMgr()->ResetImportsPaths();
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     MUnit* root = iEnv->Root();
-    /*
-       CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
-       MUnit* e4 = root->GetNode("./elem3/elem4");
-       CPPUNIT_ASSERT_MESSAGE("Fail to get e4", e4 != 0);
-       */
+    MElem* eroot = root->GetObj(eroot);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+    // Save chromo
+    string saved_name = specn + "_saved." + ext;
+    eroot->Chromos().Save(saved_name);
+    //       MUnit* e4 = root->GetNode("./elem3/elem4");
+ //      CPPUNIT_ASSERT_MESSAGE("Fail to get e4", e4 != 0);
 }
 
 void Ut_chromo2::test_Conv()
@@ -192,3 +197,115 @@ void Ut_chromo2::test_Conv()
     chr2.Save("ut_chr2_conv.chs");
 
 }
+
+void Ut_chromo2::test_Tranf1()
+{
+    printf("\n === Test of chromo transforming to tree-like form\n");
+
+    string specn = "ut_chr2_tf1";
+    string ext = "chs";
+    string spec = specn + string(".") + ext;
+    string log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root->GetObj(eroot);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
+    // Save
+    eroot->Chromos().Save(specn + "_saved." + ext);
+    // Check the model created
+    MUnit* s1_2_cp2 = root->GetNode("./s1/s1_2/cp2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get ./s1/s1_2/cp2", s1_2_cp2);
+    MUnit* s1_2_u1_1  = root->GetNode("./s1/s1_2/s1_2_u1/s1_2_u1_1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get s1_2_u1_1  ", s1_2_u1_1);
+    // Dump s1 chromo
+    MUnit* s1 = root->GetNode("./s1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get ./s1", s1);
+    cout << "Dump s1 chromo: " << endl;
+    MElem* s1e = s1->GetObj(s1e);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get ./s1 MElem", s1e);
+    s1e->Chromos().Root().Dump();
+    // Transform
+    MProvider* prov = iEnv->Provider();
+    MChromo* tchr = prov->CreateChromo("chs");
+    tchr->TransformLn(eroot->Chromos());
+    tchr->Save(specn + "_transf." + ext);
+
+    delete iEnv;
+
+
+    // Check model creation from saved chromo
+    cout << "Creating model from saved chromoe" << endl;
+    specn = "ut_chr2_tf1_saved";
+    ext = "chs";
+    spec = specn + string(".") + ext;
+    log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ConstructSystem();
+    root = iEnv->Root();
+    eroot = root->GetObj(eroot);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
+    // Check the model created
+    s1_2_cp2 = root->GetNode("./s1/s1_2/cp2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get ./s1/s1_2/cp2", s1_2_cp2);
+    s1_2_u1_1  = root->GetNode("./s1/s1_2/s1_2_u1/s1_2_u1_1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get s1_2_u1_1  ", s1_2_u1_1);
+
+    delete iEnv;
+ 
+    // Check model creation from transformed chromo
+    cout << "Creating model from transromed chromoe" << endl;
+    specn = "ut_chr2_tf1_transf";
+    ext = "chs";
+    spec = specn + string(".") + ext;
+    log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ConstructSystem();
+    root = iEnv->Root();
+    eroot = root->GetObj(eroot);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
+    // Check the model created
+    s1_2_cp2 = root->GetNode("./s1/s1_2/cp2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get ./s1/s1_2/cp2", s1_2_cp2);
+    s1_2_u1_1  = root->GetNode("./s1/s1_2/s1_2_u1/s1_2_u1_1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get s1_2_u1_1  ", s1_2_u1_1);
+
+    delete iEnv;
+
+}
+
+void Ut_chromo2::test_Tranf2()
+{
+    printf("\n === Test of chromo transforming: melding to parent targ\n");
+
+    string specn = "ut_chr2_tf2";
+    string ext = "chs";
+    string spec = specn + string(".") + ext;
+    string log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root->GetObj(eroot);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
+    // Save
+    eroot->Chromos().Save(specn + "_saved." + ext);
+    // Check the model created
+    MUnit* s1_1_u1  = root->GetNode("./s1/s1_1/s1_1_u1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get s1_1_u1", s1_1_u1);
+    // Transform
+    MProvider* prov = iEnv->Provider();
+    MChromo* tchr = prov->CreateChromo("chs");
+    tchr->TransformLn(eroot->Chromos());
+    tchr->Save(specn + "_transf." + ext);
+
+    delete iEnv;
+}
+

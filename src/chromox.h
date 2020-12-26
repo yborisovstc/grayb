@@ -41,6 +41,7 @@ class ChromoMdlX: public Base, public MChromoMdl
 	virtual TInt GetOrder(const THandle& aHandle, TBool aTree = EFalse) const;
 	virtual void DeOrder(const THandle& aHandle);
 	virtual TInt GetLineId(const THandle& aHandle) const;
+	virtual void TransfTl(const THandle& aHandle, const THandle& aSrc) override {}
     public:
 	int GetAttrInt(void *aHandle, const char *aName);
 	THandle SetFromFile(const string& aFileName);
@@ -77,6 +78,7 @@ class ChromoX: public MChromo
 	virtual TBool GetSpec(string& aSpec);
 	virtual void Set(const ChromoNode& aRoot);
 	virtual void Convert(const MChromo& aSrc);
+	virtual void TransformLn(const MChromo& aSrc) override;
 	virtual void Init(TNodeType aRootType);
 	virtual void Reset();
 	virtual void Save(const string& aFileName, TInt aIndent = 0) const;

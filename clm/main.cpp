@@ -16,6 +16,7 @@ static bool mAutoRun = false;
 
 static bool mConvert = false; //!< Flag operation of converting spec */
 static bool mFormat = false; //!< Flag operation of formatting spec */
+static bool mTransformLn = false; //!< Flag operation of transform from linear chromo */
 
 const string help = "\nFAP2 Command line monitor\n\n\
 Usage:\n\
@@ -31,6 +32,7 @@ Options:\n\
 -s <file> - spec file\n\
 -o <file> - converted spec file\n\
 -e <name,value> - environment variable\n\
+-t        - transform to treish chromo\n\
 \n";
 
 
@@ -96,6 +98,9 @@ int main(int argc, char* argv[])
 	    } else if (arg.compare("-f") == 0) {
 		// Format
 		mFormat = true;
+	    } else if (arg.compare("-t") == 0) {
+		// Transform from linear to treish
+		mTransformLn = true;
 	    } else if (arg.compare("-e") == 0) {
 		// Environment variable
 		string sevar(argv[++i]);
@@ -125,6 +130,11 @@ int main(int argc, char* argv[])
 		bool sdres = mnt.formatSpec();
 		if (!sdres) {
 		    cout << "Error on formatting chromo spec" << endl;
+		}
+	    } else if (mTransformLn) {
+		bool sdres = mnt.transformSpec();
+		if (!sdres) {
+		    cout << "Error on transforming of chromo spec" << endl;
 		}
 	    } else if (mAutoRun) {
 		// Auto-run mode: run model and exit

@@ -42,6 +42,7 @@ TBool ACapsule::OnCompChanged(const MUnit* aComp, const string& aContName, TBool
     if (iMan != NULL) {
 	iMan->OnCompChanged(aComp, aContName, aModif);
     }
+    return ETrue;
 }
 
 TBool ACapsule::OnChanged(const MUnit* aComp)
@@ -51,6 +52,7 @@ TBool ACapsule::OnChanged(const MUnit* aComp)
     if (iMan != NULL) {
 	iMan->OnChanged(aComp);
     }
+    return ETrue;
 }
 
 // Base of ConnPoint reimplement obj provider iface to redirect the request to the hier mgr

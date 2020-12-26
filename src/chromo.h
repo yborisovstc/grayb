@@ -216,6 +216,13 @@ class ChromoNode
 	void ToString(string& aString) const { iMdl.ToString(iHandle, aString);};
 	operator string() const;
 	bool IsNil() const {return iHandle.IsNull();}
+	/** @brief Transforms node to tree-like */
+	void TransfTl(const ChromoNode& aSrc) { iMdl.TransfTl(iHandle, aSrc.Handle());}
+	/** @brief Gets cumulative target from given base
+	 * @param aTargUri  result, cumulated target path
+	 * @param aBase  chromo base node
+	 * */
+	void GetTarget(GUri& aTargUri, const ChromoNode& aBase) const;
     private :
 	MChromoMdl& iMdl;
 	THandle iHandle;

@@ -138,14 +138,16 @@ C2MdlNode::C2MdlNode(const C2MdlNode& aSrc, C2MdlNode* aOwner): mOwner(aOwner), 
     }
 }
 
-void C2MdlNode::CloneFrom(const C2MdlNode& aSrc)
+void C2MdlNode::CloneFrom(const C2MdlNode& aSrc, bool aChromo)
 {
     mContext = aSrc.mContext;
     mMut = aSrc.mMut;
     mChromoPos = aSrc.mChromoPos;
-    for (TC2MdlNodesCiter it = aSrc.mChromo.begin(); it != aSrc.mChromo.end(); it++) {
-	const C2MdlNode& cn = *it;
-	mChromo.push_back(C2MdlNode(cn, this));
+    if (aChromo) {
+	for (TC2MdlNodesCiter it = aSrc.mChromo.begin(); it != aSrc.mChromo.end(); it++) {
+	    const C2MdlNode& cn = *it;
+	    mChromo.push_back(C2MdlNode(cn, this));
+	}
     }
 }
 
@@ -291,7 +293,7 @@ THandle Chromo2Mdl::GetLastChild(const THandle& aHandle, TNodeType aType)
     return comp;
 }
 
-string GetContextByAttr(const C2MdlNode& aNode, TNodeAttr aAttr)
+string Chromo2Mdl::GetContextByAttr(const C2MdlNode& aNode, TNodeAttr aAttr)
 {
     string res;
     if (KM_CtxAttToType.count(aAttr) > 0) {
@@ -399,7 +401,7 @@ THandle Chromo2Mdl::AddChild(const THandle& aParent, const THandle& aHandle, TBo
     C2MdlNode* parent = aParent.Data(parent);
     C2MdlNode* child = aHandle.Data(child);
     C2MdlNode node;
-    node.CloneFrom(*child);
+    node.CloneFrom(*child, true);
     node.mOwner = parent;
     parent->mChromo.push_back(node);
     parent->BindTree(parent->mOwner);
@@ -431,6 +433,7 @@ void Chromo2Mdl::RmChild(const THandle& aParent, const THandle& aChild, TBool aD
 	C2MdlNode& cn = *it;
 	if (&cn == child) {
 	    parent->mChromo.erase(it);
+	    child->mOwner = NULL;
 	    removed = true;
 	    break;
 	}
@@ -632,7 +635,7 @@ THandle Chromo2Mdl::SetFromSpec(const string& aSpec)
 THandle Chromo2Mdl::Set(const THandle& aHandle)
 {
     C2MdlNode* node = aHandle.Data(node);
-    mRoot.CloneFrom(*node);
+    mRoot.CloneFrom(*node, true);
     mRoot.BindTree(NULL);
     return &mRoot;
 }
@@ -1011,6 +1014,18 @@ bool Chromo2Mdl::IsError() const
     return mErr.mText.empty();
 }
 
+void Chromo2Mdl::TransfTl(const THandle& aHandle, const THandle& aSrc)
+{
+    C2MdlNode* node = aHandle.Data(node);
+    
+}
+
+
+
+
+
+
+
 
 
 
@@ -1182,5 +1197,202 @@ void Chromo2::ConvertNode(ChromoNode& aDst, const ChromoNode& aSrc)
 	const ChromoNode& scomp = *it;
 	ChromoNode dcomp = aDst.AddChild(scomp.Type());
 	ConvertNode(dcomp, scomp);
+    }
+}
+
+void Chromo2::TransformLn(const MChromo& aSrc)
+{
+    ChromoNode sroot = aSrc.Root();
+    Init(sroot.Type());
+    //mRootNode.TransfTl(sroot);
+    TransfTlNode(mRootNode, sroot, true);
+}
+
+bool IsTarg(const ChromoNode& aNode, const ChromoNode& aTarg, ChromoNode& aBase)
+{
+    bool res = false;
+    if (aTarg.Type() == ENt_Node) {
+	/*
+	string tname = aTarg.Attr(ENa_Id);
+	string ttarg = aTarg.Attr(ENa_Targ);
+	string ntarg = aNode.Attr(ENa_Targ);
+	GUri ttargUri(ttarg);
+	GUri nuri(ntarg);
+	ttargUri.AppendElem("", tname);
+	res = nuri == ttargUri;
+	*/
+	string ntarg = aNode.Attr(ENa_Targ);
+	GUri nuri(ntarg);
+	GUri turi;
+	aTarg.GetUri(turi, aBase);
+	res = (nuri == turi);
+    }
+    return res;
+}
+
+/** @brief Checks if adjacent node is same segment (has same targ) as given node
+ * @parem  aNode  given node
+ * @parem  aAdj   adjacent node
+ * @parem  aBase   owner of given node
+ *
+ * */
+bool IsSeg(const ChromoNode& aNode, const ChromoNode& aAdj, ChromoNode& aBase)
+{
+    bool res = false;
+    if (aNode.AttrExists(ENa_Targ)) {
+	string nnode = aNode.Attr(ENa_Targ);
+	GUri nuri(nnode);
+	GUri adjUri;
+	aAdj.GetTarget(adjUri, aBase);
+	res = (nuri == adjUri);
+    }
+    return res;
+}
+
+/** @brief Checks if adjacent node is owning segment (owns targ) as given node
+ * @parem  aNode  given node
+ * @parem  aAdj   adjacent node
+ * @parem  aBase   owner of given node
+ *
+ * */
+bool IsOwningSeg(const ChromoNode& aNode, const ChromoNode& aAdj, ChromoNode& aBase, GUri& aTail)
+{
+    bool res = false;
+    if (aNode.AttrExists(ENa_Targ)) {
+	string nnode = aNode.Attr(ENa_Targ);
+	GUri nuri(nnode);
+	GUri adjUri;
+	aAdj.GetTarget(adjUri, aBase);
+	res = (!adjUri.Elems().empty() && adjUri <= nuri);
+	if (res) {
+	    nuri.Tail(adjUri, aTail);
+	}
+    }
+    return res;
+}
+
+
+
+/** @brief Gets adjacent node mutation corresponding to the given node target
+ * @param  aNode  given node
+ * @param  aTarg  adjacent node - candidate for the corresponding node
+ * @param  aBase  base node, owner of aNode
+ * */
+ChromoNode getAdjNode(const ChromoNode& aNode, ChromoNode& aTarg, ChromoNode& aBase)
+{
+    ChromoNode res(aTarg.Mdl(), THandle());
+    if (IsTarg(aNode, aTarg, aBase)) {
+	res = aTarg;
+    } else if (aTarg.Count() > 0) {
+	ChromoNode targ = *(aTarg.Rbegin());
+	res = getAdjNode(aNode, targ, aBase);
+    }
+    return res;
+}
+
+/** @brief Gets the chromo adjacent segment */
+ChromoNode getAdjSeg(const ChromoNode& aNode, ChromoNode& aTarg, ChromoNode& aBase)
+{
+    ChromoNode res(aTarg.Mdl(), THandle());
+    if (IsSeg(aNode, aTarg, aBase)) {
+	res = aTarg;
+    } else if (aTarg.Count() > 0) {
+	ChromoNode targ = *(aTarg.Rbegin());
+	res = getAdjSeg(aNode, targ, aBase);
+    }
+    return res;
+}
+
+/** @brief Gets the chromo adjacent owning segment */
+ChromoNode getAdjOwnSeg(const ChromoNode& aNode, ChromoNode& aTarg, ChromoNode& aBase, GUri& aTail)
+{
+    ChromoNode res(aTarg.Mdl(), THandle());
+    if (IsOwningSeg(aNode, aTarg, aBase, aTail)) {
+	res = aTarg;
+    } else if (aTarg.Count() > 0) {
+	ChromoNode targ = *(aTarg.Rbegin());
+	ChromoNode cres = getAdjOwnSeg(aNode, targ, aBase, aTail);
+	if (!cres.IsNil()) {
+	    res = cres;
+	}
+    }
+    return res;
+}
+
+
+// TODO To optimize. Seems the cases  with getAdjSeg and getAdjOwnSeg can be combined
+void Chromo2::TransfTlNode(ChromoNode& aDst, const ChromoNode& aSrc, bool aTarg)
+{
+    ConvertAttr(aDst, aSrc, ENa_Id);
+    ConvertAttr(aDst, aSrc, ENa_Parent);
+    if (aTarg) ConvertAttr(aDst, aSrc, ENa_Targ);
+    ConvertAttr(aDst, aSrc, ENa_MutVal);
+    ConvertAttr(aDst, aSrc, ENa_Ref);
+    ConvertAttr(aDst, aSrc, ENa_NS);
+    ConvertAttr(aDst, aSrc, ENa_P);
+    ConvertAttr(aDst, aSrc, ENa_Q);
+    auto it = aSrc.Begin();
+    if (it != aSrc.End()) {
+	auto scomp = *it;
+	ChromoNode dcomp = aDst.AddChild(scomp.Type());
+	TransfTlNode(dcomp, scomp, true);
+	ChromoNode sprev = dcomp; // Previous comp
+	it++;
+	for (; it != aSrc.End(); it++) {
+	    scomp = *it;
+	    // Try to find corresponding node in adjacent mutation and add cur mut to it
+	    ChromoNode targ = getAdjNode(scomp, sprev, aDst);
+	    if (!targ.IsNil()) {
+		dcomp = targ.AddChild(scomp.Type());
+		TransfTlNode(dcomp, scomp, false);
+	    } else {
+		// Try to find corresponging segment in adjacent mutation and add cur mut to it
+		targ = getAdjSeg(scomp, sprev, aDst);
+		if (!targ.IsNil()) {
+		    if (targ.Type() == ENt_Seg) {
+			dcomp = targ.AddChild(scomp.Type());
+			TransfTlNode(dcomp, scomp, false);
+		    } else {
+			// Target is just simple mut. Adding segment.
+			ChromoNode targOwner = *targ.Parent(); 
+			//targOwner.RmChild(targ, true);
+			ChromoNode seg = targOwner.AddChild(ENt_Seg);
+			seg.SetAttr(ENa_Targ, targ.Attr(ENa_Targ));
+			ChromoNode newTarg = seg.AddChild(targ, true, true);
+			newTarg.RmAttr(ENa_Targ);
+			targOwner.RmChild(targ);
+			dcomp = seg.AddChild(scomp.Type());
+			TransfTlNode(dcomp, scomp, false);
+			sprev = seg;
+		    }
+		} else {
+		    GUri shiftUri;
+		    targ = getAdjOwnSeg(scomp, sprev, aDst, shiftUri);
+		    if (!targ.IsNil()) {
+			if (targ.Type() == ENt_Seg) {
+			    dcomp = targ.AddChild(scomp.Type());
+			    TransfTlNode(dcomp, scomp, false);
+			    dcomp.SetAttr(ENa_Targ, shiftUri);
+			} else {
+			    // Target is just simple mut. Adding segment.
+			    ChromoNode targOwner = *targ.Parent(); 
+			    ChromoNode seg = targOwner.AddChild(ENt_Seg);
+			    seg.SetAttr(ENa_Targ, targ.Attr(ENa_Targ));
+			    ChromoNode newTarg = seg.AddChild(targ, true, true);
+			    newTarg.RmAttr(ENa_Targ);
+			    targOwner.RmChild(targ);
+			    dcomp = seg.AddChild(scomp.Type());
+			    TransfTlNode(dcomp, scomp, false);
+			    dcomp.SetAttr(ENa_Targ, shiftUri);
+			    sprev = seg;
+			}
+		    } else {
+			dcomp = aDst.AddChild(scomp.Type());
+			TransfTlNode(dcomp, scomp, true);
+			sprev = dcomp;
+		    }
+		}
+	    }
+	}
     }
 }

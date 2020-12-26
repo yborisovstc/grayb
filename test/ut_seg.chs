@@ -15,7 +15,7 @@ test : Elem
       Creation : Elem;
     }
     elem4 : ./../elem1/elem2;
-    elem4.2 : ./../elem1;
+    elem4_2 : ./../elem1;
   }
   ./elem1 < {
     unit1_1 : Unit;
@@ -23,6 +23,7 @@ test : Elem
       unit1_1_1 : Unit;
       ./unit1_1_1 - {
         unit1_1_1_1 : Unit;
+        unit1_1_1_2 : Unit;
       }
     }
   }

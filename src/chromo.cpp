@@ -728,13 +728,16 @@ void ChromoNode::GetUri(GUri& aUri, const ChromoNode& aBase) const
 {
     Const_Iterator parent = Parent();
     if (parent != End()) {
-	if (parent == aBase) {
-	    return;
+	if (AttrExists(ENa_Id)) {
+	    aUri.PrependElem(string(), Name());
 	}
-	aUri.PrependElem(string(), Name());
-	(*parent).GetUri(aUri);
-    }
-    else {
+	if (AttrExists(ENa_Targ)) {
+	    aUri.Prepend(Attr(ENa_Targ));
+	}
+	ChromoNode owner = *parent;
+	if (owner == aBase) { return; }
+	owner.GetUri(aUri, aBase);
+    } else {
 	aUri.PrependElem(string(), Name());
 	aUri.PrependElem("", "");
     }
@@ -764,3 +767,15 @@ ChromoNode::operator string() const
 void ChromoNode::Dump() const { iMdl.Dump(iHandle);}
 
 void ChromoNode::DumpBackTree() const { iMdl.DumpBackTree(iHandle);}
+
+void ChromoNode::GetTarget(GUri& aTargUri, const ChromoNode& aBase) const
+{
+    if (AttrExists(ENa_Targ)) {
+	GUri cur(Attr(ENa_Targ));
+	aTargUri.Prepend(cur);
+    }
+    auto owner = *Parent();
+    if (owner != aBase && !owner.IsNil()) {
+	owner.GetTarget(aTargUri, aBase);
+    }
+}

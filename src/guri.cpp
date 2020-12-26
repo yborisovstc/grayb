@@ -253,6 +253,16 @@ bool GUri::operator==(const GUri& s) const
 	iPath == s.iPath && iBase == s.iBase && iElems == s.iElems && iErr == s.iErr;
 }
 
+bool GUri::operator<(const GUri& aSrc) const
+{
+    bool res = iScheme == aSrc.iScheme && iAuthority == aSrc.iAuthority && iPath == aSrc.iPath && iBase == aSrc.iBase && !iErr &&
+	iElems.size() < aSrc.iElems.size();
+    for (int i = 0; i < iElems.size() && res; i++) {
+	res = iElems.at(i) == aSrc.iElems.at(i);
+    }
+    return res;
+}
+
 GUri GUri::operator+(const GUri& aUri)
 {
     GUri res(*this);
@@ -389,3 +399,12 @@ void GUri::Reduce()
 	}
     } while (found); 
 }
+
+void GUri::Tail(const GUri& aHead, GUri& aTail) const
+{
+    __ASSERT(aHead <= *this);
+    for (int i = aHead.iElems.size(); i < iElems.size(); i++) {
+	aTail.iElems.push_back(iElems.at(i));
+    }
+}
+

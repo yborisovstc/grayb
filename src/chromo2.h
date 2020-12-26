@@ -62,7 +62,7 @@ class C2MdlNode
 	C2MdlNode(const C2MdlNode& aSrc);
 	C2MdlNode(const C2MdlNode& aSrc, C2MdlNode* aOwner);
     public:
-	void CloneFrom(const C2MdlNode& aSrc);
+	void CloneFrom(const C2MdlNode& aSrc, bool aChromo);
 	void AddContext(const string& aType, const string& aValue);
 	void RmContext(TNodeAttr aAttr);
 	C2MdlNode* GetNextComp(C2MdlNode* aComp);
@@ -118,6 +118,7 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	virtual THandle AddNext(const THandle& aPrev, const THandle& aHandle, TBool aCopy = ETrue);
 	virtual THandle AddNext(const THandle& aPrev, TNodeType aNode);
 	virtual THandle AddPrev(const THandle& aNext, const THandle& aHandle, TBool aCopy = ETrue);
+	// TODO Deattach doesn't work here!
 	virtual void RmChild(const THandle& aParent, const THandle& aChild, TBool aDeattachOnly = EFalse);
 	virtual void Rm(const THandle& aHandle);
 	virtual void SetAttr(const THandle& aNode, TNodeAttr aType, const string& aVal);
@@ -132,6 +133,7 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	virtual TInt GetOrder(const THandle& aHandle, TBool aTree = EFalse) const;
 	virtual void DeOrder(const THandle& aHandle);
 	virtual TInt GetLineId(const THandle& aHandle) const;
+	virtual void TransfTl(const THandle& aHandle, const THandle& aSrc) override;
     public:
 	bool CheckTree(const C2MdlNode& aNode) const;
 	int GetAttrInt(void *aHandle, const char *aName);
@@ -166,6 +168,7 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	static void OutputNode(const C2MdlNode& aNode, ostream& aOs, int aLevel, int aIndent);
 	/** @brief Parses lexems from stream */
 	void GetLexs(istream& aIs, streampos aBeg, streampos aEnd, vector<string>& aLexs);
+	static string GetContextByAttr(const C2MdlNode& aNode, TNodeAttr aAttr);
     protected:
 	/** @brief Dumps content of input stream fragment
 	 * */
@@ -200,6 +203,7 @@ class Chromo2: public MChromo
 	virtual TBool GetSpec(string& aSpec);
 	virtual void Set(const ChromoNode& aRoot);
 	virtual void Convert(const MChromo& aSrc);
+	virtual void TransformLn(const MChromo& aSrc) override;
 	virtual void Init(TNodeType aRootType);
 	virtual void Reset();
 	virtual void Save(const string& aFileName, TInt aIndent = 0) const;
@@ -209,6 +213,7 @@ class Chromo2: public MChromo
 	virtual const CError& Error() const;
     protected:
 	void ConvertNode(ChromoNode& aDst, const ChromoNode& aSrc);
+	void TransfTlNode(ChromoNode& aDst, const ChromoNode& aSrc, bool aTarg);
     protected:
 	Chromo2Mdl mMdl;
 	ChromoNode mRootNode;

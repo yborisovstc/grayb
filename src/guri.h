@@ -90,10 +90,12 @@
 	    void PrependElem(const TElem& aElem);
 	    void PrependElem(const string& aType, const string& aName, char aRelType = KNodeSep);
 	    void RemoveLastElem();
+	    void Tail(const GUri& aHead, GUri& aTail) const;
 	    /** @brief Reduces path units by merging back steps */
 	    void Reduce();
 	    //void ToString(string& aRes);
 	    TBool IsErr() const { return iErr;};
+	    void SetErr(TBool aVal = ETrue) { iErr = aVal;}
 	    TBool IsAbsolute() const;
 	    TBool IsNil() const;
 	    TBool IsContent() const { return !mContent.empty();}
@@ -103,6 +105,8 @@
 	    GUri operator+(const GUri& aUri);
 	    GUri& operator+=(const GUri& aUri);
 	    bool operator==(const GUri& aSrc) const;
+	    bool operator<(const GUri& aSrc) const;
+	    bool operator<=(const GUri& aSrc) const { return *this < aSrc || *this == aSrc;}
 	    operator string() const { return toString(iElems.begin());}
 	protected:
 	    void Parse();

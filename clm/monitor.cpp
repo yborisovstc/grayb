@@ -149,6 +149,7 @@ bool Monitor::run()
 
 bool Monitor::copyFile(const string& aSrcFname, const string& aDstFname)
 {
+    return false;
 }
 
 bool Monitor::convertSpec()
@@ -223,6 +224,28 @@ bool Monitor::formatSpec()
     return res;
 }
 
+bool Monitor::transformSpec()
+{
+    bool res = false;
+    if (!mSpecName.empty()) {
+	initEnv(false);
+	MProvider* prov = mEnv->Provider();
+	MChromo* chr = prov->CreateChromo(K_Chr2Ext);
+	chr->SetFromFile(mSpecName);
+	if (chr->IsError()) {
+	    cout << "Pos: " << chr->Error().mPos << " -- " << chr->Error().mText << endl;
+	}
+	MChromo* ochr = prov->CreateChromo(K_Chr2Ext);
+	ochr->TransformLn(*chr);
+	ochr->Save(mCSpecName);
+	res = true;
+    } else {
+	cout << "Error: input chromo is not specified";
+    }
+
+    return res;
+}
+
 InputHandler* Monitor::createHandler(const string& aCmd)
 {
     InputHandler* res = nullptr;
@@ -272,6 +295,7 @@ class IhRun: public InputHandler
 	    if (!sdres) {
 		cout << "Error on saving profile data to file";
 	    }
+	    return true;
 	}
 };
 

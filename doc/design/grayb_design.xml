@@ -9,7 +9,7 @@
 	<author><personname><firstname>Yuri</firstname><surname>Borisov</surname></personname>
 	    <email>yuri.borisov.v@gmail.com</email></author> 
 
-	<releaseinfo>Ver.0.11 at 08-Mar-2015</releaseinfo>
+	<releaseinfo>Ver.0.17 at 25-Dec-2020</releaseinfo>
 
 	<abstract>
 	    <simpara>This document collects use-cases and software desing for Discrete Events System framework ver 2.</simpara>
@@ -50,6 +50,9 @@
 		<revremark>Added <xref linkend="ds_mmc_br"/>, <xref linkend="ds_mmc_ipcm"/></revremark> </revision>
 	    <revision> <revnumber>0.16</revnumber> <date>04-Mar-2017</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Added <xref linkend="ds_mv_local_nm"/>, <xref linkend="ds_mv_local_wkc"/></revremark> </revision>
+	    <revision> <revnumber>0.17</revnumber> <date>25-Dec-2020</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Designed the support of tree-like chromo, ref <xref linkend="ds_chr2_stlc"/> and transformation 
+		    from OSM to tree-ish, ref <xref linkend="ds_chr2_tftl"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -2312,6 +2315,24 @@
 		    { “Just some value”,  About: “This is agent …”, ViewData: { Res: “./../Agents/fun_agent”, Res1:”...”}}
 		</programlisting>
 	    </sect3>
+	    <sect3><title>[202012] Another version of syntax of context representation (ABNF)</title>
+		<programlisting>
+		    content = root_content / regular_content
+		    root_content = content_value / root_combined_content
+		    regular_content = content_value / regular_combined_content
+		    regular_combined_content = “{“ component *(component_separtor component) “}”
+		    root_combined_content = “{“ [content_value / component] *(component_separtor component) “}”
+		    component_separtor = " "
+		    component = component_name  “:”  component_value
+		    component_value = content_repr
+		    quoted_value = DQUOTE content_value DQUOTE
+		</programlisting>
+		    Note that root content specific is that it contains default leaf - simple content. 
+		    Example of root content that has value and components:
+		<programlisting>
+		    { “Just some value”,  About: “This is agent …”, ViewData: { Res: “./../Agents/fun_agent”, Res1:”...”}}
+		</programlisting>
+	    </sect3>
 	    <sect3><title>What should be the content properties</title>
 		Read-only - no changes to content components (deletion or addition) are allowed
 		Value read-only - no changes to value are allowed.
@@ -4339,61 +4360,76 @@
 	    </simpara>
 	</sect2>
 	<sect2 id="ds_chr2_sns"><title>Chromo syntax notation (EBNF)</title>
-	    <simpara>Variant #1 Node-centric</simpara>
-	    <programlisting>
-		white_space = ' ';
-		end_of_line = ;
-		separator = white_space | end_of_line;
-		chromo = [context, separator, ":", separator] '{', separator,  chromo_unit , { separator, chromo_unit }, separator, '}';
-		context = context_unit { separator, context_unit };
-		chromo_node = mutation | chromo;
-		#	mutation = elem_p, mutation_id, elem_q;
-		mutation = creation | assosiation | content_change | import | mut_extensions;
+	    <sect3><title>Variant #1 Node-centric</title>
+		<programlisting>
+		    white_space = ' ';
+		    end_of_line = ;
+		    separator = white_space | end_of_line;
+		    chromo = [context, separator, ":", separator] '{', separator,  chromo_unit , { separator, chromo_unit }, separator, '}';
+		    context = context_unit { separator, context_unit };
+		    chromo_node = mutation | chromo;
+		    #	mutation = elem_p, mutation_id, elem_q;
+		    mutation = creation | assosiation | content_change | import | mut_extensions;
 
-		context = mutation_focus | change_focus | partial_mutation_context | context_extensions;
-		mutation_focus = mutation_target, separator, "&lt;";
-		change_focus = change_target, separator, "&lt;|";
-		partial_mutation_context = "(", partial_mutation, "), separator, "&gt;";
-	    </programlisting>
+		    context = mutation_focus | change_focus | partial_mutation_context | context_extensions;
+		    mutation_focus = mutation_target, separator, "&lt;";
+		    change_focus = change_target, separator, "&lt;|";
+		    partial_mutation_context = "(", partial_mutation, "), separator, "&gt;";
+		</programlisting>
+	    </sect3>
 
-	    <simpara>Variant #2 Chromo-centric - current variant</simpara>
-	    <programlisting>
-		# TODO  Add combined node: mutation + segment
-		white_space = ' ';
-		end_of_line = ;
-		separator = white_space | end_of_line;
-		chromo = chromo_node { separator, chromo_node };
-		chromo_node = [context, separator, ":", separator]  ( (mutation, ';') | ('{', [separator], chromo, [separator], '}') );
-		context = context_unit { separator, context_unit };
-		#	mutation = elem_p, mutation_id, elem_q;
-		mutation = creation | assosiation | content_change | import | mut_extensions;
+	    <sect3><title>Variant #2 Chromo-centric - current variant</title>
+		<programlisting>
+		    # TODO  Add combined node: mutation + segment
+		    white_space = ' ';
+		    end_of_line = ;
+		    separator = white_space | end_of_line;
+		    chromo = chromo_node { separator, chromo_node };
+		    chromo_node = [context, separator, ":", separator]  ( (mutation, ';') | ('{', [separator], chromo, [separator], '}') );
+		    context = context_unit { separator, context_unit };
+		    #	mutation = elem_p, mutation_id, elem_q;
+		    mutation = creation | assosiation | content_change | import | mut_extensions;
 
-		context_unit = mutation_focus | change_focus | partial_mutation_context | context_extensions;
-		mutation_focus = mutation_target, separator, "&lt;";
-		change_focus = change_target, separator, "&lt;|";
-		partial_mutation_context = "(", partial_mutation, "), separator, "&gt;";
-	    </programlisting>
+		    context_unit = mutation_focus | change_focus | partial_mutation_context | context_extensions;
+		    mutation_focus = mutation_target, separator, "&lt;";
+		    change_focus = change_target, separator, "&lt;|";
+		    partial_mutation_context = "(", partial_mutation, "), separator, "&gt;";
+		</programlisting>
+	    </sect3>
 
-	    <simpara>Variant #3 (not completed)</simpara>
-	    <programlisting>
-		chromo = chromo_node { node_separator, chromo_node };
-		chromo_node = [context, separator, ":", separator]  ( (mutation, ';') | ('{', [separator], chromo, [separator], '}') );
-		context = context_unit { separator, context_unit };
-		mutation = creation | assosiation | content_change | import | mut_extensions;
-		context_unit = mutation_focus | change_focus | partial_mutation_context | context_extensions;
-		mutation_focus = mutation_target, separator, "&lt;";
-		change_focus = change_target, separator, "&lt;|";
-		partial_mutation_context = "(", partial_mutation, "), separator, "&gt;";
-		separator = white_space | end_of_line;
-		white_space = ' ';
-		end_of_line = ;
-		#	mutation = elem_p, mutation_id, elem_q;
+	    <sect3><title>Variant #3 (not completed)</title>
+		<programlisting>
+		    chromo = chromo_node { node_separator, chromo_node };
+		    chromo_node = [context, [separator] ]  ( (mutation, ';') | ('{', [separator], chromo, [separator], '}') );
+		    context = context_unit { separator, context_unit };
+		    # mutation = creation | assosiation | content_change | import | mut_extensions;
+		    context_unit = creation_context | mutation_focus | change_focus | partial_mutation_context | context_extensions;
+		    creation_context = mutation_create;
+		    mutation_focus = mutation_target, separator, "&lt;";
+		    change_focus = change_target, separator, "&lt;|";
+		    partial_mutation_context = "(", partial_mutation, "), separator, "&gt;";
 
-	    </programlisting>
+		    separator = white_space | end_of_line;
+		    white_space = ' ';
+		    end_of_line = ;
+
+		    node_separator = ??;
+
+		    mutation = standard_mutation | custom_mutation;
+		    standard_mutation = mutation_create | mutation_content_change | mutation_remove | mutation_import
+		    | mutation_connect | mutation_disconnect | mutation_rename | mutation_move;
+
+		    # mutation = elem_p, mutation_id, elem_q;
+		</programlisting>
+		<simpara>
+		    Do we really need  change_focus and partial_mutation_context?
+		</simpara>
+	    </sect3>
 	</sect2>
 	<sect2 id="ds_chr2_mcp"><title>Chromo models compatibility</title>
 	    <sect3><title>Intro</title>
-		<simpara>We request that chromo2 introduction doesn't require the specific updates of Elem. This means that chromo2 has be compatible with
+		<simpara>
+		    We request that chromo2 introduction doesn't require the specific updates of Elem. This means that chromo2 has be compatible with
 		    the current Elem. This possibility was provided by initial design of elem chromo - there were interfaces defined for main chromo component:
 		    <itemizedlist>
 			<listitem>MChromo - chromo itself</listitem>
@@ -4408,11 +4444,13 @@
 		    root node.</simpara>
 	    </sect3>
 	    <sect3><title>Solution#1 Enable Chromo2 mut node containing chromo</title>
-		<simpara>This node exactly correspongs to Chromo1 ENt_Node type mutation. The notation of such chromo node would be as:
+		<simpara>
+		    This node exactly correspongs to Chromo1 ENt_Node type mutation. The notation of such chromo node would be as:
 		    <programlisting> Some_name : Parent_name { ... } </programlisting>
-		    and differs from standard chromo2 mutation of creation node followed by chromo segment
+			and differs from standard chromo2 mutation of creation node followed by chromo segment
 		</simpara>
-		<simpara>At the first glance this seems redundant: creation mut containing chromo seems same as creation mut followed by segment with created node
+		<simpara>
+		    At the first glance this seems redundant: creation mut containing chromo seems same as creation mut followed by segment with created node
 		    targeted. However this "new" chromo node is convenient - this is just one node, so can be simply used as argument of mutation, like
 		    on the example above:
 		    <programlisting>
@@ -4423,7 +4461,8 @@
 	</sect2>
 	<sect2><title>Notes</title>
 	    <itemizedlist>
-		<listitem>Chromosome consists of single node for root agent. This root agent is created by environment and has predefined name "Root". So the chromo looks like:
+		<listitem>
+		    Chromosome consists of single node for root agent. This root agent is created by environment and has predefined name "Root". So the chromo looks like:
 		    <programlisting>
 			Root &lt; : {
 			root chromo node #1
@@ -4460,7 +4499,7 @@
 	    </sect3>
 	    <sect3><title>Mutations chain: chromo node design considerations</title>
 		<simpara>As we stated it will be acceptable to use node creation mutation instead of URI in many parts of mutation: mutation arguments P and Q, context
-		(target, node, namespace). So chromo topology gets rather complex.</simpara>
+		    (target, node, namespace). So chromo topology gets rather complex.</simpara>
 	    </sect3>
 	    <sect3><title>Criticism: anonumous agents and mutations chains - is it really important?</title>
 		<simpara>The initial rationale of mutations chain benefits was the idea that it gives us the possibility of compact and nice notation. This could help us
@@ -4469,13 +4508,16 @@
 		    of connections.</simpara>
 		<simpara>The limitation can be bypassed in visual representation of the system, this approach was used in FAP studio - visual design tool. </simpara>
 		<simpara>So we decided to postpone implemeting of this "AAMC" feature, the code prepared is on branch yb_chr2_aamc. There are still many question regarding what
-		design approach is more effective - direct (using chromo language) or visual.</simpara>
+		    design approach is more effective - direct (using chromo language) or visual.</simpara>
 	    </sect3>
 	</sect2>
-	<sect2><title>Is combined node required?</title>
-	    <simpara>There was combined node also implemented, mutation + chromo segment (combined node is not defined in chromo grammar). In fact combo-node is almost same as
+	<sect2 id="ds_chr2_cmbn"><title>Is combined node required?</title>
+	    <simpara>
+		There was combined node also implemented, mutation + chromo segment (combined node is not defined in chromo grammar). In fact combo-node is almost same as
 		segment with target specified via dependent mutation (ref <xref linkend="ds_chr2_aamc"/>). The only distinction is missing target context relation symbol. So the
-		question is if this combo-node is required and plays valuable role in the grammar?</simpara>
+		    question is if this combo-node is required and plays valuable role in the grammar?
+	    </simpara>
+	    <simpara>The matter is that combined node syntax is very simple and understandable. So it makes sense to support it.</simpara>
 	</sect2>
 	<sect2 id="ds_chr2_nsosm"><title>Chromo structure is not supported in <xref linkend="gls_osm"/> approach. </title>
 	    <simpara><xref linkend="gls_osm"/> doesn't natively support chromo segments, the approach is used one-mut granularity instead. Look at the mutation
@@ -4497,155 +4539,180 @@
 		    <simpara>Another case of cumulative context is target and node - they can be specified in current segment and also in upper layer segment. How the final context should
 			be in that case? One approach is to calculate final target and node basing on all levels context items. But there should be different schema of "accumulating" 
 			mut-target and mut-node. This is because mut-node URI is relative to mut-target URI. So we can correctly obtain mut-node in this case:
-			<programlisting>
-			    root-chromo-node has mut-targ
-			    child-chromp-node has mut-targ and mut-node
-			    >> mut-node is obtained relative to root-chromo-node-mut-targ + child-chromo-node-mut-targ
-			</programlisting>
+		    <programlisting>
+			root-chromo-node has mut-targ
+			child-chromp-node has mut-targ and mut-node
+			>> mut-node is obtained relative to root-chromo-node-mut-targ + child-chromo-node-mut-targ
+		    </programlisting>
 			But having mut-node in begin or mid of series of these attr chain causes to complication of final mut-node obraining schema.
 			So it makes sense to restrict specifying mut-node only in final chromo-node in chromo-nodes hier.
-		    </simpara>
-		    <simpara>The thoughts above is not completely right. Let's consider the following chromo2 example:</simpara>
-		    <programlisting>
-			| ./elem1 &lt; {
-			|    unit1_1 : Unit;
-			|    ./unit1_1 - {
-			|       unit1_1_1 : Unit;
-			|       ./unit1_1_1 - {
-			|           unit1_1_1_1 : Unit;
-			|       }     
-			|    }
-			| }
-		    </programlisting>
-		    <simpara>This examples shows another approach: mut-node context is valid till the lower-layer context substitute it. The lower-layer mut-node is relative to the current
-			context. This approach makes sense especially in cases when we have the complex native hier of unmutable nodes, need to have many changes of them and want to group
-			chromo nodes.</simpara>
-		</sect4>
-		<sect4 id="ds_chr2_cctx_tn_umt"><title>Solution: using unified mut-target</title>
-		    <simpara>Currently there are both mut-target and mut-node. Mut-target points to the target of mutation, i.e. mutable node that will keep the mutation. Mut-node points
-			to the subject of the change, this node can be not mutable. Is it possible to have just one unified target instead of those two? Seems so, we just can interpret this
-			attr as the pointer to the subject of change, and caclulate the nearest mutable target in hier to redirect the mutation.</simpara>
-		    <simpara>This can be implemented in Elem::DoMutation() via finding nearest mutable node and then modifying mut-target attr rebasing it to this mutable node.</simpara>
-		    <simpara>The main problem with this approach is migrating comp based mutations (Rm, Rn, Cont).</simpara>
-		    <simpara>[20200111] Implemented the solution, most UT passed, the branch is "yb_chr2_cctx_tn_umt".</simpara>
-		</sect4>
-		<sect4 id="ds_chr2_cctx_tn_srns"><title>Solution: use specific rules for the context of nested segments.</title>
-		    <simpara>This solutions is lightweight: just to specify how the context in nested segments should be set. The possible rule is that target should be nested, i.e. lower
-			level target should be relative to the upper level. As for mut-node, it shouldn't be nested, i.e. even the segment is nested, its context mut-node shouldn't relate to
-			upper level mut-node context.</simpara>
-		    <simpara>Nesting of segments makes sense only for purpose of re-using the context by minor correction of it. So accrording to the rule above there is no sense to
-			nest the segment with just mut-node context because context is not re-used.</simpara>
-		    <simpara>There should be specific rule for mut-node context specifying in combined mut. This context shouldn't be applied in scope of segment, it only relates to
-			combo mut base mutation.</simpara>
-		</sect4>
-	    </sect3>
-	</sect2>
-    </sect1>
+		</simpara>
+		<simpara>The thoughts above is not completely right. Let's consider the following chromo2 example:</simpara>
+		<programlisting>
+		    | ./elem1 &lt; {
+		    |    unit1_1 : Unit;
+		    |    ./unit1_1 - {
+		    |       unit1_1_1 : Unit;
+		    |       ./unit1_1_1 - {
+		    |           unit1_1_1_1 : Unit;
+		    |       }     
+		    |    }
+		    | }
+		</programlisting>
+		<simpara>This examples shows another approach: mut-node context is valid till the lower-layer context substitute it. The lower-layer mut-node is relative to the current
+		    context. This approach makes sense especially in cases when we have the complex native hier of unmutable nodes, need to have many changes of them and want to group
+		    chromo nodes.</simpara>
+	    </sect4>
+	    <sect4 id="ds_chr2_cctx_tn_umt"><title>Solution: using unified mut-target</title>
+		<simpara>Currently there are both mut-target and mut-node. Mut-target points to the target of mutation, i.e. mutable node that will keep the mutation. Mut-node points
+		    to the subject of the change, this node can be not mutable. Is it possible to have just one unified target instead of those two? Seems so, we just can interpret this
+		    attr as the pointer to the subject of change, and caclulate the nearest mutable target in hier to redirect the mutation.</simpara>
+		<simpara>This can be implemented in Elem::DoMutation() via finding nearest mutable node and then modifying mut-target attr rebasing it to this mutable node.</simpara>
+		<simpara>The main problem with this approach is migrating comp based mutations (Rm, Rn, Cont).</simpara>
+		<simpara>[20200111] Implemented the solution, most UT passed, the branch is "yb_chr2_cctx_tn_umt".</simpara>
+	    </sect4>
+	    <sect4 id="ds_chr2_cctx_tn_srns"><title>Solution: use specific rules for the context of nested segments.</title>
+		<simpara>This solutions is lightweight: just to specify how the context in nested segments should be set. The possible rule is that target should be nested, i.e. lower
+		    level target should be relative to the upper level. As for mut-node, it shouldn't be nested, i.e. even the segment is nested, its context mut-node shouldn't relate to
+		    upper level mut-node context.</simpara>
+		<simpara>Nesting of segments makes sense only for purpose of re-using the context by minor correction of it. So accrording to the rule above there is no sense to
+		    nest the segment with just mut-node context because context is not re-used.</simpara>
+		<simpara>There should be specific rule for mut-node context specifying in combined mut. This context shouldn't be applied in scope of segment, it only relates to
+		    combo mut base mutation.</simpara>
+	    </sect4>
+	</sect3>
+    </sect2>
+    <sect2 id="ds_chr2_stlc"><title>Enhancement: support of tree-like chromo</title>
+	<sect3><title>Intro</title>
+	    <simpara>
+		There is konwn problem that <xref linkend="gls_osm"/> chromo is very unconvenience for models creation. Even the structured (tree-like) chromo
+		    is supported by FAP2 as "input" chromo, the nodes chromo is already one-mut granulatity. Ref
+		<xref linkend="ds_chr2_nsosm"/> for the problem description.
+		    This problem gets actual in case of the model visual development - the resulted chromo will be not structured so less suitable for analysis.
+	    </simpara>
+	    <simpara>The first-step solution is to add the chromo method for tranforming chromo to tree-like form.</simpara>
+	</sect3>
+    </sect2>
+    <sect2 id="ds_chr2_tftl"><title>Transforming chromo to tree-like form.</title>
+	<sect3><title>Intro</title>
+	    <simpara>The initial idea is to have the specific method in chromo iface. As regarding the algorithm of transforming, one of the obvious transf is 
+		to make combined mutation (ref <xref linkend="ds_chr2_cmbn"/>) from the node mutation and immediately follewing mutation with the node target.
+	    </simpara>
+	</sect3>
+	<sect3><title>Problem: combined mutation for non-mutable nodes.</title>
+	    <simpara>Combined mutation is not support currently for not-mutable nodes. This is because the combined mut is still considered as the chromo of created node.
+		To resolve this the target attr of mutation was introduced initially: is shows that the even the change is performed in non-mutable node (target) the mutation
+		itself belongs to the node mutable owner.</simpara>
+	    <simpara>The contradictional interpretation of combined mut can be avoided if we consider the mut as reduced notation of dependent mutations
+		(ref <xref linkend="ds_chr2_cmbn"/>)</simpara>
+	</sect3>
+    </sect2>
+</sect1>
 
-    <sect1 id="ds_irm"><title>How to improve iface resolution mechanism</title>
-	<sect2 id="ds_irm_intro"><title>Intro</title>
-	    <simpara>Currently we have two ifaces design and three resolution mechanism:</simpara>
-	    <orderedlist>
-		<listitem id="ds_irm_intro_im">Initail mechanism - local iface resolution
-		    <para>It was initially introduce in multiagents model: the "Base" CPP iface was introduced that assumes that Base implementation
-			can implement any ifaces also and embed theirs resolution by iface name (i.e. iface type, static prop of iface).
-			The abstract method "DoGetObj" was added to "Base" iface for that. There was not dedicated CPP iface for iface introduced on
-			initial stage. DoGetObj just returns ptr to void so the Base cient is responsible to do proper cast the returned value to
-			iface requested.</para>
-		</listitem>
-		<listitem>Topology specified resolution
-		    <para>This mechanism is used to resolve iface globally depending on context (topology) of requested agent. This is key part
-			of multiagent system.</para>
-		</listitem>
-		<listitem>Mechanism introduced in the scope of <xref linkend="gls_daa"/> implementation.
-		    <para>In the scope <xref linkend="gls_daa"/> the elementary CPP iface "MIface" was introduced for agents ifaces. This MIface
-			exposes method "Call" for unified request to iface and methods "Uid" and "Mid" for identifying. In fact all agents ifaces should
-			inherit this core "MIface" iface. This elementary iface was introduce in order to enable agents communication within distributed
-			environment. This idea was to implement the communication between distributed parts as remote procedure, that greatly simplifies the
-			overall <xref linkend="gls_daa"/> implementation. To do that we need to have thus object of remote call - this is elementary iface
-			that supports unified remote call method "Call". Then we need to uniquely identify the remote call object - this is done vis 
-			introducing elementary iface method "Uid". Finally we need to provide the communincation layer (currently des server session) with
-			simple mechanism of resolution of remote call object. This resolution mechanism currently (20160501) is implemented on server
-			session vis map with iface UID as key. But this solution seems not good. The better would be to implement iface resolution mechanism
-			on env or even base agent level. Because we already have initial mechanism of resolution implemented (ref <xref linkend="ds_irm_intro_im"/>)
+<sect1 id="ds_irm"><title>How to improve iface resolution mechanism</title>
+    <sect2 id="ds_irm_intro"><title>Intro</title>
+	<simpara>Currently we have two ifaces design and three resolution mechanism:</simpara>
+	<orderedlist>
+	    <listitem id="ds_irm_intro_im">Initail mechanism - local iface resolution
+	    <para>It was initially introduce in multiagents model: the "Base" CPP iface was introduced that assumes that Base implementation
+		can implement any ifaces also and embed theirs resolution by iface name (i.e. iface type, static prop of iface).
+		The abstract method "DoGetObj" was added to "Base" iface for that. There was not dedicated CPP iface for iface introduced on
+		initial stage. DoGetObj just returns ptr to void so the Base cient is responsible to do proper cast the returned value to
+		iface requested.</para>
+	</listitem>
+	<listitem>Topology specified resolution
+	<para>This mechanism is used to resolve iface globally depending on context (topology) of requested agent. This is key part
+		    of multiagent system.</para>
+	    </listitem>
+	    <listitem>Mechanism introduced in the scope of <xref linkend="gls_daa"/> implementation.
+	    <para>In the scope <xref linkend="gls_daa"/> the elementary CPP iface "MIface" was introduced for agents ifaces. This MIface
+		exposes method "Call" for unified request to iface and methods "Uid" and "Mid" for identifying. In fact all agents ifaces should
+		inherit this core "MIface" iface. This elementary iface was introduce in order to enable agents communication within distributed
+		environment. This idea was to implement the communication between distributed parts as remote procedure, that greatly simplifies the
+		overall <xref linkend="gls_daa"/> implementation. To do that we need to have thus object of remote call - this is elementary iface
+		    that supports unified remote call method "Call". Then we need to uniquely identify the remote call object - this is done vis 
+		    introducing elementary iface method "Uid". Finally we need to provide the communincation layer (currently des server session) with
+		    simple mechanism of resolution of remote call object. This resolution mechanism currently (20160501) is implemented on server
+		    session vis map with iface UID as key. But this solution seems not good. The better would be to implement iface resolution mechanism
+		    on env or even base agent level. Because we already have initial mechanism of resolution implemented (ref <xref linkend="ds_irm_intro_im"/>)
 			it makes sense to improve the mechanism in order to support full iface resolution.</para>
 		</listitem>
 	    </orderedlist>
 	    <simpara>Full iface resolution mechanism is required for instance to avoid creation of proxies duplicating original local iface,
-		ref <xref linkend="ds_daa_pxdup"/></simpara>
+		    ref <xref linkend="ds_daa_pxdup"/></simpara>
 	</sect2>
 	<sect2 id="ds_irm_fil"><title>Global iface resolution</title>
 	    <simpara>The iface resolution required for <xref linkend="gls_daa"/> is similar to existing local iface resoluton implemented in base agent
 		(ref <xref linkend="ds_irm_intro_im"/>. The only difference is that the former should resolve iface in native hier tree. Why
-		we need such "extension" of local iface resolution? This is because this mechanism is used for remote call but the remote call mechanism
-		is implemented "above" the model. So to specify the object of remote call we need to specify the agent first and then the iface of agent (local
-		iface). We will call iface resolution using for <xref linkend="gls_daa"/> as "global resolution" in contrast of local iface resulution.
-		Correspoidingly we will say that MIface UID is iface "global" identifier in contrast of iface type - identifier using for local iface
-		resolution. So global iface identifier currently is combined from agent URI (ogent identifier in the current env) and local iface identifier
-		(iface type). To be exact this global identifier is not global in scope of the whole distributed model but only in the scope of environments that
-		combine the whole model. Do MIface UID is the identifier that allows iface resolution in the scope of environment. Potentially we can
-		introduce "true" global identifier (GUID) that allows to resolve iface in global scope (in the scope of the whole distributed model).</simpara>
-	    <simpara>What should be UID in case of proxy? For proxy it gets a bit complicated to create UID. The first part of UID is clear - it should be
-		URI to the proxy manager. What next? In fact proxy manager can have more that one proxy with the same local iface. So the second part would
-		be proxy UID in the scope of proxy manager. It can be proxy context for instance. The context is unique within proxy manager scope so
-		can be used for proxy identifier. It is clear that with this approach we have to specifically implement proxy manager local iface
-		resolution because the UID actually gets not truly local but needs look up to the owned proxies too.</simpara>
-	</sect2>
-    </sect1>
+		    we need such "extension" of local iface resolution? This is because this mechanism is used for remote call but the remote call mechanism
+		    is implemented "above" the model. So to specify the object of remote call we need to specify the agent first and then the iface of agent (local
+		    iface). We will call iface resolution using for <xref linkend="gls_daa"/> as "global resolution" in contrast of local iface resulution.
+			Correspoidingly we will say that MIface UID is iface "global" identifier in contrast of iface type - identifier using for local iface
+			resolution. So global iface identifier currently is combined from agent URI (ogent identifier in the current env) and local iface identifier
+			(iface type). To be exact this global identifier is not global in scope of the whole distributed model but only in the scope of environments that
+			combine the whole model. Do MIface UID is the identifier that allows iface resolution in the scope of environment. Potentially we can
+			introduce "true" global identifier (GUID) that allows to resolve iface in global scope (in the scope of the whole distributed model).</simpara>
+		    <simpara>What should be UID in case of proxy? For proxy it gets a bit complicated to create UID. The first part of UID is clear - it should be
+			URI to the proxy manager. What next? In fact proxy manager can have more that one proxy with the same local iface. So the second part would
+			be proxy UID in the scope of proxy manager. It can be proxy context for instance. The context is unique within proxy manager scope so
+			can be used for proxy identifier. It is clear that with this approach we have to specifically implement proxy manager local iface
+			resolution because the UID actually gets not truly local but needs look up to the owned proxies too.</simpara>
+		</sect2>
+	    </sect1>
 
-    <sect1 id="ds_mi"><title>Model representing to the client: effective interface of multi-agent model.</title>
-	<sect2><title>Intro</title>
-	    <simpara>Currently the model publish to the client a series of native and unified (via MIface::Call) interfaces
-		in order to allow client to interact to the mode. But the main iface for communication is MElem allowing to browse
-		into the agent components and inheritance chain. In fact the client, i.e. Studio uses MElem for understanding if 
-		the agent is sutable for UI representation. Studio performs that via analysis of agents inheritance chain. But this
-		approach is not solid and doesn't work.</simpara>
-	    <simpara>The example is SockErp embedded representation. The representation declares support of :Elem:Vert:Socket agent,
-		so it doesn't support of :Elem:Vert:SocketMc (counterpart of Socket, but armed with multicontent supported agent
-		ASocketMc.</simpara>
-	    <simpara>This examples shows that the idea of using inheritance chain as the criteria of compatibility is not correct.
-		What would be correct approach? This section is dedicated for discussion of effective approach of model representing to
-		the client.</simpara>
-	</sect2>
-	<sect2><title>Set of native interfaces as model representation to the client.</title>
-	    <simpara>Anycase the interface shall be declared and publish set of ways of interaction to the model. Currently there
-		are native (C++) and unified (of text form) interfaces used. Seems this is enough at the moment. The only improvement
-		that we need is to cover by ifaces all the model behaviour. This will allow us to use ifaces exposes by the agent as
-		criteria of compatibility for the client.</simpara>
-	    <simpara>The idea is that agent exposes a set of ifcases. There is assumption that ifaces are kind of elementary, so 
-		each iface doesn't cross to others or depend on others. So the whole agent iface is combined from thiese elementary
-		ifaces like the big pazzle is combined from many small peaces. We can say that elemenary ifase is "orthogonal" to other
-		elementary ifaces. We can call this approach poly-iface.
-		The question is if it's possible to create such full ifase from a set of elementary ifaces.</simpara>
-	</sect2>
-	<sect2 id="ds_mi_rm"><title>Poly-iface approach and iface resolution mechanism.</title>
-	    <simpara>With poly-iface approach the key role plays the mechanism of iface resolution. Currently two mechanism are
-		implemented:</simpara>
-	    <orderedlist>
-		<listitem>Local iface resolution</listitem>
-		<listitem>Global iface resolution</listitem>
-	    </orderedlist>
-	    <simpara>Local method cannot be used because often the iface implementor is embedded agent (placed in Agents node).
-		Global method is also not acceptable for relolution because it can obtain remote iface. Actually we need the method being
-		near to global but limited only by local context, i.e. looking at the iface just in agent itself locally or 
-		in agent embedded agents.
-	    </simpara>
-	    <simpara>Decision: to update local iface method in order to also look up in embedded agent.</simpara>
-	</sect2>
-    </sect1>
+	    <sect1 id="ds_mi"><title>Model representing to the client: effective interface of multi-agent model.</title>
+		<sect2><title>Intro</title>
+		    <simpara>Currently the model publish to the client a series of native and unified (via MIface::Call) interfaces
+			in order to allow client to interact to the mode. But the main iface for communication is MElem allowing to browse
+			into the agent components and inheritance chain. In fact the client, i.e. Studio uses MElem for understanding if 
+			the agent is sutable for UI representation. Studio performs that via analysis of agents inheritance chain. But this
+			approach is not solid and doesn't work.</simpara>
+		    <simpara>The example is SockErp embedded representation. The representation declares support of :Elem:Vert:Socket agent,
+			so it doesn't support of :Elem:Vert:SocketMc (counterpart of Socket, but armed with multicontent supported agent
+			ASocketMc.</simpara>
+		    <simpara>This examples shows that the idea of using inheritance chain as the criteria of compatibility is not correct.
+			What would be correct approach? This section is dedicated for discussion of effective approach of model representing to
+			the client.</simpara>
+		</sect2>
+		<sect2><title>Set of native interfaces as model representation to the client.</title>
+		    <simpara>Anycase the interface shall be declared and publish set of ways of interaction to the model. Currently there
+			are native (C++) and unified (of text form) interfaces used. Seems this is enough at the moment. The only improvement
+			that we need is to cover by ifaces all the model behaviour. This will allow us to use ifaces exposes by the agent as
+			criteria of compatibility for the client.</simpara>
+		    <simpara>The idea is that agent exposes a set of ifcases. There is assumption that ifaces are kind of elementary, so 
+			each iface doesn't cross to others or depend on others. So the whole agent iface is combined from thiese elementary
+			ifaces like the big pazzle is combined from many small peaces. We can say that elemenary ifase is "orthogonal" to other
+			elementary ifaces. We can call this approach poly-iface.
+			The question is if it's possible to create such full ifase from a set of elementary ifaces.</simpara>
+		</sect2>
+		<sect2 id="ds_mi_rm"><title>Poly-iface approach and iface resolution mechanism.</title>
+		    <simpara>With poly-iface approach the key role plays the mechanism of iface resolution. Currently two mechanism are
+			implemented:</simpara>
+		    <orderedlist>
+			<listitem>Local iface resolution</listitem>
+			<listitem>Global iface resolution</listitem>
+		    </orderedlist>
+		    <simpara>Local method cannot be used because often the iface implementor is embedded agent (placed in Agents node).
+			Global method is also not acceptable for relolution because it can obtain remote iface. Actually we need the method being
+			near to global but limited only by local context, i.e. looking at the iface just in agent itself locally or 
+			in agent embedded agents.
+		</simpara>
+		<simpara>Decision: to update local iface method in order to also look up in embedded agent.</simpara>
+	    </sect2>
+	</sect1>
 
-    <sect1 id="ds_rpr"><title>Re-parent of node</title>
-	<sect2><title>Intro</title>
-	    <simpara>Ref <ulink url="../requirements/index.html#uc_067"/> for the use-case.</simpara>
-	</sect2>
-	<sect2><title>Mutation vs transformation</title>
-	    <simpara>Re-parent causes the series of mutation (or modifications) made to the node re-parented. So the question is if this should
-		be transformation instead of mutation.</simpara>
-	    <simpara>Ref <xref linkend="ds_transf"/> for design item outlining transformation.</simpara>
-	</sect2>
-    </sect1>
+	<sect1 id="ds_rpr"><title>Re-parent of node</title>
+	    <sect2><title>Intro</title>
+		<simpara>Ref <ulink url="../requirements/index.html#uc_067"/> for the use-case.</simpara>
+	    </sect2>
+	    <sect2><title>Mutation vs transformation</title>
+		<simpara>Re-parent causes the series of mutation (or modifications) made to the node re-parented. So the question is if this should
+		    be transformation instead of mutation.</simpara>
+		<simpara>Ref <xref linkend="ds_transf"/> for design item outlining transformation.</simpara>
+	    </sect2>
+	</sect1>
 
-    <sect1 id="ds_di"><title>Design issues</title>
+	<sect1 id="ds_di"><title>Design issues</title>
 	<sect2 id="ds_di_nacgna"><title>Native agents cannot get node by absolute URI</title>
 	    <simpara>The origin of this behaviour it that native agents are not included into model's main native hier.
 		They have theirs own hier instead.
@@ -5856,7 +5923,7 @@
 			agent instead of having dedicated states. Using dedicated states is redundant because of "update" register is
 			not needed in our case - the managed agent keeps all "updated" data. So we just need to latch the data from 
 			managed agent to the data embedded ADP agents data on "confirm" event.</simpara>
-		    <simpara>So <xref ilnkend="gls_adp"/> agent will contain all "observable" data of managed agent.</simpara>
+		    <simpara>So <xref linkend="gls_adp"/> agent will contain all "observable" data of managed agent.</simpara>
 		</sect4>
 		<sect4 id="ds_dmm_adp_hmd_isacd"><title>Approach: iface to "smart" access to complex data</title>
 		    <simpara>Ref <xref linkend="ds_dmm_adp_hmd_itr"/> for initial thoughts. </simpara>
@@ -6199,7 +6266,7 @@
 	</sect2>
 	<sect2 id="ds_i_nrn"><title>Current scheme doesn't allow element to get notification of related node change</title>
 	    <sect3><title>Intro</title>
-		<simple>The problem described in TODO to Unit::OnCompChanged()</simple>
+		<simpara>The problem described in TODO to Unit::OnCompChanged()</simpara>
 		<simpara>
 		    The only notification thru hier can be get via MOwner, but not relation thru edges.
 		    Thus if node A is related to node B via the chain of edges, the change of B or even the change

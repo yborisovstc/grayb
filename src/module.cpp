@@ -74,6 +74,7 @@ TBool AMod::ChangeCont(const string& aVal, TBool aRtOnly, const string& aName)
 TBool AMod::GetCont(string& aValue, const string& aName) const
 {
     aValue = mCont;
+    return ETrue;
 }
 
 TInt AMod::GetContCount() const

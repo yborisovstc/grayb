@@ -45,6 +45,10 @@ class Monitor
 	 * @return Sign of sucess
 	 * */
 	bool formatSpec();
+	/** @brief Transform chromo spec from linear to treish
+	 * @return Sign of sucess
+	 * */
+	bool transformSpec();
 	/** @brief Sets module path
 	 * @return Sign of sucess
 	 * */

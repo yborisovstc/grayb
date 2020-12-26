@@ -300,7 +300,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 
     MUnit* btarg = this; // Base target
     string sbtarg;
-    if (mroot.AttrExists(ENa_Targ) && (mroot.Type() != ENt_Node)) {
+    if (mroot.AttrExists(ENa_Targ) /* && (mroot.Type() != ENt_Node) */) {
 	sbtarg = mroot.Attr(ENa_Targ);
 	btarg = GetNodeByName(sbtarg, root_ns);
 	if (btarg == NULL) {
@@ -372,7 +372,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    }
 	    if (eftarg != NULL) {
 		if (ftarg != aoftarg) {
-		    string newTargUri = ftarg->GetUri(aoftarg, false);
+		    string newTargUri = ftarg->GetUri(aoftarg, true);
 		    rno.SetAttr(ENa_Targ, newTargUri);
 		} else {
 		    rno.RmAttr(ENa_Targ);
@@ -424,7 +424,16 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    // Local mutation
 	    TNodeType rnotype = rno.Type();
 	    if (rnotype == ENt_Node) {
-		AddElem(rno, aRunTime, aTrialMode, aCtx);
+		MUnit* mres = AddElem(rno, aRunTime, aTrialMode, aCtx);
+		if (rno.Count() > 0) {
+		    MElem* emres = mres->GetObj(emres);
+		    if (!emres) {
+			// There is node chromo but node is not mutable. Mutate it from the current mutable.
+			string targUri = mres->GetUri(this, true);
+			rno.SetAttr(ENa_Targ, targUri);
+			Mutate(rno, EFalse, aCheckSafety, aTrialMode, aCtx);
+		    }
+		}
 	    }
 	    else if (rnotype == ENt_Seg) {
 		Mutate(rno, aRunTime, aCheckSafety, aTrialMode, aCtx);
@@ -713,10 +722,21 @@ MUnit* Elem::AddElem(const ChromoNode& aNode, TBool aRunTime, TBool aTrialMode, 
 			}
 		    }
 		    else {
+			/*
 			// Node that doesn't support mutation. Generate error if there is mutation of the node
 			if (aNode.Count() > 0) {
 			    Logger()->Write(EErr, this, "Attempt to mutate node [%s] that doesn't support mutation", sname.c_str());
 			}
+			*/
+			// Node that doesn't support mutation. Mutate the current mutable
+			/*
+			if (aNode.Count() > 0) {
+			    string targUri = uelem->GetUri(this, true);
+			    ChromoNode& cnode = const_cast<ChromoNode&>(aNode);
+			    cnode.SetAttr(ENa_Targ, targUri);
+			    Mutate(cnode, EFalse, ecsaf, aTrialMode, aCtx);
+			}
+			*/
 		    }
 		}
 		else  {
@@ -1276,10 +1296,6 @@ void Elem::OnParentDeleting(MUnit* aParent)
     gparent->RegisterChild(this);
     iParent = gparent;
     */
-}
-
-ChromoNode Elem::GetChNode(const GUri& aUri) const
-{
 }
 
 TBool Elem::HasChilds() const

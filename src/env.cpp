@@ -379,6 +379,7 @@ TBool SystemObserver::OnCompChanged(const MUnit* aComp, const string& aContName,
     for (auto observer : mObservers) {
 	observer->OnCompChanged(aComp, aContName, aModif);
     }
+    return ETrue;
 }
 
 TBool SystemObserver::OnChanged(const MUnit* aComp)
@@ -386,6 +387,7 @@ TBool SystemObserver::OnChanged(const MUnit* aComp)
     for (auto observer : mObservers) {
 	observer->OnChanged(aComp);
     }
+    return ETrue;
 }
 
 TBool SystemObserver::OnCompRenamed(const MUnit* aComp, const string& aOldName)
@@ -393,6 +395,7 @@ TBool SystemObserver::OnCompRenamed(const MUnit* aComp, const string& aOldName)
     for (auto observer : mObservers) {
 	observer->OnCompRenamed(aComp, aOldName);
     }
+    return ETrue;
 }
 
 void SystemObserver::OnCompMutated(const MUnit* aNode)

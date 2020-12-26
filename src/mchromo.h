@@ -118,6 +118,7 @@ class MChromoMdl
 	virtual TInt GetOrder(const THandle& aHandle, TBool aTree = EFalse) const = 0;
 	virtual void DeOrder(const THandle& aHandle) = 0;
 	virtual TInt GetLineId(const THandle& aHandle) const = 0;
+	virtual void TransfTl(const THandle& aHandle, const THandle& aSrc) = 0;
 };
 
 class ChromoNode;
@@ -136,6 +137,8 @@ class MChromo
 	virtual void Set(const ChromoNode& aRoot) = 0;
 	/** @brief Converts from another chromo, probably not same type */
 	virtual void Convert(const MChromo& aSrc) = 0;
+	/** @brief Transform linearized chromo to tree-formed */
+	virtual void TransformLn(const MChromo& aSrc) = 0;
 	virtual void Init(TNodeType aRootType) = 0;
 	virtual void Reset() = 0;
 	/** @brief Saves chromo to file

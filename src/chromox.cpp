@@ -524,3 +524,7 @@ void ChromoX::Convert(const MChromo& aSrc)
 {
     __ASSERT(false);
 }
+
+void ChromoX::TransformLn(const MChromo& aSrc)
+{
+}

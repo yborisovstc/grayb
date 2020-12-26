@@ -110,7 +110,6 @@ class Elem: public Unit, public MElem
 	virtual void OnNodeMutated(const MUnit* aNode, const TMut& aMut, const MutCtx& aCtx);
 	virtual void OnParentMutated(MUnit* aParent, const TMut& aMut);
 	// Chromo
-	ChromoNode GetChNode(const GUri& aUri) const;
 	virtual TBool CompactChromo() override { return EFalse;}
 	virtual TBool CompactChromo(const ChromoNode& aNode) override { return EFalse;}
 	void UndoCompactChromo() {}
