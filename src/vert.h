@@ -31,9 +31,13 @@ class Vert: public Elem, public MVert
 	// From Elem
 	virtual TBool OnCompChanged(const MUnit* aComp, const string& aContName = string(), TBool aModif = EFalse);
 	virtual void OnCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse);
+	virtual void DoSpecificMut(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode, const MutCtx& aCtx) override;
 	// From MIface
 	virtual MIface* MVert_Call(const string& aSpec, string& aRes);
 	virtual string MVert_Mid() const { return Elem::MElem_Mid();}
+    protected:
+	void Connect(const string& argP, const string& argQ, const TNs& aNs);
+	void Disconnect(const string& argP, const string& argQ, const TNs& aNs);
     protected:
 	void Disconnect();
     protected:

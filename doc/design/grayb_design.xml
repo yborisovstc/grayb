@@ -9,7 +9,7 @@
 	<author><personname><firstname>Yuri</firstname><surname>Borisov</surname></personname>
 	    <email>yuri.borisov.v@gmail.com</email></author> 
 
-	<releaseinfo>Ver.0.17 at 25-Dec-2020</releaseinfo>
+	<releaseinfo>Ver.0.18 at 27-Dec-2020</releaseinfo>
 
 	<abstract>
 	    <simpara>This document collects use-cases and software desing for Discrete Events System framework ver 2.</simpara>
@@ -53,6 +53,8 @@
 	    <revision> <revnumber>0.17</revnumber> <date>25-Dec-2020</date> <authorinitials>Yuri Borisov</authorinitials>
 		<revremark>Designed the support of tree-like chromo, ref <xref linkend="ds_chr2_stlc"/> and transformation 
 		    from OSM to tree-ish, ref <xref linkend="ds_chr2_tftl"/></revremark> </revision>
+	    <revision> <revnumber>0.18</revnumber> <date>27-Dec-2020</date> <authorinitials>Yuri Borisov</authorinitials>
+		<revremark>Designed the support of <xref linkend="gls_dmc"/> chromo, ref <xref linkend="ds_chr2_dmc"/></revremark> </revision>
 	</revhistory>
 
     </articleinfo>
@@ -98,9 +100,17 @@
 	</glossdef> </glossentry>
 	<glossentry id="gls_dhc"><glossterm>DHC</glossterm> <acronym>DHC</acronym>
 	    <glossdef> <para>Direct Hierarchical Chromosome</para> <para>
-		    Approach of multi-agent system definition that describes the model's structure directly. 
-		    Ref <xref linkend="ds_smc"/> for discussion regarding chromo desing approaches.
+		Approach of multi-agent system definition that describes the model's structure directly. 
+		Initially it was based on idea that each node has its own chromo, so the root chromo has tree-like form.
+		This was enhanced in Chromo2 that introduced segments.
+		Ref <xref linkend="ds_smc"/> for discussion regarding chromo desing approaches.
 		    Ref <xref linkend="gls_osm"/> for anoter design approach.</para></glossdef> </glossentry>
+	<glossentry id="gls_dmc"><glossterm>DMC</glossterm> <acronym>DHC</acronym>
+	    <glossdef> <para>Dependent Mutations Chromosome</para> <para>
+		Chromo definition approach when the mutation can have other mutaions (of node type) as the operands.
+		This approach helps defining the model with anonymous nodes that is especially effective for <xref linkend="gls_des"/> models.
+		    Ref <xref linkend="ds_chr2_dmc"/> for discussion regarding chromo desing approaches.
+			Ref <xref linkend="gls_osm"/>,  <xref linkend="gls_dhc"/> for oter design approaches.</para></glossdef> </glossentry>
 	<glossentry id="gls_ccn"><glossterm>CCN</glossterm> <acronym>CCN</acronym>
 	    <glossdef> <para>Compact (and customized) Chromo Notation, approach that focus on having compact notation of model chromo.
 		    This allows effectivelly creating the model via 'manually' creating chromo of it. Another solution
@@ -4482,7 +4492,7 @@
 	</sect2>
 	<sect2 id="ds_chr2_aamc"><title>Anonymous agents. Dependent mutations (mutations chain)</title>
 	    <sect3><title>Intro</title>
-		<simpara>Very often we don't need to state name for agent. The example of this case is transition functions in DES: we only need to create
+		<simpara>Very often we don't need to state name for an agent. The example of this case is transition functions in DES: we only need to create
 		    some elementary function from given parent and connect the function to another function in the tree. The naming of the agents just complicates
 		    the chromo. We can use anonymous agents in that case. Some chromo features are required for that:</simpara>
 		<itemizedlist>
@@ -4490,16 +4500,37 @@
 			(inputs for instance) withous explicitly stating agents name in componentns URIs.</listitem>
 		    <listitem>Mutations can accept anonymous agent creation mutation instead of explicit URI to the agent.</listitem>
 		</itemizedlist>
-		<simpara>These features causes to the mutation chain (ref <xref linkend="ds_chr2_mc"/>) when specifying the connected agents.</simpara>
+		<simpara>These features causes to the mutation chain (ref <xref linkend="ds_chr2_dmc"/>) when specifying the connected agents.</simpara>
 	    </sect3>
 	</sect2>
-	<sect2 id="ds_chr2_mc"><title>Mutations chain</title>
-	    <sect3><title>Intro</title>
-		<simpara>Mutation chain is required when using anonymous agents, ref <xref linkend="ds_chr2_aamc"/></simpara>
+	<sect2 id="ds_chr2_dmc"><title>Dependent mutations chain chromo (<xref linkend="gls_dmc"/>).</title>
+	    <sect3 id="ds_chr2_dmc_itr"><title>Intro</title>
+		<simpara>Mutation chain is required when using anonymous agents, ref <xref linkend="ds_chr2_aamc"/>. This is just specific representation of the 
+		    chromo. We already have two forms (representatiopns) of chromo:
+		<xref linkend="gls_osm"/> and  enhanced <xref linkend="gls_dhc"/>. These forms
+		    are equivalent, so one can be transformed to another. Both forms have commont characteristic - the mutation in chrmo are independent one to another
+		    from syntax point of view. Also both forms are correspond to chromo "storage" structure. As for the independence, actually the muatations are
+		    dependent, for instance "A ~ B" mutation depends from the mutations creating A and B, these dependencies are resolved using node names.</simpara>
+		<simpara>Can same approach be used for dependent mutations? Seems so, ref <xref linkend="ds_chr2_dmc_a1"/></simpara>
 	    </sect3>
-	    <sect3><title>Mutations chain: chromo node design considerations</title>
+	    <sect3><title>Chromo node design considerations</title>
 		<simpara>As we stated it will be acceptable to use node creation mutation instead of URI in many parts of mutation: mutation arguments P and Q, context
-		    (target, node, namespace). So chromo topology gets rather complex.</simpara>
+		    (target, node, namespace). So chromo topology gets rather complex. Ref <xref linkend="ds_chr2_scs"/> and <xref linkend="ds_chr2_sns"/> for chromo syntax.</simpara>
+	    </sect3>
+	    <sect3 id="ds_chr2_dmc_a1"><title>Approach#1: extend chromo storage structure to align with chromo syntax.</title>
+		<sect4><title>Intro</title>
+		    <simpara>
+			This is approach already applied for <xref linkend="gls_dhc"/> and <xref linkend="gls_osm"/> as mentioned in
+			<xref linkend="ds_chr2_dmc_itr"/>. To implement this we need to embed into ChromoNode two dependent nodes P and Q. Also we need to update
+			    Chromo2 model correspondingly.
+		    </simpara>
+		    <simpara>Also we need to update chromo traversal algorithm in Elem to apply the dependencies first and then the main mutation.</simpara>
+		    <simpara>Note that actually we need only Q dependency - this enough to support anonymous agents in DES.</simpara>
+		</sect4>
+		<sect4><title>Analysis</title>
+		    <simpara>This approach simplifies the <xref linkend="gls_dmc"/> implementation. We don't need to transform the chromo spec of
+		    <xref linkend="gls_dmc"/> form to <xref linkend="gls_osm"/> or <xref linkend="gls_dhc"/> (thow this seems to be achievable).</simpara>
+		</sect4>
 	    </sect3>
 	    <sect3><title>Criticism: anonumous agents and mutations chains - is it really important?</title>
 		<simpara>The initial rationale of mutations chain benefits was the idea that it gives us the possibility of compact and nice notation. This could help us
@@ -6312,6 +6343,7 @@
 		    |
 		    | yb_chr2_cctx_tn_umt 
 		    |     yb_dmm
+		    |         yb_dmc
 		</programlisting>
 	    </sect3>
 	    <sect3><title>yb_chr2 - base chromo2 solution</title>
@@ -6320,6 +6352,9 @@
 	    </sect3>
 	    <sect3><title>yb_dmm - <xref linkend="gls_dmm"/> solution</title>
 		<simpara>Ref <xref linkend="ds_dmm"/> for details.</simpara>
+	    </sect3>
+	    <sect3><title>yb_dmc - <xref linkend="gls_dmc"/> solution</title>
+		<simpara>Ref <xref linkend="ds_chr2_dmc"/> for details.</simpara>
 	    </sect3>
 	</sect2>
     </sect1>

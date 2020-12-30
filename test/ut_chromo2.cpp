@@ -21,8 +21,9 @@ class Ut_chromo2 : public CPPUNIT_NS::TestFixture
     ////CPPUNIT_TEST(test_Seg);
     ////CPPUNIT_TEST(test_Ns);
 //    CPPUNIT_TEST(test_Conv);
-    CPPUNIT_TEST(test_Tranf1);
+    //CPPUNIT_TEST(test_Tranf1);
     //CPPUNIT_TEST(test_Tranf2);
+    CPPUNIT_TEST(test_Dmc1);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -36,6 +37,7 @@ private:
     void test_Conv();
     void test_Tranf1();
     void test_Tranf2();
+    void test_Dmc1();
 private:
     Env* iEnv;
 };
@@ -308,4 +310,30 @@ void Ut_chromo2::test_Tranf2()
 
     delete iEnv;
 }
+
+void Ut_chromo2::test_Dmc1()
+{
+    printf("\n === Test of DMC chromo: base chromo\n");
+
+    string specn = "ut_chr2_dmc_1";
+    string ext = "chs";
+    string spec = specn + string(".") + ext;
+    string log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root);
+    MElem* eroot = root->GetObj(eroot);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get eroot", eroot);
+    // Save
+    eroot->Chromos().Save(specn + "_saved." + ext);
+    // Check the model created
+    MUnit* s1_v1  = root->GetNode("./s1/v1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get s1/v1", s1_v1);
+
+    delete iEnv;
+}
+
 

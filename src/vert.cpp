@@ -265,6 +265,96 @@ TBool Vert::IsLinked(const MVert* aPair, TBool aDirect) const
     return res;
 }
 
+void Vert::DoSpecificMut(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMode, const MutCtx& aCtx)
+{
+    TNodeType rnotype = aSpec.Type();
+    if (rnotype == ENt_Conn) {
+	if (aSpec.AttrExists(ENa_P) && aSpec.AttrExists(ENa_Q)) {
+	    string argP = aSpec.Attr(ENa_P);
+	    string argQ = aSpec.Attr(ENa_Q);
+	    const TNs& ns = aCtx.mNs;
+	    Connect(argP, argQ, ns);
+	} else {
+	    Logger()->Write(EErr, this, "Connecting nodes: missing required attr");
+	}
+	if (!aRunTime && !aTrialMode) {
+	    ChromoNode chn = iChromo->Root().AddChild(aSpec, ETrue, EFalse);
+	    NotifyNodeMutated(chn, aCtx);
+	}
+    } else if (rnotype == ENt_Disconn) {
+	if (aSpec.AttrExists(ENa_P) && aSpec.AttrExists(ENa_Q)) {
+	    string argP = aSpec.Attr(ENa_P);
+	    string argQ = aSpec.Attr(ENa_Q);
+	    const TNs& ns = aCtx.mNs;
+	    Disconnect(argP, argQ, ns);
+	} else {
+	    Logger()->Write(EErr, this, "Disconnecting nodes: missing required attr");
+	}
+	if (!aRunTime && !aTrialMode) {
+	    ChromoNode chn = iChromo->Root().AddChild(aSpec, ETrue, EFalse);
+	    NotifyNodeMutated(chn, aCtx);
+	}
+    } else {
+	Vert::DoSpecificMut(aSpec, aRunTime, aTrialMode, aCtx);
+    }
+}
+
+void Vert::Connect(const string& argP, const string& argQ, const TNs& aNs)
+{
+    MUnit* ucpP = GetNodeByName(argP, aNs);
+    MUnit* ucpQ = GetNodeByName(argQ, aNs);
+    if (ucpP != NULL && ucpQ != NULL) {
+	MVert* vcpP = ucpP->GetObj(vcpP);
+	MVert* vcpQ = ucpQ->GetObj(vcpQ);
+	if (vcpP != NULL && vcpQ != NULL) {
+	    MCompatChecker* pt1checker = (MCompatChecker*) ucpP->GetSIfi(MCompatChecker::Type(), this);
+	    MCompatChecker* pt2checker = (MCompatChecker*) ucpQ->GetSIfi(MCompatChecker::Type(), this);
+	    TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(ucpQ);
+	    TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(ucpP);
+	    if (ispt1cptb && ispt2cptb) {
+		// Are compatible - connect
+		TBool res = vcpP->Connect(vcpQ);
+		if (!res) {
+		    Logger()->Write(EErr, this, "Connecting [%s - %s] failed", argP.c_str(), argQ.c_str());
+		}
+	    }
+	    else {
+		TBool ispt1cptb = pt1checker == NULL || pt1checker->IsCompatible(ucpQ);
+		TBool ispt2cptb = pt2checker == NULL || pt2checker->IsCompatible(ucpP);
+		Logger()->Write(EErr, this, "Connecting [%s - %s] - incompatible roles", argP.c_str(), argQ.c_str());
+	    }
+	} else {
+	    Logger()->Write(EErr, this, "Connecting nodes: pair [%s] isn't vertex", ((vcpP == NULL) ? argP : argQ).c_str());
+	}
+    } else {
+	Logger()->Write(EErr, this, "Connecting nodes: pair [%s] not found", ((ucpP == NULL) ? argP : argQ).c_str());
+    }
+}
+
+void Vert::Disconnect(const string& argP, const string& argQ, const TNs& aNs)
+{
+    MUnit* ucpP = GetNodeByName(argP, aNs);
+    MUnit* ucpQ = GetNodeByName(argQ, aNs);
+    if (ucpP != NULL && ucpQ != NULL) {
+	MVert* vcpP = ucpP->GetObj(vcpP);
+	MVert* vcpQ = ucpQ->GetObj(vcpQ);
+	if (vcpP != NULL && vcpQ != NULL) {
+	    if (vcpP->IsPair(vcpQ)) {
+		vcpP->Disconnect(vcpQ);
+		vcpQ->Disconnect(vcpP);
+	    } else {
+		Logger()->Write(EErr, this, "Disonnecting nodes: vertex [%s] isn't pair of [%s]", argQ.c_str(), argP.c_str());
+	    }
+	} else {
+	    Logger()->Write(EErr, this, "Disonnecting nodes: pair [%s] isn't vertex", ((vcpP == NULL) ? argP : argQ).c_str());
+	}
+    } else {
+	Logger()->Write(EErr, this, "Disonnecting nodes: pair [%s] not found", ((ucpP == NULL) ? argP : argQ).c_str());
+    }
+}
+
+
+
 
 // Vertex unit
 

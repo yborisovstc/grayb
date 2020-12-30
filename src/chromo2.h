@@ -61,6 +61,7 @@ class C2MdlNode
 	C2MdlNode(C2MdlNode* aOwner);
 	C2MdlNode(const C2MdlNode& aSrc);
 	C2MdlNode(const C2MdlNode& aSrc, C2MdlNode* aOwner);
+	~C2MdlNode();
     public:
 	void CloneFrom(const C2MdlNode& aSrc, bool aChromo);
 	void AddContext(const string& aType, const string& aValue);
@@ -69,13 +70,15 @@ class C2MdlNode
 	C2MdlNode* GetPrevComp(C2MdlNode* aComp);
 	void BindTree(C2MdlNode* aOwner);
 	bool ExistsContextByAttr(TNodeAttr aAttr);
+	/** @brief Adds Qnode (DMC dependency) */
+	void AddQnode(const C2MdlNode& aNode);
     public:
 	C2MdlNode* mOwner = NULL;
-	//vector<C2MdlCtxNode> mContext; /*!< Context */
-	TC2MdlCtx mContext; /*!< Context */
-	C2Mut mMut;                    /*!< Mutation */
-	TC2MdlNodes mChromo;     /*!< Chromosome */
-	TInt mChromoPos; /*!< Corresponding position in chromo */
+	TC2MdlCtx mContext;       /*!< Context */
+	C2Mut mMut;               /*!< Mutation */
+	TC2MdlNodes mChromo;      /*!< Chromosome */
+	C2MdlNode* mQnode;        /*!< Q node mut dependency, ref ds_chr2_dmc */
+	TInt mChromoPos;          /*!< Corresponding position in chromo */
 };
 
 /** @brief Chromo2 model unit with mut
@@ -98,6 +101,10 @@ using TC2MdlNodesRIter = TC2MdlNodes::reverse_iterator;
  * */
 class Chromo2Mdl: public Base, public MChromoMdl
 {
+    public:
+	using TLexPosElem = pair<string, int>;
+	using TLexPos = vector<TLexPosElem>;
+	using TLex = vector<string>;
     public:
 	static inline const char *Type() { return "ChromoMdlX";}; 
     public:
@@ -149,11 +156,14 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	 * */
 	void ParseChromo(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode);
 	/** @brief Parses mutation
+	 * @param  aDepNode  the sign that the parsed node is DMC dependency of parent node 
 	 * */
-	void ParseCnodeMut(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode);
+	void ParseCnodeMut(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode, bool aDepNode);
 	/** @brief Parses chromo node
+	 * @param  aMnode    parent node
+	 * @param  aDepNode  the sign that the parsed node is DMC dependency of parent node 
 	 * */
-	void ParseCnodeChromo(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode, bool aRoot);
+	void ParseCnodeChromo(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode, bool aRoot, bool aDepNode);
 	void ParseContext(vector<string>& aLexs, streampos aPos, C2MdlNode& aMnode);
 	/** @brief Sets error */
 	void SetErr(streampos);
@@ -168,7 +178,11 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	static void OutputNode(const C2MdlNode& aNode, ostream& aOs, int aLevel, int aIndent);
 	/** @brief Parses lexems from stream */
 	void GetLexs(istream& aIs, streampos aBeg, streampos aEnd, vector<string>& aLexs);
+	/** @brief Parses lexems from stream, positions are stored */
+	void GetLexsPos(istream& aIs, streampos aBeg, streampos aEnd, TLexPos& aLexs);
 	static string GetContextByAttr(const C2MdlNode& aNode, TNodeAttr aAttr);
+	/** @brief Gets indicator that lexeme is mutation operation */
+	bool IsLexDmcMutop(const string& aLex) const;
     protected:
 	/** @brief Dumps content of input stream fragment
 	 * */
