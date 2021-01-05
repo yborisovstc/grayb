@@ -57,8 +57,9 @@ void Ut_mnt::test_Mnt_1()
     iEnv->SetEVar("Model", "./ut_mnt_test_model_1.chs");
     iEnv->ConstructSystem();
     MUnit* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root);
     MElem* eroot = root->GetObj(eroot);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get eroot", eroot);
 
     // Verify mounted model
     MUnit* mnt = root->GetNode("./test/ModelMnt");

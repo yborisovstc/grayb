@@ -32,7 +32,7 @@ Root : Elem
       e2 : Edge
       {
         ./P2 - $ = /Root/Start/Incaps_root/Add/Capsule/Inp;
-        $ # " <cont node="./P1" ref="/Root/Start/Incaps_root/Inp_data1/Capsule/out"/> ";
+        $ # " ./P1 /Root/Start/Incaps_root/Inp_data1/Capsule/out";
       }
     }
   }

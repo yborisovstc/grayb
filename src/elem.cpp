@@ -296,7 +296,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
     }
     // TODO No need to update root ns. Root mutation is not deleted. To analyze if this is correct
     TNs root_ns = aCtx.mNs;
-    //UpdateNs(root_ns, sroot);
+    UpdateNs(root_ns, mroot); //!!
 
     MUnit* btarg = this; // Base target
     string sbtarg;
@@ -319,8 +319,8 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    }
 	    continue;
 	}
-	TNs ns = aCtx.mNs;
-	UpdateNs(ns, rno);
+	//!!TNs ns = aCtx.mNs;
+	//!!UpdateNs(ns, rno);
 	Logger()->SetContextMutId(rno.LineId());
 	if (EN_MUT_LIM && this == GetRoot()) {
 	    // Avoiding mutations above limit. Taking into account only attached chromos.
@@ -343,7 +343,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	}
 	if (exs_targ) {
 	    starg = rno.Attr(ENa_Targ);
-	    ftarg = btarg->GetNodeByName(starg, ns);
+	    ftarg = btarg->GetNodeByName(starg, root_ns);
 	    if (ftarg == NULL) {
 		Logger()->Write(EErr, this, "Cannot find target node [%s]", starg.c_str());
 		continue;
@@ -353,7 +353,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    // Transform DHC mutation to OSM mutation
 	    // Transform ENa_Targ: enlarge to ENa_MutNode
 	    smnode = rno.Attr(ENa_MutNode);
-	    ftarg = ftarg->GetNodeByName(smnode, ns);
+	    ftarg = ftarg->GetNodeByName(smnode, root_ns);
 	    if (ftarg == NULL) {
 		Logger()->Write(EErr, this, "Cannot find mut node [%s]", smnode.c_str());
 		continue;
@@ -417,53 +417,54 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	    // Redirect the mut to target: no run-time to keep the mut in internal nodes
 	    // Propagate till target owning comp if run-time to keep hidden all muts from parent
 	    ChromoNode madd = eftarg->AppendMutation(rno);
-	    MutCtx mctx(aRunTime ? GetCompOwning(ftarg) : aCtx.mUnit, ns);
+	    MutCtx mctx(aRunTime ? GetCompOwning(ftarg) : aCtx.mUnit, root_ns);
 	    eftarg->Mutate(EFalse, aCheckSafety, aTrialMode, mctx);
 	    //ftarg->Mutate(aRunTime, aCheckSafety, aTrialMode, aRunTime ? GetCompOwning(ftarg) : aCtx);
 	} else {
 	    // Local mutation
+	    MutCtx mctx(aCtx.mUnit, root_ns);
 	    TNodeType rnotype = rno.Type();
 	    if (rnotype == ENt_Node) {
-		MUnit* mres = AddElem(rno, aRunTime, aTrialMode, aCtx);
+		MUnit* mres = AddElem(rno, aRunTime, aTrialMode, mctx);
 		if (rno.Count() > 0) {
 		    MElem* emres = mres->GetObj(emres);
 		    if (!emres) {
 			// There is node chromo but node is not mutable. Mutate it from the current mutable.
 			string targUri = mres->GetUri(this, true);
 			rno.SetAttr(ENa_Targ, targUri);
-			Mutate(rno, EFalse, aCheckSafety, aTrialMode, aCtx);
+			Mutate(rno, EFalse, aCheckSafety, aTrialMode, mctx);
 		    }
 		}
 	    }
 	    else if (rnotype == ENt_Seg) {
-		Mutate(rno, aRunTime, aCheckSafety, aTrialMode, aCtx);
+		Mutate(rno, aRunTime, aCheckSafety, aTrialMode, mctx);
 	    }
 	    else if (rnotype == ENt_Change) {
 		Pdstat(PEvents::DurStat_MutChange, true);
-		ChangeAttr(rno, aRunTime, aCheckSafety, aTrialMode, aCtx);
+		ChangeAttr(rno, aRunTime, aCheckSafety, aTrialMode, mctx);
 		Pdstat(PEvents::DurStat_MutChange, false);
 	    }
 	    else if (rnotype == ENt_Cont) {
 		Pdstat(PEvents::DurStat_MutCont, true);
-		DoMutChangeCont(rno, aRunTime, aCheckSafety, aTrialMode, aCtx);
+		DoMutChangeCont(rno, aRunTime, aCheckSafety, aTrialMode, mctx);
 		Pdstat(PEvents::DurStat_MutCont, false);
 	    }
 	    else if (rnotype == ENt_Move) {
-		MoveNode(rno, aRunTime, aTrialMode, aCtx);
+		MoveNode(rno, aRunTime, aTrialMode, mctx);
 	    }
 	    else if (rnotype == ENt_Import) {
 		ImportNode(rno, aRunTime, aTrialMode);
 	    }
 	    else if (rnotype == ENt_Rm) {
-		RmNode(rno, aRunTime, aCheckSafety, aTrialMode, aCtx);
+		RmNode(rno, aRunTime, aCheckSafety, aTrialMode, mctx);
 	    }
 	    else if (rnotype == ENt_Note) {
 		// Comment, just accept
 		iChromo->Root().AddChild(rno);
-		NotifyNodeMutated(rno, aCtx);
+		NotifyNodeMutated(rno, mctx);
 	    }
 	    else {
-		DoSpecificMut(rno, aRunTime, aTrialMode, aCtx);
+		DoSpecificMut(rno, aRunTime, aTrialMode, mctx);
 	    }
 	    Logger()->SetContextMutId();
 	}
@@ -1623,7 +1624,7 @@ void Elem::UpdateNs(TNs& aNs, const ChromoNode& aCnode)
 {
     if (aCnode.AttrExists(ENa_NS)) {
 	string ns = aCnode.Attr(ENa_NS);
-	MUnit* nsu = GetNode(ns);
+	MUnit* nsu = GetNodeByName(ns, aNs);
 	if (nsu == NULL) {
 	    Log(TLog(EErr, this) + "Cannot find namespace [" + ns + "]");
 	} else {

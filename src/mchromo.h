@@ -52,10 +52,11 @@ enum TNodeAttr
  * */
 class CError {
     public:
-	CError() {};
+	CError(): mPos(0) {};
 	CError(streampos aPos, const string& aDescr): mPos(aPos), mText(aDescr) {};
     public:
 	void Set(streampos aPos, const string& aDescr) {mPos = aPos, mText = aDescr; };
+	bool IsSet() const { return mPos != 0;}
     public:
 	streampos mPos;     //!< Position of last error
 	string mText;       //!< Descrition of last error 

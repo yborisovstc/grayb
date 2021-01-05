@@ -165,6 +165,10 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	 * */
 	void ParseCnodeChromo(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode, bool aRoot, bool aDepNode);
 	void ParseContext(vector<string>& aLexs, streampos aPos, C2MdlNode& aMnode);
+	/** @brief Parses context
+	 * @param aMnode the node of context
+	 * */
+	void ParseContext2(const TLex& aLexs, streampos aPos, C2MdlNode& aMnode);
 	/** @brief Sets error */
 	void SetErr(streampos);
 	/** @brief Checks error */

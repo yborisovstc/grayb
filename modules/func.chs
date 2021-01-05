@@ -96,7 +96,7 @@ FuncComps : Elem
   FuncVarMc : /*/Modules/IncapsComps/Incaps
   {
     ./Capsule - out : ./../../Out_FVarMc;
-    ViewData.Res = ;
+    ViewData.Res = ./func_agt;
   }
   $ # " Composed/Reduced Var function wo inputs  ";
   FuncVarC : /*/Modules/IncapsComps/Incaps
@@ -346,7 +346,7 @@ FuncComps : Elem
   {
     About = "Var Transition function wo inputs";
     ./Capsule - Out : ./../../Out_TFVarMc;
-    ViewData.Res = ;
+    ViewData.Res = ./func_agt;
   }
   $ # " Function of integer addition wo caching ";
   TFAddInt : ./TFuncInt

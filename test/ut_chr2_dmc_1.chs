@@ -6,4 +6,5 @@ root : Elem
         v1 : Vert;
         v1 ~ v2 : Vert;
     }
+    $ # "Check of how DMC mut is detected";
 }

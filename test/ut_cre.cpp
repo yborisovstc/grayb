@@ -242,14 +242,15 @@ void Ut_cre::test_CreSyst()
 	iEnv->ImpsMgr()->AddImportsPaths("../modules");
 	iEnv->ConstructSystem();
 	MUnit* root = iEnv->Root();
+	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root);
 	MElem* eroot = root->GetObj(eroot);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get eroot", eroot);
 	root->ChangeCont("root_prop", EFalse);
 	root->ChangeCont("yes", EFalse, "Debug.Enable_trace");
 	root->ChangeCont("no", EFalse, "Debug.Enable_dbg");
 	string cont = root->GetContent("", ETrue);
 	TBool cont_ok = (cont == "{'root_prop' About:'' Debug:{ Enable_trace:'yes' Enable_dbg:'no'}}");
 	CPPUNIT_ASSERT_MESSAGE("Wrong root content", cont_ok);
-	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
 	string saved_name = specn + "_saved." + ext;
 	eroot->Chromos().Save(saved_name);
 	MUnit* cp1 = root->GetNode("./cp1");

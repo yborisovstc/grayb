@@ -11,6 +11,7 @@
 const string KT_Target = "<";
 const string KT_Node = "-";
 const string KT_Namespace = "@";
+const string KT_ContextSmb = KT_Target + KT_Namespace;
 
 const char KT_MutSeparator = ';';
 const char KT_ChromoStart = '{';
@@ -56,6 +57,9 @@ static const string KPE_MissingEndOfGroup = "Missin end of group";
 static const string KPE_UnknownMutation = "Unknown mutation";
 static const string KPE_WrongCombMutType = "Wrong type of combined mutation";
 static const string KPE_TextNotClosed = "Text block is not closed";
+static const string KPE_WrongDepMut = "Wrong depenent mutation, shall be 'node'";
+static const string KPE_MissingSegContext = "Missing context of the segment";
+static const string KPE_WrongNumOfCtxLex = "Wrong number of context lexemd";
 
 /** @brief Segment offset when node output */
 const int KA_OutOffset = 3;
@@ -111,6 +115,14 @@ bool IsSep(char aSmb)
     return  (KSep.find(aSmb) != string::npos);
 }
 
+/** @brief Checks if given symbol belongs to the set
+ * */
+bool IsSymbOf(char aSmb, const string& aSet)
+{
+    return  (aSet.find(aSmb) != string::npos);
+}
+
+
 
 
 
@@ -153,10 +165,12 @@ C2MdlNode::C2MdlNode(const C2MdlNode& aSrc, C2MdlNode* aOwner): mOwner(aOwner), 
 
 C2MdlNode::~C2MdlNode()
 {
+    /*
     if (mQnode) {
 	delete mQnode;
 	mQnode = NULL;
     }
+    */
 }
 
 void C2MdlNode::CloneFrom(const C2MdlNode& aSrc, bool aChromo)
@@ -245,6 +259,26 @@ Chromo2Mdl::Chromo2Mdl(): Base()
 
 Chromo2Mdl::~Chromo2Mdl()
 {
+}
+
+streampos SeekChar(istream& aIs, streampos aBeg, streampos aEnd, char aChar)
+{
+    aIs.seekg(aBeg, aIs.beg);
+    streampos pos = aIs.tellg();
+    while (pos != aEnd) {
+	char c = aIs.get();
+	if (c == aChar) {
+	    pos = aIs.tellg();
+	    break;
+	}
+	pos = aIs.tellg();
+    }
+    return pos;
+}
+
+bool IsLexCtx(const string& aLex)
+{
+    return aLex == KT_Namespace || aLex == KT_Target || aLex == KT_Node;
 }
 
 TNodeType Chromo2Mdl::GetType(const THandle& aHandle) {
@@ -632,7 +666,8 @@ THandle Chromo2Mdl::SetFromFile(const string& aFileName)
 	//ParseChromo(is, beg, end, mRoot);
 	ParseCnodeChromo(is, beg, end, mRoot, true, false);
 	mRoot.BindTree(NULL);
-	//DumpMnode(mRoot, 0);
+	//cout << "SetFromFile: parsed chromo : " << endl;
+	//DumpMnode(mRoot, 0); //!!
     } else {
 	// Error reading the file
 	mErr.Set(0, KPE_ErrOnReadingSpec);
@@ -741,6 +776,7 @@ void Chromo2Mdl::ParseChromo(istream& aIs, streampos aStart, streampos aEnd, C2M
 		    cscount--;
 		    if (cscount == 0) {
 			// Checking if it is the mut with dependency
+			pos = aIs.tellg();
 			streampos pos2 = pos;
 			bool dmc = false;
 			while (pos2 != aEnd) {
@@ -887,6 +923,60 @@ void Chromo2Mdl::ParseContext(vector<string>& aLexs, streampos aPos, C2MdlNode& 
     }
 }
 
+void Chromo2Mdl::ParseContext2(const TLex& aLexs, streampos aPos, C2MdlNode& aMnode)
+{
+    int ls = aLexs.size(); // Lexems number
+    int lidx = aLexs.size() - 1; // Lexems index
+    if (ls >= 2) {
+	while (lidx > 0 && !mErr.IsSet()) {
+	    const string& lex = aLexs.at(lidx);
+	    if (IsLexCtx(lex)) {
+		if (lidx >= 2) {
+		    const string& depmut = aLexs.at(lidx - 2);
+		    if (depmut == KMS_Add) {
+			// There is assosiated dep mutation, evolve it
+			string dmp = (lidx >= 3) ? aLexs.at(lidx - 3) : string(); // P operand of depmut
+			const string& q = aLexs.at(lidx - 1);
+			const string& r = aLexs.at(lidx - 2);
+			string p;
+			int shift = 3;
+			if (dmp.empty()) {
+			    // P operand is omitted, anonymous node. Generate P operand
+			    p = string("_") + q + to_string((int) aPos);
+			    shift = 2;
+			} else {
+			    p = dmp;
+			}
+			// Store dependent mutation in upper chromo
+			C2MdlNode mnode;
+			mnode.mOwner = aMnode.mOwner;
+			mnode.mMut.mQ = q;
+			mnode.mMut.mR = r;
+			mnode.mMut.mP = p;
+			mnode.mChromoPos = aPos;
+			aMnode.mOwner->mChromo.push_back(mnode);
+			aMnode.mOwner->mQnode = &(*aMnode.mOwner->mChromo.rbegin());
+			// Context
+			aMnode.mContext.insert(TC2MdlCtxElem(lex, p));
+			lidx -= shift; // Move to next context item
+		    } else {
+			mErr.Set(aPos, KPE_WrongCtxType);
+		    }
+		} else {
+		    // Just regular context, set it to the current node
+		    const string& val = aLexs.at(lidx - 1);
+		    aMnode.mContext.insert(TC2MdlCtxElem(lex, val));
+		    lidx -= 2; // Move to next context item
+		}
+	    } else {
+		mErr.Set(aPos, KPE_WrongCtxType);
+	    }
+	}
+    } else {
+	mErr.Set(aPos, KPE_WrongNumOfCtxLex);
+    }
+}
+
 bool Chromo2Mdl::IsLexDmcMutop(const string& aLex) const
 {
     bool res = false;
@@ -904,23 +994,38 @@ void Chromo2Mdl::ParseCnodeMut(istream& aIs, streampos aBeg, streampos aEnd, C2M
     //DumpIsFrag(aIs, aBeg, aEnd);
 
     aIs.seekg(aBeg, aIs.beg);
-    streampos pos = aIs.tellg();
+    //streampos pos = aIs.tellg();
+
+    // Find the possible chromo
+    streampos pos = SeekChar(aIs, aBeg, aEnd, KT_ChromoStart);
+    bool includesChromo = (pos != aEnd);
 
     // Get lexems
-    TLexPos lexs;   //!< Lexems
-    GetLexsPos(aIs, aBeg, aEnd, lexs);
+    TLexPos lexs;   // Lexems
+    aIs.seekg(pos, aIs.beg);
+    if (includesChromo) {
+	aIs.seekg(-1, aIs.cur);
+    }
+    streampos lexend = aIs.tellg();
+    GetLexsPos(aIs, aBeg, lexend, lexs);
 
-    if (lexs.size() >= 3) {
+    if (lexs.size() >= 1) {
+	const string& lastl = lexs.back().first;
+	if (IsLexCtx(lastl)) {
+	    lexs.pop_back();
+	} 
+    }
+
+    if (lexs.size() >= 3 || aDepNode && (lexs.size() >= 2)) {
 	bool dmc = false;
 	auto lit = lexs.rbegin();
 	const string& l2 = (lit + 1)->first;
-	const string& l3 = (lit + 2)->first;
-	int mutpos = (lit + 2)->second;
-	if (lexs.size() >= 4) {
-	    const string& l4 = (lit + 3)->first;
-	    dmc = l2 == KMS_Add && (IsLexDmcMutop(l4) || IsLexDmcMutop(l3));
-	    if (IsLexDmcMutop(l4)) {
-		mutpos = (lit + 3)->second;
+	string l3;
+	if (lexs.size() >= 3) {
+	    l3 = (lit + 2)->first;
+	    if (lexs.size() >= 4) {
+		const string& l4 = (lit + 3)->first;
+		dmc = l2 == KMS_Add && (IsLexDmcMutop(l4) || IsLexDmcMutop(l3));
 	    }
 	}
 	if (dmc) {
@@ -930,16 +1035,37 @@ void Chromo2Mdl::ParseCnodeMut(istream& aIs, streampos aBeg, streampos aEnd, C2M
 	    mnode.mMut.mR = (lit + msidx)->first;
 	    mnode.mMut.mP = (lit + msidx + 1)->first;
 	    int deppos = (lit + msidx - 1)->second;
-	    //ParseCnodeChromo(aIs, mutpos, aEnd, mnode, false, true);
-	    ParseCnodeMut(aIs, deppos, aEnd, mnode, true);
+	    if (includesChromo) {
+		ParseCnodeChromo(aIs, deppos, aEnd, aMnode, false, true);
+	    } else {
+		ParseCnodeMut(aIs, deppos, aEnd, aMnode, true);
+	    }
+	    mnode.mMut.mQ = aMnode.mQnode->mMut.mP;
+	    if (mnode.mMut.mQ.empty()) {
+		mnode.mMut.mQ = aMnode.mQnode->mContext.at(KT_Namespace);
+	    }
 	    mnode.mChromoPos = pos;
 	    aMnode.mChromo.push_back(mnode);
 	} else {
 	    // Simple mutation
 	    string q = lexs.back().first; lexs.pop_back();
 	    string r = lexs.back().first; lexs.pop_back();
-	    string p = lexs.back().first; lexs.pop_back();
-	    if (IsMutSmb(r)) {
+	    string p;
+	    if (lexs.empty()) {
+		if (aDepNode) {
+		    if (r == KMS_Add) {
+			// Apply generated name
+			p = string("_") + q + to_string((int) pos);
+		    } else {
+			mErr.Set(pos, KPE_WrongDepMut);
+		    }
+		} else {
+		    mErr.Set(pos, KPE_WrongMutLexNum);
+		}
+	    } else {
+		p = lexs.back().first; lexs.pop_back();
+	    }
+	    if (!mErr.IsSet() && IsMutSmb(r)) {
 		// Adding nodel node of chromo type
 		C2MdlNode mnode;
 		mnode.mOwner = &aMnode;
@@ -959,33 +1085,20 @@ void Chromo2Mdl::ParseCnodeMut(istream& aIs, streampos aBeg, streampos aEnd, C2M
 		    }
 		}
 		mnode.mChromoPos = pos;
+		aMnode.mChromo.push_back(mnode);
 		if (aDepNode) {
-		    aMnode.AddQnode(mnode);
-		} else {
-		    aMnode.mChromo.push_back(mnode);
+		    aMnode.mQnode = &(*aMnode.mChromo.rbegin());
 		}
-	    } else {
+	    } else if (!mErr.IsSet()) {
 		mErr.Set(pos, KPE_UnknownMutation);
+	    } else {
+		TLexPos lexs2;
+		GetLexsPos(aIs, aBeg, lexend, lexs2);
 	    }
 	}
     } else {
 	mErr.Set(pos, KPE_WrongMutLexNum);
     }
-}
-
-streampos SeekChar(istream& aIs, streampos aBeg, streampos aEnd, char aChar)
-{
-    aIs.seekg(aBeg, aIs.beg);
-    streampos pos = aIs.tellg();
-    while (pos != aEnd) {
-	char c = aIs.get();
-	if (c == aChar) {
-	    pos = aIs.tellg();
-	    break;
-	}
-	pos = aIs.tellg();
-    }
-    return pos;
 }
 
 void Chromo2Mdl::ParseCnodeChromo(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode, bool aRoot, bool aDepNode)
@@ -1015,28 +1128,32 @@ void Chromo2Mdl::ParseCnodeChromo(istream& aIs, streampos aStart, streampos aEnd
     //cout << aEnd << endl;
     GetLexs(aIs, aStart, lexend, lexs);
     int ls = lexs.size();
-    if ((ls % 2) == 0) {
-	ParseContext(lexs, aStart, mnode);
-    } else if (ls >= 3 && ((ls - 3) % 2) == 0) {
-	mnode.mMut.mQ = lexs.back(); lexs.pop_back();
-	mnode.mMut.mR = lexs.back(); lexs.pop_back();
-	mnode.mMut.mP = lexs.back(); lexs.pop_back();
-	if (mnode.mMut.mR == KMS_Add) {
-	    if (!lexs.empty()) {
-		ParseContext(lexs, aStart, mnode);
+    if (ls > 0) {
+	const string& lastlexm = *lexs.rbegin();
+	if (IsLexCtx(lastlexm)) {
+	    ParseContext2(lexs, aStart, mnode);
+	} else if (ls >= 3 && ((ls - 3) % 2) == 0) {
+	    mnode.mMut.mQ = lexs.back(); lexs.pop_back();
+	    mnode.mMut.mR = lexs.back(); lexs.pop_back();
+	    mnode.mMut.mP = lexs.back(); lexs.pop_back();
+	    if (mnode.mMut.mR == KMS_Add) {
+		if (!lexs.empty()) {
+		    ParseContext(lexs, aStart, mnode);
+		}
+	    } else {
+		mErr.Set(pos, KPE_WrongCombMutType);
 	    }
 	} else {
-	    mErr.Set(pos, KPE_WrongCombMutType);
+	    mErr.Set(pos, KPE_WrongMutLexNum);
 	}
     } else {
-	mErr.Set(pos, KPE_WrongMutLexNum);
+	mErr.Set(pos, KPE_MissingSegContext);
     }
     if (!aRoot) {
 	mnode.mChromoPos = pos;
+	aMnode.mChromo.push_back(mnode);
 	if (aDepNode) {
-	    aMnode.AddQnode(mnode);
-	} else {
-	    aMnode.mChromo.push_back(mnode);
+	    aMnode.mQnode = &(*aMnode.mChromo.rbegin());
 	}
     }
 }

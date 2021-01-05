@@ -4,6 +4,7 @@
 #include "chromox.h"
 #include "chromo2.h"
 #include "mprov.h"
+#include "mvert.h"
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -20,10 +21,13 @@ class Ut_chromo2 : public CPPUNIT_NS::TestFixture
     ////CPPUNIT_TEST(test_Combo);
     ////CPPUNIT_TEST(test_Seg);
     ////CPPUNIT_TEST(test_Ns);
-//    CPPUNIT_TEST(test_Conv);
+    //CPPUNIT_TEST(test_Conv);
     //CPPUNIT_TEST(test_Tranf1);
     //CPPUNIT_TEST(test_Tranf2);
     CPPUNIT_TEST(test_Dmc1);
+    CPPUNIT_TEST(test_Dmc2);
+    CPPUNIT_TEST(test_Dmc3);
+    CPPUNIT_TEST(test_Dmc4);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -38,6 +42,9 @@ private:
     void test_Tranf1();
     void test_Tranf2();
     void test_Dmc1();
+    void test_Dmc2();
+    void test_Dmc3();
+    void test_Dmc4();
 private:
     Env* iEnv;
 };
@@ -330,8 +337,114 @@ void Ut_chromo2::test_Dmc1()
     // Save
     eroot->Chromos().Save(specn + "_saved." + ext);
     // Check the model created
-    MUnit* s1_v1  = root->GetNode("./s1/v1");
-    CPPUNIT_ASSERT_MESSAGE("Fail to get s1/v1", s1_v1);
+    MUnit* s1_v1u  = root->GetNode("./s1/v1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get s1/v1 unit", s1_v1u);
+    MUnit* s1_v2u  = root->GetNode("./s1/v2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get s1/v2 unit", s1_v2u);
+    // Dump root chromo
+    cout << "Dump root chromo: " << endl;
+    eroot->Chromos().Root().Dump();
+    // Check connection
+    MVert* s1_v1 = s1_v1u->GetObj(s1_v1);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get s1/v1 MVert", s1_v1);
+    MVert* s1_v2 = s1_v2u->GetObj(s1_v2);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get s1/v2 MVert", s1_v2);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get v1 - v2 connected", s1_v2->IsPair(s1_v1));
+
+
+
+    delete iEnv;
+}
+
+void Ut_chromo2::test_Dmc2()
+{
+    printf("\n === Test of DMC chromo: anonymous dep\n");
+
+    string specn = "ut_chr2_dmc_2";
+    string ext = "chs";
+    string spec = specn + string(".") + ext;
+    string log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root);
+    MElem* eroot = root->GetObj(eroot);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get eroot", eroot);
+    // Save
+    eroot->Chromos().Save(specn + "_saved." + ext);
+    // Check the model created
+    MUnit* s1_v1u  = root->GetNode("./s1/v1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get s1/v1 unit", s1_v1u);
+    // Dump root chromo
+    cout << "Dump root chromo: " << endl;
+    eroot->Chromos().Root().Dump();
+    // Check connection
+    MVert* s1_v1 = s1_v1u->GetObj(s1_v1);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get s1/v1 MVert", s1_v1);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get v1 - v2 connected", s1_v1->PairsCount() == 1);
+
+    delete iEnv;
+}
+
+void Ut_chromo2::test_Dmc3()
+{
+    printf("\n === Test of DMC chromo: name space seg\n");
+
+    string specn = "ut_chr2_dmc_3";
+    string ext = "chs";
+    string spec = specn + string(".") + ext;
+    string log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root);
+    MElem* eroot = root->GetObj(eroot);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get eroot", eroot);
+    // Dump root chromo
+    cout << "Dump root chromo: " << endl;
+    eroot->Chromos().Root().Dump();
+    // Save
+    eroot->Chromos().Save(specn + "_saved." + ext);
+    // Check the model created
+    MUnit* s1_v1u  = root->GetNode("./s1/v1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get s1/v1 unit", s1_v1u);
+
+    delete iEnv;
+}
+
+void Ut_chromo2::test_Dmc4()
+{
+    printf("\n === Test of DMC chromo: DES tree\n");
+
+    string specn = "ut_chr2_dmc_4";
+    string ext = "chs";
+    string spec = specn + string(".") + ext;
+    string log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root);
+    MElem* eroot = root->GetObj(eroot);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get eroot", eroot);
+    // Dump root chromo
+    cout << "Dump root chromo: " << endl;
+    eroot->Chromos().Root().Dump();
+    // Save
+    eroot->Chromos().Save(specn + "_saved." + ext);
+    // Check the model created
+    MUnit* s1_state  = root->GetNode("./s1/State");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get s1/State", s1_state);
+    MUnit* s1_state_inp  = s1_state->GetNode("./Inp");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get s1/State/Inp", s1_state_inp);
+    MVert* s1_state_inpv = s1_state_inp->GetObj(s1_state_inpv);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get s1/State/Inp vector", s1_state_inpv);
+    CPPUNIT_ASSERT_MESSAGE("s1/State/Inp isn't connected", s1_state_inpv->PairsCount() == 1);
 
     delete iEnv;
 }

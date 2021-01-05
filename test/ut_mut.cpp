@@ -128,7 +128,7 @@ void Ut_mut::test_Add()
 	//iEnv->ChMgr()->SetEnablePhenoModif(ETrue);
 	iEnv->ConstructSystem();
 	MUnit* root = iEnv->Root();
-	MElem* eroot = root->GetObj(eroot);
+	MElem* eroot = root ? root->GetObj(eroot) : nullptr;
 	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
 
 	MUnit* e2 = root->GetNode("./elem1/elem2");
@@ -299,8 +299,9 @@ void Ut_mut::test_MutSyst2()
 	iEnv->ImpsMgr()->AddImportsPaths("../modules");
 	iEnv->ConstructSystem();
 	MUnit* root = iEnv->Root();
-	MElem* eroot = root->GetObj(eroot);
 	CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != 0);
+	MElem* eroot = root->GetObj(eroot);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get eroot", eroot != 0);
 	MUnit* cp1 = root->GetNode("./cp1");
 	CPPUNIT_ASSERT_MESSAGE("Fail to get cp1", cp1 != 0);
 	MVert* mcp1 = cp1->GetObj(mcp1);

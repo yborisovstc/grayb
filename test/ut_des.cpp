@@ -702,8 +702,9 @@ void Ut_des::test_IfInval_1()
     iEnv->ImpsMgr()->AddImportsPaths("../modules");
     iEnv->ConstructSystem();
     MUnit* root = iEnv->Root();
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root);
     MElem* eroot = root->GetObj(eroot);
-    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get eroot", eroot);
 
    // Sync the state
     MUnit* test = root->GetNode("./test");
