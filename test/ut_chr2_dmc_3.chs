@@ -9,5 +9,8 @@ root : Elem
         v1 ~ : Vert < {
              v3 : Vert;
         };
+        v1 ~ : Vert {
+             v4 : Vert;
+        };
     }
 }

@@ -7,7 +7,7 @@ DataComps : Elem
   {
     D_1 : Description
     {
-      $ = Base of Data with separate input for setting and output for getting;
+      $ = "Base of Data with separate input for setting and output for getting";
     }
     ./Capsule - inp : /*/Modules/SysComps/ConnPointInp;
     ./Capsule - out : /*/Modules/SysComps/ConnPointOut
@@ -19,7 +19,7 @@ DataComps : Elem
   $ # " Data with separate input for setting and output for getting ";
   DataSMc : /*/Modules/IncapsComps/Incaps
   {
-    About = Base of Data with separate input for setting and output for getting;
+    About = "Base of Data with separate input for setting and output for getting";
     ./Capsule - inp : /*/Modules/SysComps/ConnPointInpMc;
     ./Capsule - out : /*/Modules/SysComps/ConnPointOutMc
     {
@@ -29,7 +29,7 @@ DataComps : Elem
   $ # " Data with separate input for setting and output for getting. Props for Type and Value ";
   DataST : ./DataS
   {
-    ./D_1 - $ = Base of Data with separate input for setting and output for getting. Separate Type property.;
+    ./D_1 - $ = "Base of Data with separate input for setting and output for getting. Separate Type property.";
     Type : Prop;
   }
   $ # " Data with separate input for setting and output for getting. W/o notificaion ";
@@ -37,7 +37,7 @@ DataComps : Elem
   {
     D_1 : Description
     {
-      $ = Data with separate input for setting and output for getting, w/o notification;
+      $ = "Data with separate input for setting and output for getting, w/o notification";
     }
     ./Capsule - inp : /*/Modules/SysComps/ConnPointInp;
     ./Capsule - out : /*/Modules/SysComps/ConnPointOut;
@@ -46,15 +46,14 @@ DataComps : Elem
   $ # " Data with separate input for setting and output for getting. W/o notificaion ";
   DataSUMc : /*/Modules/IncapsComps/Incaps
   {
-    About = Data with separate input for setting and output for getting, w/o notification;
+    About = "Data with separate input for setting and output for getting, w/o notification";
     ./Capsule - inp : /*/Modules/SysComps/ConnPointInpMc;
     ./Capsule - out : /*/Modules/SysComps/ConnPointOutMc;
-    Value = ;
   }
   $ # " Data with separate input for setting and output for getting. Integer ";
   DataSInt : ./DataS
   {
-    ./D_1 - $ = Integer Data with separate input for setting and output for getting;
+    ./D_1 - $ = "Integer Data with separate input for setting and output for getting";
     ADInt : DInt;
     ./Capsule/inp/Provided - $ = MDIntSet;
     ./Capsule/out/Provided - $ = MDIntGet;
@@ -62,7 +61,7 @@ DataComps : Elem
   $ # " Data with separate input for setting and output for getting. Variant ";
   DataSVar : ./DataS
   {
-    ./D_1 - $ = Variant Data with separate input for setting and output for getting;
+    ./D_1 - $ = "Variant Data with separate input for setting and output for getting";
     ADVar : DVar;
     ./Capsule/inp/Provided - $ = MDVarSet;
     ./Capsule/out/Provided - $ = MDVarGet;
@@ -70,7 +69,7 @@ DataComps : Elem
   $ # " Data with separate input for setting and output for getting. Variant ";
   DataSVarMc : ./DataSMc
   {
-    About = Variant Data with separate input for setting and output for getting;
+    About = "Variant Data with separate input for setting and output for getting";
     ADVar : DVar;
     ./Capsule/inp - Provided = MDVarSet;
     ./Capsule/out - Provided = MDVarGet;
@@ -79,15 +78,15 @@ DataComps : Elem
   $ # " Data with separate input for setting and output for getting. Variant. Separate type prop ";
   DataSTVar : ./DataST
   {
-    ./D_1 - $ = Variant Data with separate input for setting and output for getting. Separate Type property.;
+    ./D_1 - $ = "Variant Data with separate input for setting and output for getting. Separate Type property.";
     ADVar : DVar;
     ./Capsule/inp/Provided - $ = MDVarSet;
     ./Capsule/out/Provided - $ = MDVarGet;
   }
   DataSIInt : ./DataSInt
   {
-    ./D_1 - $ = Initital data - Integer Data without input.;
-    ./Capsule/inp ! ;
+    ./D_1 - $ = "Initital data - Integer Data without input.";
+    ./Capsule/inp ! $;
   }
   $ # " Observer iface is declared for purpose of compatibility but isn't supported ";
   DataSNInt : ./DataS
@@ -110,7 +109,7 @@ DataComps : Elem
   }
   DataSUVarMc : ./DataSUMc
   {
-    About = Variable data with separate input for setting and output for getting, w/o notification;
+    About = "Variable data with separate input for setting and output for getting, w/o notification";
     ADVar : DVar;
     ./Capsule/inp - Provided = MDVarSet;
     ./Capsule/out - Provided = MDVarGet;
@@ -119,16 +118,15 @@ DataComps : Elem
   $ # " Terminal data, input only, provided data observer, required gettng data ";
   DataTInt : ./DataS
   {
-    ./D_1 - $ = Terminal data, input only. Monitoring input and update itself;
+    ./D_1 - $ = "Terminal data, input only. Monitoring input and update itself";
     ADInt : DInt;
     ./Capsule/inp/Provided - $ = MDataObserver;
     ./Capsule/inp/Required - $ = MDIntGet;
-    ./Capsule/out ! ;
   }
   $ # " Terminal data, input only, provided data observer, required gettng data ";
   DataTVar : ./DataS
   {
-    ./D_1 - $ = Terminal data, input only, variable type. Monitoring input and update itself;
+    ./D_1 - $ = "Terminal data, input only, variable type. Monitoring input and update itself";
     AData : DVar;
     ./Capsule/inp/Provided - $ = MDataObserver;
     ./Capsule/inp/Required - $ = MDVarGet;
@@ -137,7 +135,7 @@ DataComps : Elem
   $ # " Terminal data, input only, provided data observer, required gettng data ";
   DataTVarMc : ./DataSMc
   {
-    About = Terminal data, input only, variable type. Monitoring input and update itself;
+    About = "Terminal data, input only, variable type. Monitoring input and update itself";
     AData : DVar;
     ./Capsule/inp - Provided = MDataObserver;
     ./Capsule/inp - Required = MDVarGet;
@@ -147,7 +145,7 @@ DataComps : Elem
   $ # " Terminal data, input only, provided data observer, required gettng data. Separate type prop ";
   DataTTVar : ./DataST
   {
-    ./D_1 - $ = Terminal data, input only, variable type. Monitoring input and update itself. Separate type property.;
+    ./D_1 - $ = "Terminal data, input only, variable type. Monitoring input and update itself. Separate type property.";
     AData : DVar;
     ./Capsule/inp/Provided - $ = MDataObserver;
     ./Capsule/inp/Required - $ = MDVarGet;
@@ -175,11 +173,10 @@ DataComps : Elem
   $ # " Data base with separate conn point for update, multicontent ";
   DataSCMc : /*/Modules/IncapsComps/Incaps
   {
-    About = Data base with separate conn point for update;
+    About = "Data base with separate conn point for update";
     ./Capsule - Inp : /*/Modules/SysComps/ConnPointInpMc;
     ./Capsule - Out : /*/Modules/SysComps/ConnPointOutMc;
     ./Capsule - Upd : ConnPointMc;
-    Value = ;
   }
   $ # " Data base with separate conn point for update and separate type ";
   DataSCT : ./DataSC
@@ -205,7 +202,7 @@ DataComps : Elem
   $ # " Data Var, multicontent ";
   DataSCVarMc : ./DataSCMc
   {
-    About = Data with separate conn point for update;
+    About = "Data with separate conn point for update";
     ADVar : DVar;
     ./Capsule/Inp - Required = MDVarGet;
     ./Capsule/Out - Provided = MDVarGet;

@@ -34,7 +34,7 @@ Env::EIfu::EIfu()
 
 ImportsMgr::ImportsMgr(Env& aHost): Base(), mHost(aHost)
 {
-    AddImportsPaths(KDefImportPath);
+    //AddImportsPaths(KDefImportPath);
 }
 
 ImportsMgr::~ImportsMgr()
@@ -62,6 +62,10 @@ void ImportsMgr::AddImportModulesInfo(const string& aPath)
 	    MChromo *spec = mHost.Provider()->CreateChromo();
 	    __ASSERT(spec != NULL);
 	    spec->SetFromFile(filepath);
+	    if (spec->IsError()) {
+		const CError& cerr = spec->Error();
+		mHost.Logger()->Write(EErr, NULL, "Module [%s] error [pos %d]: %s", filepath.c_str(), cerr.mPos.operator streamoff(), cerr.mText.c_str());
+	    }
 	    string rname = spec->Root().Name();
 	    mModsPaths.insert(pair<string, string>(rname, filepath));
 	    delete spec;
@@ -512,7 +516,11 @@ void Env::ConstructSystem()
 	}
 	if (spec->IsError()) {
 	    const CError& cerr = spec->Error();
-	    Logger()->Write(EErr, NULL, "Chromo error [pos %d]: %s", cerr.mPos.operator streamoff(), cerr.mText.c_str());
+	    if (!iSpecFile.empty()) {
+		Logger()->Write(EErr, NULL, "Chromo [%s] error [pos %d]: %s", iSpecFile.c_str(), cerr.mPos.operator streamoff(), cerr.mText.c_str());
+	    } else {
+		Logger()->Write(EErr, NULL, "Chromo error [pos %d]: %s", cerr.mPos.operator streamoff(), cerr.mText.c_str());
+	    }
 	} else {
 	    Pdur(PEvents::Dur_Profiler_Dur_Start);
 	    Pdur(PEvents::Dur_Profiler_Dur);

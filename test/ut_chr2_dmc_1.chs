@@ -4,6 +4,9 @@ root : Elem
     s1 : Vert
     {
         v1 : Vert;
+        v1 < {
+            Value = "Test Value";
+        }
         v1 ~ v2 : Vert;
     }
     $ # "Check of how DMC mut is detected";

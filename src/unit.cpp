@@ -2212,7 +2212,9 @@ MUnit* Unit::GetNodeByName(const string& aName, const TNs& aNs)
 	// Resolving name in current context first
 	res = GetNode(uri);
 	// Then in namespaces
-	for (auto ns : aNs) {
+	// Applied namespaces priority approach, ref I_NRC
+	for (auto nsit = aNs.rbegin(); nsit != aNs.rend() && !res; nsit++) {
+	    auto ns = *nsit;
 	    if (ns == this) continue;
 	    node = ns->GetNode(uri);
 	    if (res == NULL) {

@@ -437,7 +437,6 @@ FuncComps : Elem
     func_agt : AFAddVar;
     $ # " Input positives ";
     ./Capsule - Inp : ./../../Inp_TFVar;
-    $ # " <cont node="./ViewData/Res" ref="./../../func_agt"/> ";
     ViewData.Res = ./func_agt;
   }
   $ # " Transition Function of variable adding ";

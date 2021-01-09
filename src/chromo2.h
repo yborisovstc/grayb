@@ -158,7 +158,7 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	/** @brief Parses mutation
 	 * @param  aDepNode  the sign that the parsed node is DMC dependency of parent node 
 	 * */
-	void ParseCnodeMut(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode, bool aDepNode);
+	void ParseCnodeMut(istream& aIs, streampos aStart, streampos aEnd, C2MdlNode& aMnode, bool aRoot, bool aDepNode);
 	/** @brief Parses chromo node
 	 * @param  aMnode    parent node
 	 * @param  aDepNode  the sign that the parsed node is DMC dependency of parent node 
