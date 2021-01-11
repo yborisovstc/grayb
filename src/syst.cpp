@@ -2405,7 +2405,8 @@ void Syst::DoSpecificMut(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMo
 	if (aSpec.AttrExists(ENa_P) && aSpec.AttrExists(ENa_Q)) {
 	    string argP = aSpec.Attr(ENa_P);
 	    string argQ = aSpec.Attr(ENa_Q);
-	    const TNs& ns = aCtx.mNs;
+	    TNs ns = aCtx.mNs;
+	    UpdateNs(ns, aSpec);
 	    Connect(argP, argQ, ns);
 	} else {
 	    Logger()->Write(EErr, this, "Connecting nodes: missing required attr");
@@ -2418,7 +2419,8 @@ void Syst::DoSpecificMut(const ChromoNode& aSpec, TBool aRunTime, TBool aTrialMo
 	if (aSpec.AttrExists(ENa_P) && aSpec.AttrExists(ENa_Q)) {
 	    string argP = aSpec.Attr(ENa_P);
 	    string argQ = aSpec.Attr(ENa_Q);
-	    const TNs& ns = aCtx.mNs;
+	    TNs ns = aCtx.mNs;
+	    UpdateNs(ns, aSpec);
 	    Disconnect(argP, argQ, ns);
 	} else {
 	    Logger()->Write(EErr, this, "Disconnecting nodes: missing required attr");

@@ -60,6 +60,7 @@ static const string KPE_TextNotClosed = "Text block is not closed";
 static const string KPE_WrongDepMut = "Wrong depenent mutation, shall be 'node'";
 static const string KPE_MissingSegContext = "Missing context of the segment";
 static const string KPE_WrongNumOfCtxLex = "Wrong number of context lexemd";
+static const string KPE_SmallLexNumInDmcMut = "Too small number of lex in DMC mut";
 
 /** @brief Segment offset when node output */
 const int KA_OutOffset = 3;
@@ -593,6 +594,10 @@ void Chromo2Mdl::SetAttr(const THandle& aHandle, TNodeAttr aType, const string& 
 	if (node->mMut.mP.empty()) {
 	    node->mMut.mP = KT_Default;
 	}
+    } else if (aType == ENa_NS) {
+	string ctxrel = GetCtxRel(aType);
+	__ASSERT (!ctxrel.empty());
+	node->mContext[ctxrel] = aVal;
     }
 }
 
@@ -940,7 +945,7 @@ void Chromo2Mdl::GetLexsPos(istream& aIs, streampos aBeg, streampos aEnd, TLexPo
 
 void Chromo2Mdl::ParseContext(vector<string>& aLexs, streampos aPos, C2MdlNode& aMnode)
 {
-    for (int i = 0; 2*i < aLexs.size(); i++) {
+    for (int i = 0; (2*i+1) < aLexs.size(); i++) {
 	string val = aLexs.at(2*i);
 	string rel = aLexs.at(2*i + 1);
 	if (rel == KT_Target || rel == KT_Namespace || rel == KT_Node) {
@@ -1094,6 +1099,9 @@ void Chromo2Mdl::ParseCnodeMut(istream& aIs, streampos aBeg, streampos aEnd, C2M
 		mnode.mChromoPos = pos;
 		aMnode.mChromo.push_back(mnode);
 	    }
+	} else if (includesChromo) {
+	    // Mut included chromo but not parsed it, error
+	    mErr.Set(pos, KPE_SmallLexNumInDmcMut);
 	} else {
 	    // Simple mutation
 	    string q = lexs.back().first; lexs.pop_back();

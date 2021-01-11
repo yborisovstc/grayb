@@ -24,10 +24,10 @@ class Ut_chromo2 : public CPPUNIT_NS::TestFixture
     //CPPUNIT_TEST(test_Conv);
     //CPPUNIT_TEST(test_Tranf1);
     //CPPUNIT_TEST(test_Tranf2);
-    //CPPUNIT_TEST(test_Dmc1);
+    CPPUNIT_TEST(test_Dmc1);
     //CPPUNIT_TEST(test_Dmc2);
     //CPPUNIT_TEST(test_Dmc3);
-    CPPUNIT_TEST(test_Dmc4);
+    //CPPUNIT_TEST(test_Dmc4);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();

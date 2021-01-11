@@ -34,7 +34,7 @@ Env::EIfu::EIfu()
 
 ImportsMgr::ImportsMgr(Env& aHost): Base(), mHost(aHost)
 {
-    //AddImportsPaths(KDefImportPath);
+    AddImportsPaths(KDefImportPath);
 }
 
 ImportsMgr::~ImportsMgr()

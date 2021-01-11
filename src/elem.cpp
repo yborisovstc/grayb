@@ -338,6 +338,16 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 	bool exs_targ = rno.AttrExists(ENa_Targ);
 	bool exs_mnode = rno.AttrExists(ENa_MutNode);
 	string starg, smnode;
+	// Set namespace to mut node
+	if (mroot.AttrExists(ENa_NS)) {
+	    if (!rno.AttrExists(ENa_NS)) {
+		rno.SetAttr(ENa_NS, mroot.Attr(ENa_NS));
+	    } else {
+		// TODO Support multiple namespaces, ref ds_chr2_ns_insmns 
+		// Currently the only last namespaces is active
+	//	__ASSERT(false);
+	    }
+	}
 	if (rno.AttrExists(ENa_Id) && rno.Name() == "unit1_1_1") {
 	    Logger()->Write(EInfo, this, "BP");
 	}
@@ -377,7 +387,7 @@ void Elem::DoMutation(const ChromoNode& aMutSpec, TBool aRunTime, TBool aCheckSa
 		} else {
 		    rno.RmAttr(ENa_Targ);
 		}
-		rno.RmAttr(ENa_NS);
+		//rno.RmAttr(ENa_NS);
 		if (rno.AttrExists(ENa_MutNode)) {
 		    rno.RmAttr(ENa_MutNode);
 		}

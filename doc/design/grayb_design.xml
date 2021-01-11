@@ -73,7 +73,7 @@
 
     <glossary> <title>Glossary</title> 
 	<glossentry id="gls_adp"><glossterm>ADP</glossterm> <acronym>ADP</acronym>
-	    <glossdef> <para>Agents DES adaPtor</para> <para>
+	    <glossdef> <para>Agents DES adaptor.</para> <para>
 		    The agent dedicated to adapt target agent interfaces to DES.
 		    Ref <xref linkend="ds_dmm_adp"/> </para></glossdef> </glossentry>
 	<glossentry id="gls_cp"><glossterm>CP</glossterm> <acronym>CP</acronym>
@@ -3998,52 +3998,51 @@
 	<simpara>There was two-ways relation used in base model env: owner-owned and parent-child. Node's deletion secure proper mechanism 
 	    of relations breaking. This mechanism is basing on notifications that are issued by the node playing inferior role: 
 	    from child to parent, from component to owner. In case of distributed model the only one-way relations are esatblished
-	    between MElem proxy and Elem agent.
-    </simpara>
-</sect3>
-<sect3><title>Analysis</title>
-    <simpara>Please note that proxies are deleted first when secondary env is deleted (ref ARenvu agent).</simpara>
-    <simpara>Consider parent-child relation. Let's assume [P] is parent in primary env, [PP] - MEelm proxy of [P] in secondary env,
-	[C] - remote child in secondary env, [CP] child's proxy in primary env. What happens if [PP] gets removed? On one hand we
-	need to notify [C] of parents removal, so [C] can reset relation to parent (please note that this requires two-ways relation
-	between [C] and [PP]. But what happens then if [P] get removed?
-	[P] will notify [C] via [CP] of parent removal, that seems weird, because [C] already got such an notification from [PP].
-	This shows that two-ways relations between Elem and Proxy is wrong way.
-</simpara>
-<simpara>Another way is that [PP] notifies [P] of child deletion (because [PP] is actually child [C] representation in 
-    relation to [P], i.e. direction where [PP] can act via requesting).</simpara>
-	    </sect3>
-	    <sect3><title>Use-case: MElem proxy - parent removal; child cannot get EType()</title>
-		<orderedlist>
-		    <listitem>Actors are:
-		    <programlisting>
-			[P] - parent, MElem proxy
-			[C] - child, Elem
-		    </programlisting>
-		</listitem>
-		<listitem>[P] is being deleted, [P] notifies [C] on deletion of parent, [C] reset relation to parent</listitem>
-		<listitem>Relation to parent supports some MElem API, for instance EType. Now this API will not work.</listitem>
-	    </orderedlist>
-	</sect3>
-	<sect3><title>Solution</title>
-	    <simpara>We need to complete deletion the model in a normal way. This means that we need to keep the proxies alive during
-		model destruction process. This can be done via kind of trick - to initiate in Renv/Renvu destructor components removal
-		before deleting proxies manager. This approach required dedicated request of deletion in MElem in order to 
-		distinct MElem C++ destructor (that also works in MElem proxy) and MElem deletion.</simpara>
-	</sect3>
-    </sect2>
-    <sect2 id="ds_daa_rdo"><title>DAA design issue: root elem double ownership in secondary env</title>
-	<sect3><title>Intro</title>
-	    <simpara>In distributed env the secondary environment has pecularity, namelly that root agent ownership is shared between env
-		and root owner in primary env. This causes the problem on distributed model destruction: both owners are trying to delete root.</simpara>
-	</sect3>
-	<sect3><title>Solution</title>
-	    <simpara>Actually the interaction is as: owner in primary env request root deletion first, the secondary env tries to 
-		delete root on the final phase of destruction. So we can add to MEnv the notification of root deletion so the env understand
-		that it shouldn't delete root.</simpara>
-	</sect3>
-    </sect2>
-    <sect2 id="ds_daa_hunv_osm"><title>DAA desing issue: remote heir UID is not valid on heir creation phase with <xref linkend="gls_osm"/> approach and
+	    between MElem proxy and Elem agent.  </simpara>
+    </sect3>
+    <sect3><title>Analysis</title>
+	<simpara>Please note that proxies are deleted first when secondary env is deleted (ref ARenvu agent).</simpara>
+	<simpara>Consider parent-child relation. Let's assume [P] is parent in primary env, [PP] - MEelm proxy of [P] in secondary env,
+	    [C] - remote child in secondary env, [CP] child's proxy in primary env. What happens if [PP] gets removed? On one hand we
+	    need to notify [C] of parents removal, so [C] can reset relation to parent (please note that this requires two-ways relation
+	    between [C] and [PP]. But what happens then if [P] get removed?
+	    [P] will notify [C] via [CP] of parent removal, that seems weird, because [C] already got such an notification from [PP].
+	    This shows that two-ways relations between Elem and Proxy is wrong way.  </simpara>
+	<simpara>Another way is that [PP] notifies [P] of child deletion (because [PP] is actually child [C] representation in 
+	    relation to [P], i.e. direction where [PP] can act via requesting).</simpara>
+    </sect3>
+    <sect3><title>Use-case: MElem proxy - parent removal; child cannot get EType()</title>
+	<orderedlist>
+	    <listitem>
+		Actors are:
+		<programlisting>
+		    [P] - parent, MElem proxy
+		    [C] - child, Elem
+	    </programlisting> </listitem>
+	    <listitem>[P] is being deleted, [P] notifies [C] on deletion of parent, [C] reset relation to parent</listitem>
+	    <listitem>Relation to parent supports some MElem API, for instance EType. Now this API will not work.</listitem>
+	</orderedlist>
+    </sect3>
+    <sect3><title>Solution</title>
+	<simpara>We need to complete deletion the model in a normal way. This means that we need to keep the proxies alive during
+	    model destruction process. This can be done via kind of trick - to initiate in Renv/Renvu destructor components removal
+	    before deleting proxies manager. This approach required dedicated request of deletion in MElem in order to 
+	    distinct MElem C++ destructor (that also works in MElem proxy) and MElem deletion.</simpara>
+    </sect3>
+</sect2>
+<sect2 id="ds_daa_rdo"><title>DAA design issue: root elem double ownership in secondary env</title>
+    <sect3><title>Intro</title>
+	<simpara>In distributed env the secondary environment has pecularity, namelly that root agent ownership is shared between env
+	    and root owner in primary env. This causes the problem on distributed model destruction: both owners are trying to delete root.</simpara>
+    </sect3>
+    <sect3><title>Solution</title>
+	<simpara>Actually the interaction is as: owner in primary env request root deletion first, the secondary env tries to 
+	    delete root on the final phase of destruction. So we can add to MEnv the notification of root deletion so the env understand
+	    that it shouldn't delete root.</simpara>
+    </sect3>
+</sect2>
+<sect2 id="ds_daa_hunv_osm"><title>
+    DAA desing issue: remote heir UID is not valid on heir creation phase with <xref linkend="gls_osm"/> approach and
 	treeish chromo used.</title>
     <sect3><title>Intro</title>
 	<simpara>There was initial problem with heir Uid not valid, ref <xref linkend="ds_daa_hunv"/>.
@@ -4062,49 +4061,50 @@
 		    root gets its owner (remote root mediator) assigned.</listitem>
 		<listitem>Base agent cont change mutation handler calls notification OnCompMutated to the owner. </listitem>
 		<listitem>Remote root mediator gets notification, it starts handling it and tries to get the comp (actually its proxy) by UID. But
-		    note the mediator doesn't register remote root as the comp yet.</listitem>
-		<listitem>Remote root mediator AddElemRmt waits until the remote model full creation and only after that creates the proxy
-		    of remote root and registers it as component.</listitem>
-	    </itemizedlist>
-	    <simpara>The mediator's attempt of getting the comp fails because the comp is not registered yet - this causes the model's crash.</simpara>
-	</sect3>
-	<sect3><title>Analysis</title>
-	    <simpara>It's seen from the sequence above that the problem origin is incorrect design of DAA implementation in case of using treeish chromo
-		for remote env.</simpara>
-	</sect3>
-	<sect3><title>Solutions review</title>
-	    <simpara>There are the following solutions to be considered:</simpara>
-	    <orderedlist>
-		<listitem>To notify the mediator of remote root creation as soon as connection is established.
+		note the mediator doesn't register remote root as the comp yet.</listitem>
+	    <listitem>Remote root mediator AddElemRmt waits until the remote model full creation and only after that creates the proxy
+		of remote root and registers it as component.</listitem>
+	</itemizedlist>
+	<simpara>The mediator's attempt of getting the comp fails because the comp is not registered yet - this causes the model's crash.</simpara>
+    </sect3>
+    <sect3><title>Analysis</title>
+	<simpara>It's seen from the sequence above that the problem origin is incorrect design of DAA implementation in case of using treeish chromo
+	    for remote env.</simpara>
+    </sect3>
+    <sect3><title>Solutions review</title>
+	<simpara>There are the following solutions to be considered:</simpara>
+	<orderedlist>
+	    <listitem>
+		To notify the mediator of remote root creation as soon as connection is established.
 		<programlisting>This would establish two-ways relation between primary env remote root mediator and secondary env remote root as early
-		    as possible so remote root will be accessible via UID.</programlisting>
+		    as possible so remote root will be accessible via UID.</programlisting> </listitem>
+	    <listitem>
+		To avoid establishing any relations between mediator and remote root until remote model construction complete.
+		<programlisting>This will isolate construction of remote model from the primary env, so no one request from remote model will
+		    be recieved by the primary env. Ref <xref linkend="ds_daa_hunv_osm_nas"/> for details.</programlisting>
 	    </listitem>
-	    <listitem>To avoid establishing any relations between mediator and remote root until remote model construction complete.
-	    <programlisting>This will isolate construction of remote model from the primary env, so no one request from remote model will
-		be recieved by the primary env. Ref <xref linkend="ds_daa_hunv_osm_nas"/> for details.</programlisting>
-	</listitem>
-	<listitem>To avoid using treeish chromo in distributed models, ref <xref linkend="ds_daa_hunv_osm_aut"/> for details.</listitem>
-    </orderedlist>
-</sect3>
-<sect3 id="ds_daa_hunv_osm_nas"><title>Proposed solution: to notify the mediator of remote root creation as soon as connection is established.</title>
-</sect3>
-<sect3 id="ds_daa_hunv_osm_aer"><title>To avoid establishing any relations between mediator and remote root until remote model construction complete</title>
-    <sect4><title>Disadvantages</title>
-	<simpara>There are some use-cases below</simpara>
-	<itemizedlist>
-	    <listitem>Creating agents from the parents located in primary model. This required at least one-way (sec-to-pri) relation. This
-		use-case is quite valuable for creating DAA models.</listitem>
-	</itemizedlist>
-    </sect4>
-</sect3>
-<sect3 id="ds_daa_hunv_osm_aut"><title>To avoid using treeish chromo in distributed models.</title>
-    <sect4><title>Disadvantages</title>
-	<itemizedlist>
-	    <listitem>Using OSM chromo requires interaction between model parts for each mutation. Threeish chromo allows partially isolate the 
-		creation process within secondary env, that speeds up the process.</listitem>
-	</itemizedlist>
-    </sect4>
-</sect3>
+	    <listitem>To avoid using treeish chromo in distributed models, ref <xref linkend="ds_daa_hunv_osm_aut"/> for details.</listitem>
+	</orderedlist>
+    </sect3>
+    <sect3 id="ds_daa_hunv_osm_nas"><title>Proposed solution: to notify the mediator of remote root creation as soon as connection is established.</title>
+    </sect3>
+    <sect3 id="ds_daa_hunv_osm_aer"><title>To avoid establishing any relations between mediator and remote root until remote model construction complete</title>
+	<sect4><title>Disadvantages</title>
+	    <simpara>There are some use-cases below</simpara>
+	    <itemizedlist>
+		<listitem>Creating agents from the parents located in primary model. This required at least one-way (sec-to-pri) relation. This
+		    use-case is quite valuable for creating DAA models.</listitem>
+	    </itemizedlist>
+	</sect4>
+    </sect3>
+    <sect3 id="ds_daa_hunv_osm_aut"><title>To avoid using treeish chromo in distributed models.</title>
+	<sect4><title>Disadvantages</title>
+	    <itemizedlist>
+		<listitem>Using OSM chromo requires interaction between model parts for each mutation. Threeish chromo allows partially isolate the 
+		    creation process within secondary env, that speeds up the process.</listitem>
+	    </itemizedlist>
+	</sect4>
+    </sect3>
 	</sect2>
 	<sect2 id="ds_daa_itn"><title>DAA design: Identification of temporary nodes (generating/resolving UID for them)</title>
 	    <sect3><title>Intro</title>
@@ -4306,10 +4306,12 @@
 		<simpara>So the idea is to not to use specific action semantic for mutation but establishing specific relation.</simpara>
 	    </sect2>
 	    <sect2 id="ds_chr2_ns"><title>Namespaces</title>
-		<simpara>Using namespaces can radically reduce notation for URIs.</simpara>
-		<simpara>One wariant of syntax is like '# "/Modules/DesComps/"' where relation symbol '#' means relation 'node to namespaces', i.e this
-		    mutation adds node "/Modules/DesComps/" to the set of anonimous namespaces.</simpara>
-		<simpara>What about named namespaces?</simpara>
+		<sect3><title>Intro</title>
+		    <simpara>Using namespaces can radically reduce notation for URIs.</simpara>
+		    <simpara>One wariant of syntax is like '# "/Modules/DesComps/"' where relation symbol '#' means relation 'node to namespaces', i.e this
+			mutation adds node "/Modules/DesComps/" to the set of anonimous namespaces.</simpara>
+		    <simpara>What about named namespaces?</simpara>
+		</sect3>
 		<sect3 id="ds_chr2_ns_ns"><title>Names syntax</title>
 		    <simpara>It was assumed that namespace defines system node that will be treated as owner of name. In this case name should be namespace node components URI.
 			This approach is straitforward but not convenient. The name syntax in that case will be "./component_name". It would be simpler to have just "component_name".
@@ -4323,6 +4325,16 @@
 			    we need also to change native agent syntax using for instance specific relation symbol like "~native_agent_name". This approach simplifies resolving names - 
 			    no need to check native agents.</simpara>
 			<simpara>Provlem with that approach is that is breakes compatibility with current chromos specs.</simpara>
+		    </sect4>
+		</sect3>
+		<sect3 id="ds_chr2_ns_insmns"><title>Issue: chromo doesn't support multiple namespaces</title>
+		    <sect4><title>Intro</title>
+			<simpara>Currently the only one "name space" attribute is supported for mutation in Chromo2. So if the mut is within some number of nested segments
+			    having name spece context then the number of name-spaces have to be applied to the mutation. So the <xref linkend="gls_osm"/> mut propagated
+				to the owners will not contain proper name space context.</simpara>
+		    </sect4>
+		    <sect4><title>Solution#1: enable multiple namespace specs in single "name-spece" attribute (context).</title>
+			<simpara>This solution is quite straightforward, but seems able to solve the problem.</simpara>
 		    </sect4>
 		</sect3>
 	    </sect2>
@@ -4531,91 +4543,97 @@
 		    <simpara>Note that actually we need only Q dependency - this enough to support anonymous agents in DES.</simpara>
 		</sect4>
 		<sect4><title>Analysis</title>
-		    <simpara>This approach simplifies the <xref linkend="gls_dmc"/> implementation. We don't need to transform the chromo spec of
-		    <xref linkend="gls_dmc"/> form to <xref linkend="gls_osm"/> or <xref linkend="gls_dhc"/> (thow this seems to be achievable).</simpara>
-	    </sect4>
-	</sect3>
-	<sect3><title>Criticism: anonumous agents and mutations chains - is it really important?</title>
-	    <simpara>The initial rationale of mutations chain benefits was the idea that it gives us the possibility of compact and nice notation. This could help us
-		to specify the transition functions in compact manner so that the function notation gets easy readable. Howewer this approach doesn't break the 
-		fundamental limitation of chromo languge: the language is one-dimentional. So it is not possible to get easy and adequate notation for multi-agent system with a numger
-		of connections.</simpara>
-	    <simpara>The limitation can be bypassed in visual representation of the system, this approach was used in FAP studio - visual design tool. </simpara>
-	    <simpara>So we decided to postpone implemeting of this "AAMC" feature, the code prepared is on branch yb_chr2_aamc. There are still many question regarding what
-		design approach is more effective - direct (using chromo language) or visual.</simpara>
-	</sect3>
-    </sect2>
-    <sect2 id="ds_chr2_cmbn"><title>Is combined node required?</title>
-	<simpara>
-	    There was combined node also implemented, mutation + chromo segment (combined node is not defined in chromo grammar). In fact combo-node is almost same as
-	    segment with target specified via dependent mutation (ref <xref linkend="ds_chr2_aamc"/>). The only distinction is missing target context relation symbol. So the
-		question is if this combo-node is required and plays valuable role in the grammar?
-	</simpara>
-	<simpara>The matter is that combined node syntax is very simple and understandable. So it makes sense to support it.</simpara>
-    </sect2>
-    <sect2 id="ds_chr2_nsosm"><title>Chromo structure is not supported in <xref linkend="gls_osm"/> approach. </title>
-	<simpara><xref linkend="gls_osm"/> doesn't natively support chromo segments, the approach is used one-mut granularity instead. Look at the mutation
-	    propagating mechanism implemented in base agent - Elem::OnNodeMutated(). So even the given chromo is notated with segments and combined mutations the resulted
-	    chromo will be single-mut granulated. Potentially we can transform the resulted chromo to chromo2 notation using simple rules. This can be done on run-time or 
-	    with applying separate tools.</simpara>
-    </sect2>
-    <sect2 id="ds_chr2_cctx"><title>Cumulative context</title>
-	<sect3><title>Namespaces</title>
-	    The context can potentially be cumulated, for instance namespaces. The context is updated by the current context and then needs to be restored when the
-	    current context ends. How to implement it. One way is to keep the contexts assosiated to its scope. In that case when mutation machine leaves the scope of the 
-	    given context that machine just switches to the current context, i.e uses the conext assosiated to the current scope.
-	</sect3>
-	<sect3 id="ds_chr2_cctx_tn"><title>Target and node</title>
-	    <sect4><title>Intro</title>
-		<simpara>Ref <xref linkend="ds_umt"/> for unified target related materials.</simpara>
-	    </sect4>
-	    <sect4><title>Outline of approaches</title>
-		<simpara>Another case of cumulative context is target and node - they can be specified in current segment and also in upper layer segment. How the final context should
-		    be in that case? One approach is to calculate final target and node basing on all levels context items. But there should be different schema of "accumulating" 
-		    mut-target and mut-node. This is because mut-node URI is relative to mut-target URI. So we can correctly obtain mut-node in this case:
-		<programlisting>
-		    root-chromo-node has mut-targ
-		    child-chromp-node has mut-targ and mut-node
-		    >> mut-node is obtained relative to root-chromo-node-mut-targ + child-chromo-node-mut-targ
-		</programlisting>
-		    But having mut-node in begin or mid of series of these attr chain causes to complication of final mut-node obraining schema.
-		    So it makes sense to restrict specifying mut-node only in final chromo-node in chromo-nodes hier.
+		    <simpara>
+			This approach simplifies the <xref linkend="gls_dmc"/> implementation. We don't need to transform the chromo spec of
+			<xref linkend="gls_dmc"/> form to <xref linkend="gls_osm"/> or <xref linkend="gls_dhc"/> (thow this seems to be achievable).</simpara>
+		</sect4>
+	    </sect3>
+	    <sect3><title>Criticism: anonumous agents and mutations chains - is it really important?</title>
+		<simpara>The initial rationale of mutations chain benefits was the idea that it gives us the possibility of compact and nice notation. This could help us
+		    to specify the transition functions in compact manner so that the function notation gets easy readable. Howewer this approach doesn't break the 
+		    fundamental limitation of chromo languge: the language is one-dimentional. So it is not possible to get easy and adequate notation for multi-agent system with a numger
+		    of connections.</simpara>
+		<simpara>The limitation can be bypassed in visual representation of the system, this approach was used in FAP studio - visual design tool. </simpara>
+		<simpara>So we decided to postpone implemeting of this "AAMC" feature, the code prepared is on branch yb_chr2_aamc. There are still many question regarding what
+		    design approach is more effective - direct (using chromo language) or visual.</simpara>
+	    </sect3>
+	    <sect3><title>Prototyping</title>
+		<simpara>The prototyping of <xref linkend="gls_dmc"/> chromo was done, ref branch <xref linkend="ds_cm_br_yb_dmc"/>. Also fap2-vis example "modnav" was aligned
+		    to evaluate of how DMC chromo improves the readability the chromo. The prototype showed that the idea is realistic, "modnav" DMC chromoe is
+		    more clear and readable then old "flat" format of chromo. </simpara>
+	    </sect3>
+	</sect2>
+	<sect2 id="ds_chr2_cmbn"><title>Is combined node required?</title>
+	    <simpara>
+		There was combined node also implemented, mutation + chromo segment (combined node is not defined in chromo grammar). In fact combo-node is almost same as
+		segment with target specified via dependent mutation (ref <xref linkend="ds_chr2_aamc"/>). The only distinction is missing target context relation symbol. So the
+		    question is if this combo-node is required and plays valuable role in the grammar?
 	    </simpara>
-	    <simpara>The thoughts above is not completely right. Let's consider the following chromo2 example:</simpara>
-	    <programlisting>
-		| ./elem1 &lt; {
-		|    unit1_1 : Unit;
-		|    ./unit1_1 - {
-		|       unit1_1_1 : Unit;
-		|       ./unit1_1_1 - {
-		|           unit1_1_1_1 : Unit;
-		|       }     
-		|    }
-		| }
-	    </programlisting>
-	    <simpara>This examples shows another approach: mut-node context is valid till the lower-layer context substitute it. The lower-layer mut-node is relative to the current
-		context. This approach makes sense especially in cases when we have the complex native hier of unmutable nodes, need to have many changes of them and want to group
-		chromo nodes.</simpara>
-	</sect4>
-	<sect4 id="ds_chr2_cctx_tn_umt"><title>Solution: using unified mut-target</title>
-	    <simpara>Currently there are both mut-target and mut-node. Mut-target points to the target of mutation, i.e. mutable node that will keep the mutation. Mut-node points
-		to the subject of the change, this node can be not mutable. Is it possible to have just one unified target instead of those two? Seems so, we just can interpret this
-		attr as the pointer to the subject of change, and caclulate the nearest mutable target in hier to redirect the mutation.</simpara>
-	    <simpara>This can be implemented in Elem::DoMutation() via finding nearest mutable node and then modifying mut-target attr rebasing it to this mutable node.</simpara>
-	    <simpara>The main problem with this approach is migrating comp based mutations (Rm, Rn, Cont).</simpara>
-	    <simpara>[20200111] Implemented the solution, most UT passed, the branch is "yb_chr2_cctx_tn_umt".</simpara>
-	</sect4>
-	<sect4 id="ds_chr2_cctx_tn_srns"><title>Solution: use specific rules for the context of nested segments.</title>
-	    <simpara>This solutions is lightweight: just to specify how the context in nested segments should be set. The possible rule is that target should be nested, i.e. lower
-		level target should be relative to the upper level. As for mut-node, it shouldn't be nested, i.e. even the segment is nested, its context mut-node shouldn't relate to
-		upper level mut-node context.</simpara>
-	    <simpara>Nesting of segments makes sense only for purpose of re-using the context by minor correction of it. So accrording to the rule above there is no sense to
-		nest the segment with just mut-node context because context is not re-used.</simpara>
-	    <simpara>There should be specific rule for mut-node context specifying in combined mut. This context shouldn't be applied in scope of segment, it only relates to
-		combo mut base mutation.</simpara>
-	</sect4>
-    </sect3>
-</sect2>
+	    <simpara>The matter is that combined node syntax is very simple and understandable. So it makes sense to support it.</simpara>
+	</sect2>
+	<sect2 id="ds_chr2_nsosm"><title>Chromo structure is not supported in <xref linkend="gls_osm"/> approach. </title>
+	    <simpara><xref linkend="gls_osm"/> doesn't natively support chromo segments, the approach is used one-mut granularity instead. Look at the mutation
+		propagating mechanism implemented in base agent - Elem::OnNodeMutated(). So even the given chromo is notated with segments and combined mutations the resulted
+		chromo will be single-mut granulated. Potentially we can transform the resulted chromo to chromo2 notation using simple rules. This can be done on run-time or 
+		with applying separate tools.</simpara>
+	</sect2>
+	<sect2 id="ds_chr2_cctx"><title>Cumulative context</title>
+	    <sect3><title>Namespaces</title>
+		The context can potentially be cumulated, for instance namespaces. The context is updated by the current context and then needs to be restored when the
+		current context ends. How to implement it. One way is to keep the contexts assosiated to its scope. In that case when mutation machine leaves the scope of the 
+		given context that machine just switches to the current context, i.e uses the conext assosiated to the current scope.
+	    </sect3>
+	    <sect3 id="ds_chr2_cctx_tn"><title>Target and node</title>
+		<sect4><title>Intro</title>
+		    <simpara>Ref <xref linkend="ds_umt"/> for unified target related materials.</simpara>
+		</sect4>
+		<sect4><title>Outline of approaches</title>
+		    <simpara>Another case of cumulative context is target and node - they can be specified in current segment and also in upper layer segment. How the final context should
+			be in that case? One approach is to calculate final target and node basing on all levels context items. But there should be different schema of "accumulating" 
+			mut-target and mut-node. This is because mut-node URI is relative to mut-target URI. So we can correctly obtain mut-node in this case:
+		    <programlisting>
+			root-chromo-node has mut-targ
+			child-chromp-node has mut-targ and mut-node
+			>> mut-node is obtained relative to root-chromo-node-mut-targ + child-chromo-node-mut-targ
+		    </programlisting>
+			But having mut-node in begin or mid of series of these attr chain causes to complication of final mut-node obraining schema.
+			So it makes sense to restrict specifying mut-node only in final chromo-node in chromo-nodes hier.
+		</simpara>
+		<simpara>The thoughts above is not completely right. Let's consider the following chromo2 example:</simpara>
+		<programlisting>
+		    | ./elem1 &lt; {
+		    |    unit1_1 : Unit;
+		    |    ./unit1_1 - {
+		    |       unit1_1_1 : Unit;
+		    |       ./unit1_1_1 - {
+		    |           unit1_1_1_1 : Unit;
+		    |       }     
+		    |    }
+		    | }
+		</programlisting>
+		<simpara>This examples shows another approach: mut-node context is valid till the lower-layer context substitute it. The lower-layer mut-node is relative to the current
+		    context. This approach makes sense especially in cases when we have the complex native hier of unmutable nodes, need to have many changes of them and want to group
+		    chromo nodes.</simpara>
+	    </sect4>
+	    <sect4 id="ds_chr2_cctx_tn_umt"><title>Solution: using unified mut-target</title>
+		<simpara>Currently there are both mut-target and mut-node. Mut-target points to the target of mutation, i.e. mutable node that will keep the mutation. Mut-node points
+		    to the subject of the change, this node can be not mutable. Is it possible to have just one unified target instead of those two? Seems so, we just can interpret this
+		    attr as the pointer to the subject of change, and caclulate the nearest mutable target in hier to redirect the mutation.</simpara>
+		<simpara>This can be implemented in Elem::DoMutation() via finding nearest mutable node and then modifying mut-target attr rebasing it to this mutable node.</simpara>
+		<simpara>The main problem with this approach is migrating comp based mutations (Rm, Rn, Cont).</simpara>
+		<simpara>[20200111] Implemented the solution, most UT passed, the branch is "yb_chr2_cctx_tn_umt".</simpara>
+	    </sect4>
+	    <sect4 id="ds_chr2_cctx_tn_srns"><title>Solution: use specific rules for the context of nested segments.</title>
+		<simpara>This solutions is lightweight: just to specify how the context in nested segments should be set. The possible rule is that target should be nested, i.e. lower
+		    level target should be relative to the upper level. As for mut-node, it shouldn't be nested, i.e. even the segment is nested, its context mut-node shouldn't relate to
+		    upper level mut-node context.</simpara>
+		<simpara>Nesting of segments makes sense only for purpose of re-using the context by minor correction of it. So accrording to the rule above there is no sense to
+		    nest the segment with just mut-node context because context is not re-used.</simpara>
+		<simpara>There should be specific rule for mut-node context specifying in combined mut. This context shouldn't be applied in scope of segment, it only relates to
+		    combo mut base mutation.</simpara>
+	    </sect4>
+	</sect3>
+    </sect2>
 <sect2 id="ds_chr2_stlc"><title>Enhancement: support of tree-like chromo</title>
     <sect3><title>Intro</title>
 	<simpara>
@@ -6367,7 +6385,7 @@
 		<sect3><title>yb_dmm - <xref linkend="gls_dmm"/> solution</title>
 		    <simpara>Ref <xref linkend="ds_dmm"/> for details.</simpara>
 		</sect3>
-		<sect3><title>yb_dmc - <xref linkend="gls_dmc"/> solution</title>
+		<sect3 id="ds_cm_br_yb_dmc"><title>yb_dmc - <xref linkend="gls_dmc"/> solution</title>
 		    <simpara>Ref <xref linkend="ds_chr2_dmc"/> for details.</simpara>
 		</sect3>
 	    </sect2>
