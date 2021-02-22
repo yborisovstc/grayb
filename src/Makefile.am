@@ -91,6 +91,7 @@ include_HEADERS = \
 		  melem.h \
 		  mchromo.h \
 		  mchromo2.h \
+		  chromo2.h \
 		  medge.h \
 		  mlog.h \
 		  miface.h \

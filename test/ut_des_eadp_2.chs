@@ -39,6 +39,11 @@ testroot : Elem
             Incr/Inp ~ CompIdxCount;
             Incr/Inp ~ Const_1;
             UnitAdp/InpCompIdx ~ CompIdxCount;
+            $ # "Components, not completed!!";
+            CompNames : AStatec;
+            CompNames < Value = VS;
+            CompNames < Debug.Update = y;
+            CompNames/Inp ~ UnitAdp/CompNames;
             $ # Mutation;
             NewCompNamebase : AStatec;
             NewCompNamebase < Value = "SS NewComp_";

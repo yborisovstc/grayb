@@ -16,6 +16,7 @@
 class Ut_chromo2 : public CPPUNIT_NS::TestFixture
 {
     CPPUNIT_TEST_SUITE(Ut_chromo2);
+    CPPUNIT_TEST(test_Constr1);
     //CPPUNIT_TEST(test_Chr1);
     ////CPPUNIT_TEST(test_Cre1);
     ////CPPUNIT_TEST(test_Combo);
@@ -24,7 +25,7 @@ class Ut_chromo2 : public CPPUNIT_NS::TestFixture
     //CPPUNIT_TEST(test_Conv);
     //CPPUNIT_TEST(test_Tranf1);
     //CPPUNIT_TEST(test_Tranf2);
-    CPPUNIT_TEST(test_Dmc1);
+    //CPPUNIT_TEST(test_Dmc1);
     //CPPUNIT_TEST(test_Dmc2);
     //CPPUNIT_TEST(test_Dmc3);
     //CPPUNIT_TEST(test_Dmc4);
@@ -33,6 +34,7 @@ public:
     virtual void setUp();
     virtual void tearDown();
 private:
+    void test_Constr1();
     void test_Chr1();
     void test_Cre1();
     void test_Combo();
@@ -61,6 +63,31 @@ void Ut_chromo2::tearDown()
 {
     CPPUNIT_ASSERT_EQUAL_MESSAGE("tearDown", 0, 0);
 }
+
+void Ut_chromo2::test_Constr1()
+{
+    printf("\n === Test of Chromo2 creation and copy constructor\n");
+    Chromo2 chr;
+    chr.SetFromSpec("Root : Unit { Comp : Unit; }");
+    if (chr.IsError()) {
+	cout << "Pos: " << chr.Error().mPos << " -- " << chr.Error().mText << endl;
+    }
+    chr.Root().Dump();
+    CPPUNIT_ASSERT_MESSAGE("Chromo parsing error", !chr.IsError());
+    ChromoNode croot = chr.Root();
+    CPPUNIT_ASSERT_MESSAGE("Chromo root is empty", croot != ChromoNode());
+    ChromoNode::Iterator beg = croot.Begin();
+    ChromoNode cmp1 = *beg;
+    CPPUNIT_ASSERT_MESSAGE("Chromo root comp1 is empty", cmp1 != ChromoNode());
+    TNodeType cmp1t = cmp1.Type();
+    CPPUNIT_ASSERT_MESSAGE("Wront type of root comp1", cmp1t == ENt_Node);
+    int cn = croot.Count();
+    CPPUNIT_ASSERT_MESSAGE("Wrong root node comps number", cn == 1);
+
+    // Copy constructor
+    Chromo2 chr2(chr);
+}
+
 
 void Ut_chromo2::test_Chr1()
 {

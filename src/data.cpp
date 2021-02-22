@@ -1338,6 +1338,7 @@ TBool BdVar::Init(const string& aString, MDVarGet* aInpv)
     else if ((mData = HDt<NTuple>::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<Enum>::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<DMut>::Create(this, aString, aInpv)) != NULL);
+    else if ((mData = HDt<DChr2>::Create(this, aString, aInpv)) != NULL);
     else if ((mData = HDt<Vector<string>>::Create(this, aString, aInpv)) != NULL);
     //else if ((mData = HVect<float>::Create(this, aString, aInpv)) != NULL);
     //else if ((mData = HMtrd<float>::Create(this, aString, aInpv)) != NULL);
@@ -1386,8 +1387,8 @@ bool BdVar::ToString(string& aData)
 TBool BdVar::Update()
 {
     TBool res = EFalse;
-    string old_value;
-    ToString(old_value);
+    string old_value; // Dbg
+    ToString(old_value); // Dbg
     MDVarGet* vget = mHost->HGetInp(this);
     if (vget != NULL) {
 	if (mData == NULL) {

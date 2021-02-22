@@ -326,7 +326,7 @@ ChromoNode& ChromoNode::operator=(const ChromoNode& aNode)
 {
     // TODO [YB] Wrong to assign model because its base is not assignable (Base). To redesign.
 //    iMdl = aNode.iMdl; iHandle = aNode.iHandle;
-    __ASSERT(&iMdl == &aNode.iMdl);
+    __ASSERT(&iMdl == NULL || &iMdl == &aNode.iMdl);
     iHandle = aNode.iHandle;
     return *this;
 }

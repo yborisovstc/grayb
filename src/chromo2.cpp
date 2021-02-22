@@ -646,7 +646,11 @@ void Chromo2Mdl::DumpToLog(const THandle& aNode, MLogRec* aLogRec)
 
 TBool Chromo2Mdl::ToString(const THandle& aNode, string& aString) const
 {
-    __ASSERT(false);
+    C2MdlNode* node = aNode.Data(node);
+    ostringstream ss;
+    OutputNode(*node, ss, 0, 0);
+    aString = ss.str();
+    return true;
 }
 
 void Chromo2Mdl::Save(const string& aFileName, TInt aIndent) const
@@ -1354,6 +1358,11 @@ void Chromo2Mdl::TransfTl(const THandle& aHandle, const THandle& aSrc)
     
 }
 
+TBool Chromo2Mdl::operator==(const Chromo2Mdl& b)
+{
+    TBool res = !mErr.IsSet() && !b.mErr.IsSet();
+    return res;
+}
 
 
 
@@ -1415,8 +1424,12 @@ void Chromo2::Set(const ChromoNode& aRoot)
 {
     THandle root = mMdl.Set(aRoot.Handle());
     mRootNode = ChromoNode(mMdl, root);
-    //int cnt = mRootNode.Count();
-    //cout << cnt << endl;
+}
+
+Chromo2& Chromo2::operator=(const Chromo2& aSrc)
+{
+    Set(aSrc.Root());
+    return *this;
 }
 
 Chromo2::~Chromo2()
@@ -1729,4 +1742,9 @@ void Chromo2::TransfTlNode(ChromoNode& aDst, const ChromoNode& aSrc, bool aTarg)
 	    }
 	}
     }
+}
+
+TBool Chromo2::operator==(const Chromo2& b)
+{
+    return mMdl == b.mMdl;
 }

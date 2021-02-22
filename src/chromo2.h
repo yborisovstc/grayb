@@ -151,6 +151,7 @@ class Chromo2Mdl: public Base, public MChromoMdl
 	virtual THandle Init(TNodeType aRootType);
 	void Reset();
 	const CError& Error() const { return mErr;};
+	TBool operator==(const Chromo2Mdl& b);
     protected:
 	/** @brief Parses chromo spec
 	 * */
@@ -211,6 +212,7 @@ class Chromo2: public MChromo
 	Chromo2(const Chromo2& aSrc);
 	Chromo2(const string& aFileName);
 	virtual ~Chromo2();
+	Chromo2& operator=(const Chromo2& aSrc);
     public:
 	// From MChromo
 	virtual ChromoNode& Root();
@@ -229,6 +231,7 @@ class Chromo2: public MChromo
 	virtual void ReduceToSelection(const ChromoNode& aSelNode);
 	virtual bool IsError() const;
 	virtual const CError& Error() const;
+	TBool operator==(const Chromo2& b);
     protected:
 	void ConvertNode(ChromoNode& aDst, const ChromoNode& aSrc);
 	void TransfTlNode(ChromoNode& aDst, const ChromoNode& aSrc, bool aTarg);

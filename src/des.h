@@ -507,8 +507,6 @@ class ATrcAtVar: public ATrcVar
 
 
 
-
-
 // Iface stub to avoid clashing MIface methods
 class MDesObserver_Imd: public MDesObserver
 {
@@ -788,6 +786,8 @@ class ADesLauncher: public Elem, public MLauncher, public MAgent
  * Internal "access points" are used to create required topology instead of
  * using "true" DES with transitions. This is for optimization purpose.
  * */
+// TODO There is design weakness here. The relation ADP - managed_agent is implicit and one way only. So removing managed agent
+// will cause wrond ADB behaviour.
 class AAdp: public Unit, public MDesSyncable_Imd, public MDesObserver_Imd, public MDesInpObserver_Imd, public MAgent, public MDVarGet
 {
     public:
@@ -929,6 +929,30 @@ class AAdp: public Unit, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 	string mMagUri; /*!< Managed agent URI */
 	AdpMagObs<AAdp> mMagObs = AdpMagObs<AAdp>(this); /*!< Managed agent observer */
 };
+
+// Access point, using Sdata
+
+template <typename T> void* AAdp::AdpPap<T>::DoGetDObj(const char *aName)
+{
+    void* res = NULL;
+    if (aName == MDtGet<Sdata<T> >::Type()) {
+	res = dynamic_cast<MDtGet<Sdata<T> >*>(this);
+    }
+    return res;
+}
+
+// Access point, using generic data
+
+template <typename T> void* AAdp::AdpPapB<T>::DoGetDObj(const char *aName)
+{
+    void* res = NULL;
+    if (aName == MDtGet<T>::Type()) {
+	res = dynamic_cast<MDtGet<T>*>(this);
+    }
+    return res;
+}
+
+
 
 
 /** @brief MUnit iface ADP agent

@@ -28,9 +28,10 @@ class Ut_des : public CPPUNIT_NS::TestFixture
     */
     //CPPUNIT_TEST(test_MunitAdp_1);
     //CPPUNIT_TEST(test_MelemAdp_1);
+    CPPUNIT_TEST(test_MelemAdp_chr_1);
     //CPPUNIT_TEST(test_Tr_Switch_1);
     //CPPUNIT_TEST(test_Tr_Vect_1);
-    CPPUNIT_TEST(test_IfInval_1);
+    //CPPUNIT_TEST(test_IfInval_1);
     CPPUNIT_TEST_SUITE_END();
 public:
     virtual void setUp();
@@ -46,6 +47,7 @@ private:
     void test_CreStatec();
     void test_MunitAdp_1();
     void test_MelemAdp_1();
+    void test_MelemAdp_chr_1();
     void test_Tr_Switch_1();
     void test_Tr_Vect_1();
     void test_IfInval_1();
@@ -571,6 +573,69 @@ void Ut_des::test_MelemAdp_1()
 
     delete iEnv;
 }
+
+/** @brief MElem DES adapter test
+ * Chromo data is used to specify mutations
+ * */
+void Ut_des::test_MelemAdp_chr_1()
+{
+    printf("\n === Test of MElem DES adapter: mut specified via chromo data\n");
+
+    const string specn("ut_des_eadp_chr_1");
+    string ext = "chs";
+    string spec = specn + string(".") + "chs";
+    string log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root->GetObj(eroot);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
+
+    // Verify target agent
+    MUnit* tag = root->GetNode("./test/Target");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get target agent", tag != NULL);
+    // Verify adapter
+    MUnit* adp = root->GetNode("./test/Controller/UnitAdp");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get adapter", adp != NULL);
+   // Sync the state
+    MUnit* esync = root->GetNode("./test");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != NULL);
+    MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != NULL);
+
+    // Do some ticks
+    const TInt ticksnum = 5;
+    for (TInt cnt = 0; cnt < ticksnum; cnt++) {
+	cout << "Cnt: " << cnt << endl;
+	if (sync->IsActive()) {
+	    //iEnv->SetSBool(MEnv::ESb_EnIfTrace, ETrue);
+	    sync->Update();
+	    //iEnv->SetSBool(MEnv::ESb_EnIfTrace, EFalse);
+	}
+	if (sync->IsUpdated()) {
+	    sync->Confirm();
+	}
+	// Verify comps count
+	MUnit* cmpCount = root->GetNode("./test/Controller/UnitAdp/CompsCount");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get adapters CompsCount", cmpCount != NULL);
+	MDVarGet* cmpCountVget = cmpCount->GetSIfit(cmpCountVget);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get CompsCount VarGet iface", cmpCountVget != NULL);
+	MDtGet<Sdata<int>>* cmpCountGsi = cmpCountVget->GetDObj(cmpCountGsi);
+	CPPUNIT_ASSERT_MESSAGE("Fail to get cmpCountGsi ", cmpCountGsi != NULL);
+	Sdata<int> cmpCountSi = 0;
+	cmpCountGsi->DtGet(cmpCountSi);
+	CPPUNIT_ASSERT_MESSAGE("Incorrect CompsCount value", cmpCountSi.mData == 3);
+	// Verify comp created in managed agent
+	MUnit* newComp = root->GetNode("./test/Target/Comp");
+	CPPUNIT_ASSERT_MESSAGE("Fail to get new comp in MAG", newComp != NULL);
+    }
+
+    delete iEnv;
+}
+
 
 /** @brief MElem DES transition test: switcher
  * */

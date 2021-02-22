@@ -115,6 +115,9 @@
 	    <glossdef> <para>Compact (and customized) Chromo Notation, approach that focus on having compact notation of model chromo.
 		    This allows effectivelly creating the model via 'manually' creating chromo of it. Another solution
 		    is Native Chromo Notation, ref <xref linkend="gls_ncn"/>. </para></glossdef> </glossentry>
+	<glossentry id="gls_cfd"><glossterm>CFD</glossterm> <acronym>CFD</acronym>
+	    <glossdef> <para>Canny Function Diagram, a graphical programming language conceptually similar to <xref linkend="gls_fbd"/>.
+		    Ref <ulink url="https://ru.wikipedia.org/wiki/Canny_Function_Diagram"/>. </para></glossdef> </glossentry>
 	<glossentry id="gls_clm"><glossterm>CLM</glossterm> <acronym>CLM</acronym>
 	    <glossdef> <para>Command Line Monitor application <xref linkend="ds_clm"/> </para></glossdef> </glossentry>
 	<glossentry id="gls_cmt"><glossterm>CMT</glossterm> <acronym>CMT</acronym>
@@ -132,6 +135,10 @@
 	    <glossdef> <para>DES Managing of Model.  The approach of using DES to manage the generic multi-agent model.
 		    With this approach it is not needed to have some external native model managing entity, this managing entity
 		    is implemented as managing DES model, ref also <xref linkend="ds_dmm"/> for details.</para></glossdef> </glossentry>
+	<glossentry id="gls_fbd"><glossterm>FBD</glossterm> <acronym>FBD</acronym>
+	    <glossdef> <para>Function Block Diagram, a graphical language for programmable logic controller design, that can describe the function between
+		input variables and output variables. A function is described as a set of elementary blocks. Input and output variables are connected to
+		blocks by connection lines. Ref <ulink url="https://en.wikipedia.org/wiki/Function_block_diagram"/> for details.</para></glossdef> </glossentry>
 	<glossentry id="gls_irm"><glossterm>IRM</glossterm>
 	    <glossdef> <para>Interface resolution mechanism.  <xref linkend="ds_ifcache"/>
 	</para></glossdef> </glossentry>
@@ -187,6 +194,18 @@
     </glossary>
 
     <sect1 id="ds_itr"><title>Intro</title>
+	<sect2><title>Outline of existing modelling frameworks and languages</title>
+	    <sect3><title><xref linkend="gls_cfd"/>  (Canny Function Diagram) </title>
+		<simpara>Ref <ulink url="https://ru.wikipedia.org/wiki/Canny_Function_Diagram"/>. Also ref <xref linkend="gls_fbd"/></simpara>
+	    </sect3>
+	    <sect3><title>Modelica</title>
+		<simpara>Ref <ulink url="https://en.wikipedia.org/wiki/Modelica"/></simpara>
+		<blockquote>
+		    Modelica is an object-oriented, declarative, multi-domain modeling language for component-oriented modeling of complex systems,
+		    e.g., systems containing mechanical, electrical, electronic, hydraulic, thermal, control, electric power or process-oriented subcomponents.
+		</blockquote>
+	    </sect3>
+	</sect2>
 	<sect2><title>Desing items status</title>
 	    <simpara>Desing items status is designated by specific tags in square brackets. The tag prefix is DS_. The status values are:</simpara>
 	    <itemizedlist>
@@ -4557,7 +4576,7 @@
 		<simpara>So we decided to postpone implemeting of this "AAMC" feature, the code prepared is on branch yb_chr2_aamc. There are still many question regarding what
 		    design approach is more effective - direct (using chromo language) or visual.</simpara>
 	    </sect3>
-	    <sect3><title>Prototyping</title>
+	    <sect3 id="ds_chr2_dmc_proto"><title>Prototyping</title>
 		<simpara>The prototyping of <xref linkend="gls_dmc"/> chromo was done, ref branch <xref linkend="ds_cm_br_yb_dmc"/>. Also fap2-vis example "modnav" was aligned
 		    to evaluate of how DMC chromo improves the readability the chromo. The prototype showed that the idea is realistic, "modnav" DMC chromoe is
 		    more clear and readable then old "flat" format of chromo. </simpara>
@@ -5941,83 +5960,104 @@
 
 	<sect1 id="ds_dmm"><title>DES managing of model</title>
 	    <sect2><title>Intro</title>
-		<simpara>Currently <xref linkend="gls_des"/> layer of the modeling framework is used to create regular dynamic models, where
-		    the states represents some regular data (coordinates, current etc.). But in many cases it is required to change the model itself.
-		    Such case is creating visual representation (ref <xref linkend="ds_itr_dp_vis"/>) where we need to create the visual representation model
-			of given model.</simpara>
-		    <simpara>Managing the model means that there should be mechanism of managing base agents - Unit, Elem etc.</simpara>
-		</sect2>
-		<sect2 id="ds_dmm_adp"><title>Design approach: Agent's DES adapter (<xref linkend="gls_adp"/>)</title>
-		    <sect3 id="ds_dmm_adp_itr"><title>Intro</title>
-			<simpara>To apply DES-style managing of some agent we need to make this agent "visible" for DES. This means we need to adapt the
-			    agent (object of managing) to DES. So we need to introduce specific agent that "adapts" target agent to DES.</simpara>
-			<simpara>Main aspect of adaptation is to represent the agent as DES. This implies compatibility with DES cycling mechanism
-			    (update-confirm) so any mutations of the managed agent are not affect the connected DES agents during update phase.</simpara>
-		    </sect3>
-		    <sect3><title>What is the object of adaptation? Interfaces.</title>
-			<simpara>Interfaces are the only what target agent exposes for observation and managing. So the only interfaces have to 
-			    be used in DES adaptation. What interface to be adapted depends on what aspect of agent needs to be controlled. For
-			    instance for the purpose of creating unit detail visual representation (DRP) as mentioned above we need MUnit interface
-			    adapted only.</simpara>
-		    </sect3>
-		    <sect3 id="ds_dmm_adp_hmd"><title>How to get access to managed agent data.</title>
-			<sect4 id="ds_dmm_adp_hmd_itr"><title>Intro</title>
-			    <simpara>The clients gets managed agent data from the agents adapter. As example is the agents component's names.
-				What method can be used to provide the access to the data? The first approach is to implement adapters inputs
-				for the request parameters (in case of component's names it is index of component) and output for the request
-				result (in case of components names it is the name). Another approach is to have adapters outputs for all the
-				data (in case of components names it is vector of components names).</simpara>
-			    <simpara>The first approach was applied in Unit <xref linkend="gls_adp"/> initial implementation but it seems wrong
-				for me. This is because this approach has the problem with access from more than one clients. Indeed if say two
-				clients want to get some components name then they need to do it successively, one after another.</simpara>
-			    <simpara>Second approach is more suitable. Ref <xref linkend="ds_dmm_adp_hmd_isacd"/> for the approach discussion.
-				Regarding the low-level design, we can embed the data into <xref linkend="gls_adp"/>
-				    agent instead of having dedicated states. Using dedicated states is redundant because of "update" register is
-				    not needed in our case - the managed agent keeps all "updated" data. So we just need to latch the data from 
-				    managed agent to the data embedded ADP agents data on "confirm" event.</simpara>
-				<simpara>So <xref linkend="gls_adp"/> agent will contain all "observable" data of managed agent.</simpara>
-			    </sect4>
-			    <sect4 id="ds_dmm_adp_hmd_isacd"><title>Approach: iface to "smart" access to complex data</title>
-				<simpara>Ref <xref linkend="ds_dmm_adp_hmd_itr"/> for initial thoughts. </simpara>
-				<sect5><title>Full data model in adapter of set of data items?</title>
-				    <simpara> Interesing, we can potentially
-					even extend the approach and have the full managed object observable data object embedded to the adapter.
-					The corresponding iface for access can be defined also. In that case we would have just one output from 
-					adapter. The clients connects to this output via the functions-selectors to have the particular data from
-					the whole data model. Isn't it more nice design? Not sure. Seems it just complicates the clients - they need
-					to select the data.  </simpara>
-				</sect5>
+		<simpara>
+		    Currently
+		    <xref linkend="gls_des"/> layer of the modeling framework is used to create regular dynamic models, where
+			the states represents some regular data (coordinates, current etc.). But in many cases it is required to change the model itself.
+			Such case is creating visual representation (ref
+		    <xref linkend="ds_itr_dp_vis"/>) where we need to create the visual representation model
+			of given model.
+		</simpara>
+		<simpara>Managing the model means that there should be mechanism of managing base agents - Unit, Elem etc.</simpara>
+	    </sect2>
+	    <sect2 id="ds_dmm_adp"><title>Design approach: Agent's DES adapter (<xref linkend="gls_adp"/>)</title>
+		<sect3 id="ds_dmm_adp_itr"><title>Intro</title>
+		    <simpara>To apply DES-style managing of some agent we need to make this agent "visible" for DES. This means we need to adapt the
+			agent (object of managing) to DES. So we need to introduce specific agent that "adapts" target agent to DES.</simpara>
+		    <simpara>Main aspect of adaptation is to represent the agent as DES. This implies compatibility with DES cycling mechanism
+			(update-confirm) so any mutations of the managed agent are not affect the connected DES agents during update phase.</simpara>
+		</sect3>
+		<sect3><title>What is the object of adaptation? Interfaces.</title>
+		    <simpara>Interfaces are the only what target agent exposes for observation and managing. So the only interfaces have to 
+			be used in DES adaptation. What interface to be adapted depends on what aspect of agent needs to be controlled. For
+			instance for the purpose of creating unit detail visual representation (DRP) as mentioned above we need MUnit interface
+			adapted only.</simpara>
+		</sect3>
+		<sect3 id="ds_dmm_adp_hmd"><title>How to get access to managed agent data.</title>
+		    <sect4 id="ds_dmm_adp_hmd_itr"><title>Intro</title>
+			<simpara>The clients gets managed agent data from the agents adapter. As example is the agents component's names.
+			    What method can be used to provide the access to the data? The first approach is to implement adapters inputs
+			    for the request parameters (in case of component's names it is index of component) and output for the request
+			    result (in case of components names it is the name). Another approach is to have adapters outputs for all the
+			    data (in case of components names it is vector of components names).</simpara>
+			<simpara>The first approach was applied in Unit <xref linkend="gls_adp"/> initial implementation but it seems wrong
+			    for me. This is because this approach has the problem with access from more than one clients. Indeed if say two
+			    clients want to get some components name then they need to do it successively, one after another.</simpara>
+			<simpara>
+			    Second approach is more suitable. Ref
+			    <xref linkend="ds_dmm_adp_hmd_isacd"/> for the approach discussion.
+				Regarding the low-level design, we can embed the data into
+			    <xref linkend="gls_adp"/>
+				agent instead of having dedicated states. Using dedicated states is redundant because of "update" register is
+				not needed in our case - the managed agent keeps all "updated" data. So we just need to latch the data from 
+				managed agent to the data embedded ADP agents data on "confirm" event.
+			</simpara>
+			<simpara>So <xref linkend="gls_adp"/> agent will contain all "observable" data of managed agent.  </simpara>
+		    </sect4>
+		    <sect4 id="ds_dmm_adp_hmd_isacd"><title>Approach: iface to "smart" access to complex data</title>
+			<simpara>Ref <xref linkend="ds_dmm_adp_hmd_itr"/> for initial thoughts. </simpara>
+			<sect5><title>Full data model in adapter of set of data items?</title>
+			    <simpara>
+				Interesing, we can potentially
+				even extend the approach and have the full managed object observable data object embedded to the adapter.
+				The corresponding iface for access can be defined also. In that case we would have just one output from 
+				adapter. The clients connects to this output via the functions-selectors to have the particular data from
+				the whole data model. Isn't it more nice design? Not sure. Seems it just complicates the clients - they need
+				to select the data.
+			    </simpara>
+			</sect5>
+		    </sect4>
+		</sect3>
+	    </sect2>
+	    <sect2 id="ds_dmm_irta"><title>How to implement reference to target agent?</title>
+		<sect3><title>Intro</title>
+		    <simpara>The adaptor has to have "reference" to target agent in order to communicate to it. Currently the framework design
+			doesn't contain the proper abstraction for referencing agents. Kinds of referencing approaches are implemented in the scope of
+			vertices layer: vertex has one-way reference to its pair, owning vertex establishes two-way reference between two owned 
+			    vertices via getting URI of pairs, obtaining pairs by the given URI (referencing) and then "connecting" the pairs </simpara>
+			<simpara>So at the moment we can use just simple one-way reference ADP-to-managed_agent as short-term solution. But this apporach
+			    suffers from design weakness - adapter is not notified of any changes in managed agent. This will cause to the adapter
+			    inproper behavior. For instance removal of managed agent will most probably cause adapter crash.
+		    </simpara>
+		    <simpara>So the question is do we need the specific abstraction for referencing (ref <xref linkend="ds_rai"/>) or can
+			we use some local solution?</simpara>
+		</sect3>
+	    </sect2>
+	    <sect2><title>Managing of systems</title>
+		<sect3><title>Intro</title>
+		    <simpara>For managing system (or even Vertex) the controller needs to observe its status including compoments connections. The example is:
+			the controller needs to create two connections in managed system. There should be adapter of managed system. The controller does the first
+			connection so it needs to observer system status "Connection establishe" to create the second connection. This managed system status
+			"Connection establised" should be observable by controller from system adapter.</simpara>
+		</sect3>
+	    </sect2>
+	</sect1>
 
-			    </sect4>
-			</sect3>
-		    </sect2>
-		    <sect2 id="ds_dmm_irta"><title>How to implement reference to target agent?</title>
-			<sect3><title>Intro</title>
-			    <simpara>The adaptor has to have "reference" to target agent in order to communicate to it. Currently the framework design
-				doesn't contain the proper abstraction for referencing agents. Kinds of referencing approaches are implemented in the scope of
-				vertices layer: vertex has one-way reference to its pair, owning vertex establishes two-way reference between two owned 
-				vertices via getting URI of pairs, obtaining pairs by the given URI (referencing) and then "connecting" the pairs </simpara>
-			    <simpara>So the question is do we need the specific abstraction for referencing (ref <xref linkend="ds_rai"/>) or can
-				we use some local solution?</simpara>
-			</sect3>
-		    </sect2>
-		</sect1>
-
-		<sect1 id="ds_ifisd"><title>Using data iface or proxy instead of solid data</title>
-		    <sect2 id="ds_ifisd_into"><title>Intro</title>
-			<simpara>Currently the only solid data types are used. Solid in terms of keeping the data itself, not only representing.
-			    Such solid data types is required for DES state implementation. But often we don't need to keep the data but
-			    get and manipulate them. The example is <xref linkend="gls_dmm"/> DES adapter (<xref linkend="gls_adp"/>),
-				ref <xref linkend="ds_dmm_adp"/>: it exposes output to get vector of comps names from adapter, so we can get some element
-				    of vector. Specific function for getting elem can be introduced. But this func doesn't need to copy data from adapter's output.
-				    Instead the func can get vector interface of proxy allowing to get element of vector.</simpara>
-				<simpara>So we need to modify approach to the data representation: introduce data interfaces. Same MDtGet/Set interface can 
-				    be used to get access to data interface.</simpara>
-				<simpara>Oops. This feature seems not applicable for access to internals of managed agent,
-				    ref <xref linkend="ds_ifisd_cr"/> for the criticism. However the feature is still valid for other cases, for instance
-					when some state keeps vector and function selecting vector element is connected to the state. In this case the function
-					can request iface to get access to the vector instead of iface that copyis the vector.</simpara>
-				</sect2>
+	<sect1 id="ds_ifisd"><title>Using data iface or proxy instead of solid data</title>
+	    <sect2 id="ds_ifisd_into"><title>Intro</title>
+		<simpara>Currently the only solid data types are used. Solid in terms of keeping the data itself, not only representing.
+		    Such solid data types is required for DES state implementation. But often we don't need to keep the data but
+		    get and manipulate them. The example is <xref linkend="gls_dmm"/> DES adapter (<xref linkend="gls_adp"/>),
+			ref <xref linkend="ds_dmm_adp"/>: it exposes output to get vector of comps names from adapter, so we can get some element
+			    of vector. Specific function for getting elem can be introduced. But this func doesn't need to copy data from adapter's output.
+			    Instead the func can get vector interface of proxy allowing to get element of vector.</simpara>
+			<simpara>So we need to modify approach to the data representation: introduce data interfaces. Same MDtGet/Set interface can 
+			    be used to get access to data interface.</simpara>
+			<simpara>Oops. This feature seems not applicable for access to internals of managed agent,
+			    ref <xref linkend="ds_ifisd_cr"/> for the criticism. However the feature is still valid for other cases, for instance
+				when some state keeps vector and function selecting vector element is connected to the state. In this case the function
+				can request iface to get access to the vector instead of iface that copyis the vector.</simpara>
+			</sect2>
 				<sect2 id="ds_ifisd_rs"><title>Representing states (??)</title>
 				    <sect3><title>Intro</title>
 					<simpara>As mentioned in <xref linkend="ds_ifisd_into"/> DES state utilises solid data types so keeps of data.

@@ -1388,9 +1388,6 @@ string ATrcAtVar::GetInpUri(TInt aId) const
 
 
 
-
-
-
 /* State base agent */
 
 StateAgent::StateAgent(const string& aName, MUnit* aMan, MEnv* aEnv): Elem(aName, aMan, aEnv), iActive(ETrue)
@@ -2908,30 +2905,6 @@ void AAdp::AdpIap::OnInpUpdated()
 }
 
 
-// Access point, using Sdata
-
-template <typename T> void* AAdp::AdpPap<T>::DoGetDObj(const char *aName)
-{
-    void* res = NULL;
-    if (aName == MDtGet<Sdata<T> >::Type()) {
-	res = dynamic_cast<MDtGet<Sdata<T> >*>(this);
-    }
-    return res;
-}
-
-// Access point, using generic data
-
-template <typename T> void* AAdp::AdpPapB<T>::DoGetDObj(const char *aName)
-{
-    void* res = NULL;
-    if (aName == MDtGet<T>::Type()) {
-	res = dynamic_cast<MDtGet<T>*>(this);
-    }
-    return res;
-}
-
-
-
 // MUnit DES adapter
 
 const string K_CpUriCompNames = "./CompNames";
@@ -3083,28 +3056,56 @@ void AMelemAdp::ApplyMut()
 {
     if (mMag) {
 	TBool eres = EFalse;
-	MUnit* inpMut = Host()->GetNode(K_InpMUtpUri);
-	DMut dmut;
-	eres = GetGData(inpMut, dmut);
-	if (eres) {
-	    MElem* mag = mMag->GetObj(mag);
-	    TMut& mut = dmut.mData;
-	    if (mag) {
-		if (mut.IsValid() && mut.Type() != ENt_None && mut.Type() != ENt_Unknown) {
-		    mag->AppendMutation(mut);
-		    TNs ns; MutCtx mutctx(NULL, ns);
-		    mag->Mutate(EFalse, EFalse, EFalse, mutctx);
-		    string muts = mut.ToString();
-		    Logger()->Write(EInfo, this, "Managed agent is mutated [%s]", muts.c_str());
-		} else if (!mut.IsValid() || mut.Type() == ENt_Unknown) {
-		    Logger()->Write(EErr, this, "Invalid mutation [%s]", mut.operator string().c_str());
+	MUnit* inp = Host()->GetNode(K_InpMUtpUri);
+	MDVarGet* vget = inp ? inp->GetSIfit(vget) : NULL;
+	if (vget) {
+	    MDtGet<DMut>* gsd = vget->GetDObj(gsd);
+	    if (gsd) {
+		DMut dmut;
+		gsd->DtGet(dmut);
+		TMut& mut = dmut.mData;
+		MElem* mag = mMag->GetObj(mag);
+		if (mag) {
+		    if (mut.IsValid() && mut.Type() != ENt_None && mut.Type() != ENt_Unknown) {
+			mag->AppendMutation(mut);
+			TNs ns; MutCtx mutctx(NULL, ns);
+			mag->Mutate(EFalse, EFalse, EFalse, mutctx);
+			string muts = mut.ToString();
+			Logger()->Write(EInfo, this, "Managed agent is mutated [%s]", muts.c_str());
+		    } else if (!mut.IsValid() || mut.Type() == ENt_Unknown) {
+			Logger()->Write(EErr, this, "Invalid mutation [%s]", mut.operator string().c_str());
+		    }
+		} else {
+		    Logger()->Write(EErr, this, "Managed agent is not MElem");
 		}
 	    } else {
-		Logger()->Write(EErr, this, "Managed agent is not MElem");
+		MDtGet<DChr2>* gsd = vget->GetDObj(gsd);
+		if (gsd) {
+		    DChr2 data;
+		    gsd->DtGet(data);
+		    Chromo2& chromo = data.mData;
+		    MElem* mag = mMag->GetObj(mag);
+		    if (mag) {
+			if (data.IsValid()) {
+			    mag->SetMutation(chromo.Root());
+			    TNs ns; MutCtx mutctx(NULL, ns);
+			    mag->Mutate(EFalse, EFalse, EFalse, mutctx);
+			    string datas = chromo.Root();
+			    Logger()->Write(EInfo, this, "Managed agent is mutated [%s]", datas.c_str());
+			} else {
+			    string datas = chromo.Root();
+			    Logger()->Write(EErr, this, "Invalid mutations [%s]", datas.c_str());
+			}
+		    } else {
+			Logger()->Write(EErr, this, "Managed agent is not MElem");
+		    }
+
+		} else  {
+		    Logger()->Write(EErr, this, "Cannot get data from Inp");
+		}
 	    }
-	}
-	if (!eres) {
-	    Logger()->Write(EErr, this, "Cannot get data from InpMut");
+	} else {
+	    Logger()->Write(EErr, this, "Cannot get input");
 	}
     }
 }
