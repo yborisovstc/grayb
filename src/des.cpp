@@ -2662,12 +2662,18 @@ TBool ADesLauncher::Run()
 	    mStop = EFalse;
 	    while (!mStop) {
 		if (sync->IsActive()) {
+		    Logger()->Write(EInfo, this, "");
+		    Logger()->Write(EInfo, this, ">>> Update [%d]", mCounter);
 		    sync->Update();
-		} else if (sync->IsUpdated()) {
+		}
+		if (sync->IsUpdated()) {
+		    Logger()->Write(EInfo, this, "");
+		    Logger()->Write(EInfo, this, ">>> Confirm [%d]", mCounter);
 		    sync->Confirm();
 		} else {
 		    OnIdle();
 		}
+		mCounter++;
 	    }
 
 	} else {

@@ -778,6 +778,7 @@ class ADesLauncher: public Elem, public MLauncher, public MAgent
 	// Local
 	virtual void OnIdle();
     protected:
+	TInt mCounter = 0;
 	TBool mStop;
 };
 

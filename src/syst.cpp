@@ -356,35 +356,46 @@ void ConnPointMc::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     if (res != NULL) {
 	InsertIfCache(aName, aCtx, this, res);
     }
-    if (res == NULL) {
-	// Redirect to pairs if iface requiested is provided by this CP
+    if (!res) {
 	if (GetProvided() == aName) {
 	    // Requested provided iface - cannot be obtain via pairs - redirect to host
-	    if (iMan != NULL && !ctx.IsInContext(iMan)) {
+	    if (iMan) {
 		// TODO [YB] Clean up redirecing to mgr. Do we need to have Capsule agt to redirect?
+		MUnit* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
+		if (!ctx.IsInContext(iMan)) {
+		    rr = mgr->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, mgr, rr);
+		    resg = resg || (rr.first == rr.second);
+		} else {
+		    // Owner is in context, but probably it is socket and the connections
+		    // chain is the loopback from one pin to another. Accept such case.
+		    // Avoid redirect to immediate requestor
+		    if (mgr != aCtx.back()) {
+			MSocket* mgrs = mgr->GetObj(mgrs);
+			if (mgrs) {
+			    rr = mgr->GetIfi(aName, ctx);
+			    InsertIfCache(aName, aCtx, mgr, rr);
+			    resg = resg || (rr.first == rr.second);
+			}
+		    }
+		}
+	    }
+	} else if (GetRequired() == aName) {
+	    // Requested required iface - redirect to pairs
+	    for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
+		MUnit* pe = (*it)->GetObj(pe);
+		if (!ctx.IsInContext(pe)) {
+		    rr = pe->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, pe, rr);
+		    resg = resg || (rr.first == rr.second);
+		}
+	    }
+	    // Responsible pairs not found, redirect to upper layer
+	    if ((rr.first == rr.second) && iMan && !ctx.IsInContext(iMan)) {
 		MUnit* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
 		rr = mgr->GetIfi(aName, ctx);
 		InsertIfCache(aName, aCtx, mgr, rr);
 		resg = resg || (rr.first == rr.second);
-	    }
-	}
-	if (!resg) {
-	    if (GetRequired() == aName) {
-		for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
-		    MUnit* pe = (*it)->GetObj(pe);
-		    if (!ctx.IsInContext(pe)) {
-			rr = pe->GetIfi(aName, ctx);
-			InsertIfCache(aName, aCtx, pe, rr);
-			resg = resg || (rr.first == rr.second);
-		    }
-		}
-		// Responsible pairs not found, redirect to upper layer
-		if ((rr.first == rr.second) && iMan != NULL && !ctx.IsInContext(iMan)) {
-		    MUnit* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
-		    rr = mgr->GetIfi(aName, ctx);
-		    InsertIfCache(aName, aCtx, mgr, rr);
-		    resg = resg || (rr.first == rr.second);
-		}
 	    }
 	}
     }
@@ -420,6 +431,8 @@ TBool ConnPointMc::IsCompatible(MUnit* aPair, TBool aExt)
 		}
 	    }
 	}
+    } else {
+	res = aExt;
     }
     return res;
 }
@@ -587,7 +600,6 @@ void ConnPointMcu::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 	InsertIfCache(aName, aCtx, this, res);
     }
     if (res == NULL) {
-	// Redirect to pairs if iface requiested is provided by this CP
 	if (GetProvided() == aName) {
 	    // Requested provided iface - cannot be obtain via pairs - redirect to host
 	    if (iMan != NULL) {
@@ -611,25 +623,23 @@ void ConnPointMcu::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 		    }
 		}
 	    }
-	}
-	if (!resg) {
-	    if (GetRequired() == aName) {
-		for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
-		    MUnit* pe = (*it)->GetObj(pe);
-		    if (!ctx.IsInContext(pe)) {
-			rr = pe->GetIfi(aName, ctx);
-			InsertIfCache(aName, aCtx, pe, rr);
-			resg = resg || (rr.first == rr.second);
-		    }
+	} else if (GetRequired() == aName) {
+	    // Requested required iface - redirect to pairs
+	    for (set<MVert*>::iterator it = iPairs.begin(); it != iPairs.end(); it++) {
+		MUnit* pe = (*it)->GetObj(pe);
+		if (!ctx.IsInContext(pe)) {
+		    rr = pe->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, pe, rr);
+		    resg = resg || (rr.first == rr.second);
 		}
-		// Responsible pairs not found, redirect to upper layer
-		if ((rr.first == rr.second) && iMan != NULL) {
-		    MUnit* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
-		    if (!ctx.IsInContext(iMan)) {
-			rr = mgr->GetIfi(aName, ctx);
-			InsertIfCache(aName, aCtx, mgr, rr);
-			resg = resg || (rr.first == rr.second);
-		    }
+	    }
+	    // Responsible pairs not found, redirect to upper layer
+	    if ((rr.first == rr.second) && iMan != NULL) {
+		MUnit* mgr = iMan->Name() == "Capsule" ? iMan->GetMan() : iMan;
+		if (!ctx.IsInContext(iMan)) {
+		    rr = mgr->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, mgr, rr);
+		    resg = resg || (rr.first == rr.second);
 		}
 	    }
 	}
@@ -1163,24 +1173,13 @@ void AExtd::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 		    // the connection environment still can be able to provide the iface requested
 		    MUnit* hostmgr = GetMan();
 		    MUnit* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
-		    mgr = (mgr == NULL) ? NULL : mgr->GetMan();
-		    if (mgr != NULL && !ctx.IsInContext(mgr)) {
+		    //mgr = (mgr == NULL) ? NULL : mgr->GetMan();
+		    if (mgr && !ctx.IsInContext(mgr)) {
 			rr = mgr->GetIfi(aName, ctx);
 			InsertIfCache(aName, aCtx, mgr, rr);
 			resg = resg || (rr.first != rr.second);
 		    }
 		}
-	    }
-	}
-	// Responsible pairs not found, redirect to upper level
-	// TODO consider if we need this
-	if (rr.first == rr.second && iMan != NULL) {
-	    MUnit* hostmgr = GetMan();
-	    MUnit* mgr = hostmgr->Name() == "Capsule" ? hostmgr->GetMan() : hostmgr;
-	    if (mgr != NULL && !ctx.IsInContext(mgr)) {
-		rr = mgr->GetIfi(aName, ctx);
-		InsertIfCache(aName, aCtx, mgr, rr);
-		resg = resg || (rr.first != rr.second);
 	    }
 	}
     }
@@ -1941,68 +1940,84 @@ void ASocketMcm::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 		    }
 		}
 	    } else { // Request from not internals
-		// Find associated pair in context
-		MUnit* apair = NULL;
-		MUnit* pcomp = NULL;
-		MUnit* ctxe = erqst;
-		TICacheRCtx cct(aCtx);
-		TBool isextd = EFalse;
-		while (ctxe != NULL && pcomp == NULL) {
-		    // MUnit* cpe = ctxe->GetObj(cpe); // Comment it out. For debug purpose only
-		    MCompatChecker* cp = ctxe->GetObj(cp);
-		    // Update extention option if met extention in context
-		    if (cp != NULL) {
-			apair = NULL;
-			if (cp->IsCompatible(this, isextd)) {
-			    isextd ^= ETrue;
-			    MUnit* extd = cp->GetExtd();
-			    if (extd != this) {
-				apair = extd != NULL ? extd : ctxe;
-			    }
-			}
-		    }
-		    ctxe = NULL;
-		    if (!cct.empty()) {
-			cct.pop_back();
-			ctxe = !cct.empty() ? cct.back() : NULL;
-		    }
-		    if (apair != NULL && ctxe != NULL) {
-			// Find associated pairs pin within the context
-			// TODO [YB] Checking pair for being ASocketMcm (implemenetation) is wrong way
-			// We need to use ifaces instead of impl. Knowledge of impl should be denied.
-			MSocket* psock = apair->GetObj(psock);
-			if (psock != NULL) {
-			    MUnit* pereq = psock->GetPin(cct);
-			    if (pereq != NULL) {
-				GUri uri;
-				// Using only name as signature of socket pin. This is because even the compatible types can differ
-				uri.AppendElem("*", pereq->Name());
-				pcomp = GetNode(uri);
-			    }
-			}
+		// First check the pairs, ref DSI_SRST
+		TInt pcount = PairsCount();
+		for (TInt ct = 0; ct < pcount && res == NULL; ct++) {
+		    MVert* pair = GetPair(ct);
+		    MUnit* pe = pair->GetObj(pe);
+		    if (!aCtx.IsInContext(pe) || aCtx.IsInContext(pe) && pe != aCtx.back()) {
+			rr = pe->GetIfi(aName, ctx);
+			InsertIfCache(aName, aCtx, pe, rr);
+			resok = resok || (rr.first != rr.second);
+		    } else {
+			// Pair is in context
 		    }
 		}
-		if (pcomp != NULL && !ctx.IsInContext(pcomp)) {
-		    // Found associated pairs pin within the context, so redirect to it's pair in current socket
-		    rr = pcomp->GetIfi(aName, ctx);
-		    InsertIfCache(aName, aCtx, pcomp, rr);
-		    resok = resok || (rr.first != rr.second);
+		// Continue downwards if iface not provided by pairs, ref DSI_SRST_S1_EDC
+		if (!resok) {
+		    // Find associated pair in context
+		    MUnit* apair = NULL;
+		    MUnit* pcomp = NULL;
+		    MUnit* ctxe = erqst;
+		    TICacheRCtx cct(aCtx);
+		    TBool isextd = EFalse;
+		    while (ctxe != NULL && pcomp == NULL) {
+			// MUnit* cpe = ctxe->GetObj(cpe); // Comment it out. For debug purpose only
+			MCompatChecker* cp = ctxe->GetObj(cp);
+			// Update extention option if met extention in context
+			if (cp != NULL) {
+			    apair = NULL;
+			    if (cp->IsCompatible(this, isextd)) {
+				isextd ^= ETrue;
+				MUnit* extd = cp->GetExtd();
+				if (extd != this) {
+				    apair = extd != NULL ? extd : ctxe;
+				}
+			    }
+			}
+			ctxe = NULL;
+			if (!cct.empty()) {
+			    cct.pop_back();
+			    ctxe = !cct.empty() ? cct.back() : NULL;
+			}
+			if (apair != NULL && ctxe != NULL) {
+			    // Find associated pairs pin within the context
+			    // TODO [YB] Checking pair for being ASocketMcm (implemenetation) is wrong way
+			    // We need to use ifaces instead of impl. Knowledge of impl should be denied.
+			    MSocket* psock = apair->GetObj(psock);
+			    if (psock != NULL) {
+				MUnit* pereq = psock->GetPin(cct);
+				if (pereq != NULL) {
+				    GUri uri;
+				    // Using only name as signature of socket pin. This is because even the compatible types can differ
+				    uri.AppendElem("*", pereq->Name());
+				    pcomp = GetNode(uri);
+				}
+			    }
+			}
+		    }
+		    if (pcomp != NULL && !ctx.IsInContext(pcomp)) {
+			// Found associated pairs pin within the context, so redirect to it's pair in current socket
+			rr = pcomp->GetIfi(aName, ctx);
+			InsertIfCache(aName, aCtx, pcomp, rr);
+			resok = resok || (rr.first != rr.second);
+		    }
 		}
 	    }
-#if 0
-	    // Redirect to upper layer
+	    // Redirect to upper layer socket
 	    if (rr.first == rr.second && iMan != NULL) {
 		MUnit* mgr = GetMan();
 		mgr = mgr->Name() == "Capsule" ? mgr->GetMan() : mgr;
 		if (mgr != NULL && !ctx.IsInContext(mgr)) {
-		    rr = mgr->GetIfi(aName, ctx);
-		    InsertIfCache(aName, aCtx, mgr, rr);
-		    resok = resok || (rr.first != rr.second);
+		    MSocket* mgrsk = mgr->GetObj(mgrsk);
+		    if (mgrsk) {
+			rr = mgr->GetIfi(aName, ctx);
+			InsertIfCache(aName, aCtx, mgr, rr);
+			resok = resok || (rr.first != rr.second);
+		    }
 		}
 	    }
-#endif
-	}
-	else {
+	} else {
 	    // Requestor not specified, anonymous request
 	    if (!resok) {
 		// Redirect to internal pins. Add host into context, this will prevent internals to redirect

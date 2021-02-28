@@ -4796,31 +4796,32 @@
 	    to get root. Or we can use this approach persistently for getting root.</simpara>
     </sect2>
     <sect2 id="ds_di_wsucv"><title>Wrong scheme of using content "Value" in DataBase</title>
-	<simpara>The current scheme of using "Value" content in DataBase (data.cpp) is wrong. The example is update
+	<simpara>
+	    The current scheme of using "Value" content in DataBase (data.cpp) is wrong. The example is update
 	    of data: on the update of data (using Set()) also the update of property is initiated, but this causes FromString(),
 	    that in turn calls Set. The only thing that prevents the scheme from full mess is checking in Set that new data is
 	    the same as old and stopping of proceeding. See the stack below:
-    </simpara>
-    <programlisting>
-	#0  DVar::HInt::Set (this=0x7b531a0, aData=1) at data.cpp:725
-	#1  DVar::HInt::FromString (this=0x7b531a0, aString="I 1") at data.cpp:705
-	#2  DVar::FromString (this=0x8635d90, aData="I 1") at data.cpp:517
-	#3  DataBase::FromString (this=0x8635d90, aType="", aData="I 1") at data.cpp:181
-	#4  DataBase::HandleCompChanged (this=0x8635d90, aContext=..., aComp=..., aContName="Value") at data.cpp:63
-	#5  DVar::HandleCompChanged (this=0x8635d90, aContext=..., aComp=..., aContName="Value") at data.cpp:601
-	#6  Elem::OnCompChanged (this=0x7c1cf30, aComp=..., aContName="Value") at elem.cpp:2264
-	#7  Syst::OnCompChanged (this=0x7c1cf30, aComp=..., aContName="Value") at syst.cpp:1261
-	#8  Elem::ChangeCont (this=0x7c1cf30, aVal="I 1", aRtOnly=true, aName="Value") at elem.cpp:1496
-	#9  DataBase::UpdateProp (this=0x8635d90) at data.cpp:156
-	#10 DVar::HInt::Set (this=0x7b531a0, aData=1) at data.cpp:727
-	#11 DVar::HInt::Set (this=0x7b531a0, aInp=0x77a4380) at data.cpp:738
-	#12 DVar::Update (this=0x8635d90) at data.cpp:572
-	#13 StateAgent::Confirm (this=0x7c9aa60) at des.cpp:888
-    </programlisting>
-    <simpara>The solution can be having two contents instead on single: one is read-write, for setting data, second is 
-	read-only just for checking of data only. Then DVar should ignore the change of second content in HandleCompChanged.</simpara>
-</sect2>
-<sect2 id="ds_di_cnfr"><title>Component notifies to Component Observers chain while the component isn't fully registered in native hier yet.</title>
+	</simpara>
+	<programlisting>
+	    #0  DVar::HInt::Set (this=0x7b531a0, aData=1) at data.cpp:725
+	    #1  DVar::HInt::FromString (this=0x7b531a0, aString="I 1") at data.cpp:705
+	    #2  DVar::FromString (this=0x8635d90, aData="I 1") at data.cpp:517
+	    #3  DataBase::FromString (this=0x8635d90, aType="", aData="I 1") at data.cpp:181
+	    #4  DataBase::HandleCompChanged (this=0x8635d90, aContext=..., aComp=..., aContName="Value") at data.cpp:63
+	    #5  DVar::HandleCompChanged (this=0x8635d90, aContext=..., aComp=..., aContName="Value") at data.cpp:601
+	    #6  Elem::OnCompChanged (this=0x7c1cf30, aComp=..., aContName="Value") at elem.cpp:2264
+	    #7  Syst::OnCompChanged (this=0x7c1cf30, aComp=..., aContName="Value") at syst.cpp:1261
+	    #8  Elem::ChangeCont (this=0x7c1cf30, aVal="I 1", aRtOnly=true, aName="Value") at elem.cpp:1496
+	    #9  DataBase::UpdateProp (this=0x8635d90) at data.cpp:156
+	    #10 DVar::HInt::Set (this=0x7b531a0, aData=1) at data.cpp:727
+	    #11 DVar::HInt::Set (this=0x7b531a0, aInp=0x77a4380) at data.cpp:738
+	    #12 DVar::Update (this=0x8635d90) at data.cpp:572
+	    #13 StateAgent::Confirm (this=0x7c9aa60) at des.cpp:888
+	</programlisting>
+	<simpara>The solution can be having two contents instead on single: one is read-write, for setting data, second is 
+	    read-only just for checking of data only. Then DVar should ignore the change of second content in HandleCompChanged.</simpara>
+    </sect2>
+    <sect2 id="ds_di_cnfr"><title>Component notifies to Component Observers chain while the component isn't fully registered in native hier yet.</title>
     <sect3><title>Intro</title>
 	<itemizedlist>
 	    <listitem>Ref <xref linkend="ds_daa_hunv"/> for related issue</listitem>
@@ -4965,6 +4966,50 @@
 		socket common routing.</simpara>
 	</sect3>
     </sect2>
+    <sect2 id="ds_di_srst"><title>[DSI_SRST] [20210225] Socket doesn't route pin-to-pin for some topology.</title>
+	<sect3><title>Intro</title>
+	    <simpara>The problem was discovered in fap2-vis when migrated to DRP socket connpoint, ref f875ccad21ac commit. The problem is
+		that the ASocketMcm current <xref linkend="gls_irm"/> algorithm doesn't support pin-to-pin routing in the connections topology
+		    used in fap2-vis modnav app. The specific of this topology is that the upper layer socket includes intermediate sockets. 
+		    In the fap2-vis the socket hierarhy is VrViewCp/NavCtrl/DrpCp. DrpCp is also socket (one of its pin is InpModelUri), the compatible socket is CP in DRP, so
+		    DRP CP connects to VrViewCp/NavCtrl/DrpCp (i.e. in connects sockets but not pins). In that configuration
+		<xref linkend="gls_irm"/>
+		    routes to VrViewCp/NavCtrl/DrpCp/InpModelUri but not to DRP/CP/InpModelUri. This is because the current resolution mechanism
+		    doesn't analyse the connections to some internal level of socket hierarchy.
+	    </simpara>
+	</sect3>
+	<sect3><title>Possible workaround</title>
+	    <simpara>The idea is to modify the topology to satisfy the ASocketMcm iface resoluion rules. In the fap2-vis case mentioned above it will be
+		to not connect cursor directly to CtrlCp/NavCtrl/DrpCp/InpModelUri, but via intermediate extension of DrpCp type. In that case the connection structure
+		from both sides are identical and the resoluion shall work ok.</simpara>
+	    <simpara>The cons of this solution is that there will be variation of socket iface: the client should know how the service is connected.
+		This makes the socket "interface" ambiguous.</simpara>
+	</sect3>
+	<sect3 id="ds_di_srst_s1"><title>Solution#1 add routing to pairs first if requesting not from comp.</title>
+	    <sect4 id="ds_di_srst_s1_edc"><title>[DSI_SRST_S1_EDC] Resolution enables double connection</title>
+		<simpara>Actually there can be another related issue with this solution: it is possible to have connection both to the final point in the
+		    socket X in hiearchy and to the point via connection of socket X. This possibility is not obvious. If we look at electrical chains by analogy with our
+		    case we will see that normally this "double" connection is not possibel. It can be possible if we use special electrical connector-extender. So probably
+		    we also need to disable this possibility.</simpara>
+	    </sect4>
+	</sect3>
+    </sect2>
+    <sect2 id="ds_di_wrcpe"><title>DI_WRCPE Wrong iface resolution routing whan request extender int via extender.</title>
+	<sect3><title>Intro</title>
+	    <simpara>There is extender which internal CP is connected to pair. Client request iternal CP Provided from extender but the
+		iface resolution works wrong - CP doesn't redirect the request to pair. I created test test_CpExtd1 that shows the problem. </simpara>
+	</sect3>
+	<sect3><title>Analysis</title>
+	    <simpara>The root-cause is that ConnPointMc doesn't analyse if the request come from extender or not. So it still consider
+		requested iface as provided and try to redirect the request to the owner but not to its pair.</simpara>
+	    <simpara>Actually this shows serious design misunderstanding: If there is CP with Provided: I1, Required: I2 and extender CPE "around" it. Let CP be connected
+		to CPP { Provided: I2, Required: I1}. Then on the one hand CPE can be considered as "compatible" to CP (i.e it can be connected to any other instaces of CP),
+		but on the other hand it differs from "true" compatible CP because CPE request of I1 will not route to CP pair.</simpara>
+	    <simpara>So we need clearly define the role of extenders saying the "it is not same as wrapped connection point compatible". We aslo need
+		to specify that this shall restrict the usage of connpoint extender.</simpara>
+	    <simpara>To summarise : <emphasis>CP extender cannot be used for iface request, but just to extend connection. Use directly CP to request iface.</emphasis></simpara>
+	</sect3>
+    </sect2>
 </sect1>
 
 <sect1 id="ds_va"><title>Visualization agent</title>
@@ -4978,140 +5023,140 @@
 </sect1>
 
 <sect1 id="ds_nmm"><title>How to implement notification of mutation or modification</title>
-    <sect2><title>Intro</title>
-	<itemizedlist>
-	    <listitem>Ref <ulink url="../requirements/index.html#uc_066"/> for use-case</listitem>
-	</itemizedlist>
-    </sect2>
-    <sect2><title>Current implementation: extra parameter in notification</title>
-	<simpara>Currently (9767f9de) the mut/mod notification is implemented via additional argument (run-time or modif) of notifications. The rationale was
-    </simpara>
-    <itemizedlist>
-	<listitem>There are already notification of change so there is no sense to introduce one more new.  </listitem>
-	<listitem>Adding new notification "OnChromoChanged" causes to increasing the notifications almost twice. In distribured model each
-	    notification can cause "long" request (via IPC), so this increase of notificaction could downgrade the model's benchmark siginificantly.</listitem>
-    </itemizedlist>
-    <simpara>But there is still doubts regarding appropriateness of this approach.  The argument is that no one agent doesn't use this
-	parameter but the only observer (studio application).</simpara>
-    <simpara>Also the trigger of this doubts was the bug in Elem::AddElem():</simpara>
-    <programlisting>
-	TBool persist = !aRunTime &amp;&amp; aCtx != NULL &amp;&amp; (aCtx == root || root->IsCompAttached(this));
-	res = node->AppendComp(elem, !persist);
-    </programlisting>
-    <simpara>Here IsCompAttached() is called, that causes the problem in case of "this" is the node newly created and not inserted into owner. In this
-	case the node Uid cannot be resolved in distributed mode (ref <xref linkend="ds_daa_hunv"/>). The idea of solving <xref linkend="ds_daa_hunv"/>
-	    was to avoid any "long" requests while created node is under weak one-side relation to owner. But the approach of using notification parameter for 
-	    mut/modif requires calculation mut/modif before AppendComp, that leads to "long" call IsCompAttached().</simpara>
-	<simpara>
-	    The drawback of "mut/moduf arg" solution is that in fact the argument needs to be calculated (i.e. this is not a fact but a prediction) each
-	    time the mutation occurs. This arg is not the sign of node's chromo changed but the sign of model's chromo changed. So node issuing the
-	    notification that is not in its scope of responsibility. So this is architectural gap. To keep this "mut/modif arg" architecturally clear
-	    this arg should have the meaning "this is mutation/modificatio" of the notifying node (component)". Then the owner can analyze this arg,
-	    calculate its own arg and propagate the notification. This seems not to be elegant solution because it requires passing to the notification
-		some parameters required for the calculation: context of mutation for instance.  </simpara>
+	<sect2><title>Intro</title>
+	    <itemizedlist>
+		<listitem>Ref <ulink url="../requirements/index.html#uc_066"/> for use-case</listitem>
+	    </itemizedlist>
 	</sect2>
-	<sect2><title>Solution: dedicated observer for agent's chromo change</title>
-	    <sect3><title>Intro</title>
-		<simpara>Assuming that the observer is registered for root node only. The idea is to minimize the number of notification events.
-		    With this solution the number of notifications within the model remains same as in case of mut/modif argument. The only notifications number to
-		    model's client (studio application for instance) will be increased.</simpara>
+	<sect2><title>Current implementation: extra parameter in notification</title>
+	    <simpara>Currently (9767f9de) the mut/mod notification is implemented via additional argument (run-time or modif) of notifications. The rationale was
+	</simpara>
+	<itemizedlist>
+	    <listitem>There are already notification of change so there is no sense to introduce one more new.  </listitem>
+	    <listitem>Adding new notification "OnChromoChanged" causes to increasing the notifications almost twice. In distribured model each
+		notification can cause "long" request (via IPC), so this increase of notificaction could downgrade the model's benchmark siginificantly.</listitem>
+	</itemizedlist>
+	<simpara>But there is still doubts regarding appropriateness of this approach.  The argument is that no one agent doesn't use this
+	    parameter but the only observer (studio application).</simpara>
+	<simpara>Also the trigger of this doubts was the bug in Elem::AddElem():</simpara>
+	<programlisting>
+	    TBool persist = !aRunTime &amp;&amp; aCtx != NULL &amp;&amp; (aCtx == root || root->IsCompAttached(this));
+	    res = node->AppendComp(elem, !persist);
+	</programlisting>
+	<simpara>Here IsCompAttached() is called, that causes the problem in case of "this" is the node newly created and not inserted into owner. In this
+	    case the node Uid cannot be resolved in distributed mode (ref <xref linkend="ds_daa_hunv"/>). The idea of solving <xref linkend="ds_daa_hunv"/>
+		was to avoid any "long" requests while created node is under weak one-side relation to owner. But the approach of using notification parameter for 
+		mut/modif requires calculation mut/modif before AppendComp, that leads to "long" call IsCompAttached().</simpara>
+	    <simpara>
+		The drawback of "mut/moduf arg" solution is that in fact the argument needs to be calculated (i.e. this is not a fact but a prediction) each
+		time the mutation occurs. This arg is not the sign of node's chromo changed but the sign of model's chromo changed. So node issuing the
+		notification that is not in its scope of responsibility. So this is architectural gap. To keep this "mut/modif arg" architecturally clear
+		this arg should have the meaning "this is mutation/modificatio" of the notifying node (component)". Then the owner can analyze this arg,
+		calculate its own arg and propagate the notification. This seems not to be elegant solution because it requires passing to the notification
+		    some parameters required for the calculation: context of mutation for instance.  </simpara>
+	    </sect2>
+	    <sect2><title>Solution: dedicated observer for agent's chromo change</title>
+		<sect3><title>Intro</title>
+		    <simpara>Assuming that the observer is registered for root node only. The idea is to minimize the number of notification events.
+			With this solution the number of notifications within the model remains same as in case of mut/modif argument. The only notifications number to
+			model's client (studio application for instance) will be increased.</simpara>
+		</sect3>
+	    </sect2>
+	    <sect2><title>Solution: to add specific notification of chromo changed in agent observer.</title>
+		<simpara>Note that there is already such a notification MElem::OnNodeMutated() that proparates to the upper node. So in any case the notification is issued.
+		    The idea is to add such a notification (without mutation context in args) into agent's observer. Base agent should issue this notification from
+		    its own handler OnNodeMutated in case if there is agents observer registered.  </simpara>
+		<simpara>It makes sense to consider moving MElem::OnNodeMutated() to comp observer. In that case the correspondance between comp observer and
+		    agent observer will exists for all notifications.</simpara>
+	    </sect2>
+	</sect1>
+
+	<sect1 id="ds_ifrd"><title>How to re-desing interface mechanism</title>
+	    <sect2><title>Intro</title>
+		<simpara>In current implementation of multi-agent model interface is the key part of the model. Each agent is represented in multi-agent 
+		    environment as set of interfaces. An interface is elementary behavioural entity. At the moment (20170423) interface mechanism is 
+		    implemented with definition of meta-inerface interface "miface" that states common behaviour of an interface itself.</simpara>
+		<simpara>So, yes. We still use behavioural model for multi-agents. This was considered as simplest way of mapping multi-agent to
+		    extising processors core computing model.</simpara>
+		<simpara>The important aspect of interface concept is the mechanism of unified call of interfaces methods. This mechanism is 
+		    implemented as text formed request, the format of requests is specified. Agent as interface implementor is responsible for handling
+		    unified call request. In order to simplify handling the helper class "ifu" is used. It provides utilities simplifying of dealing with
+		    unified call request: parsing, seriaizing/deserializing, etc. However the current implemetation is rather ineffective, so agent needs
+		    quite lot of code to handle the request. We need to re-desing the interface mechanism in order to make it more effective.</simpara>
+	    </sect2>
+	</sect1>
+
+	<sect1 id="ds_prfopt"><title>Performance optimization</title>
+	    <sect2><title>Intro</title>
+		<itemizedlist>
+		    <listitem>Ref <xref linkend="sec_img"/> for design solution for creating system from image.</listitem>
+		    <listitem>Ref <xref linkend="ds_mae"/> for optimization approach of using monolitic native agents.</listitem>
+		</itemizedlist>
+	    </sect2>
+	    <sect2 id="ds_prfopt_un"><title>Migrating to unique name</title>
+		<sect3><title>Intro</title>
+		    <simpara>Ref <xref linkend="ds_mut_nm"/> for the design consideration regarding unique naming.</simpara>
+		    <simpara>Non-unique names causes performance degradation. An example is component resolution when searching node by URI. Look at 
+			Elem::GetNode():</simpara>
+		    <programlisting>
+			MElem* Elem::GetNode(const GUri&amp; aUri, GUri::const_elem_iter&amp; aPathBase, TBool aAnywhere, TBool aInclRm)
+			...
+			|||             Iterator it = NodesLoc_Begin(elem, aInclRm); 
+			|||             Iterator itend = NodesLoc_End(elem, aInclRm);
+			45-                     for (; it != itend; it++) {
+			456                         MElem* node = *it;
+			456                         MElem* res1 = node->GetNode(aUri, uripos, EFalse, aInclRm);
+		    </programlisting>
+		    <simpara>It is seen from this chunk that for URI each unit: </simpara>
+		    <itemizedlist>
+			<listitem>We look up all components, not just selecting one. Look at Elem::Iterator mechanism.</listitem>
+			<listitem>We try to find next unit for all nodes we found for current unit. So having two same names we do remaining search twice.
+			    If next units also have say 2 same names then we have sarch branch again.
+		    </listitem>
+		</itemizedlist>
+		<simpara>Actually the implementation itself doesn't produce performance degradation. In case if there are not duplicated names the
+		    internal iterator works fast.</simpara>
+	    </sect3>
+	    <sect3><title>We also need to disable "any" name in URI unit</title>
+		<simpara>If we keep "any" name we will need to have complex Elem::IterImplBase with using iterators range. If we disable "any" then the 
+		    local name iterator gets trivial so can be removed at all.</simpara>
+	    </sect3>
+	    <sect3><title>What are the use-cases preventing unique name</title>
+		<itemizedlist>
+		    <listitem>Moving node - there can be same name node in the destination. No problem - we just need to request new name.</listitem>
+		</itemizedlist>
+	    </sect3>
+	    <sect3><title>Uri but not query</title>
+		<simpara>The current implementation is the result of attempt to implement kind of query to the tree. But URI is not query.
+		    URI main purpose is to unambiguesly identificate the node in the tree. Query purpose is to find set of nodes.</simpara>
+		<simpara>This relates also to "Anywhere" and "Any" pattern in URI. It is clear that using "Anywhere" is very ambiguous approach.
+		    This is because for URI /**/some_name if there are two nodes some_name in the system then we don't know what node is specified
+		    exactly, i.e. this URI actualy specifies set of nodes, so is query. Same is for "Any".</simpara>
+	    </sect3>
+	    <sect3><title>Unique name approach works for owning tree not for inheritance.</title>
+		<simpara>For inheritance it is not possible to meet uniqueness of name because if a1 = { Elem:a2} then
+		    a1:a1_child will also contain Elem:a2 but it is another a2.</simpara>
+	    </sect3>
+	    <sect3><title>Solution: unique name for owning hier, not unique for inheritance. URI only based on owning.</title>
+		<simpara>Taking into account that only owning hier supports unique name we can use only this hier for 
+		    URI.</simpara>
+	    </sect3>
+	    <sect3 id="ds_prfopt_un_icr"><title>iComps register can be removed now</title>
 	    </sect3>
 	</sect2>
-	<sect2><title>Solution: to add specific notification of chromo changed in agent observer.</title>
-	    <simpara>Note that there is already such a notification MElem::OnNodeMutated() that proparates to the upper node. So in any case the notification is issued.
-		The idea is to add such a notification (without mutation context in args) into agent's observer. Base agent should issue this notification from
-		its own handler OnNodeMutated in case if there is agents observer registered.  </simpara>
-	    <simpara>It makes sense to consider moving MElem::OnNodeMutated() to comp observer. In that case the correspondance between comp observer and
-		agent observer will exists for all notifications.</simpara>
+	<sect2><title>To get rid of Agents special container.</title>
+	    <simpara>Ref <xref linkend="ds_dla"/></simpara>
 	</sect2>
-    </sect1>
-
-    <sect1 id="ds_ifrd"><title>How to re-desing interface mechanism</title>
-	<sect2><title>Intro</title>
-	    <simpara>In current implementation of multi-agent model interface is the key part of the model. Each agent is represented in multi-agent 
-		environment as set of interfaces. An interface is elementary behavioural entity. At the moment (20170423) interface mechanism is 
-		implemented with definition of meta-inerface interface "miface" that states common behaviour of an interface itself.</simpara>
-	    <simpara>So, yes. We still use behavioural model for multi-agents. This was considered as simplest way of mapping multi-agent to
-		extising processors core computing model.</simpara>
-	    <simpara>The important aspect of interface concept is the mechanism of unified call of interfaces methods. This mechanism is 
-		implemented as text formed request, the format of requests is specified. Agent as interface implementor is responsible for handling
-		unified call request. In order to simplify handling the helper class "ifu" is used. It provides utilities simplifying of dealing with
-		unified call request: parsing, seriaizing/deserializing, etc. However the current implemetation is rather ineffective, so agent needs
-		quite lot of code to handle the request. We need to re-desing the interface mechanism in order to make it more effective.</simpara>
-	</sect2>
-    </sect1>
-
-    <sect1 id="ds_prfopt"><title>Performance optimization</title>
-	<sect2><title>Intro</title>
-	    <itemizedlist>
-		<listitem>Ref <xref linkend="sec_img"/> for design solution for creating system from image.</listitem>
-		<listitem>Ref <xref linkend="ds_mae"/> for optimization approach of using monolitic native agents.</listitem>
-	    </itemizedlist>
-	</sect2>
-	<sect2 id="ds_prfopt_un"><title>Migrating to unique name</title>
-	    <sect3><title>Intro</title>
-		<simpara>Ref <xref linkend="ds_mut_nm"/> for the design consideration regarding unique naming.</simpara>
-		<simpara>Non-unique names causes performance degradation. An example is component resolution when searching node by URI. Look at 
-		    Elem::GetNode():</simpara>
-		<programlisting>
-		    MElem* Elem::GetNode(const GUri&amp; aUri, GUri::const_elem_iter&amp; aPathBase, TBool aAnywhere, TBool aInclRm)
-		    ...
-		    |||             Iterator it = NodesLoc_Begin(elem, aInclRm); 
-		    |||             Iterator itend = NodesLoc_End(elem, aInclRm);
-		    45-                     for (; it != itend; it++) {
-		    456                         MElem* node = *it;
-		    456                         MElem* res1 = node->GetNode(aUri, uripos, EFalse, aInclRm);
-		</programlisting>
-		<simpara>It is seen from this chunk that for URI each unit: </simpara>
-		<itemizedlist>
-		    <listitem>We look up all components, not just selecting one. Look at Elem::Iterator mechanism.</listitem>
-		    <listitem>We try to find next unit for all nodes we found for current unit. So having two same names we do remaining search twice.
-			If next units also have say 2 same names then we have sarch branch again.
-		</listitem>
-	    </itemizedlist>
-	    <simpara>Actually the implementation itself doesn't produce performance degradation. In case if there are not duplicated names the
-		internal iterator works fast.</simpara>
-	</sect3>
-	<sect3><title>We also need to disable "any" name in URI unit</title>
-	    <simpara>If we keep "any" name we will need to have complex Elem::IterImplBase with using iterators range. If we disable "any" then the 
-		local name iterator gets trivial so can be removed at all.</simpara>
-	</sect3>
-	<sect3><title>What are the use-cases preventing unique name</title>
-	    <itemizedlist>
-		<listitem>Moving node - there can be same name node in the destination. No problem - we just need to request new name.</listitem>
-	    </itemizedlist>
-	</sect3>
-	<sect3><title>Uri but not query</title>
-	    <simpara>The current implementation is the result of attempt to implement kind of query to the tree. But URI is not query.
-		URI main purpose is to unambiguesly identificate the node in the tree. Query purpose is to find set of nodes.</simpara>
-	    <simpara>This relates also to "Anywhere" and "Any" pattern in URI. It is clear that using "Anywhere" is very ambiguous approach.
-		This is because for URI /**/some_name if there are two nodes some_name in the system then we don't know what node is specified
-		exactly, i.e. this URI actualy specifies set of nodes, so is query. Same is for "Any".</simpara>
-	</sect3>
-	<sect3><title>Unique name approach works for owning tree not for inheritance.</title>
-	    <simpara>For inheritance it is not possible to meet uniqueness of name because if a1 = { Elem:a2} then
-		a1:a1_child will also contain Elem:a2 but it is another a2.</simpara>
-	</sect3>
-	<sect3><title>Solution: unique name for owning hier, not unique for inheritance. URI only based on owning.</title>
-	    <simpara>Taking into account that only owning hier supports unique name we can use only this hier for 
-		URI.</simpara>
-	</sect3>
-	<sect3 id="ds_prfopt_un_icr"><title>iComps register can be removed now</title>
-	</sect3>
+	<sect2><title>TODO</title>
+	    <orderedlist>
+		<listitem>To avoid handling notifs from comp on all levels. Maybe direct owner handling is enough</listitem>
+		<listitem>To reimplement content as tree</listitem>
+		<listitem>To apply IRM IPX approach
+		<simpara>Ref <xref linkend="ds_ifcache_ipx"/></simpara>
+	    </listitem>
+	</orderedlist>
     </sect2>
-    <sect2><title>To get rid of Agents special container.</title>
-	<simpara>Ref <xref linkend="ds_dla"/></simpara>
-    </sect2>
-    <sect2><title>TODO</title>
-	<orderedlist>
-	    <listitem>To avoid handling notifs from comp on all levels. Maybe direct owner handling is enough</listitem>
-	    <listitem>To reimplement content as tree</listitem>
-	    <listitem>To apply IRM IPX approach
-	    <simpara>Ref <xref linkend="ds_ifcache_ipx"/></simpara>
-	</listitem>
-    </orderedlist>
-</sect2>
-<sect2 id="ds_prfopt_ahn"><title>To avoid handling notifs from comp on all levels</title>
+    <sect2 id="ds_prfopt_ahn"><title>To avoid handling notifs from comp on all levels</title>
     <sect3><title>Intro</title>
 	<simpara>Ref <xref linkend="ds_hsc"/> for observers design.</simpara>
     </sect3>
@@ -5481,96 +5526,108 @@
 
 <sect1 id="sec_img"><title>Using "image" for constructing system</title>
     <sect2><title>Intro</title>
-	<simpara>Creating model from spec takes a lot of time. This is because each mutation causes many actions not local only.
+	<simpara>
+	    Creating model from spec takes a lot of time. This is because each mutation causes many actions not local only.
 	    Creation time can be reduced if system is created from system "image". System image is serialized sytem so the creation from
 	    image is just de-serialization of the image.
-    </simpara>
-</sect2>
-    </sect1>
+	</simpara>
+    </sect2>
+</sect1>
 
-    <sect1 id="ds_pia"><title>Re-design: using properties instead of embedded auxiliary agents (<xref linkend="gls_pia"/>)</title>
-	<sect2><title>Intro</title>
-	    <simpara>Ref <xref linkend="ds_prfopt_mnn"/> for example of one model optimization - it shows that the major part of nodes is of 
-		complex connection points. It also shows that the currently developed set of multicontent agents doesn't allow
-		to properly optimize the complexity of the model.</simpara>
-	    <simpara>Ref <xref linkend="ds_uac"/> for alternative solution.</simpara>
-	</sect2>
-	<sect2><title>Connection redesign</title>
-	    <sect3><title>Intro</title>
-		<simpara>Concept items:</simpara>
+<sect1 id="ds_pia"><title>Re-design: using properties instead of embedded auxiliary agents (<xref linkend="gls_pia"/>)</title>
+    <sect2><title>Intro</title>
+	<simpara>Ref <xref linkend="ds_prfopt_mnn"/> for example of one model optimization - it shows that the major part of nodes is of 
+	    complex connection points. It also shows that the currently developed set of multicontent agents doesn't allow
+	    to properly optimize the complexity of the model.</simpara>
+	<simpara>Ref <xref linkend="ds_uac"/> for alternative solution.</simpara>
+    </sect2>
+    <sect2><title>Connection redesign</title>
+	<sect3><title>Intro</title>
+	    <simpara>Concept items:</simpara>
+	    <itemizedlist>
+		<listitem>Get rid of edges - using direct connections vertex-to-vertex</listitem>
+		<listitem>Vertex pair are registered via URI in content</listitem>
+		<listitem>Pre-defined content node for pair URIs</listitem>
+		<listitem>Vertex pair registry as map {pair pointer, content (URI) id}</listitem>
+	    </itemizedlist>
+	</sect3>
+    </sect2>
+    <sect2 id="ds_pia_ifr"><title>Iface resolution in <xref linkend="gls_pia"/> system Systp</title>
+	<sect3><title>Iface routing by direct request (empty request context).</title>
+	    <simpara>On the one hand it is reasonable that having connection thru connpoint requesing Iface_A Systp routes the direct request to that pair.</simpara>
+	    <simpara>On the other hand the Systp itself is designed as agent that exposes itself via connpoints so shouldnt handle direct request other
+		that superclass (Vertp) does. However we can ignore the last argument thinkin it the followng manner: yes, Systp exposes via CPs but it exposes
+		all it's complex behaviour, so if some one get direct access then Systp shall behave some way as if the request was thru CP. </simpara>
+	</sect3>
+	<sect3 id="ds_pia_ifr_ap"><title>How can we implement routing in Systp: problem - ambiguos paths</title>
+	    <simpara>In Syst the routing key part is agents-connpoints. Exactly conn points are requested by system internal
+		agents to get iface. For instance function-agent asked input connpont for iface MData to get input data.
+		The context in that case is unique "path" from requestor to responser.  </simpara>
+	    <simpara>
+		How can we implement this with <xref linkend="gls_pia"/> approach? In this case the agents in context doesn't create
+		    unambigues path from requestor to responser. Ref
+		<xref linkend="fig_pia_ifr_ac"/> for example, S1, S2, S1a, S2a are systems.
+		    The example of routing is as following:
+	    </simpara>
+	    <itemizedlist>
+		<listitem>Embedded agent S2aa requests iface from its owner S2a conn point CP2aa1.</listitem>
+		<listitem>S2a redirects the request to S2 because S2A connects to S2 via CP2aa.</listitem>
+		<listitem>S2 resirects the request to S1 because CP2aa connnects via Int of E21 and S2 connects to S1 via E21</listitem>
+		<listitem>
+		    S1 gets the request with context {S2aa, S2a, S2}. S1 needs to analyze the context to understant via what internal point of
+		    socket E11 to route next. But S1 cannot make unambiguos path back usign just context. There are 2 paths:
+		    <programlisting>
+			1: S1(E11) - S2(E21) - S2a(CP2aa1) - S2aa
+			2: S1(E21) - S2(E22) - S2a(CP2aa2) - S2aa
+		    </programlisting>
+		    <simpara>As it is seen, the context is same for thath 2 paths</simpara>
+		</listitem>
+	    </itemizedlist>
+	    <figure id="fig_pia_ifr_ac"><title>Example of interface resolution problem</title>
+		<imageobject> <imagedata fileref="pics/pia_iface_rsl.png"/> </imageobject></figure>
+	    <simpara>What would be possible solution here?</simpara>
+	    <itemizedlist>
+		<listitem>Specific iface resolution API for system, ref <xref linkend="ds_pia_ifr_ap_sira"/></listitem>
+	    </itemizedlist>
+	    <sect4 id="ds_pia_ifr_ap_sira"><title>Specific iface resolution API for system</title>
+		<simpara>
+		    Current iface resolution mechanism and API was introduced on base agent (MElem) level. This means it knows nothing
+		    of agents connecting via contracts (connection points). So for <xref linkend="gls_pia"/> system it is resonable to
+			introduce specific iface resolution API. This API needs to consider the fact that contracts (connection points) are required 
+			for finding correct path back.
+		</simpara>
+		<simpara>There are two approaches regarding context:</simpara>
 		<itemizedlist>
-		    <listitem>Get rid of edges - using direct connections vertex-to-vertex</listitem>
-		    <listitem>Vertex pair are registered via URI in content</listitem>
-		    <listitem>Pre-defined content node for pair URIs</listitem>
-		    <listitem>Vertex pair registry as map {pair pointer, content (URI) id}</listitem>
-		</itemizedlist>
-	    </sect3>
-	</sect2>
-	<sect2 id="ds_pia_ifr"><title>Iface resolution in <xref linkend="gls_pia"/> system Systp</title>
-	    <sect3><title>Iface routing by direct request (empty request context).</title>
-		<simpara>On the one hand it is reasonable that having connection thru connpoint requesing Iface_A Systp routes the direct request to that pair.</simpara>
-		<simpara>On the other hand the Systp itself is designed as agent that exposes itself via connpoints so shouldnt handle direct request other
-		    that superclass (Vertp) does. However we can ignore the last argument thinkin it the followng manner: yes, Systp exposes via CPs but it exposes
-		    all it's complex behaviour, so if some one get direct access then Systp shall behave some way as if the request was thru CP. </simpara>
-	    </sect3>
-	    <sect3 id="ds_pia_ifr_ap"><title>How can we implement routing in Systp: problem - ambiguos paths</title>
-		<simpara>In Syst the routing key part is agents-connpoints. Exactly conn points are requested by system internal
-		    agents to get iface. For instance function-agent asked input connpont for iface MData to get input data.
-		    The context in that case is unique "path" from requestor to responser.  </simpara>
-		<simpara> How can we implement this with <xref linkend="gls_pia"/> approach? In this case the agents in context doesn't create
-		    unambigues path from requestor to responser. Ref <xref linkend="fig_pia_ifr_ac"/> for example, S1, S2, S1a, S2a are systems.
-			The example of routing is as following:</simpara>
-		    <itemizedlist>
-			<listitem>Embedded agent S2aa requests iface from its owner S2a conn point CP2aa1.</listitem>
-			<listitem>S2a redirects the request to S2 because S2A connects to S2 via CP2aa.</listitem>
-			<listitem>S2 resirects the request to S1 because CP2aa connnects via Int of E21 and S2 connects to S1 via E21</listitem>
-			<listitem>S1 gets the request with context {S2aa, S2a, S2}. S1 needs to analyze the context to understant via what internal point of
-			    socket E11 to route next. But S1 cannot make unambiguos path back usign just context. There are 2 paths:
-			<programlisting>
-			    1: S1(E11) - S2(E21) - S2a(CP2aa1) - S2aa
-			    2: S1(E21) - S2(E22) - S2a(CP2aa2) - S2aa
-			</programlisting>
-			<simpara>As it is seen, the context is same for thath 2 paths</simpara>
+		    <listitem>This specific API needs to have extended context. This context has to include connection contracts info,
+			ref <xref linkend="ds_pia_ifr_ap_sira_ex"/>
+		    </listitem>
+		    <listitem>
+			No need to have extended context. The only additional argument in iface requesting method is enough, ref
+			<xref linkend="ds_pia_ifr_ap_sira_aa"/>
 		    </listitem>
 		</itemizedlist>
-		<figure id="fig_pia_ifr_ac"><title>Example of interface resolution problem</title>
-		    <imageobject> <imagedata fileref="pics/pia_iface_rsl.png"/> </imageobject></figure>
-		<simpara>What would be possible solution here?</simpara>
-		<itemizedlist>
-		    <listitem>Specific iface resolution API for system, ref <xref linkend="ds_pia_ifr_ap_sira"/></listitem>
-		</itemizedlist>
-		<sect4 id="ds_pia_ifr_ap_sira"><title>Specific iface resolution API for system</title>
-		    <simpara>Current iface resolution mechanism and API was introduced on base agent (MElem) level. This means it knows nothing
-			of agents connecting via contracts (connection points). So for <xref linkend="gls_pia"/> system it is resonable to
-			    introduce specific iface resolution API. This API needs to consider the fact that contracts (connection points) are required 
-			    for finding correct path back.</simpara>
-			<simpara>There are two approaches regarding context:</simpara>
-			<itemizedlist>
-			    <listitem>This specific API needs to have extended context. This context has to include connection contracts info,
-				ref <xref linkend="ds_pia_ifr_ap_sira_ex"/>
-			    </listitem>
-			    <listitem>No need to have extended context. The only additional argument in iface requesting method is enough, ref
-			    <xref linkend="ds_pia_ifr_ap_sira_aa"/></listitem>
-		    </itemizedlist>
-		    <sect5 id="ds_pia_ifr_ap_sira_aa"><title>Approach: additional argument in iface requesting method </title>
-			<simpara>Analyzing the example above we can see that in this case the additonal argument can be used. Indeed, the ambiguity in this example
-			    cand be avoided if we specify connection point S1.E11 witin the request iface from S2. In that case S1 can understand that the request
-			    is coming from S2.E21 and then create unambiguos path. This seems to be generic rule. The ambiguty happens if we don's specify the 
-			    connection point on requesting system. Specifying connection point solves this problem. The sequence of requests for
-			    example <xref linkend="fig_pia_ifr_ac"/> will be as:</simpara>
-			<programlisting>
-			    S2aa -->
-			    S2a.CP2a1
-			    S2.E21
-			    S1.E11.P1
-			    S1a.CP1a1 
-			    --> S1aa
-			</programlisting>
-			<simpara>Another design point is to how implement the extended request. Currently an agent has single ifaces cache, the key
-			    is request context (requestors) and iface provider. If we add new parameter of request - conn point then we need to 
-			    extend the cache. It can be done either extending the key (for instance combining the context with connpoint) or having separate
-			    cache for each connpoint.  </simpara>
-			<simpara>This design is incredibly similar to the iface cache design for <xref linkend="gls_cpa"/> approach:
+		<sect5 id="ds_pia_ifr_ap_sira_aa"><title>Approach: additional argument in iface requesting method </title>
+		    <simpara>
+			Analyzing the example above we can see that in this case the additonal argument can be used. Indeed, the ambiguity in this example
+			cand be avoided if we specify connection point S1.E11 witin the request iface from S2. In that case S1 can understand that the request
+			is coming from S2.E21 and then create unambiguos path. This seems to be generic rule. The ambiguty happens if we don's specify the 
+			connection point on requesting system. Specifying connection point solves this problem. The sequence of requests for
+			example <xref linkend="fig_pia_ifr_ac"/> will be as:
+		    </simpara>
+		    <programlisting>
+			S2aa -->
+			S2a.CP2a1
+			S2.E21
+			S1.E11.P1
+			S1a.CP1a1 
+			--> S1aa
+		    </programlisting>
+		    <simpara>Another design point is to how implement the extended request. Currently an agent has single ifaces cache, the key
+			is request context (requestors) and iface provider. If we add new parameter of request - conn point then we need to 
+			extend the cache. It can be done either extending the key (for instance combining the context with connpoint) or having separate
+			cache for each connpoint.  </simpara>
+		    <simpara>
+			This design is incredibly similar to the iface cache design for <xref linkend="gls_cpa"/> approach:
 			<itemizedlist>
 			    <listitem> If we use conn points speciifc caches then it is as if connection point is just agent and system just do iface resolution
 				task in place of this agent.  </listitem>
@@ -5591,36 +5648,36 @@
 		    <programlisting>
 			S2aa
 			S2a.CP2a1
-			S2.E21
-			S1.E11.P1
-			S1a.CP1a1 
-			--> S1aa
-		    </programlisting>
-		    <simpara>What would be solutions here?</simpara>
-		    <itemizedlist>
-			<listitem>Extending of context element. Currently it is pointer to an agent. We can add connection point to the element.</listitem>
-			<listitem>To introduce "context element" - special wrapper of connection point
-			<simpara>It is almost same as solution above, just small design modification.
-			    This element is the class that contains both pointer to element and "hint" (it can be conn point UID) for instance.
-			    We can introduce specific cast operator to smoothly get pointer to agent from the element in order to keep
-			    compatibility with the current code.</simpara>
-		    </listitem>
-		    <listitem>To support polymorphic context element we can introduce context element's interface. It has to include casting to base
-			agents pointer.
-		    <simpara> For <xref linkend="gls_pia"/> system we need the context element that represents agents conn point. This 
-			representation can be created for each active conn points of system.
-			There is design option to use connection record in Vertp as context element iface implementation: it contains 
-			conn point URI, so we just add ref to the system itself.  </simpara>
-		    <simpara>In fact the current context element is pointer to MElem. It can be simply migrated to Base that contains local
-			iface resolution API. In that case the context element can be any derivation from Base. For instance it can be
-			"PIA connection point" - wrapper of Vertp connection register record including the Vertp agent itself. 
-		</simpara>
-		<simpara>
-			Note that this approach is similar somehow to passive "units" approach, ref <xref linkend="ds_uac"/></simpara>
+		    S2.E21
+		    S1.E11.P1
+		    S1a.CP1a1 
+		    --> S1aa
+		</programlisting>
+		<simpara>What would be solutions here?</simpara>
+		<itemizedlist>
+		    <listitem>Extending of context element. Currently it is pointer to an agent. We can add connection point to the element.</listitem>
+		    <listitem>To introduce "context element" - special wrapper of connection point
+		    <simpara>It is almost same as solution above, just small design modification.
+			This element is the class that contains both pointer to element and "hint" (it can be conn point UID) for instance.
+			We can introduce specific cast operator to smoothly get pointer to agent from the element in order to keep
+			compatibility with the current code.</simpara>
 		</listitem>
-	    </itemizedlist>
-	</sect5>
-    </sect4>
+		<listitem>To support polymorphic context element we can introduce context element's interface. It has to include casting to base
+		    agents pointer.
+		<simpara> For <xref linkend="gls_pia"/> system we need the context element that represents agents conn point. This 
+		    representation can be created for each active conn points of system.
+		    There is design option to use connection record in Vertp as context element iface implementation: it contains 
+		    conn point URI, so we just add ref to the system itself.  </simpara>
+		<simpara>In fact the current context element is pointer to MElem. It can be simply migrated to Base that contains local
+		    iface resolution API. In that case the context element can be any derivation from Base. For instance it can be
+		    "PIA connection point" - wrapper of Vertp connection register record including the Vertp agent itself. 
+	    </simpara>
+	    <simpara>
+		    Note that this approach is similar somehow to passive "units" approach, ref <xref linkend="ds_uac"/></simpara>
+	    </listitem>
+	</itemizedlist>
+    </sect5>
+</sect4>
 </sect3>
 	</sect2>
 	<sect2 id="ds_pia_cp"><title>Connection points</title>

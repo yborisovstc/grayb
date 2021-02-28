@@ -179,12 +179,15 @@ class Ut_conn : public CPPUNIT_NS::TestFixture
     // CPPUNIT_TEST(test_Systp); // Prop based agents aren't supported
     // CPPUNIT_TEST(test_Systp2); // Prop based agents aren't supported
     // CPPUNIT_TEST(test_SystpSock); // Prop based agents aren't supported
+    //
     CPPUNIT_TEST(test_Sock);
     CPPUNIT_TEST(test_Sock2);
     CPPUNIT_TEST(test_Reconn);
     CPPUNIT_TEST(test_Conn2);
     CPPUNIT_TEST(test_SockMcm);
     CPPUNIT_TEST(test_SockMcmu);
+    CPPUNIT_TEST(test_SockMcm_Tc);
+    CPPUNIT_TEST(test_CpExtd1);
     CPPUNIT_TEST_SUITE_END();
     public:
     virtual void setUp();
@@ -201,6 +204,8 @@ class Ut_conn : public CPPUNIT_NS::TestFixture
     void test_Conn2();
     void test_SockMcm();
     void test_SockMcmu();
+    void test_SockMcm_Tc();
+    void test_CpExtd1();
     private:
     Env* iEnv;
     TstProv* mProv;
@@ -604,3 +609,75 @@ void Ut_conn::test_SockMcmu()
 
     delete iEnv;
 }
+
+/** @brief Test of socket tree-ish configuration
+ * Ref desing issue DSI_SRST
+ * */
+void Ut_conn::test_SockMcm_Tc()
+{
+    printf("\n === Test of socket tre-ish configuration\n");
+
+    const string specn("ut_conn_sock_mcmu_tc");
+    string ext = "chs";
+    string spec = specn + string(".") + ext;
+    string log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
+    mProv = new TstProv("TstProv", iEnv);
+    iEnv->AddProvider(mProv);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root->GetObj(eroot);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root  && eroot);
+
+    MUnit* cpi1 = root->GetNode("./test/V1/Agt/Cpi1");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get cpi1", cpi1);
+    MUnit* cpi2 = root->GetNode("./test/Cpi2");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get cpi2", cpi2);
+    MTestIface2* ifc = cpi2->GetSIfit(ifc);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get ifc", ifc);
+
+    delete iEnv;
+}
+
+
+/** @brief Test of iface resolution when conn point extending
+ * Ref issue DSI_WRCPE "Wrong iface resolution routing whan request extender int via extender"
+ * */
+void Ut_conn::test_CpExtd1()
+{
+    printf("\n === Test of wrong usage of CP extension\n");
+
+    const string specn("ut_conn_cpextd_1");
+    string ext = "chs";
+    string spec = specn + string(".") + ext;
+    string log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
+    mProv = new TstProv("TstProv", iEnv);
+    iEnv->AddProvider(mProv);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root->GetObj(eroot);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root  && eroot);
+
+    // Wrong usage
+    MUnit* cpae = root->GetNode("./test/CpAE");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get cpae", cpae);
+    MTestIface1* ifc = cpae->GetSIfit(ifc);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get ifc", ifc == NULL);
+
+    // Right usage
+    MUnit* cpae2int = root->GetNode("./test/CpAE2/Int");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get cpae2int", cpae2int);
+    MTestIface1* ifc2 = cpae2int->GetSIfit(ifc2);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get ifc2", ifc2);
+
+    delete iEnv;
+}
+
+

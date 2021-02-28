@@ -1475,8 +1475,12 @@ void Unit::RemoveComp(MUnit* aComp)
 TBool Unit::RegisterComp(MUnit* aComp)
 {
     TBool res = ETrue;
-    __ASSERT(iMComps.count(aComp->Name()) == 0);
-    iMComps.insert(TNMVal(aComp->Name(), aComp));
+    if (iMComps.count(aComp->Name()) == 0) {
+	iMComps.insert(TNMVal(aComp->Name(), aComp));
+    } else {
+	Logger()->Write(EErr, this, "Component named [%s] already exists", aComp->Name().c_str());
+	//__ASSERT(false);
+    }
     return res;
 }
 
