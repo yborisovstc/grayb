@@ -18,6 +18,10 @@ const string Unit::KCont_About = "About";
 const string MUnit::KCont_Categories = "Categories";
 const string MUnit::KCont_Ctg_Readonly = "Readonly";
 const string MUnit::KCont_Ctg_Debug = "Debug";
+static const string KCont_Debug_LogLevel = "Debug.LogLevel";
+
+// Maximum of debugging log level
+static const TInt KDbgLogLevelMax = 100;
 
 string Unit::Fmt::mSepContInp = ";";
 string Unit::Fmt::mSepContName = "~";
@@ -1829,6 +1833,14 @@ TBool Unit::IsLogeventCreOn()
     MUnit* node = GetNode("./Unit:Logspec/Unit:Creation");
     string ls = GetContent("Debug.Creation");
     return node != NULL || ls == "y";
+}
+
+TInt Unit::LogLevel() const
+{
+    TInt res = -1;
+    string ss = GetContent(KCont_Debug_LogLevel);
+    if  (!ss.empty()) res = stoi(ss);
+    return res;
 }
 
 TBool Unit::IsRemoved() const

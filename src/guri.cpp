@@ -249,8 +249,19 @@ string GUri::toString(const_elem_iter aStart, const_elem_iter aEnd, TBool aShort
 
 bool GUri::operator==(const GUri& s) const
 {
-    return iScheme == s.iScheme && iAuthority == s.iAuthority &&
-	iPath == s.iPath && iBase == s.iBase && iElems == s.iElems && iErr == s.iErr;
+    bool res = iScheme == s.iScheme && iAuthority == s.iAuthority &&
+	iPath == s.iPath && iBase == s.iBase && iErr == s.iErr;
+    // Comparing elems with consideration of "some" condition
+    // TODO YB this is not good enough solution, needs to redesign
+    res = iElems.size() == s.iElems.size();
+    if (res) {
+	for (TInt i = 0; i < iElems.size(); i++ && res) {
+	    const Unit& a = iElems.at(i);
+	    const Unit& b = s.iElems.at(i);
+	    res = a.mRel == b.mRel && a.mExt == b.mExt && (a.mName == b.mName || a.mName == KTypeAny || b.mName == KTypeAny);
+	}
+    }
+    return res;
 }
 
 bool GUri::operator<(const GUri& aSrc) const

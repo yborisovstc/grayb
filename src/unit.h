@@ -219,6 +219,7 @@ class Unit: public MUnit
 	TBool UnregisterComp(MUnit* aComp, const string& aName = string());
 	virtual MUnit* GetComp(const string& aParent, const string& aName) const;
 	TBool IsLogeventCreOn();
+	TInt LogLevel() const;
 	void UnregAllIfRel();
 	static string ContentKey(const string& aBase, const string& aSuffix);
 	static string ContentValueKey(const string& aId);

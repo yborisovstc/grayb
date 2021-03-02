@@ -28,9 +28,10 @@ class Ut_des : public CPPUNIT_NS::TestFixture
     */
     //CPPUNIT_TEST(test_MunitAdp_1);
     //CPPUNIT_TEST(test_MelemAdp_1);
-    CPPUNIT_TEST(test_MelemAdp_chr_1);
+    //CPPUNIT_TEST(test_MelemAdp_chr_1);
     //CPPUNIT_TEST(test_Tr_Switch_1);
     //CPPUNIT_TEST(test_Tr_Vect_1);
+    CPPUNIT_TEST(test_Tr_Uri_1);
     //CPPUNIT_TEST(test_IfInval_1);
     CPPUNIT_TEST_SUITE_END();
 public:
@@ -50,6 +51,7 @@ private:
     void test_MelemAdp_chr_1();
     void test_Tr_Switch_1();
     void test_Tr_Vect_1();
+    void test_Tr_Uri_1();
     void test_IfInval_1();
 private:
     Env* iEnv;
@@ -811,3 +813,60 @@ void Ut_des::test_IfInval_1()
 
     delete iEnv;
 }
+
+
+/** @brief MElem DES transition test: Uri comparition
+ * */
+void Ut_des::test_Tr_Uri_1()
+{
+    printf("\n === Test of Uri comparition transition\n");
+
+    const string specn("ut_des_tr_uri_1");
+    string ext = "chs";
+    string spec = specn + string(".") + "chs";
+    string log = specn + "_" + ext + ".log";
+    iEnv = new Env(spec, log);
+    CPPUNIT_ASSERT_MESSAGE("Fail to create Env", iEnv != 0);
+    iEnv->ImpsMgr()->ResetImportsPaths();
+    iEnv->ImpsMgr()->AddImportsPaths("../modules");
+    iEnv->ConstructSystem();
+    MUnit* root = iEnv->Root();
+    MElem* eroot = root ? root->GetObj(eroot) : NULL;
+    CPPUNIT_ASSERT_MESSAGE("Fail to get root", root != NULL && eroot != NULL);
+
+   // Sync the state
+    MUnit* esync = root->GetNode("./test");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get input for Syncable iface", esync != NULL);
+    MDesSyncable* sync = (MDesSyncable*) esync->GetSIfi(MDesSyncable::Type());
+    CPPUNIT_ASSERT_MESSAGE("Fail to get Syncable iface", sync != NULL);
+
+    // Do some ticks
+    const TInt ticksnum = 8;
+    for (TInt cnt = 0; cnt < ticksnum; cnt++) {
+	if (sync->IsActive()) {
+	    sync->Update();
+	}
+	if (sync->IsUpdated()) {
+	    sync->Confirm();
+	}
+    }
+    // Checking positive comparition result
+    MUnit* reseq = root->GetNode("./test/ResEq");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get reseq", reseq);
+    bool sval = EFalse;
+    bool res = GetSData(reseq, sval);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get reseq value", res);
+    CPPUNIT_ASSERT_MESSAGE("Wrong reseq value", sval);
+    // Checking negative comparition result
+    MUnit* resneq = root->GetNode("./test/ResNeq");
+    CPPUNIT_ASSERT_MESSAGE("Fail to get resneq", resneq);
+    sval = EFalse;
+    res = GetSData(resneq, sval);
+    CPPUNIT_ASSERT_MESSAGE("Fail to get resneq value", res);
+    CPPUNIT_ASSERT_MESSAGE("Wrong resneq value", sval);
+
+
+    delete iEnv;
+}
+
+

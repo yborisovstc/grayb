@@ -68,6 +68,8 @@ libgrayb_la_SOURCES = \
 		       rdata.cpp \
 		       rmutdata.h \
 		       rmutdata.cpp \
+		       rdatauri.h \
+		       rdatauri.cpp \
 		       miface.h \
 		       mmuta.h \
 		       mplugin.h \
@@ -118,6 +120,7 @@ include_HEADERS = \
 		  rdata.h \
 		  ifu.h \
 		  rmutdata.h \
+		  rdatauri.h \
 		  des.h \
 		  func.h \
 		  msyst.h \

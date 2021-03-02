@@ -2955,6 +2955,8 @@ TBool FBcmpFloat::Value()
 	res = arg1 <= arg2;
     else if (mFType == EEq) 
 	res = arg1 == arg2;
+    else if (mFType == ENeq) 
+	res = arg1 != arg2;
     else if (mFType == EGt) 
 	res = arg1 > arg2;
     else if (mFType == EGe) 
@@ -3043,6 +3045,7 @@ FBcmpBase::TFType AFBcmpVar::GetFType()
     if (Name() == "AF_Lt") res = FBcmpBase::ELt;
     else if (Name() == "AF_Le") res = FBcmpBase::ELe;
     else if (Name() == "AF_Eq") res = FBcmpBase::EEq;
+    else if (Name() == "AF_Neq") res = FBcmpBase::EEq;
     else if (Name() == "AF_Gt") res = FBcmpBase::EGt;
     else if (Name() == "AF_Ge") res = FBcmpBase::EGe;
     else {
@@ -3077,6 +3080,7 @@ void AFCmpVar::Init(const string& aIfaceName)
 	if ((mFunc = FCmp<Sdata<int> >::Create(this, t1, t2, ftype)) != NULL);
 	else if ((mFunc = FCmp<Enum>::Create(this, t1, t2, ftype)) != NULL);
 	else if ((mFunc = FCmp<Sdata<string>>::Create(this, t1, t2, ftype)) != NULL);
+	else if ((mFunc = FCmp<DGuri>::Create(this, t1, t2, ftype)) != NULL);
 	/* Debuggng
 	   if (mFunc != NULL) {
 	//Func* func = new FCmpBase(*this, ftype);
@@ -3103,6 +3107,7 @@ FCmpBase::TFType AFCmpVar::GetFType()
     if (Name() == "AF_Lt") res = FCmpBase::ELt;
     else if (Name() == "AF_Le") res = FCmpBase::ELe;
     else if (Name() == "AF_Eq") res = FCmpBase::EEq;
+    else if (Name() == "AF_Neq") res = FCmpBase::EEq;
     else if (Name() == "AF_Gt") res = FCmpBase::EGt;
     else if (Name() == "AF_Ge") res = FCmpBase::EGe;
     else {
@@ -3166,6 +3171,7 @@ template <class T> void FCmp<T>::DtGet(Sdata<bool>& aData)
 		if (mFType == ELt) res = arg1 < arg2;
 		else if (mFType == ELe) res = arg1 <= arg2;
 		else if (mFType == EEq) res = arg1 == arg2;
+		else if (mFType == ENeq) res = arg1 != arg2;
 		else if (mFType == EGt) res = arg1 > arg2;
 		else if (mFType == EGe) res = arg1 >= arg2;
 		aData.Set(res);
@@ -3183,8 +3189,8 @@ template <class T> void FCmp<T>::DtGet(Sdata<bool>& aData)
 
 }
 
-// Getting size of container: vector
 
+// Getting size of container: vector
 
 template <class T> Func* FSizeVect<T>::Create(Host* aHost, const string& aOutIid, const string& aInpIid)
 {
@@ -4265,6 +4271,65 @@ template <class T> void FNtos<T>::DtGet(Sdata<string>& aData)
 static void FNtosFact() {
     FNtos<Sdata<int> >::Create(NULL, "");
     //FNtos<Sdata<float> >::Create(NULL, "");
+}
+
+
+// Converting to GUri
+
+Func* FUri::Create(Host* aHost, const string& aOutIid, const string& aInpIid)
+{
+    Func* res = NULL;
+    if (!aOutIid.empty()) {
+	if (aOutIid == MDtGet<TData>::Type() && aInpIid == MDtGet<TInpData>::Type()) {
+	    res = new FUri(*aHost);
+	}
+    } else {
+	// Weak negotiation - wrong case here
+	aHost->LogWrite(EErr, "Creating instance, wrong outp [%s] or inp [%s] types", aOutIid.c_str(), aInpIid.c_str());
+    }
+    return res;
+}
+
+MIface* FUri::DoGetObj(const char *aName)
+{
+    MIface* res = NULL;
+    if (strcmp(aName, MDtGet<TData>::Type()) == 0) res = (MDtGet<TData>*) this;
+    return res;
+}
+
+void FUri::DtGet(TData& aData)
+{
+    TBool res = ETrue;
+    MDVarGet* dget = mHost.GetInp(EInp1);
+    MDtGet<TInpData>* dfget = dget->GetDObj(dfget);
+    if (dfget) {
+	TInpData arg;
+	dfget->DtGet(arg);
+	if (arg.mValid) {
+	    aData.mData = GUri(arg.mData);
+	    aData.mValid = ETrue;
+	} else {
+	    mHost.LogWrite(EErr, "Incorrect input data");
+	    res = EFalse;
+	}
+    } else {
+	mHost.LogWrite(EErr, "Cannot get input [%s]", mHost.GetInpUri(EInp1).c_str());
+	res = EFalse;
+    }
+    aData.mValid = res;
+    if (mRes != aData) {
+	mRes = aData;
+	mHost.OnFuncContentChanged();
+    }
+}
+
+string FUri::GetInpExpType(TInt aId) const
+{
+    string res;
+    if (aId == EInp1) {
+	res = MDtGet<TInpData>::Type();
+    }
+    return res;
 }
 
 

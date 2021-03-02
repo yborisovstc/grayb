@@ -629,6 +629,7 @@ FBcmpBase::TFType ATrBcmpVar::GetFType()
     if (Name() == "AF_Lt") res = FBcmpBase::ELt;
     else if (Name() == "AF_Le") res = FBcmpBase::ELe;
     else if (Name() == "AF_Eq") res = FBcmpBase::EEq;
+    else if (Name() == "AF_Neq") res = FBcmpBase::ENeq;
     else if (Name() == "AF_Gt") res = FBcmpBase::EGt;
     else if (Name() == "AF_Ge") res = FBcmpBase::EGe;
     else {
@@ -1281,6 +1282,10 @@ void ATrcCmpVar::Init(const string& aIfaceName)
 	if (mFunc = FCmp<Sdata<int> >::Create(this, t1, t2, ftype));
 	else if (mFunc = FCmp<Enum>::Create(this, t1, t2, ftype));
 	else if (mFunc = FCmp<Sdata<string> >::Create(this, t1, t2, ftype));
+	else if (mFunc = FCmp<DGuri>::Create(this, t1, t2, ftype));
+	else {
+	    Logger()->Write(EErr, this, "Failed init, inputs [%s], [%s]", t1.c_str(), t2.c_str());
+	}
     }
 }
 
@@ -1297,6 +1302,7 @@ FCmpBase::TFType ATrcCmpVar::GetFType()
     if (Name().find("_Lt") != string::npos) res = FCmpBase::ELt;
     else if (Name().find("_Le") != string::npos) res = FCmpBase::ELe;
     else if (Name().find("_Eq") != string::npos) res = FCmpBase::EEq;
+    else if (Name().find("_Neq") != string::npos) res = FCmpBase::ENeq;
     else if (Name().find("_Gt") != string::npos) res = FCmpBase::EGt;
     else if (Name().find("_Ge") != string::npos) res = FCmpBase::EGe;
     else {
@@ -1347,7 +1353,7 @@ string ATrcSizeVar::VarGetIfid()
 
 
 
-// Agent function "Get component"
+// Transition agent "Get component"
 
 string ATrcAtVar::PEType()
 {
@@ -1382,6 +1388,49 @@ string ATrcAtVar::GetInpUri(TInt aId) const
     else if (aId == Func::EInp2) return "Idx";
     else return string();
 }
+
+
+// Transition agent "Convert to URI"
+
+string ATrcUri::PEType()
+{
+    return ATrcVar::PEType() + GUri::KParentSep + Type();
+} 
+
+ATrcUri::ATrcUri(const string& aName, MUnit* aMan, MEnv* aEnv): ATrcVar(aName, aMan, aEnv)
+{
+    iName = aName.empty() ? GetType(PEType()) : aName;
+    AddInput("Inp");
+}
+
+void ATrcUri::Init(const string& aIfaceName)
+{ 
+    if (mFunc != NULL) {
+	delete mFunc;
+	mFunc = NULL;
+    }
+    MDVarGet* inp = GetInp(Func::EInp1);
+    if (inp) {
+	string t_inp = inp->VarGetIfid();
+	if ((mFunc = FUri::Create(this, aIfaceName, t_inp)));
+	else {
+	    Logger()->Write(EErr, this, "Failed init function");
+	}
+    }
+}
+
+string ATrcUri::GetInpUri(TInt aId) const 
+{
+    if (aId == Func::EInp1) return "Inp";
+    else return string();
+}
+
+string ATrcUri::VarGetIfid()
+{
+    return MDtGet<DGuri>::Type();
+}
+
+
 
 
 

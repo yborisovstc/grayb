@@ -105,8 +105,11 @@
 	    GUri operator+(const GUri& aUri);
 	    GUri& operator+=(const GUri& aUri);
 	    bool operator==(const GUri& aSrc) const;
+	    bool operator!=(const GUri& aSrc) const { return !operator ==(aSrc);}
 	    bool operator<(const GUri& aSrc) const;
 	    bool operator<=(const GUri& aSrc) const { return *this < aSrc || *this == aSrc;}
+	    bool operator>(const GUri& aSrc) const { return aSrc < *this;}
+	    bool operator>=(const GUri& aSrc) const { return aSrc <= *this;}
 	    operator string() const { return toString(iElems.begin());}
 	protected:
 	    void Parse();

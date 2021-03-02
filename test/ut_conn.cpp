@@ -165,6 +165,8 @@ void TstProv::AppendNodesInfo(vector<string>& aInfo) {
 }
 
 const string& TstProv::ModulesPath() const {
+    static string ss;
+    return ss;
 }
 
 

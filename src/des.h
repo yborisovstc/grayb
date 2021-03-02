@@ -488,7 +488,6 @@ class ATrcSizeVar: public ATrcVar
 	virtual string VarGetIfid() override;
 };
 
-
 /** @brief Agent function "Getting component"
  * */
 class ATrcAtVar: public ATrcVar
@@ -502,6 +501,23 @@ class ATrcAtVar: public ATrcVar
 	virtual string GetInpUri(TInt aId) const override;
 	// From Func::Host
 	virtual TInt GetInpCpsCount() const override {return 2;}
+};
+
+/** @brief Transition agent "Convert to URI"
+ * */
+class ATrcUri: public ATrcVar
+{
+    public:
+	static const char* Type() { return "ATrcUri";};
+	static string PEType();
+	ATrcUri(const string& aName = string(), MUnit* aMan = NULL, MEnv* aEnv = NULL);
+	// From ATrVar
+	virtual void Init(const string& aIfaceName) override;
+	virtual string GetInpUri(TInt aId) const override;
+	// From Func::Host
+	virtual TInt GetInpCpsCount() const override {return 1;}
+	// From MDVarGet
+	virtual string VarGetIfid() override;
 };
 
 

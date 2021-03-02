@@ -3,6 +3,7 @@
 
 #include "elem.h"
 #include "mdata.h"
+#include "rdatauri.h"
 
 class FuncBase: public Elem, public MACompsObserver, public MDataObserver
 {
@@ -834,7 +835,7 @@ template <class T> class FApndDt: public FApndBase, public MDtGet<T> {
 class FBcmpBase: public Func {
     public:
 	enum { EInp_1 = EInp1, EInp_2, EInp_Ftype };
-	enum TFType {ELt, ELe, EEq, EGe, EGt};
+	enum TFType {ELt, ELe, EEq, ENeq, EGe, EGt};
 	FBcmpBase(Host& aHost, TFType aFType): Func(aHost), mFType(aFType) {};
 	virtual void GetResult(string& aResult) const;
     protected:
@@ -874,7 +875,7 @@ class AFBcmpVar: public AFunVar
 class FCmpBase: public Func, public MDtGet<Sdata<bool> >
 {
     public:
-	enum TFType {ELt, ELe, EEq, EGe, EGt};
+	enum TFType {ELt, ELe, EEq, ENeq, EGe, EGt};
     public:
 	FCmpBase(Host& aHost, TFType aFType): Func(aHost), mFType(aFType) {};
 	virtual ~FCmpBase();
@@ -1194,6 +1195,27 @@ class FBAndDt: public Func, public MDtGet<Sdata<bool> >
     protected:
 	Sdata<bool> mRes;
 };
+
+/** @brief Converting to GUri
+ * @tparam T type of vector element
+ * */
+class FUri: public Func, public MDtGet<DGuri> {
+    public:
+	using TData = DGuri;
+	using TInpData = Sdata<string>;
+    public:
+	static Func* Create(Host* aHost, const string& aOutIid, const string& aInp1Id);
+	FUri(Host& aHost): Func(aHost) {};
+	virtual MIface *DoGetObj(const char *aName);
+	virtual string IfaceGetId() const { return MDtGet<TData>::Type();}
+	virtual void DtGet(TData& aData) override;
+	virtual void GetResult(string& aResult) const {mRes.ToString(aResult);}
+	virtual string GetInpExpType(TInt aId) const;
+    protected:
+	DGuri mRes;
+};
+
+
 
 
 #endif
