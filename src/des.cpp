@@ -1983,6 +1983,10 @@ CpStatecOutp::CpStatecOutp(const string& aName, MUnit* aMan, MEnv* aEnv): ConnPo
 
 const string AStatec::KContVal = "Value";
 
+// Debug logging levels
+static const TInt KStatecDlog_Obs = 6;  // Observers
+static const TInt KStatecDlog_ObsIfr = 7;  // Observers ifaces routing
+
 AStatec::AStatec(const string& aName, MUnit* aMan, MEnv* aEnv): Vertu(aName, aMan, aEnv), iUpdated(ETrue), iActive(ETrue),
     mPdata(NULL), mCdata(NULL)
 {
@@ -2117,6 +2121,13 @@ void AStatec::NotifyInpsUpdated()
 	MUnit* pe = (*it)->GetObj(pe);
 	// Don't add self to if request context to enable routing back to self
 	TIfRange range = pe->GetIfi(MDesInpObserver::Type());
+	if (IsLogLevel(KStatecDlog_Obs)) {
+	    Logger()->Write(EDbg, this, "Output pair [%s]", pe->Uid().c_str());
+	    LogIfRange(range);
+	    if (IsLogLevel(KStatecDlog_ObsIfr)) {
+		pe->LogIfPaths(MDesInpObserver::Type());
+	    }
+	}
 	// Using secondary cache to avoid crach during the cache invalidation, ref ds_ifcache_cip_s1
 	vector<MDesInpObserver*> ic;
 	for (TIfIter it = range.first; it != range.second; it++) {
@@ -2700,7 +2711,7 @@ MIface* ADesLauncher::MAgent_DoGetIface(const string& aName)
     return DoGetObj(aName.c_str());
 }
 
-TBool ADesLauncher::Run()
+TBool ADesLauncher::Run(TInt aCount)
 {
     TBool res = ETrue;
     const string path = GetContent(KCont_TopDesUri);
@@ -2709,7 +2720,7 @@ TBool ADesLauncher::Run()
 	MDesSyncable* sync = dynamic_cast<MDesSyncable*>(desu->GetSIfi(MDesSyncable::Type()));
 	if (sync) {
 	    mStop = EFalse;
-	    while (!mStop) {
+	    while (!mStop && (aCount == 0 || mCounter < aCount)) {
 		if (sync->IsActive()) {
 		    Logger()->Write(EInfo, this, "");
 		    Logger()->Write(EInfo, this, ">>> Update [%d]", mCounter);

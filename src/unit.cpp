@@ -615,9 +615,9 @@ void Unit::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
     }
 }
 
-void Unit::DumpIfProv(const string& aName, const TICacheRCtx& aCtx, const MIface* aIface) const
+void Unit::DoDumpIfProv(const string& aName, const TICacheRCtx& aCtx, const MIface* aIface, ostream& aOs) const
 {
-    cout << this << ": " << GetUri(NULL, ETrue) << endl;
+    aOs << this << ": " << GetUri(NULL, ETrue) << endl;
     TICacheKey key(aName, aCtx);
     auto rg = iICache.equal_range(key);
     for (auto it = rg.first; it != rg.second; it++) {
@@ -627,16 +627,21 @@ void Unit::DumpIfProv(const string& aName, const TICacheRCtx& aCtx, const MIface
 	    if (prov != this) {
 		TICacheRCtx pctx(aCtx);
 		pctx.push_back(const_cast<Unit*>(this), ETrue);
-		prov->DumpIfProv(aName, pctx, iface);
+		prov->DoDumpIfProv(aName, pctx, iface, aOs);
 	    }
 	}
     }
 }
 
-void Unit::DumpIfPaths(const char* aIfName) const
+void Unit::DumpIfProv(const string& aName, const TICacheRCtx& aCtx, const MIface* aIface) const
+{
+    DoDumpIfProv(aName, aCtx, aIface, cout);
+}
+
+void Unit::DoDumpIfPaths(const char* aIfName, ostream& aOs) const
 {
     string aifname(aIfName);
-    cout << "<< IRM paths, iface [" << aifname << "] START >>" << endl;
+    aOs << "<< IRM paths, iface [" << aifname << "] START >>" << endl;
     for (auto it : iICache) {
 	const string& iname = it.first.first;
 	if (!aifname.empty() && (iname != aifname)) continue;
@@ -645,21 +650,34 @@ void Unit::DumpIfPaths(const char* aIfName) const
 	MUnit* prov = it.second.first;
 	// Output left part - requestors
 	if (!ctx.empty()) {
-	    cout << endl << ">>> [" << iname << "] -> [" << iface << ": " << (iface == NULL ? "" : iface->Uid()) << "], [" << ctx.size() << "]:" << endl;
+	    aOs << endl << ">>> [" << iname << "] -> [" << iface << ": " << (iface == NULL ? "" : iface->Uid()) << "], [" << ctx.size() << "]:" << endl;
 	    for (auto* reqe : ctx) {
-		cout << reqe << ": " << (reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue)) << endl;
+		aOs << reqe << ": " << (reqe == NULL ? "NULL" : reqe->GetUri(NULL, ETrue)) << endl;
 	    }
 	} else {
-	    cout << endl << ">>> [" << iname << "] -> [" << iface << ": " << (iface == NULL ? "" : iface->Uid()) << "], [none]" << endl;
+	    aOs << endl << ">>> [" << iname << "] -> [" << iface << ": " << (iface == NULL ? "" : iface->Uid()) << "], [none]" << endl;
 	}
 	// Output providers chain
-	cout << "==>" << endl;
+	aOs << "==>" << endl;
 	TICacheRCtx pctx(ctx);
 	pctx.push_back(const_cast<Unit*>(this), ETrue);
-	prov->DumpIfProv(iname, pctx, iface);
+	prov->DoDumpIfProv(iname, pctx, iface, aOs);
     }
-    cout << "<< IRM paths END >>" << endl;
+    aOs << "<< IRM paths END >>" << endl;
 }
+
+void Unit::DumpIfPaths(const char* aIfName) const
+{
+    DoDumpIfPaths(aIfName, cout);
+}
+
+void Unit::LogIfPaths(const char* aIfName) const
+{
+    stringstream ss;
+    DoDumpIfPaths(aIfName, ss);
+    Logger()->Write(EDbg, this, "%s", ss.str().c_str());
+}
+
 
 void Unit::DumpIfCache() const
 {
@@ -1561,22 +1579,32 @@ TEhr Unit::ProcessCompChanged(const MUnit* aComp, const string& aContName)
     Pdstat(PEvents::DurStat_OnCompChanged, true);
     TEhr res = EEHR_Ignored;
     TBool hres = EFalse;
-    TIfRange rg = GetIfi(MAgent::Type());
-    // Using cache of agents because iterators will be broken
-    vector<MUnit*> ca;
-    for (TIfIter it = rg.first; it != rg.second; it++) {
-	MAgent* ait = (MAgent*) (*it);
-	MIface* iit = ait->DoGetIface(MUnit::Type());
-	MUnit* eit = dynamic_cast<MUnit*>(iit);
-	ca.push_back(eit);
-    }
-    for (MUnit* agent : ca) {
-	MACompsObserver* iagent = agent == NULL ? NULL : agent->GetObj(iagent);
-	if (iagent != NULL) {
-	    hres = iagent->HandleCompChanged(this, const_cast<MUnit*>(aComp), aContName);
-	    res = hres ? EEHR_Accepted : EEHR_Denied;
-	    if (!hres) {
-		//iagent->HandleCompChanged(*this, aComp, aContName);
+    if (aContName == KCont_Debug_LogLevel) {
+	// Cache log level
+	// TODO YB Consider also redirecting to the agents
+	string ss = GetContent(KCont_Debug_LogLevel);
+	if  (!ss.empty()) { 
+	    mLogLevel = stoi(ss);
+	    res = EEHR_Accepted;
+	}
+    } else {
+	TIfRange rg = GetIfi(MAgent::Type());
+	// Using cache of agents because iterators will be broken
+	vector<MUnit*> ca;
+	for (TIfIter it = rg.first; it != rg.second; it++) {
+	    MAgent* ait = (MAgent*) (*it);
+	    MIface* iit = ait->DoGetIface(MUnit::Type());
+	    MUnit* eit = dynamic_cast<MUnit*>(iit);
+	    ca.push_back(eit);
+	}
+	for (MUnit* agent : ca) {
+	    MACompsObserver* iagent = agent == NULL ? NULL : agent->GetObj(iagent);
+	    if (iagent != NULL) {
+		hres = iagent->HandleCompChanged(this, const_cast<MUnit*>(aComp), aContName);
+		res = hres ? EEHR_Accepted : EEHR_Denied;
+		if (!hres) {
+		    //iagent->HandleCompChanged(*this, aComp, aContName);
+		}
 	    }
 	}
     }
@@ -1833,14 +1861,6 @@ TBool Unit::IsLogeventCreOn()
     MUnit* node = GetNode("./Unit:Logspec/Unit:Creation");
     string ls = GetContent("Debug.Creation");
     return node != NULL || ls == "y";
-}
-
-TInt Unit::LogLevel() const
-{
-    TInt res = -1;
-    string ss = GetContent(KCont_Debug_LogLevel);
-    if  (!ss.empty()) res = stoi(ss);
-    return res;
 }
 
 TBool Unit::IsRemoved() const
@@ -2192,15 +2212,27 @@ void Unit::DumpIfCtx(const TICacheRCtx& aCtx)
     cout << "<< Dump of Ifaces request context: END >>" << endl;
 }
 
-void Unit::DumpIfRange(const TIfRange& aRange)
+void Unit::DoDumpIfRange(const TIfRange& aRange, ostream& aOs)
 {
-    cout << "<< Dump of Ifaces range: START >>" << endl;
+    aOs << "<< Dump of Ifaces range: START >>" << endl;
     for (auto it = aRange.first; it != aRange.second; it++) {
 	const MIface* item = *it;
 	string uri = item->Uid();
-	cout << uri << endl;
+	aOs << uri << endl;
     }
-    cout << "<< Dump of Ifaces range: END >>" << endl;
+    aOs << "<< Dump of Ifaces range: END >>" << endl;
+}
+
+void Unit::DumpIfRange(const TIfRange& aRange)
+{
+    DoDumpIfRange(aRange, cout);
+}
+
+void Unit::LogIfRange(const TIfRange& aRange)
+{
+    stringstream ss;
+    DoDumpIfRange(aRange, ss);
+    Logger()->Write(EDbg, this, "%s", ss.str().c_str());
 }
 
 MUnit* Unit::CreateHeir(const string& aName, MUnit* aMan, MUnit* aContext)

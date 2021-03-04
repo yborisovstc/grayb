@@ -96,7 +96,7 @@ class MAgentObserver;
 	    virtual void SetEVar(const string& aName, const string& aValue) = 0;
 	    virtual TBool GetEVar(const string& aName, string& aValue) const = 0;
 	    virtual void ConstructSystem() = 0;
-	    virtual TBool RunSystem() = 0;
+	    virtual TBool RunSystem(TInt aCount = 0) = 0;
 	    virtual TBool StopSystem() = 0;
 	    // Notification of root deleted, ref ds_daa_rdo
 	    virtual void OnRootDeleted() = 0;

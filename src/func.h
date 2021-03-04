@@ -328,6 +328,7 @@ class Func: public Base {
 	    virtual void LogWrite(TLogRecCtg aCtg, const char* aFmt,...) = 0;
 	    virtual string GetInpUri(TInt aId) const = 0;
 	    virtual Unit* GetAgent() = 0;
+	    virtual TBool IsLogLevel(TInt aLevel) const { return EFalse; }
 	};
     public:
     Func(Host& aHost): Base(), mHost(aHost) {};

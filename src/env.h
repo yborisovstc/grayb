@@ -151,7 +151,7 @@ class Env: public Base, public MEnv
     virtual void SetEVar(const string& aName, const string& aValue);
     virtual TBool GetEVar(const string& aName, string& aValue) const;
     virtual void ConstructSystem() override;
-    virtual TBool RunSystem() override;
+    virtual TBool RunSystem(TInt aCount = 0) override;
     virtual TBool StopSystem() override;
     virtual void OnRootDeleted();
     virtual TBool SetObserver(MAgentObserver* aObserver) override { return mObserver->SetObserver(aObserver);}

@@ -566,12 +566,12 @@ void Env::ConstructSystem()
     }
 }
 
-TBool Env::RunSystem()
+TBool Env::RunSystem(TInt aCount)
 {
     TBool res = EFalse;
     if (iRoot) {
 	if (mLauncher) {
-	    res = mLauncher->Run();
+	    res = mLauncher->Run(aCount);
 	} else {
 	    Logger()->Write(EErr, NULL, "Cannot find launcher");
 	}

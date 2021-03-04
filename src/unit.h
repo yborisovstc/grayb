@@ -219,7 +219,6 @@ class Unit: public MUnit
 	TBool UnregisterComp(MUnit* aComp, const string& aName = string());
 	virtual MUnit* GetComp(const string& aParent, const string& aName) const;
 	TBool IsLogeventCreOn();
-	TInt LogLevel() const;
 	void UnregAllIfRel();
 	static string ContentKey(const string& aBase, const string& aSuffix);
 	static string ContentValueKey(const string& aId);
@@ -232,10 +231,16 @@ class Unit: public MUnit
 	virtual void DumpComps(TBool aRecurs = EFalse) const;
 	virtual void DumpContent() const;
 	virtual void DumpIfPaths(const char* aIfName = NULL) const override;
+	virtual void LogIfPaths(const char* aIfName = NULL) const override;
 	virtual void DumpIfCache() const override;
+	virtual void DoDumpIfProv(const string& aName, const TICacheRCtx& aCtx, const MIface* aIface, ostream& aOs) const override;
 	virtual void DumpIfProv(const string& aName, const TICacheRCtx& aCtx, const MIface* aIface) const override;
 	static void DumpIfCtx(const TICacheRCtx& aCtx);
-	static void DumpIfRange(const TIfRange& aCtx);
+	static void DumpIfRange(const TIfRange& aRange);
+	static void DoDumpIfRange(const TIfRange& aRange, ostream& aOs);
+	void DoDumpIfPaths(const char* aIfName, ostream& aOs) const;
+	void LogIfRange(const TIfRange& aRange);
+	TBool IsLogLevel(TInt aLevel) const { return mLogLevel >= aLevel;}
     public:
 	// TODO [YB] To move to Ifu ?
 	static const char KContentStart = '{';
@@ -274,6 +279,8 @@ class Unit: public MUnit
 
 	static TBool EN_MUT_LIM;
 	static const string KCont_About;
+
+	TInt mLogLevel = 0;
 
 	/** Profiler helpers */
 	void Pclock(PEvent::TId aEventId, MUnit* aNode) { iEnv->Profiler()->Clock()(aEventId, aNode);}

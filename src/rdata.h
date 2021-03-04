@@ -78,8 +78,8 @@ template<class T> class Sdata: public DtBase
 	virtual void DataToString(stringstream& aStream) const override { aStream << std::boolalpha << mData;};
 	virtual TBool DataFromString(istringstream& aStream, TBool& aRes) override;
 	virtual DtBase* Clone() {return new Sdata<T>(*this);};
-	virtual TBool operator==(const MDtBase& sb) override
-	{ const Sdata<T>& b = dynamic_cast<const Sdata<T>& >(sb); return &b != NULL && DtBase::operator==(b) && mData == b.mData;};
+	virtual TBool operator==(const MDtBase& sb) override { const Sdata<T>& b = dynamic_cast<const Sdata<T>& >(sb);
+	    return &b != NULL && DtBase::operator==(b) && mData == b.mData;};
 	TBool operator>(const Sdata<T>& b) const { return mData > b.mData;};
 	TBool operator>=(const Sdata<T>& b) const { return mData >= b.mData;};
 	TBool operator<(const Sdata<T>& b) const { return mData < b.mData;};

@@ -10,7 +10,7 @@ class MLauncher: public MIface
 {
     public:
 	static const char* Type() { return "MLauncher";};
-	virtual TBool Run() = 0;
+	virtual TBool Run(TInt aCount = 0) = 0;
 	virtual TBool Stop() = 0;
 	// From MIface
 	virtual MIface* MLauncher_Call(const string& aSpec, string& aRes) { return NULL;}

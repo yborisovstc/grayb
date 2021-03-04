@@ -7,6 +7,10 @@
 #include "log.h"
 #include <stdio.h>
 
+
+static TInt KDbgLog_Value = 9;
+
+
 string FuncBase::PEType()
 {
     return Elem::PEType() + GUri::KParentSep + Type();
@@ -3175,6 +3179,9 @@ template <class T> void FCmp<T>::DtGet(Sdata<bool>& aData)
 		else if (mFType == EGt) res = arg1 > arg2;
 		else if (mFType == EGe) res = arg1 >= arg2;
 		aData.Set(res);
+		if (mHost.IsLogLevel(KDbgLog_Value)) {
+		    mHost.LogWrite(EDbg, "Result: %s", res ? "true" : "false");
+		}
 	    }
 	    else {
 		res = EFalse;
@@ -4310,6 +4317,8 @@ void FUri::DtGet(TData& aData)
 	    aData.mValid = ETrue;
 	} else {
 	    mHost.LogWrite(EErr, "Incorrect input data");
+	    TInpData arg;
+	    dfget->DtGet(arg);
 	    res = EFalse;
 	}
     } else {

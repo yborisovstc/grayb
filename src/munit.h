@@ -295,8 +295,10 @@ class MUnit : public MIface, public Base, public MOwner, public MIfProv
 	virtual void DumpComps(TBool aRecurs = EFalse) const = 0;
 	virtual void DumpContent() const = 0;
 	virtual void DumpIfProv(const string& aName, const TICacheRCtx& aCtx, const MIface* aIface) const = 0;
+	virtual void DoDumpIfProv(const string& aName, const TICacheRCtx& aCtx, const MIface* aIface, ostream& aOs) const = 0;
 	/** @brief Dumps iface resolution paths */
 	virtual void DumpIfPaths(const char* aIfName = NULL) const = 0;
+	virtual void LogIfPaths(const char* aIfName = NULL) const = 0;
 	virtual void DumpIfCache() const = 0;
 	// From MIface
 	virtual string Uid() const { return Mid() + "%" + Type();};

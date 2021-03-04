@@ -281,6 +281,7 @@ class ATrcVar: public ATrcBase, public MDVarGet, public Func::Host
 	virtual void LogWrite(TLogRecCtg aCtg, const char* aFmt,...) override;
 	virtual Unit* GetAgent() override {return this;}
 	virtual TInt GetInpCpsCount() const {return 0;}
+	virtual TBool IsLogLevel(TInt aLevel) const override { return aLevel <= mLogLevel; }
 	// From Elem
 	virtual TBool GetCont(string& aCont, const string& aName=string()) const; 
     protected:
@@ -787,7 +788,7 @@ class ADesLauncher: public Elem, public MLauncher, public MAgent
 	// From Base
 	virtual MIface* DoGetObj(const char *aName);
 	// From MLauncher
-	virtual TBool Run() override;
+	virtual TBool Run(TInt aCount = 0) override;
 	virtual TBool Stop() override;
 	// From MAgent
 	MIface* MAgent_DoGetIface(const string& aName) override;
