@@ -42,6 +42,13 @@ class TICacheRCtx: public vector<MUnit*>
 	    }
 	    return res;
 	}
+	TInt Rank(MUnit* aElem) const {
+	    TInt res = 0;
+	    for (auto* req : *this) {
+		if (req == aElem) res++;
+	    }
+	    return res;
+	}
 	inline void push_back(MUnit* aUnit, TBool aNoCheck = false) {
 	    __ASSERT(aNoCheck || !IsInContext(aUnit));
 	    vector<MUnit*>::push_back(aUnit);

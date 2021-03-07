@@ -1931,13 +1931,12 @@ void ASocketMcm::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 		    }
 		}
 		// Forward it to upper layer if there are no pairs
-		if (PairsCount() == 0 && iMan != NULL && !ctx.IsInContext(iMan)) {
-		    MUnit* mgr =  GetMan();
-		    if (mgr != NULL && !ctx.IsInContext(mgr)) {
-			rr = mgr->GetIfi(aName, ctx);
-			InsertIfCache(aName, aCtx, mgr, rr);
-			resok = resok || (rr.first != rr.second);
-		    }
+		// Enagle single cycle to support SLC, ref ds_ifcache_slc_esc
+		MUnit* mgr =  GetMan();
+		if (PairsCount() == 0 && mgr && ctx.Rank(mgr) <= 1) {
+		    rr = mgr->GetIfi(aName, ctx);
+		    InsertIfCache(aName, aCtx, mgr, rr);
+		    resok = resok || (rr.first != rr.second);
 		}
 	    } else { // Request from not internals
 		// First check the pairs, ref DSI_SRST
@@ -1996,7 +1995,7 @@ void ASocketMcm::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 			    }
 			}
 		    }
-		    if (pcomp != NULL && !ctx.IsInContext(pcomp)) {
+		    if (pcomp != NULL && ctx.Rank(pcomp) <= 1) {
 			// Found associated pairs pin within the context, so redirect to it's pair in current socket
 			rr = pcomp->GetIfi(aName, ctx);
 			InsertIfCache(aName, aCtx, pcomp, rr);

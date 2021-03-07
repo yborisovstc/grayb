@@ -2650,6 +2650,7 @@ void ADes::DumpUpdated()
     }
 }
 
+// Ref ds_i_nrn_s1
 TBool ADes::HandleCompChanged(MUnit* aContext, MUnit* aComp, const string& aContName)
 {
     TBool res = EFalse;

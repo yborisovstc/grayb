@@ -3179,9 +3179,6 @@ template <class T> void FCmp<T>::DtGet(Sdata<bool>& aData)
 		else if (mFType == EGt) res = arg1 > arg2;
 		else if (mFType == EGe) res = arg1 >= arg2;
 		aData.Set(res);
-		if (mHost.IsLogLevel(KDbgLog_Value)) {
-		    mHost.LogWrite(EDbg, "Result: %s", res ? "true" : "false");
-		}
 	    }
 	    else {
 		res = EFalse;
@@ -3191,6 +3188,9 @@ template <class T> void FCmp<T>::DtGet(Sdata<bool>& aData)
     aData.mValid = res;
     if (mRes != aData) {
 	mRes = aData;
+	if (mHost.IsLogLevel(KDbgLog_Value)) {
+	    mHost.LogWrite(EDbg, "Result: %s", res ? (aData.mData ? "true" : "false") : "err");
+	}
 	mHost.OnFuncContentChanged();
     }
 
@@ -3937,6 +3937,7 @@ void FBAndDt::DtGet(Sdata<bool>& aData)
 	    }
 	} else {
 	    Logger()->Write(EErr, mHost.GetAgent(), "Incompatible argument [%s]",  mHost.GetInpUri(EInp1).c_str());
+	    dfget = dget->GetDObj(dfget);
 	    res = EFalse; break;
 	}
     }
@@ -3944,6 +3945,9 @@ void FBAndDt::DtGet(Sdata<bool>& aData)
     if (mRes != aData) {
 	mRes = aData;
 	mHost.OnFuncContentChanged();
+	if (mHost.IsLogLevel(KDbgLog_Value)) {
+	    mHost.LogWrite(EDbg, "Result: %s", res ? (aData.mData ? "true" : "false") : "err");
+	}
     }
 }
 
@@ -4308,7 +4312,7 @@ void FUri::DtGet(TData& aData)
 {
     TBool res = ETrue;
     MDVarGet* dget = mHost.GetInp(EInp1);
-    MDtGet<TInpData>* dfget = dget->GetDObj(dfget);
+    MDtGet<TInpData>* dfget = dget ? dget->GetDObj(dfget) : nullptr;
     if (dfget) {
 	TInpData arg;
 	dfget->DtGet(arg);

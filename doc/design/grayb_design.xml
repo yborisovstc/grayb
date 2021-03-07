@@ -597,6 +597,14 @@
 	    </sect3>
 	    <sect3 id="ds_ifcache_slc_ecp"><title>Solution: enable cycles in IRM paths</title>
 	    </sect3>
+	    <sect3 id="ds_ifcache_slc_esc"><title>Solution: enable single cycle in IRM paths using ctx elem rank.</title>
+		<simpara>The unit inclusion in context rank in case of single cycle can be &lt;= 1.
+		    So we just need to use the check if element rank in context is &lt;= 1 instead of just checking the element presents in context
+		    (i.e. that rank > 0) to disable routing.</simpara>
+	    </sect3>
+	    <sect3><title>Resolution</title>
+		<simpara>I have implemented the solution <xref linkend="ds_ifcache_slc_esc"/>, commit next to 261f92ca4b59.</simpara>
+	    </sect3>
 	</sect2>
 	<sect2 id="ds_ifcache_ipx"><title>Approach: IRM proxying support</title>
 	    <sect3><title>Intro</title>
