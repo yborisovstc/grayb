@@ -8,6 +8,7 @@ AdpComps : Elem
         InpMagUri : CpStatecInp;
         CompsCount : CpStatecOutp;
         CompNames : CpStatecOutp;
+        Owner : CpStatecOutp;
     }
     MelemAdp : Syst
     {

@@ -2788,6 +2788,23 @@ MIface* AAdp::MAgent_DoGetIface(const string& aName)
     return res;
 }
 
+void AAdp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
+{
+    TIfRange rr;
+    TICacheRCtx ctx(aCtx); ctx.push_back(this);
+
+    if (aName == MDesInpObserver::Type()) {
+	MUnit* inp = Host()->GetNode(K_CpUriInpMagUri);
+	if (ctx.IsInContext(inp)) {
+	    MIface* iface = dynamic_cast<MDesInpObserver*>(&mIapMagUri);
+	    InsertIfCache(aName, aCtx, inp, iface);
+	}
+    } else  {
+	Unit::UpdateIfi(aName, aCtx);
+    }
+}
+
+
 TEhr AAdp::ProcessCompChanged(const MUnit* aComp, const string& aContName)
 {
     TEhr res = EEHR_Ignored;
@@ -2878,7 +2895,10 @@ void AAdp::SetActive()
 
 void AAdp::Update()
 {
-    UpdateMag();
+    if (mInpMagUriUpdated) {
+	UpdateMag();
+	mInpMagUriUpdated = EFalse;
+    }
     SetUpdated();
     ResetActive();
 }
@@ -2961,6 +2981,13 @@ TBool AAdp::UpdateMag(const string& aMagUri)
     return res;
 }
 
+void AAdp::OnInpMagUri()
+{
+    mInpMagUriUpdated = ETrue;
+    SetActive();
+}
+
+
 
 
 
@@ -2976,6 +3003,7 @@ void AAdp::AdpIap::OnInpUpdated()
 
 const string K_CpUriCompNames = "./CompNames";
 const string K_CpUriCompCount = "./CompsCount";
+const string K_CpUriOwner = "./Owner";
 
 AMunitAdp::AMunitAdp(const string& aName, MUnit* aMan, MEnv* aEnv): AAdp(aName, aMan, aEnv)
 {
@@ -2999,20 +3027,19 @@ void AMunitAdp::UpdateIfi(const string& aName, const TICacheRCtx& aCtx)
 	if (ctx.IsInContext(cmpCount)) {
 	    MIface* iface = dynamic_cast<MDVarGet*>(&mApCmpCount);
 	    InsertIfCache(aName, aCtx, cmpCount, iface);
+	} else {
+	    MUnit* cmpNames = Host()->GetNode(K_CpUriCompNames);
+	    if (ctx.IsInContext(cmpNames)) {
+		MIface* iface = dynamic_cast<MDVarGet*>(&mApCmpNames);
+		InsertIfCache(aName, aCtx, cmpNames, iface);
+	    } else {
+		MUnit* out = Host()->GetNode(K_CpUriOwner);
+		if (ctx.IsInContext(out)) {
+		    MIface* iface = dynamic_cast<MDVarGet*>(&mPapOwner);
+		    InsertIfCache(aName, aCtx, out, iface);
+		}
+	    }
 	}
-	MUnit* cmpNames = Host()->GetNode(K_CpUriCompNames);
-	if (ctx.IsInContext(cmpNames)) {
-	    MIface* iface = dynamic_cast<MDVarGet*>(&mApCmpNames);
-	    InsertIfCache(aName, aCtx, cmpNames, iface);
-	}
-	/*
-    } else if (aName == MVectorGet<string>::Type()) {
-	MUnit* cmpNames = Host()->GetNode("./CompNames");
-	if (ctx.IsInContext(cmpNames)) {
-	    MIface* iface = dynamic_cast<MDVarGet*>(&mApCmpNames);
-	    InsertIfCache(aName, aCtx, cmpNames, iface);
-	}
-	*/
     } else  {
 	AAdp::UpdateIfi(aName, aCtx);
     }
@@ -3023,6 +3050,18 @@ void AMunitAdp::GetCompsCount(Sdata<TInt>& aData)
     aData.mData = mCompNames.mData.size();
     aData.mValid = ETrue;
 }
+
+void AMunitAdp::GetOwner(Sdata<string>& aData)
+{
+    if (mMag) {
+	aData.mData = mMag->GetMan()->GetUri(NULL, ETrue);
+	aData.mValid = ETrue;
+    } else {
+	aData.mData = GUri::Nil();
+	aData.mValid = ETrue;
+    }
+}
+
 
 void AMunitAdp::Confirm()
 {
@@ -3040,6 +3079,11 @@ void AMunitAdp::Confirm()
 	    // Comps count
 	    cp = Host()->GetNode(K_CpUriCompCount);
 	    NotifyInpsUpdated(cp);
+	}
+	if (mOwnerUpdated) {
+	    MUnit* cp = Host()->GetNode(K_CpUriOwner);
+	    NotifyInpsUpdated(cp);
+	    mOwnerUpdated = false;
 	}
     } else {
 	Logger()->Write(EErr, this, "Managed agent is not attached");
@@ -3085,6 +3129,8 @@ void AMunitAdp::OnMagError(const MUnit* aComp)
 void AMunitAdp::OnMagUpdated()
 {
     mCompNamesUpdated = ETrue;
+    mOwnerUpdated = ETrue;
+    SetUpdated();
 }
 
 // MElem DES adapter

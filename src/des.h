@@ -894,6 +894,8 @@ class AAdp: public Unit, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 	virtual ~AAdp();
 	// From Base
 	virtual MIface* DoGetObj(const char *aName) override;
+	// From MUnit
+	virtual void UpdateIfi(const string& aName, const TICacheRCtx& aCtx = TICacheRCtx()) override;
 	// From MAgent
 	MIface* MAgent_DoGetIface(const string& aName) override;
 	// From MDVarGet
@@ -940,12 +942,16 @@ class AAdp: public Unit, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 	/** @brief Notifies all states inputs of update **/
 	void NotifyInpsUpdated();
 	inline MUnit* Host() { return iMan;}
+	// Local
+	void OnInpMagUri();
     protected:
 	TBool mActive = ETrue;
 	TBool mUpdated = ETrue;
+	TBool mInpMagUriUpdated = ETrue;
 	MUnit* mMag; /*!< Managed agent */
 	string mMagUri; /*!< Managed agent URI */
 	AdpMagObs<AAdp> mMagObs = AdpMagObs<AAdp>(this); /*!< Managed agent observer */
+	AdpIap mIapMagUri = AdpIap(*this, [this]() {OnInpMagUri();}); /*!< MAG URI input access point */
 };
 
 // Access point, using Sdata
@@ -953,7 +959,8 @@ class AAdp: public Unit, public MDesSyncable_Imd, public MDesObserver_Imd, publi
 template <typename T> void* AAdp::AdpPap<T>::DoGetDObj(const char *aName)
 {
     void* res = NULL;
-    if (aName == MDtGet<Sdata<T> >::Type()) {
+    string tt = MDtGet<Sdata<T> >::Type();
+    if (tt.compare(aName) == 0) {
 	res = dynamic_cast<MDtGet<Sdata<T> >*>(this);
     }
     return res;
@@ -964,7 +971,8 @@ template <typename T> void* AAdp::AdpPap<T>::DoGetDObj(const char *aName)
 template <typename T> void* AAdp::AdpPapB<T>::DoGetDObj(const char *aName)
 {
     void* res = NULL;
-    if (aName == MDtGet<T>::Type()) {
+    string tt = MDtGet<T>::Type();
+    if (tt.compare(aName) == 0) {
 	res = dynamic_cast<MDtGet<T>*>(this);
     }
     return res;
@@ -1006,6 +1014,7 @@ class AMunitAdp : public AAdp
     protected:
 	void GetCompsCount(Sdata<TInt>& aData);
 	void GetCompNames(TCmpNames& aData) { aData = mCompNames;}
+	void GetOwner(Sdata<string>& aData);
 	// From AAdp
 	virtual void OnMagCompDeleting(const MUnit* aComp, TBool aSoft = ETrue, TBool aModif = EFalse) override;
 	virtual void OnMagCompAdding(const MUnit* aComp, TBool aModif = EFalse) override;
@@ -1021,9 +1030,11 @@ class AMunitAdp : public AAdp
 	AdpPap<int> mApCmpCount = AdpPap<int>(*this, [this](Sdata<TInt>& aData) {GetCompsCount(aData);}); /*!< Comps count access point */
 	AdpPapB<TCmpNames> mApCmpNames = AdpPapB<TCmpNames>([this](TCmpNames& aData) {GetCompNames(aData);}); /*!< Comp names access point */
 //	AdpPapCns mApCmpNames = AdpPapCns(*this); /*!< Comps names access point */
+	AdpPap<string> mPapOwner = AdpPap<string>(*this, [this](Sdata<string>& aData) {GetOwner(aData);}); /*!< Comps count access point */
     protected:
 	TCmpNames mCompNames;
 	TBool mCompNamesUpdated = ETrue;
+	TBool mOwnerUpdated = ETrue;
 };
 
 /** @brief MElem iface ADP agent
